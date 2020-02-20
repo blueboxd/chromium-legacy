@@ -84,4 +84,36 @@ export class BrowserProxy {
    * @abstract
    */
   openInspector(type) {}
+
+  /**
+   * @return {string}
+   * @abstract
+   */
+  getAppId() {}
+
+  /**
+   * @return {string}
+   * @abstract
+   */
+  getAppVersion() {}
+
+  /**
+   * @param {function(*, !MessageSender, function(string)): (boolean|undefined)}
+   *     listener
+   * @abstract
+   */
+  addOnMessageExternalListener(listener) {}
+
+  /**
+   * @param {function(Port)} listener
+   * @abstract
+   */
+  addOnConnectExternalListener(listener) {}
+
+  /**
+   * @param {string} extensionId
+   * @param {*} message
+   * @abstract
+   */
+  sendMessage(extensionId, message) {}
 }

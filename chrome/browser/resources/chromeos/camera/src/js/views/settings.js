@@ -115,13 +115,13 @@ export class MasterSettings extends BaseSettings {
       'feedbackInfo': {
         'description': '',
         'systemInformation': [
-          {key: 'APP ID', value: chrome.runtime.id},
-          {key: 'APP VERSION', value: chrome.runtime.getManifest().version},
+          {key: 'APP ID', value: browserProxy.getAppId()},
+          {key: 'APP VERSION', value: browserProxy.getAppVersion()},
         ],
       },
     };
     const id = 'gfdkimpbcpahaombhbimeihdjnejgicl';  // Feedback extension id.
-    chrome.runtime.sendMessage(id, data);
+    browserProxy.sendMessage(id, data);
   }
 }
 

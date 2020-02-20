@@ -1328,8 +1328,9 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
       return;
   }
 
-  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeydown) {
-    input_type_view_->HandleKeydownEvent(ToKeyboardEvent(evt));
+  auto* keyboad_event = DynamicTo<KeyboardEvent>(evt);
+  if (keyboad_event && evt.type() == event_type_names::kKeydown) {
+    input_type_view_->HandleKeydownEvent(*keyboad_event);
     if (evt.DefaultHandled())
       return;
   }
@@ -1360,14 +1361,14 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 
   // Use key press event here since sending simulated mouse events
   // on key down blocks the proper sending of the key press event.
-  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeypress) {
-    input_type_view_->HandleKeypressEvent(ToKeyboardEvent(evt));
+  if (keyboad_event && evt.type() == event_type_names::kKeypress) {
+    input_type_view_->HandleKeypressEvent(*keyboad_event);
     if (evt.DefaultHandled())
       return;
   }
 
-  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeyup) {
-    input_type_view_->HandleKeyupEvent(ToKeyboardEvent(evt));
+  if (keyboad_event && evt.type() == event_type_names::kKeyup) {
+    input_type_view_->HandleKeyupEvent(*keyboad_event);
     if (evt.DefaultHandled())
       return;
   }

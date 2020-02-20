@@ -17,6 +17,7 @@
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -133,6 +134,10 @@ ArcPowerBridge::~ArcPowerBridge() {
   arc_bridge_service_->power()->SetHost(nullptr);
 }
 
+void ArcPowerBridge::SetUserIdHash(const std::string& user_id_hash) {
+  user_id_hash_ = user_id_hash;
+}
+
 bool ArcPowerBridge::TriggerNotifyBrightnessTimerForTesting() {
   if (!notify_brightness_timer_.IsRunning())
     return false;
@@ -172,19 +177,66 @@ void ArcPowerBridge::SuspendImminent(
 
   auto token = base::UnguessableToken::Create();
   chromeos::PowerManagerClient::Get()->BlockSuspend(token, "ArcPowerBridge");
-  power_instance->Suspend(base::BindOnce(
-      [](base::UnguessableToken token) {
-        chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
-      },
-      token));
+  power_instance->Suspend(base::BindOnce(&ArcPowerBridge::OnAndroidSuspendReady,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         token));
+}
+
+void ArcPowerBridge::OnAndroidSuspendReady(base::UnguessableToken token) {
+  if (arc::IsArcVmEnabled()) {
+    vm_tools::concierge::SuspendVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->SuspendVm(
+        request, base::BindOnce(&ArcPowerBridge::OnConciergeSuspendVmResponse,
+                                weak_ptr_factory_.GetWeakPtr(), token));
+    return;
+  }
+
+  chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
+}
+
+void ArcPowerBridge::OnConciergeSuspendVmResponse(
+    base::UnguessableToken token,
+    base::Optional<vm_tools::concierge::SuspendVmResponse> reply) {
+  if (!reply.has_value())
+    LOG(ERROR) << "Failed to suspend arcvm, no reply received.";
+  else if (!reply.value().success())
+    LOG(ERROR) << "Failed to suspend arcvm: " << reply.value().failure_reason();
+  chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
 }
 
 void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
+  if (arc::IsArcVmEnabled()) {
+    vm_tools::concierge::ResumeVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->ResumeVm(
+        request, base::BindOnce(&ArcPowerBridge::OnConciergeResumeVmResponse,
+                                weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  DispatchAndroidResume();
+}
+
+void ArcPowerBridge::OnConciergeResumeVmResponse(
+    base::Optional<vm_tools::concierge::ResumeVmResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to resume arcvm, no reply received.";
+    return;
+  }
+  if (!reply.value().success()) {
+    LOG(ERROR) << "Failed to resume arcvm: " << reply.value().failure_reason();
+    return;
+  }
+  DispatchAndroidResume();
+}
+
+void ArcPowerBridge::DispatchAndroidResume() {
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Resume);
   if (!power_instance)
     return;
-
   power_instance->Resume();
 }
 

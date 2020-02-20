@@ -546,7 +546,6 @@ void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   DCHECK_NE(common_.GetState(), kConnecting);
   if (common_.GetState() != kOpen)
     return;
-  RecordReceiveTypeHistogram(WebSocketReceiveType::kString);
 
   DCHECK(!origin_string_.IsNull());
   event_queue_->Dispatch(MessageEvent::Create(msg, origin_string_));
@@ -575,7 +574,6 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       }
       auto* blob = MakeGarbageCollected<Blob>(
           BlobDataHandle::Create(std::move(blob_data), size));
-      RecordReceiveTypeHistogram(WebSocketReceiveType::kBlob);
       RecordReceiveMessageSizeHistogram(WebSocketReceiveType::kBlob, size);
       event_queue_->Dispatch(MessageEvent::Create(blob, origin_string_));
       break;
@@ -583,7 +581,6 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
     case kBinaryTypeArrayBuffer:
       DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(data);
-      RecordReceiveTypeHistogram(WebSocketReceiveType::kArrayBuffer);
       RecordReceiveMessageSizeHistogram(WebSocketReceiveType::kArrayBuffer,
                                         size);
       event_queue_->Dispatch(
@@ -669,10 +666,6 @@ void DOMWebSocket::RecordSendMessageSizeHistogram(WebSocketSendType type,
       return;
   }
   NOTREACHED();
-}
-
-void DOMWebSocket::RecordReceiveTypeHistogram(WebSocketReceiveType type) {
-  base::UmaHistogramEnumeration("WebCore.WebSocket.ReceiveType", type);
 }
 
 void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,

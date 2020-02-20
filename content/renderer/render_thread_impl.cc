@@ -1045,8 +1045,6 @@ void RenderThreadImpl::RegisterSchemes() {
   // chrome-untrusted:
   WebString chrome_untrusted_scheme(
       WebString::FromASCII(kChromeUIUntrustedScheme));
-  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(
-      chrome_untrusted_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_untrusted_scheme);
 

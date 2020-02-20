@@ -44,6 +44,8 @@ using mojom::blink::PermissionService;
 // static
 ScriptPromise ClipboardPromise::CreateForRead(ExecutionContext* context,
                                               ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(context, script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
@@ -55,6 +57,8 @@ ScriptPromise ClipboardPromise::CreateForRead(ExecutionContext* context,
 // static
 ScriptPromise ClipboardPromise::CreateForReadText(ExecutionContext* context,
                                                   ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(context, script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
@@ -68,6 +72,8 @@ ScriptPromise ClipboardPromise::CreateForWrite(
     ExecutionContext* context,
     ScriptState* script_state,
     const HeapVector<Member<ClipboardItem>>& items) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(context, script_state);
   HeapVector<Member<ClipboardItem>>* items_copy =
@@ -83,6 +89,8 @@ ScriptPromise ClipboardPromise::CreateForWrite(
 ScriptPromise ClipboardPromise::CreateForWriteText(ExecutionContext* context,
                                                    ScriptState* script_state,
                                                    const String& data) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(context, script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
@@ -110,6 +118,8 @@ void ClipboardPromise::CompleteWriteRepresentation() {
 
 void ClipboardPromise::StartWriteRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   LocalFrame* local_frame = GetLocalFrame();
   // Commit to system clipboard when all representations are written.
   // This is in the start flow so that a |clipboard_item_data_| with 0 items
@@ -141,6 +151,8 @@ void ClipboardPromise::StartWriteRepresentation() {
 
 void ClipboardPromise::RejectFromReadOrDecodeFailure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kDataError,
       "Failed to read or decode Blob for clipboard item type " +
@@ -165,6 +177,8 @@ void ClipboardPromise::HandleWrite(
     HeapVector<Member<ClipboardItem>>* clipboard_items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(clipboard_items);
+  if (!GetExecutionContext())
+    return;
 
   if (clipboard_items->size() > 1) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
@@ -200,6 +214,8 @@ void ClipboardPromise::HandleWriteText(const String& data) {
 
 void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   if (status != PermissionStatus::GRANTED) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Read permission denied."));
@@ -232,6 +248,9 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
 }
 
 void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   if (status != PermissionStatus::GRANTED) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Read permission denied."));
@@ -245,6 +264,8 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
 
 void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   if (status != PermissionStatus::GRANTED) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Write permission denied."));
@@ -279,6 +300,8 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
 
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
   if (status != PermissionStatus::GRANTED) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Write permission denied."));
@@ -311,7 +334,8 @@ void ClipboardPromise::RequestPermission(
          permission == mojom::blink::PermissionName::CLIPBOARD_WRITE);
 
   ExecutionContext* context = ExecutionContext::From(script_state_);
-  DCHECK(context);
+  if (!context)
+    return;
   const Document& document = *Document::From(context);
   DCHECK(document.IsSecureContext());  // [SecureContext] in IDL
 

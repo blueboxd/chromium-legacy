@@ -25,9 +25,9 @@ namespace blink {
 namespace {
 
 const size_t kTestCacheLimit = 100;
-class MockStoragePartitionService
-    : public mojom::blink::StoragePartitionService {
+class MockDomStorage : public mojom::blink::DomStorage {
  public:
+  // mojom::blink::DomStorage implementation:
   void OpenLocalStorage(
       const scoped_refptr<const SecurityOrigin>& origin,
       mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
@@ -63,22 +63,19 @@ TEST(StorageControllerTest, CacheLimit) {
   Persistent<FakeAreaSource> source_area =
       MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
-  mojo::PendingRemote<mojom::blink::StoragePartitionService>
-      storage_partition_service_remote;
+  StorageController::DomStorageConnection connection;
   PostCrossThreadTask(
       *base::CreateSequencedTaskRunner({base::ThreadPool()}), FROM_HERE,
       CrossThreadBindOnce(
-          [](mojo::PendingReceiver<mojom::blink::StoragePartitionService>
-                 receiver) {
-            mojo::MakeSelfOwnedReceiver(
-                std::make_unique<MockStoragePartitionService>(),
-                std::move(receiver));
+          [](mojo::PendingReceiver<mojom::blink::DomStorage> receiver) {
+            mojo::MakeSelfOwnedReceiver(std::make_unique<MockDomStorage>(),
+                                        std::move(receiver));
           },
-          WTF::Passed(storage_partition_service_remote
-                          .InitWithNewPipeAndPassReceiver())));
+          WTF::Passed(
+              connection.dom_storage_remote.BindNewPipeAndPassReceiver())));
 
-  StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
-                               std::move(storage_partition_service_remote),
+  StorageController controller(std::move(connection),
+                               scheduler::GetSingleThreadTaskRunnerForTesting(),
                                kTestCacheLimit);
 
   auto cached_area1 = controller.GetLocalStorageArea(kOrigin.get());
@@ -121,28 +118,23 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
 
   auto task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
 
-  auto mock_storage_partition_service =
-      std::make_unique<MockStoragePartitionService>();
-  MockStoragePartitionService* storage_partition_ptr =
-      mock_storage_partition_service.get();
+  auto mock_dom_storage = std::make_unique<MockDomStorage>();
+  MockDomStorage* dom_storage_ptr = mock_dom_storage.get();
 
-  mojo::PendingRemote<mojom::blink::StoragePartitionService>
-      storage_partition_service_remote;
+  StorageController::DomStorageConnection connection;
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce(
-          [](std::unique_ptr<MockStoragePartitionService> storage_partition_ptr,
-             mojo::PendingReceiver<mojom::blink::StoragePartitionService>
-                 receiver) {
-            mojo::MakeSelfOwnedReceiver(std::move(storage_partition_ptr),
+          [](std::unique_ptr<MockDomStorage> dom_storage_ptr,
+             mojo::PendingReceiver<mojom::blink::DomStorage> receiver) {
+            mojo::MakeSelfOwnedReceiver(std::move(dom_storage_ptr),
                                         std::move(receiver));
           },
-          WTF::Passed(std::move(mock_storage_partition_service)),
-          WTF::Passed(storage_partition_service_remote
-                          .InitWithNewPipeAndPassReceiver())));
+          WTF::Passed(std::move(mock_dom_storage)),
+          WTF::Passed(
+              connection.dom_storage_remote.BindNewPipeAndPassReceiver())));
 
-  StorageController controller(
-      nullptr, std::move(storage_partition_service_remote), kTestCacheLimit);
+  StorageController controller(std::move(connection), nullptr, kTestCacheLimit);
 
   StorageNamespace* ns1 = controller.CreateSessionStorageNamespace(kNamespace1);
   StorageNamespace* ns2 = controller.CreateSessionStorageNamespace(kNamespace2);
@@ -174,8 +166,8 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
     base::RunLoop loop;
     task_runner->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&MockStoragePartitionService::GetSessionStorageUsage,
-                       base::Unretained(storage_partition_ptr), &opens),
+        base::BindOnce(&MockDomStorage::GetSessionStorageUsage,
+                       base::Unretained(dom_storage_ptr), &opens),
         loop.QuitClosure());
     loop.Run();
   }

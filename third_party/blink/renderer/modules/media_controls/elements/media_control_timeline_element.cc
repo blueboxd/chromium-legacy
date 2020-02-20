@@ -116,14 +116,16 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kKeydown) {
     metrics_.StartKey();
   }
-  if (event.type() == event_type_names::kKeyup && event.IsKeyboardEvent()) {
-    metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event).keyCode());
+
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeyup && keyboard_event) {
+    metrics_.RecordEndKey(TrackWidth(), keyboard_event->keyCode());
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
 
-  if (IsA<MouseEvent>(event) || event.IsKeyboardEvent() ||
-      IsA<GestureEvent>(event) || IsA<PointerEvent>(event)) {
+  if (IsA<MouseEvent>(event) || keyboard_event || IsA<GestureEvent>(event) ||
+      IsA<PointerEvent>(event)) {
     MaybeRecordInteracted();
   }
 

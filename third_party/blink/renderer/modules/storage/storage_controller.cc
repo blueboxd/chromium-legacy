@@ -19,25 +19,32 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
+
 namespace {
 
 const size_t kStorageControllerTotalCacheLimitInBytesLowEnd = 1 * 1024 * 1024;
 const size_t kStorageControllerTotalCacheLimitInBytes = 5 * 1024 * 1024;
 
-mojo::PendingRemote<mojom::blink::StoragePartitionService>
-GetAndCreateStorageInterface() {
-  mojo::PendingRemote<mojom::blink::StoragePartitionService> pending_remote;
+StorageController::DomStorageConnection GetDomStorageConnection() {
+  StorageController::DomStorageConnection connection;
+  mojo::Remote<mojom::blink::DomStorageProvider> provider;
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-      pending_remote.InitWithNewPipeAndPassReceiver());
-  return pending_remote;
+      provider.BindNewPipeAndPassReceiver());
+  mojo::PendingRemote<mojom::blink::DomStorageClient> client;
+  connection.client_receiver = client.InitWithNewPipeAndPassReceiver();
+  provider->BindDomStorage(
+      connection.dom_storage_remote.BindNewPipeAndPassReceiver(),
+      std::move(client));
+  return connection;
 }
+
 }  // namespace
 
 // static
 StorageController* StorageController::GetInstance() {
   DEFINE_STATIC_LOCAL(StorageController, gCachedStorageAreaController,
-                      (Thread::MainThread()->Scheduler()->IPCTaskRunner(),
-                       GetAndCreateStorageInterface(),
+                      (GetDomStorageConnection(),
+                       Thread::MainThread()->Scheduler()->IPCTaskRunner(),
                        base::SysInfo::IsLowEndDevice()
                            ? kStorageControllerTotalCacheLimitInBytesLowEnd
                            : kStorageControllerTotalCacheLimitInBytes));
@@ -55,15 +62,18 @@ bool StorageController::CanAccessStorageArea(LocalFrame* frame,
 }
 
 StorageController::StorageController(
+    DomStorageConnection connection,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-    mojo::PendingRemote<mojom::blink::StoragePartitionService>
-        storage_partition_service,
     size_t total_cache_limit)
     : ipc_runner_(std::move(ipc_runner)),
       namespaces_(MakeGarbageCollected<
                   HeapHashMap<String, WeakMember<StorageNamespace>>>()),
       total_cache_limit_(total_cache_limit),
-      storage_partition_service_(std::move(storage_partition_service)) {}
+      dom_storage_remote_(std::move(connection.dom_storage_remote)) {
+  // May be null in tests.
+  if (connection.client_receiver)
+    dom_storage_client_receiver_.Bind(std::move(connection.client_receiver));
+}
 
 StorageNamespace* StorageController::CreateSessionStorageNamespace(
     const String& namespace_id) {
@@ -136,6 +146,15 @@ void StorageController::EnsureLocalStorageNamespaceCreated() {
   if (local_storage_namespace_)
     return;
   local_storage_namespace_ = MakeGarbageCollected<StorageNamespace>(this);
+}
+
+void StorageController::ResetStorageAreaAndNamespaceConnections() {
+  for (auto& ns : *namespaces_) {
+    if (ns.value)
+      ns.value->ResetStorageAreaAndNamespaceConnections();
+  }
+  if (local_storage_namespace_)
+    local_storage_namespace_->ResetStorageAreaAndNamespaceConnections();
 }
 
 }  // namespace blink

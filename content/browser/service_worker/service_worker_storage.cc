@@ -17,11 +17,10 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/service_worker/service_worker_consts.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
@@ -907,16 +906,14 @@ ServiceWorkerStorage::ServiceWorkerStorage(
 base::FilePath ServiceWorkerStorage::GetDatabasePath() {
   if (user_data_directory_.empty())
     return base::FilePath();
-  return user_data_directory_
-      .Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+  return user_data_directory_.Append(storage::kServiceWorkerDirectory)
       .Append(kDatabaseName);
 }
 
 base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
   if (user_data_directory_.empty())
     return base::FilePath();
-  return user_data_directory_
-      .Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+  return user_data_directory_.Append(storage::kServiceWorkerDirectory)
       .Append(kDiskCacheName);
 }
 

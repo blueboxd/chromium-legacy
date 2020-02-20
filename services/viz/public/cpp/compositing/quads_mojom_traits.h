@@ -252,6 +252,12 @@ struct StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad> {
     return quad->backdrop_filter_quality;
   }
 
+  static bool can_use_backdrop_filter_cache(const viz::DrawQuad& input) {
+    const viz::RenderPassDrawQuad* quad =
+        viz::RenderPassDrawQuad::MaterialCast(&input);
+    return quad->can_use_backdrop_filter_cache;
+  }
+
   static bool Read(viz::mojom::RenderPassQuadStateDataView data,
                    viz::DrawQuad* out);
 };

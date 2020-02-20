@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -138,7 +139,7 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   DrawQuad* copy_all =                                               \
       render_pass->CopyFromAndAppendRenderPassDrawQuad(quad_all, a); \
   CompareDrawQuad(quad_all, copy_all);                               \
-  copy_quad = Type::MaterialCast(copy_all);
+  const Type* copy_quad = Type::MaterialCast(copy_all);
 
 #define CREATE_QUAD_ALL(Type, ...)                                         \
   Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();           \
@@ -153,11 +154,11 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, __VA_ARGS__); } \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, g, h, i, j, copy_a)        \
+#define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, g, h, i, j, k, copy_a)     \
   Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();              \
   {                                                                           \
-    QUAD_DATA quad_all->SetAll(shared_state, quad_rect, quad_visible_rect,    \
-                               needs_blending, a, b, c, d, e, f, g, h, i, j); \
+    QUAD_DATA quad_all->SetAll(shared_state, quad_rect, a, needs_blending, b, \
+                               c, d, e, f, g, h, i, j, k);                    \
   }                                                                           \
   SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
@@ -198,15 +199,16 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::RectF tex_coord_rect(1, 1, 255, 254);
   bool force_anti_aliasing_off = false;
   float backdrop_filter_quality = 1.0f;
+  bool can_use_backdrop_filter_cache = true;
 
   RenderPassId copied_render_pass_id = 235;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
+  CREATE_QUAD_ALL_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_rect, mask_texture_size,
                      filters_scale, filters_origin, tex_coord_rect,
                      force_anti_aliasing_off, backdrop_filter_quality,
-                     copied_render_pass_id);
+                     can_use_backdrop_filter_cache, copied_render_pass_id);
   EXPECT_EQ(DrawQuad::Material::kRenderPass, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
@@ -217,6 +219,10 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(filters_origin, copy_quad->filters_origin);
   EXPECT_EQ(tex_coord_rect.ToString(), copy_quad->tex_coord_rect.ToString());
+  EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
+  EXPECT_EQ(backdrop_filter_quality, copy_quad->backdrop_filter_quality);
+  EXPECT_EQ(can_use_backdrop_filter_cache,
+            copy_quad->can_use_backdrop_filter_cache);
 }
 
 TEST(DrawQuadTest, CopySolidColorDrawQuad) {
@@ -531,7 +537,6 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::RectF tex_coord_rect(1.f, 1.f, 33.f, 19.f);
   bool force_anti_aliasing_off = false;
   float backdrop_filter_quality = 1.0f;
-
   int copied_render_pass_id = 235;
 
   CREATE_SHARED_STATE();

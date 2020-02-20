@@ -1467,10 +1467,11 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
     ResetHideMediaControlsTimer();
   }
 
-  if (event.IsKeyboardEvent() && !event.defaultPrevented() &&
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (keyboard_event && !event.defaultPrevented() &&
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-    const String& key = ToKeyboardEvent(event).key();
-    if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
+    const String& key = keyboard_event->key();
+    if (key == "Enter" || keyboard_event->keyCode() == ' ') {
       if (overlay_play_button_) {
         overlay_play_button_->OnMediaKeyboardEvent(&event);
       } else {

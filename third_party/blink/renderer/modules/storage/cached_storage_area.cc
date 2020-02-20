@@ -6,6 +6,8 @@
 
 #include <inttypes.h>
 
+#include <algorithm>
+
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -179,17 +181,14 @@ String CachedStorageArea::RegisterSource(Source* source) {
 CachedStorageArea::CachedStorageArea(
     AreaType type,
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingRemote<mojom::blink::StorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     StorageNamespace* storage_namespace)
     : type_(type),
       origin_(std::move(origin)),
       storage_namespace_(storage_namespace),
       ipc_task_runner_(std::move(ipc_runner)),
-      remote_area_(std::move(area), ipc_task_runner_),
       areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
-  remote_area_->AddObserver(
-      receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
+  BindStorageArea();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DOMStorage",
       ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
@@ -198,6 +197,104 @@ CachedStorageArea::CachedStorageArea(
 CachedStorageArea::~CachedStorageArea() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+}
+
+void CachedStorageArea::BindStorageArea(
+    mojo::PendingRemote<mojom::blink::StorageArea> new_area) {
+  // Some tests may not provide a StorageNamespace.
+  DCHECK(!remote_area_);
+  if (new_area) {
+    remote_area_.Bind(std::move(new_area), ipc_task_runner_);
+  } else if (storage_namespace_) {
+    storage_namespace_->BindStorageArea(
+        origin_, remote_area_.BindNewPipeAndPassReceiver(ipc_task_runner_));
+  } else {
+    return;
+  }
+
+  receiver_.reset();
+  remote_area_->AddObserver(
+      receiver_.BindNewPipeAndPassRemote(ipc_task_runner_));
+}
+
+void CachedStorageArea::ResetConnection(
+    mojo::PendingRemote<mojom::blink::StorageArea> new_area) {
+  remote_area_.reset();
+  BindStorageArea(std::move(new_area));
+
+  // If we had not yet initialized a local cache, there's no synchronization to
+  // be done.
+  if (!map_)
+    return;
+
+  std::unique_ptr<StorageAreaMap> old_map;
+  std::swap(map_, old_map);
+  pending_mutations_by_key_.clear();
+  pending_mutations_by_source_.clear();
+
+  // Fully repopulate the cache from the loaded backend state.
+  EnsureLoaded();
+
+  // The data received from the backend may differ from what we had cached
+  // previously. How we proceed depends on the type of storage. First we
+  // compute the full diff between our old cache and the restored cache.
+  struct ValueDelta {
+    String previously_cached_value;
+    String restored_value;
+  };
+  HashMap<String, ValueDelta> deltas;
+  for (unsigned i = 0; i < map_->GetLength(); ++i) {
+    const String key = map_->GetKey(i);
+    const String previously_cached_value = old_map->GetItem(key);
+    const String restored_value = map_->GetItem(key);
+    if (previously_cached_value != restored_value)
+      deltas.insert(key, ValueDelta{previously_cached_value, restored_value});
+  }
+
+  // Make sure we also get values for keys that weren't stored in the backend.
+  for (unsigned i = 0; i < old_map->GetLength(); ++i) {
+    const String key = old_map->GetKey(i);
+    const String previously_cached_value = old_map->GetItem(key);
+    // This key will already be covered if it's also present in the restored
+    // cache.
+    if (!map_->GetItem(key).IsNull())
+      continue;
+    deltas.insert(key, ValueDelta{previously_cached_value, String()});
+  }
+
+  if (!IsSessionStorage()) {
+    // For Local Storage we have no way of knowing whether changes not reflected
+    // by the backend were merely dropped, or if they were landed and
+    // overwritten by another client. For simplicity we treat them as dropped,
+    // use the restored cache without modification, and notify script about any
+    // deltas from the previously cached state.
+    for (const auto& delta : deltas) {
+      EnqueueStorageEvent(delta.key, delta.value.previously_cached_value,
+                          delta.value.restored_value, "", "");
+    }
+    return;
+  }
+
+  // For Session Storage, we're the source of truth for our own data, so we
+  // can simply push any needed updates down to the backend and continue
+  // using our previous cache.
+  map_ = std::move(old_map);
+  for (const auto& delta : deltas) {
+    if (delta.value.previously_cached_value.IsNull()) {
+      remote_area_->Delete(
+          StringToUint8Vector(delta.key, GetKeyFormat()),
+          StringToUint8Vector(delta.value.restored_value, GetValueFormat()),
+          /*source=*/"\n", base::DoNothing());
+    } else {
+      const FormatOption value_format = GetValueFormat();
+      remote_area_->Put(
+          StringToUint8Vector(delta.key, GetKeyFormat()),
+          StringToUint8Vector(delta.value.previously_cached_value,
+                              value_format),
+          StringToUint8Vector(delta.value.restored_value, value_format),
+          /*source=*/"\n", base::DoNothing());
+    }
+  }
 }
 
 void CachedStorageArea::KeyChanged(

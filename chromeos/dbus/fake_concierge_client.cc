@@ -179,6 +179,20 @@ void FakeConciergeClient::StopVm(
       FROM_HERE, base::BindOnce(std::move(callback), stop_vm_response_));
 }
 
+void FakeConciergeClient::SuspendVm(
+    const vm_tools::concierge::SuspendVmRequest& request,
+    DBusMethodCallback<vm_tools::concierge::SuspendVmResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), suspend_vm_response_));
+}
+
+void FakeConciergeClient::ResumeVm(
+    const vm_tools::concierge::ResumeVmRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ResumeVmResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), resume_vm_response_));
+}
+
 void FakeConciergeClient::GetVmInfo(
     const vm_tools::concierge::GetVmInfoRequest& request,
     DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse> callback) {
@@ -288,6 +302,12 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   stop_vm_response_.emplace();
   stop_vm_response_->set_success(true);
+
+  suspend_vm_response_.emplace();
+  suspend_vm_response_->set_success(true);
+
+  resume_vm_response_.emplace();
+  resume_vm_response_->set_success(true);
 
   get_vm_info_response_.emplace();
   get_vm_info_response_->set_success(true);

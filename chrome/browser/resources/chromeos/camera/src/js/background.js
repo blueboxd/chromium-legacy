@@ -561,6 +561,6 @@ chrome.app.runtime.onLaunched.addListener((launchData) => {
   }
 });
 
-chrome.runtime.onMessageExternal.addListener(handleExternalMessageFromTest);
+browserProxy.addOnMessageExternalListener(handleExternalMessageFromTest);
 
-chrome.runtime.onConnectExternal.addListener(handleExternalConnectionFromTest);
+browserProxy.addOnConnectExternalListener(handleExternalConnectionFromTest);

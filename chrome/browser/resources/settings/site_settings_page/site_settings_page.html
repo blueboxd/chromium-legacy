@@ -25,6 +25,11 @@
       .two-line {
         --cr-section-min-height: var(--cr-section-two-line-min-height);
       }
+
+      /* Remove border-top added by .hr for the 1st cr-link-row. */
+      .settings-box + cr-link-row {
+        border-top: none;
+      }
     </style>
     <div class="settings-box first line-only">
       <h2 class="first">$i18n{siteSettingsAllSites}</h2>
@@ -38,7 +43,7 @@
     </div>
 
     <template is="dom-repeat" items="[[categoryList_]]">
-      <cr-link-row class="two-line" data-route$="[[item.route]]"
+      <cr-link-row class="hr two-line" data-route$="[[item.route]]"
           id="[[item.id]]" label="[[i18n(item.label)]]"
           on-click="onTapNavigate_" start-icon="[[item.icon]]"
           sub-label="[[item.subLabel]]"

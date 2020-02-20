@@ -70,9 +70,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   using ContainerHostByClientUUIDMap =
       std::map<std::string, std::unique_ptr<ServiceWorkerContainerHost>>;
 
-  // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
-  static const base::FilePath::CharType kServiceWorkerDirectory[];
-
   // Iterates over ServiceWorkerContainerHost objects in the
   // ContainerHostByClientUUIDMap.
   // Note: As ContainerHostIterator is operating on a member of

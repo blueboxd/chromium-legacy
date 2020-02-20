@@ -155,16 +155,20 @@ void StorageAreaImpl::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
 }
 
-void StorageAreaImpl::ScheduleImmediateCommit() {
+void StorageAreaImpl::ScheduleImmediateCommit(base::OnceClosure callback) {
   if (!on_load_complete_tasks_.empty()) {
     LoadMap(base::BindOnce(&StorageAreaImpl::ScheduleImmediateCommit,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(callback)));
     return;
   }
 
-  if (!database_ || !commit_batch_)
+  if (!database_ || !commit_batch_) {
+    if (callback)
+      std::move(callback).Run();
     return;
-  CommitChanges();
+  }
+  CommitChanges(std::move(callback));
 }
 
 void StorageAreaImpl::OnMemoryDump(const std::string& name,
@@ -746,7 +750,7 @@ void StorageAreaImpl::StartCommitTimer() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&StorageAreaImpl::CommitChanges,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), base::OnceClosure()),
       ComputeCommitDelay());
 }
 
@@ -765,11 +769,14 @@ base::TimeDelta StorageAreaImpl::ComputeCommitDelay() const {
   return delay;
 }
 
-void StorageAreaImpl::CommitChanges() {
+void StorageAreaImpl::CommitChanges(base::OnceClosure callback) {
   // Note: commit_batch_ may be null if ScheduleImmediateCommit was called
   // after a delayed commit task was scheduled.
-  if (!commit_batch_)
+  if (!commit_batch_) {
+    if (callback)
+      std::move(callback).Run();
     return;
+  }
 
   DCHECK(database_);
   DCHECK(IsMapLoaded()) << static_cast<int>(map_state_);
@@ -866,10 +873,11 @@ void StorageAreaImpl::CommitChanges() {
           },
           std::move(commit)),
       base::BindOnce(&StorageAreaImpl::OnCommitComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void StorageAreaImpl::OnCommitComplete(leveldb::Status status) {
+void StorageAreaImpl::OnCommitComplete(base::OnceClosure callback,
+                                       leveldb::Status status) {
   has_committed_data_ = true;
   --commit_batches_in_flight_;
   StartCommitTimer();
@@ -881,6 +889,8 @@ void StorageAreaImpl::OnCommitComplete(leveldb::Status status) {
   UnloadMapIfPossible();
 
   delegate_->DidCommit(status);
+  if (callback)
+    std::move(callback).Run();
 }
 
 void StorageAreaImpl::UnloadMapIfPossible() {

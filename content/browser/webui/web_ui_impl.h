@@ -51,8 +51,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void OverrideTitle(const base::string16& title) override;
   int GetBindings() override;
   void SetBindings(int bindings) override;
-  const std::vector<std::string>& GetRequestableSchemes();
-  void AddRequestableScheme(const char* scheme);
+  const std::vector<std::string>& GetRequestableSchemes() override;
+  void AddRequestableScheme(const char* scheme) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
                                const MessageCallback& callback) override;

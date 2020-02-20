@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -51,7 +52,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/host_zoom_level_context.h"
@@ -74,7 +75,7 @@ class NativeFileSystemManagerImpl;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
-      public blink::mojom::StoragePartitionService,
+      public blink::mojom::DomStorage,
       public network::mojom::NetworkContextClient {
  public:
   // It is guaranteed that storage partitions are destructed before the
@@ -195,7 +196,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   NativeFileSystemManagerImpl* GetNativeFileSystemManager();
   ConversionManager* GetConversionManager();
 
-  // blink::mojom::StoragePartitionService interface.
+  // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
@@ -292,16 +293,17 @@ class CONTENT_EXPORT StoragePartitionImpl
   static mojo::Remote<storage::mojom::StorageService>&
   GetStorageServiceForTesting();
 
-  // Called by each renderer process for each StoragePartitionService interface
-  // it binds in the renderer process. Returns the id of the created receiver.
-  mojo::ReceiverId Bind(
+  // Called by each renderer process to bind its global DomStorage interface.
+  // Returns the id of the created receiver.
+  mojo::ReceiverId BindDomStorage(
       int process_id,
-      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
+      mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
+      mojo::PendingRemote<blink::mojom::DomStorageClient> client);
 
-  // Remove a receiver created by a previous Bind() call.
-  void Unbind(mojo::ReceiverId receiver_id);
+  // Remove a receiver created by a previous BindDomStorage() call.
+  void UnbindDomStorage(mojo::ReceiverId receiver_id);
 
-  auto& receivers_for_testing() { return receivers_; }
+  auto& dom_storage_receivers_for_testing() { return dom_storage_receivers_; }
 
   // When this StoragePartition is for guests (e.g., for a <webview> tag), this
   // is the site URL to use when creating a SiteInstance for a service worker.
@@ -406,6 +408,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   // can query properties of the StoragePartitionImpl (notably GetPath()).
   void Initialize();
 
+  // If we're running Storage Service out-of-process and it crashes, this
+  // re-establishes a connection and makes sure the service returns to a usable
+  // state.
+  void OnStorageServiceDisconnected();
+
   // We will never have both remove_origin be populated and a cookie_matcher.
   void ClearDataImpl(
       uint32_t remove_mask,
@@ -489,14 +496,18 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
   std::unique_ptr<ConversionManager> conversion_manager_;
 
-  // ReceiverSet for StoragePartitionService, using the
+  // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The
   // handle can subsequently be used during interface method calls to
   // enforce security checks.
   using SecurityPolicyHandle = ChildProcessSecurityPolicyImpl::Handle;
-  mojo::ReceiverSet<blink::mojom::StoragePartitionService,
+  mojo::ReceiverSet<blink::mojom::DomStorage,
                     std::unique_ptr<SecurityPolicyHandle>>
-      receivers_;
+      dom_storage_receivers_;
+
+  // A client interface for each receiver above.
+  std::map<mojo::ReceiverId, mojo::Remote<blink::mojom::DomStorageClient>>
+      dom_storage_clients_;
 
   // This is the NetworkContext used to
   // make requests for the StoragePartition. When the network service is

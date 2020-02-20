@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -765,6 +766,32 @@ TEST_F(WindowStateTest, SetBoundsUpdatesSizeOfPipRestoreBounds) {
   // SetBounds only updates the size of the restore bounds.
   EXPECT_EQ(gfx::Rect(8, 8, 100, 100),
             window_state->GetRestoreBoundsInScreen());
+}
+
+TEST_F(WindowStateTest, SetBoundsSnapsPipBoundsToScreenEdge) {
+  UpdateDisplay("600x900");
+
+  aura::test::TestWindowDelegate delegate;
+  delegate.set_minimum_size(gfx::Size(51, 51));
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, -1, gfx::Rect(0, 0, 50, 50)));
+  WindowState* window_state = WindowState::Get(window.get());
+  window->Show();
+
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  window->SetBounds(gfx::Rect(542, 50, 50, 50));
+  EXPECT_TRUE(window_state->IsPip());
+  // Ensure that the PIP window is along the right edge of the screen even when
+  // the new bounds is adjusted by the minimum size.
+  // 541 (left origin) + 51 (PIP width) + 8 (PIP insets) == 600.
+  EXPECT_EQ(gfx::Rect(541, 50, 51, 51),
+            window_state->window()->GetBoundsInScreen());
+
+  PipPositioner::SaveSnapFraction(window_state);
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
+  EXPECT_EQ(gfx::Rect(541, 50, 51, 51),
+            PipPositioner::GetPositionAfterMovementAreaChange(window_state));
 }
 
 // TODO(skuhne): Add more unit test to verify the correctness for the restore

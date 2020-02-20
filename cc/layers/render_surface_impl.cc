@@ -458,11 +458,13 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
 
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, content_rect(), unoccluded_content_rect, id(),
-               mask_resource_id, mask_uv_rect, mask_texture_size,
-               surface_contents_scale, FiltersOrigin(), tex_coord_rect,
+  quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
+               /*needs_blending=*/true, id(), mask_resource_id, mask_uv_rect,
+               mask_texture_size, surface_contents_scale, FiltersOrigin(),
+               tex_coord_rect,
                !layer_tree_impl_->settings().enable_edge_anti_aliasing,
-               OwningEffectNode()->backdrop_filter_quality);
+               OwningEffectNode()->backdrop_filter_quality,
+               can_use_cached_backdrop_filtered_result_);
 }
 
 }  // namespace cc

@@ -78,7 +78,7 @@ class BrowsingDataCounter {
     DISALLOW_COPY_AND_ASSIGN(SyncResult);
   };
 
-  typedef base::RepeatingCallback<void(std::unique_ptr<Result>)> Callback;
+  typedef base::RepeatingCallback<void(std::unique_ptr<Result>)> ResultCallback;
 
   // Every calculation progresses through a state machine. At initialization,
   // the counter is IDLE. If a result is calculated within a given time
@@ -106,12 +106,12 @@ class BrowsingDataCounter {
   // Should be called once to initialize this class.
   void Init(PrefService* pref_service,
             ClearBrowsingDataTab clear_browsing_data_tab,
-            const Callback& callback);
+            ResultCallback callback);
 
   // Can be called instead of |Init()|, to create a counter that doesn't
   // observe pref changes and counts data that was changed since |begin_time|.
   // This mode doesn't use delayed responses.
-  void InitWithoutPref(base::Time begin_time, const Callback& callback);
+  void InitWithoutPref(base::Time begin_time, ResultCallback callback);
 
   // Name of the preference associated with this counter.
   virtual const char* GetPrefName() const = 0;
@@ -167,7 +167,7 @@ class BrowsingDataCounter {
 
   // The callback that will be called when the UI should be updated with a new
   // counter value.
-  Callback callback_;
+  ResultCallback callback_;
 
   // The boolean preference indicating whether this data type is to be deleted.
   BooleanPrefMember pref_;

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,10 +20,38 @@ class MockStorageArea : public mojom::blink::StorageArea {
  public:
   using ResultCallback = base::OnceCallback<void(bool)>;
 
+  struct ObservedPut {
+    Vector<uint8_t> key;
+    Vector<uint8_t> value;
+    String source;
+
+    bool operator==(const ObservedPut& other) const {
+      return std::tie(key, value, source) ==
+             std::tie(other.key, other.value, other.source);
+    }
+  };
+
+  struct ObservedDelete {
+    Vector<uint8_t> key;
+    String source;
+
+    bool operator==(const ObservedDelete& other) const {
+      return std::tie(key, source) == std::tie(other.key, other.source);
+    }
+  };
+
+  struct KeyValue {
+    Vector<uint8_t> key;
+    Vector<uint8_t> value;
+  };
+
   MockStorageArea();
   ~MockStorageArea() override;
 
   mojo::PendingRemote<mojom::blink::StorageArea> GetInterfaceRemote();
+
+  void InjectKeyValue(const Vector<uint8_t>& key, const Vector<uint8_t>& value);
+  void Clear();
 
   // StorageArea implementation:
   void AddObserver(
@@ -48,13 +78,10 @@ class MockStorageArea : public mojom::blink::StorageArea {
   bool HasBindings() { return !receivers_.empty(); }
 
   void ResetObservations() {
-    observed_get_all_ = false;
-    observed_put_ = false;
-    observed_delete_ = false;
-    observed_delete_all_ = false;
-    observed_key_.clear();
-    observed_value_.clear();
-    observed_source_ = String();
+    observed_get_alls_ = 0;
+    observed_puts_.clear();
+    observed_deletes_.clear();
+    observed_delete_alls_.clear();
   }
 
   void Flush() {
@@ -65,30 +92,24 @@ class MockStorageArea : public mojom::blink::StorageArea {
     receivers_.Clear();
   }
 
-  bool observed_get_all() const { return observed_get_all_; }
-  bool observed_put() const { return observed_put_; }
-  bool observed_delete() const { return observed_delete_; }
-  bool observed_delete_all() const { return observed_delete_all_; }
-  const Vector<uint8_t>& observed_key() const { return observed_key_; }
-  const Vector<uint8_t>& observed_value() const { return observed_value_; }
-  const String& observed_source() const { return observed_source_; }
+  int observed_get_alls() const { return observed_get_alls_; }
+  const Vector<ObservedPut>& observed_puts() const { return observed_puts_; }
+  const Vector<ObservedDelete>& observed_deletes() const {
+    return observed_deletes_;
+  }
+  const Vector<String>& observed_delete_alls() const {
+    return observed_delete_alls_;
+  }
   size_t observer_count() const { return observer_count_; }
 
-  Vector<mojom::blink::KeyValuePtr>& mutable_get_all_return_values() {
-    return get_all_return_values_;
-  }
-
  private:
-  bool observed_get_all_ = false;
-  bool observed_put_ = false;
-  bool observed_delete_ = false;
-  bool observed_delete_all_ = false;
-  Vector<uint8_t> observed_key_;
-  Vector<uint8_t> observed_value_;
-  String observed_source_;
+  int observed_get_alls_ = 0;
+  Vector<ObservedPut> observed_puts_;
+  Vector<ObservedDelete> observed_deletes_;
+  Vector<String> observed_delete_alls_;
   size_t observer_count_ = 0;
 
-  Vector<mojom::blink::KeyValuePtr> get_all_return_values_;
+  Vector<KeyValue> key_values_;
 
   mojo::ReceiverSet<mojom::blink::StorageArea> receivers_;
 };

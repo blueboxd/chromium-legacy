@@ -232,10 +232,10 @@ void FrameSequenceMetrics::ReportMetrics() {
     frames_checkerboarded_ = 0;
   }
 
-  // Reset the metrics that have already been reported.
-  if (impl_throughput_percent.has_value())
+  // Reset the metrics that reach reporting threshold.
+  if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric)
     impl_throughput_ = {};
-  if (main_throughput_percent.has_value())
+  if (main_throughput_.frames_expected >= kMinFramesForThroughputMetric)
     main_throughput_ = {};
 }
 

@@ -28,25 +28,26 @@ BrowsingDataCounter::~BrowsingDataCounter() {}
 
 void BrowsingDataCounter::Init(PrefService* pref_service,
                                ClearBrowsingDataTab clear_browsing_data_tab,
-                               const Callback& callback) {
+                               ResultCallback callback) {
   DCHECK(!initialized_);
-  callback_ = callback;
+  callback_ = std::move(callback);
   clear_browsing_data_tab_ = clear_browsing_data_tab;
   pref_.Init(GetPrefName(), pref_service,
-             base::Bind(&BrowsingDataCounter::Restart, base::Unretained(this)));
-  period_.Init(
-      GetTimePeriodPreferenceName(GetTab()), pref_service,
-      base::Bind(&BrowsingDataCounter::Restart, base::Unretained(this)));
+             base::BindRepeating(&BrowsingDataCounter::Restart,
+                                 base::Unretained(this)));
+  period_.Init(GetTimePeriodPreferenceName(GetTab()), pref_service,
+               base::BindRepeating(&BrowsingDataCounter::Restart,
+                                   base::Unretained(this)));
 
   initialized_ = true;
   OnInitialized();
 }
 
 void BrowsingDataCounter::InitWithoutPref(base::Time begin_time,
-                                          const Callback& callback) {
+                                          ResultCallback callback) {
   DCHECK(!initialized_);
   use_delay_ = false;
-  callback_ = callback;
+  callback_ = std::move(callback);
   clear_browsing_data_tab_ = ClearBrowsingDataTab::ADVANCED;
   begin_time_ = begin_time;
   initialized_ = true;

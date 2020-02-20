@@ -89,12 +89,12 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
   // some element to none which will cause a layout tree detach.
   select_->GetDocument().UpdateStyleAndLayoutTree();
 
+  const auto* key_event = DynamicTo<KeyboardEvent>(event);
   if (event.type() == event_type_names::kKeydown) {
-    if (!select_->GetLayoutObject() || !event.IsKeyboardEvent())
+    if (!select_->GetLayoutObject() || !key_event)
       return false;
 
-    const auto& key_event = ToKeyboardEvent(event);
-    if (select_->ShouldOpenPopupForKeyDownEvent(key_event))
+    if (select_->ShouldOpenPopupForKeyDownEvent(*key_event))
       return select_->HandlePopupOpenKeyboardEvent(event);
 
     // When using spatial navigation, we want to be able to navigate away
@@ -114,10 +114,10 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     int ignore_modifiers = WebInputEvent::kShiftKey |
                            WebInputEvent::kControlKey | WebInputEvent::kAltKey |
                            WebInputEvent::kMetaKey;
-    if (key_event.GetModifiers() & ignore_modifiers)
+    if (key_event->GetModifiers() & ignore_modifiers)
       return false;
 
-    const String& key = key_event.key();
+    const String& key = key_event->key();
     bool handled = true;
     const HTMLSelectElement::ListItems& list_items = select_->GetListItems();
     HTMLOptionElement* option = select_->SelectedOption();
@@ -155,10 +155,10 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
   }
 
   if (event.type() == event_type_names::kKeypress) {
-    if (!select_->GetLayoutObject() || !event.IsKeyboardEvent())
+    if (!select_->GetLayoutObject() || !key_event)
       return false;
 
-    int key_code = ToKeyboardEvent(event).keyCode();
+    int key_code = key_event->keyCode();
     if (key_code == ' ' &&
         IsSpatialNavigationEnabled(select_->GetDocument().GetFrame())) {
       // Use space to toggle arrow key handling for selection change or
@@ -167,8 +167,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
       return true;
     }
 
-    const auto& key_event = ToKeyboardEvent(event);
-    if (select_->ShouldOpenPopupForKeyPressEvent(key_event))
+    if (select_->ShouldOpenPopupForKeyPressEvent(*key_event))
       return select_->HandlePopupOpenKeyboardEvent(event);
 
     if (!LayoutTheme::GetTheme().PopsMenuByReturnKey() && key_code == '\r') {
@@ -335,6 +334,10 @@ class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
+  void UpdateMultiSelectFocus() override;
+
+ private:
+  bool is_in_non_contiguous_selection_ = false;
 };
 
 bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
@@ -439,7 +442,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   }
 
   if (event.type() == event_type_names::kKeydown) {
-    const auto* keyboard_event = ToKeyboardEventOrNull(event);
+    const auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
     if (!keyboard_event)
       return false;
     const String& key = keyboard_event->key();
@@ -527,12 +530,11 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
 
       select_->SetActiveSelectionEnd(end_option);
 
-      select_->is_in_non_contiguous_selection_ =
-          select_->is_multiple_ && is_control_key;
+      is_in_non_contiguous_selection_ = select_->is_multiple_ && is_control_key;
       bool select_new_item =
           !select_->is_multiple_ || keyboard_event->shiftKey() ||
           (!IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()) &&
-           !select_->is_in_non_contiguous_selection_);
+           !is_in_non_contiguous_selection_);
       if (select_new_item)
         select_->active_selection_state_ = true;
       // If the anchor is uninitialized, or if we're going to deselect all
@@ -546,12 +548,12 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       }
 
       select_->ScrollToOption(end_option);
-      if (select_new_item || select_->is_in_non_contiguous_selection_) {
+      if (select_new_item || is_in_non_contiguous_selection_) {
         if (select_new_item) {
           select_->UpdateListBoxSelection(deselect_others);
           select_->ListBoxOnChange();
         }
-        select_->UpdateMultiSelectListBoxFocus();
+        UpdateMultiSelectFocus();
       } else {
         select_->ScrollToSelection();
       }
@@ -562,9 +564,10 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   }
 
   if (event.type() == event_type_names::kKeypress) {
-    if (!event.IsKeyboardEvent())
+    auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+    if (!keyboard_event)
       return false;
-    int key_code = ToKeyboardEvent(event).keyCode();
+    int key_code = keyboard_event->keyCode();
 
     if (key_code == '\r') {
       if (HTMLFormElement* form = select_->Form())
@@ -572,7 +575,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       return true;
     } else if (select_->is_multiple_ && key_code == ' ' &&
                (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()) ||
-                select_->is_in_non_contiguous_selection_)) {
+                is_in_non_contiguous_selection_)) {
       HTMLOptionElement* option = select_->active_selection_end_;
       // If there's no active selection,
       // act as if "ArrowDown" had been pressed.
@@ -587,6 +590,20 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     return false;
   }
   return false;
+}
+
+void ListBoxSelectType::UpdateMultiSelectFocus() {
+  if (!select_->is_multiple_)
+    return;
+
+  for (auto* const option : select_->GetOptionList()) {
+    if (option->IsDisabledFormControl() || !option->GetLayoutObject())
+      continue;
+    bool is_focused = (option == select_->active_selection_end_) &&
+                      is_in_non_contiguous_selection_;
+    option->SetMultiSelectFocusedState(is_focused);
+  }
+  select_->ScrollToSelection();
 }
 
 // ============================================================================
@@ -623,5 +640,7 @@ const ComputedStyle* SelectType::OptionStyle() const {
   NOTREACHED();
   return nullptr;
 }
+
+void SelectType::UpdateMultiSelectFocus() {}
 
 }  // namespace blink

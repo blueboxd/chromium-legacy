@@ -307,6 +307,22 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
                                 kInputBufferCount, input_frame_size_,
                                 output_buffer_byte_size_));
 
+  // Notify VideoEncoderInfo after initialization.
+  VideoEncoderInfo encoder_info;
+  encoder_info.implementation_name = "V4L2VideoEncodeAccelerator";
+  encoder_info.has_trusted_rate_controller = true;
+  encoder_info.is_hardware_accelerated = true;
+  encoder_info.supports_native_handle = true;
+  encoder_info.supports_simulcast = false;
+
+  // V4L2VideoEncodeAccelerator doesn't support either temporal-SVC or
+  // spatial-SVC. A single stream shall be output at the desired FPS.
+  constexpr uint8_t kFullFramerate = 255;
+  encoder_info.fps_allocation[0] = {kFullFramerate};
+  child_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Client::NotifyEncoderInfoChange, client_, encoder_info));
+
   // Finish initialization.
   *result = true;
 }

@@ -190,6 +190,7 @@ cr.define('settings', function() {
       chrome.send('requestCrostiniUpgraderDialogStatus');
     }
 
+    /** @override */
     addCrostiniPortForward(
         vmName, containerName, portNumber, protocolIndex, label) {
       return cr.sendWithPromise(

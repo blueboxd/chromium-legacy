@@ -118,6 +118,33 @@ class WebUIBrowserProxy {
   openInspector(type) {
     NOTIMPLEMENTED();
   }
+
+  /** @override */
+  getAppId() {
+    NOTIMPLEMENTED();
+    return '';
+  }
+
+  /** @override */
+  getAppVersion() {
+    NOTIMPLEMENTED();
+    return '';
+  }
+
+  /** @override */
+  addOnMessageExternalListener(listener) {
+    NOTIMPLEMENTED();
+  }
+
+  /** @override */
+  addOnConnectExternalListener(listener) {
+    NOTIMPLEMENTED();
+  }
+
+  /** @override */
+  sendMessage(extensionId, message) {
+    NOTIMPLEMENTED();
+  }
 }
 
 export const browserProxy = new WebUIBrowserProxy();

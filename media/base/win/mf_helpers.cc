@@ -4,17 +4,9 @@
 
 #include "media/base/win/mf_helpers.h"
 
-#include "base/metrics/histogram_functions.h"
-
 namespace media {
 
 namespace mf {
-
-void LogDXVAError(int line) {
-  LOG(ERROR) << "Error in dxva_video_decode_accelerator_win.cc on line "
-             << line;
-  base::UmaHistogramSparse("Media.DXVAVDA.ErrorLine", line);
-}
 
 Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
     uint32_t buffer_length,

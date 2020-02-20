@@ -629,12 +629,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
   web_app::CheckMixedContentLoaded(app_browser_);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
-  SetupApp("https_app");
-
-  EXPECT_FALSE(app_browser_->app_controller()->CreatedForInstalledPwa());
-}
-
 // Common app manifest for HostedAppProcessModelTests.
 constexpr const char kHostedAppProcessModelManifest[] =
     R"( { "name": "Hosted App Process Model Test",

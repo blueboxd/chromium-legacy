@@ -5,6 +5,6 @@ PASS An image bitmap can be transferred through activate data.
 PASS A message port can be passed through activate data.
 PASS A SharedArrayBuffer cannot be passed through activate data.
 PASS Uncloneable data has its exception propagated.
-FAIL Errors during transfer list processing are propagated. promise_reject_js: function "function() { throw e }" threw object "TypeError: Failed to execute 'activate' on 'HTMLPortalElement': Failed to convert value to 'object'." ("TypeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
+FAIL Errors during transfer list processing are propagated. promise_rejects_js: function "function() { throw e }" threw object "TypeError: Failed to execute 'activate' on 'HTMLPortalElement': Failed to convert value to 'object'." ("TypeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 Harness: the test ran to completion.
 

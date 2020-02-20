@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -560,10 +561,11 @@ void LocalStorageImpl::Flush(FlushCallback callback) {
                                     std::move(callback)));
     return;
   }
-  for (const auto& it : areas_)
-    it.second->storage_area()->ScheduleImmediateCommit();
 
-  std::move(callback).Run();
+  base::RepeatingClosure commit_callback = base::BarrierClosure(
+      base::saturated_cast<int>(areas_.size()), std::move(callback));
+  for (const auto& it : areas_)
+    it.second->storage_area()->ScheduleImmediateCommit(commit_callback);
 }
 
 void LocalStorageImpl::FlushOriginForTesting(const url::Origin& origin) {

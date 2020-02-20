@@ -246,7 +246,6 @@ class MODULES_EXPORT DOMWebSocket
   void ReleaseChannel();
   void RecordSendTypeHistogram(WebSocketSendType);
   void RecordSendMessageSizeHistogram(WebSocketSendType, size_t);
-  void RecordReceiveTypeHistogram(WebSocketReceiveType);
   void RecordReceiveMessageSizeHistogram(WebSocketReceiveType, size_t);
 
   Member<WebSocketChannel> channel_;

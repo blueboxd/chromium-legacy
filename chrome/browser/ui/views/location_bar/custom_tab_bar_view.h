@@ -50,6 +50,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
   // views::AccessiblePaneView:
   gfx::Rect GetAnchorBoundsInScreen() const override;
   const char* GetClassName() const override;
+  void SetVisible(bool visible) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -118,6 +119,9 @@ class CustomTabBarView : public views::AccessiblePaneView,
 
   // Convenience method to return the theme color from |app_controller_|.
   base::Optional<SkColor> GetThemeColor() const;
+
+  // Populates child elements with page details from the current WebContents.
+  void UpdateContents();
 
   SkColor title_bar_color_;
   SkColor background_color_;

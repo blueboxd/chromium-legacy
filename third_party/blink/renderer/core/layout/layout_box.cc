@@ -154,6 +154,16 @@ LayoutUnit ListBoxItemHeight(const HTMLSelectElement& select,
   return max_height;
 }
 
+LayoutUnit MenuListIntrinsicBlockSize(const HTMLSelectElement& select,
+                                      const LayoutBox& box) {
+  if (!box.StyleRef().HasEffectiveAppearance())
+    return kIndefiniteSize;
+  const SimpleFontData* font_data = box.StyleRef().GetFont().PrimaryFont();
+  DCHECK(font_data);
+  return (font_data ? font_data->GetFontMetrics().Height() : 0) +
+         select.InnerElement().GetLayoutBox()->BorderAndPaddingLogicalHeight();
+}
+
 }  // anonymous namespace
 
 BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& box) : box(box) {
@@ -862,10 +872,13 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
   // get here.
   DCHECK(!HasOverrideIntrinsicContentLogicalHeight());
 
-  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
-  if (select && !select->UsesMenuList()) {
-    return ListBoxItemHeight(*select, *this) * select->ListBoxSize() -
-           ScrollbarLogicalHeight();
+  if (const auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
+    if (select->UsesMenuList()) {
+      return MenuListIntrinsicBlockSize(*select, *this);
+    } else {
+      return ListBoxItemHeight(*select, *this) * select->ListBoxSize() -
+             ScrollbarLogicalHeight();
+    }
   }
   return kIndefiniteSize;
 }

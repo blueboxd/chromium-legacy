@@ -140,15 +140,15 @@ void MediaDocument::DefaultEventHandler(Event& event) {
   if (!target_node)
     return;
 
-  if (event.type() == event_type_names::kKeydown && event.IsKeyboardEvent()) {
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeydown && keyboard_event) {
     HTMLVideoElement* video =
         Traversal<HTMLVideoElement>::FirstWithin(*target_node);
     if (!video)
       return;
 
-    auto& keyboard_event = ToKeyboardEvent(event);
-    if (keyboard_event.key() == " " ||
-        keyboard_event.keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
+    if (keyboard_event->key() == " " ||
+        keyboard_event->keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
       // space or media key (play/pause)
       video->TogglePlayState();
       event.SetDefaultHandled();

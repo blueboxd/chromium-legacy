@@ -3148,14 +3148,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    Browser* browser = chrome::FindBrowserWithWebContents(contents);
-    if (browser && browser->app_controller() &&
-        browser->app_controller()->CreatedForInstalledPwa()) {
-      web_prefs->strict_mixed_content_checking = true;
-    }
-#endif
-
     web_prefs->immersive_mode_enabled = vr::VrTabHelper::IsInVr(contents);
   }
 

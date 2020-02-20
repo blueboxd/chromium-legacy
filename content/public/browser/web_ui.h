@@ -69,6 +69,10 @@ class CONTENT_EXPORT WebUI {
   virtual int GetBindings() = 0;
   virtual void SetBindings(int bindings) = 0;
 
+  // Allows a scheme to be requested which is provided by the WebUIController.
+  virtual const std::vector<std::string>& GetRequestableSchemes() = 0;
+  virtual void AddRequestableScheme(const char* scheme) = 0;
+
   virtual void AddMessageHandler(
       std::unique_ptr<WebUIMessageHandler> handler) = 0;
 

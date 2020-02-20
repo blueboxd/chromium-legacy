@@ -465,9 +465,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {
-  return event.type() == event_type_names::kKeydown &&
-         event.IsKeyboardEvent() && ToKeyboardEvent(event).key() == "Enter" &&
-         !ToKeyboardEvent(event).repeat();
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  return event.type() == event_type_names::kKeydown && keyboard_event &&
+         keyboard_event->key() == "Enter" && !keyboard_event->repeat();
 }
 
 bool IsLinkClick(Event& event) {

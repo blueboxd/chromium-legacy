@@ -27,6 +27,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
@@ -256,7 +257,7 @@ scoped_refptr<LegacyCacheStorageManager> LegacyCacheStorageManager::Create(
     scoped_refptr<CacheStorageContextImpl::ObserverList> observers) {
   base::FilePath root_path = path;
   if (!path.empty()) {
-    root_path = path.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+    root_path = path.Append(storage::kServiceWorkerDirectory)
                     .AppendASCII("CacheStorage");
   }
 

@@ -1283,6 +1283,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
         ],
       },
+      'url_unittests': {},
       'viz_unittests': {
         'args': [
           '--child-arg=--ozone-platform=headless',

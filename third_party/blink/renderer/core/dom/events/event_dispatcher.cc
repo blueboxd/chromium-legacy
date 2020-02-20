@@ -364,10 +364,11 @@ inline void EventDispatcher::DispatchEventPostProcess(
     }
   }
 
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event_);
   if (Page* page = node_->GetDocument().GetPage()) {
     if (page->GetSettings().GetSpatialNavigationEnabled() &&
-        is_trusted_or_click && event_->IsKeyboardEvent() &&
-        ToKeyboardEvent(*event_).key() == "Enter" &&
+        is_trusted_or_click && keyboard_event &&
+        keyboard_event->key() == "Enter" &&
         event_->type() == event_type_names::kKeyup) {
       page->GetSpatialNavigationController().ResetEnterKeyState();
     }

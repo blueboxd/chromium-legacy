@@ -1382,8 +1382,9 @@ bool HTMLElement::IsInteractiveContent() const {
 }
 
 void HTMLElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
-    HandleKeypressEvent(ToKeyboardEvent(event));
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeypress && keyboard_event) {
+    HandleKeypressEvent(*keyboard_event);
     if (event.DefaultHandled())
       return;
   }
@@ -1392,15 +1393,16 @@ void HTMLElement::DefaultEventHandler(Event& event) {
 }
 
 bool HTMLElement::HandleKeyboardActivation(Event& event) {
-  if (event.IsKeyboardEvent()) {
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (keyboard_event) {
     if (event.type() == event_type_names::kKeydown &&
-        ToKeyboardEvent(event).key() == " ") {
+        keyboard_event->key() == " ") {
       SetActive(true);
       // No setDefaultHandled() - IE dispatches a keypress in this case.
       return true;
     }
     if (event.type() == event_type_names::kKeypress) {
-      switch (ToKeyboardEvent(event).charCode()) {
+      switch (keyboard_event->charCode()) {
         case '\r':
           DispatchSimulatedClick(&event);
           event.SetDefaultHandled();
@@ -1412,7 +1414,7 @@ bool HTMLElement::HandleKeyboardActivation(Event& event) {
       }
     }
     if (event.type() == event_type_names::kKeyup &&
-        ToKeyboardEvent(event).key() == " ") {
+        keyboard_event->key() == " ") {
       if (IsActive())
         DispatchSimulatedClick(&event);
       event.SetDefaultHandled();

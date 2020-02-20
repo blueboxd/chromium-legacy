@@ -3771,13 +3771,13 @@
   },
   {
     "name": "webui-tab-strip",
-    "owners": [ "johntlee", "pbos" ],
-    "expiry_milestone": 82
+    "owners": [ "collinbaker", "johntlee" ],
+    "expiry_milestone": 85
   },
   {
     "name": "webui-tab-strip-demo-options",
     "owners": [ "johntlee", "dpapad" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "webxr-incubations",

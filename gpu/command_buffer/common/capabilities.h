@@ -183,9 +183,6 @@ struct GPU_EXPORT Capabilities {
   // details.
   bool chromium_image_rgb_emulation = false;
 
-  // When true, non-empty post sub buffer calls are unsupported.
-  bool disable_non_empty_post_sub_buffers = false;
-
   bool disable_2d_canvas_copy_on_write = false;
 
   bool texture_npot = false;

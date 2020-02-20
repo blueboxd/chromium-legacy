@@ -21,9 +21,9 @@
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/dom_storage/session_storage_impl.h"
-#include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -63,17 +63,6 @@ void AdaptLocalStorageUsageInfo(
                         info->last_modified_time);
   }
   std::move(callback).Run(result);
-}
-
-void HandleSessionStorageBindingResult(
-    const std::string& namespace_id,
-    mojo::ReportBadMessageCallback bad_message_callback,
-    bool success) {
-  if (success)
-    return;
-
-  std::move(bad_message_callback)
-      .Run("Request for unknown namespace: " + namespace_id);
 }
 
 }  // namespace
@@ -116,18 +105,10 @@ class DOMStorageContextWrapper::StoragePolicyObserver
 };
 
 scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
-    storage::mojom::Partition* partition,
+    StoragePartitionImpl* partition,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  mojo::Remote<storage::mojom::SessionStorageControl> session_storage_control;
-  partition->BindSessionStorageControl(
-      session_storage_control.BindNewPipeAndPassReceiver());
-  mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control;
-  partition->BindLocalStorageControl(
-      local_storage_control.BindNewPipeAndPassReceiver());
-  auto wrapper = base::WrapRefCounted(new DOMStorageContextWrapper(
-      std::move(session_storage_control), std::move(local_storage_control),
-      special_storage_policy));
-
+  auto wrapper = base::WrapRefCounted(
+      new DOMStorageContextWrapper(partition, special_storage_policy));
   if (special_storage_policy) {
     // If there's a SpecialStoragePolicy, ensure the wrapper is observing it on
     // the IO thread and query the initial set of in-use origins ASAP.
@@ -139,20 +120,19 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
     wrapper->local_storage_control_->GetUsage(base::BindOnce(
         &DOMStorageContextWrapper::OnStartupUsageRetrieved, wrapper));
   }
-
   return wrapper;
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
-    mojo::Remote<storage::mojom::SessionStorageControl> session_storage_control,
-    mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control,
+    StoragePartitionImpl* partition,
     storage::SpecialStoragePolicy* special_storage_policy)
-    : session_storage_control_(std::move(session_storage_control)),
-      local_storage_control_(std::move(local_storage_control)),
-      storage_policy_(special_storage_policy) {
+    : partition_(partition), storage_policy_(special_storage_policy) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
                           base::Unretained(this))));
+
+  MaybeBindSessionStorageControl();
+  MaybeBindLocalStorageControl();
 }
 
 DOMStorageContextWrapper::~DOMStorageContextWrapper() {
@@ -271,6 +251,10 @@ void DOMStorageContextWrapper::SetForceKeepSessionState() {
 }
 
 void DOMStorageContextWrapper::Shutdown() {
+  // |partition_| is about to be destroyed, so we must not dereference it after
+  // this call.
+  partition_ = nullptr;
+
   // Signals the implementation to perform shutdown operations.
   session_storage_control_.reset();
   local_storage_control_.reset();
@@ -306,10 +290,8 @@ void DOMStorageContextWrapper::BindNamespace(
     mojo::ReportBadMessageCallback bad_message_callback,
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(session_storage_control_);
-  session_storage_control_->BindNamespace(
-      namespace_id, std::move(receiver),
-      base::BindOnce(&HandleSessionStorageBindingResult, namespace_id,
-                     std::move(bad_message_callback)));
+  session_storage_control_->BindNamespace(namespace_id, std::move(receiver),
+                                          base::DoNothing());
 }
 
 void DOMStorageContextWrapper::BindStorageArea(
@@ -326,9 +308,37 @@ void DOMStorageContextWrapper::BindStorageArea(
 
   DCHECK(session_storage_control_);
   session_storage_control_->BindStorageArea(
-      origin, namespace_id, std::move(receiver),
-      base::BindOnce(&HandleSessionStorageBindingResult, namespace_id,
-                     std::move(bad_message_callback)));
+      origin, namespace_id, std::move(receiver), base::DoNothing());
+}
+
+void DOMStorageContextWrapper::RecoverFromStorageServiceCrash() {
+  DCHECK(partition_);
+  MaybeBindSessionStorageControl();
+  MaybeBindLocalStorageControl();
+
+  // Make sure the service is aware of namespaces we asked a previous instance
+  // to create, so it can properly service renderers trying to manipulate those
+  // namespaces.
+  base::AutoLock lock(alive_namespaces_lock_);
+  for (const auto& entry : alive_namespaces_)
+    session_storage_control_->CreateNamespace(entry.first);
+  session_storage_control_->ScavengeUnusedNamespaces(base::NullCallback());
+}
+
+void DOMStorageContextWrapper::MaybeBindSessionStorageControl() {
+  if (!partition_)
+    return;
+  session_storage_control_.reset();
+  partition_->GetStorageServicePartition()->BindSessionStorageControl(
+      session_storage_control_.BindNewPipeAndPassReceiver());
+}
+
+void DOMStorageContextWrapper::MaybeBindLocalStorageControl() {
+  if (!partition_)
+    return;
+  local_storage_control_.reset();
+  partition_->GetStorageServicePartition()->BindLocalStorageControl(
+      local_storage_control_.BindNewPipeAndPassReceiver());
 }
 
 scoped_refptr<SessionStorageNamespaceImpl>

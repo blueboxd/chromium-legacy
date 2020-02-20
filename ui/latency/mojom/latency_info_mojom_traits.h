@@ -44,7 +44,6 @@ struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
 
 template <>
 struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
-  static const std::string& trace_name(const ui::LatencyInfo& info);
   static const ui::LatencyInfo::LatencyMap& latency_components(
       const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);

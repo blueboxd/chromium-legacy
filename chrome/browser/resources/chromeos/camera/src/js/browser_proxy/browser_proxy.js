@@ -91,6 +91,31 @@ class ChromeAppBrowserProxy {
   openInspector(type) {
     chrome.fileManagerPrivate.openInspector(type);
   }
+
+  /** @override */
+  getAppId() {
+    return chrome.runtime.id;
+  }
+
+  /** @override */
+  getAppVersion() {
+    return chrome.runtime.getManifest().version;
+  }
+
+  /** @override */
+  addOnMessageExternalListener(listener) {
+    chrome.runtime.onMessageExternal.addListener(listener);
+  }
+
+  /** @override */
+  addOnConnectExternalListener(listener) {
+    chrome.runtime.onConnectExternal.addListener(listener);
+  }
+
+  /** @override */
+  sendMessage(extensionId, message) {
+    chrome.runtime.sendMessage(extensionId, message);
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

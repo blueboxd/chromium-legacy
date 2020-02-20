@@ -7,10 +7,12 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -43,6 +45,8 @@ class ArcPowerBridge : public KeyedService,
   ArcPowerBridge(content::BrowserContext* context,
                  ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
+
+  void SetUserIdHash(const std::string& user_id_hash);
 
   // If |notify_brightness_timer_| is set, runs it and returns true. Returns
   // false otherwise.
@@ -86,9 +90,29 @@ class ArcPowerBridge : public KeyedService,
   // Called on PowerManagerClient::GetScreenBrightnessPercent() completion.
   void OnGetScreenBrightnessPercent(base::Optional<double> percent);
 
+  // Called by Android when ready to suspend.
+  void OnAndroidSuspendReady(base::UnguessableToken token);
+
+  // Called by ConciergeClient when a response has been receive for the
+  // SuspendVm D-Bus call.
+  void OnConciergeSuspendVmResponse(
+      base::UnguessableToken token,
+      base::Optional<vm_tools::concierge::SuspendVmResponse> reply);
+
+  // Called by ConciergeClient when a response has been receive for the
+  // ResumeVm D-Bus call.
+  void OnConciergeResumeVmResponse(
+      base::Optional<vm_tools::concierge::ResumeVmResponse> reply);
+
+  // Sends a PowerInstance::UpdateScreenBrightnessSettings mojo call to Android.
   void UpdateAndroidScreenBrightness(double percent);
 
+  // Sends a PowerInstance::Resume mojo call to Android.
+  void DispatchAndroidResume();
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  std::string user_id_hash_;
 
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 

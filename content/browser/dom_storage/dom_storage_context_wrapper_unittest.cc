@@ -13,7 +13,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -29,9 +28,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
 
   void SetUp() override {
     context_ = new DOMStorageContextWrapper(
-        mojo::Remote<storage::mojom::SessionStorageControl>(),
-        mojo::Remote<storage::mojom::LocalStorageControl>(),
-        /*special_storage_policy=*/nullptr);
+        /*partition=*/nullptr, /*special_storage_policy=*/nullptr);
 
     auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
     security_policy->Add(kTestProcessIdOrigin1, &browser_context_);

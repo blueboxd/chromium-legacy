@@ -1373,8 +1373,7 @@ void StoragePartitionImpl::Initialize() {
       browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy.get());
 
   dom_storage_context_ = DOMStorageContextWrapper::Create(
-      GetStorageServicePartition(),
-      browser_context_->GetSpecialStoragePolicy());
+      this, browser_context_->GetSpecialStoragePolicy());
 
   idle_manager_ = std::make_unique<IdleManager>();
   lock_manager_ = std::make_unique<LockManager>();
@@ -1505,6 +1504,15 @@ void StoragePartitionImpl::Initialize() {
     GetGeneratedCodeCacheContext()->Initialize(code_cache_path,
                                                settings.size_in_bytes());
   }
+}
+
+void StoragePartitionImpl::OnStorageServiceDisconnected() {
+  // This will be lazily re-bound on next use.
+  remote_partition_.reset();
+
+  dom_storage_context_->RecoverFromStorageServiceCrash();
+  for (const auto& client : dom_storage_clients_)
+    client.second->ResetStorageAreaAndNamespaceConnections();
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -1780,10 +1788,11 @@ void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(initialized_);
-  const auto& security_policy_handle = receivers_.current_context();
+  const auto& security_policy_handle = dom_storage_receivers_.current_context();
   if (!security_policy_handle->CanAccessDataForOrigin(origin)) {
     SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
-    receivers_.ReportBadMessage("Access denied for localStorage request");
+    dom_storage_receivers_.ReportBadMessage(
+        "Access denied for localStorage request");
     return;
   }
   dom_storage_context_->OpenLocalStorage(origin, std::move(receiver));
@@ -1794,7 +1803,8 @@ void StoragePartitionImpl::BindSessionStorageNamespace(
     mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver) {
   DCHECK(initialized_);
   dom_storage_context_->BindNamespace(
-      namespace_id, receivers_.GetBadMessageCallback(), std::move(receiver));
+      namespace_id, dom_storage_receivers_.GetBadMessageCallback(),
+      std::move(receiver));
 }
 
 void StoragePartitionImpl::BindSessionStorageArea(
@@ -1803,10 +1813,10 @@ void StoragePartitionImpl::BindSessionStorageArea(
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(initialized_);
   ChildProcessSecurityPolicyImpl::Handle security_policy_handle =
-      receivers_.current_context()->Duplicate();
+      dom_storage_receivers_.current_context()->Duplicate();
   dom_storage_context_->BindStorageArea(
       std::move(security_policy_handle), origin, namespace_id,
-      receivers_.GetBadMessageCallback(), std::move(receiver));
+      dom_storage_receivers_.GetBadMessageCallback(), std::move(receiver));
 }
 
 void StoragePartitionImpl::OnAuthRequired(
@@ -2444,6 +2454,9 @@ storage::mojom::Partition* StoragePartitionImpl::GetStorageServicePartition() {
     }
     GetStorageServiceRemote()->BindPartition(
         storage_path, remote_partition_.BindNewPipeAndPassReceiver());
+    remote_partition_.set_disconnect_handler(
+        base::BindOnce(&StoragePartitionImpl::OnStorageServiceDisconnected,
+                       base::Unretained(this)));
   }
   return remote_partition_.get();
 }
@@ -2454,20 +2467,24 @@ StoragePartitionImpl::GetStorageServiceForTesting() {
   return GetStorageServiceRemote();
 }
 
-mojo::ReceiverId StoragePartitionImpl::Bind(
+mojo::ReceiverId StoragePartitionImpl::BindDomStorage(
     int process_id,
-    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
+    mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
+    mojo::PendingRemote<blink::mojom::DomStorageClient> client) {
   DCHECK(initialized_);
   auto handle =
       ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id);
-  return receivers_.Add(
+  mojo::ReceiverId id = dom_storage_receivers_.Add(
       this, std::move(receiver),
       std::make_unique<SecurityPolicyHandle>(std::move(handle)));
+  dom_storage_clients_[id].Bind(std::move(client));
+  return id;
 }
 
-void StoragePartitionImpl::Unbind(mojo::ReceiverId receiver_id) {
+void StoragePartitionImpl::UnbindDomStorage(mojo::ReceiverId receiver_id) {
   DCHECK(initialized_);
-  receivers_.Remove(receiver_id);
+  dom_storage_receivers_.Remove(receiver_id);
+  dom_storage_clients_.erase(receiver_id);
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(

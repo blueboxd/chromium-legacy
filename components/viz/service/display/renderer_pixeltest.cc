@@ -3376,6 +3376,7 @@ TYPED_TEST(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   bool needs_blending = false;
   bool force_anti_aliasing_off = true;
   float backdrop_filter_quality = 1.0f;
+  bool can_use_backdrop_filter_cache = false;
   gfx::Transform hole_pass_to_target_transform;
   hole_pass_to_target_transform.Translate(50, 50);
   hole_pass_to_target_transform.Scale(0.5f + 1.0f / (rect.width() * 2.0f),
@@ -3387,7 +3388,8 @@ TYPED_TEST(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   pass_quad->SetAll(pass_shared_state, rect, rect, needs_blending,
                     child_pass_id, 0, gfx::RectF(), gfx::Size(),
                     gfx::Vector2dF(), gfx::PointF(), gfx::RectF(rect),
-                    force_anti_aliasing_off, backdrop_filter_quality);
+                    force_anti_aliasing_off, backdrop_filter_quality,
+                    can_use_backdrop_filter_cache);
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(

@@ -17,36 +17,23 @@ namespace media {
 
 namespace mf {
 
-#define RETURN_ON_FAILURE(result, log, ret) \
-  do {                                      \
-    if (!(result)) {                        \
-      DLOG(ERROR) << log;                   \
-      mf::LogDXVAError(__LINE__);           \
-      return ret;                           \
-    }                                       \
+#define RETURN_ON_FAILURE(success, log, ret) \
+  do {                                       \
+    if (!(success)) {                        \
+      DLOG(ERROR) << log;                    \
+      return ret;                            \
+    }                                        \
   } while (0)
 
-#define RETURN_ON_HR_FAILURE(result, log, ret) \
-  RETURN_ON_FAILURE(SUCCEEDED(result),         \
-                    log << ", HRESULT: 0x" << std::hex << result, ret);
+#define RETURN_ON_HR_FAILURE(hresult, log, ret) \
+  RETURN_ON_FAILURE(SUCCEEDED(hresult),         \
+                    log << ", HRESULT: 0x" << std::hex << hresult, ret);
 
-#define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
-  do {                                                             \
-    if (!(result)) {                                               \
-      DVLOG(1) << log;                                             \
-      mf::LogDXVAError(__LINE__);                                  \
-      StopOnError(error_code);                                     \
-      return ret;                                                  \
-    }                                                              \
-  } while (0)
-
-#define RETURN_AND_NOTIFY_ON_HR_FAILURE(result, log, error_code, ret)        \
-  RETURN_AND_NOTIFY_ON_FAILURE(SUCCEEDED(result),                            \
-                               log << ", HRESULT: 0x" << std::hex << result, \
-                               error_code, ret);
-
-MF_INITIALIZER_EXPORT void LogDXVAError(int line);
-
+// Macros that contain return statements can make code harder to read. Only use
+// it when necessary, e.g. in places where we deal with a lot of Windows API
+// calls, for each of which we have to check the returned HRESULT.
+// See discussion thread at:
+// https://groups.google.com/a/chromium.org/d/msg/cxx/zw5Xmcs--S4/r7Fwb-TsCAAJ
 #define RETURN_IF_FAILED(expr)                                \
   do {                                                        \
     HRESULT hresult = (expr);                                 \

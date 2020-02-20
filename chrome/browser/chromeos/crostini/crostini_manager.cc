@@ -703,7 +703,7 @@ void CrostiniManager::SetContainerOsRelease(
   VLOG(1) << "os_release.version " << os_release.version();
   VLOG(1) << "os_release.version_id " << os_release.version_id();
   VLOG(1) << "os_release.id " << os_release.id();
-  container_os_releases_.emplace(std::move(container_id), os_release);
+  container_os_releases_[container_id] = os_release;
 
   base::UmaHistogramEnumeration("Crostini.ContainerOsVersion", version);
 }
@@ -1619,8 +1619,7 @@ void CrostiniManager::UpgradeContainer(const ContainerId& key,
       weak_ptr_factory_.GetWeakPtr(), std::move(request), std::move(callback));
 
   if (!IsVmRunning(vm_name)) {
-    RestartCrostini(vm_name, container_name, std::move(do_upgrade_container),
-                    new AbortOnVmStartObserver(weak_ptr_factory_.GetWeakPtr()));
+    RestartCrostini(vm_name, container_name, std::move(do_upgrade_container));
   } else {
     std::move(do_upgrade_container).Run(CrostiniResult::SUCCESS);
   }

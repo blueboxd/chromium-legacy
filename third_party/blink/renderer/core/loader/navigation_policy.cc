@@ -82,9 +82,8 @@ NavigationPolicy NavigationPolicyFromEventInternal(const Event* event) {
     return NavigationPolicyFromEventModifiers(
         mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
         mouse_event->altKey(), mouse_event->metaKey());
-  } else if (event->IsKeyboardEvent()) {
+  } else if (const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event)) {
     // The click is simulated when triggering the keypress event.
-    const KeyboardEvent* key_event = ToKeyboardEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
         key_event->metaKey());

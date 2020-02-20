@@ -67,6 +67,16 @@ void TestWebUI::SetBindings(int bindings) {
   bindings_ = bindings;
 }
 
+const std::vector<std::string>& TestWebUI::GetRequestableSchemes() {
+  NOTIMPLEMENTED();
+  return std::move(std::vector<std::string>());
+}
+
+void TestWebUI::AddRequestableScheme(const char* scheme) {
+  NOTIMPLEMENTED();
+  return;
+}
+
 void TestWebUI::AddMessageHandler(
     std::unique_ptr<WebUIMessageHandler> handler) {
   handler->set_web_ui(this);

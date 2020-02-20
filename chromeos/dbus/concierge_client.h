@@ -162,6 +162,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::StopVmRequest& request,
       DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) = 0;
 
+  // Suspends the named Termina VM if it is running.
+  // |callback| is called after the method call finishes.
+  virtual void SuspendVm(
+      const vm_tools::concierge::SuspendVmRequest& request,
+      DBusMethodCallback<vm_tools::concierge::SuspendVmResponse> callback) = 0;
+
+  // Resumes the named Termina VM if it is running.
+  // |callback| is called after the method call finishes.
+  virtual void ResumeVm(
+      const vm_tools::concierge::ResumeVmRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ResumeVmResponse> callback) = 0;
+
   // Get VM Info.
   // |callback| is called after the method call finishes.
   virtual void GetVmInfo(

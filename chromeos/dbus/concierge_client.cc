@@ -149,6 +149,18 @@ class ConciergeClientImpl : public ConciergeClient {
     CallMethod(concierge::kStopVmMethod, request, std::move(callback));
   }
 
+  void SuspendVm(
+      const concierge::SuspendVmRequest& request,
+      DBusMethodCallback<concierge::SuspendVmResponse> callback) override {
+    CallMethod(concierge::kSuspendVmMethod, request, std::move(callback));
+  }
+
+  void ResumeVm(
+      const concierge::ResumeVmRequest& request,
+      DBusMethodCallback<concierge::ResumeVmResponse> callback) override {
+    CallMethod(concierge::kResumeVmMethod, request, std::move(callback));
+  }
+
   void GetVmInfo(
       const concierge::GetVmInfoRequest& request,
       DBusMethodCallback<concierge::GetVmInfoResponse> callback) override {

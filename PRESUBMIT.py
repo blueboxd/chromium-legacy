@@ -302,7 +302,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/autofill/',
   '^components/autofill_assistant/',
   '^components/browser_watcher/',
-  '^components/browsing_data/',
   '^components/cast_channel/',
   '^components/chromeos_camera/',
   '^components/component_updater/',

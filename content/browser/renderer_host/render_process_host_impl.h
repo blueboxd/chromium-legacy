@@ -78,7 +78,7 @@
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
@@ -159,6 +159,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider,
       public mojom::RendererHost,
+      public blink::mojom::DomStorageProvider,
       public memory_instrumentation::mojom::CoordinatorConnector {
  public:
   // Special depth used when there are no PriorityClients.
@@ -424,14 +425,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void RegisterRendererMainThreadFactory(
       RendererMainThreadFactoryFunction create);
 
-  // Allows external code to supply a callback which handles a
-  // StoragePartitionServiceRequest. Used for supplying test versions of the
-  // service.
-  using StoragePartitionServiceRequestHandler = base::RepeatingCallback<void(
+  // Allows external code to supply a callback which handles a DomStorage
+  // binding request. Used for supplying test versions of DomStorage.
+  using DomStorageBinder = base::RepeatingCallback<void(
       RenderProcessHostImpl* rph,
-      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver)>;
-  static void SetStoragePartitionServiceRequestHandlerForTesting(
-      StoragePartitionServiceRequestHandler handler);
+      mojo::PendingReceiver<blink::mojom::DomStorage> receiver)>;
+  static void SetDomStorageBinderForTesting(DomStorageBinder binder);
 
   // Allows external code to supply a callback which handles a
   // mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider>. Used for
@@ -734,8 +733,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<mojom::FrameSinkProvider> receiver);
   void BindCompositingModeReporter(
       mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver);
-  void CreateStoragePartitionService(
-      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
+  void CreateDomStorageProvider(
+      mojo::PendingReceiver<blink::mojom::DomStorageProvider> receiver);
   void CreateBroadcastChannelProvider(
       mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
   void CreateCodeCacheHost(
@@ -764,6 +763,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindPluginRegistry(
       mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver);
 #endif
+
+  // blink::mojom::DomStorageProvider:
+  void BindDomStorage(
+      mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
+      mojo::PendingRemote<blink::mojom::DomStorageClient> client) override;
 
   // memory_instrumentation::mojom::CoordinatorConnector implementation:
   void RegisterCoordinatorClient(
@@ -1034,9 +1038,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Owned by |browser_context_|.
   StoragePartitionImpl* const storage_partition_impl_;
 
-  // Keeps track of the BindingIds  returned by storage_partition_impl_->Bind()
-  // calls so we can Unbind() them on cleanup.
-  std::set<mojo::ReceiverId> storage_partition_binding_ids_;
+  // Owns the singular DomStorageProvider binding established by this renderer.
+  mojo::Receiver<blink::mojom::DomStorageProvider>
+      dom_storage_provider_receiver_{this};
+
+  // Keeps track of the ReceiverIds returned by
+  // storage_partition_impl_->BindDomStorage() calls so we can Unbind() them on
+  // cleanup.
+  std::set<mojo::ReceiverId> dom_storage_receiver_ids_;
 
   // The observers watching our lifetime.
   base::ObserverList<RenderProcessHostObserver>::Unchecked observers_;

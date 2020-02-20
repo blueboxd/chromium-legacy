@@ -30,8 +30,9 @@
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -106,6 +107,17 @@ class MODULES_EXPORT StorageNamespace final
                                const String& key,
                                const String& old_value,
                                const String& new_value);
+
+  // Called by areas in |cached_areas_| to bind/rebind their StorageArea
+  // interface.
+  void BindStorageArea(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver);
+
+  // If this StorageNamespace was previously connected to the backend, this
+  // forcibly disconnects it so that it reconnects lazily when next needed.
+  // Also forces all owned CachedStorageAreas to be reconnected.
+  void ResetStorageAreaAndNamespaceConnections();
 
  private:
   void EnsureConnected();

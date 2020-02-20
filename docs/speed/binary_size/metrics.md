@@ -31,7 +31,7 @@ For Googlers, more information available at [go/chrome-apk-size](https://goto.go
 
 ### Normalized APK Size
 
- * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=d6542096534166992e063320f8e1b7128e10ed53091e865eef3b5295644e60ce)
+ * [Telemetry Graph](https://chromeperf.appspot.com/report?sid=e55e2189727a5bc410196e8cb7492879f9a224dc1383c6cdf9409edc0a8a1050)
  * Monitored by [Binary Size Sheriffs](../apk_size_regressions.md).
    * Alerts fire for changes of 16kb or more.
  * Computed as:

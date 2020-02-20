@@ -120,6 +120,12 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
       "CompositorAnimation",
       0u);
 
+  // Not reported, but the data should be reset.
+  EXPECT_EQ(first.impl_throughput().frames_expected, 0u);
+  EXPECT_EQ(first.impl_throughput().frames_produced, 0u);
+  EXPECT_EQ(first.main_throughput().frames_expected, 0u);
+  EXPECT_EQ(first.main_throughput().frames_produced, 0u);
+
   FrameSequenceMetrics second(FrameSequenceTrackerType::kRAF, nullptr);
   second.impl_throughput().frames_expected = 120;
   second.impl_throughput().frames_produced = 80;

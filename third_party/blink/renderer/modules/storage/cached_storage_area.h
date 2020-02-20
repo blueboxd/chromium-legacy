@@ -62,7 +62,6 @@ class MODULES_EXPORT CachedStorageArea
 
   CachedStorageArea(AreaType type,
                     scoped_refptr<const SecurityOrigin> origin,
-                    mojo::PendingRemote<mojom::blink::StorageArea> area,
                     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
                     StorageNamespace* storage_namespace);
 
@@ -91,6 +90,18 @@ class MODULES_EXPORT CachedStorageArea
 
   mojo::Remote<mojom::blink::StorageArea>& RemoteArea() { return remote_area_; }
 
+  // Invoked by the owning StorageNamespace the renderer is told to reset its
+  // DOM Storage connections (e.g. to recover from a backend crash). Normally
+  // a new StorageArea pipe is bound through the owning StorageNamespace, but
+  // |new_area| may be provided by test code instead.
+  void ResetConnection(
+      mojo::PendingRemote<mojom::blink::StorageArea> new_area = {});
+
+  void SetRemoteAreaForTesting(
+      mojo::PendingRemote<mojom::blink::StorageArea> area) {
+    remote_area_.Bind(std::move(area));
+  }
+
  private:
   friend class RefCounted<CachedStorageArea>;
   ~CachedStorageArea() override;
@@ -108,6 +119,9 @@ class MODULES_EXPORT CachedStorageArea
     String new_value;
     String old_value;
   };
+
+  void BindStorageArea(
+      mojo::PendingRemote<mojom::blink::StorageArea> new_area = {});
 
   // mojom::blink::StorageAreaObserver:
   void KeyChanged(const Vector<uint8_t>& key,

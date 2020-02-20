@@ -285,10 +285,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordFileBandwidth(
     size_t length,
     base::TimeDelta elapsed_time);
 
-// Records the size of the download from content-length header.
-COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableContentLength(
-    int64_t content_length);
-
 // Increment one of the count for parallelizable download.
 COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableDownloadCount(
     DownloadCountTypes type,

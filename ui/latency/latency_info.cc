@@ -255,12 +255,8 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
         ts = base::TimeTicks::Now();
       }
 
-      if (trace_name_str) {
-        trace_name_ = std::string("InputLatency::") + trace_name_str;
-      }
-
-      TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          kTraceCategoriesForAsyncEvents, trace_name_.c_str(),
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          kTraceCategoriesForAsyncEvents, trace_name_str,
           TRACE_ID_GLOBAL(trace_id_), ts);
     }
 
@@ -286,9 +282,15 @@ void LatencyInfo::Terminate() {
   terminated_ = true;
 
   if (*g_latency_info_enabled.Get().latency_info_enabled) {
-    TRACE_EVENT_COPY_NESTABLE_ASYNC_END1(
-        kTraceCategoriesForAsyncEvents, trace_name_.c_str(),
-        TRACE_ID_GLOBAL(trace_id_), "data", AsTraceableData());
+    // The name field is not needed for NESTABLE events because we only need the
+    // category to know which event to close. In fact the name will not be
+    // emitted internally.
+    //
+    // TODO(nuskos): Once we have the new TraceEvent macros that support Tracks
+    // we can migrate this macro to it (and the name will no longer be there).
+    TRACE_EVENT_NESTABLE_ASYNC_END1(kTraceCategoriesForAsyncEvents,
+                                    /* name = */ "", TRACE_ID_GLOBAL(trace_id_),
+                                    "data", AsTraceableData());
   }
 
   TRACE_EVENT_WITH_FLOW0("input,benchmark", "LatencyInfo.Flow",

@@ -2957,10 +2957,9 @@ void Node::DefaultEventHandler(Event& event) {
   if (event_type == event_type_names::kKeydown ||
       event_type == event_type_names::kKeypress ||
       event_type == event_type_names::kKeyup) {
-    if (event.IsKeyboardEvent()) {
+    if (auto* keyboard_event = DynamicTo<KeyboardEvent>(&event)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
-        frame->GetEventHandler().DefaultKeyboardEventHandler(
-            ToKeyboardEvent(&event));
+        frame->GetEventHandler().DefaultKeyboardEventHandler(keyboard_event);
       }
     }
   } else if (event_type == event_type_names::kClick) {

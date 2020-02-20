@@ -60,7 +60,6 @@ enum SourceEventType {
 
 // See ui/latency/latency_info.h
 struct LatencyInfo {
-  string trace_name;
   map<LatencyComponentType, mojo_base.mojom.TimeTicks> latency_components;
   int64 trace_id;
   int64 ukm_source_id;

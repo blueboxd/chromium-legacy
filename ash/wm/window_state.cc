@@ -696,6 +696,17 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
         std::max(min_size.width(), actual_new_bounds.width()));
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
+
+    // Changing the size of the PIP window can detach it from one of the edges
+    // of the screen, which makes the snap fraction logic fail. Ensure to snap
+    // it again.
+    if (IsPip() && !is_dragged()) {
+      ::wm::ConvertRectToScreen(window_->GetRootWindow(), &actual_new_bounds);
+      actual_new_bounds = CollisionDetectionUtils::GetRestingPosition(
+          display, actual_new_bounds,
+          CollisionDetectionUtils::RelativePriority::kPictureInPicture);
+      ::wm::ConvertRectFromScreen(window_->GetRootWindow(), &actual_new_bounds);
+    }
   }
   BoundsSetter().SetBounds(window_, actual_new_bounds);
 }

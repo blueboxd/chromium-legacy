@@ -53,11 +53,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
-  void ComputeLogicalHeight(LayoutUnit logical_height,
-                            LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const override;
-
-  LayoutBlock* InnerBlock() const;
   int MeasureOptionsWidth() const;
 };
 

@@ -52,7 +52,7 @@ PasswordsCounter::~PasswordsCounter() {
 }
 
 void PasswordsCounter::OnInitialized() {
-  sync_tracker_.OnInitialized(base::Bind(&IsPasswordSyncEnabled));
+  sync_tracker_.OnInitialized(base::BindRepeating(&IsPasswordSyncEnabled));
   store_->AddObserver(this);
 }
 

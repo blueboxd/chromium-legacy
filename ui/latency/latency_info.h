@@ -183,7 +183,6 @@ class LatencyInfo {
   void set_trace_id(int64_t trace_id) { trace_id_ = trace_id; }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void set_ukm_source_id(ukm::SourceId id) { ukm_source_id_ = id; }
-  const std::string& trace_name() const { return trace_name_; }
   void set_scroll_update_delta(float delta) { scroll_update_delta_ = delta; }
   float scroll_update_delta() const { return scroll_update_delta_; }
   void set_predicted_scroll_update_delta(float delta) {
@@ -201,10 +200,6 @@ class LatencyInfo {
   // Converts latencyinfo into format that can be dumped into trace buffer.
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   AsTraceableData();
-
-  // Shown as part of the name of the trace event for this LatencyInfo.
-  // String is empty if no tracing is enabled.
-  std::string trace_name_;
 
   LatencyMap latency_components_;
 

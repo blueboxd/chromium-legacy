@@ -4,6 +4,10 @@
 
 #include "components/viz/common/quads/render_pass_io.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bit_cast.h"
 #include "base/containers/span.h"
@@ -1050,6 +1054,8 @@ void RenderPassDrawQuadToDict(const RenderPassDrawQuad* draw_quad,
                      draw_quad->backdrop_filter_quality);
   dict->SetBoolKey("force_anti_aliasing_off",
                    draw_quad->force_anti_aliasing_off);
+  dict->SetBoolKey("can_use_backdrop_filter_cache",
+                   draw_quad->can_use_backdrop_filter_cache);
   DCHECK_GE(1u, draw_quad->resources.count);
 }
 
@@ -1219,6 +1225,8 @@ bool RenderPassDrawQuadFromDict(const base::Value& dict,
       dict.FindDoubleKey("backdrop_filter_quality");
   base::Optional<bool> force_anti_aliasing_off =
       dict.FindBoolKey("force_anti_aliasing_off");
+  base::Optional<bool> can_use_backdrop_filter_cache =
+      dict.FindBoolKey("can_use_backdrop_filter_cache");
 
   if (!render_pass_id || !mask_uv_rect || !mask_texture_size ||
       !filters_scale || !filters_origin || !tex_coord_rect ||
@@ -1248,7 +1256,9 @@ bool RenderPassDrawQuadFromDict(const base::Value& dict,
       common.shared_quad_state, common.rect, common.visible_rect,
       common.needs_blending, t_render_pass_id, mask_resource_id, t_mask_uv_rect,
       t_mask_texture_size, t_filters_scale, t_filters_origin, t_tex_coord_rect,
-      force_anti_aliasing_off.value(), backdrop_filter_quality.value());
+      force_anti_aliasing_off.value(), backdrop_filter_quality.value(),
+      can_use_backdrop_filter_cache ? can_use_backdrop_filter_cache.value()
+                                    : false);
   return true;
 }
 

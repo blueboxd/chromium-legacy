@@ -25,16 +25,13 @@ namespace {
 
 static const char* kTestingDatatypePref = "counter.testing.datatype";
 
-void IgnoreResult(std::unique_ptr<BrowsingDataCounter::Result> result) {
-}
-
 class MockBrowsingDataCounter : public BrowsingDataCounter {
  public:
-  MockBrowsingDataCounter() {}
-  ~MockBrowsingDataCounter() override {}
+  MockBrowsingDataCounter() = default;
+  ~MockBrowsingDataCounter() override = default;
 
   // There are two overloaded ReportResult methods. We need to disambiguate
-  // between them to be able to bind one of them in base::Bind().
+  // between them to be able to bind one of them in base::BindOnce().
   using ReportResultType =
       void(MockBrowsingDataCounter::*)(BrowsingDataCounter::ResultInt);
 
@@ -90,7 +87,7 @@ class BrowsingDataCounterTest : public testing::Test {
     counter_.reset(new MockBrowsingDataCounter());
     counter_->Init(pref_service_.get(),
                    browsing_data::ClearBrowsingDataTab::ADVANCED,
-                   base::Bind(&IgnoreResult));
+                   base::DoNothing());
   }
 
   void TearDown() override {

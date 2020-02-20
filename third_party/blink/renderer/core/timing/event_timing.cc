@@ -6,6 +6,7 @@
 
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -35,7 +36,7 @@ bool ShouldLogEvent(const Event& event) {
 
 bool IsEventTypeForEventTiming(const Event& event) {
   return (IsA<MouseEvent>(event) || IsA<PointerEvent>(event) ||
-          IsA<TouchEvent>(event) || event.IsKeyboardEvent() ||
+          IsA<TouchEvent>(event) || IsA<KeyboardEvent>(event) ||
           event.IsWheelEvent() || event.IsInputEvent() ||
           event.IsCompositionEvent()) &&
          event.isTrusted();

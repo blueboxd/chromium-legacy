@@ -89,6 +89,11 @@ To add JNI to a class:
    the declaration of the corresponding static methods you wish to have
    implemented.
 3. Call native functions using `${OriginalClassName}Jni.get().${method}`
+4. In C++ code, #include the header `${OriginalClassName}_jni.h`. (The path will
+   depend on the location of the `generate_jni` BUILD rule that lists your Java
+   source code.) Only include this header from a single `.cc` file as the
+   header defines functions. That `.cc` must implement your native code by
+   defining functions named `JNI_${OriginalClassName}_${UpperCamelCaseMethod}`
 
 Example:
 ```java

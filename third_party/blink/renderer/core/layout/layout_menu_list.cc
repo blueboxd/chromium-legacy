@@ -53,10 +53,6 @@ HTMLSelectElement* LayoutMenuList::SelectElement() const {
   return To<HTMLSelectElement>(GetNode());
 }
 
-LayoutBlock* LayoutMenuList::InnerBlock() const {
-  return To<LayoutBlock>(SelectElement()->InnerElement().GetLayoutObject());
-}
-
 int LayoutMenuList::MeasureOptionsWidth() const {
   if (ShouldApplySizeContainment())
     return 0;
@@ -100,21 +96,6 @@ void LayoutMenuList::ComputeIntrinsicLogicalWidths(
     min_logical_width = max_logical_width;
   else
     min_logical_width = LayoutUnit();
-}
-
-void LayoutMenuList::ComputeLogicalHeight(
-    LayoutUnit logical_height,
-    LayoutUnit logical_top,
-    LogicalExtentComputedValues& computed_values) const {
-  if (StyleRef().HasEffectiveAppearance()) {
-    const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
-    DCHECK(font_data);
-    const LayoutUnit inner_block_height =
-        (font_data ? font_data->GetFontMetrics().Height() : 0) +
-        InnerBlock()->BorderAndPaddingHeight();
-    logical_height = inner_block_height + BorderAndPaddingHeight();
-  }
-  LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
 }  // namespace blink

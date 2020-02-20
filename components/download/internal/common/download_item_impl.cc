@@ -1969,8 +1969,6 @@ void DownloadItemImpl::Completed() {
       response_headers_->GetContentRangeFor206(&first_byte, &last_byte,
                                                &content_length);
     }
-    if (content_length > 0)
-      RecordParallelizableContentLength(content_length);
   }
 
   if (auto_opened_) {

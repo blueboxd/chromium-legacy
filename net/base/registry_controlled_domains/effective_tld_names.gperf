@@ -80,6 +80,7 @@ ac.ci, 0
 ac.cn, 0
 ac.cr, 0
 ac.cy, 0
+ac.fj, 0
 ac.gn, 0
 ac.gov.br, 0
 ac.id, 0
@@ -272,6 +273,7 @@ ama.shimane.jp, 0
 amagasaki.hyogo.jp, 0
 amakusa.kumamoto.jp, 0
 amami.kagoshima.jp, 0
+amazon, 0
 amber.museum, 0
 ambulance.aero, 0
 ambulance.museum, 0
@@ -722,6 +724,7 @@ biz.bb, 0
 biz.cy, 0
 biz.dk, 4
 biz.et, 0
+biz.fj, 0
 biz.gl, 4
 biz.id, 0
 biz.ki, 0
@@ -1424,6 +1427,7 @@ com.ee, 0
 com.eg, 0
 com.es, 0
 com.et, 0
+com.fj, 0
 com.fr, 0
 com.ge, 0
 com.gh, 0
@@ -1527,6 +1531,8 @@ commune.am, 0
 communication.museum, 0
 communications.museum, 0
 community, 0
+community-pro.de, 4
+community-pro.net, 4
 community.museum, 0
 como.it, 0
 company, 0
@@ -1756,12 +1762,14 @@ direct.quickconnect.to, 4
 directory, 0
 discount, 0
 discourse.group, 4
+discourse.team, 4
 discover, 0
 discovery.museum, 0
 dish, 0
 diskstation.eu, 4
 diskstation.me, 4
 diskstation.org, 4
+diskussionsbereich.de, 4
 ditchyourip.com, 4
 divtasvuodna.no, 0
 divttasvuotna.no, 0
@@ -2113,7 +2121,6 @@ environment.museum, 0
 environmentalconservation.museum, 0
 epilepsy.museum, 0
 epson, 0
-eq.edu.au, 0
 equipment, 0
 equipment.aero, 0
 er, 2
@@ -2288,7 +2295,7 @@ fishing, 0
 fit, 0
 fitjar.no, 0
 fitness, 0
-fj, 2
+fj, 0
 fj.cn, 0
 fjaler.no, 0
 fjell.no, 0
@@ -2764,6 +2771,7 @@ gov.ec, 0
 gov.ee, 0
 gov.eg, 0
 gov.et, 0
+gov.fj, 0
 gov.ge, 0
 gov.gh, 0
 gov.gi, 0
@@ -3405,6 +3413,7 @@ info.co, 0
 info.cx, 4
 info.ec, 0
 info.et, 0
+info.fj, 0
 info.gu, 0
 info.ht, 0
 info.hu, 0
@@ -4276,7 +4285,6 @@ lg.ua, 0
 lgbt, 0
 li, 0
 li.it, 0
-liaison, 0
 lib.ak.us, 0
 lib.al.us, 0
 lib.ar.us, 0
@@ -4618,6 +4626,7 @@ meet, 0
 meguro.tokyo.jp, 0
 mein-iserv.de, 4
 mein-vigor.de, 4
+meinforum.net, 4
 meiwa.gunma.jp, 0
 meiwa.mie.jp, 0
 meland.no, 0
@@ -4691,6 +4700,7 @@ mil.co, 0
 mil.do, 0
 mil.ec, 0
 mil.eg, 0
+mil.fj, 0
 mil.ge, 0
 mil.gh, 0
 mil.gt, 0
@@ -4918,7 +4928,6 @@ motoyama.kochi.jp, 0
 mov, 0
 movie, 0
 movimiento.bo, 0
-movistar, 0
 mozilla-iot.org, 4
 mp, 0
 mp.br, 0
@@ -5006,6 +5015,7 @@ mydrobo.com, 4
 myds.me, 4
 myeffect.net, 4
 myfirewall.org, 4
+myforum.community, 4
 myfritz.net, 4
 myftp.biz, 4
 myftp.org, 4
@@ -5098,6 +5108,7 @@ name.az, 0
 name.cy, 0
 name.eg, 0
 name.et, 0
+name.fj, 0
 name.hr, 0
 name.jo, 0
 name.mk, 0
@@ -5235,6 +5246,7 @@ net.ec, 0
 net.eg, 0
 net.et, 0
 net.eu.org, 4
+net.fj, 0
 net.ge, 0
 net.gg, 0
 net.gl, 0
@@ -5828,6 +5840,7 @@ org.ee, 0
 org.eg, 0
 org.es, 0
 org.et, 0
+org.fj, 0
 org.ge, 0
 org.gg, 0
 org.gh, 0
@@ -6249,6 +6262,7 @@ pro.az, 0
 pro.br, 0
 pro.cy, 0
 pro.ec, 0
+pro.fj, 0
 pro.ht, 0
 pro.mv, 0
 pro.na, 0
@@ -6310,6 +6324,7 @@ q-a.eu.org, 4
 q.bg, 0
 qa, 0
 qa2.com, 4
+qbuser.com, 4
 qc.ca, 0
 qc.com, 4
 qcx.io, 4
@@ -6818,6 +6833,7 @@ semine.miyagi.jp, 0
 sendai.jp, 2
 sener, 0
 sennan.osaka.jp, 0
+senseering.net, 4
 sensiosite.cloud, 6
 seoul.kr, 0
 sera.hiroshima.jp, 0
@@ -7420,7 +7436,6 @@ tele.amune.org, 4
 telebit.app, 4
 telebit.io, 4
 telebit.xyz, 6
-telefonica, 0
 telekommunikation.museum, 0
 television.museum, 0
 temasek, 0
@@ -7756,6 +7771,7 @@ tysnes.no, 0
 tysvar.no, 0
 tz, 0
 u.bg, 0
+u.channelsdvr.net, 4
 u.se, 0
 u2-local.xnbay.com, 4
 u2.xnbay.com, 4
@@ -8297,6 +8313,7 @@ xn--c1avg.xn--90a3ac, 0
 xn--c2br7g, 0
 xn--c3s14m.jp, 0
 xn--cck2b3b, 0
+xn--cckwcxetd, 0
 xn--cesena-forl-mcb.it, 0
 xn--cesenaforl-i8a.it, 0
 xn--cg4bki, 0
@@ -8388,6 +8405,7 @@ xn--io0a7i.hk, 0
 xn--j1aef, 0
 xn--j1amh, 0
 xn--j6w193g, 0
+xn--jlq480n2rg, 0
 xn--jlq61u9w7b, 0
 xn--jlster-bya.no, 0
 xn--jrpeland-54a.no, 0
@@ -8525,6 +8543,7 @@ xn--pssy2u, 0
 xn--q9jyb4c, 0
 xn--qcka1pmc, 0
 xn--qqqt11m.jp, 0
+xn--qxa6a, 0
 xn--qxam, 0
 xn--rady-ira.no, 0
 xn--rdal-poa.no, 0

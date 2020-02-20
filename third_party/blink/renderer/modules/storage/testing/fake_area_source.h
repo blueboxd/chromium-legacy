@@ -35,6 +35,11 @@ class FakeAreaSource : public GarbageCollected<FakeAreaSource>,
 
   struct Event {
     String key, old_value, new_value, url;
+
+    bool operator==(const Event& other) const {
+      return std::tie(key, old_value, new_value, url) ==
+             std::tie(other.key, other.old_value, other.new_value, other.url);
+    }
   };
 
   Vector<Event> events;

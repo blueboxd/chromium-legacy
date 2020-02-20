@@ -7,11 +7,13 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -45,7 +47,7 @@ class StorageNamespace;
 // GetLocalStorageArea, GetWebLocalStorageArea,
 // AddLocalStorageInspectorStorageAgent,
 // RemoveLocalStorageInspectorStorageAgent, DidDispatchLocalStorageEvent
-class MODULES_EXPORT StorageController {
+class MODULES_EXPORT StorageController : public mojom::blink::DomStorageClient {
   USING_FAST_MALLOC(StorageController);
 
  public:
@@ -56,9 +58,12 @@ class MODULES_EXPORT StorageController {
                                    StorageArea::StorageType type);
 
   // Visible for testing.
-  StorageController(scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-                    mojo::PendingRemote<mojom::blink::StoragePartitionService>
-                        storage_partition_service,
+  struct DomStorageConnection {
+    mojo::Remote<mojom::blink::DomStorage> dom_storage_remote;
+    mojo::PendingReceiver<mojom::blink::DomStorageClient> client_receiver;
+  };
+  StorageController(DomStorageConnection connection,
+                    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
                     size_t total_cache_limit);
 
   // Creates a MakeGarbageCollected<StorageNamespace> for Session storage, and
@@ -84,8 +89,8 @@ class MODULES_EXPORT StorageController {
                                     const String& old_value,
                                     const String& new_value);
 
-  mojom::blink::StoragePartitionService* storage_partition_service() const {
-    return storage_partition_service_.get();
+  mojom::blink::DomStorage* dom_storage() const {
+    return dom_storage_remote_.get();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() {
@@ -95,13 +100,17 @@ class MODULES_EXPORT StorageController {
  private:
   void EnsureLocalStorageNamespaceCreated();
 
+  // mojom::blink::DomStorageClient:
+  void ResetStorageAreaAndNamespaceConnections() override;
+
   scoped_refptr<base::SingleThreadTaskRunner> ipc_runner_;
   Persistent<HeapHashMap<String, WeakMember<StorageNamespace>>> namespaces_;
   Persistent<StorageNamespace> local_storage_namespace_;
   size_t total_cache_limit_;
 
-  mojo::Remote<mojom::blink::StoragePartitionService>
-      storage_partition_service_;
+  mojo::Remote<mojom::blink::DomStorage> dom_storage_remote_;
+  mojo::Receiver<mojom::blink::DomStorageClient> dom_storage_client_receiver_{
+      this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

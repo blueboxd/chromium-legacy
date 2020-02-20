@@ -1308,14 +1308,14 @@ std::unique_ptr<TracedValue> inspector_event_dispatch_event::Data(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.inputs"),
       &record_input_enabled);
   if (record_input_enabled) {
-    if (event.IsKeyboardEvent()) {
-      const KeyboardEvent& keyboard_event = ToKeyboardEvent(event);
-      value->SetInteger("modifier", GetModifierFromEvent(keyboard_event));
+    const auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+    if (keyboard_event) {
+      value->SetInteger("modifier", GetModifierFromEvent(*keyboard_event));
       value->SetDouble(
           "timestamp",
-          keyboard_event.PlatformTimeStamp().since_origin().InMicroseconds());
-      value->SetString("code", keyboard_event.code());
-      value->SetString("key", keyboard_event.key());
+          keyboard_event->PlatformTimeStamp().since_origin().InMicroseconds());
+      value->SetString("code", keyboard_event->code());
+      value->SetString("key", keyboard_event->key());
     }
 
     const auto* mouse_event = DynamicTo<MouseEvent>(event);

@@ -782,7 +782,7 @@ void AppMenuModel::Build() {
           GetInstallPWAAppMenuItemName(browser_)) {
     AddItem(IDC_INSTALL_PWA, *name);
   } else if (base::Optional<web_app::AppId> app_id =
-                 web_app::GetPwaForSecureActiveTab(browser_)) {
+                 web_app::GetWebAppForActiveTab(browser_)) {
     auto* provider = web_app::WebAppProvider::Get(browser_->profile());
     const base::string16 short_name =
         base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));

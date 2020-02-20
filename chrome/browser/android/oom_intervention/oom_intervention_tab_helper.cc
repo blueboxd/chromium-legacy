@@ -36,29 +36,9 @@ void SetLastVisibleWebContents(content::WebContents* web_contents) {
   g_last_visible_web_contents = web_contents;
 }
 
-// These enums are associated with UMA. Values must be kept in sync with
-// enums.xml and must not be renumbered/reused.
-enum class NearOomDetectionEndReason {
-  OOM_PROTECTED_CRASH = 0,
-  RENDERER_GONE = 1,
-  NAVIGATION = 2,
-  COUNT,
-};
-
-void RecordNearOomDetectionEndReason(NearOomDetectionEndReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.OomIntervention.NearOomDetectionEndReason", reason,
-      NearOomDetectionEndReason::COUNT);
-}
-
 void RecordInterventionUserDecision(bool accepted) {
   UMA_HISTOGRAM_BOOLEAN("Memory.Experimental.OomIntervention.UserDecision",
                         accepted);
-}
-
-void RecordInterventionStateOnCrash(bool accepted) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Memory.Experimental.OomIntervention.InterventionStateOnCrash", accepted);
 }
 
 }  // namespace
@@ -160,8 +140,6 @@ void OomInterventionTabHelper::RenderProcessGone(
         "RendererGoneAfterDetectionTime",
         elapsed_time);
     ResetInterventionState();
-  } else {
-    RecordNearOomDetectionEndReason(NearOomDetectionEndReason::RENDERER_GONE);
   }
 }
 
@@ -201,9 +179,6 @@ void OomInterventionTabHelper::DidStartNavigation(
         "NavigationAfterDetectionTime",
         elapsed_time);
     ResetInterventionState();
-  } else {
-    // Monitoring but near-OOM hasn't been detected.
-    RecordNearOomDetectionEndReason(NearOomDetectionEndReason::NAVIGATION);
   }
 }
 
@@ -244,16 +219,7 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
         "OomProtectedCrashAfterDetectionTime",
         elapsed_time);
 
-    if (intervention_state_ != InterventionState::NOT_TRIGGERED) {
-      // Consider UI_SHOWN as ACCEPTED because we already triggered the
-      // intervention and the user didn't decline.
-      bool accepted = intervention_state_ != InterventionState::DECLINED;
-      RecordInterventionStateOnCrash(accepted);
-    }
     ResetInterventionState();
-  } else {
-    RecordNearOomDetectionEndReason(
-        NearOomDetectionEndReason::OOM_PROTECTED_CRASH);
   }
 
   base::TimeDelta time_since_last_navigation;

@@ -34,10 +34,11 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   DCHECK(render_pass_id);
 
   bool needs_blending = true;
+  bool can_use_backdrop_filter_cache = false;
   SetAll(shared_quad_state, rect, visible_rect, needs_blending, render_pass_id,
          mask_resource_id, mask_uv_rect, mask_texture_size, filters_scale,
          filters_origin, tex_coord_rect, force_anti_aliasing_off,
-         backdrop_filter_quality);
+         backdrop_filter_quality, can_use_backdrop_filter_cache);
 }
 
 void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -52,7 +53,8 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::PointF& filters_origin,
                                 const gfx::RectF& tex_coord_rect,
                                 bool force_anti_aliasing_off,
-                                float backdrop_filter_quality) {
+                                float backdrop_filter_quality,
+                                bool can_use_backdrop_filter_cache) {
   DCHECK(render_pass_id);
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kRenderPass, rect,
@@ -67,6 +69,7 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->tex_coord_rect = tex_coord_rect;
   this->force_anti_aliasing_off = force_anti_aliasing_off;
   this->backdrop_filter_quality = backdrop_filter_quality;
+  this->can_use_backdrop_filter_cache = can_use_backdrop_filter_cache;
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
@@ -85,6 +88,8 @@ void RenderPassDrawQuad::ExtendValue(
   cc::MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
   value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
+  value->SetBoolean("can_use_backdrop_filter_cache",
+                    can_use_backdrop_filter_cache);
 }
 
 }  // namespace viz

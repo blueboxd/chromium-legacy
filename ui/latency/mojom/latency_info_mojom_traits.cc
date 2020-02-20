@@ -63,13 +63,6 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
 }  // namespace
 
 // static
-const std::string&
-StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_name(
-    const ui::LatencyInfo& info) {
-  return info.trace_name_;
-}
-
-// static
 const ui::LatencyInfo::LatencyMap&
 StructTraits<ui::mojom::LatencyInfoDataView,
              ui::LatencyInfo>::latency_components(const ui::LatencyInfo& info) {
@@ -131,8 +124,6 @@ float StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
-  if (!data.ReadTraceName(&out->trace_name_))
-    return false;
   if (!data.ReadLatencyComponents(&out->latency_components_))
     return false;
   out->trace_id_ = data.trace_id();

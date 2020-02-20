@@ -19,6 +19,15 @@ MockStorageArea::GetInterfaceRemote() {
   return result;
 }
 
+void MockStorageArea::InjectKeyValue(const Vector<uint8_t>& key,
+                                     const Vector<uint8_t>& value) {
+  key_values_.push_back(KeyValue{key, value});
+}
+
+void MockStorageArea::Clear() {
+  key_values_.clear();
+}
+
 void MockStorageArea::AddObserver(
     mojo::PendingRemote<mojom::blink::StorageAreaObserver> observer) {
   ++observer_count_;
@@ -30,10 +39,7 @@ void MockStorageArea::Put(
     const base::Optional<Vector<uint8_t>>& client_old_value,
     const String& source,
     PutCallback callback) {
-  observed_put_ = true;
-  observed_key_ = key;
-  observed_value_ = value;
-  observed_source_ = source;
+  observed_puts_.push_back(ObservedPut{key, value, source});
   std::move(callback).Run(true);
 }
 
@@ -42,9 +48,7 @@ void MockStorageArea::Delete(
     const base::Optional<Vector<uint8_t>>& client_old_value,
     const String& source,
     DeleteCallback callback) {
-  observed_delete_ = true;
-  observed_key_ = key;
-  observed_source_ = source;
+  observed_deletes_.push_back(ObservedDelete{key, source});
   std::move(callback).Run(true);
 }
 
@@ -52,8 +56,7 @@ void MockStorageArea::DeleteAll(
     const String& source,
     mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
     DeleteAllCallback callback) {
-  observed_delete_all_ = true;
-  observed_source_ = source;
+  observed_delete_alls_.push_back(source);
   ++observer_count_;
   std::move(callback).Run(true);
 }
@@ -65,9 +68,13 @@ void MockStorageArea::Get(const Vector<uint8_t>& key, GetCallback callback) {
 void MockStorageArea::GetAll(
     mojo::PendingRemote<mojom::blink::StorageAreaObserver> new_observer,
     GetAllCallback callback) {
-  observed_get_all_ = true;
+  ++observed_get_alls_;
   ++observer_count_;
-  std::move(callback).Run(std::move(get_all_return_values_));
+
+  Vector<mojom::blink::KeyValuePtr> entries;
+  for (const auto& entry : key_values_)
+    entries.push_back(mojom::blink::KeyValue::New(entry.key, entry.value));
+  std::move(callback).Run(std::move(entries));
 }
 
 }  // namespace blink

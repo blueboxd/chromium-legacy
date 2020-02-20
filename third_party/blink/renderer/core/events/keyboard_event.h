@@ -29,6 +29,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -110,7 +111,10 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   unsigned key_code_ = 0;
 };
 
-DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);
+template <>
+struct DowncastTraits<KeyboardEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsKeyboardEvent(); }
+};
 
 }  // namespace blink
 

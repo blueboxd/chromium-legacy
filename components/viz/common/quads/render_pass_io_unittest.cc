@@ -5,6 +5,7 @@
 #include "components/viz/common/quads/render_pass_io.h"
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -267,7 +268,7 @@ TEST(RenderPassIOTest, QuadList) {
                    198u, 81u, gfx::RectF(0.1f, 0.2f, 0.5f, 0.6f),
                    gfx::Size(800, 600), gfx::Vector2dF(1.1f, 0.9f),
                    gfx::PointF(0.01f, 0.02f),
-                   gfx::RectF(0.2f, 0.3f, 0.3f, 0.4f), true, 0.88f);
+                   gfx::RectF(0.2f, 0.3f, 0.3f, 0.4f), true, 0.88f, true);
       ++sqs_index;
       ++quad_count;
     }
@@ -314,6 +315,23 @@ TEST(RenderPassIOTest, RenderPassList) {
   RenderPassList render_pass_list;
   EXPECT_TRUE(RenderPassListFromDict(dict0.value(), &render_pass_list));
   base::Value dict1 = RenderPassListToDict(render_pass_list);
+  // Since the test file doesn't contain the field
+  // 'can_use_backdrop_filter_cache' in its RenderPassDrawQuad, I'm removing
+  // the field on dict1 for the exact comparison to work.
+  base::Value* list = dict1.FindListKey("render_pass_list");
+  for (size_t i = 0; i < list->GetList().size(); ++i) {
+    base::Value* quad_list = list->GetList()[i].FindListKey("quad_list");
+
+    for (size_t ii = 0; ii < quad_list->GetList().size(); ++ii) {
+      if (const base::Value* extra_value = quad_list->GetList()[ii].FindKey(
+              "can_use_backdrop_filter_cache")) {
+        EXPECT_FALSE(extra_value->GetBool());
+        ASSERT_TRUE(quad_list->GetList()[ii].RemoveKey(
+            "can_use_backdrop_filter_cache"));
+      }
+    }
+  }
+
   EXPECT_EQ(dict0, dict1);
 }
 

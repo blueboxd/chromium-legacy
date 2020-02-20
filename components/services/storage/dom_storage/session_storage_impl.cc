@@ -9,12 +9,14 @@
 #include <cctype>  // for std::isalnum
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -300,9 +302,11 @@ void SessionStorageImpl::Flush(FlushCallback callback) {
                                     std::move(callback)));
     return;
   }
+
+  base::RepeatingClosure commit_callback = base::BarrierClosure(
+      base::saturated_cast<int>(data_maps_.size()), std::move(callback));
   for (const auto& it : data_maps_)
-    it.second->storage_area()->ScheduleImmediateCommit();
-  std::move(callback).Run();
+    it.second->storage_area()->ScheduleImmediateCommit(commit_callback);
 }
 
 void SessionStorageImpl::GetUsage(GetUsageCallback callback) {

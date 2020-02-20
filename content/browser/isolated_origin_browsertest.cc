@@ -42,7 +42,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-test-utils.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -1534,26 +1534,27 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
 // This class allows intercepting the OpenLocalStorage method and changing
 // the parameters to the real implementation of it.
 class StoragePartitonInterceptor
-    : public blink::mojom::StoragePartitionServiceInterceptorForTesting,
+    : public blink::mojom::DomStorageInterceptorForTesting,
       public RenderProcessHostObserver {
  public:
   StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
-      mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver,
+      mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
       const url::Origin& origin_to_inject)
       : origin_to_inject_(origin_to_inject) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
-    // Bind the real StoragePartitionService implementation.
-    mojo::ReceiverId receiver_id =
-        storage_partition->Bind(rph->GetID(), std::move(receiver));
+    // Bind the real DomStorage implementation.
+    mojo::PendingRemote<blink::mojom::DomStorageClient> unused_client;
+    ignore_result(unused_client.InitWithNewPipeAndPassReceiver());
+    mojo::ReceiverId receiver_id = storage_partition->BindDomStorage(
+        rph->GetID(), std::move(receiver), std::move(unused_client));
 
     // Now replace it with this object and keep a pointer to the real
     // implementation.
-    storage_partition_service_ =
-        storage_partition->receivers_for_testing().SwapImplForTesting(
-            receiver_id, this);
+    dom_storage_ = storage_partition->dom_storage_receivers_for_testing()
+                       .SwapImplForTesting(receiver_id, this);
 
     // Register the |this| as a RenderProcessHostObserver, so it can be
     // correctly cleaned up when the process exits.
@@ -1570,8 +1571,8 @@ class StoragePartitonInterceptor
 
   // Allow all methods that aren't explicitly overridden to pass through
   // unmodified.
-  blink::mojom::StoragePartitionService* GetForwardingInterface() override {
-    return storage_partition_service_;
+  blink::mojom::DomStorage* GetForwardingInterface() override {
+    return dom_storage_;
   }
 
   // Override this method to allow changing the origin. It simulates a
@@ -1587,17 +1588,17 @@ class StoragePartitonInterceptor
  private:
   // Keep a pointer to the original implementation of the service, so all
   // calls can be forwarded to it.
-  blink::mojom::StoragePartitionService* storage_partition_service_;
+  blink::mojom::DomStorage* dom_storage_;
 
   url::Origin origin_to_inject_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
-void CreateTestStoragePartitionService(
+void CreateTestDomStorageBackend(
     const url::Origin& origin_to_inject,
     RenderProcessHostImpl* rph,
-    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
+    mojo::PendingReceiver<blink::mojom::DomStorage> receiver) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
   new StoragePartitonInterceptor(rph, std::move(receiver), origin_to_inject);
@@ -1610,9 +1611,8 @@ IN_PROC_BROWSER_TEST_F(
     LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
   auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
   EXPECT_FALSE(IsIsolatedOrigin(mismatched_origin));
-  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
-      base::BindRepeating(&CreateTestStoragePartitionService,
-                          mismatched_origin));
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackend, mismatched_origin));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
@@ -1655,8 +1655,8 @@ IN_PROC_BROWSER_TEST_F(
       embedded_test_server()->GetURL("non-isolated.com", "/title1.html"));
   EXPECT_FALSE(IsIsolatedOrigin(url::Origin::Create(nonisolated_url)));
 
-  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
-      base::BindRepeating(&CreateTestStoragePartitionService, isolated_origin));
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackend, isolated_origin));
   EXPECT_TRUE(NavigateToURL(shell(), nonisolated_url));
 
   content::RenderProcessHostKillWaiter kill_waiter(
@@ -1676,8 +1676,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   url::Origin precursor_origin =
       url::Origin::Create(GURL("https://non-isolated.com"));
   url::Origin opaque_origin = precursor_origin.DeriveNewOpaqueOrigin();
-  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
-      base::BindRepeating(&CreateTestStoragePartitionService, opaque_origin));
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackend, opaque_origin));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));

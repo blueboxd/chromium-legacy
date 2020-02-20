@@ -25,9 +25,10 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
     # memory used throughout the page loading tests. Include "umaMetric" as a
     # timeline so that we can parse this UMA Histogram.
     tbm_options.config.chrome_trace_config.EnableUMAHistograms(
-      'Memory.GPU.PeakMemoryUsage.PageLoad',
-      'PageLoad.PaintTiming.NavigationToLargestContentfulPaint',
-      'PageLoad.PaintTiming.NavigationToFirstContentfulPaint')
+        'Memory.GPU.PeakMemoryUsage.PageLoad',
+        'PageLoad.PaintTiming.NavigationToLargestContentfulPaint',
+        'PageLoad.PaintTiming.NavigationToFirstContentfulPaint',
+        'PageLoad.LayoutInstability.CumulativeShiftScore')
 
     # Add "umaMetric" to the timeline based metrics. This does not override
     # those added in loading_metrics_category.AugmentOptionsForLoadingMetrics.

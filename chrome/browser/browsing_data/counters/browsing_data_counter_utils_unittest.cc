@@ -74,7 +74,7 @@ TEST_F(BrowsingDataCounterUtilsTest, CacheCounterResult) {
         test_case.is_basic_tab ? browsing_data::ClearBrowsingDataTab::BASIC
                                : browsing_data::ClearBrowsingDataTab::ADVANCED;
     counter.Init(GetProfile()->GetPrefs(), tab,
-                 browsing_data::BrowsingDataCounter::Callback());
+                 browsing_data::BrowsingDataCounter::ResultCallback());
     CacheCounter::CacheResult result(&counter, test_case.bytes,
                                      test_case.is_upper_limit);
     SCOPED_TRACE(base::StringPrintf(

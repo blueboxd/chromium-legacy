@@ -22,6 +22,9 @@ Clipboard* NavigatorClipboard::clipboard(ScriptState* script_state,
     ProvideTo(navigator, supplement);
   }
 
+  if (!supplement->GetSupplementable()->GetFrame())
+    return nullptr;
+
   return supplement->clipboard_;
 }
 

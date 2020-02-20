@@ -1094,12 +1094,9 @@ void CopyFeatureSwitch(const base::CommandLine& src,
     dest->AppendSwitchASCII(switch_name, base::JoinString(features, ","));
 }
 
-RenderProcessHostImpl::StoragePartitionServiceRequestHandler&
-GetStoragePartitionServiceRequestHandler() {
-  static base::NoDestructor<
-      RenderProcessHostImpl::StoragePartitionServiceRequestHandler>
-      instance;
-  return *instance;
+RenderProcessHostImpl::DomStorageBinder& GetDomStorageBinder() {
+  static base::NoDestructor<RenderProcessHostImpl::DomStorageBinder> binder;
+  return *binder;
 }
 
 RenderProcessHostImpl::BroadcastChannelProviderReceiverHandler&
@@ -1608,9 +1605,9 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
   g_renderer_main_thread_factory = create;
 }
 
-void RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
-    StoragePartitionServiceRequestHandler handler) {
-  GetStoragePartitionServiceRequestHandler() = handler;
+void RenderProcessHostImpl::SetDomStorageBinderForTesting(
+    DomStorageBinder binder) {
+  GetDomStorageBinder() = std::move(binder);
 }
 
 void RenderProcessHostImpl::
@@ -2221,7 +2218,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                           weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::CreateStoragePartitionService,
+      base::BindRepeating(&RenderProcessHostImpl::CreateDomStorageProvider,
                           weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
       registry.get(),
@@ -2506,15 +2503,10 @@ void RenderProcessHostImpl::BindCompositingModeReporter(
       std::move(receiver));
 }
 
-void RenderProcessHostImpl::CreateStoragePartitionService(
-    mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
-  if (!GetStoragePartitionServiceRequestHandler().is_null()) {
-    GetStoragePartitionServiceRequestHandler().Run(this, std::move(receiver));
-    return;
-  }
-
-  storage_partition_binding_ids_.insert(
-      storage_partition_impl_->Bind(id_, std::move(receiver)));
+void RenderProcessHostImpl::CreateDomStorageProvider(
+    mojo::PendingReceiver<blink::mojom::DomStorageProvider> receiver) {
+  DCHECK(!dom_storage_provider_receiver_.is_bound());
+  dom_storage_provider_receiver_.Bind(std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateBroadcastChannelProvider(
@@ -2606,6 +2598,23 @@ void RenderProcessHostImpl::BindPluginRegistry(
   plugin_registry_->Bind(std::move(receiver));
 }
 #endif
+
+void RenderProcessHostImpl::BindDomStorage(
+    mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
+    mojo::PendingRemote<blink::mojom::DomStorageClient> client) {
+  const DomStorageBinder& binder = GetDomStorageBinder();
+  if (binder) {
+    binder.Run(this, std::move(receiver));
+    return;
+  }
+
+  dom_storage_receiver_ids_.insert(storage_partition_impl_->BindDomStorage(
+      id_, std::move(receiver), std::move(client)));
+
+  // Renderers only use this interface to send a single BindDomStorage message,
+  // so we can tear down the receiver now.
+  dom_storage_provider_receiver_.reset();
+}
 
 void RenderProcessHostImpl::RegisterCoordinatorClient(
     mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator> receiver,
@@ -4491,9 +4500,9 @@ void RenderProcessHostImpl::ResetIPC() {
   // Destroy all embedded CompositorFrameSinks.
   embedded_frame_sink_provider_.reset();
 
-  for (auto binding_id : storage_partition_binding_ids_) {
-    storage_partition_impl_->Unbind(binding_id);
-  }
+  dom_storage_provider_receiver_.reset();
+  for (auto receiver_id : dom_storage_receiver_ids_)
+    storage_partition_impl_->UnbindDomStorage(receiver_id);
 
   instance_weak_factory_.emplace(this);
 

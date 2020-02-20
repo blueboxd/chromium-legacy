@@ -22,8 +22,10 @@ WebUINavigationThrottle::~WebUINavigationThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
 WebUINavigationThrottle::WillStartRequest() {
-  // Allow only chrome: scheme documents to be navigated to.
-  if (navigation_handle()->GetURL().SchemeIs(kChromeUIScheme))
+  // Allow only chrome: and chrome-untrusted: scheme documents to be navigated
+  // to.
+  if (navigation_handle()->GetURL().SchemeIs(kChromeUIScheme) ||
+      navigation_handle()->GetURL().SchemeIs(kChromeUIUntrustedScheme))
     return PROCEED;
 
   return BLOCK_REQUEST;

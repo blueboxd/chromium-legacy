@@ -55,11 +55,6 @@ void RecordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
       "Media.Video.FullscreenOrientationLock.MetadataAvailability", metrics);
 }
 
-void RecordAutoRotateEnabled(bool enabled) {
-  base::UmaHistogramBoolean(
-      "Media.Video.FullscreenOrientationLock.AutoRotateEnabled", enabled);
-}
-
 // WebLockOrientationCallback implementation that will not react to a success
 // nor a failure.
 class DummyScreenOrientationCallback : public WebLockOrientationCallback {
@@ -204,8 +199,6 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 void MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser(
     bool enabled) {
   monitor_.reset();
-
-  RecordAutoRotateEnabled(enabled);
 
   if (!enabled) {
     // Since the user has locked their screen orientation, prevent

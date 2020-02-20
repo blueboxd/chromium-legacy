@@ -229,10 +229,6 @@ class ClearAllServiceWorkersHelper
 
 }  // namespace
 
-const base::FilePath::CharType
-    ServiceWorkerContextCore::kServiceWorkerDirectory[] =
-        FILE_PATH_LITERAL("Service Worker");
-
 ServiceWorkerContextCore::ContainerHostIterator::~ContainerHostIterator() =
     default;
 

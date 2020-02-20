@@ -95,7 +95,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       size_(0),
       last_on_change_option_(nullptr),
       is_multiple_(false),
-      is_in_non_contiguous_selection_(false),
       active_selection_state_(false),
       should_recalc_list_items_(false),
       is_autofilled_by_preview_(false),
@@ -665,7 +664,7 @@ void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
     ++i;
   }
 
-  UpdateMultiSelectListBoxFocus();
+  select_type_->UpdateMultiSelectFocus();
   SetNeedsValidityCheck();
   if (scroll)
     ScrollToSelection();
@@ -701,20 +700,6 @@ void HTMLSelectElement::ListBoxOnChange() {
     DispatchInputEvent();
     DispatchChangeEvent();
   }
-}
-
-void HTMLSelectElement::UpdateMultiSelectListBoxFocus() {
-  if (!is_multiple_)
-    return;
-
-  for (auto* const option : GetOptionList()) {
-    if (option->IsDisabledFormControl() || !option->GetLayoutObject())
-      continue;
-    bool is_focused =
-        (option == active_selection_end_) && is_in_non_contiguous_selection_;
-    option->SetMultiSelectFocusedState(is_focused);
-  }
-  ScrollToSelection();
 }
 
 void HTMLSelectElement::DispatchInputAndChangeEventForMenuList() {
@@ -1437,12 +1422,12 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
-    auto& keyboard_event = ToKeyboardEvent(event);
-    if (!keyboard_event.ctrlKey() && !keyboard_event.altKey() &&
-        !keyboard_event.metaKey() &&
-        WTF::unicode::IsPrintableChar(keyboard_event.charCode())) {
-      TypeAheadFind(keyboard_event);
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeypress && keyboard_event) {
+    if (!keyboard_event->ctrlKey() && !keyboard_event->altKey() &&
+        !keyboard_event->metaKey() &&
+        WTF::unicode::IsPrintableChar(keyboard_event->charCode())) {
+      TypeAheadFind(*keyboard_event);
       event.SetDefaultHandled();
       return;
     }

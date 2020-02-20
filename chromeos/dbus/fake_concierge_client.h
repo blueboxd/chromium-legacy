@@ -70,6 +70,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void StopVm(const vm_tools::concierge::StopVmRequest& request,
               DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
       override;
+  void SuspendVm(const vm_tools::concierge::SuspendVmRequest& request,
+                 DBusMethodCallback<vm_tools::concierge::SuspendVmResponse>
+                     callback) override;
+  void ResumeVm(const vm_tools::concierge::ResumeVmRequest& request,
+                DBusMethodCallback<vm_tools::concierge::ResumeVmResponse>
+                    callback) override;
   void GetVmInfo(const vm_tools::concierge::GetVmInfoRequest& request,
                  DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse>
                      callback) override;
@@ -281,6 +287,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       list_vm_disks_response_;
   base::Optional<vm_tools::concierge::StartVmResponse> start_vm_response_;
   base::Optional<vm_tools::concierge::StopVmResponse> stop_vm_response_;
+  base::Optional<vm_tools::concierge::SuspendVmResponse> suspend_vm_response_;
+  base::Optional<vm_tools::concierge::ResumeVmResponse> resume_vm_response_;
   base::Optional<vm_tools::concierge::GetVmInfoResponse> get_vm_info_response_;
   base::Optional<vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
       get_vm_enterprise_reporting_info_response_;

@@ -9,9 +9,9 @@ mojom_component("dom_storage") {
   macro_prefix = "DOM_STORAGE_MOJOM"
 
   sources = [
+    "dom_storage.mojom",
     "session_storage_namespace.mojom",
     "storage_area.mojom",
-    "storage_partition_service.mojom",
   ]
 
   public_deps = [ "//url/mojom:url_mojom_origin" ]

@@ -1083,11 +1083,11 @@
         ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
 
     // Open Files app on Downloads containing ENTRIES.rawNef.
-    const appId =
-        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.rawNef], []);
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.nefImage], []);
 
     // Open the file in Quick View.
-    await openQuickView(appId, ENTRIES.rawNef.nameText);
+    await openQuickView(appId, ENTRIES.nefImage.nameText);
 
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewImageLoaded(elements) {

@@ -4335,10 +4335,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       group_->gpu_feature_info()
           .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
       kGpuFeatureStatusEnabled;
-  if (workarounds().disable_non_empty_post_sub_buffers_for_onscreen_surfaces &&
-      !surface_->IsOffscreen()) {
-    caps.disable_non_empty_post_sub_buffers = true;
-  }
   if (workarounds().broken_egl_image_ref_counting &&
       group_->gpu_preferences().enable_threaded_texture_mailboxes) {
     caps.disable_2d_canvas_copy_on_write = true;

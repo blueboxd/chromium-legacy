@@ -32,6 +32,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -134,7 +135,46 @@ uint64_t GetCurrentQPC() {
 uint64_t g_last_process_output_time;
 HRESULT g_last_device_removed_reason;
 
+void LogDXVAError(int line) {
+  LOG(ERROR) << "Error in dxva_video_decode_accelerator_win.cc on line "
+             << line;
+  base::UmaHistogramSparse("Media.DXVAVDA.ErrorLine", line);
+}
+
 }  // namespace
+
+// TODO(xhwang): Remove this after we remove or rename same macros in
+// mf_helpers.h.
+#undef RETURN_ON_FAILURE
+#undef RETURN_ON_HR_FAILURE
+
+#define RETURN_ON_FAILURE(result, log, ret) \
+  do {                                      \
+    if (!(result)) {                        \
+      DLOG(ERROR) << log;                   \
+      LogDXVAError(__LINE__);               \
+      return ret;                           \
+    }                                       \
+  } while (0)
+
+#define RETURN_ON_HR_FAILURE(result, log, ret) \
+  RETURN_ON_FAILURE(SUCCEEDED(result),         \
+                    log << ", HRESULT: 0x" << std::hex << result, ret);
+
+#define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
+  do {                                                             \
+    if (!(result)) {                                               \
+      DVLOG(1) << log;                                             \
+      LogDXVAError(__LINE__);                                      \
+      StopOnError(error_code);                                     \
+      return ret;                                                  \
+    }                                                              \
+  } while (0)
+
+#define RETURN_AND_NOTIFY_ON_HR_FAILURE(result, log, error_code, ret)        \
+  RETURN_AND_NOTIFY_ON_FAILURE(SUCCEEDED(result),                            \
+                               log << ", HRESULT: 0x" << std::hex << result, \
+                               error_code, ret);
 
 namespace media {
 

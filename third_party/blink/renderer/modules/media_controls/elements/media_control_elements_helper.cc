@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -26,7 +27,7 @@ bool MediaControlElementsHelper::IsUserInteractionEvent(const Event& event) {
          type == event_type_names::kMouseup ||
          type == event_type_names::kClick ||
          type == event_type_names::kDblclick ||
-         type == event_type_names::kGesturetap || event.IsKeyboardEvent() ||
+         type == event_type_names::kGesturetap || IsA<KeyboardEvent>(event) ||
          IsA<TouchEvent>(event);
 }
 

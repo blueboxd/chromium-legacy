@@ -37,6 +37,7 @@ class Partition;
 namespace content {
 
 class SessionStorageNamespaceImpl;
+class StoragePartitionImpl;
 
 // This is owned by Storage Partition and encapsulates all its dom storage
 // state.
@@ -60,13 +61,11 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   };
 
   static scoped_refptr<DOMStorageContextWrapper> Create(
-      storage::mojom::Partition* partition,
+      StoragePartitionImpl* partition,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   DOMStorageContextWrapper(
-      mojo::Remote<storage::mojom::SessionStorageControl>
-          session_storage_control,
-      mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control,
+      StoragePartitionImpl* partition,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   storage::mojom::SessionStorageControl* GetSessionStorageControl();
@@ -110,6 +109,11 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
+  // Pushes information about known Session Storage namespaces down to the
+  // Storage Service instance after a crash. This in turn allows renderer
+  // clients to re-establish working connections.
+  void RecoverFromStorageServiceCrash();
+
  private:
   friend class DOMStorageContextWrapperTest;
   friend class base::RefCountedThreadSafe<DOMStorageContextWrapper>;
@@ -117,6 +121,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   ~DOMStorageContextWrapper() override;
 
+  void MaybeBindSessionStorageControl();
+  void MaybeBindLocalStorageControl();
   scoped_refptr<SessionStorageNamespaceImpl> MaybeGetExistingNamespace(
       const std::string& namespace_id) const;
 
@@ -152,6 +158,11 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_
       GUARDED_BY(alive_namespaces_lock_);
   mutable base::Lock alive_namespaces_lock_;
+
+  // Unowned reference to our owning partition. This is always valid until it's
+  // reset to null if/when the partition is destroyed. May also be null in
+  // tests.
+  StoragePartitionImpl* partition_;
 
   // To receive memory pressure signals.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

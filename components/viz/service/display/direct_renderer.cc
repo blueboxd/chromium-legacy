@@ -137,10 +137,6 @@ void DirectRenderer::Initialize() {
   if (context_provider) {
     if (context_provider->ContextCapabilities().commit_overlay_planes)
       allow_empty_swap_ = true;
-    if (context_provider->ContextCapabilities()
-            .disable_non_empty_post_sub_buffers) {
-      use_partial_swap_ = false;
-    }
 #if DCHECK_IS_ON()
     supports_occlusion_query_ =
         context_provider->ContextCapabilities().occlusion_query;

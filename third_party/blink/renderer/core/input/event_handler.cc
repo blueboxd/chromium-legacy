@@ -2274,9 +2274,9 @@ bool EventHandler::HandleTextInputEvent(const String& text,
   // Platforms should differentiate real commands like selectAll from text input
   // in disguise (like insertNewline), and avoid dispatching text input events
   // from keydown default handlers.
-  DCHECK(!underlying_event || !underlying_event->IsKeyboardEvent() ||
-         ToKeyboardEvent(underlying_event)->type() ==
-             event_type_names::kKeypress);
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(underlying_event);
+  DCHECK(!keyboard_event ||
+         keyboard_event->type() == event_type_names::kKeypress);
 
   if (!frame_)
     return false;

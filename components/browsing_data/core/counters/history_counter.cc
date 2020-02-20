@@ -18,10 +18,9 @@ static const int64_t kWebHistoryTimeoutSeconds = 10;
 
 namespace browsing_data {
 
-HistoryCounter::HistoryCounter(
-    history::HistoryService* history_service,
-    const GetUpdatedWebHistoryServiceCallback& callback,
-    syncer::SyncService* sync_service)
+HistoryCounter::HistoryCounter(history::HistoryService* history_service,
+                               GetUpdatedWebHistoryServiceCallback callback,
+                               syncer::SyncService* sync_service)
     : history_service_(history_service),
       web_history_service_callback_(callback),
       sync_tracker_(this, sync_service),
@@ -31,11 +30,11 @@ HistoryCounter::HistoryCounter(
   DCHECK(history_service_);
 }
 
-HistoryCounter::~HistoryCounter() {}
+HistoryCounter::~HistoryCounter() = default;
 
 void HistoryCounter::OnInitialized() {
-  sync_tracker_.OnInitialized(base::Bind(&HistoryCounter::IsHistorySyncEnabled,
-                                         base::Unretained(this)));
+  sync_tracker_.OnInitialized(base::BindRepeating(
+      &HistoryCounter::IsHistorySyncEnabled, base::Unretained(this)));
 }
 
 bool HistoryCounter::HasTrackedTasksForTesting() {
@@ -114,8 +113,8 @@ void HistoryCounter::Count() {
         })");
   web_history_request_ = web_history->QueryHistory(
       base::string16(), options,
-      base::Bind(&HistoryCounter::OnGetWebHistoryCount,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HistoryCounter::OnGetWebHistoryCount,
+                     weak_ptr_factory_.GetWeakPtr()),
       partial_traffic_annotation);
 
   // TODO(msramek): Include web history count when there is an API for it.

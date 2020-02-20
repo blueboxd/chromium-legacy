@@ -243,8 +243,8 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
     HandleMouseEvent(*mouse_event);
   else if (event.IsWheelEvent())
     HandleWheelEvent(ToWheelEvent(event));
-  else if (event.IsKeyboardEvent())
-    HandleKeyboardEvent(ToKeyboardEvent(event));
+  else if (auto* keyboard_event = DynamicTo<KeyboardEvent>(event))
+    HandleKeyboardEvent(*keyboard_event);
   else if (auto* touch_event = DynamicTo<TouchEvent>(event))
     HandleTouchEvent(*touch_event);
   else if (auto* gesture_event = DynamicTo<GestureEvent>(event))

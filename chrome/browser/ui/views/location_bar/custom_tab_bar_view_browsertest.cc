@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -25,6 +26,7 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -189,6 +191,12 @@ class CustomTabBarViewBrowserTest
     cert_verifier_.SetUpCommandLine(command_line);
   }
 
+  void SetUp() override {
+    feature_list_.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+    web_app::WebAppControllerBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
@@ -243,6 +251,8 @@ class CustomTabBarViewBrowserTest
     app_controller_ = app_browser_->app_controller();
     DCHECK(app_controller_);
   }
+
+  base::test::ScopedFeatureList feature_list_;
 
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
@@ -318,6 +328,35 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, IsUsedForDesktopPWA) {
 
   // Custom tab bar should be created.
   EXPECT_TRUE(app_view->toolbar()->custom_tab_bar());
+}
+
+// Check the CustomTabBarView appears when a PWA window attempts to load
+// insecure content.
+IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, ShowsWithMixedContent) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL& url = https_server()->GetURL("app.com", "/ssl/google.html");
+  InstallPWA(url);
+
+  ASSERT_TRUE(app_browser_);
+
+  CustomTabBarView* bar = BrowserView::GetBrowserViewForBrowser(app_browser_)
+                              ->toolbar()
+                              ->custom_tab_bar();
+  EXPECT_FALSE(bar->GetVisible());
+  EXPECT_TRUE(ExecJs(app_browser_->tab_strip_model()->GetActiveWebContents(),
+                     R"(
+      let img = document.createElement('img');
+      img.src = 'http://not-secure.com';
+      document.body.appendChild(img);
+    )"));
+  EXPECT_TRUE(bar->GetVisible());
+  EXPECT_EQ(bar->title_for_testing(), base::ASCIIToUTF16("Google"));
+  EXPECT_EQ(bar->location_for_testing() + base::ASCIIToUTF16("/"),
+            base::ASCIIToUTF16(
+                https_server()->GetURL("app.com", "/ssl").GetOrigin().spec()));
+  EXPECT_FALSE(bar->close_button_for_testing()->GetVisible());
 }
 
 // The custom tab bar should update with the title and location of the current

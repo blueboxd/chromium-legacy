@@ -57,9 +57,6 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns whether this controller was created for an installed PWA.
   virtual bool IsHostedApp() const;
 
-  // Returns true if the associated Hosted App is for a PWA.
-  virtual bool CreatedForInstalledPwa() const;
-
   // Whether the custom tab bar should be visible.
   virtual bool ShouldShowCustomTabBar() const;
 

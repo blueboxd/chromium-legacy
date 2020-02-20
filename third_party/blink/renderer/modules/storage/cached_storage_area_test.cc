@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
@@ -16,6 +17,8 @@
 namespace blink {
 
 using FormatOption = CachedStorageArea::FormatOption;
+using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 
 class CachedStorageAreaTest : public testing::Test {
  public:
@@ -34,8 +37,10 @@ class CachedStorageAreaTest : public testing::Test {
         IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
                            : CachedStorageArea::AreaType::kLocalStorage;
     cached_area_ = base::MakeRefCounted<CachedStorageArea>(
-        area_type, kOrigin, mock_storage_area_.GetInterfaceRemote(),
-        scheduler::GetSingleThreadTaskRunnerForTesting(), nullptr);
+        area_type, kOrigin, scheduler::GetSingleThreadTaskRunnerForTesting(),
+        nullptr);
+    cached_area_->SetRemoteAreaForTesting(
+        mock_storage_area_.GetInterfaceRemote());
     source_area_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl);
     source_area_id_ = cached_area_->RegisterSource(source_area_);
     source_ = kPageUrl.GetString() + "\n" + source_area_id_;
@@ -85,6 +90,29 @@ class CachedStorageAreaTest : public testing::Test {
                                   : FormatOption::kLocalStorageDetectFormat);
   }
 
+  MockStorageArea::ObservedPut ObservedPut(const String& key,
+                                           const String& value,
+                                           const String& source) {
+    return MockStorageArea::ObservedPut{KeyToUint8Vector(key),
+                                        ValueToUint8Vector(value), source};
+  }
+
+  MockStorageArea::ObservedDelete ObservedDelete(const String& key,
+                                                 const String& source) {
+    return MockStorageArea::ObservedDelete{KeyToUint8Vector(key), source};
+  }
+
+  FakeAreaSource::Event Event(const String& key,
+                              const String& old_value,
+                              const String& new_value) {
+    return FakeAreaSource::Event{key, old_value, new_value, ""};
+  }
+
+  void InjectKeyValue(const String& key, const String& value) {
+    mock_storage_area_.InjectKeyValue(KeyToUint8Vector(key),
+                                      ValueToUint8Vector(value));
+  }
+
  protected:
   MockStorageArea mock_storage_area_;
   Persistent<FakeAreaSource> source_area_;
@@ -117,7 +145,7 @@ TEST_P(CachedStorageAreaTestWithParam, Basics) {
   EXPECT_EQ(0u, cached_area_->GetLength());
 
   mock_storage_area_.Flush();
-  EXPECT_EQ(2u, mock_storage_area_.observer_count());
+  EXPECT_EQ(1u, mock_storage_area_.observer_count());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetLength) {
@@ -125,7 +153,7 @@ TEST_P(CachedStorageAreaTestWithParam, GetLength) {
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_EQ(0u, cached_area_->GetLength());
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetKey) {
@@ -133,7 +161,7 @@ TEST_P(CachedStorageAreaTestWithParam, GetKey) {
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->GetKey(2).IsNull());
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, GetItem) {
@@ -141,7 +169,7 @@ TEST_P(CachedStorageAreaTestWithParam, GetItem) {
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
 }
 
 TEST_P(CachedStorageAreaTestWithParam, SetItem) {
@@ -149,13 +177,11 @@ TEST_P(CachedStorageAreaTestWithParam, SetItem) {
   EXPECT_FALSE(IsCacheLoaded());
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
 
   mock_storage_area_.Flush();
-  EXPECT_TRUE(mock_storage_area_.observed_put());
-  EXPECT_EQ(source_, mock_storage_area_.observed_source());
-  EXPECT_EQ(KeyToUint8Vector(kKey), mock_storage_area_.observed_key());
-  EXPECT_EQ(ValueToUint8Vector(kValue), mock_storage_area_.observed_value());
+  EXPECT_THAT(mock_storage_area_.observed_puts(),
+              ElementsAre(ObservedPut(kKey, kValue, source_)));
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
   if (IsSessionStorage()) {
@@ -178,12 +204,11 @@ TEST_P(CachedStorageAreaTestWithParam, Clear_AlreadyEmpty) {
   cached_area_->Clear(source_area_);
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_delete_all());
-  EXPECT_EQ(source_, mock_storage_area_.observed_source());
+  EXPECT_THAT(mock_storage_area_.observed_delete_alls(), ElementsAre(source_));
   if (IsSessionStorage()) {
-    EXPECT_TRUE(mock_storage_area_.observed_get_all());
+    EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
   } else {
-    EXPECT_FALSE(mock_storage_area_.observed_get_all());
+    EXPECT_EQ(0, mock_storage_area_.observed_get_alls());
   }
 
   // Neither should have events since area was already empty.
@@ -192,20 +217,17 @@ TEST_P(CachedStorageAreaTestWithParam, Clear_AlreadyEmpty) {
 }
 
 TEST_P(CachedStorageAreaTestWithParam, Clear_WithData) {
-  mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
+  InjectKeyValue(kKey, kValue);
 
   EXPECT_FALSE(IsCacheLoaded());
   cached_area_->Clear(source_area_);
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_delete_all());
-  EXPECT_EQ(source_, mock_storage_area_.observed_source());
+  EXPECT_THAT(mock_storage_area_.observed_delete_alls(), ElementsAre(source_));
   if (IsSessionStorage()) {
-    EXPECT_TRUE(mock_storage_area_.observed_get_all());
+    EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
   } else {
-    EXPECT_FALSE(mock_storage_area_.observed_get_all());
+    EXPECT_EQ(0, mock_storage_area_.observed_get_alls());
   }
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
@@ -226,8 +248,8 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem_NothingToRemove) {
   cached_area_->RemoveItem(kKey, source_area_);
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
-  EXPECT_FALSE(mock_storage_area_.observed_delete());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+  EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
 
   // Neither should have events since area was already empty.
   EXPECT_TRUE(source_area_->events.IsEmpty());
@@ -237,17 +259,15 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem_NothingToRemove) {
 TEST_P(CachedStorageAreaTestWithParam, RemoveItem) {
   // RemoveItem with something to remove, expect a call to load followed
   // by a call to remove.
-  mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
+  InjectKeyValue(kKey, kValue);
+
   EXPECT_FALSE(IsCacheLoaded());
   cached_area_->RemoveItem(kKey, source_area_);
   mock_storage_area_.Flush();
   EXPECT_TRUE(IsCacheLoaded());
-  EXPECT_TRUE(mock_storage_area_.observed_get_all());
-  EXPECT_TRUE(mock_storage_area_.observed_delete());
-  EXPECT_EQ(source_, mock_storage_area_.observed_source());
-  EXPECT_EQ(KeyToUint8Vector(kKey), mock_storage_area_.observed_key());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+  EXPECT_THAT(mock_storage_area_.observed_deletes(),
+              ElementsAre(ObservedDelete(kKey, source_)));
 
   EXPECT_TRUE(source_area_->events.IsEmpty());
   if (IsSessionStorage()) {
@@ -262,10 +282,9 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem) {
 }
 
 TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
+  InjectKeyValue(kKey, kValue);
+
   // GetLength to prime the cache.
-  mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
   EXPECT_EQ(1u, cached_area_->GetLength());
   EXPECT_TRUE(IsCacheLoaded());
   mock_storage_area_.ResetObservations();
@@ -282,6 +301,242 @@ TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
   cached_area_->RemoveItem(kKey, source_area_);
   EXPECT_EQ(0u, cached_area_->GetLength());
   EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
+}
+
+TEST_P(CachedStorageAreaTestWithParam, ResetConnectionWithNoDelta) {
+  const String kKey1 = "key1";
+  const String kValue1 = "value1";
+  const String kKey2 = "key2";
+  const String kValue2 = "value2";
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kValue2);
+
+  // Prime the cache.
+  EXPECT_EQ(2u, cached_area_->GetLength());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+
+  // Simulate a connection reset, which should always re-initialize the local
+  // cache.
+  cached_area_->ResetConnection(mock_storage_area_.GetInterfaceRemote());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(2, mock_storage_area_.observed_get_alls());
+  EXPECT_EQ(2u, cached_area_->GetLength());
+
+  // Cached values should be unchanged for both Session and Local Storage.
+  EXPECT_EQ(kValue1, cached_area_->GetItem(kKey1));
+  EXPECT_EQ(kValue2, cached_area_->GetItem(kKey2));
+
+  // There should be no observed operations on the backend.
+  mock_storage_area_.Flush();
+  EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+  EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+
+  // There should also be no generated storage events.
+  EXPECT_TRUE(source_area_->events.IsEmpty());
+}
+
+TEST_P(CachedStorageAreaTestWithParam, ResetConnectionWithKeyDiff) {
+  const String kKey1 = "key1";
+  const String kValue1 = "value1";
+  const String kKey2 = "key2";
+  const String kCachedValue2 = "cached_value2";
+  const String kPersistedValue2 = "persisted_value2";
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kCachedValue2);
+
+  // Prime the cache.
+  EXPECT_EQ(2u, cached_area_->GetLength());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+
+  // Now modify the backend so it's out of sync with the cache. Namely, the
+  // value of |kKey2| is no different.
+  mock_storage_area_.Clear();
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kPersistedValue2);
+
+  // Resetting the connection should re-initialize the local cache, with
+  // different outcomes for Local and Session Storage.
+  cached_area_->ResetConnection(mock_storage_area_.GetInterfaceRemote());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(2, mock_storage_area_.observed_get_alls());
+  EXPECT_EQ(2u, cached_area_->GetLength());
+  EXPECT_EQ(kValue1, cached_area_->GetItem(kKey1));
+  mock_storage_area_.Flush();
+
+  if (IsSessionStorage()) {
+    // For Session Storage, we expect the local cache to push changes to the
+    // backend, as the local cache is the source of truth.
+    EXPECT_EQ(kCachedValue2, cached_area_->GetItem(kKey2));
+    EXPECT_THAT(mock_storage_area_.observed_puts(),
+                ElementsAre(ObservedPut(kKey2, kCachedValue2, "\n")));
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_TRUE(source_area_->events.IsEmpty());
+  } else {
+    // For Local Storage, we expect no mutations to the backend but instead a
+    // storage event to be broadcast for the diff.
+    EXPECT_EQ(kPersistedValue2, cached_area_->GetItem(kKey2));
+    EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_THAT(source_area_->events,
+                ElementsAre(Event(kKey2, kCachedValue2, kPersistedValue2)));
+  }
+}
+
+TEST_P(CachedStorageAreaTestWithParam, ResetConnectionWithMissingBackendKey) {
+  const String kKey1 = "key1";
+  const String kValue1 = "value1";
+  const String kKey2 = "key2";
+  const String kValue2 = "value2";
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kValue2);
+
+  // Prime the cache.
+  EXPECT_EQ(2u, cached_area_->GetLength());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+
+  // Now modify the backend so it's out of sync with the cache. Namely, |kKey2|
+  // is no longer present in the backend.
+  mock_storage_area_.Clear();
+  InjectKeyValue(kKey1, kValue1);
+
+  // Resetting the connection should re-initialize the local cache, with
+  // different outcomes for Local and Session Storage.
+  cached_area_->ResetConnection(mock_storage_area_.GetInterfaceRemote());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(2, mock_storage_area_.observed_get_alls());
+  EXPECT_EQ(kValue1, cached_area_->GetItem(kKey1));
+  mock_storage_area_.Flush();
+
+  if (IsSessionStorage()) {
+    // For Session Storage, we expect the local cache to push changes to the
+    // backend, as the local cache is the source of truth.
+    EXPECT_EQ(2u, cached_area_->GetLength());
+    EXPECT_EQ(kValue2, cached_area_->GetItem(kKey2));
+    EXPECT_THAT(mock_storage_area_.observed_puts(),
+                ElementsAre(ObservedPut(kKey2, kValue2, "\n")));
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_TRUE(source_area_->events.IsEmpty());
+  } else {
+    // For Local Storage, we expect no mutations to the backend but instead a
+    // storage event to be broadcast for the diff.
+    EXPECT_EQ(1u, cached_area_->GetLength());
+    EXPECT_TRUE(cached_area_->GetItem(kKey2).IsNull());
+    EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_THAT(source_area_->events,
+                ElementsAre(Event(kKey2, kValue2, String())));
+  }
+}
+
+TEST_P(CachedStorageAreaTestWithParam, ResetConnectionWithMissingLocalKey) {
+  const String kKey1 = "key1";
+  const String kValue1 = "value1";
+  const String kKey2 = "key2";
+  const String kValue2 = "value2";
+  InjectKeyValue(kKey1, kValue1);
+
+  // Prime the cache.
+  EXPECT_EQ(1u, cached_area_->GetLength());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+
+  // Now modify the backend so it's out of sync with the cache. Namely, |kKey2|
+  // is present in the backend despite never being cached locally.
+  InjectKeyValue(kKey2, kValue2);
+
+  // Resetting the connection should re-initialize the local cache, with
+  // different outcomes for Local and Session Storage.
+  cached_area_->ResetConnection(mock_storage_area_.GetInterfaceRemote());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(2, mock_storage_area_.observed_get_alls());
+  EXPECT_EQ(kValue1, cached_area_->GetItem(kKey1));
+  mock_storage_area_.Flush();
+
+  if (IsSessionStorage()) {
+    // For Session Storage, we expect the local cache to push changes to the
+    // backend, as the local cache is the source of truth.
+    EXPECT_EQ(1u, cached_area_->GetLength());
+    EXPECT_TRUE(cached_area_->GetItem(kKey2).IsNull());
+    EXPECT_THAT(mock_storage_area_.observed_deletes(),
+                ElementsAre(ObservedDelete(kKey2, "\n")));
+    EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+    EXPECT_TRUE(source_area_->events.IsEmpty());
+  } else {
+    // For Local Storage, we expect no mutations to the backend but instead a
+    // storage event to be broadcast for the diff.
+    EXPECT_EQ(2u, cached_area_->GetLength());
+    EXPECT_EQ(kValue2, cached_area_->GetItem(kKey2));
+    EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_THAT(source_area_->events,
+                ElementsAre(Event(kKey2, String(), kValue2)));
+  }
+}
+
+TEST_P(CachedStorageAreaTestWithParam, ResetConnectionWithComplexDiff) {
+  const String kKey1 = "key1";
+  const String kValue1 = "value1";
+  const String kKey2 = "key2";
+  const String kValue2 = "value2";
+  const String kAltValue2 = "alt_value2";
+  const String kKey3 = "key3";
+  const String kValue3 = "value3";
+  const String kKey4 = "key4";
+  const String kValue4 = "value4";
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kValue2);
+  InjectKeyValue(kKey3, kValue3);
+
+  // Prime the cache.
+  EXPECT_EQ(3u, cached_area_->GetLength());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(1, mock_storage_area_.observed_get_alls());
+
+  // Now modify the backend so it's out of sync with the cache. Namely, the
+  // value of |kKey2| differs, |kKey3| is no longer present in the backend, and
+  // |kKey4| is now present where it wasn't before.
+  mock_storage_area_.Clear();
+  InjectKeyValue(kKey1, kValue1);
+  InjectKeyValue(kKey2, kAltValue2);
+  InjectKeyValue(kKey4, kValue4);
+
+  // Resetting the connection should re-initialize the local cache, with
+  // different outcomes for Local and Session Storage.
+  cached_area_->ResetConnection(mock_storage_area_.GetInterfaceRemote());
+  EXPECT_TRUE(IsCacheLoaded());
+  EXPECT_EQ(2, mock_storage_area_.observed_get_alls());
+  EXPECT_EQ(3u, cached_area_->GetLength());
+  EXPECT_EQ(kValue1, cached_area_->GetItem(kKey1));
+  mock_storage_area_.Flush();
+
+  if (IsSessionStorage()) {
+    // For Session Storage, we expect the local cache to push changes to the
+    // backend, as the local cache is the source of truth.
+    EXPECT_EQ(kValue2, cached_area_->GetItem(kKey2));
+    EXPECT_EQ(kValue3, cached_area_->GetItem(kKey3));
+    EXPECT_TRUE(cached_area_->GetItem(kKey4).IsNull());
+    EXPECT_THAT(mock_storage_area_.observed_puts(),
+                UnorderedElementsAre(ObservedPut(kKey2, kValue2, "\n"),
+                                     ObservedPut(kKey3, kValue3, "\n")));
+    EXPECT_THAT(mock_storage_area_.observed_deletes(),
+                ElementsAre(ObservedDelete(kKey4, "\n")));
+    EXPECT_TRUE(source_area_->events.IsEmpty());
+  } else {
+    // For Local Storage, we expect no mutations to the backend but instead a
+    // storage event to be broadcast for the diff.
+    EXPECT_EQ(kAltValue2, cached_area_->GetItem(kKey2));
+    EXPECT_TRUE(cached_area_->GetItem(kKey3).IsNull());
+    EXPECT_EQ(kValue4, cached_area_->GetItem(kKey4));
+    EXPECT_TRUE(mock_storage_area_.observed_puts().IsEmpty());
+    EXPECT_TRUE(mock_storage_area_.observed_deletes().IsEmpty());
+    EXPECT_THAT(source_area_->events,
+                UnorderedElementsAre(Event(kKey2, kValue2, kAltValue2),
+                                     Event(kKey3, kValue3, String()),
+                                     Event(kKey4, String(), kValue4)));
+  }
 }
 
 TEST_F(CachedStorageAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
@@ -340,7 +595,7 @@ TEST_F(CachedStorageAreaTest, ChangeEvents) {
 
   observer->KeyChanged(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
                        base::nullopt, kRemoteSource);
-  observer->AllDeleted(/*was_nonempty*/ true, kRemoteSource);
+  observer->AllDeleted(/*was_nonempty=*/true, kRemoteSource);
 
   // Source area should have ignored all but the last two events.
   ASSERT_EQ(2u, source_area_->events.size());

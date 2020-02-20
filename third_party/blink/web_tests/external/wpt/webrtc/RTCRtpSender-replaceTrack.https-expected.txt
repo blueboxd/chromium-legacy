@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Calling replaceTrack on closed connection should reject with InvalidStateError
-FAIL Calling replaceTrack with track of different kind should reject with TypeError promise_reject_js: function "function() { throw e }" threw object "InvalidModificationError" ("InvalidModificationError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
+FAIL Calling replaceTrack with track of different kind should reject with TypeError promise_rejects_js: function "function() { throw e }" threw object "InvalidModificationError" ("InvalidModificationError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 FAIL Calling replaceTrack on stopped sender should reject with InvalidStateError promise_test: Unhandled rejection with value: object "TypeError: transceiver.stop is not a function"
 PASS Calling replaceTrack on sender with null track and not set to session description should resolve with sender.track set to given track
 PASS Calling replaceTrack on sender not set to session description should resolve with sender.track set to given track

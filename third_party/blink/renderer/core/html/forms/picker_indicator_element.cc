@@ -73,12 +73,12 @@ void PickerIndicatorElement::DefaultEventHandler(Event& event) {
       picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return;
 
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
   if (event.type() == event_type_names::kClick) {
     OpenPopup();
     event.SetDefaultHandled();
-  } else if (event.type() == event_type_names::kKeypress &&
-             event.IsKeyboardEvent()) {
-    int char_code = ToKeyboardEvent(event).charCode();
+  } else if (event.type() == event_type_names::kKeypress && keyboard_event) {
+    int char_code = keyboard_event->charCode();
     if (char_code == ' ' || char_code == '\r') {
       OpenPopup();
       event.SetDefaultHandled();

@@ -98,21 +98,10 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   scoped_refptr<const SecurityOrigin> origin(origin_ptr);
 
   controller_->ClearAreasIfNeeded();
-  if (IsSessionStorage()) {
-    mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
-    controller_->storage_partition_service()->BindSessionStorageArea(
-        origin, namespace_id_, area_remote.InitWithNewPipeAndPassReceiver());
-    result = base::MakeRefCounted<CachedStorageArea>(
-        CachedStorageArea::AreaType::kSessionStorage, origin,
-        std::move(area_remote), controller_->IPCTaskRunner(), this);
-  } else {
-    mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
-    controller_->storage_partition_service()->OpenLocalStorage(
-        origin, area_remote.InitWithNewPipeAndPassReceiver());
-    result = base::MakeRefCounted<CachedStorageArea>(
-        CachedStorageArea::AreaType::kLocalStorage, origin,
-        std::move(area_remote), controller_->IPCTaskRunner(), this);
-  }
+  result = base::MakeRefCounted<CachedStorageArea>(
+      IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
+                         : CachedStorageArea::AreaType::kLocalStorage,
+      origin, controller_->IPCTaskRunner(), this);
   cached_areas_.insert(std::move(origin), result);
   return result;
 }
@@ -199,11 +188,28 @@ void StorageNamespace::DidDispatchStorageEvent(const SecurityOrigin* origin,
   }
 }
 
+void StorageNamespace::BindStorageArea(
+    const scoped_refptr<const SecurityOrigin>& origin,
+    mojo::PendingReceiver<mojom::blink::StorageArea> receiver) {
+  if (IsSessionStorage()) {
+    controller_->dom_storage()->BindSessionStorageArea(origin, namespace_id_,
+                                                       std::move(receiver));
+  } else {
+    controller_->dom_storage()->OpenLocalStorage(origin, std::move(receiver));
+  }
+}
+
+void StorageNamespace::ResetStorageAreaAndNamespaceConnections() {
+  for (const auto& area : cached_areas_)
+    area.value->ResetConnection();
+  namespace_.reset();
+}
+
 void StorageNamespace::EnsureConnected() {
   DCHECK(IsSessionStorage());
   if (namespace_)
     return;
-  controller_->storage_partition_service()->BindSessionStorageNamespace(
+  controller_->dom_storage()->BindSessionStorageNamespace(
       namespace_id_,
       namespace_.BindNewPipeAndPassReceiver(controller_->IPCTaskRunner()));
 }

@@ -10443,6 +10443,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON" desc="Text shown in the cancel button of a tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
       Cancel upload
     </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE" desc="Message shown in the tab modal dialog when the file to be scanned is too large according to the enterprise policies">
+      Your organization can scan files up to 50 MB. Try uploading a smaller file.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE" desc="Message shown in the tab modal dialog when the uploaded file to be scanned is encrypted and when this is not allowed by enterprise policies">
+      This upload is encrypted and violates your organization's security policies.
+    </message>
 
 
     <!-- Deep scanning open now dialog strings -->

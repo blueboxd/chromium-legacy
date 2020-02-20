@@ -130,6 +130,14 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
     } @catch (NSException* exception) {
       NOTREACHED() << "Error setting value for longPressActionsEnabled";
     }
+
+    // WKWebView's "fradulentWebsiteWarning" is an iOS 13+ feature that is
+    // conceptually similar to Safe Browsing but uses a non-Google provider and
+    // only works for devices in certain locales. Disable this feature when
+    // Safe Browsing is available.
+    if (base::FeatureList::IsEnabled(web::features::kSafeBrowsingAvailable)) {
+      [[configuration_ preferences] setFraudulentWebsiteWarningEnabled:NO];
+    }
   }
 
   [configuration_ setAllowsInlineMediaPlayback:YES];

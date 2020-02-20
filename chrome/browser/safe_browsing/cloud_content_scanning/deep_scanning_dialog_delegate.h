@@ -119,6 +119,21 @@ class DeepScanningDialogDelegate {
     uint64_t size = 0;
   };
 
+  // Enum to identify special cases when deep scanning doesn't happen either
+  // because the file is too large or encrypted. This is used to show
+  // appropriate messages in the upload UI dialog to inform the user of why
+  // their file(s) we not scanned and blocked.
+  enum class DeepScanUploadStatus {
+    // The data was uploaded and scanned.
+    NORMAL,
+
+    // The file(s) were not uploaded since they were too large.
+    LARGE_FILES,
+
+    // The file(s) were not uploaded since they were encrypted.
+    ENCRYPTED_FILES,
+  };
+
   // Callback used with ShowForWebContents() that informs caller of verdict
   // of deep scans.
   using CompletionCallback =
@@ -280,6 +295,10 @@ class DeepScanningDialogDelegate {
 
   // Access point to use to record UMA metrics.
   DeepScanAccessPoint access_point_;
+
+  // Upload status indicating if one of the files was not scanned because of
+  // policies.
+  DeepScanUploadStatus upload_status_ = DeepScanUploadStatus::NORMAL;
 
   base::TimeTicks upload_start_time_;
 

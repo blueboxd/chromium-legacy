@@ -414,7 +414,7 @@ CheckedContiguousIterator<Value> Value::Insert(
 
 bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
   CHECK(is_list());
-  const auto offset = iter - make_span(list_).begin();
+  const auto offset = iter - ListView(list_).begin();
   auto list_iter = list_.begin() + offset;
   if (list_iter == list_.end())
     return false;
@@ -1752,7 +1752,10 @@ ListValue::iterator ListValue::Erase(iterator iter,
   if (out_value)
     *out_value = std::make_unique<Value>(std::move(*iter));
 
-  return list_.erase(iter);
+  auto list_iter = list_.begin() + (iter - GetList().begin());
+  CHECK(list_iter != list_.end());
+  list_iter = list_.erase(list_iter);
+  return GetList().begin() + (list_iter - list_.begin());
 }
 
 void ListValue::Append(std::unique_ptr<Value> in_value) {
@@ -1810,7 +1813,7 @@ bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
 }
 
 ListValue::const_iterator ListValue::Find(const Value& value) const {
-  return std::find(list_.begin(), list_.end(), value);
+  return std::find(GetList().begin(), GetList().end(), value);
 }
 
 void ListValue::Swap(ListValue* other) {

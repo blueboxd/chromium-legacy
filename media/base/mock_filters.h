@@ -489,7 +489,7 @@ class MockDecryptor : public Decryptor {
   ~MockDecryptor() override;
 
   MOCK_METHOD2(RegisterNewKeyCB,
-               void(StreamType stream_type, const NewKeyCB& new_key_cb));
+               void(StreamType stream_type, NewKeyCB new_key_cb));
   MOCK_METHOD3(Decrypt,
                void(StreamType stream_type,
                     scoped_refptr<DecoderBuffer> encrypted,

@@ -19,26 +19,25 @@
 namespace syncer {
 
 class SingleObjectInvalidationSet;
-class ObjectIdInvalidationMap;
+class TopicInvalidationMap;
 class AckHandle;
 class UnackedInvalidationSet;
 
-using UnackedInvalidationsMap =
-    std::map<invalidation::ObjectId, UnackedInvalidationSet, ObjectIdLessThan>;
+using UnackedInvalidationsMap = std::map<Topic, UnackedInvalidationSet>;
 
 // Manages the set of invalidations that are awaiting local acknowledgement for
-// a particular ObjectId.  This set of invalidations will be persisted across
+// a particular Topic.  This set of invalidations will be persisted across
 // restarts, though this class is not directly responsible for that.
 class INVALIDATION_EXPORT UnackedInvalidationSet {
  public:
   static const size_t kMaxBufferedInvalidations;
 
-  explicit UnackedInvalidationSet(invalidation::ObjectId id);
+  explicit UnackedInvalidationSet(const Topic& topic);
   UnackedInvalidationSet(const UnackedInvalidationSet& other);
   ~UnackedInvalidationSet();
 
-  // Returns the ObjectID of the invalidations this class is tracking.
-  const invalidation::ObjectId& object_id() const;
+  // Returns the Topic of the invalidations this class is tracking.
+  const Topic& topic() const;
 
   // Adds a new invalidation to the set awaiting acknowledgement.
   void Add(const Invalidation& invalidation);
@@ -47,7 +46,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   void AddSet(const SingleObjectInvalidationSet& invalidations);
 
   // Exports the set of invalidations awaiting acknowledgement as an
-  // ObjectIdInvalidationMap.  Each of these invalidations will be associated
+  // TopicInvalidationMap. Each of these invalidations will be associated
   // with the given |ack_handler|.
   //
   // The contents of the UnackedInvalidationSet are not directly modified by
@@ -56,7 +55,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   void ExportInvalidations(
       base::WeakPtr<AckHandler> ack_handler,
       scoped_refptr<base::SingleThreadTaskRunner> ack_handler_task_runner,
-      ObjectIdInvalidationMap* out) const;
+      TopicInvalidationMap* out) const;
 
   // Removes all stored invalidations from this object.
   void Clear();
@@ -100,7 +99,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   void Truncate(size_t max_size);
 
   bool registered_;
-  invalidation::ObjectId object_id_;
+  const Topic topic_;
   InvalidationsSet invalidations_;
 };
 

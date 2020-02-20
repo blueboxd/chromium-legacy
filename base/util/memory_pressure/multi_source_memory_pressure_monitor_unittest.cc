@@ -14,7 +14,9 @@
 namespace util {
 
 TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
+
   MultiSourceMemoryPressureMonitor monitor;
   monitor.Start();
   auto* aggregator = monitor.aggregator_for_testing();
@@ -35,8 +37,10 @@ TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
 }
 
 TEST(MultiSourceMemoryPressureMonitorTest, Histograms) {
-  base::test::TaskEnvironment task_environment(
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
   MultiSourceMemoryPressureMonitor monitor;
   base::HistogramTester histogram_tester;
   monitor.Start();

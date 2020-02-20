@@ -159,16 +159,11 @@
   self.historyClearBrowsingDataCoordinator =
       [[HistoryClearBrowsingDataCoordinator alloc]
           initWithBaseViewController:self.historyNavigationController
-                        browserState:self.browser->GetBrowserState()];
+                             browser:self.browser];
   self.historyClearBrowsingDataCoordinator.localDispatcher = self;
   self.historyClearBrowsingDataCoordinator.presentationDelegate =
       self.presentationDelegate;
   self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
-  // TODO(crbug.com/1048407): Remove dispatcher as the property of
-  // HistoryClearBrowsingDataCoordinator.
-  self.historyClearBrowsingDataCoordinator.dispatcher =
-      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
-          self.browser->GetCommandDispatcher());
   [self.historyClearBrowsingDataCoordinator start];
 }
 

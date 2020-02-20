@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_client.h"
@@ -31,16 +30,13 @@ PasswordModelTypeController::PasswordModelTypeController(
       pref_service_(pref_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
-      state_changed_callback_(state_changed_callback) {
-  // TODO(crbug.com/1024332): Use PasswordAccountStorageOptInWatcher instead of
-  // observing the pref directly.
-  pref_registrar_.Init(pref_service_);
-  pref_registrar_.Add(
-      prefs::kAccountStoragePerAccountSettings,
-      base::BindRepeating(
-          &PasswordModelTypeController::OnOptInStateMaybeChanged,
-          base::Unretained(this)));
-
+      state_changed_callback_(state_changed_callback),
+      account_storage_opt_in_watcher_(
+          identity_manager_,
+          pref_service_,
+          base::BindRepeating(
+              &PasswordModelTypeController::OnOptInStateMaybeChanged,
+              base::Unretained(this))) {
   identity_manager_->AddObserver(this);
 }
 

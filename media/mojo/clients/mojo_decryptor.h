@@ -34,8 +34,7 @@ class MojoDecryptor : public Decryptor {
   ~MojoDecryptor() final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) final;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                const DecryptCB& decrypt_cb) final;

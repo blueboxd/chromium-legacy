@@ -516,6 +516,12 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
   result_.paths_results[index] = file_complies;
 
   ++file_result_count_;
+
+  if (!file_complies && result == BinaryUploadService::Result::FILE_TOO_LARGE)
+    upload_status_ = DeepScanUploadStatus::LARGE_FILES;
+  if (!file_complies && result == BinaryUploadService::Result::FILE_ENCRYPTED)
+    upload_status_ = DeepScanUploadStatus::ENCRYPTED_FILES;
+
   MaybeCompleteScanRequest();
 }
 
@@ -688,7 +694,7 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
                  std::all_of(result_.paths_results.begin(),
                              result_.paths_results.end(), is_true);
 
-  dialog_->ShowResult(success);
+  dialog_->ShowResult(success, upload_status_);
   return true;
 }
 

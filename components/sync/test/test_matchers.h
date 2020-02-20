@@ -74,6 +74,11 @@ MATCHER(HasInitialSyncDone, "") {
   return arg.initial_sync_done();
 }
 
+// Matcher for sync_pb::ModelTypeState: verifies that initial sync is not done.
+MATCHER(HasNotInitialSyncDone, "") {
+  return !arg.initial_sync_done();
+}
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_TEST_TEST_MATCHERS_H_

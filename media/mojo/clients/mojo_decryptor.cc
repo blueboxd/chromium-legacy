@@ -91,14 +91,14 @@ MojoDecryptor::~MojoDecryptor() {
 }
 
 void MojoDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                     const NewKeyCB& key_added_cb) {
+                                     NewKeyCB key_added_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   switch (stream_type) {
     case kAudio:
-      new_audio_key_cb_ = key_added_cb;
+      new_audio_key_cb_ = std::move(key_added_cb);
       break;
     case kVideo:
-      new_video_key_cb_ = key_added_cb;
+      new_video_key_cb_ = std::move(key_added_cb);
       break;
     default:
       NOTREACHED();

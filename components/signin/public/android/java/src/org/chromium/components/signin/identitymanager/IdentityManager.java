@@ -141,8 +141,7 @@ public class IdentityManager {
      * is available.
      */
     public @Nullable CoreAccountId getPrimaryAccountId() {
-        CoreAccountInfo primaryAccountInfo = getPrimaryAccountInfo();
-        return primaryAccountInfo == null ? null : primaryAccountInfo.getId();
+        return CoreAccountInfo.getIdFrom(getPrimaryAccountInfo());
     }
 
     /**

@@ -3258,26 +3258,68 @@ void RenderFrameHostImpl::UpdateFaviconURL(
 }
 
 void RenderFrameHostImpl::DownloadURL(
-    blink::mojom::DownloadURLParamsPtr params) {
+    blink::mojom::DownloadURLParamsPtr blink_parameters) {
   mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
-  if (!VerifyDownloadUrlParams(GetSiteInstance(), params.get(),
+  if (!VerifyDownloadUrlParams(GetSiteInstance(), blink_parameters.get(),
                                &blob_url_token))
     return;
 
   mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
-      std::move(params->data_url_blob), blink::mojom::Blob::Version_);
+      std::move(blink_parameters->data_url_blob), blink::mojom::Blob::Version_);
 
-  // TODO(https://crbug.com/1041083): Merge DownloadURLInternal() to this
-  // method here. It will also allow us to eliminate one more use of
-  // content::Referrer in favor of blink::mojom::Referrer.
-  Referrer referrer = params->referrer ? Referrer(params->referrer->url,
-                                                  params->referrer->policy)
-                                       : Referrer();
-  DownloadURLInternal(params->url, referrer,
-                      params->initiator_origin.value_or(url::Origin()),
-                      params->suggested_name.value_or(base::string16()), false,
-                      params->cross_origin_redirects, std::move(blob_url_token),
-                      std::move(blob_data_remote));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
+        semantics {
+          sender: "Download from Renderer"
+          description:
+            "The frame has either navigated to a URL that was determined to be "
+            "a download via one of the renderer's classification mechanisms, "
+            "or WebView has requested a <canvas> or <img> element at a "
+            "specific location be to downloaded."
+          trigger:
+            "The user navigated to a destination that was categorized as a "
+            "download, or WebView triggered saving a <canvas> or <img> tag."
+          data: "Only the URL we are attempting to download."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting: "This feature cannot be disabled by settings."
+          chrome_policy {
+            DownloadRestrictions {
+              DownloadRestrictions: 3
+            }
+          }
+        })");
+  std::unique_ptr<download::DownloadUrlParameters> parameters(
+      new download::DownloadUrlParameters(
+          blink_parameters->url, GetProcess()->GetID(),
+          GetRenderViewHost()->GetRoutingID(), GetRoutingID(),
+          traffic_annotation, network_isolation_key_));
+  parameters->set_content_initiated(true);
+  parameters->set_suggested_name(
+      blink_parameters->suggested_name.value_or(base::string16()));
+  parameters->set_prompt(false);
+  parameters->set_cross_origin_redirects(
+      blink_parameters->cross_origin_redirects);
+  parameters->set_referrer(
+      blink_parameters->referrer ? blink_parameters->referrer->url : GURL());
+  parameters->set_referrer_policy(Referrer::ReferrerPolicyForUrlRequest(
+      blink_parameters->referrer ? blink_parameters->referrer->policy
+                                 : network::mojom::ReferrerPolicy::kDefault));
+  parameters->set_initiator(
+      blink_parameters->initiator_origin.value_or(url::Origin()));
+  parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
+
+  if (blob_data_remote) {
+    DataURLBlobReader::ReadDataURLFromBlob(
+        std::move(blob_data_remote),
+        base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
+    return;
+  }
+
+  StartDownload(std::move(parameters), std::move(blob_url_token));
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
@@ -4348,64 +4390,6 @@ void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {
                  frame_tree_node()->render_manager()->GetProxyToParent()) {
     proxy->GetAssociatedRemoteFrame()->RenderFallbackContent();
   }
-}
-
-void RenderFrameHostImpl::DownloadURLInternal(
-    const GURL& url,
-    const Referrer& referrer,
-    const url::Origin& initiator,
-    const base::string16& suggested_name,
-    const bool use_prompt,
-    const network::mojom::RedirectMode cross_origin_redirects,
-    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-    mojo::PendingRemote<blink::mojom::Blob> data_url_blob) {
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
-        semantics {
-          sender: "Download from Renderer"
-          description:
-            "The frame has either navigated to a URL that was determined to be "
-            "a download via one of the renderer's classification mechanisms, "
-            "or WebView has requested a <canvas> or <img> element at a "
-            "specific location be to downloaded."
-          trigger:
-            "The user navigated to a destination that was categorized as a "
-            "download, or WebView triggered saving a <canvas> or <img> tag."
-          data: "Only the URL we are attempting to download."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting: "This feature cannot be disabled by settings."
-          chrome_policy {
-            DownloadRestrictions {
-              DownloadRestrictions: 3
-            }
-          }
-        })");
-  std::unique_ptr<download::DownloadUrlParameters> parameters(
-      new download::DownloadUrlParameters(
-          url, GetProcess()->GetID(), GetRenderViewHost()->GetRoutingID(),
-          GetRoutingID(), traffic_annotation, network_isolation_key_));
-  parameters->set_content_initiated(true);
-  parameters->set_suggested_name(suggested_name);
-  parameters->set_prompt(use_prompt);
-  parameters->set_cross_origin_redirects(cross_origin_redirects);
-  parameters->set_referrer(referrer.url);
-  parameters->set_referrer_policy(
-      Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
-  parameters->set_initiator(initiator);
-  parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
-
-  if (data_url_blob) {
-    DataURLBlobReader::ReadDataURLFromBlob(
-        std::move(data_url_blob),
-        base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
-    return;
-  }
-
-  StartDownload(std::move(parameters), std::move(blob_url_token));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

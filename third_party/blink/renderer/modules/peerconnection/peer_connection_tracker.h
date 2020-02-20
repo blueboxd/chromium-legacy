@@ -29,8 +29,8 @@ class RTCAnswerOptionsPlatform;
 class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
 class RTCPeerConnectionHandler;
+class UserMediaRequest;
 class WebLocalFrame;
-class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
@@ -212,8 +212,7 @@ class MODULES_EXPORT PeerConnectionTracker
   virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when getUserMedia is called.
-  virtual void TrackGetUserMedia(
-      const blink::WebUserMediaRequest& user_media_request);
+  virtual void TrackGetUserMedia(UserMediaRequest* user_media_request);
 
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,

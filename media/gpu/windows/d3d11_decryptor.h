@@ -23,8 +23,7 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
   ~D3D11Decryptor() final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) final;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                const DecryptCB& decrypt_cb) final;

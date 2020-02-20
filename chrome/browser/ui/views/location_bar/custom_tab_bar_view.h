@@ -123,6 +123,8 @@ class CustomTabBarView : public views::AccessiblePaneView,
   // Populates child elements with page details from the current WebContents.
   void UpdateContents();
 
+  bool ShouldShowTitle() const;
+
   SkColor title_bar_color_;
   SkColor background_color_;
 

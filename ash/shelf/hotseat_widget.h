@@ -17,10 +17,6 @@ namespace aura {
 class ScopedWindowTargeter;
 }
 
-namespace ui {
-class AnimationMetricsReporter;
-}
-
 namespace ash {
 class FocusCycler;
 class ScrollableShelfView;
@@ -156,11 +152,6 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // The contents view of this widget. Contains |shelf_view_| and the background
   // of the hotseat.
   DelegateView* delegate_view_ = nullptr;
-
-  // Records animation smoothness metrics for movement animations of
-  // HotseatWidget.
-  std::unique_ptr<ui::AnimationMetricsReporter>
-      hotseat_animation_metrics_reporter_;
 
   // Whether the widget is currently extended because the user has manually
   // dragged it. This will be reset with any visible shelf configuration change.

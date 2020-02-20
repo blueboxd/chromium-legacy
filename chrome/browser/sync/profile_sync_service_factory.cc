@@ -248,8 +248,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
         invalidation::ProfileInvalidationProviderFactory::GetForProfile(
             profile);
     if (fcm_invalidation_provider) {
-      init_params.invalidations_identity_providers.push_back(
-          fcm_invalidation_provider->GetIdentityProvider());
+      init_params.invalidations_identity_provider =
+          fcm_invalidation_provider->GetIdentityProvider();
     }
 
     // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync

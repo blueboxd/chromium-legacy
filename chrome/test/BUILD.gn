@@ -15,6 +15,7 @@ import("//build/util/version.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/browser/page_load_metrics/integration_tests/jsdeps.gni")
+import("//chrome/browser/page_load_metrics/integration_tests/sources.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
@@ -1055,7 +1056,6 @@ if (!is_android) {
       "../browser/optimization_guide/hints_fetcher_browsertest.cc",
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
       "../browser/optimization_guide/prediction/prediction_manager_browsertest.cc",
-      "../browser/page_load_metrics/integration_tests/metric_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/amp_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/data_saver_site_breakdown_metrics_observer_browsertest.cc",
@@ -2847,6 +2847,8 @@ if (!is_android) {
       sources +=
           [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
     }
+
+    sources += metric_integration_sources
   }
 }
 

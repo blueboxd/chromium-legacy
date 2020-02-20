@@ -33,8 +33,7 @@ class FuchsiaDecryptor : public Decryptor {
   ~FuchsiaDecryptor() override;
 
   // media::Decryptor implementation:
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) override;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                const DecryptCB& decrypt_cb) override;

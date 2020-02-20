@@ -12,7 +12,6 @@ blink_modules_sources("exported") {
     "web_dom_media_stream_track.cc",
     "web_embedded_worker_impl.cc",
     "web_embedded_worker_impl.h",
-    "web_user_media_request.cc",
   ]
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]

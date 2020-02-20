@@ -192,7 +192,7 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
   }
 
   decryptor_->RegisterNewKeyCB(
-      Decryptor::kVideo, BindToCurrentLoop(base::Bind(
+      Decryptor::kVideo, BindToCurrentLoop(base::BindRepeating(
                              &DecryptingVideoDecoder::OnKeyAdded, weak_this_)));
 
   // Success!

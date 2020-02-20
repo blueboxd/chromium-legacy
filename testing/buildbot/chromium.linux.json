@@ -1751,6 +1751,26 @@
             }
           ]
         },
+        "test": "base_util_unittests",
+        "test_target": "//base/util:base_util_unittests"
+      },
+      {
+        "args": [
+          "--device=aemu"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
         "test": "blink_common_unittests",
         "test_target": "//third_party/blink/common:blink_common_unittests"
       },

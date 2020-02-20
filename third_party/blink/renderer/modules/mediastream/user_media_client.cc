@@ -17,7 +17,6 @@
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
@@ -33,13 +32,13 @@ static int g_next_request_id = 0;
 
 // The histogram counts the number of calls to the JS API
 // getUserMedia or getDisplayMedia().
-void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
+void UpdateAPICount(UserMediaRequest::MediaType media_type) {
   RTCAPIName api_name = RTCAPIName::kGetUserMedia;
   switch (media_type) {
-    case blink::WebUserMediaRequest::MediaType::kUserMedia:
+    case UserMediaRequest::MediaType::kUserMedia:
       api_name = RTCAPIName::kGetUserMedia;
       break;
-    case blink::WebUserMediaRequest::MediaType::kDisplayMedia:
+    case UserMediaRequest::MediaType::kDisplayMedia:
       api_name = RTCAPIName::kGetDisplayMedia;
       break;
   }
@@ -129,21 +128,18 @@ UserMediaClient::~UserMediaClient() {
   DCHECK(!is_processing_request_);
 }
 
-void UserMediaClient::RequestUserMedia(
-    const blink::WebUserMediaRequest& web_request) {
+void UserMediaClient::RequestUserMedia(UserMediaRequest* web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!web_request.IsNull());
-  DCHECK(web_request.Audio() || web_request.Video());
+  DCHECK(web_request);
+  DCHECK(web_request->Audio() || web_request->Video());
   // ownerDocument may be null if we are in a test.
   // In that case, it's OK to not check frame().
 
-  DCHECK(web_request.OwnerDocument().IsNull() ||
-         WebFrame::FromFrame(frame_) ==
-             static_cast<blink::WebFrame*>(
-                 web_request.OwnerDocument().GetFrame()));
+  DCHECK(!web_request->OwnerDocument() ||
+         frame_ == web_request->OwnerDocument()->GetFrame());
 
   // Save histogram data so we can see how much GetUserMedia is used.
-  UpdateAPICount(web_request.MediaRequestType());
+  UpdateAPICount(web_request->MediaRequestType());
 
   // TODO(crbug.com/787254): Communicate directly with the
   // PeerConnectionTrackerHost mojo object once it is available from Blink.
@@ -153,8 +149,8 @@ void UserMediaClient::RequestUserMedia(
   blink::WebRtcLogMessage(base::StringPrintf(
       "UMCI::RequestUserMedia. request_id=%d, audio constraints=%s, "
       "video constraints=%s",
-      request_id, web_request.AudioConstraints().ToString().Utf8().c_str(),
-      web_request.VideoConstraints().ToString().Utf8().c_str()));
+      request_id, web_request->AudioConstraints().ToString().Utf8().c_str(),
+      web_request->VideoConstraints().ToString().Utf8().c_str()));
 
   // The value returned by HasTransientUserActivation() is used by the browser
   // to make decisions about the permissions UI. Its value can be lost while
@@ -163,10 +159,11 @@ void UserMediaClient::RequestUserMedia(
   // TODO(mustaq): The description above seems specific to pre-UAv2 stack-based
   // tokens.  Perhaps we don't need to preserve this bit?
   bool has_transient_user_activation = false;
-  if (!web_request.OwnerDocument().IsNull() &&
-      web_request.OwnerDocument().GetFrame()) {
-    has_transient_user_activation =
-        web_request.OwnerDocument().GetFrame()->HasTransientUserActivation();
+  if (web_request->OwnerDocument() &&
+      web_request->OwnerDocument()->GetFrame()) {
+    has_transient_user_activation = web_request->OwnerDocument()
+                                        ->GetFrame()
+                                        ->Frame::HasTransientUserActivation();
   }
   std::unique_ptr<UserMediaRequestInfo> request_info =
       std::make_unique<UserMediaRequestInfo>(request_id, web_request,
@@ -240,8 +237,7 @@ void UserMediaClient::CurrentRequestCompleted() {
   }
 }
 
-void UserMediaClient::CancelUserMediaRequest(
-    const blink::WebUserMediaRequest& web_request) {
+void UserMediaClient::CancelUserMediaRequest(UserMediaRequest* web_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
     // TODO(guidou): Remove this conditional logging. https://crbug.com/764293

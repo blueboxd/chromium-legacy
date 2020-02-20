@@ -46,7 +46,7 @@ class MEDIA_EXPORT Decryptor {
 
   // Indicates that a new key has been added to the ContentDecryptionModule
   // object associated with the Decryptor.
-  typedef base::Callback<void()> NewKeyCB;
+  using NewKeyCB = base::RepeatingClosure;
 
   // Registers a NewKeyCB which should be called when a new key is added to the
   // decryptor. Only one NewKeyCB can be registered for one |stream_type|.
@@ -55,7 +55,7 @@ class MEDIA_EXPORT Decryptor {
   // registering a null callback cancels the originally registered callback.
   // TODO(crbug.com/821288): Replace this with CdmContext::RegisterEventCB().
   virtual void RegisterNewKeyCB(StreamType stream_type,
-                                const NewKeyCB& key_added_cb) = 0;
+                                NewKeyCB key_added_cb) = 0;
 
   // Indicates completion of a decryption operation.
   //

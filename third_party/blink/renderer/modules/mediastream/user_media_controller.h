@@ -75,7 +75,7 @@ inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
 
 inline void UserMediaController::CancelUserMediaRequest(
     UserMediaRequest* request) {
-  Client()->CancelUserMediaRequest(WebUserMediaRequest(request));
+  Client()->CancelUserMediaRequest(request);
 }
 
 inline void UserMediaController::ApplyConstraints(

@@ -109,6 +109,7 @@ source_set("clear_browsing_data") {
   deps = [
     ":history_ui",
     "//base",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/history/public",

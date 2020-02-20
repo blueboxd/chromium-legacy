@@ -585,13 +585,12 @@ gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
     return views::View::CalculatePreferredSize();
   }
 
-  int height = views::View::CalculatePreferredSize().height();
   int width = kMinBubbleWidth;
   if (site_settings_view_) {
     width = std::max(width, permissions_view_->GetPreferredSize().width());
+    width = std::min(width, kMaxBubbleWidth);
   }
-  width = std::min(width, kMaxBubbleWidth);
-  return gfx::Size(width, height);
+  return gfx::Size(width, views::View::GetHeightForWidth(width));
 }
 
 void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {

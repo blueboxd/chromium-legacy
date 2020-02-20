@@ -62,6 +62,7 @@ public class WebApkIntentDataProviderFactory {
     private static final String SHORTCUT_NAME_ATTRIBUTE = "shortcutLongLabel";
     private static final String SHORTCUT_SHORT_NAME_ATTRIBUTE = "shortcutShortLabel";
     private static final String SHORTCUT_ICON_HASH_ATTRIBUTE = "iconHash";
+    private static final String SHORTCUT_ICON_URL_ATTRIBUTE = "iconUrl";
     private static final String SHORTCUT_INTENT_LAUNCH_URL_ATTRIBUTE = "data";
 
     private static final String TAG = "WebApkInfo";
@@ -166,6 +167,7 @@ public class WebApkIntentDataProviderFactory {
                             SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_NAME_ATTRIBUTE, 0);
                     int shortNameResId = parser.getAttributeResourceValue(
                             SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_SHORT_NAME_ATTRIBUTE, 0);
+                    String iconUrl = parser.getAttributeValue(null, SHORTCUT_ICON_URL_ATTRIBUTE);
                     String iconHash = parser.getAttributeValue(null, SHORTCUT_ICON_HASH_ATTRIBUTE);
 
                     eventType = parser.next();
@@ -178,11 +180,9 @@ public class WebApkIntentDataProviderFactory {
                     String launchUrl = parser.getAttributeValue(
                             SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_INTENT_LAUNCH_URL_ATTRIBUTE);
 
-                    // The |iconUrl| is not required, only a change in the icon hash will trigger an
-                    // update.
                     shortcuts.add(new ShortcutItem(nameResId != 0 ? res.getString(nameResId) : "",
                             shortNameResId != 0 ? res.getString(shortNameResId) : "", launchUrl,
-                            "" /* iconUrl */, iconHash));
+                            iconUrl, iconHash));
                 }
                 eventType = parser.next();
             }

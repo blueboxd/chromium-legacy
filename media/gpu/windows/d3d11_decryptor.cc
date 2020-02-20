@@ -141,7 +141,7 @@ D3D11Decryptor::D3D11Decryptor(CdmProxyContext* cdm_proxy_context)
 D3D11Decryptor::~D3D11Decryptor() {}
 
 void D3D11Decryptor::RegisterNewKeyCB(StreamType stream_type,
-                                      const NewKeyCB& new_key_cb) {
+                                      NewKeyCB new_key_cb) {
   // TODO(crbug.com/821288): Use RegisterNewKeyCB() on CdmContext, and remove
   // RegisterNewKeyCB from Decryptor interface.
   NOTREACHED();

@@ -18,12 +18,7 @@ class SafetyCheckHandlerObserver {
   virtual ~SafetyCheckHandlerObserver() = default;
 
   virtual void OnUpdateCheckStart() = 0;
-  virtual void OnUpdateCheckResult(VersionUpdater::Status status,
-                                   int progress,
-                                   bool rollback,
-                                   const std::string& version,
-                                   int64_t update_size,
-                                   const base::string16& message) = 0;
+  virtual void OnUpdateCheckResult(SafetyCheckHandler::UpdateStatus status) = 0;
   virtual void OnSafeBrowsingCheckStart() = 0;
   virtual void OnSafeBrowsingCheckResult(
       SafetyCheckHandler::SafeBrowsingStatus status) = 0;

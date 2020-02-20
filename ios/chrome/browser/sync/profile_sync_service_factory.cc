@@ -178,8 +178,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state);
   if (fcm_invalidation_provider) {
-    init_params.invalidations_identity_providers.push_back(
-        fcm_invalidation_provider->GetIdentityProvider());
+    init_params.invalidations_identity_provider =
+        fcm_invalidation_provider->GetIdentityProvider();
   }
 
   auto pss =

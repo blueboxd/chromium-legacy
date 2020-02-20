@@ -10,8 +10,6 @@
 
 enum class UrlLoadStrategy;
 
-@protocol ApplicationCommands;
-@protocol BrowsingDataCommands;
 @protocol HistoryLocalCommands;
 @protocol HistoryPresentationDelegate;
 @protocol HistoryClearBrowsingDataLocalCommands;
@@ -21,12 +19,16 @@ enum class UrlLoadStrategy;
 @interface HistoryClearBrowsingDataCoordinator
     : ChromeCoordinator<ClearBrowsingDataLocalCommands>
 
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // Delegate for this coordinator.
 @property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
-
-// Dispatcher for view controller.
-@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
-    dispatcher;
 
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;

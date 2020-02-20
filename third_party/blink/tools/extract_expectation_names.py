@@ -7,11 +7,7 @@
 # Given an expectations file (e.g. web_tests/WebGPUExpectations), extracts only
 # the test name from each expectation (e.g. wpt_internal/webgpu/cts.html?...).
 
-from blinkpy.common import path_finder
-
-path_finder.add_typ_dir_to_sys_path()
-
-from typ.expectations_parser import TaggedTestListParser
+from blinkpy.web_tests.models.test_expectations import TestExpectationLine
 import sys
 
 
@@ -23,7 +19,9 @@ class StubPort(object):
 filename = sys.argv[1]
 with open(filename) as f:
     port = StubPort()
-    parser = TaggedTestListParser(f.read())
-    for test_expectation in parser.expectations:
-        if test_expectation.test:
-            print test_expectation.test
+    line_number = 1
+    for line in f:
+        test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number, port)
+        if test_expectation.name:
+            print test_expectation.name
+        line_number += 1

@@ -103,15 +103,14 @@ void FCMInvalidationListener::DispatchInvalidations(
 
 void FCMInvalidationListener::SaveInvalidations(
     const TopicInvalidationMap& to_save) {
-  ObjectIdSet objects_to_save = ConvertTopicsToIds(to_save.GetTopics());
-  for (const invalidation::ObjectId& id : objects_to_save) {
-    auto lookup = unacked_invalidations_map_.find(id);
+  for (const Topic& topic : to_save.GetTopics()) {
+    auto lookup = unacked_invalidations_map_.find(topic);
     if (lookup == unacked_invalidations_map_.end()) {
-      lookup =
-          unacked_invalidations_map_.emplace(id, UnackedInvalidationSet(id))
-              .first;
+      lookup = unacked_invalidations_map_
+                   .emplace(topic, UnackedInvalidationSet(topic))
+                   .first;
     }
-    lookup->second.AddSet(to_save.ForTopic(id.name()));
+    lookup->second.AddSet(to_save.ForTopic(topic));
   }
 }
 
@@ -134,7 +133,7 @@ void FCMInvalidationListener::TokenReceived(
 
 void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
                                           const syncer::AckHandle& handle) {
-  auto lookup = unacked_invalidations_map_.find(id);
+  auto lookup = unacked_invalidations_map_.find(id.name());
   if (lookup == unacked_invalidations_map_.end()) {
     DLOG(WARNING) << "Received acknowledgement for untracked object ID";
     return;
@@ -144,7 +143,7 @@ void FCMInvalidationListener::Acknowledge(const invalidation::ObjectId& id,
 
 void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
                                    const syncer::AckHandle& handle) {
-  auto lookup = unacked_invalidations_map_.find(id);
+  auto lookup = unacked_invalidations_map_.find(id.name());
   if (lookup == unacked_invalidations_map_.end()) {
     DLOG(WARNING) << "Received drop for untracked object ID";
     return;
@@ -164,24 +163,22 @@ void FCMInvalidationListener::DoSubscriptionUpdate() {
   // have become interesting.
   // Note: We might dispatch invalidations for a second time here, if they were
   // already dispatched but not acked yet.
-  // TODO(melandory): remove unacked invalidations for unregistered objects.
-  ObjectIdInvalidationMap object_id_invalidation_map;
+  // TODO(melandory): remove unacked invalidations for unregistered topics.
+  TopicInvalidationMap topic_invalidation_map;
   for (const auto& unacked : unacked_invalidations_map_) {
-    if (interested_topics_.find(unacked.first.name()) ==
-        interested_topics_.end()) {
+    if (interested_topics_.find(unacked.first) == interested_topics_.end()) {
       continue;
     }
 
     unacked.second.ExportInvalidations(weak_factory_.GetWeakPtr(),
                                        base::ThreadTaskRunnerHandle::Get(),
-                                       &object_id_invalidation_map);
+                                       &topic_invalidation_map);
   }
 
   // There's no need to run these through DispatchInvalidations(); they've
   // already been saved to storage (that's where we found them) so all we need
   // to do now is emit them.
-  EmitSavedInvalidations(ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-      object_id_invalidation_map));
+  EmitSavedInvalidations(topic_invalidation_map);
 }
 
 void FCMInvalidationListener::RequestDetailedStatus(

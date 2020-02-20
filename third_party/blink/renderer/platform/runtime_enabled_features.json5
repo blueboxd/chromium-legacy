@@ -116,7 +116,6 @@
     },
     {
       name: "AccessibilityExposeARIAAnnotations",
-      origin_trial_feature_name: "AccessibilityExposeARIAAnnotations",
       status: "experimental",
     },
     {

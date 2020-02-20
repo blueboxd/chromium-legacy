@@ -199,8 +199,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_disabled_by_admin_(false),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
-      invalidations_identity_providers_(
-          init_params.invalidations_identity_providers),
+      invalidations_identity_provider_(
+          init_params.invalidations_identity_provider),
       create_http_post_provider_factory_cb_(
           base::BindRepeating(&CreateHttpBridgeFactory)),
       start_behavior_(init_params.start_behavior),
@@ -267,10 +267,9 @@ void ProfileSyncService::Initialize() {
 
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
-    for (auto* provider : invalidations_identity_providers_) {
-      if (provider) {
-        provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
-      }
+    if (invalidations_identity_provider_) {
+      invalidations_identity_provider_->SetActiveAccountId(
+          GetAuthenticatedAccountInfo().account_id);
     }
   }
 
@@ -359,10 +358,9 @@ void ProfileSyncService::AccountStateChanged() {
   }
 
   // Propagate the (potentially) changed account ID to the invalidations system.
-  for (auto* provider : invalidations_identity_providers_) {
-    if (provider) {
-      provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
-    }
+  if (invalidations_identity_provider_) {
+    invalidations_identity_provider_->SetActiveAccountId(
+        GetAuthenticatedAccountInfo().account_id);
   }
 }
 

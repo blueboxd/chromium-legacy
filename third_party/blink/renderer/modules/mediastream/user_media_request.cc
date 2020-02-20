@@ -328,7 +328,7 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
-    WebUserMediaRequest::MediaType media_type,
+    UserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     Callbacks* callbacks,
     MediaErrorState& error_state) {
@@ -340,7 +340,7 @@ UserMediaRequest* UserMediaRequest::Create(
   if (error_state.HadException())
     return nullptr;
 
-  if (media_type == WebUserMediaRequest::MediaType::kDisplayMedia) {
+  if (media_type == UserMediaRequest::MediaType::kDisplayMedia) {
     // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
     // MediaDevices Additions
     // The user agent MUST reject audio-only requests.
@@ -407,7 +407,7 @@ UserMediaRequest* UserMediaRequest::Create(
     V8NavigatorUserMediaErrorCallback* error_callback,
     MediaErrorState& error_state) {
   return Create(
-      context, controller, WebUserMediaRequest::MediaType::kUserMedia, options,
+      context, controller, UserMediaRequest::MediaType::kUserMedia, options,
       MakeGarbageCollected<V8Callbacks>(success_callback, error_callback),
       error_state);
 }
@@ -416,13 +416,13 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& audio,
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
-      nullptr, nullptr, WebUserMediaRequest::MediaType::kUserMedia, audio,
-      video, nullptr);
+      nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
+      nullptr);
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaController* controller,
-                                   WebUserMediaRequest::MediaType media_type,
+                                   UserMediaRequest::MediaType media_type,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    Callbacks* callbacks)
@@ -443,7 +443,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
 
 UserMediaRequest::~UserMediaRequest() = default;
 
-WebUserMediaRequest::MediaType UserMediaRequest::MediaRequestType() const {
+UserMediaRequest::MediaType UserMediaRequest::MediaRequestType() const {
   return media_type_;
 }
 
@@ -554,37 +554,36 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
   is_resolved_ = true;
 }
 
-void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
-                            const String& message) {
+void UserMediaRequest::Fail(Error name, const String& message) {
   DCHECK(!is_resolved_);
   if (!GetExecutionContext())
     return;
 
   DOMExceptionCode exception_code = DOMExceptionCode::kNotSupportedError;
   switch (name) {
-    case WebUserMediaRequest::Error::kPermissionDenied:
-    case WebUserMediaRequest::Error::kPermissionDismissed:
-    case WebUserMediaRequest::Error::kInvalidState:
-    case WebUserMediaRequest::Error::kFailedDueToShutdown:
-    case WebUserMediaRequest::Error::kKillSwitchOn:
-    case WebUserMediaRequest::Error::kSystemPermissionDenied:
+    case Error::kPermissionDenied:
+    case Error::kPermissionDismissed:
+    case Error::kInvalidState:
+    case Error::kFailedDueToShutdown:
+    case Error::kKillSwitchOn:
+    case Error::kSystemPermissionDenied:
       exception_code = DOMExceptionCode::kNotAllowedError;
       break;
-    case WebUserMediaRequest::Error::kDevicesNotFound:
+    case Error::kDevicesNotFound:
       exception_code = DOMExceptionCode::kNotFoundError;
       break;
-    case WebUserMediaRequest::Error::kTabCapture:
-    case WebUserMediaRequest::Error::kScreenCapture:
-    case WebUserMediaRequest::Error::kCapture:
+    case Error::kTabCapture:
+    case Error::kScreenCapture:
+    case Error::kCapture:
       exception_code = DOMExceptionCode::kAbortError;
       break;
-    case WebUserMediaRequest::Error::kTrackStart:
+    case Error::kTrackStart:
       exception_code = DOMExceptionCode::kNotReadableError;
       break;
-    case WebUserMediaRequest::Error::kNotSupported:
+    case Error::kNotSupported:
       exception_code = DOMExceptionCode::kNotSupportedError;
       break;
-    case WebUserMediaRequest::Error::kSecurityError:
+    case Error::kSecurityError:
       exception_code = DOMExceptionCode::kSecurityError;
       break;
     default:

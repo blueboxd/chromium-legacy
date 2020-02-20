@@ -728,6 +728,7 @@ public class WebApkInfoTest {
                 + "  <shortcut"
                 + "    android:shortcutId='shortcut_1'"
                 + "    android:icon='@drawable/shortcut_1_icon'"
+                + "    iconUrl='https://example.com/icon1.png'"
                 + "    iconHash='1234'"
                 + "    android:shortcutShortLabel='@string/shortcut_1_short_name'"
                 + "    android:shortcutLongLabel='@string/shortcut_1_name'>"
@@ -742,6 +743,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(item.name, "name1");
         Assert.assertEquals(item.shortName, "short name1");
         Assert.assertEquals(item.launchUrl, "https://example.com/launch1");
+        Assert.assertEquals(item.iconUrl, "https://example.com/icon1.png");
         Assert.assertEquals(item.iconHash, "1234");
 
         // Multiple shortcuts case.
@@ -750,6 +752,7 @@ public class WebApkInfoTest {
                 + "  <shortcut"
                 + "    android:shortcutId='shortcut_1'"
                 + "    android:icon='@drawable/shortcut_1_icon'"
+                + "    iconUrl='https://example.con/icon1.png'"
                 + "    iconHash='1234'"
                 + "    android:shortcutShortLabel='@string/shortcut_1_short_name'"
                 + "    android:shortcutLongLabel='@string/shortcut_1_name'>"
@@ -758,6 +761,7 @@ public class WebApkInfoTest {
                 + "  <shortcut"
                 + "    android:shortcutId='shortcut_2'"
                 + "    android:icon='@drawable/shortcut_2_icon'"
+                + "    iconUrl='https://example.com/icon2.png'"
                 + "    iconHash='2345'"
                 + "    android:shortcutShortLabel='@string/shortcut_2_short_name'"
                 + "    android:shortcutLongLabel='@string/shortcut_2_name'>"
@@ -772,6 +776,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(item.name, "name2");
         Assert.assertEquals(item.shortName, "short name2");
         Assert.assertEquals(item.launchUrl, "https://example.com/launch2");
+        Assert.assertEquals(item.iconUrl, "https://example.com/icon2.png");
         Assert.assertEquals(item.iconHash, "2345");
     }
 }

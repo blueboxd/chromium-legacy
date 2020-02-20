@@ -110,9 +110,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
-  // Updates the dialog with the result, and simply delete it from memory if it
+  // Updates the dialog with the result, and simply delete it from memory if
   // nothing should be shown.
-  void ShowResult(bool success);
+  void ShowResult(
+      bool success,
+      DeepScanningDialogDelegate::DeepScanUploadStatus upload_status);
 
   // Accessors to simplify |dialog_status_| checking.
   inline bool is_success() const {
@@ -194,6 +196,10 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Used to show the appropriate dialog depending on the scan's status.
   DeepScanningDialogStatus dialog_status_ = DeepScanningDialogStatus::PENDING;
+
+  // Used to show the appropriate message if the scan did not occur.
+  DeepScanningDialogDelegate::DeepScanUploadStatus upload_status_ =
+      DeepScanningDialogDelegate::DeepScanUploadStatus::NORMAL;
 
   // Used to animate dialog height changes.
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

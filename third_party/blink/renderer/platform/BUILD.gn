@@ -1225,6 +1225,8 @@ jumbo_component("platform") {
     "mojo/fetch_api_request_headers_mojom_traits.h",
     "mojo/heap_mojo_receiver.h",
     "mojo/heap_mojo_receiver.h",
+    "mojo/heap_mojo_receiver_set.h",
+    "mojo/heap_mojo_receiver_set.h",
     "mojo/heap_mojo_remote.h",
     "mojo/heap_mojo_remote.h",
     "mojo/kurl_mojom_traits.h",

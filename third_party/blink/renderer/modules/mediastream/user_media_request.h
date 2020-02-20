@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
-#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -54,6 +53,27 @@ class MODULES_EXPORT UserMediaRequest final
   USING_GARBAGE_COLLECTED_MIXIN(UserMediaRequest);
 
  public:
+  enum class Error {
+    kNotSupported,
+    kSecurityError,
+    kPermissionDenied,
+    kPermissionDismissed,
+    kInvalidState,
+    kDevicesNotFound,
+    kTabCapture,
+    kScreenCapture,
+    kCapture,
+    kTrackStart,
+    kFailedDueToShutdown,
+    kKillSwitchOn,
+    kSystemPermissionDenied
+  };
+
+  enum class MediaType {
+    kUserMedia,
+    kDisplayMedia,
+  };
+
   class Callbacks : public GarbageCollected<Callbacks> {
    public:
     virtual ~Callbacks() = default;
@@ -73,7 +93,7 @@ class MODULES_EXPORT UserMediaRequest final
 
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
-                                  WebUserMediaRequest::MediaType media_type,
+                                  MediaType media_type,
                                   const MediaStreamConstraints* options,
                                   Callbacks*,
                                   MediaErrorState&);
@@ -88,7 +108,7 @@ class MODULES_EXPORT UserMediaRequest final
 
   UserMediaRequest(ExecutionContext*,
                    UserMediaController*,
-                   WebUserMediaRequest::MediaType media_type,
+                   MediaType media_type,
                    MediaConstraints audio,
                    MediaConstraints video,
                    Callbacks*);
@@ -100,9 +120,9 @@ class MODULES_EXPORT UserMediaRequest final
 
   void Succeed(MediaStreamDescriptor*);
   void FailConstraint(const String& constraint_name, const String& message);
-  void Fail(WebUserMediaRequest::Error name, const String& message);
+  void Fail(Error name, const String& message);
 
-  WebUserMediaRequest::MediaType MediaRequestType() const;
+  MediaType MediaRequestType() const;
   bool Audio() const;
   bool Video() const;
   MediaConstraints AudioConstraints() const;
@@ -122,7 +142,7 @@ class MODULES_EXPORT UserMediaRequest final
   void Trace(Visitor*) override;
 
  private:
-  WebUserMediaRequest::MediaType media_type_;
+  MediaType media_type_;
   MediaConstraints audio_;
   MediaConstraints video_;
   bool should_disable_hardware_noise_suppression_;

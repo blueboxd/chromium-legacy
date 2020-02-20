@@ -20,7 +20,8 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
@@ -1134,14 +1135,27 @@ void PeerConnectionTracker::TrackOnRenegotiationNeeded(
 }
 
 void PeerConnectionTracker::TrackGetUserMedia(
-    const blink::WebUserMediaRequest& user_media_request) {
+    UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
 
+  // When running tests, it is possible that UserMediaRequest's
+  // ExecutionContext is null.
+  //
+  // TODO(crbug.com/704136): Is there a better way to do this?
+  String security_origin;
+  if (!user_media_request->GetExecutionContext()) {
+    security_origin =
+        SecurityOrigin::CreateFromString("test://test")->ToString();
+  } else {
+    security_origin = user_media_request->GetExecutionContext()
+                          ->GetSecurityOrigin()
+                          ->ToString();
+  }
+
   peer_connection_tracker_host_->GetUserMedia(
-      String(user_media_request.GetSecurityOrigin().ToString()),
-      user_media_request.Audio(), user_media_request.Video(),
-      SerializeMediaConstraints(user_media_request.AudioConstraints()),
-      SerializeMediaConstraints(user_media_request.VideoConstraints()));
+      security_origin, user_media_request->Audio(), user_media_request->Video(),
+      SerializeMediaConstraints(user_media_request->AudioConstraints()),
+      SerializeMediaConstraints(user_media_request->VideoConstraints()));
 }
 
 void PeerConnectionTracker::TrackRtcEventLogWrite(

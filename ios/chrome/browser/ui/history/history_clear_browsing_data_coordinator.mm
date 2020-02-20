@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
@@ -39,7 +40,6 @@
 @implementation HistoryClearBrowsingDataCoordinator
 @synthesize clearBrowsingDataTableViewController =
     _clearBrowsingDataTableViewController;
-@synthesize dispatcher = _dispatcher;
 @synthesize historyClearBrowsingDataNavigationController =
     _historyClearBrowsingDataNavigationController;
 @synthesize localDispatcher = _localDispatcher;
@@ -48,11 +48,15 @@
 - (void)start {
   self.clearBrowsingDataTableViewController =
       [[ClearBrowsingDataTableViewController alloc]
-          initWithBrowserState:self.browserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   self.clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars =
       YES;
   self.clearBrowsingDataTableViewController.localDispatcher = self;
-  self.clearBrowsingDataTableViewController.dispatcher = self.dispatcher;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.clearBrowsingDataTableViewController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
+          self.browser->GetCommandDispatcher());
   // Configure and present ClearBrowsingDataNavigationController.
   self.historyClearBrowsingDataNavigationController =
       [[TableViewNavigationController alloc]
@@ -119,7 +123,8 @@
   params.load_strategy = self.loadStrategy;
   [self stopWithCompletion:^() {
     [self.localDispatcher dismissHistoryWithCompletion:^{
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      UrlLoadingServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
           ->Load(params);
       [self.presentationDelegate showActiveRegularTabFromHistory];
     }];

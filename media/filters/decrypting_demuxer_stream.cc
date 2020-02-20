@@ -64,8 +64,8 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   decryptor_->RegisterNewKeyCB(
       GetDecryptorStreamType(),
-      BindToCurrentLoop(
-          base::Bind(&DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
+      BindToCurrentLoop(base::BindRepeating(
+          &DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
   std::move(init_cb_).Run(PIPELINE_OK);

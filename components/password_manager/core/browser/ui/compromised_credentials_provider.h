@@ -17,6 +17,24 @@
 
 namespace password_manager {
 
+class SavedPasswordsPresenter;
+
+// Simple struct that augments the CompromisedCredentials with a password.
+struct CredentialWithPassword : CompromisedCredentials {
+  // Enable explicit construction from the parent struct. This will leave
+  // |password| empty.
+  explicit CredentialWithPassword(CompromisedCredentials credential)
+      : CompromisedCredentials(std::move(credential)) {}
+
+  base::string16 password;
+};
+
+bool operator==(const CredentialWithPassword& lhs,
+                const CredentialWithPassword& rhs);
+
+std::ostream& operator<<(std::ostream& out,
+                         const CredentialWithPassword& credential);
+
 // This class provides a read-only view over saved compromised credentials. It
 // supports an observer interface, and clients can register themselves to get
 // notified about changes to the list.
@@ -24,21 +42,6 @@ class CompromisedCredentialsProvider
     : public PasswordStore::DatabaseCompromisedCredentialsObserver,
       public CompromisedCredentialsConsumer {
  public:
-  // Simple struct that augments the CompromisedCredentials with a password.
-  struct CredentialWithPassword : CompromisedCredentials {
-    // Enable explicit construction and assignment from the parent struct. These
-    // will leave |password| empty.
-    explicit CredentialWithPassword(CompromisedCredentials credential)
-        : CompromisedCredentials(std::move(credential)) {}
-
-    CredentialWithPassword& operator=(CompromisedCredentials credential) {
-      CompromisedCredentials::operator=(std::move(credential));
-      password.clear();
-      return *this;
-    }
-
-    base::string16 password;
-  };
 
   using CredentialsView = base::span<const CredentialWithPassword>;
 
@@ -52,7 +55,8 @@ class CompromisedCredentialsProvider
         CredentialsView credentials) = 0;
   };
 
-  explicit CompromisedCredentialsProvider(scoped_refptr<PasswordStore> store);
+  explicit CompromisedCredentialsProvider(scoped_refptr<PasswordStore> store,
+                                          SavedPasswordsPresenter* presenter);
   ~CompromisedCredentialsProvider() override;
 
   void Init();
@@ -77,6 +81,10 @@ class CompromisedCredentialsProvider
 
   // The password store containing the compromised credentials.
   scoped_refptr<PasswordStore> store_;
+
+  // A weak handle to the presenter used to join the list of compromised
+  // credentials with saved passwords. Needs to outlive this instance.
+  SavedPasswordsPresenter* presenter_ = nullptr;
 
   // Cache of the most recently obtained compromised credentials.
   std::vector<CredentialWithPassword> compromised_credentials_;

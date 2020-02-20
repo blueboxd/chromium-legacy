@@ -403,9 +403,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     return source;
   }
 
-  void GetUserMediaRequestSucceeded(
-      const blink::WebMediaStream& stream,
-      blink::WebUserMediaRequest request_info) override {
+  void GetUserMediaRequestSucceeded(const blink::WebMediaStream& stream,
+                                    UserMediaRequest* request_info) override {
     last_generated_stream_ = stream;
     *state_ = REQUEST_SUCCEEDED;
   }
@@ -450,17 +449,15 @@ class UserMediaClientUnderTest : public UserMediaClient {
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         state_(state) {}
 
-  void RequestUserMediaForTest(
-      const blink::WebUserMediaRequest& user_media_request) {
+  void RequestUserMediaForTest(UserMediaRequest* user_media_request) {
     *state_ = REQUEST_NOT_COMPLETE;
     RequestUserMedia(user_media_request);
     base::RunLoop().RunUntilIdle();
   }
 
   void RequestUserMediaForTest() {
-    blink::WebUserMediaRequest user_media_request =
-        blink::WebUserMediaRequest::CreateForTesting(
-            CreateDefaultConstraints(), CreateDefaultConstraints());
+    UserMediaRequest* user_media_request = UserMediaRequest::CreateForTesting(
+        CreateDefaultConstraints(), CreateDefaultConstraints());
     RequestUserMediaForTest(user_media_request);
   }
 
@@ -524,9 +521,8 @@ class UserMediaClientTest : public ::testing::Test {
   }
 
   blink::WebMediaStreamTrack RequestLocalVideoTrack() {
-    blink::WebUserMediaRequest user_media_request =
-        blink::WebUserMediaRequest::CreateForTesting(
-            MediaConstraints(), CreateDefaultConstraints());
+    UserMediaRequest* user_media_request = UserMediaRequest::CreateForTesting(
+        MediaConstraints(), CreateDefaultConstraints());
     user_media_client_impl_->RequestUserMediaForTest(user_media_request);
     StartMockedVideoSource();
     EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
@@ -549,9 +545,8 @@ class UserMediaClientTest : public ::testing::Test {
     blink::MockConstraintFactory constraint_factory;
     constraint_factory.basic().render_to_associated_sink.SetExact(
         render_to_associated_sink);
-    blink::WebUserMediaRequest user_media_request =
-        blink::WebUserMediaRequest::CreateForTesting(
-            constraint_factory.CreateMediaConstraints(), MediaConstraints());
+    UserMediaRequest* user_media_request = UserMediaRequest::CreateForTesting(
+        constraint_factory.CreateMediaConstraints(), MediaConstraints());
     user_media_client_impl_->RequestUserMediaForTest(user_media_request);
 
     EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
@@ -590,9 +585,8 @@ class UserMediaClientTest : public ::testing::Test {
       const std::string& expected_video_device_id) {
     DCHECK(!audio_constraints.IsNull());
     DCHECK(!video_constraints.IsNull());
-    blink::WebUserMediaRequest request =
-        blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                     video_constraints);
+    UserMediaRequest* request = UserMediaRequest::CreateForTesting(
+        audio_constraints, video_constraints);
     user_media_client_impl_->RequestUserMediaForTest(request);
     StartMockedVideoSource();
 
@@ -890,9 +884,8 @@ TEST_F(UserMediaClientTest, StopTrackAfterReload) {
 }
 
 TEST_F(UserMediaClientTest, DefaultConstraintsPropagate) {
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(CreateDefaultConstraints(),
-                                                   CreateDefaultConstraints());
+  UserMediaRequest* request = UserMediaRequest::CreateForTesting(
+      CreateDefaultConstraints(), CreateDefaultConstraints());
   user_media_client_impl_->RequestUserMediaForTest(request);
   blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
@@ -951,9 +944,8 @@ TEST_F(UserMediaClientTest, DefaultTabCapturePropagate) {
   factory.basic().media_stream_source.SetExact(kMediaStreamSourceTab);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   video_constraints);
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
   blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
@@ -1006,9 +998,8 @@ TEST_F(UserMediaClientTest, DefaultDesktopCapturePropagate) {
   factory.basic().media_stream_source.SetExact(kMediaStreamSourceDesktop);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   video_constraints);
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
   blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
@@ -1068,9 +1059,8 @@ TEST_F(UserMediaClientTest, NonDefaultAudioConstraintsPropagate) {
   factory.basic().goog_audio_mirroring.SetExact(true);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   // Request contains only audio
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   MediaConstraints());
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, MediaConstraints());
   user_media_client_impl_->RequestUserMediaForTest(request);
   blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
@@ -1101,9 +1091,8 @@ TEST_F(UserMediaClientTest, NonDefaultAudioConstraintsPropagate) {
 TEST_F(UserMediaClientTest, CreateWithMandatoryInvalidAudioDeviceId) {
   MediaConstraints audio_constraints =
       CreateDeviceConstraints(kInvalidDeviceId);
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   MediaConstraints());
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, MediaConstraints());
   user_media_client_impl_->RequestUserMediaForTest(request);
   EXPECT_EQ(REQUEST_FAILED, request_state());
 }
@@ -1111,9 +1100,8 @@ TEST_F(UserMediaClientTest, CreateWithMandatoryInvalidAudioDeviceId) {
 TEST_F(UserMediaClientTest, CreateWithMandatoryInvalidVideoDeviceId) {
   MediaConstraints video_constraints =
       CreateDeviceConstraints(kInvalidDeviceId);
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(MediaConstraints(),
-                                                   video_constraints);
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(MediaConstraints(), video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
   EXPECT_EQ(REQUEST_FAILED, request_state());
 }
@@ -1388,9 +1376,8 @@ TEST_F(UserMediaClientTest, DesktopCaptureChangeSource) {
       blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   video_constraints);
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
 
   // Test changing video source.
@@ -1423,9 +1410,8 @@ TEST_F(UserMediaClientTest, DesktopCaptureChangeSourceWithoutAudio) {
   factory.basic().media_stream_source.SetExact(kMediaStreamSourceDesktop);
   MediaConstraints audio_constraints = factory.CreateMediaConstraints();
   MediaConstraints video_constraints = factory.CreateMediaConstraints();
-  blink::WebUserMediaRequest request =
-      blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
-                                                   video_constraints);
+  UserMediaRequest* request =
+      UserMediaRequest::CreateForTesting(audio_constraints, video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
   EXPECT_EQ(1U, mock_dispatcher_host_.audio_devices().size());
   EXPECT_EQ(1U, mock_dispatcher_host_.video_devices().size());

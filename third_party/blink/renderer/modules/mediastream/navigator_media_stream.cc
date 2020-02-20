@@ -74,7 +74,7 @@ void NavigatorMediaStream::getUserMedia(
 
   String error_message;
   if (!request->IsSecureContextUse(error_message)) {
-    request->Fail(WebUserMediaRequest::Error::kSecurityError, error_message);
+    request->Fail(UserMediaRequest::Error::kSecurityError, error_message);
     return;
   }
 

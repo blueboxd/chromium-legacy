@@ -52,7 +52,8 @@ ManifestManager::ManifestManager(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       ExecutionContextLifecycleObserver(frame.GetDocument()),
       may_have_manifest_(false),
-      manifest_dirty_(true) {
+      manifest_dirty_(true),
+      receivers_(GetExecutionContext()) {
   if (frame.IsMainFrame()) {
     manifest_change_notifier_ =
         MakeGarbageCollected<ManifestChangeNotifier>(frame);
@@ -256,7 +257,10 @@ bool ManifestManager::ManifestUseCredentials() const {
 
 void ManifestManager::BindReceiver(
     mojo::PendingReceiver<mojom::blink::ManifestManager> receiver) {
-  receivers_.Add(this, std::move(receiver));
+  receivers_.Add(
+      this, std::move(receiver),
+      GetSupplementable()->GetDocument()->ToExecutionContext()->GetTaskRunner(
+          TaskType::kNetworking));
 }
 
 void ManifestManager::ContextDestroyed() {
@@ -267,17 +271,12 @@ void ManifestManager::ContextDestroyed() {
   // will be aware of the RenderFrame dying and should act on that. Consumers
   // in the renderer process should be correctly notified.
   ResolveCallbacks(ResolveStateFailure);
-
-  receivers_.Clear();
-}
-
-void ManifestManager::Prefinalize() {
-  receivers_.Clear();
 }
 
 void ManifestManager::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(manifest_change_notifier_);
+  visitor->Trace(receivers_);
   Supplement<LocalFrame>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

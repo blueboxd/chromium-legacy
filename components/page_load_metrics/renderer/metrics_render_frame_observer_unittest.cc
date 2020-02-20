@@ -51,10 +51,9 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
     fake_timing_ = timing.Clone();
   }
 
-  Timing GetTiming() const override {
+  mojom::PageLoadTimingPtr GetTiming() const override {
     EXPECT_NE(nullptr, fake_timing_.get());
-    return Timing(std::move(fake_timing_),
-                  PageTimingMetadataRecorder::MonotonicTiming());
+    return std::move(fake_timing_);
   }
 
   void VerifyExpectedTimings() const {

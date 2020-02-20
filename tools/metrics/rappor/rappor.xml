@@ -119,24 +119,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="DeviceSensors.DeviceMotionCrossOrigin"
-    type="ETLD_PLUS_ONE">
-  <owner>timvolodine@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL that is using Device Motion API from a
-    frame with an origin different to that of the main frame.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="DeviceSensors.DeviceOrientationCrossOrigin"
-    type="ETLD_PLUS_ONE">
-  <owner>timvolodine@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL that is using Device Orientation API from
-    a frame with an origin different to that of the main frame.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="NTP.ExplicitUserAction.PageNavigation.NTPTileClick"
     type="UMA_RAPPOR_TYPE">
   <owner>knn@chromium.org</owner>

@@ -211,7 +211,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
       new AudioTimestampHelper(config_.samples_per_second()));
 
   decryptor_->RegisterNewKeyCB(
-      Decryptor::kAudio, BindToCurrentLoop(base::Bind(
+      Decryptor::kAudio, BindToCurrentLoop(base::BindRepeating(
                              &DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;

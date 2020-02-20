@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -167,6 +168,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky: crbug/1053606")
     public void testExternalAddAndEnterProfile() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
@@ -399,6 +401,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky: crbug/1053606")
     public void testExternalAddCreditCard() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()

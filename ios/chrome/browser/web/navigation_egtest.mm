@@ -562,7 +562,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
 // Tests that navigating forward from a WebUI URL works when resuming from
 // session restore. This is a regression test for https://crbug.com/814790.
-- (void)testRestoreHistoryToWebUIAndNavigateForward {
+// Flaky: https://crbug.com/1054372
+- (void)DISABLED_testRestoreHistoryToWebUIAndNavigateForward {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
@@ -602,7 +603,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
 // Tests that restoring a placeholder URL is correctly restored.  This is a
 // regression test from http://crbug.com/1011758.
-- (void)testRestoreHistoryToPlaceholderURL {
+// Flaky: https://crbug.com/1054372
+- (void)DISABLED_testRestoreHistoryToPlaceholderURL {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationURL("chrome://crash");
   [ChromeEarlGrey loadURL:destinationURL];

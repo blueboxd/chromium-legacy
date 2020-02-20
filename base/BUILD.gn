@@ -2487,6 +2487,7 @@ test("base_unittests") {
     "component_export_unittest.cc",
     "containers/adapters_unittest.cc",
     "containers/buffer_iterator_unittest.cc",
+    "containers/checked_iterators_unittest.cc",
     "containers/checked_range_unittest.cc",
     "containers/circular_deque_unittest.cc",
     "containers/flat_map_unittest.cc",

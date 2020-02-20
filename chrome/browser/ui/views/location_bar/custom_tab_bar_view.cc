@@ -91,20 +91,12 @@ bool IsUrlInAppScope(web_app::AppBrowserController* app_controller, GURL url) {
 // page.
 class CustomTabBarTitleOriginView : public views::View {
  public:
-  CustomTabBarTitleOriginView() {
-    auto title_label = std::make_unique<views::Label>(
-        base::string16(), views::style::CONTEXT_LABEL);
+  CustomTabBarTitleOriginView(SkColor background_color,
+                              bool should_show_title) {
     auto location_label = std::make_unique<views::Label>(
         base::string16(), views::style::CONTEXT_LABEL,
         views::style::STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
-
-    title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
-    title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    title_label->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                                 views::MaximumFlexSizeRule::kPreferred));
 
     location_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
     location_label->SetHorizontalAlignment(
@@ -113,9 +105,20 @@ class CustomTabBarTitleOriginView : public views::View {
         views::kFlexBehaviorKey,
         views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                  views::MaximumFlexSizeRule::kPreferred));
-
-    title_label_ = AddChildView(std::move(title_label));
     location_label_ = AddChildView(std::move(location_label));
+
+    if (should_show_title) {
+      auto title_label = std::make_unique<views::Label>(
+          base::string16(), views::style::CONTEXT_LABEL);
+
+      title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+      title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+      title_label->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                                   views::MaximumFlexSizeRule::kPreferred));
+      title_label_ = AddChildView(std::move(title_label));
+    }
 
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
@@ -123,14 +126,16 @@ class CustomTabBarTitleOriginView : public views::View {
         .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   }
 
-  void Update(base::string16 title, base::string16 location) {
-    title_label_->SetText(title);
+  void Update(const base::string16 title, const base::string16 location) {
+    if (title_label_)
+      title_label_->SetText(title);
     location_label_->SetText(location);
     location_label_->SetVisible(!location.empty());
   }
 
   void SetColors(SkColor background_color) {
-    title_label_->SetBackgroundColor(background_color);
+    if (title_label_)
+      title_label_->SetBackgroundColor(background_color);
     location_label_->SetBackgroundColor(background_color);
   }
 
@@ -143,7 +148,10 @@ class CustomTabBarTitleOriginView : public views::View {
     // preferred size is at least as wide as the minimum size, and the
     // minimum height of the control should be the preferred height.
     constexpr int kMinCharacters = 20;
-    return title_label_->font_list().GetExpectedTextWidth(kMinCharacters);
+    return title_label_
+               ? title_label_->font_list().GetExpectedTextWidth(kMinCharacters)
+               : location_label_->font_list().GetExpectedTextWidth(
+                     kMinCharacters);
   }
 
   SkColor GetLocationColor() const {
@@ -170,8 +178,10 @@ class CustomTabBarTitleOriginView : public views::View {
   }
 
  private:
-  views::Label* title_label_;
-  views::Label* location_label_;
+  // Can be nullptr.
+  views::Label* title_label_ = nullptr;
+
+  views::Label* location_label_ = nullptr;
 };
 
 // static
@@ -192,7 +202,8 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   location_icon_view_ =
       AddChildView(std::make_unique<LocationIconView>(font_list, this, this));
 
-  auto title_origin_view = std::make_unique<CustomTabBarTitleOriginView>();
+  auto title_origin_view = std::make_unique<CustomTabBarTitleOriginView>(
+      background_color_, ShouldShowTitle());
   title_origin_view->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -496,4 +507,8 @@ base::Optional<SkColor> CustomTabBarView::GetThemeColor() const {
   web_app::AppBrowserController* application_controller = app_controller();
   return application_controller ? application_controller->GetThemeColor()
                                 : base::nullopt;
+}
+
+bool CustomTabBarView::ShouldShowTitle() const {
+  return app_controller() != nullptr;
 }

@@ -60,34 +60,39 @@ class CheckedContiguousIterator {
   constexpr CheckedContiguousIterator& operator=(
       const CheckedContiguousIterator& other) = default;
 
-  constexpr bool operator==(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ == other.current_;
+  friend constexpr bool operator==(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ == rhs.current_;
   }
 
-  constexpr bool operator!=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ != other.current_;
+  friend constexpr bool operator!=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ != rhs.current_;
   }
 
-  constexpr bool operator<(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ < other.current_;
+  friend constexpr bool operator<(const CheckedContiguousIterator& lhs,
+                                  const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ < rhs.current_;
   }
 
-  constexpr bool operator<=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ <= other.current_;
+  friend constexpr bool operator<=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ <= rhs.current_;
+  }
+  friend constexpr bool operator>(const CheckedContiguousIterator& lhs,
+                                  const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ > rhs.current_;
   }
 
-  constexpr bool operator>(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ > other.current_;
-  }
-
-  constexpr bool operator>=(const CheckedContiguousIterator& other) const {
-    CheckComparable(other);
-    return current_ >= other.current_;
+  friend constexpr bool operator>=(const CheckedContiguousIterator& lhs,
+                                   const CheckedContiguousIterator& rhs) {
+    lhs.CheckComparable(rhs);
+    return lhs.current_ >= rhs.current_;
   }
 
   constexpr CheckedContiguousIterator& operator++() {
@@ -149,8 +154,7 @@ class CheckedContiguousIterator {
   constexpr friend difference_type operator-(
       const CheckedContiguousIterator& lhs,
       const CheckedContiguousIterator& rhs) {
-    CHECK_EQ(lhs.start_, rhs.start_);
-    CHECK_EQ(lhs.end_, rhs.end_);
+    lhs.CheckComparable(rhs);
     return lhs.current_ - rhs.current_;
   }
 

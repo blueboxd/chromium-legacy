@@ -288,10 +288,6 @@ void AppBrowserController::DidChangeThemeColor() {
 }
 
 base::Optional<SkColor> AppBrowserController::GetThemeColor() const {
-  // System App popus (settings pages) always use white theme.
-  if (system_app_type_ && browser_->is_type_app_popup())
-    return SK_ColorWHITE;
-
   base::Optional<SkColor> result;
   // HTML meta theme-color tag overrides manifest theme_color, see spec:
   // https://www.w3.org/TR/appmanifest/#theme_color-member

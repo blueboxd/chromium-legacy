@@ -96,13 +96,13 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                                          const MediaStreamConstraints* options,
                                          ExceptionState& exception_state) {
   return SendUserMediaRequest(script_state,
-                              WebUserMediaRequest::MediaType::kUserMedia,
-                              options, exception_state);
+                              UserMediaRequest::MediaType::kUserMedia, options,
+                              exception_state);
 }
 
 ScriptPromise MediaDevices::SendUserMediaRequest(
     ScriptState* script_state,
-    WebUserMediaRequest::MediaType media_type,
+    UserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -149,7 +149,7 @@ ScriptPromise MediaDevices::getDisplayMedia(
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   return SendUserMediaRequest(script_state,
-                              WebUserMediaRequest::MediaType::kDisplayMedia,
+                              UserMediaRequest::MediaType::kDisplayMedia,
                               options, exception_state);
 }
 

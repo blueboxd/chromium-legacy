@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -36,7 +37,6 @@ class MODULES_EXPORT ManifestManager
       public mojom::blink::ManifestManager,
       public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
-  USING_PRE_FINALIZER(ManifestManager, Prefinalize);
 
  public:
   static const char kSupplementName[];
@@ -86,8 +86,6 @@ class MODULES_EXPORT ManifestManager
   void BindReceiver(
       mojo::PendingReceiver<mojom::blink::ManifestManager> receiver);
 
-  void Prefinalize();
-
   friend class ManifestManagerTest;
 
   Member<ManifestFetcher> fetcher_;
@@ -113,7 +111,7 @@ class MODULES_EXPORT ManifestManager
 
   Vector<InternalRequestManifestCallback> pending_callbacks_;
 
-  mojo::ReceiverSet<mojom::blink::ManifestManager> receivers_;
+  HeapMojoReceiverSet<mojom::blink::ManifestManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManager);
 };

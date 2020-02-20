@@ -62,11 +62,6 @@ void DeviceMotionController::DidAddEventListener(
   UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
 
   if (!has_event_listener_) {
-    if (!IsSameSecurityOriginAsMainFrame()) {
-      Platform::Current()->RecordRapporURL(
-          "DeviceSensors.DeviceMotionCrossOrigin", WebURL(GetDocument().Url()));
-    }
-
     if (!CheckPolicyFeatures(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {

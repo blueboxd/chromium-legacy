@@ -222,10 +222,13 @@ ui::ModalType DeepScanningDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-void DeepScanningDialogViews::ShowResult(bool success) {
+void DeepScanningDialogViews::ShowResult(
+    bool success,
+    DeepScanningDialogDelegate::DeepScanUploadStatus upload_status) {
   DCHECK(is_pending());
   dialog_status_ = success ? DeepScanningDialogStatus::SUCCESS
                            : DeepScanningDialogStatus::FAILURE;
+  upload_status_ = upload_status;
 
   // Do nothing if the pending dialog wasn't shown, the delayed |Show| callback
   // will show the negative result later if that's the verdict.
@@ -523,6 +526,17 @@ int DeepScanningDialogViews::GetPendingMessageId() const {
 
 int DeepScanningDialogViews::GetFailureMessageId() const {
   DCHECK(is_failure());
+
+  if (upload_status_ ==
+      DeepScanningDialogDelegate::DeepScanUploadStatus::LARGE_FILES) {
+    return IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE;
+  }
+
+  if (upload_status_ ==
+      DeepScanningDialogDelegate::DeepScanUploadStatus::ENCRYPTED_FILES) {
+    return IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE;
+  }
+
   switch (access_point_) {
     case DeepScanAccessPoint::DOWNLOAD:
       // This dialog should not appear on the download path. If it somehow does,

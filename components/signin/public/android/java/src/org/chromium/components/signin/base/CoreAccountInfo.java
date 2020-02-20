@@ -4,9 +4,13 @@
 
 package org.chromium.components.signin.base;
 
+import android.accounts.Account;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.components.signin.AccountManagerFacade;
 
 /**
  * Structure storing the core information about a Google account that is always known. The {@link
@@ -79,5 +83,43 @@ public class CoreAccountInfo {
         CoreAccountInfo other = (CoreAccountInfo) obj;
         return mId.equals(other.mId) && mEmail.equals(other.mEmail)
                 && mGaiaId.equals(other.mGaiaId);
+    }
+
+    /**
+     * Null-checking helper to create {@link Account} from a possibly null {@link CoreAccountInfo}.
+     *
+     * @return {@link Account} for the argument if it is not null, null otherwise.
+     */
+    public static @Nullable Account getAndroidAccountFrom(@Nullable CoreAccountInfo accountInfo) {
+        return accountInfo == null
+                ? null
+                : AccountManagerFacade.createAccountFromName(accountInfo.getEmail());
+    }
+
+    /**
+     * Null-checking helper to get an account id from a possibly null {@link CoreAccountInfo}.
+     *
+     * @return {@link #getId()} for the argument if it is not null, null otherwise.
+     */
+    public static @Nullable CoreAccountId getIdFrom(@Nullable CoreAccountInfo accountInfo) {
+        return accountInfo == null ? null : accountInfo.getId();
+    }
+
+    /**
+     * Null-checking helper to get an email from a possibly null {@link CoreAccountInfo}.
+     *
+     * @return {@link #getEmail()} for the argument if it is not null, null otherwise.
+     */
+    public static @Nullable String getEmailFrom(@Nullable CoreAccountInfo accountInfo) {
+        return accountInfo == null ? null : accountInfo.getEmail();
+    }
+
+    /**
+     * Null-checking helper to get a GaiaId from a possibly null {@link CoreAccountInfo}.
+     *
+     * @return {@link #getGaiaId()} ()} for the argument if it is not null, null otherwise.
+     */
+    public static @Nullable String getGaiaIdFrom(@Nullable CoreAccountInfo accountInfo) {
+        return accountInfo == null ? null : accountInfo.getGaiaId();
     }
 }

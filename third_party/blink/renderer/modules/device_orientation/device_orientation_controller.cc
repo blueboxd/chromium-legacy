@@ -73,12 +73,6 @@ void DeviceOrientationController::DidAddEventListener(
   UseCounter::Count(GetDocument(), WebFeature::kDeviceOrientationSecureOrigin);
 
   if (!has_event_listener_) {
-    if (!IsSameSecurityOriginAsMainFrame()) {
-      Platform::Current()->RecordRapporURL(
-          "DeviceSensors.DeviceOrientationCrossOrigin",
-          WebURL(GetDocument().Url()));
-    }
-
     if (!CheckPolicyFeatures(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {

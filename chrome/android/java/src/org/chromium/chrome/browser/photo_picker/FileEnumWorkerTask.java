@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.net.MimeTypeFilter;
@@ -21,12 +22,16 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * A worker task to enumerate image files on disk.
  */
 class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
+    // A tag for logging error messages.
+    private static final String TAG = "PhotoPicker";
+
     /**
      * An interface to use to communicate back the results to the client.
      */
@@ -154,6 +159,11 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         Uri contentUri = MediaStore.Files.getContentUri("external");
         Cursor imageCursor =
                 mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
+
+        Log.i(TAG,
+                "Found " + imageCursor.getCount() + " media files, when requesting columns: "
+                        + Arrays.toString(selectColumns) + ", with WHERE " + whereClause
+                        + ", params: " + Arrays.toString(whereArgs));
 
         while (imageCursor.moveToNext()) {
             int mimeTypeIndex = imageCursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE);

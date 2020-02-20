@@ -94,10 +94,10 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker();
   init_params.channel = version_info::Channel::STABLE;
-  init_params.invalidations_identity_providers.push_back(
+  init_params.invalidations_identity_provider =
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
-          ->GetIdentityProvider());
+          ->GetIdentityProvider();
   init_params.autofill_enable_account_wallet_storage =
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage);

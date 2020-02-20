@@ -91,10 +91,7 @@ class ProfileSyncService : public SyncService,
     // TODO(treib): Remove this and instead retrieve it via
     // SyncClient::GetIdentityManager (but mind LocalSync).
     signin::IdentityManager* identity_manager = nullptr;
-    // TODO(crbug.com/1029481): This vector only ever has one entry; replace by
-    // just a pointer.
-    std::vector<invalidation::IdentityProvider*>
-        invalidations_identity_providers;
+    invalidation::IdentityProvider* invalidations_identity_provider = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -388,6 +385,7 @@ class ProfileSyncService : public SyncService,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address and sign-out upon error.
+  // May be null (if local Sync is enabled).
   signin::IdentityManager* const identity_manager_;
 
   // The user-configurable knobs. Non-null between Initialize() and Shutdown().
@@ -489,11 +487,11 @@ class ProfileSyncService : public SyncService,
   // or must delay loading for some reason).
   DataTypeStatusTable::TypeErrorMap data_type_error_map_;
 
-  // This providers tells the invalidations code which identity to register for.
+  // This provider tells the invalidations code which identity to register for.
   // The account that it registers for should be the same as the currently
   // syncing account, so we'll need to update this whenever the account changes.
-  std::vector<invalidation::IdentityProvider*> const
-      invalidations_identity_providers_;
+  // May be null (if local Sync is enabled).
+  invalidation::IdentityProvider* const invalidations_identity_provider_;
 
   // List of available data type controllers.
   DataTypeController::TypeMap data_type_controllers_;

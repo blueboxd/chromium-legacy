@@ -447,9 +447,18 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
                                 const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
 
+  // If the account storage can't be enabled (e.g. because the feature flag was
+  // turned off), then don't consider the user opted in, even if the pref is
+  // set.
+  // Note: IsUserEligibleForAccountStorage() is not appropriate here, because
+  // a) Sync-the-feature users are not considered eligible, but might have
+  //    opted in before turning on Sync, and
+  // b) eligibility requires IsEngineInitialized() (i.e. will be false for a
+  //    few seconds after browser startup).
   if (!CanAccountStorageBeEnabled(sync_service))
     return false;
 
+  // The opt-in is per account, so if there's no account then there's no opt-in.
   std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
   if (gaia_id.empty())
     return false;
@@ -463,7 +472,8 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
 
   // Show the opt-in if the user is eligible, but not yet opted in.
   return IsUserEligibleForAccountStorage(sync_service) &&
-         !IsOptedInForAccountStorage(pref_service, sync_service);
+         !IsOptedInForAccountStorage(pref_service, sync_service) &&
+         !sync_service->IsSyncFeatureEnabled();
 }
 
 void SetAccountStorageOptIn(PrefService* pref_service,
@@ -485,8 +495,9 @@ void SetAccountStorageOptIn(PrefService* pref_service,
 
 bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
                                    const syncer::SyncService* sync_service) {
-  return IsOptedInForAccountStorage(pref_service, sync_service) ||
-         IsUserEligibleForAccountStorage(sync_service);
+  return !sync_service->IsSyncFeatureEnabled() &&
+         (IsOptedInForAccountStorage(pref_service, sync_service) ||
+          IsUserEligibleForAccountStorage(sync_service));
 }
 
 PasswordForm::Store GetDefaultPasswordStore(

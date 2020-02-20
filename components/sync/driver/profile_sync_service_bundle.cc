@@ -51,8 +51,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.identity_manager = identity_manager();
-  init_params.invalidations_identity_providers.push_back(
-      identity_provider_.get());
+  init_params.invalidations_identity_provider = identity_provider_.get();
   init_params.network_time_update_callback = base::DoNothing();
   init_params.url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

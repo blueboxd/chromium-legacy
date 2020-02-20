@@ -23,7 +23,30 @@ class SafetyCheckHandlerObserver;
 // software.
 class SafetyCheckHandler : public settings::SettingsPageUIHandler {
  public:
-  enum SafeBrowsingStatus { ENABLED, DISABLED_BY_ADMIN, DISABLED };
+  // Used in communication with the frontend to indicate which component the
+  // communicated status update applies to.
+  enum class SafetyCheckComponent {
+    kUpdates,
+    kPasswords,
+    kSafeBrowsing,
+    kExtensions,
+  };
+  enum class UpdateStatus {
+    kChecking,
+    kUpdated,
+    kUpdating,
+    kRelaunch,
+    kDisabledByAdmin,
+    kFailedOffline,
+    kFailed,
+  };
+  enum class SafeBrowsingStatus {
+    kChecking,
+    kEnabled,
+    kDisabled,
+    kDisabledByAdmin,
+    kDisabledByExtension,
+  };
 
   SafetyCheckHandler();
   ~SafetyCheckHandler() override;
@@ -38,9 +61,16 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
                      SafetyCheckHandlerObserver* observer);
 
  private:
+  // Handles page initialization. Should be called when page is loaded.
+  void HandleInitialize(const base::ListValue* args);
+
+  // Handles triggering the safety check from the frontend (by user pressing a
+  // button).
+  void HandlePerformSafetyCheck(const base::ListValue* args);
+
   // Triggers an update check and invokes the provided callback once results
   // are available.
-  void CheckUpdates(const VersionUpdater::StatusCallback& update_callback);
+  void CheckUpdates();
 
   // Gets the status of Safe Browsing from the PrefService and invokes
   // OnSafeBrowsingCheckResult with results.

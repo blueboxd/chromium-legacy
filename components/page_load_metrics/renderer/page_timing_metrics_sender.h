@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
-#include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
 #include "content/public/common/previews_state.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -43,8 +42,6 @@ class PageTimingMetricsSender {
   PageTimingMetricsSender(std::unique_ptr<PageTimingSender> sender,
                           std::unique_ptr<base::OneShotTimer> timer,
                           mojom::PageLoadTimingPtr initial_timing,
-                          const PageTimingMetadataRecorder::MonotonicTiming&
-                              initial_monotonic_timing,
                           std::unique_ptr<PageResourceDataUse> initial_request);
   ~PageTimingMetricsSender();
 
@@ -70,11 +67,8 @@ class PageTimingMetricsSender {
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
 
-  // Updates the timing information. Buffers |timing| to be sent over mojo
-  // sometime 'soon'.
-  void Update(
-      mojom::PageLoadTimingPtr timing,
-      const PageTimingMetadataRecorder::MonotonicTiming& monotonic_timing);
+  // Queues the send by starting the send timer.
+  void SendSoon(mojom::PageLoadTimingPtr timing);
 
   // Sends any queued timing data immediately and stops the send timer.
   void SendLatest();
@@ -130,10 +124,6 @@ class PageTimingMetricsSender {
   // Field trial for alternating page timing metrics sender buffer timer delay.
   // https://crbug.com/847269.
   int buffer_timer_delay_ms_;
-
-  // Responsible for recording sampling profiler metadata corresponding to page
-  // timing.
-  PageTimingMetadataRecorder metadata_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTimingMetricsSender);
 };

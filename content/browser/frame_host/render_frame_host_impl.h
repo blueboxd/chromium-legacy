@@ -2049,17 +2049,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // and ineligible for caching.
   void MaybeEvictFromBackForwardCache();
 
-  // Helper for handling download-related IPCs.
-  void DownloadURLInternal(
-      const GURL& url,
-      const Referrer& referrer,
-      const url::Origin& initiator,
-      const base::string16& suggested_name,
-      const bool use_prompt,
-      const network::mojom::RedirectMode cross_origin_redirects,
-      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-      mojo::PendingRemote<blink::mojom::Blob> data_url_blob);
-
   // Common handler for displaying a javascript dialog from the Run*Dialog
   // mojo handlers. This method sets up some initial state before asking the
   // delegate to create a dialog.

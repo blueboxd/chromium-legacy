@@ -55,6 +55,11 @@ extern const base::Feature kUseDefaultUserAgentInWebClient;
 // of properties using hard coded logic.
 extern const base::Feature kPreserveScrollViewProperties;
 
+// Feature flag for making native (instead of WKWebView-provided) Safe
+// Browsing available. When this flag is enabled, Safe Browsing is still
+// subject to an opt-out controlled by prefs::kSafeBrowsingEnabled.
+extern const base::Feature kSafeBrowsingAvailable;
+
 // Use WKWebView.loading to update WebState::IsLoading.
 // TODO(crbug.com/1006012): Clean up this flag after experiment.
 bool UseWKWebViewLoading();

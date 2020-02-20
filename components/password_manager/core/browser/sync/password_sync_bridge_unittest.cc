@@ -673,6 +673,24 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_FALSE(error);
 }
 
+// This tests that if reading sync metadata from the store fails,
+// metadata should be deleted and Sync starts without error.
+TEST_F(
+    PasswordSyncBridgeTest,
+    ShouldMergeSyncRemoteAndLocalPasswordsWithoutErrorWhenMetadataReadFails) {
+  // Simulate a failed GetAllSyncMetadata() by returning a nullptr.
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault(testing::ReturnNull());
+
+  EXPECT_CALL(*mock_sync_metadata_store_sync(), DeleteAllSyncMetadata());
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/syncer::HasNotInitialSyncDone(),
+                                    /*entities=*/testing::SizeIs(0))));
+  auto bridge = std::make_unique<PasswordSyncBridge>(
+      mock_processor().CreateForwardingProcessor(), mock_password_store_sync(),
+      base::DoNothing());
+}
+
 // This tests that if reading logins from the store fails,
 // ShouldMergeSync() would return an error without crashing.
 TEST_F(PasswordSyncBridgeTest,

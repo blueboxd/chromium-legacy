@@ -14,10 +14,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink-forward.h"
-#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
@@ -47,8 +47,8 @@ class MODULES_EXPORT UserMediaClient
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaClient();
 
-  void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
-  void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
+  void RequestUserMedia(UserMediaRequest* web_request);
+  void CancelUserMediaRequest(UserMediaRequest* web_request);
   void ApplyConstraints(blink::ApplyConstraintsRequest* web_request);
   void StopTrack(const blink::WebMediaStreamTrack& web_track);
   void ContextDestroyed();

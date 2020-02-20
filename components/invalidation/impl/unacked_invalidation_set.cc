@@ -5,29 +5,22 @@
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 
 #include "components/invalidation/public/ack_handle.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 
 namespace syncer {
 
 const size_t UnackedInvalidationSet::kMaxBufferedInvalidations = 5;
 
-// static
-UnackedInvalidationSet::UnackedInvalidationSet(
-    invalidation::ObjectId id)
-    : registered_(false),
-      object_id_(id) {}
+UnackedInvalidationSet::UnackedInvalidationSet(const Topic& topic)
+    : registered_(false), topic_(topic) {}
 
 UnackedInvalidationSet::UnackedInvalidationSet(
-    const UnackedInvalidationSet& other)
-    : registered_(other.registered_),
-      object_id_(other.object_id_),
-      invalidations_(other.invalidations_) {
-}
+    const UnackedInvalidationSet& other) = default;
 
-UnackedInvalidationSet::~UnackedInvalidationSet() {}
+UnackedInvalidationSet::~UnackedInvalidationSet() = default;
 
-const invalidation::ObjectId& UnackedInvalidationSet::object_id() const {
-  return object_id_;
+const Topic& UnackedInvalidationSet::topic() const {
+  return topic_;
 }
 
 void UnackedInvalidationSet::Add(
@@ -49,12 +42,12 @@ void UnackedInvalidationSet::AddSet(
 void UnackedInvalidationSet::ExportInvalidations(
     base::WeakPtr<AckHandler> ack_handler,
     scoped_refptr<base::SingleThreadTaskRunner> ack_handler_task_runner,
-    ObjectIdInvalidationMap* out) const {
-  for (auto it = invalidations_.begin(); it != invalidations_.end(); ++it) {
+    TopicInvalidationMap* out) const {
+  for (const Invalidation& invalidation : invalidations_) {
     // Copy the invalidation and set the copy's ack_handler.
-    Invalidation inv(*it);
-    inv.SetAckHandler(ack_handler, ack_handler_task_runner);
-    out->Insert(inv);
+    Invalidation invalidation_copy = invalidation;
+    invalidation_copy.SetAckHandler(ack_handler, ack_handler_task_runner);
+    out->Insert(invalidation_copy);
   }
 }
 
@@ -81,8 +74,7 @@ void UnackedInvalidationSet::Acknowledge(const AckHandle& handle) {
       break;
     }
   }
-  DLOG_IF(WARNING, !handle_found)
-      << "Unrecognized to ack for object " << ObjectIdToString(object_id_);
+  DLOG_IF(WARNING, !handle_found) << "Unrecognized to ack for topic " << topic_;
   (void)handle_found;  // Silence unused variable warning in release builds.
 }
 
@@ -98,8 +90,7 @@ void UnackedInvalidationSet::Drop(const AckHandle& handle) {
     }
   }
   if (it == invalidations_.end()) {
-    DLOG(WARNING) << "Unrecognized drop request for object "
-                  << ObjectIdToString(object_id_);
+    DLOG(WARNING) << "Unrecognized drop request for topic " << topic_;
     return;
   }
 

@@ -97,8 +97,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   int GetCdmId() const final;
 
   // Decryptor implementation.
-  void RegisterNewKeyCB(StreamType stream_type,
-                        const NewKeyCB& key_added_cb) final;
+  void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
                const DecryptCB& decrypt_cb) final;

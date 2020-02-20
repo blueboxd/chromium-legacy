@@ -262,6 +262,31 @@ if (is_chromeos_device) {
 
       # crbug.com/1051059
       "security.SELinuxProcessesARC",
+
+      # crbug.com/1054340
+      "crostini.AudioSanity.artifact",
+      "crostini.CopyPaste.wayland_to_wayland_artifact",
+      "crostini.CopyPaste.wayland_to_x11_artifact",
+      "crostini.DisplayDensity.wayland_artifact",
+      "crostini.DisplayDensity.x11_artifact",
+      "crostini.GPUEnabled.artifact_gpu",
+      "crostini.GPUEnabled.artifact_sw",
+      "crostini.LaunchTerminal.artifact",
+      "crostini.PackageInfo.artifact",
+      "crostini.PackageInstallUninstall.artifact",
+      "crostini.Restart.artifact",
+      "crostini.SecureCopyPaste.copy_wayland_artifact",
+      "crostini.SecureCopyPaste.copy_x11_artifact",
+      "crostini.SecureCopyPaste.paste_wayland_artifact",
+      "crostini.SecureCopyPaste.paste_x11_artifact",
+      "crostini.Toolkit.gtk3_wayland",
+      "crostini.Toolkit.gtk3_x11",
+      "crostini.Toolkit.qt5",
+      "crostini.Toolkit.tkinter",
+      "crostini.UninstallInvalidApp.artifact",
+      "crostini.VerifyAppWayland.artifact",
+      "crostini.VerifyAppX11.artifact",
+      "crostini.Webserver.artifact",
     ]
   }
 

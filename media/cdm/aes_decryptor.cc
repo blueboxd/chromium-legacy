@@ -470,15 +470,15 @@ int AesDecryptor::GetCdmId() const {
 }
 
 void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                    const NewKeyCB& new_key_cb) {
+                                    NewKeyCB new_key_cb) {
   base::AutoLock auto_lock(new_key_cb_lock_);
 
   switch (stream_type) {
     case kAudio:
-      new_audio_key_cb_ = new_key_cb;
+      new_audio_key_cb_ = std::move(new_key_cb);
       break;
     case kVideo:
-      new_video_key_cb_ = new_key_cb;
+      new_video_key_cb_ = std::move(new_key_cb);
       break;
     default:
       NOTREACHED();

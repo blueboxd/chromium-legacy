@@ -30,7 +30,6 @@ PageTimingMetricsSender::PageTimingMetricsSender(
     std::unique_ptr<PageTimingSender> sender,
     std::unique_ptr<base::OneShotTimer> timer,
     mojom::PageLoadTimingPtr initial_timing,
-    const PageTimingMetadataRecorder::MonotonicTiming& initial_monotonic_timing,
     std::unique_ptr<PageResourceDataUse> initial_request)
     : sender_(std::move(sender)),
       timer_(std::move(timer)),
@@ -40,8 +39,7 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       new_features_(mojom::PageLoadFeatures::New()),
       render_data_(),
       new_deferred_resource_data_(mojom::DeferredResourceCounts::New()),
-      buffer_timer_delay_ms_(kBufferTimerDelayMillis),
-      metadata_recorder_(initial_monotonic_timing) {
+      buffer_timer_delay_ms_(kBufferTimerDelayMillis) {
   page_resource_data_use_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(initial_request->resource_id()),
@@ -228,9 +226,7 @@ void PageTimingMetricsSender::UpdateResourceMetadata(
   it->second->SetIsMainFrameResource(is_main_frame_resource);
 }
 
-void PageTimingMetricsSender::Update(
-    mojom::PageLoadTimingPtr timing,
-    const PageTimingMetadataRecorder::MonotonicTiming& monotonic_timing) {
+void PageTimingMetricsSender::SendSoon(mojom::PageLoadTimingPtr timing) {
   if (last_timing_->Equals(*timing)) {
     return;
   }
@@ -244,7 +240,6 @@ void PageTimingMetricsSender::Update(
   }
 
   last_timing_ = std::move(timing);
-  metadata_recorder_.UpdateMetadata(monotonic_timing);
   EnsureSendTimer();
 }
 

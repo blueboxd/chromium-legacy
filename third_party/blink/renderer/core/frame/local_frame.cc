@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
@@ -131,6 +132,7 @@
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -165,6 +167,19 @@ inline float ParentPageZoomFactor(LocalFrame* frame) {
 inline float ParentTextZoomFactor(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
+}
+
+// Convert a data url to a message pipe handle that corresponds to a remote
+// blob, so that it can be passed across processes.
+mojo::ScopedMessagePipeHandle DataURLToMessagePipeHandle(
+    const String& data_url) {
+  auto blob_data = std::make_unique<BlobData>();
+  blob_data->AppendBytes(data_url.Utf8().data(), data_url.length());
+  scoped_refptr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(std::move(blob_data), data_url.length());
+  mojo::PendingRemote<mojom::blink::Blob> data_url_blob =
+      blob_data_handle->CloneBlobRemote();
+  return data_url_blob.PassPipe();
 }
 
 }  // namespace
@@ -2224,7 +2239,7 @@ void LocalFrame::DownloadURL(
     return;
 
   auto params = mojom::blink::DownloadURLParams::New();
-  const WebURL& url = request.Url();
+  const KURL& url = request.Url();
   // Pass data URL through blob.
   if (url.ProtocolIs("data")) {
     params->url = KURL();

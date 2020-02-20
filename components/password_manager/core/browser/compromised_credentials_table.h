@@ -40,7 +40,7 @@ struct CompromisedCredentials {
   // The date when the record was created.
   base::Time create_time;
   // The type of the credentials that was compromised.
-  CompromiseType compromise_type;
+  CompromiseType compromise_type = CompromiseType::kLeaked;
 };
 
 bool operator==(const CompromisedCredentials& lhs,

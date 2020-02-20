@@ -223,7 +223,8 @@ void IOSChromeSavePasswordInfoBarDelegate::InfoBarDismissed() {
 
 bool IOSChromeSavePasswordInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return !details.is_redirect && ConfirmInfoBarDelegate::ShouldExpire(details);
+  return !details.is_form_submission && !details.is_redirect &&
+         ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 void IOSChromeSavePasswordInfoBarDelegate::UpdateCredentials(

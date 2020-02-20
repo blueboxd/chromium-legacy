@@ -609,9 +609,7 @@ class IdentityManager : public KeyedService,
   void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
   void UnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& account_info) override;
-#if !defined(OS_CHROMEOS)
   void GoogleSignedOut(const CoreAccountInfo& account_info) override;
-#endif
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;

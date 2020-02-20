@@ -1180,7 +1180,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         for (TabObserver observer : mObservers) observer.onBackgroundColorChanged(this, color);
     }
 
-    /** This is currently called when committing a pre-rendered page. */
+    /**
+     *  This is currently called when committing a pre-rendered page or activating a portal.
+     */
+    @CalledByNative
     void swapWebContents(WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         boolean hasWebContents = mContentView != null && mWebContents != null;
         Rect original = hasWebContents

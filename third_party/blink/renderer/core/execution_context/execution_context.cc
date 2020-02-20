@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -429,9 +430,9 @@ bool ExecutionContext::IsFeatureEnabled(
     CountPotentialFeaturePolicyViolation(feature);
   }
 
-  base::Optional<mojom::FeaturePolicyDisposition> disposition;
+  bool should_report;
   bool enabled = GetSecurityContext().IsFeatureEnabled(feature, threshold_value,
-                                                       &disposition);
+                                                       &should_report);
 
   if (enabled) {
     // Report if the proposed header semantics change would have affected the
@@ -448,9 +449,27 @@ bool ExecutionContext::IsFeatureEnabled(
     }
   }
 
-  if (disposition && report_on_failure == ReportOptions::kReportOnFailure)
-    ReportFeaturePolicyViolation(feature, *disposition, message, source_file);
+  if (should_report && report_on_failure == ReportOptions::kReportOnFailure) {
+    mojom::blink::FeaturePolicyDisposition disposition =
+        enabled ? mojom::blink::FeaturePolicyDisposition::kReport
+                : mojom::blink::FeaturePolicyDisposition::kEnforce;
+    ReportFeaturePolicyViolation(feature, disposition, message, source_file);
+  }
+
   return enabled;
+}
+
+bool ExecutionContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature) const {
+  PolicyValue threshold_value = PolicyValue::CreateMaxPolicyValue(
+      GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type());
+  return IsFeatureEnabled(feature, threshold_value);
+}
+
+bool ExecutionContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature,
+    PolicyValue threshold_value) const {
+  return GetSecurityContext().IsFeatureEnabled(feature, threshold_value);
 }
 
 bool ExecutionContext::RequireTrustedTypes() const {

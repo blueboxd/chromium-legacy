@@ -29,36 +29,36 @@ class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
   virtual IPin* GetPin(int index) = 0;
 
   // Inherited from IUnknown.
-  STDMETHODIMP QueryInterface(REFIID id, void** object_ptr) override;
-  STDMETHODIMP_(ULONG) AddRef() override;
-  STDMETHODIMP_(ULONG) Release() override;
+  IFACEMETHODIMP QueryInterface(REFIID id, void** object_ptr) override;
+  IFACEMETHODIMP_(ULONG) AddRef() override;
+  IFACEMETHODIMP_(ULONG) Release() override;
 
   // Inherited from IBaseFilter.
-  STDMETHODIMP EnumPins(IEnumPins** enum_pins) override;
+  IFACEMETHODIMP EnumPins(IEnumPins** enum_pins) override;
 
-  STDMETHODIMP FindPin(LPCWSTR id, IPin** pin) override;
+  IFACEMETHODIMP FindPin(LPCWSTR id, IPin** pin) override;
 
-  STDMETHODIMP QueryFilterInfo(FILTER_INFO* info) override;
+  IFACEMETHODIMP QueryFilterInfo(FILTER_INFO* info) override;
 
-  STDMETHODIMP JoinFilterGraph(IFilterGraph* graph, LPCWSTR name) override;
+  IFACEMETHODIMP JoinFilterGraph(IFilterGraph* graph, LPCWSTR name) override;
 
-  STDMETHODIMP QueryVendorInfo(LPWSTR* vendor_info) override;
+  IFACEMETHODIMP QueryVendorInfo(LPWSTR* vendor_info) override;
 
   // Inherited from IMediaFilter.
-  STDMETHODIMP Stop() override;
+  IFACEMETHODIMP Stop() override;
 
-  STDMETHODIMP Pause() override;
+  IFACEMETHODIMP Pause() override;
 
-  STDMETHODIMP Run(REFERENCE_TIME start) override;
+  IFACEMETHODIMP Run(REFERENCE_TIME start) override;
 
-  STDMETHODIMP GetState(DWORD msec_timeout, FILTER_STATE* state) override;
+  IFACEMETHODIMP GetState(DWORD msec_timeout, FILTER_STATE* state) override;
 
-  STDMETHODIMP SetSyncSource(IReferenceClock* clock) override;
+  IFACEMETHODIMP SetSyncSource(IReferenceClock* clock) override;
 
-  STDMETHODIMP GetSyncSource(IReferenceClock** clock) override;
+  IFACEMETHODIMP GetSyncSource(IReferenceClock** clock) override;
 
   // Inherited from IPersistent.
-  STDMETHODIMP GetClassID(CLSID* class_id) override = 0;
+  IFACEMETHODIMP GetClassID(CLSID* class_id) override = 0;
 
  protected:
   friend class base::RefCounted<FilterBase>;

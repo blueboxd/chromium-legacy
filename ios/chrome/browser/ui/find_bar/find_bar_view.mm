@@ -22,6 +22,9 @@
 namespace {
 // Horizontal padding betwee all elements (except the previous/next buttons).
 const CGFloat kPadding = 8;
+// Horizontal padding between the last button and the trailing edge in a
+// Regular x Regular environment.
+const CGFloat kIPadButtonEdgeSpacing = 17;
 const CGFloat kInputFieldCornerRadius = 10;
 const CGFloat kFontSize = 15;
 const CGFloat kButtonFontSize = 17;
@@ -97,6 +100,9 @@ const CGFloat kButtonLength = 44;
   [self.inputField setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
                                      forAxis:UILayoutConstraintAxisHorizontal];
 
+  const CGFloat closeButtonTrailingPadding =
+      ShouldShowCompactToolbar() ? kPadding : kIPadButtonEdgeSpacing;
+
   [NSLayoutConstraint activateConstraints:@[
     // Input Field.
     [self.inputField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
@@ -133,7 +139,7 @@ const CGFloat kButtonLength = 44;
     // Use button intrinsic width.
     [self.closeButton.trailingAnchor
         constraintEqualToAnchor:safeArea.trailingAnchor
-                       constant:-kPadding],
+                       constant:-closeButtonTrailingPadding],
   ]];
 }
 

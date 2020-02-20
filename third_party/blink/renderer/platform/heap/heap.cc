@@ -152,9 +152,8 @@ void ThreadHeap::VisitRememberedSets(MarkingVisitor* visitor) {
       // finalization.
       DCHECK(header->IsMarked());
       DCHECK(!MarkingVisitor::IsInConstruction(header));
-      const GCInfo* gc_info =
-          GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-      gc_info->trace(visitor, header->Payload());
+      const GCInfo& gc_info = GCInfo::From(header->GcInfoIndex());
+      gc_info.trace(visitor, header->Payload());
     }
   };
   for (size_t i = 0; i < BlinkGC::kLargeObjectArenaIndex; ++i) {
@@ -372,9 +371,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, write_barrier_worklist_.get(),
           [visitor](HeapObjectHeader* header) {
             DCHECK(!MarkingVisitor::IsInConstruction(header));
-            GCInfoTable::Get()
-                .GCInfoFromIndex(header->GcInfoIndex())
-                ->trace(visitor, header->Payload());
+            GCInfo::From(header->GcInfoIndex())
+                .trace(visitor, header->Payload());
             visitor->AccountMarkedBytes(header);
           },
           WorklistTaskId::MutatorThread);
@@ -420,9 +418,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
         deadline, write_barrier_worklist_.get(),
         [visitor](HeapObjectHeader* header) {
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
-          GCInfoTable::Get()
-              .GCInfoFromIndex(header->GcInfoIndex())
-              ->trace(visitor, header->Payload());
+          GCInfo::From(header->GcInfoIndex()).trace(visitor, header->Payload());
           visitor->AccountMarkedBytes(header);
         },
         visitor->task_id());

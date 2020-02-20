@@ -56,10 +56,41 @@ const AuthenticationViewConstants kRegularConstants = {
 // Button used to exit the sign-in operation without confirmation, e.g. "No
 // Thanks", "Cancel".
 @property(nonatomic, strong) UIButton* skipSigninButton;
+// Property that denotes whether the unified consent screen reached bottom has
+// triggered.
+@property(nonatomic, assign) BOOL hasUnifiedConsentScreenReachedBottom;
 
 @end
 
 @implementation UserSigninViewController
+
+#pragma mark - Public
+
+- (void)markUnifiedConsentScreenReachedBottom {
+  // This is the first time the unified consent screen has reached the bottom.
+  if (self.hasUnifiedConsentScreenReachedBottom == NO) {
+    self.hasUnifiedConsentScreenReachedBottom = YES;
+    [self updatePrimaryButtonStyle];
+  }
+}
+
+- (void)updatePrimaryButtonStyle {
+  if (![self.delegate unifiedConsentCoordinatorHasIdentity]) {
+    // User has not added an account. Display 'add account' button.
+    [self.confirmationButton setTitle:self.addAccountButtonTitle
+                             forState:UIControlStateNormal];
+    [self setConfirmationStylingWithButton:self.confirmationButton];
+  } else if (!self.hasUnifiedConsentScreenReachedBottom) {
+    // User has not scrolled to the bottom of the user consent screen.
+    // Display 'more' button.
+    [self updateButtonAsMoreButton:self.confirmationButton];
+  } else {
+    // By default display 'Yes I'm in' button.
+    [self.confirmationButton setTitle:self.confirmationButtonTitle
+                             forState:UIControlStateNormal];
+    [self setConfirmationStylingWithButton:self.confirmationButton];
+  }
+}
 
 #pragma mark - UIViewController
 
@@ -108,6 +139,15 @@ const AuthenticationViewConstants kRegularConstants = {
   return l10n_util::GetNSString(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
 }
 
+- (NSString*)addAccountButtonTitle {
+  return l10n_util::GetNSString(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT);
+}
+
+- (NSString*)scrollButtonTitle {
+  return l10n_util::GetNSString(
+      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON);
+}
+
 - (const AuthenticationViewConstants&)authenticationViewConstants {
   BOOL isRegularSizeClass = IsRegularXRegularSizeClass(self.traitCollection);
   return isRegularSizeClass ? kRegularConstants : kCompactConstants;
@@ -146,10 +186,9 @@ const AuthenticationViewConstants kRegularConstants = {
   self.confirmationButton = [[UIButton alloc] init];
   self.confirmationButton.accessibilityIdentifier = @"ic_close";
 
-  [self addSubviewWithButton:self.confirmationButton
-                       title:self.confirmationButtonTitle];
-  [self setConfirmationStylingWithButton:self.confirmationButton];
-
+  [self addSubviewWithButton:self.confirmationButton];
+  // Note that the button style will depend on the user sign-in state.
+  [self updatePrimaryButtonStyle];
   self.confirmationButton.contentEdgeInsets =
       UIEdgeInsetsMake(kButtonTitleContentInset, kButtonTitleContentInset,
                        kButtonTitleContentInset, kButtonTitleContentInset);
@@ -160,14 +199,14 @@ const AuthenticationViewConstants kRegularConstants = {
   DCHECK(!self.skipSigninButton);
   DCHECK(self.unifiedConsentViewController);
   self.skipSigninButton = [[UIButton alloc] init];
-  [self addSubviewWithButton:self.skipSigninButton
-                       title:self.skipSigninButtonTitle];
+  [self addSubviewWithButton:self.skipSigninButton];
+  [self.skipSigninButton setTitle:self.skipSigninButtonTitle
+                         forState:UIControlStateNormal];
   [self setSkipSigninStylingWithButton:self.skipSigninButton];
 }
 
 // Sets up button properties and adds it to view.
-- (void)addSubviewWithButton:(UIButton*)button title:(NSString*)title {
-  [button setTitle:title forState:UIControlStateNormal];
+- (void)addSubviewWithButton:(UIButton*)button {
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
 
@@ -194,6 +233,14 @@ const AuthenticationViewConstants kRegularConstants = {
   button.backgroundColor = self.systemBackgroundColor;
   [button setTitleColor:[UIColor colorNamed:kBlueColor]
                forState:UIControlStateNormal];
+}
+
+- (void)updateButtonAsMoreButton:(UIButton*)button {
+  [button setTitle:self.scrollButtonTitle forState:UIControlStateNormal];
+  UIImage* buttonImage = [[UIImage imageNamed:@"signin_confirmation_more"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [button setImage:buttonImage forState:UIControlStateNormal];
+  [self setSkipSigninStylingWithButton:button];
 }
 
 #pragma mark - Events

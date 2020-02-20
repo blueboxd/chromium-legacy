@@ -1189,6 +1189,10 @@ const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
     "New implementation of tabstrip animations.";
 
+const char kTextureLayerSkipWaitForActivationName[] = "Parallelize layers";
+const char kTextureLayerSkipWaitForActivationDescription[] =
+    "Don't wait for layer activation before beginning new frame.";
+
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
     "Enable notification indicators, which appear on app icons when a "

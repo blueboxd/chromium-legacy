@@ -520,6 +520,10 @@ class HeapHashMap : public HashMap<KeyArg,
   HeapHashMap() { CheckType(); }
 };
 
+template <typename T, typename U, typename V, typename W, typename X>
+struct GCInfoTrait<HeapHashMap<T, U, V, W, X>>
+    : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator>> {};
+
 template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
           typename TraitsArg = HashTraits<ValueArg>>
@@ -550,6 +554,10 @@ class HeapHashSet
 
   HeapHashSet() { CheckType(); }
 };
+
+template <typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashSet<T, U, V>>
+    : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {};
 
 template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
@@ -582,6 +590,10 @@ class HeapLinkedHashSet
 
   HeapLinkedHashSet() { CheckType(); }
 };
+
+template <typename T, typename U, typename V>
+struct GCInfoTrait<HeapLinkedHashSet<T, U, V>>
+    : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {};
 
 template <typename ValueArg,
           wtf_size_t inlineCapacity =
@@ -619,6 +631,14 @@ class HeapListHashSet
   HeapListHashSet() { CheckType(); }
 };
 
+template <typename T, wtf_size_t inlineCapacity, typename U>
+struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>>
+    : public GCInfoTrait<
+          ListHashSet<T,
+                      inlineCapacity,
+                      U,
+                      HeapListHashSetAllocator<T, inlineCapacity>>> {};
+
 template <typename Value,
           typename HashFunctions = typename DefaultHash<Value>::Hash,
           typename Traits = HashTraits<Value>>
@@ -649,6 +669,10 @@ class HeapHashCountedSet
 
   HeapHashCountedSet() { CheckType(); }
 };
+
+template <typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashCountedSet<T, U, V>>
+    : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> {};
 
 template <typename T, wtf_size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
@@ -702,6 +726,10 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   }
 };
 
+template <typename T, wtf_size_t inlineCapacity>
+struct GCInfoTrait<HeapVector<T, inlineCapacity>>
+    : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {};
+
 template <typename T>
 class HeapDeque : public Deque<T, 0, HeapAllocator> {
   IS_GARBAGE_COLLECTED_CONTAINER_TYPE();
@@ -745,6 +773,10 @@ class HeapDeque : public Deque<T, 0, HeapAllocator> {
 
   HeapDeque(const HeapDeque<T>& other) : Deque<T, 0, HeapAllocator>(other) {}
 };
+
+template <typename T>
+struct GCInfoTrait<HeapDeque<T>>
+    : public GCInfoTrait<Deque<T, 0, HeapAllocator>> {};
 
 }  // namespace blink
 

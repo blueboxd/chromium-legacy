@@ -52,8 +52,9 @@ def determine_app_path(app, host_app=None):
   # Default app_path looks like /b/s/w/ir/out/Debug/test.app/test
   app_path = os.path.join(full_app_path, app_name)
 
-  if host_app:
-    LOGGER.debug("Detected EG2 test while building application path.")
+  if host_app and host_app != 'NO_PATH':
+    LOGGER.debug("Detected EG2 test while building application path. "
+                 "Host app: {}".format(host_app))
     # EG2 tests always end in -Runner, so we split that off
     app_name = app[:app.rindex('-Runner')]
     app_path = os.path.join(full_app_path, 'PlugIns',

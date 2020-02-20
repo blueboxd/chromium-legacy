@@ -75,9 +75,10 @@ class AppTimeController : public SystemClockClient::Observer,
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   // AppTimeNotificationDelegate:
-  void ShowAppTimeLimitNotification(const AppId& app_id,
-                                    base::TimeDelta time_limit,
-                                    AppNotification notification) override;
+  void ShowAppTimeLimitNotification(
+      const AppId& app_id,
+      const base::Optional<base::TimeDelta>& time_limit,
+      AppNotification notification) override;
 
   // AppActivityRegistry::AppStateObserver:
   void OnAppLimitReached(const AppId& app_id,

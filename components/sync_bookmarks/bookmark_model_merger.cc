@@ -203,7 +203,7 @@ void BookmarkModelMerger::RemoteTreeNode::EmplaceSelfAndDescendantsByGUID(
 
   if (entity().server_defined_unique_tag.empty()) {
     const std::string& guid = entity().specifics.bookmark().guid();
-    DCHECK(base::IsValidGUID(guid));
+    DCHECK(base::IsValidGUIDOutputString(guid));
 
     // Duplicate GUIDs have been sorted out before.
     bool success = guid_to_remote_node_map->emplace(guid, this).second;
@@ -358,7 +358,7 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
       bookmark_model->root_node());
   while (iterator.has_next()) {
     const bookmarks::BookmarkNode* const node = iterator.Next();
-    DCHECK(base::IsValidGUID(node->guid()));
+    DCHECK(base::IsValidGUIDOutputString(node->guid()));
 
     const auto remote_it = guid_to_remote_node_map.find(node->guid());
     if (remote_it == guid_to_remote_node_map.end()) {
@@ -598,7 +598,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
   // server id upon receiving commit response.
   const bookmarks::BookmarkNode* node = parent->children()[index].get();
   DCHECK(!FindMatchingRemoteNodeByGUID(node));
-  DCHECK(base::IsValidGUID(node->guid()));
+  DCHECK(base::IsValidGUIDOutputString(node->guid()));
 
   // The node's GUID cannot run into collisions because
   // FindGuidMatchesOrReassignLocal() takes care of reassigning local GUIDs if

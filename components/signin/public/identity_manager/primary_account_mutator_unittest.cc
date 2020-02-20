@@ -11,10 +11,13 @@
 #include "base/test/task_environment.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/platform_test.h"
+
+using signin::ConsentLevel;
 
 namespace {
 
@@ -498,3 +501,32 @@ TEST_F(PrimaryAccountMutatorTest,
       RemoveAccountExpectation::kRemovePrimary, AuthExpectation::kAuthError);
 }
 #endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+TEST_F(PrimaryAccountMutatorTest, RevokeSyncConsent) {
+  base::test::TaskEnvironment task_environment;
+  signin::IdentityTestEnvironment environment;
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+
+  class Observer : public signin::IdentityManager::Observer {
+   public:
+    void OnPrimaryAccountCleared(const CoreAccountInfo& info) override {
+      ++primary_account_cleared_;
+    }
+
+    int primary_account_cleared_ = 0;
+  } observer;
+  identity_manager->AddObserver(&observer);
+
+  environment.MakePrimaryAccountAvailable(kPrimaryAccountEmail);
+  ASSERT_TRUE(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
+  EXPECT_EQ(0, observer.primary_account_cleared_);
+
+  identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent();
+  EXPECT_FALSE(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
+  EXPECT_TRUE(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
+  EXPECT_EQ(1, observer.primary_account_cleared_);
+
+  identity_manager->RemoveObserver(&observer);
+}
+#endif  // defined(OS_CHROMEOS)

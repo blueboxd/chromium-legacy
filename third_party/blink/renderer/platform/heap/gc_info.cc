@@ -43,43 +43,46 @@ constexpr size_t MaxTableSize() {
 }  // namespace
 
 GCInfoTable* GCInfoTable::global_table_ = nullptr;
-constexpr uint32_t GCInfoTable::kMaxIndex;
+constexpr GCInfoIndex GCInfoTable::kMaxIndex;
+constexpr GCInfoIndex GCInfoTable::kMinIndex;
 
 void GCInfoTable::CreateGlobalTable() {
   DEFINE_STATIC_LOCAL(GCInfoTable, table, ());
   global_table_ = &table;
 }
 
-uint32_t GCInfoTable::EnsureGCInfoIndex(
+GCInfoIndex GCInfoTable::EnsureGCInfoIndex(
     const GCInfo* gc_info,
-    std::atomic<uint32_t>* gc_info_index_slot) {
+    std::atomic<GCInfoIndex>* gc_info_index_slot) {
   DCHECK(gc_info);
   DCHECK(gc_info_index_slot);
 
-  // Ensuring a new index involves current index adjustment as well
-  // as potentially resizing the table, both operations that require
-  // a lock.
+  // Ensuring a new index involves current index adjustment as well as
+  // potentially resizing the table. For simplicity we use a lock.
   MutexLocker locker(table_mutex_);
 
-  // If more than one thread ends up allocating a slot for
-  // the same GCInfo, have later threads reuse the slot
-  // allocated by the first.
-  uint32_t gc_info_index = gc_info_index_slot->load(std::memory_order_acquire);
+  // If more than one thread ends up allocating a slot for the same GCInfo, have
+  // later threads reuse the slot allocated by the first.
+  GCInfoIndex gc_info_index =
+      gc_info_index_slot->load(std::memory_order_relaxed);
   if (gc_info_index)
     return gc_info_index;
 
-  gc_info_index = ++current_index_;
-  CHECK(gc_info_index < GCInfoTable::kMaxIndex);
-  if (current_index_ >= limit_)
+  if (current_index_ == limit_)
     Resize();
 
+  gc_info_index = current_index_++;
+  CHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
+
   table_[gc_info_index] = gc_info;
-  gc_info_index_slot->store(gc_info_index, std::memory_order_release);
+  gc_info_index_slot->store(gc_info_index, std::memory_order_relaxed);
   return gc_info_index;
 }
 
 void GCInfoTable::Resize() {
-  const size_t new_limit = (limit_) ? 2 * limit_ : ComputeInitialTableLimit();
+  const GCInfoIndex new_limit =
+      (limit_) ? 2 * limit_ : ComputeInitialTableLimit();
+  CHECK_GT(new_limit, limit_);
   const size_t old_committed_size = limit_ * kEntrySize;
   const size_t new_committed_size = new_limit * kEntrySize;
   CHECK(table_);
@@ -107,28 +110,15 @@ void GCInfoTable::Resize() {
   }
 #endif  // DCHECK_IS_ON()
 
-  limit_ = static_cast<uint32_t>(new_limit);
+  limit_ = new_limit;
 }
 
 GCInfoTable::GCInfoTable() {
-  CHECK(!table_);
   table_ = reinterpret_cast<GCInfo const**>(base::AllocPages(
       nullptr, MaxTableSize(), base::kPageAllocationGranularity,
       base::PageInaccessible, base::PageTag::kBlinkGC));
   CHECK(table_);
   Resize();
 }
-
-#if DCHECK_IS_ON()
-void AssertObjectHasGCInfo(const void* payload, size_t gc_info_index) {
-  HeapObjectHeader::CheckFromPayload(payload);
-#if !defined(COMPONENT_BUILD)
-  // On component builds we cannot compare the gcInfos as they are statically
-  // defined in each of the components and hence will not match.
-  DCHECK_EQ(HeapObjectHeader::FromPayload(payload)->GcInfoIndex(),
-            gc_info_index);
-#endif
-}
-#endif
 
 }  // namespace blink

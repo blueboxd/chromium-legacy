@@ -14,13 +14,12 @@ void MarkingVerifier::VerifyObject(HeapObjectHeader* header) {
   if (header->IsFree() || !header->IsMarked())
     return;
 
-  const GCInfo* info =
-      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
+  const GCInfo& info = GCInfo::From(header->GcInfoIndex());
   const bool can_verify =
-      !info->has_v_table || blink::VTableInitialized(header->Payload());
+      !info.has_v_table || blink::VTableInitialized(header->Payload());
   if (can_verify) {
     parent_ = header;
-    info->trace(this, header->Payload());
+    info.trace(this, header->Payload());
   }
 }
 

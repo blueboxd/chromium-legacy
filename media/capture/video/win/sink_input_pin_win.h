@@ -32,7 +32,7 @@ class SinkInputPin : public PinBase {
   bool IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) override;
   bool GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHODIMP Receive(IMediaSample* media_sample) override;
+  IFACEMETHODIMP Receive(IMediaSample* media_sample) override;
 
  private:
   ~SinkInputPin() override;

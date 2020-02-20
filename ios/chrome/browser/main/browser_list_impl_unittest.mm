@@ -114,26 +114,6 @@ TEST_F(BrowserListImplTest, AddRemoveIncognitoBrowsers) {
   EXPECT_EQ(0UL, browser_list_->AllRegularBrowsers().size());
 }
 
-// Test that destroyed browsers are auto-removed.
-TEST_F(BrowserListImplTest, AutoRemoveBrowsers) {
-  {
-    // Create and add scoped browsers
-    TestBrowser browser_1(chrome_browser_state_.get());
-    browser_list_->AddBrowser(&browser_1);
-    EXPECT_EQ(1UL, browser_list_->AllRegularBrowsers().size());
-
-    ChromeBrowserState* incognito_browser_state =
-        chrome_browser_state_->GetOffTheRecordChromeBrowserState();
-    TestBrowser incognito_browser_1(incognito_browser_state);
-    browser_list_->AddIncognitoBrowser(&incognito_browser_1);
-    EXPECT_EQ(1UL, browser_list_->AllIncognitoBrowsers().size());
-  }
-
-  // Expect that the browsers going out of scope will have triggered removal.
-  EXPECT_EQ(0UL, browser_list_->AllRegularBrowsers().size());
-  EXPECT_EQ(0UL, browser_list_->AllIncognitoBrowsers().size());
-}
-
 // Test that values returned from AllRegularBrowsers and AllIncognitoBrowsers
 // aren't affected by subsequent changes to the browser list.
 TEST_F(BrowserListImplTest, AllBrowserValuesDontChange) {
@@ -191,14 +171,4 @@ TEST_F(BrowserListImplTest, DISABLED_BrowserListObserver) {
   EXPECT_EQ(0UL, observer->GetLastIncognitoBrowsers().size());
 
   browser_list_->RemoveObserver(observer);
-}
-
-TEST_F(BrowserListImplTest, DeleteBrowserState) {
-  TestBrowserListObserver* observer = new TestBrowserListObserver;
-  browser_list_->AddObserver(observer);
-  Browser* browser_1 = new TestBrowser(chrome_browser_state_.get());
-  browser_list_->AddBrowser(browser_1);
-
-  // Now delete the browser state. Nothing should explode.
-  chrome_browser_state_.reset();
 }

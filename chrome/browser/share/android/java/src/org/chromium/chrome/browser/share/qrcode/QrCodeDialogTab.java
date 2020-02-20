@@ -15,4 +15,6 @@ public interface QrCodeDialogTab {
     public void onResume();
 
     public void onPause();
+
+    public void onDestroy();
 }

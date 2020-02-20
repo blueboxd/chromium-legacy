@@ -24,6 +24,9 @@ class ASH_PUBLIC_EXPORT MediaClient {
   // Handles the Pause Media shortcut key.
   virtual void HandleMediaPause() = 0;
 
+  // Handles the Stop Media shortcut key.
+  virtual void HandleMediaStop() = 0;
+
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
 

@@ -62,6 +62,7 @@ class ASH_EXPORT MediaControllerImpl
   void HandleMediaPlayPause();
   void HandleMediaPlay();
   void HandleMediaPause();
+  void HandleMediaStop();
   void HandleMediaNextTrack();
   void HandleMediaPrevTrack();
 

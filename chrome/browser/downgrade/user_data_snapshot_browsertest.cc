@@ -4,18 +4,24 @@
 
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/test/mock_callback.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/downgrade/downgrade_manager.h"
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -24,6 +30,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_types.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -256,5 +265,102 @@ IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, Test) {}
+
+class HistorySnapshotTest : public UserDataSnapshotBrowserTestBase {
+  struct HistoryEntry {
+    HistoryEntry(base::StringPiece url,
+                 base::StringPiece title,
+                 base::Time time,
+                 history::VisitSource source)
+        : url(url),
+          title(base::ASCIIToUTF16(title)),
+          time(time),
+          source(source) {}
+    ~HistoryEntry() = default;
+    GURL url;
+    base::string16 title;
+    base::Time time;
+    history::VisitSource source;
+  };
+
+ protected:
+  void SimulateUserActions() override {
+    auto* history_service = HistoryServiceFactory::GetForProfile(
+        browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    for (const auto& entry : history_entries_) {
+      history_service->AddPage(entry.url, entry.time, entry.source);
+      history_service->SetPageTitle(entry.url, entry.title);
+    }
+  }
+
+  void ValidateUserActions() override {
+    auto* history_service = HistoryServiceFactory::GetForProfile(
+        browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+
+    history::QueryResults history_query_results;
+    base::RunLoop run_loop;
+    base::CancelableTaskTracker tracker;
+    history_service->QueryHistory(
+        base::string16(), history::QueryOptions(),
+        base::BindOnce(&HistorySnapshotTest::SetQueryResults,
+                       base::Unretained(this), run_loop.QuitClosure()),
+        &tracker);
+    run_loop.Run();
+    EXPECT_EQ(history_query_results_.size(), history_entries_.size());
+    std::map<GURL, const HistoryEntry*> expected_results_map;
+    for (const auto& entry : history_entries_)
+      expected_results_map[entry.url] = &entry;
+    for (const auto& result : history_query_results_) {
+      auto it = expected_results_map.find(result.url());
+      if (it == expected_results_map.end()) {
+        ADD_FAILURE() << "found an unexpected result for url " << result.url();
+        continue;
+      }
+      const auto* expected = it->second;
+      EXPECT_EQ(expected->time, result.visit_time());
+      EXPECT_EQ(expected->title, result.title());
+    }
+  }
+
+ private:
+  void SetQueryResults(base::RepeatingClosure continuation,
+                       history::QueryResults results) {
+    history_query_results_ = std::move(results);
+    continuation.Run();
+  }
+
+  history::QueryResults history_query_results_;
+  const std::vector<HistoryEntry> history_entries_{
+      HistoryEntry("https://www.website.com",
+                   "website",
+                   base::Time::FromDoubleT(1000),
+                   history::VisitSource::SOURCE_BROWSED),
+      HistoryEntry("https://www.website1.com",
+                   "website1",
+                   base::Time::FromDoubleT(10001),
+                   history::VisitSource::SOURCE_EXTENSION),
+      HistoryEntry("https://www.website2.com",
+                   "website2",
+                   base::Time::FromDoubleT(10002),
+                   history::VisitSource::SOURCE_FIREFOX_IMPORTED),
+      HistoryEntry("https://www.website3.com",
+                   "website3",
+                   base::Time::FromDoubleT(10003),
+                   history::VisitSource::SOURCE_IE_IMPORTED),
+      HistoryEntry("https://www.website4.com",
+                   "website4",
+                   base::Time::FromDoubleT(10004),
+                   history::VisitSource::SOURCE_SAFARI_IMPORTED),
+      HistoryEntry("https://www.website5.com",
+                   "website5",
+                   base::Time::FromDoubleT(10005),
+                   history::VisitSource::SOURCE_SYNCED),
+  };
+};
+
+IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, Test) {}
 
 }  // namespace downgrade

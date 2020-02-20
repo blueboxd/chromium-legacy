@@ -37,7 +37,9 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -99,6 +101,20 @@ void CoreTabHelper::SearchByImageInNewTab(
       base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
                  weak_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame),
                  src_url));
+}
+
+std::unique_ptr<content::WebContents> CoreTabHelper::SwapWebContents(
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+#if defined(OS_ANDROID)
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+  return tab->SwapWebContents(std::move(new_contents), did_start_load,
+                              did_finish_load);
+#else
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  return browser->SwapWebContents(web_contents(), std::move(new_contents));
+#endif
 }
 
 // static

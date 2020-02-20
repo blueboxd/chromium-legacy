@@ -38,6 +38,7 @@ source_set("unit_tests") {
     "//ios/chrome/app",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app:mode",
+    "//ios/chrome/app/intents",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/app/startup",
     "//ios/chrome/browser",

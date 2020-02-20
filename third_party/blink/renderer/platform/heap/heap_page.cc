@@ -89,21 +89,19 @@ namespace blink {
 
 void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   HeapAllocHooks::FreeHookIfEnabled(object);
-  const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
-  if (gc_info->finalize)
-    gc_info->finalize(object);
+  const GCInfo& gc_info = GCInfo::From(GcInfoIndex());
+  if (gc_info.finalize)
+    gc_info.finalize(object);
 
   ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
 }
 
 bool HeapObjectHeader::HasNonTrivialFinalizer() const {
-  const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
-  return gc_info->finalize;
+  return GCInfo::From(GcInfoIndex()).finalize;
 }
 
 const char* HeapObjectHeader::Name() const {
-  const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
-  return gc_info->name(Payload()).value;
+  return GCInfo::From(GcInfoIndex()).name(Payload()).value;
 }
 
 BaseArena::BaseArena(ThreadState* state, int index)
@@ -132,7 +130,7 @@ void BaseArena::CollectStatistics(std::string name,
   ResetAllocationPoint();
 
   if (!NameClient::HideInternalName()) {
-    size_t num_types = GCInfoTable::Get().GcInfoIndex() + 1;
+    const size_t num_types = GCInfoTable::Get().NumberOfGCInfos();
     arena_stats.object_stats.num_types = num_types;
     arena_stats.object_stats.type_name.resize(num_types);
     arena_stats.object_stats.type_count.resize(num_types);

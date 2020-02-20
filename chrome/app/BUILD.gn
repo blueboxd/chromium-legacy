@@ -154,7 +154,6 @@ static_library("test_support") {
 
   if (is_win) {
     deps += [
-      "//chrome:chrome_initial",
       "//chrome/chrome_elf:test_stubs",
       "//chrome/install_static:install_static_util",
       "//components/browser_watcher:stability_client",

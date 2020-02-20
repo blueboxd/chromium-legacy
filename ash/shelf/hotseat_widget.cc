@@ -397,6 +397,42 @@ void HotseatWidget::SetTranslucentBackground(
   delegate_view_->SetTranslucentBackground(translucent_background_bounds);
 }
 
+int HotseatWidget::CalculateHotseatYInScreen(
+    HotseatState hotseat_target_state) const {
+  DCHECK(shelf_->IsHorizontalAlignment());
+  const bool is_hotseat_enabled = Shell::Get()->IsInTabletMode() &&
+                                  chromeos::switches::ShouldShowShelfHotseat();
+  int hotseat_distance_from_bottom_of_display;
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  switch (hotseat_target_state) {
+    case HotseatState::kShown: {
+      // When the hotseat state is HotseatState::kShown in tablet mode, the
+      // home launcher is showing. Elevate the hotseat a few px to match the
+      // navigation and status area.
+      const bool use_padding = is_hotseat_enabled;
+      hotseat_distance_from_bottom_of_display =
+          hotseat_size +
+          (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
+    } break;
+    case HotseatState::kHidden:
+      // Show the hotseat offscreen.
+      hotseat_distance_from_bottom_of_display = 0;
+      break;
+    case HotseatState::kExtended:
+      // Show the hotseat at its extended position.
+      hotseat_distance_from_bottom_of_display =
+          ShelfConfig::Get()->in_app_shelf_size() +
+          ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
+      break;
+  }
+  const int target_shelf_size =
+      shelf_->shelf_widget()->GetTargetBounds().size().height();
+  const int hotseat_y_in_shelf =
+      -(hotseat_distance_from_bottom_of_display - target_shelf_size);
+  const int shelf_y = shelf_->shelf_widget()->GetTargetBounds().y();
+  return hotseat_y_in_shelf + shelf_y;
+}
+
 void HotseatWidget::CalculateTargetBounds() {
   ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
   const HotseatState hotseat_target_state =
@@ -429,9 +465,8 @@ void HotseatWidget::CalculateTargetBounds() {
       hotseat_width = shelf_bounds.width();
       hotseat_x = shelf_bounds.x();
     }
-    hotseat_origin = gfx::Point(
-        hotseat_x,
-        layout_manager->CalculateHotseatYInScreen(hotseat_target_state));
+    hotseat_origin =
+        gfx::Point(hotseat_x, CalculateHotseatYInScreen(hotseat_target_state));
     hotseat_height = ShelfConfig::Get()->hotseat_size();
   } else {
     hotseat_origin = gfx::Point(shelf_bounds.x(),

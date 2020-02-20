@@ -12,28 +12,12 @@
 #endif
 
 BrowserListImpl::BrowserListImpl() {}
-BrowserListImpl::~BrowserListImpl() {
-  observers_.Clear();
-}
-
-// KeyedService:
-void BrowserListImpl::Shutdown() {
-  for (auto& observer : observers_)
-    observer.OnBrowserListShutdown(this);
-  observers_.Clear();
-  for (Browser* browser : browsers_) {
-    browser->RemoveObserver(this);
-  }
-  for (Browser* browser : incognito_browsers_) {
-    browser->RemoveObserver(this);
-  }
-}
+BrowserListImpl::~BrowserListImpl() {}
 
 // BrowserList:
 void BrowserListImpl::AddBrowser(Browser* browser) {
   DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
   browsers_.insert(browser);
-  browser->AddObserver(this);
   for (auto& observer : observers_)
     observer.OnBrowserAdded(this, browser);
 }
@@ -41,14 +25,12 @@ void BrowserListImpl::AddBrowser(Browser* browser) {
 void BrowserListImpl::AddIncognitoBrowser(Browser* browser) {
   DCHECK(browser->GetBrowserState()->IsOffTheRecord());
   incognito_browsers_.insert(browser);
-  browser->AddObserver(this);
   for (auto& observer : observers_)
     observer.OnIncognitoBrowserAdded(this, browser);
 }
 
 void BrowserListImpl::RemoveBrowser(Browser* browser) {
   if (browsers_.erase(browser) > 0) {
-    browser->RemoveObserver(this);
     for (auto& observer : observers_)
       observer.OnBrowserRemoved(this, browser);
   }
@@ -56,7 +38,6 @@ void BrowserListImpl::RemoveBrowser(Browser* browser) {
 
 void BrowserListImpl::RemoveIncognitoBrowser(Browser* browser) {
   if (incognito_browsers_.erase(browser) > 0) {
-    browser->RemoveObserver(this);
     for (auto& observer : observers_)
       observer.OnIncognitoBrowserRemoved(this, browser);
   }
@@ -78,14 +59,4 @@ void BrowserListImpl::AddObserver(BrowserListObserver* observer) {
 // Removes an observer from the model.
 void BrowserListImpl::RemoveObserver(BrowserListObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-// BrowserObserver
-void BrowserListImpl::BrowserDestroyed(Browser* browser) {
-  if (browser->GetBrowserState()->IsOffTheRecord()) {
-    RemoveIncognitoBrowser(browser);
-  } else {
-    RemoveBrowser(browser);
-  }
-  browser->RemoveObserver(this);
 }

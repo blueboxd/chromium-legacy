@@ -38,9 +38,6 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
     // Size of the underlying texture.
     gfx::Size size;
 
-    // Color space used for the SharedImage.
-    gfx::ColorSpace color_space;
-
     // This is a hack to allow us to discard pooled images if the TextureOwner
     // changes.  We don't want to keep a ref to the TextureOwner here, so we
     // just use a generation counter.  Note that this is temporary anyway; we

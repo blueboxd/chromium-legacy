@@ -216,9 +216,20 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
   auto params = mojom::URLLoaderFactoryParams::New();
   params->process_id = process_id;
   params->is_corb_enabled = false;
-  params->network_isolation_key =
-      net::NetworkIsolationKey(url::Origin::Create(GURL("https://abc.com")),
-                               url::Origin::Create(GURL("https://xyz.com")));
+
+  // If |site_for_cookies| is null, any non-empty NIK is fine. Otherwise, the
+  // NIK must be consistent with |site_for_cookies|.
+  if (request.site_for_cookies.IsNull()) {
+    params->network_isolation_key =
+        net::NetworkIsolationKey(url::Origin::Create(GURL("https://abc.com")),
+                                 url::Origin::Create(GURL("https://xyz.com")));
+  } else {
+    url::Origin first_party_origin =
+        url::Origin::Create(request.site_for_cookies.RepresentativeUrl());
+    params->network_isolation_key =
+        net::NetworkIsolationKey(first_party_origin, first_party_origin);
+  }
+
   network_context->CreateURLLoaderFactory(
       loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
 
@@ -6621,8 +6632,6 @@ static ResourceRequest CreateResourceRequest(const char* method,
   ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
-  request.site_for_cookies =
-      net::SiteForCookies::FromUrl(url);  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
   return request;

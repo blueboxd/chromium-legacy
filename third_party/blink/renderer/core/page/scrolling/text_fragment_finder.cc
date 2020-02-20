@@ -148,13 +148,15 @@ EphemeralRangeInFlatTree FindMatchInRangeWithContext(
       // No search_text match in remaining range
       if (potential_match.IsNull())
         return EphemeralRangeInFlatTree();
+
+      search_start = potential_match.EndPosition();
     }
 
+    PositionInFlatTree suffix_start = potential_match.EndPosition();
     DCHECK(potential_match.IsNotNull());
-    search_start = potential_match.EndPosition();
     if (!suffix.IsEmpty()) {
       EphemeralRangeInFlatTree suffix_match =
-          FindImmediateMatch(suffix, search_start, search_end);
+          FindImmediateMatch(suffix, suffix_start, search_end);
 
       // No suffix match after current potential_match
       if (suffix_match.IsNull())

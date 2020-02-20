@@ -1632,7 +1632,9 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
     ApplyProperty(GetCSSPropertyBorderTopColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBoxShadow(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyColumnRuleColor(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
+    ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyTextDecorationColor(), state, *unset,
                   apply_mask);
     ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
@@ -1640,13 +1642,6 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
                   apply_mask);
     ApplyProperty(GetCSSPropertyWebkitTextEmphasisColor(), state, *unset,
                   apply_mask);
-
-    // Only revert fill and stroke for elements that handle fill and stroke
-    // forced colors in the UA stylesheet.
-    if (state.GetElement().IsSVGElement()) {
-      ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
-      ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
-    }
 
     // Background colors compute to the Canvas system color for all values
     // except for the alpha channel.
@@ -2134,19 +2129,13 @@ void StyleResolver::CascadeAndApplyForcedColors(StyleResolverState& state,
   set->SetProperty(CSSPropertyID::kBoxShadow, *unset);
   set->SetProperty(CSSPropertyID::kColor, *unset);
   set->SetProperty(CSSPropertyID::kColumnRuleColor, *unset);
+  set->SetProperty(CSSPropertyID::kFill, *unset);
   set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
-  set->SetProperty(CSSPropertyID::kOutlineColor, *unset);
+  set->SetProperty(CSSPropertyID::kStroke, *unset);
   set->SetProperty(CSSPropertyID::kTextDecorationColor, *unset);
   set->SetProperty(CSSPropertyID::kTextShadow, *unset);
   set->SetProperty(CSSPropertyID::kWebkitTapHighlightColor, *unset);
   set->SetProperty(CSSPropertyID::kWebkitTextEmphasisColor, *unset);
-
-  // Only revert fill and stroke for elements that handle fill and stroke
-  // forced colors in the UA stylesheet.
-  if (state.GetElement().IsSVGElement()) {
-    set->SetProperty(CSSPropertyID::kFill, *unset);
-    set->SetProperty(CSSPropertyID::kStroke, *unset);
-  }
 
   amended_result.AddMatchedProperties(set);
 

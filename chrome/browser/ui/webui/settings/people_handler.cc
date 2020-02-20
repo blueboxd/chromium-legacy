@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,6 +44,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
@@ -65,7 +67,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"
 #else
-#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #endif
 
@@ -76,6 +77,7 @@
 using content::WebContents;
 using l10n_util::GetStringFUTF16;
 using l10n_util::GetStringUTF16;
+using signin::ConsentLevel;
 
 namespace {
 
@@ -564,11 +566,13 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   // Guest mode does not have a primary account (or an IdentityManager).
   if (profile_->IsGuestSession())
     return base::ListValue();
-  // If dice is disabled or unsupported, show only the primary account.
+  // If DICE is disabled for this profile or unsupported on this platform (e.g.
+  // Chrome OS), then show only the primary account, whether or not that account
+  // has consented to sync.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   base::Optional<AccountInfo> primary_account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo());
+          identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
   if (primary_account_info.has_value())
     accounts.Append(GetAccountValue(primary_account_info.value()));
   return accounts;
@@ -725,8 +729,14 @@ void PeopleHandler::HandleTurnOnSync(const base::ListValue* args) {
 }
 
 void PeopleHandler::HandleTurnOffSync(const base::ListValue* args) {
-  // TODO(https://crbug.com/1050677)
-  NOTIMPLEMENTED();
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
+  DCHECK(signin_util::IsUserSignoutAllowedForProfile(profile_));
+
+  if (GetSyncService())
+    syncer::RecordSyncEvent(syncer::STOP_FROM_OPTIONS);
+
+  identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent();
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -946,7 +956,6 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   DCHECK(identity_manager);
 
-#if !defined(OS_CHROMEOS)
   // Signout is not allowed if the user has policy (crbug.com/172204).
   if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
     std::string username = identity_manager->GetPrimaryAccountInfo().email;
@@ -956,7 +965,6 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
     if (!username.empty())
       sync_status->SetString("domain", gaia::ExtractDomainName(username));
   }
-#endif
 
   // This is intentionally not using GetSyncService(), in order to access more
   // nuanced information, since GetSyncService() returns nullptr if anything

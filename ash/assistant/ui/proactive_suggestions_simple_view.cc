@@ -92,23 +92,23 @@ void ProactiveSuggestionsSimpleView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Assistant icon.
-  views::ImageView* assistant_icon = new views::ImageView();
+  auto assistant_icon = std::make_unique<views::ImageView>();
   assistant_icon->SetImage(gfx::CreateVectorIcon(
       kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
   assistant_icon->SetPreferredSize(
       gfx::Size(kAssistantIconSizeDip, kAssistantIconSizeDip));
-  AddChildView(assistant_icon);
+  AddChildView(std::move(assistant_icon));
 
   // Spacing.
   // Note that we don't add similar spacing between |label_| and the
   // |close_button_| as the latter has internal spacing between its icon and
   // outer bounds so as to provide a larger hit rect to the user.
-  views::View* spacing = new views::View();
+  auto spacing = std::make_unique<views::View>();
   spacing->SetPreferredSize(gfx::Size(kSpacingDip, kPreferredHeightDip));
-  AddChildView(spacing);
+  AddChildView(std::move(spacing));
 
   // Label.
-  views::Label* label = new views::Label();
+  auto label = std::make_unique<views::Label>();
   label->SetAutoColorReadabilityEnabled(false);
   label->SetElideBehavior(gfx::ElideBehavior::FADE_TAIL);
   label->SetEnabledColor(gfx::kGoogleGrey100);
@@ -124,23 +124,21 @@ void ProactiveSuggestionsSimpleView::InitLayout() {
   label->SetText(net::UnescapeForHTML(
       base::UTF8ToUTF16(proactive_suggestions()->description())));
 
-  AddChildView(label);
-
   // We impose a maximum width restriction on the proactive suggestions view.
   // When restricting width, |label| should cede layout space to its siblings.
-  layout_manager->SetFlexForView(label, 1);
+  layout_manager->SetFlexForView(AddChildView(std::move(label)), 1);
 
   // Close button.
-  close_button_ = new views::ImageButton(/*listener=*/this);
-  close_button_->SetImage(
+  auto close_button = std::make_unique<views::ImageButton>(/*listener=*/this);
+  close_button->SetImage(
       views::ImageButton::ButtonState::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonIconSizeDip,
                             gfx::kGoogleGrey100));
-  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  close_button_->SetPreferredSize(
+  close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+  close_button->SetPreferredSize(
       gfx::Size(kCloseButtonSizeDip, kCloseButtonSizeDip));
-  AddChildView(close_button_);
+  close_button_ = AddChildView(std::move(close_button));
 }
 
 }  // namespace ash

@@ -7,7 +7,6 @@ import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
 import("//ios/third_party/earl_grey2/ios_eg2_test.gni")
-import("//ios/third_party/firebase/firebase.gni")
 
 ios_app_bundle("showcase") {
   info_plist = "core/Info.plist"
@@ -62,13 +61,6 @@ ios_eg2_test_app_host("ios_showcase_eg2tests") {
     "//ios/third_party/gtx:gtx+bundle",
   ]
 
-  # TODO(crbug.com/870935): This dependency of ios_showcase_egtests on
-  # Firebase SDK seems unnecessary. There must be some transitive
-  # dependencies that eventually led to ios/chrome/app:app_internal.
-  if (ios_enable_firebase_sdk) {
-    deps += [ "//ios/third_party/firebase" ]
-  }
-
   assert_no_deps = ios_assert_no_deps
 }
 
@@ -104,12 +96,6 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/text_badge_view:eg_tests",
   ]
 
-  # TODO(crbug.com/870935): This dependency of ios_showcase_egtests on
-  # Firebase SDK seems unnecessary. There must be some transitive
-  # dependencies that eventually led to ios/chrome/app:app_internal.
-  if (ios_enable_firebase_sdk) {
-    deps += [ "//ios/third_party/firebase" ]
-  }
   bundle_deps = [ "//ios/showcase/core/resources" ]
   assert_no_deps = ios_assert_no_deps
 }

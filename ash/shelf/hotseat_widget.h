@@ -74,6 +74,10 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // hotseat background.
   void SetTranslucentBackground(const gfx::Rect& background_bounds);
 
+  // Calculates the hotseat y position for |hotseat_target_state| in screen
+  // coordinates.
+  int CalculateHotseatYInScreen(HotseatState hotseat_target_state) const;
+
   // ShelfComponent:
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;

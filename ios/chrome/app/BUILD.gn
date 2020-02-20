@@ -11,12 +11,6 @@ import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/features.gni")
-import("//ios/third_party/firebase/firebase.gni")
-
-buildflag_header("firebase_buildflags") {
-  header = "firebase_buildflags.h"
-  flags = [ "FIREBASE_ENABLED=$ios_enable_firebase_sdk" ]
-}
 
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -43,14 +37,12 @@ source_set("unit_tests") {
   sources = [
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
-    "firebase_utils_unittest.mm",
     "main_application_delegate_unittest.mm",
     "tab_opener_unittest.mm",
   ]
   deps = [
     ":app",
     ":app_internal",
-    ":firebase_buildflags",
     "//base",
     "//base/test:test_support",
     "//components/metrics",
@@ -121,8 +113,6 @@ source_set("app_internal") {
   sources = [
     "chrome_overlay_window.h",
     "chrome_overlay_window.mm",
-    "firebase_utils.h",
-    "firebase_utils.mm",
     "main_application_delegate.h",
     "main_application_delegate.mm",
     "main_application_delegate_testing.h",
@@ -138,7 +128,6 @@ source_set("app_internal") {
 
   deps = [
     ":app",
-    ":firebase_buildflags",
     ":mode",
     ":tests_hook",
     "//base",
@@ -328,10 +317,7 @@ ios_app_bundle("chrome") {
            "ios_application_icons_target must be defined.")
     bundle_deps += [ ios_application_icons_target ]
 
-    if (ios_enable_firebase_sdk) {
-      assert(ios_firebase_resources_target != "",
-             "ios_firebase_resources_target must be defined if Firebase SDK " +
-                 "is enabled.")
+    if (ios_firebase_resources_target != "") {
       bundle_deps += [ ios_firebase_resources_target ]
     }
   } else {
@@ -342,9 +328,6 @@ ios_app_bundle("chrome") {
     ":main",
     ":tests_fake_hook",
   ]
-  if (ios_enable_firebase_sdk) {
-    deps += [ "//ios/third_party/firebase" ]
-  }
 
   if (current_toolchain == default_toolchain) {
     if (ios_enable_search_widget_extension) {

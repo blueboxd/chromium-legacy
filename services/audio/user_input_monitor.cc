@@ -6,15 +6,11 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/system/platform_handle.h"
-
 namespace audio {
 
 // static
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
-    mojo::ScopedSharedBufferHandle handle) {
-  base::ReadOnlySharedMemoryRegion memory =
-      mojo::UnwrapReadOnlySharedMemoryRegion(std::move(handle));
+    base::ReadOnlySharedMemoryRegion memory) {
   if (memory.IsValid())
     return std::make_unique<UserInputMonitor>(memory.Map());
 

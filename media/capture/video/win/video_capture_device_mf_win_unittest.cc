@@ -100,50 +100,50 @@ class MockImageCaptureClient
 class MockMFMediaSource : public base::RefCountedThreadSafe<MockMFMediaSource>,
                           public IMFMediaSource {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockMFMediaSource>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockMFMediaSource>::Release();
     return 1U;
   }
-  STDMETHODIMP GetEvent(DWORD dwFlags, IMFMediaEvent** ppEvent) override {
+  IFACEMETHODIMP GetEvent(DWORD dwFlags, IMFMediaEvent** ppEvent) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP BeginGetEvent(IMFAsyncCallback* pCallback,
-                             IUnknown* punkState) override {
+  IFACEMETHODIMP BeginGetEvent(IMFAsyncCallback* pCallback,
+                               IUnknown* punkState) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP EndGetEvent(IMFAsyncResult* pResult,
-                           IMFMediaEvent** ppEvent) override {
+  IFACEMETHODIMP EndGetEvent(IMFAsyncResult* pResult,
+                             IMFMediaEvent** ppEvent) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP QueueEvent(MediaEventType met,
-                          REFGUID guidExtendedType,
-                          HRESULT hrStatus,
-                          const PROPVARIANT* pvValue) override {
+  IFACEMETHODIMP QueueEvent(MediaEventType met,
+                            REFGUID guidExtendedType,
+                            HRESULT hrStatus,
+                            const PROPVARIANT* pvValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetCharacteristics(DWORD* pdwCharacteristics) override {
+  IFACEMETHODIMP GetCharacteristics(DWORD* pdwCharacteristics) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP CreatePresentationDescriptor(
+  IFACEMETHODIMP CreatePresentationDescriptor(
       IMFPresentationDescriptor** ppPresentationDescriptor) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Start(IMFPresentationDescriptor* pPresentationDescriptor,
-                     const GUID* pguidTimeFormat,
-                     const PROPVARIANT* pvarStartPosition) override {
+  IFACEMETHODIMP Start(IMFPresentationDescriptor* pPresentationDescriptor,
+                       const GUID* pguidTimeFormat,
+                       const PROPVARIANT* pvarStartPosition) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Stop(void) override { return E_NOTIMPL; }
-  STDMETHODIMP Pause(void) override { return E_NOTIMPL; }
-  STDMETHODIMP Shutdown(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Stop(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Pause(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Shutdown(void) override { return E_NOTIMPL; }
 
  private:
   friend class base::RefCountedThreadSafe<MockMFMediaSource>;
@@ -154,48 +154,49 @@ class MockMFCaptureSource
     : public base::RefCountedThreadSafe<MockMFCaptureSource>,
       public IMFCaptureSource {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockMFCaptureSource>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockMFCaptureSource>::Release();
     return 1U;
   }
-  STDMETHODIMP GetCaptureDeviceSource(
+  IFACEMETHODIMP GetCaptureDeviceSource(
       MF_CAPTURE_ENGINE_DEVICE_TYPE mfCaptureEngineDeviceType,
       IMFMediaSource** ppMediaSource) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetCaptureDeviceActivate(
+  IFACEMETHODIMP GetCaptureDeviceActivate(
       MF_CAPTURE_ENGINE_DEVICE_TYPE mfCaptureEngineDeviceType,
       IMFActivate** ppActivate) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetService(REFIID rguidService,
-                          REFIID riid,
-                          IUnknown** ppUnknown) override {
+  IFACEMETHODIMP GetService(REFIID rguidService,
+                            REFIID riid,
+                            IUnknown** ppUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP AddEffect(DWORD dwSourceStreamIndex,
-                         IUnknown* pUnknown) override {
+  IFACEMETHODIMP AddEffect(DWORD dwSourceStreamIndex,
+                           IUnknown* pUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP RemoveEffect(DWORD dwSourceStreamIndex,
-                            IUnknown* pUnknown) override {
+  IFACEMETHODIMP RemoveEffect(DWORD dwSourceStreamIndex,
+                              IUnknown* pUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP RemoveAllEffects(DWORD dwSourceStreamIndex) override {
+  IFACEMETHODIMP RemoveAllEffects(DWORD dwSourceStreamIndex) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetAvailableDeviceMediaType(DWORD stream_index,
-                                           DWORD media_type_index,
-                                           IMFMediaType** media_type) override {
+  IFACEMETHODIMP GetAvailableDeviceMediaType(
+      DWORD stream_index,
+      DWORD media_type_index,
+      IMFMediaType** media_type) override {
     return DoGetAvailableDeviceMediaType(stream_index, media_type_index,
                                          media_type);
   }
@@ -203,25 +204,25 @@ class MockMFCaptureSource
   MOCK_METHOD3(DoGetAvailableDeviceMediaType,
                HRESULT(DWORD, DWORD, IMFMediaType**));
 
-  STDMETHODIMP SetCurrentDeviceMediaType(DWORD dwSourceStreamIndex,
-                                         IMFMediaType* pMediaType) override {
+  IFACEMETHODIMP SetCurrentDeviceMediaType(DWORD dwSourceStreamIndex,
+                                           IMFMediaType* pMediaType) override {
     return DoSetCurrentDeviceMediaType(dwSourceStreamIndex, pMediaType);
   }
 
   MOCK_METHOD2(DoSetCurrentDeviceMediaType, HRESULT(DWORD, IMFMediaType*));
 
-  STDMETHODIMP GetCurrentDeviceMediaType(DWORD stream_index,
-                                         IMFMediaType** media_type) {
+  IFACEMETHODIMP GetCurrentDeviceMediaType(DWORD stream_index,
+                                           IMFMediaType** media_type) {
     return DoGetCurrentDeviceMediaType(stream_index, media_type);
   }
   MOCK_METHOD2(DoGetCurrentDeviceMediaType, HRESULT(DWORD, IMFMediaType**));
 
-  STDMETHODIMP GetDeviceStreamCount(DWORD* count) {
+  IFACEMETHODIMP GetDeviceStreamCount(DWORD* count) {
     return DoGetDeviceStreamCount(count);
   }
   MOCK_METHOD1(DoGetDeviceStreamCount, HRESULT(DWORD*));
 
-  STDMETHODIMP GetDeviceStreamCategory(
+  IFACEMETHODIMP GetDeviceStreamCategory(
       DWORD stream_index,
       MF_CAPTURE_ENGINE_STREAM_CATEGORY* category) {
     return DoGetDeviceStreamCategory(stream_index, category);
@@ -229,14 +230,15 @@ class MockMFCaptureSource
   MOCK_METHOD2(DoGetDeviceStreamCategory,
                HRESULT(DWORD, MF_CAPTURE_ENGINE_STREAM_CATEGORY*));
 
-  STDMETHODIMP GetMirrorState(DWORD dwStreamIndex,
-                              BOOL* pfMirrorState) override {
+  IFACEMETHODIMP GetMirrorState(DWORD dwStreamIndex,
+                                BOOL* pfMirrorState) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetMirrorState(DWORD dwStreamIndex, BOOL fMirrorState) override {
+  IFACEMETHODIMP SetMirrorState(DWORD dwStreamIndex,
+                                BOOL fMirrorState) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetStreamIndexFromFriendlyName(
+  IFACEMETHODIMP GetStreamIndexFromFriendlyName(
       UINT32 uifriendlyName,
       DWORD* pdwActualStreamIndex) override {
     return E_NOTIMPL;
@@ -251,7 +253,7 @@ class MockCapturePreviewSink
     : public base::RefCountedThreadSafe<MockCapturePreviewSink>,
       public IMFCapturePreviewSink {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** object) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
     if (riid == IID_IUnknown || riid == IID_IMFCapturePreviewSink) {
       AddRef();
       *object = this;
@@ -259,65 +261,67 @@ class MockCapturePreviewSink
     }
     return E_NOINTERFACE;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockCapturePreviewSink>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockCapturePreviewSink>::Release();
     return 1U;
   }
-  STDMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
-                                  IMFMediaType** ppMediaType) override {
+  IFACEMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
+                                    IMFMediaType** ppMediaType) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetService(DWORD dwSinkStreamIndex,
-                          REFGUID rguidService,
-                          REFIID riid,
-                          IUnknown** ppUnknown) override {
+  IFACEMETHODIMP GetService(DWORD dwSinkStreamIndex,
+                            REFGUID rguidService,
+                            REFIID riid,
+                            IUnknown** ppUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP AddStream(DWORD stream_index,
-                         IMFMediaType* media_type,
-                         IMFAttributes* attributes,
-                         DWORD* sink_stream_index) override {
+  IFACEMETHODIMP AddStream(DWORD stream_index,
+                           IMFMediaType* media_type,
+                           IMFAttributes* attributes,
+                           DWORD* sink_stream_index) override {
     return DoAddStream(stream_index, media_type, attributes, sink_stream_index);
   }
 
   MOCK_METHOD4(DoAddStream,
                HRESULT(DWORD, IMFMediaType*, IMFAttributes*, DWORD*));
 
-  STDMETHODIMP Prepare(void) override { return E_NOTIMPL; }
-  STDMETHODIMP RemoveAllStreams(void) override { return S_OK; }
-  STDMETHODIMP SetRenderHandle(HANDLE handle) override { return E_NOTIMPL; }
-  STDMETHODIMP SetRenderSurface(IUnknown* pSurface) override {
+  IFACEMETHODIMP Prepare(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP RemoveAllStreams(void) override { return S_OK; }
+  IFACEMETHODIMP SetRenderHandle(HANDLE handle) override { return E_NOTIMPL; }
+  IFACEMETHODIMP SetRenderSurface(IUnknown* pSurface) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP UpdateVideo(const MFVideoNormalizedRect* pSrc,
-                           const RECT* pDst,
-                           const COLORREF* pBorderClr) override {
+  IFACEMETHODIMP UpdateVideo(const MFVideoNormalizedRect* pSrc,
+                             const RECT* pDst,
+                             const COLORREF* pBorderClr) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetSampleCallback(
+  IFACEMETHODIMP SetSampleCallback(
       DWORD dwStreamSinkIndex,
       IMFCaptureEngineOnSampleCallback* pCallback) override {
     sample_callback = pCallback;
     return S_OK;
   }
-  STDMETHODIMP GetMirrorState(BOOL* pfMirrorState) override {
+  IFACEMETHODIMP GetMirrorState(BOOL* pfMirrorState) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetMirrorState(BOOL fMirrorState) override { return E_NOTIMPL; }
-  STDMETHODIMP GetRotation(DWORD dwStreamIndex,
-                           DWORD* pdwRotationValue) override {
+  IFACEMETHODIMP SetMirrorState(BOOL fMirrorState) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetRotation(DWORD dwStreamIndex,
-                           DWORD dwRotationValue) override {
+  IFACEMETHODIMP GetRotation(DWORD dwStreamIndex,
+                             DWORD* pdwRotationValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetCustomSink(IMFMediaSink* pMediaSink) override {
+  IFACEMETHODIMP SetRotation(DWORD dwStreamIndex,
+                             DWORD dwRotationValue) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP SetCustomSink(IMFMediaSink* pMediaSink) override {
     return E_NOTIMPL;
   }
 
@@ -332,7 +336,7 @@ class MockCapturePhotoSink
     : public base::RefCountedThreadSafe<MockCapturePhotoSink>,
       public IMFCapturePhotoSink {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** object) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
     if (riid == IID_IUnknown || riid == IID_IMFCapturePhotoSink) {
       AddRef();
       *object = this;
@@ -340,43 +344,43 @@ class MockCapturePhotoSink
     }
     return E_NOINTERFACE;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockCapturePhotoSink>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockCapturePhotoSink>::Release();
     return 1U;
   }
-  STDMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
-                                  IMFMediaType** ppMediaType) override {
+  IFACEMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
+                                    IMFMediaType** ppMediaType) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetService(DWORD dwSinkStreamIndex,
-                          REFGUID rguidService,
-                          REFIID riid,
-                          IUnknown** ppUnknown) override {
+  IFACEMETHODIMP GetService(DWORD dwSinkStreamIndex,
+                            REFGUID rguidService,
+                            REFIID riid,
+                            IUnknown** ppUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP AddStream(DWORD dwSourceStreamIndex,
-                         IMFMediaType* pMediaType,
-                         IMFAttributes* pAttributes,
-                         DWORD* pdwSinkStreamIndex) override {
+  IFACEMETHODIMP AddStream(DWORD dwSourceStreamIndex,
+                           IMFMediaType* pMediaType,
+                           IMFAttributes* pAttributes,
+                           DWORD* pdwSinkStreamIndex) override {
     return S_OK;
   }
-  STDMETHODIMP Prepare(void) override { return E_NOTIMPL; }
-  STDMETHODIMP RemoveAllStreams(void) override { return S_OK; }
+  IFACEMETHODIMP Prepare(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP RemoveAllStreams(void) override { return S_OK; }
 
-  STDMETHODIMP SetOutputFileName(LPCWSTR fileName) override {
+  IFACEMETHODIMP SetOutputFileName(LPCWSTR fileName) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetSampleCallback(
+  IFACEMETHODIMP SetSampleCallback(
       IMFCaptureEngineOnSampleCallback* pCallback) override {
     sample_callback = pCallback;
     return S_OK;
   }
-  STDMETHODIMP SetOutputByteStream(IMFByteStream* pByteStream) override {
+  IFACEMETHODIMP SetOutputByteStream(IMFByteStream* pByteStream) override {
     return E_NOTIMPL;
   }
 
@@ -391,20 +395,20 @@ class MockMFCaptureEngine
     : public base::RefCountedThreadSafe<MockMFCaptureEngine>,
       public IMFCaptureEngine {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) { return S_OK; }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) { return S_OK; }
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockMFCaptureEngine>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockMFCaptureEngine>::Release();
     return 1U;
   }
-  STDMETHODIMP Initialize(IMFCaptureEngineOnEventCallback* pEventCallback,
-                          IMFAttributes* pAttributes,
-                          IUnknown* pAudioSource,
-                          IUnknown* pVideoSource) override {
+  IFACEMETHODIMP Initialize(IMFCaptureEngineOnEventCallback* pEventCallback,
+                            IMFAttributes* pAttributes,
+                            IUnknown* pAudioSource,
+                            IUnknown* pVideoSource) override {
     EXPECT_TRUE(pEventCallback);
     EXPECT_TRUE(pAttributes);
     EXPECT_TRUE(pVideoSource);
@@ -415,38 +419,38 @@ class MockMFCaptureEngine
 
   MOCK_METHOD0(OnCorrectInitialize, void(void));
 
-  STDMETHODIMP StartPreview(void) override {
+  IFACEMETHODIMP StartPreview(void) override {
     OnStartPreview();
     return S_OK;
   }
 
   MOCK_METHOD0(OnStartPreview, void(void));
 
-  STDMETHODIMP StopPreview(void) override {
+  IFACEMETHODIMP StopPreview(void) override {
     OnStopPreview();
     return S_OK;
   }
 
   MOCK_METHOD0(OnStopPreview, void(void));
 
-  STDMETHODIMP StartRecord(void) override { return E_NOTIMPL; }
-  STDMETHODIMP StopRecord(BOOL bFinalize, BOOL bFlushUnprocessedSamples) {
+  IFACEMETHODIMP StartRecord(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP StopRecord(BOOL bFinalize, BOOL bFlushUnprocessedSamples) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP TakePhoto(void) override {
+  IFACEMETHODIMP TakePhoto(void) override {
     OnTakePhoto();
     return S_OK;
   }
   MOCK_METHOD0(OnTakePhoto, void(void));
 
-  STDMETHODIMP GetSink(MF_CAPTURE_ENGINE_SINK_TYPE type,
-                       IMFCaptureSink** sink) {
+  IFACEMETHODIMP GetSink(MF_CAPTURE_ENGINE_SINK_TYPE type,
+                         IMFCaptureSink** sink) {
     return DoGetSink(type, sink);
   }
   MOCK_METHOD2(DoGetSink,
                HRESULT(MF_CAPTURE_ENGINE_SINK_TYPE, IMFCaptureSink**));
 
-  STDMETHODIMP GetSource(IMFCaptureSource** source) {
+  IFACEMETHODIMP GetSource(IMFCaptureSource** source) {
     *source = DoGetSource();
     return source ? S_OK : E_FAIL;
   }
@@ -473,19 +477,19 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
         frame_height_(frame_height),
         frame_rate_(frame_rate) {}
 
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<StubMFMediaType>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<StubMFMediaType>::Release();
     return 1U;
   }
-  STDMETHODIMP GetItem(REFGUID key, PROPVARIANT* value) override {
+  IFACEMETHODIMP GetItem(REFGUID key, PROPVARIANT* value) override {
     if (key == MF_MT_FRAME_SIZE) {
       value->vt = VT_UI8;
       value->uhVal.QuadPart = Pack2UINT32AsUINT64(frame_width_, frame_height_);
@@ -508,27 +512,28 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
     }
     return E_FAIL;
   }
-  STDMETHODIMP GetItemType(REFGUID guidKey, MF_ATTRIBUTE_TYPE* pType) override {
+  IFACEMETHODIMP GetItemType(REFGUID guidKey,
+                             MF_ATTRIBUTE_TYPE* pType) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP CompareItem(REFGUID guidKey,
-                           REFPROPVARIANT Value,
-                           BOOL* pbResult) override {
+  IFACEMETHODIMP CompareItem(REFGUID guidKey,
+                             REFPROPVARIANT Value,
+                             BOOL* pbResult) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Compare(IMFAttributes* pTheirs,
-                       MF_ATTRIBUTES_MATCH_TYPE MatchType,
-                       BOOL* pbResult) override {
+  IFACEMETHODIMP Compare(IMFAttributes* pTheirs,
+                         MF_ATTRIBUTES_MATCH_TYPE MatchType,
+                         BOOL* pbResult) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUINT32(REFGUID key, UINT32* value) override {
+  IFACEMETHODIMP GetUINT32(REFGUID key, UINT32* value) override {
     if (key == MF_MT_INTERLACE_MODE) {
       *value = MFVideoInterlace_Progressive;
       return S_OK;
     }
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUINT64(REFGUID key, UINT64* value) override {
+  IFACEMETHODIMP GetUINT64(REFGUID key, UINT64* value) override {
     if (key == MF_MT_FRAME_SIZE) {
       *value = (long long)frame_width_ << 32 | frame_height_;
       return S_OK;
@@ -543,10 +548,10 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
     }
     return E_FAIL;
   }
-  STDMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
+  IFACEMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetGUID(REFGUID key, GUID* value) override {
+  IFACEMETHODIMP GetGUID(REFGUID key, GUID* value) override {
     if (key == MF_MT_MAJOR_TYPE) {
       *value = major_type_;
       return S_OK;
@@ -557,87 +562,93 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
     }
     return E_FAIL;
   }
-  STDMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
+  IFACEMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetString(REFGUID guidKey,
-                         LPWSTR pwszValue,
-                         UINT32 cchBufSize,
-                         UINT32* pcchLength) override {
+  IFACEMETHODIMP GetString(REFGUID guidKey,
+                           LPWSTR pwszValue,
+                           UINT32 cchBufSize,
+                           UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetAllocatedString(REFGUID guidKey,
-                                  LPWSTR* ppwszValue,
-                                  UINT32* pcchLength) override {
+  IFACEMETHODIMP GetAllocatedString(REFGUID guidKey,
+                                    LPWSTR* ppwszValue,
+                                    UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetBlob(REFGUID guidKey,
-                       UINT8* pBuf,
-                       UINT32 cbBufSize,
-                       UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlob(REFGUID guidKey,
+                         UINT8* pBuf,
+                         UINT32 cbBufSize,
+                         UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetAllocatedBlob(REFGUID guidKey,
-                                UINT8** ppBuf,
-                                UINT32* pcbSize) override {
+  IFACEMETHODIMP GetAllocatedBlob(REFGUID guidKey,
+                                  UINT8** ppBuf,
+                                  UINT32* pcbSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUnknown(REFGUID guidKey, REFIID riid, LPVOID* ppv) override {
+  IFACEMETHODIMP GetUnknown(REFGUID guidKey,
+                            REFIID riid,
+                            LPVOID* ppv) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
+  IFACEMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
-  STDMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
-  STDMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
+  IFACEMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
+  IFACEMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
+  IFACEMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
+  IFACEMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
+  IFACEMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
+  IFACEMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetBlob(REFGUID guidKey,
-                       const UINT8* pBuf,
-                       UINT32 cbBufSize) override {
+  IFACEMETHODIMP SetBlob(REFGUID guidKey,
+                         const UINT8* pBuf,
+                         UINT32 cbBufSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
+  IFACEMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP LockStore(void) override { return E_NOTIMPL; }
-  STDMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
-  STDMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
-  STDMETHODIMP GetItemByIndex(UINT32 unIndex,
-                              GUID* pguidKey,
-                              PROPVARIANT* pValue) override {
+  IFACEMETHODIMP LockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetItemByIndex(UINT32 unIndex,
+                                GUID* pguidKey,
+                                PROPVARIANT* pValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP CopyAllItems(IMFAttributes* pDest) override { return E_NOTIMPL; }
-  STDMETHODIMP GetMajorType(GUID* pguidMajorType) override { return E_NOTIMPL; }
-  STDMETHODIMP IsCompressedFormat(BOOL* pfCompressed) override {
+  IFACEMETHODIMP CopyAllItems(IMFAttributes* pDest) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP IsEqual(IMFMediaType* pIMediaType, DWORD* pdwFlags) override {
+  IFACEMETHODIMP GetMajorType(GUID* pguidMajorType) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetRepresentation(GUID guidRepresentation,
-                                 LPVOID* ppvRepresentation) override {
+  IFACEMETHODIMP IsCompressedFormat(BOOL* pfCompressed) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP FreeRepresentation(GUID guidRepresentation,
-                                  LPVOID pvRepresentation) override {
+  IFACEMETHODIMP IsEqual(IMFMediaType* pIMediaType, DWORD* pdwFlags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetRepresentation(GUID guidRepresentation,
+                                   LPVOID* ppvRepresentation) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP FreeRepresentation(GUID guidRepresentation,
+                                    LPVOID pvRepresentation) override {
     return E_NOTIMPL;
   }
 
@@ -655,165 +666,170 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
 class MockMFMediaEvent : public base::RefCountedThreadSafe<MockMFMediaEvent>,
                          public IMFMediaEvent {
  public:
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockMFMediaEvent>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockMFMediaEvent>::Release();
     return 1U;
   }
 
-  STDMETHODIMP GetItem(REFGUID guidKey, PROPVARIANT* pValue) override {
+  IFACEMETHODIMP GetItem(REFGUID guidKey, PROPVARIANT* pValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetItemType(REFGUID guidKey, MF_ATTRIBUTE_TYPE* pType) override {
+  IFACEMETHODIMP GetItemType(REFGUID guidKey,
+                             MF_ATTRIBUTE_TYPE* pType) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP CompareItem(REFGUID guidKey,
-                           REFPROPVARIANT Value,
-                           BOOL* pbResult) override {
+  IFACEMETHODIMP CompareItem(REFGUID guidKey,
+                             REFPROPVARIANT Value,
+                             BOOL* pbResult) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP Compare(IMFAttributes* pTheirs,
-                       MF_ATTRIBUTES_MATCH_TYPE MatchType,
-                       BOOL* pbResult) override {
+  IFACEMETHODIMP Compare(IMFAttributes* pTheirs,
+                         MF_ATTRIBUTES_MATCH_TYPE MatchType,
+                         BOOL* pbResult) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetUINT32(REFGUID guidKey, UINT32* punValue) override {
+  IFACEMETHODIMP GetUINT32(REFGUID guidKey, UINT32* punValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetUINT64(REFGUID guidKey, UINT64* punValue) override {
+  IFACEMETHODIMP GetUINT64(REFGUID guidKey, UINT64* punValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
+  IFACEMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetGUID(REFGUID guidKey, GUID* pguidValue) override {
+  IFACEMETHODIMP GetGUID(REFGUID guidKey, GUID* pguidValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
+  IFACEMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetString(REFGUID guidKey,
-                         LPWSTR pwszValue,
-                         UINT32 cchBufSize,
-                         UINT32* pcchLength) override {
+  IFACEMETHODIMP GetString(REFGUID guidKey,
+                           LPWSTR pwszValue,
+                           UINT32 cchBufSize,
+                           UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetAllocatedString(REFGUID guidKey,
-                                  LPWSTR* ppwszValue,
-                                  UINT32* pcchLength) override {
+  IFACEMETHODIMP GetAllocatedString(REFGUID guidKey,
+                                    LPWSTR* ppwszValue,
+                                    UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetBlob(REFGUID guidKey,
-                       UINT8* pBuf,
-                       UINT32 cbBufSize,
-                       UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlob(REFGUID guidKey,
+                         UINT8* pBuf,
+                         UINT32 cbBufSize,
+                         UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetAllocatedBlob(REFGUID guidKey,
-                                UINT8** ppBuf,
-                                UINT32* pcbSize) override {
+  IFACEMETHODIMP GetAllocatedBlob(REFGUID guidKey,
+                                  UINT8** ppBuf,
+                                  UINT32* pcbSize) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetUnknown(REFGUID guidKey, REFIID riid, LPVOID* ppv) override {
+  IFACEMETHODIMP GetUnknown(REFGUID guidKey,
+                            REFIID riid,
+                            LPVOID* ppv) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
+  IFACEMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
+  IFACEMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
 
-  STDMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
 
-  STDMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
+  IFACEMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
+  IFACEMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
+  IFACEMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
+  IFACEMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
+  IFACEMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetBlob(REFGUID guidKey,
-                       const UINT8* pBuf,
-                       UINT32 cbBufSize) override {
+  IFACEMETHODIMP SetBlob(REFGUID guidKey,
+                         const UINT8* pBuf,
+                         UINT32 cbBufSize) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
+  IFACEMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP LockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP LockStore(void) override { return E_NOTIMPL; }
 
-  STDMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
 
-  STDMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
 
-  STDMETHODIMP GetItemByIndex(UINT32 unIndex,
-                              GUID* pguidKey,
-                              PROPVARIANT* pValue) override {
+  IFACEMETHODIMP GetItemByIndex(UINT32 unIndex,
+                                GUID* pguidKey,
+                                PROPVARIANT* pValue) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP CopyAllItems(IMFAttributes* pDest) override { return E_NOTIMPL; }
+  IFACEMETHODIMP CopyAllItems(IMFAttributes* pDest) override {
+    return E_NOTIMPL;
+  }
 
-  STDMETHODIMP GetType(MediaEventType* pmet) override {
+  IFACEMETHODIMP GetType(MediaEventType* pmet) override {
     *pmet = DoGetType();
     return S_OK;
   }
   MOCK_METHOD0(DoGetType, MediaEventType());
 
-  STDMETHODIMP GetExtendedType(GUID* pguidExtendedType) override {
+  IFACEMETHODIMP GetExtendedType(GUID* pguidExtendedType) override {
     *pguidExtendedType = DoGetExtendedType();
     return S_OK;
   }
   MOCK_METHOD0(DoGetExtendedType, GUID());
 
-  STDMETHODIMP GetStatus(HRESULT* status) override {
+  IFACEMETHODIMP GetStatus(HRESULT* status) override {
     *status = DoGetStatus();
     return S_OK;
   }
   MOCK_METHOD0(DoGetStatus, HRESULT());
 
-  STDMETHODIMP GetValue(PROPVARIANT* pvValue) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetValue(PROPVARIANT* pvValue) override { return E_NOTIMPL; }
 
  private:
   friend class base::RefCountedThreadSafe<MockMFMediaEvent>;

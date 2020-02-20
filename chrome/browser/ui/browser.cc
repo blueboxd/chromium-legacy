@@ -1421,11 +1421,15 @@ void Browser::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
+std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
+    content::WebContents* predecessor_contents,
+    std::unique_ptr<content::WebContents> portal_contents) {
+  return SwapWebContents(predecessor_contents, std::move(portal_contents));
+}
+
 std::unique_ptr<content::WebContents> Browser::SwapWebContents(
     content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
+    std::unique_ptr<content::WebContents> new_contents) {
   // Copies the background color and contents of the old WebContents to a new
   // one that replaces it on the screen. This allows the new WebContents to
   // have something to show before having loaded any contents. As a result, we

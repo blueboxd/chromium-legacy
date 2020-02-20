@@ -46,6 +46,7 @@ mojom("mojom_platform") {
     "devtools/inspector_issue.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
+    "feature_policy/document_policy_feature.mojom",
     "feature_policy/feature_policy.mojom",
     "feature_policy/feature_policy_feature.mojom",
     "feature_policy/policy_value.mojom",

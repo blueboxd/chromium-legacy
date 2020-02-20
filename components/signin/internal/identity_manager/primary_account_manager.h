@@ -54,23 +54,21 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
     virtual void UnconsentedPrimaryAccountChanged(const CoreAccountInfo& info) {
     }
 
-#if !defined(OS_CHROMEOS)
     // Called whenever the currently signed-in user has been signed out.
     virtual void GoogleSignedOut(const CoreAccountInfo& info) {}
-#endif
   };
 
-#if !defined(OS_CHROMEOS)
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
     // Do not remove accounts.
     kKeepAllAccounts = 0,
+#if !defined(OS_CHROMEOS)
     // Remove all the accounts.
     kRemoveAllAccounts,
     // Removes the authenticated account if it is in authentication error.
     kRemoveAuthenticatedAccountIfInError
-  };
 #endif
+  };
 
   PrimaryAccountManager(
       SigninClient* client,
@@ -142,7 +140,14 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void SignOutAndKeepAllAccounts(
       signin_metrics::ProfileSignout signout_source_metric,
       signin_metrics::SignoutDelete signout_delete_metric);
-#endif
+#endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  // Revokes sync consent from the primary account. The primary account must
+  // have sync consent. After the call a primary account will remain but it will
+  // not have sync consent.
+  void RevokeSyncConsent();
+#endif  // defined(OS_CHROMEOS)
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
@@ -175,19 +180,22 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void SetPrimaryAccountInternal(const CoreAccountInfo& account_info,
                                  bool consented_to_sync);
 
-#if !defined(OS_CHROMEOS)
-  // Starts the sign out process.
+  // Starts the sign out process. If |assert_signout_allowed| is true then
+  // the sign out process will DCHECK if user sign out is not allowed.
   void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,
                     signin_metrics::SignoutDelete signout_delete_metric,
-                    RemoveAccountsOption remove_option);
+                    RemoveAccountsOption remove_option,
+                    bool assert_signout_allowed = false);
 
   // The sign out process which is started by SigninClient::PreSignOut()
   void OnSignoutDecisionReached(
       signin_metrics::ProfileSignout signout_source_metric,
       signin_metrics::SignoutDelete signout_delete_metric,
       RemoveAccountsOption remove_option,
+      bool assert_signout_allowed,
       SigninClient::SignoutDecision signout_decision);
 
+#if !defined(OS_CHROMEOS)
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
 #endif

@@ -49,6 +49,11 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   // type of "text/html; charset=utf-8".
   void Serve(const std::string& url, const std::string& content);
 
+  // Like Serve, but with an artificial time delay in the response.
+  void ServeDelayed(const std::string& url,
+                    const std::string& content,
+                    base::TimeDelta delay);
+
   // Starts the test server.  Call this after configuring request
   // handlers, and before loading any pages.
   void Start();
@@ -90,6 +95,7 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const std::string& relative_url,
       const std::string& content,
+      base::TimeDelta delay,
       const net::test_server::HttpRequest& request);
 
   base::Optional<ukm::TestAutoSetUkmRecorder> ukm_recorder_;

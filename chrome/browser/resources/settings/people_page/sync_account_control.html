@@ -210,7 +210,7 @@
         </cr-button>
         <cr-button id="turn-off"
             hidden="[[!shouldShowTurnOffButton_(syncStatus.signedIn,
-                showSetupButtons_)]]"
+                syncStatus.domain, showSetupButtons_)]]"
             on-click="onTurnOffButtonTap_"
             disabled="[[syncStatus.firstSetupInProgress]]">
           $i18n{turnOffSync}

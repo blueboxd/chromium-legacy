@@ -203,10 +203,7 @@ class QrCodeScanView {
     /** Creates and sets the camera preview. */
     private void setCameraPreview() {
         mView.removeAllViews();
-        if (mCameraPreview != null) {
-            mCameraPreview.stopCamera();
-            mCameraPreview = null;
-        }
+        stopCamera();
 
         if (mHasCameraPermission) {
             mCameraPreview =
@@ -251,18 +248,29 @@ class QrCodeScanView {
     }
 
     /**
-     * Displays the open settings dialog.
-     */
-    private void displayOpenSettingsDialog() {
-        mView.removeAllViews();
-        mView.addView(mOpenSettingsView);
-    }
-    /**
      * Returns an Intent to show the App Info page for the current app.
      */
     private Intent getAppInfoIntent(String packageName) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.setData(new Uri.Builder().scheme("package").opaquePart(packageName).build());
         return intent;
+    }
+
+    /**
+     * Displays the open settings dialog.
+     */
+    private void displayOpenSettingsDialog() {
+        mView.removeAllViews();
+        mView.addView(mOpenSettingsView);
+    }
+
+    /**
+     * Stop the camera.
+     */
+    public void stopCamera() {
+        if (mCameraPreview != null) {
+            mCameraPreview.stopCamera();
+            mCameraPreview = null;
+        }
     }
 }

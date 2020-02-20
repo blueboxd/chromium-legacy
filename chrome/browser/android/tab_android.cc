@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -444,6 +445,25 @@ scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
 void TabAndroid::SetDevToolsAgentHost(
     scoped_refptr<content::DevToolsAgentHost> host) {
   devtools_host_ = std::move(host);
+}
+
+std::unique_ptr<content::WebContents> TabAndroid::SwapWebContents(
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  content::WebContents* old_contents = web_contents_.get();
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TabImpl_swapWebContents(env, weak_java_tab_.get(env),
+                               new_contents->GetJavaWebContents(),
+                               did_start_load, did_finish_load);
+  DCHECK_EQ(web_contents_, new_contents);
+  new_contents.release();
+  return base::WrapUnique(old_contents);
 }
 
 static void JNI_TabImpl_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -7,8 +7,11 @@
 from __future__ import print_function
 
 import argparse
+import os
 import subprocess
 import sys
+
+from util import build_utils
 
 
 def _AddArguments(parser):
@@ -50,7 +53,9 @@ def _RunJetifyCommand(parser):
   if args.jetify_config_path:
     cmd.extend(['-c', args.jetify_config_path])
   # Must wait for jetify command to complete to prevent race condition.
-  subprocess.check_call(cmd)
+  env = os.environ.copy()
+  env['JAVA_HOME'] = build_utils.JAVA_HOME
+  subprocess.check_call(cmd, env=env)
 
 
 def main():

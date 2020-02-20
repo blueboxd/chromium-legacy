@@ -6,7 +6,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
-import {FittingType} from './pdf_fitting_type.js';
+import {FittingType} from './constants.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
 /**

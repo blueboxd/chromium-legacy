@@ -30,7 +30,7 @@ IPin* SinkFilter::GetPin(int index) {
   return index == 0 ? input_pin_.get() : nullptr;
 }
 
-STDMETHODIMP SinkFilter::GetClassID(CLSID* clsid) {
+HRESULT SinkFilter::GetClassID(CLSID* clsid) {
   *clsid = __uuidof(SinkFilter);
   return S_OK;
 }

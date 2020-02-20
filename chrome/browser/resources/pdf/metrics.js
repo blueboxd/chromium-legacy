@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType} from './pdf_fitting_type.js';
+import {FittingType} from './constants.js';
 
 /**
  * Handles events specific to the PDF viewer and logs the corresponding metrics.

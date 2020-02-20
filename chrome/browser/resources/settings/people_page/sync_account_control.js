@@ -330,6 +330,14 @@ cr.define('settings', function() {
      * @private
      */
     shouldShowTurnOffButton_() {
+      // <if expr="chromeos">
+      if (this.syncStatus.domain) {
+        // Chrome OS cannot delete the user's profile like other platforms, so
+        // hide the turn off sync button for enterprise users who are not
+        // allowed to sign out.
+        return false;
+      }
+      // </if>
       return !this.hideButtons && !this.showSetupButtons_ &&
           !!this.syncStatus.signedIn;
     },

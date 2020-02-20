@@ -243,8 +243,8 @@ void SuggestionContainerView::AddSuggestionChip(
     params.icon = gfx::ImageSkia();
   }
 
-  SuggestionChipView* suggestion_chip_view =
-      new SuggestionChipView(params, /*listener=*/this);
+  auto suggestion_chip_view =
+      std::make_unique<SuggestionChipView>(params, /*listener=*/this);
 
   suggestion_chip_view->SetAccessibleName(params.text);
 
@@ -258,13 +258,12 @@ void SuggestionContainerView::AddSuggestionChip(
 
   // Given an id, we also want to be able to look up the corresponding
   // suggestion chip view. This is used for handling icon download events.
-  suggestion_chip_views_[id] = suggestion_chip_view;
-
-  content_view()->AddChildView(suggestion_chip_view);
+  suggestion_chip_views_[id] =
+      content_view()->AddChildView(std::move(suggestion_chip_view));
 
   // Set the animations for the suggestion chip.
-  AddElementAnimator(
-      std::make_unique<SuggestionChipAnimator>(suggestion_chip_view, this));
+  AddElementAnimator(std::make_unique<SuggestionChipAnimator>(
+      suggestion_chip_views_[id], this));
 }
 
 void SuggestionContainerView::OnSuggestionChipIconDownloaded(

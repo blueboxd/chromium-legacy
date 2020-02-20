@@ -113,10 +113,7 @@ source_set("prerequisites") {
     "//third_party/ots",
     "//third_party/snappy",
     "//third_party/zlib",
-
-    # TODO: don't depend on ui/base:base it has a bunch of browser related stuff.
-    # https://crbug.com/1052085
-    "//ui/base:base",
+    "//ui/base:features",
     "//ui/base/ime/mojom",
     "//ui/display/mojom:mojom_blink",
     "//ui/events:dom_keycode_converter",

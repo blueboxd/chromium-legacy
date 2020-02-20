@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {
@@ -47,7 +47,7 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       base::BindOnce(&InputIPC::OnError, base::Unretained(this)));
 
   // For now we don't care about key presses, so we pass a invalid buffer.
-  mojo::ScopedSharedBufferHandle invalid_key_press_count_buffer;
+  base::ReadOnlySharedMemoryRegion invalid_key_press_count_buffer;
 
   mojo::PendingRemote<media::mojom::AudioLog> log;
   if (log_)

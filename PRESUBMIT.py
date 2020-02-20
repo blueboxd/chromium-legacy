@@ -1325,6 +1325,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/jacoco_instr.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/java_cpp_strings.pydeps',
+    'build/android/gyp/jetify_jar.pydeps',
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/main_dex_list.pydeps',

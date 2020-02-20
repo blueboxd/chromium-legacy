@@ -1533,7 +1533,7 @@ config("default_warnings") {
           ]
         }
 
-        if (is_ios || is_chromeos || is_chromecast) {
+        if (is_chromeos || is_chromecast) {
           cflags += [
             # TODO(https://crbug.com/1031169): Clean up and enable.
             "-Wno-misleading-indentation",
@@ -1993,13 +1993,12 @@ config("default_stack_frames") {
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
-    # Favor size over speed, /O1 must be before the common flags. The GYP
-    # build also specifies /Os and /GF but these are implied by /O1.
+    # Favor size over speed, /O1 must be before the common flags.
+    # /O1 implies /Os and /GF.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-
     # TODO(thakis): Use -flto in official builds here eventually,
     # https://crbug.com/598772
-} else if (optimize_for_size && !is_nacl) {
+  } else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
     # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
     # guard above.
@@ -2017,8 +2016,8 @@ config("optimize") {
 # Same config as 'optimize' but without the WPO flag.
 config("optimize_no_wpo") {
   if (is_win) {
-    # Favor size over speed, /O1 must be before the common flags. The GYP
-    # build also specifies /Os and /GF but these are implied by /O1.
+    # Favor size over speed, /O1 must be before the common flags.
+    # /O1 implies /Os and /GF.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
   } else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
@@ -2048,7 +2047,7 @@ config("no_optimize") {
 
     if (target_cpu == "arm64") {
       # Disable omitting frame pointers for no_optimize build because stack
-      # trace on Windows ARM64 relies on it.
+      # traces on Windows ARM64 rely on it.
       cflags += [ "/Oy-" ]
     }
   } else if (is_android && !android_full_debug) {
@@ -2086,8 +2085,8 @@ config("optimize_max") {
   } else {
     ldflags = common_optimize_on_ldflags
     if (is_win) {
-      # Favor speed over size, /O2 must be before the common flags. The GYP
-      # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
+      # Favor speed over size, /O2 must be before the common flags.
+      # /O2 implies /Ot, /Oi, and /GF.
       cflags = [ "/O2" ] + common_optimize_on_cflags
 
       if (is_official_build) {
@@ -2125,8 +2124,8 @@ config("optimize_speed") {
   } else {
     ldflags = common_optimize_on_ldflags
     if (is_win) {
-      # Favor speed over size, /O2 must be before the common flags. The GYP
-      # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
+      # Favor speed over size, /O2 must be before the common flags.
+      # /O2 implies /Ot, /Oi, and /GF.
       cflags = [ "/O2" ] + common_optimize_on_cflags
 
       # TODO(thakis): Remove is_clang here, https://crbug.com/598772

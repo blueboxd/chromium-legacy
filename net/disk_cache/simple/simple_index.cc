@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
@@ -58,9 +57,6 @@ static const int kEstimatedEntryOverhead = 512;
 }  // namespace
 
 namespace disk_cache {
-
-const base::Feature kSimpleCacheEvictionWithSize = {
-    "SimpleCacheEvictionWithSize", base::FEATURE_ENABLED_BY_DEFAULT};
 
 EntryMetadata::EntryMetadata()
     : last_used_time_seconds_since_epoch_(0),
@@ -426,15 +422,14 @@ void SimpleIndex::StartEvictionIfNeeded() {
   std::vector<std::pair<uint64_t, const EntrySet::value_type*>> entries;
   entries.reserve(entries_set_.size());
   uint32_t now = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
-  bool use_size = base::FeatureList::IsEnabled(kSimpleCacheEvictionWithSize);
   for (EntrySet::const_iterator i = entries_set_.begin();
        i != entries_set_.end(); ++i) {
     uint64_t sort_value = now - i->second.RawTimeForSorting();
-    if (use_size) {
-      // Will not overflow since we're multiplying two 32-bit values and storing
-      // them in a 64-bit variable.
-      sort_value *= i->second.GetEntrySize() + kEstimatedEntryOverhead;
-    }
+    // See crbug.com/736437 for context.
+    //
+    // Will not overflow since we're multiplying two 32-bit values and storing
+    // them in a 64-bit variable.
+    sort_value *= i->second.GetEntrySize() + kEstimatedEntryOverhead;
     // Subtract so we don't need a custom comparator.
     entries.emplace_back(std::numeric_limits<uint64_t>::max() - sort_value,
                          &*i);

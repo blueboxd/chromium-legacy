@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 
+#include "base/logging.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
@@ -20,12 +21,20 @@ AppTimeLimitsWhitelistPolicyWrapper::~AppTimeLimitsWhitelistPolicyWrapper() =
 
 std::vector<std::string>
 AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistURLList() const {
+  std::vector<std::string> return_value;
+
   const base::Value* list = value_->FindListKey(policy::kUrlList);
-  DCHECK(list);
+  if (!list) {
+    VLOG(1) << "Invalid whitelist URL list provided.";
+    return return_value;
+  }
 
   base::Value::ConstListView list_view = list->GetList();
-  std::vector<std::string> return_value;
   for (const base::Value& value : list_view) {
+    if (!value.is_string()) {
+      VLOG(1) << "Whitelist URL is not a string.";
+      continue;
+    }
     return_value.push_back(value.GetString());
   }
   return return_value;
@@ -33,11 +42,15 @@ AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistURLList() const {
 
 std::vector<AppId> AppTimeLimitsWhitelistPolicyWrapper::GetWhitelistAppList()
     const {
+  std::vector<AppId> return_value;
+
   const base::Value* app_list = value_->FindListKey(policy::kAppList);
-  DCHECK(app_list);
+  if (!app_list) {
+    VLOG(1) << "Invalid whitelist application list.";
+    return return_value;
+  }
 
   base::Value::ConstListView list_view = app_list->GetList();
-  std::vector<AppId> return_value;
   for (const base::Value& value : list_view) {
     base::Optional<AppId> app_id = policy::AppIdFromDict(value);
     if (app_id)

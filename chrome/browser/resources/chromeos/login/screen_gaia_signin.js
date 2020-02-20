@@ -1483,8 +1483,8 @@ Polymer({
   /**
    * Observer that is called when the |pinDialogParameters_| property gets
    * changed.
-   * @param {number} newValue
-   * @param {number} oldValue
+   * @param {OobeTypes.SecurityTokenPinDialogParameter} newValue
+   * @param {OobeTypes.SecurityTokenPinDialogParameter} oldValue
    * @private
    */
   onPinDialogParametersChanged_(newValue, oldValue) {
@@ -1493,8 +1493,17 @@ Polymer({
       // initialization.
       return;
     }
-    if (oldValue === null && newValue !== null)
-      chrome.send('securityTokenPinDialogShownForTest');
+    if (oldValue === null && newValue !== null) {
+      // Asynchronously set the focus, so that this happens after Polymer
+      // recalculates the visibility of |pinDialog|.
+      // Also notify the C++ test after this happens, in order to avoid
+      // flakiness (so that the test doesn't try to simulate the input before
+      // the caret is positioned).
+      requestAnimationFrame(() => {
+        this.$.pinDialog.focus();
+        chrome.send('securityTokenPinDialogShownForTest');
+      });
+    }
     if ((oldValue !== null && newValue === null) ||
         (oldValue !== null && newValue !== null &&
          !this.pinDialogResultReported_)) {

@@ -1529,7 +1529,6 @@ jumbo_component("platform") {
     "//third_party/libyuv",
     "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
-    "//ui/base:base",
     "//ui/events/ipc",
     "//ui/gfx/geometry",
     "//ui/gfx/mojom",

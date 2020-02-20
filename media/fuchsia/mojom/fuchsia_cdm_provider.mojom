@@ -7,7 +7,7 @@ module media.mojom;
 // Mojo struct for
 // fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>.
 struct CdmRequest {
-  handle request;
+  handle<platform> request;
 };
 
 // Interface for asking privileged process to create connection to

@@ -20,17 +20,17 @@
           </div>
           <div>
             <div class="sub-title">
-              <content select=".zippy-title"></content>
+              <slot name="title"></slot>
             </div>
             <div class="content">
-              <content select=".zippy-description, .learn-more-link"></content>
+              <slot name="content"></slot>
             </div>
           </div>
         </div>
       </cr-expand-button>
       <iron-collapse opened="[[expanded_]]">
         <div class="content indent">
-          <content select=.zippy-additional></content>
+          <slot name="additional"></slot>
         </div>
       </iron-collapse>
     </template>
@@ -42,14 +42,14 @@
         </div>
         <div>
           <div class="sub-title">
-            <content select=".zippy-title"></content>
+            <slot name="title"></slot>
           </div>
           <div id="description" class="content">
-            <content select=".zippy-description, .learn-more-link"></content>
+            <slot name="content"></slot>
           </div>
         </div>
         <div class="toggle">
-          <content select=".zippy-toggle" hidden="[[!toggleStyle]]"></content>
+          <slot name="toggle"></slot>
         </div>
       </div>
     </template>

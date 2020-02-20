@@ -1579,7 +1579,7 @@ if (enable_java_templates) {
       _jetify_input_jar = _previous_output_jar
       _jetify_output_jar = "$target_out_dir/$target_name-jetified.jar"
 
-      action(_jetify_target) {
+      action_with_pydeps(_jetify_target) {
         script = "//build/android/gyp/jetify_jar.py"
         deps = _deps
         if (defined(invoker.deps)) {

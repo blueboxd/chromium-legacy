@@ -5,26 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_IMPL_H_
 #define IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_IMPL_H_
 
+#include "base/macros.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #include "ios/chrome/browser/main/browser_list_observer.h"
-#import "ios/chrome/browser/main/browser_observer.h"
 
 // The concrete implementation of BrowserList returned by the
 // BrowserListFactory.
-class BrowserListImpl : public BrowserList, public BrowserObserver {
+class BrowserListImpl : public BrowserList {
  public:
   BrowserListImpl();
-
-  // Not copyable or moveable.
-  BrowserListImpl(const BrowserListImpl&) = delete;
-  BrowserListImpl& operator=(const BrowserListImpl&) = delete;
-
   ~BrowserListImpl() override;
 
-  // KeyedService
-  void Shutdown() override;
-
-  // BrowserList
+  // BrowserList:
   void AddBrowser(Browser* browser) override;
   void AddIncognitoBrowser(Browser* browser) override;
   void RemoveBrowser(Browser* browser) override;
@@ -34,13 +26,12 @@ class BrowserListImpl : public BrowserList, public BrowserObserver {
   void AddObserver(BrowserListObserver* observer) override;
   void RemoveObserver(BrowserListObserver* observer) override;
 
-  // BrowserObserver:
-  void BrowserDestroyed(Browser* browser) override;
-
  private:
   std::set<Browser*> browsers_;
   std::set<Browser*> incognito_browsers_;
   base::ObserverList<BrowserListObserver, true>::Unchecked observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserListImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_IMPL_H_

@@ -38,8 +38,8 @@ constexpr base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
 constexpr char kApp1Name[] = "App1";
 constexpr char kApp2Name[] = "App2";
-const chromeos::app_time::AppId kApp1(apps::mojom::AppType::kArc, "1");
-const chromeos::app_time::AppId kApp2(apps::mojom::AppType::kArc, "2");
+const AppId kApp1(apps::mojom::AppType::kArc, "1");
+const AppId kApp2(apps::mojom::AppType::kArc, "2");
 
 }  // namespace
 
@@ -60,9 +60,10 @@ class AppTimeControllerTest : public testing::Test {
                             base::TimeDelta time_limit);
 
   void SimulateInstallArcApp(const AppId& app_id, const std::string& app_name);
-  bool HasNotificationFor(
-      const std::string& app_name,
-      chromeos::app_time::AppNotification notification) const;
+  bool HasNotificationFor(const std::string& app_name,
+                          AppNotification notification) const;
+  size_t GetNotificationsCount();
+  void DismissNotifications();
 
   AppTimeController::TestApi* test_api() { return test_api_.get(); }
   AppTimeController* controller() { return controller_.get(); }
@@ -160,14 +161,14 @@ void AppTimeControllerTest::SimulateInstallArcApp(const AppId& app_id,
 
 bool AppTimeControllerTest::HasNotificationFor(
     const std::string& app_name,
-    chromeos::app_time::AppNotification notification) const {
+    AppNotification notification) const {
   std::string notification_id;
   switch (notification) {
-    case chromeos::app_time::AppNotification::kFiveMinutes:
-    case chromeos::app_time::AppNotification::kOneMinute:
+    case AppNotification::kFiveMinutes:
+    case AppNotification::kOneMinute:
       notification_id = "time-limit-reaching-id-";
       break;
-    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+    case AppNotification::kTimeLimitChanged:
       notification_id = "time-limit-updated-id-";
       break;
     default:
@@ -180,6 +181,17 @@ bool AppTimeControllerTest::HasNotificationFor(
   base::Optional<message_center::Notification> message_center_notification =
       notification_tester_.GetNotification(notification_id);
   return message_center_notification.has_value();
+}
+
+size_t AppTimeControllerTest::GetNotificationsCount() {
+  return notification_tester_
+      .GetDisplayedNotificationsForType(NotificationHandler::Type::TRANSIENT)
+      .size();
+}
+
+void AppTimeControllerTest::DismissNotifications() {
+  notification_tester_.RemoveAllNotifications(
+      NotificationHandler::Type::TRANSIENT, true /* by_user */);
 }
 
 TEST_F(AppTimeControllerTest, EnableFeature) {
@@ -315,6 +327,47 @@ TEST_F(AppTimeControllerTest, TimeLimitNotification) {
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
 
   EXPECT_TRUE(HasNotificationFor(kApp1Name, AppNotification::kOneMinute));
+}
+
+TEST_F(AppTimeControllerTest, TimeLimitUpdatedNotification) {
+  AppActivityRegistry* registry = controller()->app_registry();
+
+  // Set new time limits.
+  const AppLimit limit1(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(35), base::Time::Now());
+  const AppLimit limit2(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(30), base::Time::Now());
+  registry->UpdateAppLimits({{kApp1, limit1}, {kApp2, limit2}});
+  task_environment().RunUntilIdle();
+
+  // Expect time limit changed notification for both apps.
+  EXPECT_EQ(2u, GetNotificationsCount());
+  EXPECT_TRUE(
+      HasNotificationFor(kApp1Name, AppNotification::kTimeLimitChanged));
+  EXPECT_TRUE(
+      HasNotificationFor(kApp2Name, AppNotification::kTimeLimitChanged));
+
+  DismissNotifications();
+
+  // Only update one time limit.
+  const AppLimit limit3(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(10), base::Time::Now());
+  registry->UpdateAppLimits({{kApp1, limit1}, {kApp2, limit3}});
+  task_environment().RunUntilIdle();
+  EXPECT_EQ(1u, GetNotificationsCount());
+  EXPECT_TRUE(
+      HasNotificationFor(kApp2Name, AppNotification::kTimeLimitChanged));
+
+  DismissNotifications();
+
+  // Remove one time limit.
+  registry->UpdateAppLimits({{kApp2, limit3}});
+  task_environment().RunUntilIdle();
+  EXPECT_EQ(1u, GetNotificationsCount());
+  EXPECT_TRUE(
+      HasNotificationFor(kApp1Name, AppNotification::kTimeLimitChanged));
+
+  DismissNotifications();
 }
 
 }  // namespace app_time

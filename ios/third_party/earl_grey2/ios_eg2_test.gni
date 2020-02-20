@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/rules.gni")
-import("//ios/third_party/firebase/firebase.gni")
+import("//ios/build/chrome_build.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 
 template("ios_eg2_test_app_host") {
   ios_app_bundle(target_name) {
@@ -16,10 +17,7 @@ template("ios_eg2_test_app_host") {
       bundle_deps = []
     }
     bundle_deps += [ "//ios/third_party/earl_grey2:app_framework+bundle" ]
-    if (ios_enable_firebase_sdk) {
-      assert(ios_firebase_resources_target != "",
-             "ios_firebase_resources_target must be defined if Firebase SDK " +
-                 "is enabled.")
+    if (ios_firebase_resources_target != "") {
       bundle_deps += [ ios_firebase_resources_target ]
     }
 
@@ -27,9 +25,6 @@ template("ios_eg2_test_app_host") {
       deps = []
     }
     deps += [ "//ios/third_party/earl_grey2:app_framework+link" ]
-    if (ios_enable_firebase_sdk) {
-      deps += [ "//ios/third_party/firebase" ]
-    }
 
     # Xcode needs the following frameworks installed in the application (and
     # signed) for the XCTest to run, so install them using

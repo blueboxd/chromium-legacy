@@ -11,7 +11,6 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -58,7 +57,16 @@ import java.util.Collection;
     private final Dialog mDialog;
     private final ViewGroup mFullContainer;
     private final int mAnimatorTranslation;
+    private OnDismissListener mDismissListener;
     private boolean mIsAnimatingDisappearance;
+
+    /**
+     * Listener for the dismissal of the DimmingDialog.
+     */
+    public interface OnDismissListener {
+        /** Called when the UI is dismissed. */
+        void onDismiss();
+    }
 
     /**
      * Builds the dimming dialog.
@@ -66,8 +74,8 @@ import java.util.Collection;
      * @param activity        The activity on top of which the dialog should be displayed.
      * @param dismissListener The listener for the dismissal of this dialog.
      */
-    /* package */ DimmingDialog(
-            Activity activity, DialogInterface.OnDismissListener dismissListener) {
+    /* package */ DimmingDialog(Activity activity, OnDismissListener dismissListener) {
+        mDismissListener = dismissListener;
         // To handle the specced animations, the dialog is entirely contained within a translucent
         // FrameLayout. This could eventually be converted to a real BottomSheetDialog, but that
         // requires exploration of how interactions would work when the dialog can be sent back and
@@ -76,7 +84,7 @@ import java.util.Collection;
         mFullContainer.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modal_dialog_scrim_color));
         mDialog = new AlwaysDismissedDialog(activity, R.style.DimmingDialog);
-        mDialog.setOnDismissListener(dismissListener);
+        mDialog.setOnDismissListener((v) -> notifyListenerDialogDismissed());
         mDialog.addContentView(mFullContainer,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         Window dialogWindow = mDialog.getWindow();
@@ -124,12 +132,18 @@ import java.util.Collection;
      * @param isAnimated If true, the dialog dismissal is animated.
      */
     /* package */ void dismiss(boolean isAnimated) {
-        if (!mDialog.isShowing()) return;
         if (isAnimated) {
             new DisappearingAnimator(true);
         } else {
             mDialog.dismiss();
+            notifyListenerDialogDismissed();
         }
+    }
+
+    private void notifyListenerDialogDismissed() {
+        if (mDismissListener == null) return;
+        mDismissListener.onDismiss();
+        mDismissListener = null;
     }
 
     /** @param overlay The overlay to show. This can be an error dialog, for example. */
@@ -232,7 +246,10 @@ import java.util.Collection;
         public void onAnimationEnd(Animator animation) {
             mIsAnimatingDisappearance = false;
             mFullContainer.removeView(mFullContainer.getChildAt(0));
-            if (mIsDialogClosing && mDialog.isShowing()) mDialog.dismiss();
+            if (mIsDialogClosing) {
+                if (mDialog.isShowing()) mDialog.dismiss();
+                notifyListenerDialogDismissed();
+            }
         }
     }
 

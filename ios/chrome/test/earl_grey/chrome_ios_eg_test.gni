@@ -7,7 +7,6 @@ import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
-import("//ios/third_party/firebase/firebase.gni")
 
 # Template wrapping ios_eg_test, setting default values for EarlGrey test
 # based on //ios/chrome/app:chrome.
@@ -126,10 +125,6 @@ template("chrome_ios_eg_test") {
       "//ios/chrome/app:main",
       "//ios/testing:http_server_bundle_data",
     ]
-    if (ios_enable_firebase_sdk) {
-      # This is required here so Firebase SDK can supply ldflags to app bundle.
-      deps += [ "//ios/third_party/firebase" ]
-    }
     if (defined(invoker.hooks_target)) {
       assert(invoker.hooks_target != "",
              "hooks_target must be non-empty if defined")

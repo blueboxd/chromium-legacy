@@ -17,10 +17,5 @@ include_rules = [
     "+third_party/blink/renderer/platform/web_test_support.h",
     "+third_party/blink/renderer/platform/weborigin",
     "+third_party/blink/renderer/platform/wtf",
-]
-
-specific_include_rules = {
-  "(locale_mac\.mm|locale_icu\.cc|locale_win\.cc|locale_win_test\.cc)": [
     "+ui/base/ui_base_features.h",
-  ],
-}
+]

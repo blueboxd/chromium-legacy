@@ -23,7 +23,6 @@
 #include "media/audio/audio_logging.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/browser/media/keyboard_mic_registration.h"
@@ -173,8 +172,7 @@ void AudioInputStreamBroker::CreateStream(
           media::AudioLogFactory::AudioComponent::AUDIO_INPUT_CONTROLLER,
           log_component_id, render_process_id(), render_frame_id()),
       device_id_, params_, shared_memory_count_, enable_agc_,
-      mojo::WrapReadOnlySharedMemoryRegion(std::move(key_press_count_buffer)),
-      std::move(processing_config_),
+      std::move(key_press_count_buffer), std::move(processing_config_),
       base::BindOnce(&AudioInputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }

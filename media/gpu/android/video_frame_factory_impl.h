@@ -109,7 +109,6 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       VideoPixelFormat pixel_format,
       OverlayMode overlay_mode,
       bool enable_threaded_texture_mailboxes,
-      const gfx::ColorSpace& color_space,
       SharedImageVideoProvider::ImageRecord record);
 
   MaybeRenderEarlyManager* mre_manager() const { return mre_manager_.get(); }

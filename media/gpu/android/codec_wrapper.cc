@@ -97,9 +97,6 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   // while we're already flushed?
   bool elided_eos_pending_ = false;
 
-  // Most recently reported color space.
-  gfx::ColorSpace color_space_ = gfx::ColorSpace::CreateSRGB();
-
   // Task runner on which we'll release codec buffers without rendering.  May be
   // null to always do this on the calling task runner.
   scoped_refptr<base::SequencedTaskRunner> release_task_runner_;
@@ -109,18 +106,12 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
 
 CodecOutputBuffer::CodecOutputBuffer(scoped_refptr<CodecWrapperImpl> codec,
                                      int64_t id,
-                                     const gfx::Size& size,
-                                     const gfx::ColorSpace& color_space)
-    : codec_(std::move(codec)),
-      id_(id),
-      size_(size),
-      color_space_(color_space) {}
+                                     const gfx::Size& size)
+    : codec_(std::move(codec)), id_(id), size_(size) {}
 
 // For testing.
-CodecOutputBuffer::CodecOutputBuffer(int64_t id,
-                                     const gfx::Size& size,
-                                     const gfx::ColorSpace& color_space)
-    : id_(id), size_(size), color_space_(color_space) {}
+CodecOutputBuffer::CodecOutputBuffer(int64_t id, const gfx::Size& size)
+    : id_(id), size_(size) {}
 
 CodecOutputBuffer::~CodecOutputBuffer() {
   // While it will work if we re-release the buffer, since CodecWrapper handles
@@ -340,8 +331,8 @@ CodecWrapperImpl::DequeueStatus CodecWrapperImpl::DequeueOutputBuffer(
 
         int64_t buffer_id = next_buffer_id_++;
         buffer_ids_[buffer_id] = index;
-        *codec_buffer = base::WrapUnique(
-            new CodecOutputBuffer(this, buffer_id, size_, color_space_));
+        *codec_buffer =
+            base::WrapUnique(new CodecOutputBuffer(this, buffer_id, size_));
         return DequeueStatus::kOk;
       }
       case MEDIA_CODEC_TRY_AGAIN_LATER: {
@@ -355,12 +346,6 @@ CodecWrapperImpl::DequeueStatus CodecWrapperImpl::DequeueOutputBuffer(
         if (codec_->GetOutputSize(&size_) == MEDIA_CODEC_ERROR) {
           state_ = State::kError;
           return DequeueStatus::kError;
-        }
-        if (codec_->GetOutputColorSpace(&color_space_) == MEDIA_CODEC_ERROR) {
-          // If we get back an unsupported color space, then just default to
-          // sRGB for < 720p, or 709 otherwise.  It's better than nothing.
-          color_space_ = size_.width() >= 1280 ? gfx::ColorSpace::CreateREC709()
-                                               : gfx::ColorSpace::CreateSRGB();
         }
         continue;
       }

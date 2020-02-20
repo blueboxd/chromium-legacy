@@ -16336,6 +16336,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1" label="Cross Origin">
     window.opener is cross origin to the top frame of this download.
   </int>
+  <int value="2" label="Same Site">
+    window.opener is cross origin but same site to the top frame of this
+    download (e.g. google.com vs subdomain.google.com).
+  </int>
 </enum>
 
 <enum name="DownloadInProgressDBCountType">
@@ -38928,6 +38932,7 @@ from previous Chrome versions.
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
+  <int value="304588364" label="TextureLayerSkipWaitForActivation:enabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="306834044" label="webui-tab-strip"/>
@@ -39045,6 +39050,7 @@ from previous Chrome versions.
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
   <int value="425520856" label="InterestFeedNotifications:enabled"/>
+  <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>

@@ -928,7 +928,6 @@ bool HistoryService::Init(
     bool no_db,
     const HistoryDatabaseParams& history_database_params) {
   TRACE_EVENT0("browser,startup", "HistoryService::Init")
-  SCOPED_UMA_HISTOGRAM_TIMER("History.HistoryServiceInitTime");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Unit tests can inject |backend_task_runner_| before this is called.

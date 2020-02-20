@@ -297,17 +297,17 @@ Polymer({
       zippy.setAttribute('popup-style', true);
 
       var title = document.createElement('div');
-      title.className = 'zippy-title';
+      title.slot = 'title';
       title.innerHTML = this.sanitizer_.sanitizeHtml(data['title']);
       zippy.appendChild(title);
 
       var description = document.createElement('div');
-      description.className = 'zippy-description';
+      description.slot = 'content';
       description.innerHTML = this.sanitizer_.sanitizeHtml(data['description']);
       description.innerHTML += '&ensp;';
 
       var learnMoreLink = document.createElement('a');
-      learnMoreLink.className = 'learn-more-link';
+      learnMoreLink.slot = 'content';
       learnMoreLink.textContent = data['popupLink'];
       learnMoreLink.setAttribute('href', 'javascript:void(0)');
       learnMoreLink.onclick = function(title, additionalInfo, focus) {

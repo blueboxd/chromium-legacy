@@ -15,7 +15,8 @@
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
-@interface UserSigninCoordinator () <UnifiedConsentCoordinatorDelegate>
+@interface UserSigninCoordinator () <UnifiedConsentCoordinatorDelegate,
+                                     UserSigninViewControllerDelegate>
 
 // Coordinator that handles the user consent before the user signs in.
 @property(nonatomic, strong)
@@ -56,6 +57,7 @@ using signin_metrics::PromoAction;
 - (void)start {
   [super start];
   self.viewController = [[UserSigninViewController alloc] init];
+  self.viewController.delegate = self;
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
   self.unifiedConsentCoordinator.delegate = self;
@@ -104,7 +106,8 @@ using signin_metrics::PromoAction;
 
 - (void)unifiedConsentCoordinatorDidReachBottom:
     (UnifiedConsentCoordinator*)coordinator {
-  // TODO(crbug.com/971989): Needs implementation.
+  DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
+  [self.viewController markUnifiedConsentScreenReachedBottom];
 }
 
 - (void)unifiedConsentCoordinatorDidTapOnAddAccount:
@@ -115,7 +118,14 @@ using signin_metrics::PromoAction;
 
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
-  // TODO(crbug.com/971989): Needs implementation.
+  DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
+  [self.viewController updatePrimaryButtonStyle];
+}
+
+#pragma mark - UserSigninViewControllerDelegate
+
+- (BOOL)unifiedConsentCoordinatorHasIdentity {
+  return self.unifiedConsentCoordinator.selectedIdentity != nil;
 }
 
 @end

@@ -30,7 +30,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
-#include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -148,13 +147,14 @@ CommunicationErrorType CommunicationErrorTypeFromLibassistantErrorCode(
   return CommunicationErrorType::Other;
 }
 
-std::vector<std::pair<std::string, std::string>> ReturnAuthTokensOrEmpty(
-    const base::Optional<std::string>& access_token) {
-  if (!access_token.has_value())
+std::vector<std::pair<std::string, std::string>> ToAuthTokensOrEmpty(
+    const base::Optional<AssistantManagerService::UserInfo>& user) {
+  if (!user.has_value())
     return {};
 
-  DCHECK(!access_token.value().empty());
-  return {std::pair<std::string, std::string>(kUserID, access_token.value())};
+  DCHECK(!user.value().gaia_id.empty());
+  DCHECK(!user.value().access_token.empty());
+  return {std::make_pair(user.value().gaia_id, user.value().access_token)};
 }
 
 }  // namespace
@@ -246,9 +246,8 @@ AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
   background_thread_.Stop();
 }
 
-void AssistantManagerServiceImpl::Start(
-    const base::Optional<std::string>& access_token,
-    bool enable_hotword) {
+void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
+                                        bool enable_hotword) {
   DCHECK(!assistant_manager_);
   DCHECK_EQ(GetState(), State::STOPPED);
 
@@ -272,7 +271,7 @@ void AssistantManagerServiceImpl::Start(
   background_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                     base::Unretained(this), access_token),
+                     base::Unretained(this), user),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
                      weak_factory_.GetWeakPtr()));
 }
@@ -298,20 +297,13 @@ AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
   return state_;
 }
 
-void AssistantManagerServiceImpl::SetAccessToken(
-    const base::Optional<std::string>& access_token) {
+void AssistantManagerServiceImpl::SetUser(
+    const base::Optional<UserInfo>& user) {
   if (!assistant_manager_)
     return;
 
-  VLOG(1) << "Set access token.";
-  // Push the |access_token| we got as an argument into AssistantManager before
-  // starting to ensure that all server requests will be authenticated once
-  // it is started. |user_id| is used to pair a user to their |access_token|,
-  // since we do not support multi-user in this example we can set it to a
-  // dummy value like "0". When |access_token| does not contain a value, we
-  // need to switch Libassistant to signed-out mode so that it can work with
-  // 0 auth token.
-  assistant_manager_->SetAuthTokens(ReturnAuthTokensOrEmpty(access_token));
+  VLOG(1) << "Set user information (Gaia ID and access token).";
+  assistant_manager_->SetAuthTokens(ToAuthTokensOrEmpty(user));
 }
 
 void AssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {
@@ -1207,7 +1199,7 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
-    const base::Optional<std::string>& access_token) {
+    const base::Optional<UserInfo>& user) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
   base::AutoLock lock(new_assistant_manager_lock_);
   // There can only be one |AssistantManager| instance at any given time.
@@ -1242,7 +1234,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   // When |access_token| does not contain a value, we will start Libassistant
   // in signed-out mode by calling SetAuthTokens() with an empty vector.
-  new_assistant_manager_->SetAuthTokens(ReturnAuthTokensOrEmpty(access_token));
+  new_assistant_manager_->SetAuthTokens(ToAuthTokensOrEmpty(user));
   new_assistant_manager_->Start();
 }
 

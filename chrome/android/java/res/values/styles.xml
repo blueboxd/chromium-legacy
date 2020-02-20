@@ -581,7 +581,6 @@
     <style name="SigninButtonBorderlessRegular" parent="@style/TextButton">
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.TextMedium.Blue</item>
     </style>
     <style name="NavigationPopupDialog" parent="Widget.AppCompat.Light.ListPopupWindow" />
 

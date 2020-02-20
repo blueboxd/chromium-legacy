@@ -38,6 +38,7 @@ source_set("text_zoom_ui") {
     "//components/strings:components_strings",
     "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ui/base",
   ]

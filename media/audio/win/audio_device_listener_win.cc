@@ -67,15 +67,15 @@ AudioDeviceListenerWin::~AudioDeviceListenerWin() {
                              << "failed: " << std::hex << hr;
 }
 
-STDMETHODIMP_(ULONG) AudioDeviceListenerWin::AddRef() {
+ULONG AudioDeviceListenerWin::AddRef() {
   return 1;
 }
 
-STDMETHODIMP_(ULONG) AudioDeviceListenerWin::Release() {
+ULONG AudioDeviceListenerWin::Release() {
   return 1;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::QueryInterface(REFIID iid, void** object) {
+HRESULT AudioDeviceListenerWin::QueryInterface(REFIID iid, void** object) {
   if (iid == IID_IUnknown || iid == __uuidof(IMMNotificationClient)) {
     *object = static_cast<IMMNotificationClient*>(this);
     return S_OK;
@@ -85,33 +85,32 @@ STDMETHODIMP AudioDeviceListenerWin::QueryInterface(REFIID iid, void** object) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::OnPropertyValueChanged(
-    LPCWSTR device_id,
-    const PROPERTYKEY key) {
+HRESULT AudioDeviceListenerWin::OnPropertyValueChanged(LPCWSTR device_id,
+                                                       const PROPERTYKEY key) {
   // Property changes are handled by IAudioSessionControl listeners hung off of
   // each WASAPIAudioOutputStream() since not all property changes make it to
   // this method and those that do are spammed 10s of times.
   return S_OK;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::OnDeviceAdded(LPCWSTR device_id) {
+HRESULT AudioDeviceListenerWin::OnDeviceAdded(LPCWSTR device_id) {
   // We don't care when devices are added.
   return S_OK;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::OnDeviceRemoved(LPCWSTR device_id) {
+HRESULT AudioDeviceListenerWin::OnDeviceRemoved(LPCWSTR device_id) {
   // We don't care when devices are removed.
   return S_OK;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
-                                                          DWORD new_state) {
+HRESULT AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
+                                                     DWORD new_state) {
   if (auto* monitor = base::SystemMonitor::Get())
     monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
   return S_OK;
 }
 
-STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
+HRESULT AudioDeviceListenerWin::OnDefaultDeviceChanged(
     EDataFlow flow,
     ERole role,
     LPCWSTR new_default_device_id) {

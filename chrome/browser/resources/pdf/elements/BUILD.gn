@@ -89,7 +89,7 @@ js_library("viewer-toolbar-dropdown") {
 js_library("viewer-zoom-toolbar") {
   deps = [
     ":viewer-zoom-button",
-    "..:pdf_fitting_type",
+    "..:constants",
     "//ui/webui/resources/js:assert.m",
   ]
 }

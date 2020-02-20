@@ -69,16 +69,15 @@ base::string16 GetTimeLimitMessage(base::TimeDelta time_limit, int cutoff) {
                                   time_limit);
 }
 
-base::string16 GetNotificationTitleFor(
-    const base::string16& app_name,
-    chromeos::app_time::AppNotification notification) {
+base::string16 GetNotificationTitleFor(const base::string16& app_name,
+                                       AppNotification notification) {
   switch (notification) {
-    case chromeos::app_time::AppNotification::kFiveMinutes:
-    case chromeos::app_time::AppNotification::kOneMinute:
+    case AppNotification::kFiveMinutes:
+    case AppNotification::kOneMinute:
       return l10n_util::GetStringFUTF16(
           IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_TITLE,
           app_name);
-    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+    case AppNotification::kTimeLimitChanged:
       return l10n_util::GetStringUTF16(
           IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_TITLE);
     default:
@@ -89,37 +88,41 @@ base::string16 GetNotificationTitleFor(
 
 base::string16 GetNotificationMessageFor(
     const base::string16& app_name,
-    chromeos::app_time::AppNotification notification,
-    base::TimeDelta time_limit) {
+    AppNotification notification,
+    base::Optional<base::TimeDelta> time_limit) {
   switch (notification) {
-    case chromeos::app_time::AppNotification::kFiveMinutes:
+    case AppNotification::kFiveMinutes:
       return l10n_util::GetStringFUTF16(
           IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_MESSAGE,
           GetTimeLimitMessage(base::TimeDelta::FromMinutes(5), /* cutoff */ 1));
-    case chromeos::app_time::AppNotification::kOneMinute:
+    case AppNotification::kOneMinute:
       return l10n_util::GetStringFUTF16(
           IDS_APP_TIME_LIMIT_APP_WILL_PAUSE_SYSTEM_NOTIFICATION_MESSAGE,
           GetTimeLimitMessage(base::TimeDelta::FromMinutes(1), /* cutoff */ 1));
-    case chromeos::app_time::AppNotification::kTimeLimitChanged:
-      return l10n_util::GetStringFUTF16(
-          IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_MESSAGE,
-          GetTimeLimitMessage(time_limit, /* cutoff */ 3), app_name);
+    case AppNotification::kTimeLimitChanged:
+      return time_limit
+                 ? l10n_util::GetStringFUTF16(
+                       IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_SET_SYSTEM_NOTIFICATION_MESSAGE,
+                       GetTimeLimitMessage(*time_limit, /* cutoff */ 3),
+                       app_name)
+                 : l10n_util::GetStringFUTF16(
+                       IDS_APP_TIME_LIMIT_APP_TIME_LIMIT_REMOVED_SYSTEM_NOTIFICATION_MESSAGE,
+                       app_name);
     default:
       NOTREACHED();
       return base::EmptyString16();
   }
 }
 
-std::string GetNotificationIdFor(
-    const std::string& app_name,
-    chromeos::app_time::AppNotification notification) {
+std::string GetNotificationIdFor(const std::string& app_name,
+                                 AppNotification notification) {
   std::string notification_id;
   switch (notification) {
-    case chromeos::app_time::AppNotification::kFiveMinutes:
-    case chromeos::app_time::AppNotification::kOneMinute:
+    case AppNotification::kFiveMinutes:
+    case AppNotification::kOneMinute:
       notification_id = kAppTimeLimitReachingNotificationId;
       break;
-    case chromeos::app_time::AppNotification::kTimeLimitChanged:
+    case AppNotification::kTimeLimitChanged:
       notification_id = kAppTimeLimitUpdateNotificationId;
       break;
     default:
@@ -131,14 +134,15 @@ std::string GetNotificationIdFor(
 }
 
 void ShowNotificationForApp(const std::string& app_name,
-                            chromeos::app_time::AppNotification notification,
-                            base::TimeDelta time_limit,
+                            AppNotification notification,
+                            base::Optional<base::TimeDelta> time_limit,
                             Profile* profile,
                             base::Optional<gfx::ImageSkia> icon) {
-  DCHECK(notification == chromeos::app_time::AppNotification::kFiveMinutes ||
-         notification == chromeos::app_time::AppNotification::kOneMinute ||
-         notification ==
-             chromeos::app_time::AppNotification::kTimeLimitChanged);
+  DCHECK(notification == AppNotification::kFiveMinutes ||
+         notification == AppNotification::kOneMinute ||
+         notification == AppNotification::kTimeLimitChanged);
+  DCHECK(notification == AppNotification::kTimeLimitChanged ||
+         time_limit.has_value());
 
   // Alright we have all the messages that we want.
   const base::string16 app_name_16 = base::UTF8ToUTF16(app_name);
@@ -342,26 +346,19 @@ void AppTimeController::TimeLimitsWhitelistPolicyUpdated(
 
 void AppTimeController::ShowAppTimeLimitNotification(
     const AppId& app_id,
-    base::TimeDelta time_limit,
+    const base::Optional<base::TimeDelta>& time_limit,
     AppNotification notification) {
-  switch (notification) {
-    case AppNotification::kFiveMinutes:
-    case AppNotification::kOneMinute:
-    case AppNotification::kTimeLimitChanged: {
-      std::string app_name = app_service_wrapper_->GetAppName(app_id);
-      int size_hint_in_dp = 48;
-      app_service_wrapper_->GetAppIcon(
-          app_id, size_hint_in_dp,
-          base::BindOnce(&ShowNotificationForApp, app_name, notification,
-                         time_limit, profile_));
-      return;
-    }
-    case AppNotification::kTimeLimitReached:
-      // TODO(1015658)
-      return;
-    default:
-      return;
-  }
+  DCHECK_NE(AppNotification::kUnknown, notification);
+
+  if (notification == AppNotification::kTimeLimitReached)
+    return;
+
+  const std::string app_name = app_service_wrapper_->GetAppName(app_id);
+  int size_hint_in_dp = 48;
+  app_service_wrapper_->GetAppIcon(
+      app_id, size_hint_in_dp,
+      base::BindOnce(&ShowNotificationForApp, app_name, notification,
+                     time_limit, profile_));
 }
 
 void AppTimeController::OnAppLimitReached(const AppId& app_id,

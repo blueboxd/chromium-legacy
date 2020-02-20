@@ -48,8 +48,12 @@ class DownloadItemImpl;
 // Entries should not be renumbered and numeric values should never be reused.
 enum class InitiatedByWindowOpenerType {
   kSameOrigin = 0,
+  // Download URL and the initiator are cross origin.
   kCrossOrigin = 1,
-  kMaxValue = kCrossOrigin
+  // Download URL and the initiator are cross origin but same site (i.e. same
+  // eTLD+1).
+  kSameSite = 2,
+  kMaxValue = kSameSite
 };
 
 namespace content {

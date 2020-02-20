@@ -71,6 +71,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -1209,8 +1210,16 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     if (opener) {
       if (opener->GetLastCommittedOrigin() !=
           render_frame_host->GetLastCommittedOrigin()) {
-        UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
-                                  InitiatedByWindowOpenerType::kCrossOrigin);
+        if (net::registry_controlled_domains::SameDomainOrHost(
+                opener->GetLastCommittedOrigin(),
+                render_frame_host->GetLastCommittedOrigin(),
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+          UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                                    InitiatedByWindowOpenerType::kSameSite);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                                    InitiatedByWindowOpenerType::kCrossOrigin);
+        }
       } else {
         UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
                                   InitiatedByWindowOpenerType::kSameOrigin);

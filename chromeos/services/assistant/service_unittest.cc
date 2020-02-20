@@ -42,6 +42,12 @@ namespace assistant {
 namespace {
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
     base::TimeDelta::FromMilliseconds(60000);
+
+#define EXPECT_STATE(_state) EXPECT_EQ(_state, assistant_manager()->GetState())
+
+const char* kAccessToken = "fake access token";
+const char* kGaiaId = "gaia_id_for_user_gmail.com";
+const char* kEmailAddress = "user@gmail.com";
 }  // namespace
 
 class FakeAssistantClient : public FakeClient {
@@ -129,7 +135,7 @@ class AssistantServiceTest : public testing::Test {
     pref_service_.SetBoolean(prefs::kAssistantHotwordEnabled, true);
 
     // In production the primary account is set before the service is created.
-    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable("user@gmail.com");
+    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kEmailAddress);
 
     service_ = std::make_unique<Service>(
         remote_service_.BindNewPipeAndPassReceiver(),
@@ -143,14 +149,28 @@ class AssistantServiceTest : public testing::Test {
     // Wait for AssistantManagerService to be set.
     base::RunLoop().RunUntilIdle();
 
-    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        "fake access token", base::Time::Now() + kDefaultTokenExpirationDelay);
+    IssueAccessToken(kAccessToken);
   }
 
   void TearDown() override {
     service_.reset();
     PowerManagerClient::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
+  }
+
+  void StartAssistantAndWait() {
+    pref_service()->SetBoolean(prefs::kAssistantEnabled, true);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void StopAssistantAndWait() {
+    pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void IssueAccessToken(const std::string& access_token) {
+    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        access_token, base::Time::Now() + kDefaultTokenExpirationDelay);
   }
 
   Service* service() { return service_.get(); }
@@ -160,6 +180,10 @@ class AssistantServiceTest : public testing::Test {
         service_->assistant_manager_service_.get());
     DCHECK(result);
     return result;
+  }
+
+  void ResetFakeAssistantManager() {
+    assistant_manager()->SetUser(base::nullopt);
   }
 
   signin::IdentityTestEnvironment* identity_test_env() {
@@ -243,39 +267,59 @@ TEST_F(AssistantServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
 TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
   // Test is set up as |State::STARTED|.
   assistant_manager()->FinishStart();
+  EXPECT_STATE(AssistantManagerService::State::RUNNING);
 
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::RUNNING);
+  StopAssistantAndWait();
 
-  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STOPPED);
+  EXPECT_STATE(AssistantManagerService::State::STOPPED);
 }
 
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
-  ASSERT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STARTING);
+  EXPECT_STATE(AssistantManagerService::State::STARTING);
 
   // Turning settings off will trigger logic to try to stop it.
-  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
+  StopAssistantAndWait();
 
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STARTING);
+  EXPECT_STATE(AssistantManagerService::State::STARTING);
 
   task_environment()->FastForwardBy(kUpdateAssistantManagerDelay);
 
   // No change of state because it is still starting.
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STARTING);
+  EXPECT_STATE(AssistantManagerService::State::STARTING);
 
   assistant_manager()->FinishStart();
 
   task_environment()->FastForwardBy(kUpdateAssistantManagerDelay);
 
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::STOPPED);
+  EXPECT_STATE(AssistantManagerService::State::STOPPED);
+}
+
+TEST_F(AssistantServiceTest, ShouldSendUserInfoWhenStarting) {
+  // First stop the service and reset the AssistantManagerService
+  assistant_manager()->FinishStart();
+  StopAssistantAndWait();
+  ResetFakeAssistantManager();
+
+  // Now start the service
+  StartAssistantAndWait();
+
+  EXPECT_EQ(kAccessToken, assistant_manager()->access_token());
+  EXPECT_EQ(kGaiaId, assistant_manager()->gaia_id());
+}
+
+TEST_F(AssistantServiceTest, ShouldSendUserInfoWhenAccessTokenIsRefreshed) {
+  assistant_manager()->FinishStart();
+
+  // Reset the AssistantManagerService so it forgets the user info sent when
+  // starting the service.
+  ResetFakeAssistantManager();
+
+  // Now force an access token refresh
+  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay);
+  IssueAccessToken("new token");
+
+  EXPECT_EQ("new token", assistant_manager()->access_token());
+  EXPECT_EQ(kGaiaId, assistant_manager()->gaia_id());
 }
 
 TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStarting) {
@@ -307,8 +351,7 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {
       AssistantManagerService::State::RUNNING);
   base::RunLoop().RunUntilIdle();
 
-  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
-  base::RunLoop().RunUntilIdle();
+  StopAssistantAndWait();
 
   EXPECT_EQ(client()->status(), ash::mojom::AssistantState::NOT_READY);
 }
@@ -316,11 +359,10 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {
 TEST_F(AssistantServiceTest,
        ShouldResetAccessTokenWhenAmbientModeStateChanged) {
   assistant_manager()->FinishStart();
-  EXPECT_EQ(assistant_manager()->GetState(),
-            AssistantManagerService::State::RUNNING);
+  EXPECT_STATE(AssistantManagerService::State::RUNNING);
   EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
-  ASSERT_EQ(assistant_manager()->access_token().value(), "fake access token");
+  ASSERT_EQ(assistant_manager()->access_token().value(), kAccessToken);
 
   ambient_mode_state()->SetAmbientModeEnabled(true);
   base::RunLoop().RunUntilIdle();
@@ -332,8 +374,7 @@ TEST_F(AssistantServiceTest,
   EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 
   // Assistant manager receives the new token.
-  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "new token", base::Time::Now() + kDefaultTokenExpirationDelay);
+  IssueAccessToken("new token");
   EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
   ASSERT_EQ(assistant_manager()->access_token().value(), "new token");

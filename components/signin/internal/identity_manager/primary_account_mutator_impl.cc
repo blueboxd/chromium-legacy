@@ -52,6 +52,10 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
 }
 
 #if defined(OS_CHROMEOS)
+void PrimaryAccountMutatorImpl::RevokeSyncConsent() {
+  primary_account_manager_->RevokeSyncConsent();
+}
+
 void PrimaryAccountMutatorImpl::SetUnconsentedPrimaryAccount(
     const CoreAccountId& account_id) {
   // On Chrome OS the UPA can only be set once and never removed or changed.

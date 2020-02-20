@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.share.qrcode;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -14,6 +14,8 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.share.qrcode.scan_tab.QrCodeScanCoordinator;
+import org.chromium.chrome.browser.share.qrcode.share_tab.QrCodeShareCoordinator;
 import org.chromium.ui.widget.ChromeImageButton;
 
 import java.util.ArrayList;
@@ -23,25 +25,25 @@ import java.util.ArrayList;
  */
 public class QrCodeDialog extends DialogFragment {
     private ArrayList<QrCodeDialogTab> mTabs;
+    private Context mContext;
 
     /**
      * The QrCodeDialog constructor.
-     * TODO(tgupta): This causes an NPE when the user moves away from Chrome
-     * and comes back. Fix this issue.
      */
-    public QrCodeDialog() {}
+    public QrCodeDialog() {
+        mTabs = new ArrayList<QrCodeDialogTab>();
+    }
 
-    /**
-     * The QrCodeDialog constructor.
-     * @param tabs The array of tabs for the tab layout.
-     */
-    /**
-     * TODO(gayane): Resolve lint warning. Per warning, tabs should be passed through Bundle, but I
-     * don't want to make all the classes parcelable.
-     */
-    @SuppressLint("ValidFragment")
-    public QrCodeDialog(ArrayList<QrCodeDialogTab> tabs) {
-        mTabs = tabs;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
+
+        QrCodeShareCoordinator shareCoordinator = new QrCodeShareCoordinator(context);
+        QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context, this::dismiss);
+
+        mTabs.add(shareCoordinator);
+        mTabs.add(scanCoordinator);
     }
 
     @Override
@@ -65,6 +67,16 @@ public class QrCodeDialog extends DialogFragment {
         for (QrCodeDialogTab tab : mTabs) {
             tab.onPause();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mContext = null;
+        for (QrCodeDialogTab tab : mTabs) {
+            tab.onDestroy();
+        }
+        mTabs.clear();
     }
 
     private View getDialogView() {

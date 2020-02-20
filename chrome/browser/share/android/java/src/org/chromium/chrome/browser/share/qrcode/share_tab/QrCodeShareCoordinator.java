@@ -30,4 +30,7 @@ public class QrCodeShareCoordinator implements QrCodeDialogTab {
 
     @Override
     public void onPause() {}
+
+    @Override
+    public void onDestroy() {}
 }

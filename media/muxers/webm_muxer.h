@@ -48,7 +48,7 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
  public:
   // Callback to be called when WebmMuxer is ready to write a chunk of data,
   // either any file header or a SingleBlock.
-  using WriteDataCB = base::Callback<void(base::StringPiece)>;
+  using WriteDataCB = base::RepeatingCallback<void(base::StringPiece)>;
 
   // Container for the parameters that muxer uses that is extracted from
   // media::VideoFrame.

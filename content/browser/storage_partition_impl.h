@@ -476,7 +476,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<PushMessagingContext> push_messaging_context_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 #if !defined(OS_ANDROID)
-  scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
+  std::unique_ptr<HostZoomLevelContext, BrowserThread::DeleteOnUIThread>
+      host_zoom_level_context_;
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;

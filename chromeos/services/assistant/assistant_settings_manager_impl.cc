@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/cros_platform_api.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
@@ -135,7 +134,7 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
   speaker_id_enrollment_client_.Bind(std::move(client));
 
   assistant_client::SpeakerIdEnrollmentConfig client_config;
-  client_config.user_id = kUserID;
+  client_config.user_id = context_->primary_account_gaia_id();
   client_config.skip_cloud_enrollment = skip_cloud_enrollment;
 
   assistant_manager_service_->assistant_manager_internal()
@@ -188,7 +187,7 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
 
   assistant_manager_service_->assistant_manager_internal()
       ->GetSpeakerIdEnrollmentStatus(
-          kUserID,
+          context_->primary_account_gaia_id(),
           [weak_ptr = weak_factory_.GetWeakPtr(),
            task_runner = main_task_runner()](
               const assistant_client::SpeakerIdEnrollmentStatus& status) {

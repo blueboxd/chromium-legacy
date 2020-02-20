@@ -7,11 +7,28 @@
 
 #import <UIKit/UIKit.h>
 
+// Delegate that interacts with the user sign-in coordinator.
+@protocol UserSigninViewControllerDelegate
+// Returns whether the user has selected an identity from the unified consent
+// screen.
+- (BOOL)unifiedConsentCoordinatorHasIdentity;
+@end
+
 // View controller used to show sign-in UI.
 @interface UserSigninViewController : UIViewController
 
+// The delegate.
+@property(nonatomic, weak) id<UserSigninViewControllerDelegate> delegate;
+
 // View controller that handles the user consent before the user signs in.
 @property UIViewController* unifiedConsentViewController;
+
+// Informs the view controller that the unified consent has reached the bottom
+// of the screen.
+- (void)markUnifiedConsentScreenReachedBottom;
+
+// Updates the primary button based on the user sign-in state.
+- (void)updatePrimaryButtonStyle;
 
 @end
 

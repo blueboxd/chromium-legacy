@@ -53,6 +53,8 @@
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
@@ -118,6 +120,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CSPDirectiveName,
                           network::mojom::CSPDirectiveName::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
                           blink::mojom::FeaturePolicyFeature::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::DocumentPolicyFeature,
+                          blink::mojom::DocumentPolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::TriggeringEventInfo,
                           blink::TriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::UserActivationUpdateType,

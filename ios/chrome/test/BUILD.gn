@@ -6,7 +6,6 @@ import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/features.gni")
-import("//ios/third_party/firebase/firebase.gni")
 import("//testing/test.gni")
 
 # All tests needs to be listed in that target to be built as part of
@@ -314,10 +313,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/search_widget_extension:unit_tests",
     "//ios/testing:http_server_bundle_data",
   ]
-  if (ios_enable_firebase_sdk) {
-    # This is required here so Firebase SDK can supply ldflags to app bundle.
-    deps += [ "//ios/third_party/firebase" ]
-  }
 
   assert_no_deps = ios_assert_no_deps
 }

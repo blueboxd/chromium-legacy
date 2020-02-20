@@ -90,6 +90,11 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // See Shelf::GetScreenBoundsOfItemIconForWindow().
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
+  // Returns the bounds of the shelf on the screen. The returned rect does
+  // not include portions of the shelf that extend beyond its own display,
+  // as those are not visible to the user.
+  gfx::Rect GetVisibleShelfBounds() const;
+
   // Returns the ApplicationDragAndDropHost for this shelf.
   ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 

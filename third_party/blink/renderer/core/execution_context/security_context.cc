@@ -28,6 +28,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -183,37 +184,41 @@ bool SecurityContext::IsFeatureEnabled(
 bool SecurityContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value,
-    base::Optional<mojom::FeaturePolicyDisposition>* disposition) const {
-  // Use Document Policy to determine feature availability, but only if all of
-  // the following are true:
-  // * The DocumentPolicy RuntimeEnabledFeature is not disabled,
-  // * Document policy has been set on this object, and
-  // * Document policy infrastructure actually supports the feature.
-  // If any of those are false, assume true (enabled) here. Otherwise, check
-  // this object's policy.
-  bool document_policy_result =
-      !RuntimeEnabledFeatures::DocumentPolicyEnabled() || !document_policy_ ||
-      !document_policy_->IsFeatureSupported(feature) ||
-      document_policy_->IsFeatureEnabled(feature, threshold_value);
+    bool* should_report) const {
+  DCHECK(feature_policy_);
+  LogImagePolicies(feature, threshold_value);
+  bool feature_policy_result =
+      feature_policy_->IsFeatureEnabled(feature, threshold_value);
+  bool report_only_feature_policy_result =
+      !report_only_feature_policy_ ||
+      report_only_feature_policy_->IsFeatureEnabled(feature, threshold_value);
 
-  FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
-  if (state == FeatureEnabledState::kEnabled)
-    return document_policy_result;
-  if (disposition) {
-    *disposition = (state == FeatureEnabledState::kReportOnly)
-                       ? mojom::FeaturePolicyDisposition::kReport
-                       : mojom::FeaturePolicyDisposition::kEnforce;
+  if (should_report) {
+    *should_report =
+        !feature_policy_result || !report_only_feature_policy_result;
   }
-  return (state != FeatureEnabledState::kDisabled) && document_policy_result;
+
+  return feature_policy_result;
 }
 
-FeatureEnabledState SecurityContext::GetFeatureEnabledState(
+bool SecurityContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature) const {
+  return IsFeatureEnabled(
+      feature,
+      PolicyValue::CreateMaxPolicyValue(
+          GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type()));
+}
+
+bool SecurityContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature,
+    PolicyValue threshold_value) const {
+  DCHECK(document_policy_);
+  return document_policy_->IsFeatureEnabled(feature, threshold_value);
+}
+
+void SecurityContext::LogImagePolicies(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value) const {
-  // The policy should always be initialized before checking it to ensure we
-  // properly inherit the parent policy.
-  DCHECK(feature_policy_);
-
   // Log metrics for unoptimized-*-images and oversized-images policies.
   if ((feature >= mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages &&
        feature <= mojom::blink::FeaturePolicyFeature::
@@ -237,15 +242,6 @@ FeatureEnabledState SecurityContext::GetFeatureEnabledState(
               GetImagePolicyHistogramName(feature), 0, 100, 101, 0x1));
     }
   }
-  if (feature_policy_->IsFeatureEnabled(feature, threshold_value)) {
-    if (report_only_feature_policy_ &&
-        !report_only_feature_policy_->IsFeatureEnabled(feature,
-                                                       threshold_value)) {
-      return FeatureEnabledState::kReportOnly;
-    }
-    return FeatureEnabledState::kEnabled;
-  }
-  return FeatureEnabledState::kDisabled;
 }
 
 }  // namespace blink

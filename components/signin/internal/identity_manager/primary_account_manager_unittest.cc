@@ -480,3 +480,18 @@ TEST_F(PrimaryAccountManagerTest, SetUnconsentedPrimaryAccountInfo) {
   EXPECT_EQ(CoreAccountInfo(), manager_->GetUnconsentedPrimaryAccountInfo());
   EXPECT_EQ(CoreAccountInfo(), manager_->GetAuthenticatedAccountInfo());
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(PrimaryAccountManagerTest, RevokeSyncConsent) {
+  CreatePrimaryAccountManager();
+  CoreAccountId account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
+  manager_->SignIn("user@gmail.com");
+  EXPECT_TRUE(manager_->IsAuthenticated());
+
+  manager_->RevokeSyncConsent();
+  EXPECT_FALSE(manager_->IsAuthenticated());
+  EXPECT_TRUE(manager_->HasUnconsentedPrimaryAccount());
+  EXPECT_EQ(account_id,
+            manager_->GetUnconsentedPrimaryAccountInfo().account_id);
+}
+#endif  // defined(OS_CHROMEOS)

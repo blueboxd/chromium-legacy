@@ -568,23 +568,22 @@ void Shell::ActivateContents(WebContents* contents) {
   contents->GetRenderViewHost()->GetWidget()->Focus();
 }
 
-std::unique_ptr<WebContents> Shell::SwapWebContents(
-    WebContents* old_contents,
-    std::unique_ptr<WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  DCHECK_EQ(old_contents, web_contents_.get());
-  new_contents->SetDelegate(this);
+std::unique_ptr<WebContents> Shell::ActivatePortalWebContents(
+    WebContents* predecessor_contents,
+    std::unique_ptr<WebContents> portal_contents) {
+  DCHECK_EQ(predecessor_contents, web_contents_.get());
+  portal_contents->SetDelegate(this);
   web_contents_->SetDelegate(nullptr);
   for (auto* shell_devtools_bindings :
-       ShellDevToolsBindings::GetInstancesForWebContents(old_contents)) {
-    shell_devtools_bindings->UpdateInspectedWebContents(new_contents.get());
+       ShellDevToolsBindings::GetInstancesForWebContents(
+           predecessor_contents)) {
+    shell_devtools_bindings->UpdateInspectedWebContents(portal_contents.get());
   }
-  std::swap(web_contents_, new_contents);
+  std::swap(web_contents_, portal_contents);
   PlatformSetContents();
   PlatformSetAddressBarURL(web_contents_->GetVisibleURL());
   LoadingStateChanged(web_contents_.get(), true);
-  return new_contents;
+  return portal_contents;
 }
 
 bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,

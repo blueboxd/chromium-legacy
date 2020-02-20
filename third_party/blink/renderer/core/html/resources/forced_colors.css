@@ -12,6 +12,7 @@
   body {
     background-color: Canvas;
     color: CanvasText;
+    fill: currentColor;
   }
 
   :focus {

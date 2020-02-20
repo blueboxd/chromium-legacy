@@ -34,7 +34,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
@@ -472,22 +471,14 @@ void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
 }
 
 std::unique_ptr<content::WebContents>
-TabWebContentsDelegateAndroid::SwapWebContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TabWebContentsDelegateAndroid_swapWebContents(
-      env, GetJavaDelegate(env), new_contents->GetJavaWebContents(),
-      did_start_load, did_finish_load);
-  new_contents.release();
-  return base::WrapUnique(old_contents);
+TabWebContentsDelegateAndroid::ActivatePortalWebContents(
+    content::WebContents* predecessor_contents,
+    std::unique_ptr<content::WebContents> portal_contents) {
+  const bool is_loading = portal_contents->IsLoading();
+  return TabAndroid::FromWebContents(predecessor_contents)
+      ->SwapWebContents(std::move(portal_contents),
+                        /* did_start_load */ true,
+                        /* did_finish_load */ !is_loading);
 }
 
 #if BUILDFLAG(ENABLE_PRINTING)

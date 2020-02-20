@@ -100,7 +100,7 @@ std::string InferGuidForLegacyBookmark(
   static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer GUID");
 
   const std::string guid = ComputeGuidFromBytes(base::make_span(hash));
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
   return guid;
 }
 

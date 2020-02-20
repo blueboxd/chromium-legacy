@@ -25,6 +25,10 @@ void TestMediaClient::HandleMediaPause() {
   ++handle_media_pause_count_;
 }
 
+void TestMediaClient::HandleMediaStop() {
+  ++handle_media_stop_count_;
+}
+
 void TestMediaClient::HandleMediaPrevTrack() {
   ++handle_media_prev_track_count_;
 }

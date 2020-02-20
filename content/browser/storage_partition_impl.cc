@@ -1419,8 +1419,8 @@ void StoragePartitionImpl::Initialize() {
       browser_context_, service_worker_context_);
 
 #if !defined(OS_ANDROID)
-  host_zoom_level_context_ = new HostZoomLevelContext(
-      browser_context_->CreateZoomLevelDelegate(partition_path_));
+  host_zoom_level_context_.reset(new HostZoomLevelContext(
+      browser_context_->CreateZoomLevelDelegate(partition_path_)));
 #endif  // !defined(OS_ANDROID)
 
   platform_notification_context_ = new PlatformNotificationContextImpl(

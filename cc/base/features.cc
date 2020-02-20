@@ -12,6 +12,11 @@ namespace features {
 const base::Feature kImpulseScrollAnimations = {
     "ImpulseScrollAnimations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled BeginMainFrame does not wait for activation in the compositor
+// thread for texture layers (crbug.com/1046463)
+const base::Feature kTextureLayerSkipWaitForActivation{
+    "TextureLayerSkipWaitForActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Enables latency recovery on the impl thread.
 const base::Feature kImplLatencyRecovery = {"ImplLatencyRecovery",

@@ -145,7 +145,6 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   gfx::Size coded_size = output_buffer->size();
-  const gfx::ColorSpace& color_space = output_buffer->color_space();
   gfx::Rect visible_rect(coded_size);
 
   // The pixel format doesn't matter here as long as it's valid for texture
@@ -166,9 +165,8 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     return;
   }
 
-  // Update the current spec to match the size and color space.
+  // Update the current spec to match the size.
   image_spec_.size = coded_size;
-  image_spec_.color_space = color_space;
 
   auto image_ready_cb = base::BindOnce(
       &VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
@@ -204,8 +202,6 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   if (!thiz)
     return;
 
-  gfx::ColorSpace color_space = output_buffer->color_space();
-
   // Initialize the CodecImage to use this output buffer.  Note that we're not
   // on the gpu main thread here, but it's okay since CodecImage is not being
   // used at this point.  Alternatively, we could post it, or hand it off to the
@@ -231,7 +227,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
       &VideoFrameFactoryImpl::CreateVideoFrame_Finish, thiz,
       std::move(output_cb), timestamp, coded_size, natural_size,
       std::move(codec_buffer_wait_coordinator), pixel_format, overlay_mode,
-      enable_threaded_texture_mailboxes, color_space, std::move(record));
+      enable_threaded_texture_mailboxes, std::move(record));
 
   // TODO(liberato): Use |ycbcr_helper_| as a signal about whether we're
   // supposed to get YCbCr info or not, rather than requiring the provider to
@@ -281,7 +277,6 @@ void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
     bool enable_threaded_texture_mailboxes,
-    const gfx::ColorSpace& color_space,
     SharedImageVideoProvider::ImageRecord record) {
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] = gpu::MailboxHolder(record.mailbox, gpu::SyncToken(),
@@ -295,8 +290,6 @@ void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
 
   // For Vulkan.
   frame->set_ycbcr_info(ycbcr_info_);
-
-  frame->set_color_space(color_space);
 
   // If, for some reason, we failed to create a frame, then fail.  Note that we
   // don't need to call |release_cb|; dropping it is okay since the api says so.

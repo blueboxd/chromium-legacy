@@ -59,7 +59,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     const auto audio_codec = static_cast<media::AudioCodec>(
         kSupportedAudioCodecs[rng() % base::size(kSupportedAudioCodecs)]);
     media::WebmMuxer muxer(audio_codec, input_type.has_video,
-                           input_type.has_audio, base::Bind(&OnWriteCallback));
+                           input_type.has_audio,
+                           base::BindRepeating(&OnWriteCallback));
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
 

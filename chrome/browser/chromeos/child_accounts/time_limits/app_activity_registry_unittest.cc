@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
@@ -44,7 +45,7 @@ class AppTimeNotificationDelegateMock : public AppTimeNotificationDelegate {
 
   MOCK_METHOD3(ShowAppTimeLimitNotification,
                void(const chromeos::app_time::AppId&,
-                    base::TimeDelta,
+                    const base::Optional<base::TimeDelta>&,
                     chromeos::app_time::AppNotification));
 };
 

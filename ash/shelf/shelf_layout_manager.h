@@ -257,10 +257,6 @@ class ASH_EXPORT ShelfLayoutManager
     is_auto_hide_state_locked_ = lock_auto_hide_state;
   }
 
-  // Calculates the hotseat y position for |hotseat_target_state| in screen
-  // coordinates.
-  int CalculateHotseatYInScreen(HotseatState hotseat_target_state) const;
-
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
@@ -382,11 +378,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Stops the auto hide timer and clears
   // |mouse_over_shelf_when_auto_hide_timer_started_|.
   void StopAutoHideTimer();
-
-  // Returns the bounds of the shelf on the screen. The returned rect does
-  // not include portions of the shelf that extend beyond its own display,
-  // as those are not visible to the user.
-  gfx::Rect GetVisibleShelfBounds() const;
 
   // Returns the bounds of an additional region which can trigger showing the
   // shelf. This region exists to make it easier to trigger showing the shelf

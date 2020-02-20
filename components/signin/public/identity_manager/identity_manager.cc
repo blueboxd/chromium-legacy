@@ -559,7 +559,6 @@ void IdentityManager::UnconsentedPrimaryAccountChanged(
     observer.OnUnconsentedPrimaryAccountChanged(account_info);
 }
 
-#if !defined(OS_CHROMEOS)
 void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   DCHECK(!account_info.IsEmpty());
@@ -576,7 +575,6 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   }
 #endif
 }
-#endif  // !defined(OS_CHROMEOS)
 
 void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
   UpdateUnconsentedPrimaryAccount();

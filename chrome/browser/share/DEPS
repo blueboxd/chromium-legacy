@@ -2,11 +2,10 @@ include_rules = [
   # TODO(crbug/1022172): Remove this dependency when ShareActivity is moved to
   # chrome/browser/share.
   "+chrome/android/java/src/org/chromium/chrome/browser/share",
-
-  "+chrome/android/java/src/org/chromium/chrome/browser/ActivityTabProvider.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/IntentHandler.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/ShortcutHelper.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/document/ChromeLauncherActivity.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/modules/ModuleInstallUi.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab/Tab.java",
-  "+chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabCreatorManager.java",
-  "+content/public/android/java/src/org/chromium/content_public/browser/LoadUrlParams.java",
 ]

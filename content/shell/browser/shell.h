@@ -186,11 +186,9 @@ class Shell : public WebContentsDelegate,
       RenderWidgetHost* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
   void ActivateContents(WebContents* contents) override;
-  std::unique_ptr<content::WebContents> SwapWebContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
+      content::WebContents* predecessor_contents,
+      std::unique_ptr<content::WebContents> portal_contents) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,

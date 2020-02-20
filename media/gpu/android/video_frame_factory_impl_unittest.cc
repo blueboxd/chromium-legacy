@@ -90,20 +90,14 @@ class VideoFrameFactoryImplTest : public testing::Test {
 
   ~VideoFrameFactoryImplTest() override = default;
 
-  struct {
-    gfx::Size coded_size{100, 100};
-    gfx::Rect visible_rect{coded_size};
-    gfx::Size natural_size{coded_size};
-    gfx::ColorSpace color_space{gfx::ColorSpace::CreateSCRGBLinear()};
-  } video_frame_params_;
-
   void RequestVideoFrame() {
-    auto output_buffer = CodecOutputBuffer::CreateForTesting(
-        0, video_frame_params_.coded_size, video_frame_params_.color_space);
-    ASSERT_TRUE(VideoFrame::IsValidConfig(
-        PIXEL_FORMAT_ARGB, VideoFrame::STORAGE_OPAQUE,
-        video_frame_params_.coded_size, video_frame_params_.visible_rect,
-        video_frame_params_.natural_size));
+    gfx::Size coded_size(100, 100);
+    gfx::Rect visible_rect(coded_size);
+    gfx::Size natural_size(coded_size);
+    auto output_buffer = CodecOutputBuffer::CreateForTesting(0, coded_size);
+    ASSERT_TRUE(
+        VideoFrame::IsValidConfig(PIXEL_FORMAT_ARGB, VideoFrame::STORAGE_OPAQUE,
+                                  coded_size, visible_rect, natural_size));
 
     // Save a copy in case the test wants it.
     output_buffer_raw_ = output_buffer.get();
@@ -116,11 +110,9 @@ class VideoFrameFactoryImplTest : public testing::Test {
     EXPECT_CALL(*image_provider_raw_, MockRequestImage());
 
     impl_->CreateVideoFrame(std::move(output_buffer), base::TimeDelta(),
-                            video_frame_params_.natural_size,
-                            base::NullCallback(), output_cb_.Get());
+                            natural_size, base::NullCallback(),
+                            output_cb_.Get());
     base::RunLoop().RunUntilIdle();
-
-    // TODO(liberato): Verify that it requested a shared image.
   }
 
   // |release_cb_called_flag| will be set when the record's |release_cb| runs.
@@ -198,8 +190,7 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameFailsIfUnsupportedFormat) {
   gfx::Size coded_size(limits::kMaxDimension + 1, limits::kMaxDimension + 1);
   gfx::Rect visible_rect(coded_size);
   gfx::Size natural_size(0, 0);
-  auto output_buffer =
-      CodecOutputBuffer::CreateForTesting(0, coded_size, gfx::ColorSpace());
+  auto output_buffer = CodecOutputBuffer::CreateForTesting(0, coded_size);
   ASSERT_FALSE(VideoFrame::IsValidConfig(PIXEL_FORMAT_ARGB,
                                          VideoFrame::STORAGE_OPAQUE, coded_size,
                                          visible_rect, natural_size));
@@ -235,11 +226,6 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameSucceeds) {
   // Make sure that it set the output buffer properly.
   EXPECT_EQ(codec_image->get_codec_output_buffer_for_testing(),
             output_buffer_raw_);
-
-  EXPECT_EQ(frame->coded_size(), video_frame_params_.coded_size);
-  EXPECT_EQ(frame->natural_size(), video_frame_params_.natural_size);
-  EXPECT_EQ(frame->visible_rect(), video_frame_params_.visible_rect);
-  EXPECT_EQ(frame->ColorSpace(), video_frame_params_.color_space);
 
   // Destroy the VideoFrame, and verify that our release cb is called.
   EXPECT_FALSE(release_cb_called_flag);

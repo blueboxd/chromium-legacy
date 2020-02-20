@@ -345,6 +345,7 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     int id;
   } kPdfResources[] = {
     {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
+    {"pdf/constants.js", IDR_PDF_CONSTANTS_JS},
     {"pdf/controller.js", IDR_PDF_CONTROLLER_JS},
     {"pdf/elements/icons.js", IDR_PDF_ICONS_JS},
     {"pdf/elements/shared-vars.js", IDR_PDF_SHARED_VARS_JS},
@@ -373,7 +374,6 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     {"pdf/metrics.js", IDR_PDF_METRICS_JS},
     {"pdf/navigator.js", IDR_PDF_NAVIGATOR_JS},
     {"pdf/open_pdf_params_parser.js", IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS},
-    {"pdf/pdf_fitting_type.js", IDR_PDF_PDF_FITTING_TYPE_JS},
     {"pdf/pdf_scripting_api.js", IDR_PDF_PDF_SCRIPTING_API_JS},
     {"pdf/pdf_viewer.js", IDR_PDF_PDF_VIEWER_JS},
     {"pdf/toolbar_manager.js", IDR_PDF_TOOLBAR_MANAGER_JS},

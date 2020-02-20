@@ -112,6 +112,34 @@ bool IsSignedOutMode() {
 
 }  // namespace
 
+// Scoped observer that will subscribe |Service| as an Ash session observer,
+// and will unsubscribe in its destructor.
+class ScopedAshSessionObserver {
+ public:
+  ScopedAshSessionObserver(ash::SessionActivationObserver* observer,
+                           const AccountId& account_id)
+      : observer_(observer), account_id_(account_id) {
+    DCHECK(account_id_.is_valid());
+    DCHECK(controller());
+    controller()->AddSessionActivationObserverForAccountId(account_id_,
+                                                           observer_);
+  }
+
+  ~ScopedAshSessionObserver() {
+    if (controller())
+      controller()->RemoveSessionActivationObserverForAccountId(account_id_,
+                                                                observer_);
+  }
+
+ private:
+  ash::SessionController* controller() const {
+    return ash::SessionController::Get();
+  }
+
+  ash::SessionActivationObserver* const observer_;
+  const AccountId account_id_;
+};
+
 class Service::Context : public ServiceContext {
  public:
   explicit Context(Service* parent) : parent_(parent) {}
@@ -157,6 +185,10 @@ class Service::Context : public ServiceContext {
     return PowerManagerClient::Get();
   }
 
+  std::string primary_account_gaia_id() override {
+    return parent_->RetrievePrimaryAccountInfo().gaia;
+  }
+
  private:
   Service* const parent_;  // |this| is owned by |parent_|.
 
@@ -194,12 +226,6 @@ Service::~Service() {
     ambient_mode_state->RemoveObserver(this);
 
   assistant_state_.RemoveObserver(this);
-
-  auto* const session_controller = ash::SessionController::Get();
-  if (session_controller && account_id_.is_valid()) {
-    session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
-                                                                    this);
-  }
 }
 
 // static
@@ -397,7 +423,7 @@ void Service::UpdateAssistantManagerState() {
   switch (state) {
     case AssistantManagerService::State::STOPPED:
       if (assistant_state_.settings_enabled().value()) {
-        assistant_manager_service_->Start(access_token_, ShouldEnableHotword());
+        assistant_manager_service_->Start(GetUserInfo(), ShouldEnableHotword());
         DVLOG(1) << "Request Assistant start";
       }
       break;
@@ -422,7 +448,7 @@ void Service::UpdateAssistantManagerState() {
       break;
     case AssistantManagerService::State::RUNNING:
       if (assistant_state_.settings_enabled().value()) {
-        assistant_manager_service_->SetAccessToken(access_token_);
+        assistant_manager_service_->SetUser(GetUserInfo());
         if (chromeos::features::IsAmbientModeEnabled()) {
           assistant_manager_service_->EnableAmbientMode(
               ash::AmbientModeState::Get()->enabled());
@@ -437,7 +463,7 @@ void Service::UpdateAssistantManagerState() {
   }
 }
 
-CoreAccountInfo Service::RetrievePrimaryAccountInfo() {
+CoreAccountInfo Service::RetrievePrimaryAccountInfo() const {
   CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
       signin::ConsentLevel::kNotRequired);
   CHECK(!account_info.account_id.empty());
@@ -597,11 +623,10 @@ void Service::AddAshSessionObserver() {
     // Note that this account can either be a regular account using real gaia,
     // or a fake gaia account.
     CoreAccountInfo account_info = RetrievePrimaryAccountInfo();
-    account_id_ = user_manager::known_user::GetAccountId(
+    AccountId account_id = user_manager::known_user::GetAccountId(
         account_info.email, account_info.gaia, AccountType::GOOGLE);
-    DCHECK(account_id_.is_valid());
-    ash::SessionController::Get()->AddSessionActivationObserverForAccountId(
-        account_id_, this);
+    scoped_ash_session_observer_ =
+        std::make_unique<ScopedAshSessionObserver>(this, account_id);
   }
 }
 
@@ -616,6 +641,14 @@ void Service::UpdateListeningState() {
   assistant_manager_service_->EnableListening(should_listen);
   assistant_manager_service_->EnableHotword(should_listen &&
                                             ShouldEnableHotword());
+}
+
+base::Optional<AssistantManagerService::UserInfo> Service::GetUserInfo() const {
+  if (access_token_) {
+    return AssistantManagerService::UserInfo(RetrievePrimaryAccountInfo().gaia,
+                                             access_token_.value());
+  }
+  return base::nullopt;
 }
 
 bool Service::ShouldEnableHotword() {

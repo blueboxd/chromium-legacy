@@ -349,7 +349,6 @@ void Portal::Activate(blink::TransferableMessage data,
                           "ownership is yielded";
 
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
-  bool is_loading = portal_contents_->IsLoading();
   std::unique_ptr<WebContents> successor_contents;
 
   if (portal_contents_->GetOuterWebContents()) {
@@ -397,8 +396,8 @@ void Portal::Activate(blink::TransferableMessage data,
   successor_contents_raw->set_portal(nullptr);
 
   std::unique_ptr<WebContents> predecessor_web_contents =
-      delegate->SwapWebContents(outer_contents, std::move(successor_contents),
-                                true, is_loading);
+      delegate->ActivatePortalWebContents(outer_contents,
+                                          std::move(successor_contents));
   CHECK_EQ(predecessor_web_contents.get(), outer_contents);
 
   if (outer_contents_main_frame_view) {

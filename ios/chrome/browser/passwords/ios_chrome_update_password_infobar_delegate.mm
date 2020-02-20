@@ -56,6 +56,12 @@ IOSChromeUpdatePasswordInfoBarDelegate::
       infobar_response());
 }
 
+bool IOSChromeUpdatePasswordInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  return !details.is_form_submission && !details.is_redirect &&
+         ConfirmInfoBarDelegate::ShouldExpire(details);
+}
+
 IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     bool is_sync_user,
     std::unique_ptr<PasswordFormManagerForUI> form_manager)

@@ -32,7 +32,7 @@ public abstract class AwContentsBackgroundThreadClient {
                             isMainFrame, hasUserGesture, method, requestHeaderNames,
                             requestHeaderValues)),
                     /*raisedException=*/false);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.e(TAG,
                     "Client raised exception in shouldInterceptRequest. Re-throwing on UI thread.");
 

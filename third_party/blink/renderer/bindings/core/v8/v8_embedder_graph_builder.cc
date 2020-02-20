@@ -668,9 +668,9 @@ void V8EmbedderGraphBuilder::Visit(void* object,
     return;
   }
   const void* traceable = wrapper_descriptor.base_object_payload;
-  const GCInfo* info = GCInfoTable::Get().GCInfoFromIndex(
-      HeapObjectHeader::FromPayload(traceable)->GcInfoIndex());
-  HeapObjectName name = info->name(traceable);
+  const GCInfo& info =
+      GCInfo::From(HeapObjectHeader::FromPayload(traceable)->GcInfoIndex());
+  HeapObjectName name = info.name(traceable);
 
   State* const parent = GetStateNotNull(current_parent_);
   State* const current =
@@ -692,7 +692,7 @@ void V8EmbedderGraphBuilder::Visit(void* object,
   current->UpdateDomTreeState(parent->GetDomTreeState());
 
   if (!current->IsVisited()) {
-    CreateAndPushVisitationItem(parent, current, traceable, info->trace);
+    CreateAndPushVisitationItem(parent, current, traceable, info.trace);
   } else {
     // Edge into an already processed subgraph.
     if (current->HasNode()) {

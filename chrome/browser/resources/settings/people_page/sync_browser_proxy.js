@@ -146,12 +146,12 @@ cr.define('settings', function() {
 
     /**
      * Turns on sync for the currently logged in user. Chrome OS users are
-     * always signed in.
+     * always signed in to Chrome.
      */
     turnOnSync() {}
 
     /**
-     * Turns off sync without signing out the user.
+     * Turns off sync. Does not sign out of Chrome.
      */
     turnOffSync() {}
     // </if>

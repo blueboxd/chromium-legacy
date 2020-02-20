@@ -359,6 +359,7 @@ void AppActivityRegistry::SetAppLimit(
   // Limit 'data' are considered equal if only the |last_updated_| is different.
   // Update the limit to store new |last_updated_| value.
   bool did_change = !details.IsLimitEqual(app_limit);
+  ShowLimitUpdatedNotificationIfNeeded(app_id, details.limit, app_limit);
   details.limit = app_limit;
 
   // Limit 'data' is the same - no action needed.
@@ -668,6 +669,35 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
 
     notification_delegate_->ShowAppTimeLimitNotification(
         app_id, time_limit, AppNotification::kTimeLimitReached);
+  }
+}
+
+void AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
+    const AppId& app_id,
+    const base::Optional<AppLimit>& old_limit,
+    const base::Optional<AppLimit>& new_limit) {
+  // Web app limit changes are covered by Chrome notification.
+  if (app_id.app_type() == apps::mojom::AppType::kWeb)
+    return;
+
+  const bool had_time_limit =
+      old_limit && old_limit->restriction() == AppRestriction::kTimeLimit;
+  const bool has_time_limit =
+      new_limit && new_limit->restriction() == AppRestriction::kTimeLimit;
+
+  // Time limit was removed.
+  if (!has_time_limit && had_time_limit) {
+    notification_delegate_->ShowAppTimeLimitNotification(
+        app_id, base::nullopt, AppNotification::kTimeLimitChanged);
+    return;
+  }
+
+  // Time limit was set or value changed.
+  if (has_time_limit && (!had_time_limit || old_limit->daily_limit() !=
+                                                new_limit->daily_limit())) {
+    notification_delegate_->ShowAppTimeLimitNotification(
+        app_id, new_limit->daily_limit(), AppNotification::kTimeLimitChanged);
+    return;
   }
 }
 

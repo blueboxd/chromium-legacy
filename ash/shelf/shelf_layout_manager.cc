@@ -565,7 +565,7 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
 
   if (event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSE_MOVED) {
-    if (GetVisibleShelfBounds().Contains(
+    if (shelf_->shelf_widget()->GetVisibleShelfBounds().Contains(
             display::Screen::GetScreen()->GetCursorScreenPoint())) {
       UpdateAutoHideState();
       last_seen_mouse_position_was_over_shelf_ = true;
@@ -1070,40 +1070,6 @@ float ShelfLayoutManager::GetOpacity() const {
   return target_opacity_;
 }
 
-int ShelfLayoutManager::CalculateHotseatYInScreen(
-    HotseatState hotseat_target_state) const {
-  DCHECK(shelf_->IsHorizontalAlignment());
-  int hotseat_distance_from_bottom_of_display;
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
-  switch (hotseat_target_state) {
-    case HotseatState::kShown: {
-      // When the hotseat state is HotseatState::kShown in tablet mode, the
-      // home launcher is showing. Elevate the hotseat a few px to match the
-      // navigation and status area.
-      const bool use_padding = IsHotseatEnabled();
-      hotseat_distance_from_bottom_of_display =
-          hotseat_size +
-          (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
-    } break;
-    case HotseatState::kHidden:
-      // Show the hotseat offscreen.
-      hotseat_distance_from_bottom_of_display = 0;
-      break;
-    case HotseatState::kExtended:
-      // Show the hotseat at its extended position.
-      hotseat_distance_from_bottom_of_display =
-          ShelfConfig::Get()->in_app_shelf_size() +
-          ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
-      break;
-  }
-  const int current_shelf_size =
-      shelf_->shelf_widget()->GetTargetBounds().size().height();
-  const int hotseat_y_in_shelf =
-      -(hotseat_distance_from_bottom_of_display - current_shelf_size);
-  const int shelf_y = shelf_->shelf_widget()->GetTargetBounds().y();
-  return hotseat_y_in_shelf + shelf_y;
-}
-
 void ShelfLayoutManager::OnShelfConfigUpdated() {
   LayoutShelf(/*animate=*/true);
 }
@@ -1510,6 +1476,8 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);
 
+  // TODO(manucornet): Snap bounds in the shelf widget directly, and adjust
+  // tests that don't expect snapped bounds.
   const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
   gfx::Rect snapped_shelf_bounds(shelf_bounds);
   screen_util::SnapBoundsToDisplayEdge(
@@ -1686,16 +1654,9 @@ void ShelfLayoutManager::StopAutoHideTimer() {
   mouse_over_shelf_when_auto_hide_timer_started_ = false;
 }
 
-gfx::Rect ShelfLayoutManager::GetVisibleShelfBounds() const {
-  gfx::Rect shelf_region = shelf_widget_->GetWindowBoundsInScreen();
-  DCHECK(!display_.bounds().IsEmpty());
-  shelf_region.Intersect(display_.bounds());
-  return screen_util::SnapBoundsToDisplayEdge(shelf_region,
-                                              shelf_widget_->GetNativeWindow());
-}
-
 gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
-  gfx::Rect shelf_bounds_in_screen = GetVisibleShelfBounds();
+  gfx::Rect shelf_bounds_in_screen =
+      shelf_->shelf_widget()->GetVisibleShelfBounds();
   gfx::Vector2d offset = shelf_->SelectValueForShelfAlignment(
       gfx::Vector2d(0, shelf_bounds_in_screen.height()),
       gfx::Vector2d(-kMaxAutoHideShowShelfRegionSize, 0),
@@ -1813,7 +1774,7 @@ ShelfLayoutManager::CalculateAutoHideStateBasedOnCursorLocation() const {
   if (!shelf_widget_->IsMouseEventsEnabled())
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  gfx::Rect shelf_region = GetVisibleShelfBounds();
+  gfx::Rect shelf_region = shelf_->shelf_widget()->GetVisibleShelfBounds();
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->IsMessageBubbleShown() &&
       IsVisible()) {
@@ -2209,7 +2170,8 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
 
   // If the start location is above the shelf (e.g., on the extended hotseat),
   // do not allow window drag when the hotseat is extended.
-  const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
+  const gfx::Rect shelf_bounds =
+      shelf_->shelf_widget()->GetVisibleShelfBounds();
   allow_window_drag_on_extended_hotseat_ =
       event_in_screen.location_f().y() >= shelf_bounds.y();
 

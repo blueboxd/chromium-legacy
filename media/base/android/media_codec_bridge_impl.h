@@ -110,7 +110,6 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
   MediaCodecStatus GetOutputSize(gfx::Size* size) override;
   MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus GetOutputChannelCount(int* channel_count) override;
-  MediaCodecStatus GetOutputColorSpace(gfx::ColorSpace* color_space) override;
   MediaCodecStatus QueueInputBuffer(int index,
                                     const uint8_t* data,
                                     size_t data_size,

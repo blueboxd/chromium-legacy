@@ -95,7 +95,7 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
-  DCHECK(base::IsValidGUID(node->guid()));
+  DCHECK(base::IsValidGUIDOutputString(node->guid()));
 
   // Local bookmark creations should have used a random GUID so it's safe to
   // use it as originator client item ID, without the risk for collision.

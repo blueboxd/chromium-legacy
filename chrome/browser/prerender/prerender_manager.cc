@@ -433,8 +433,8 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
       &web_contents->GetController(), should_replace_current_entry);
   WebContents* raw_new_web_contents = new_web_contents.get();
   std::unique_ptr<content::WebContents> old_web_contents =
-      web_contents->GetDelegate()->SwapWebContents(
-          web_contents, std::move(new_web_contents), true,
+      core_tab_helper->SwapWebContents(
+          std::move(new_web_contents), true,
           prerender_contents->has_finished_loading());
   prerender_contents->CommitHistory(raw_new_web_contents);
 

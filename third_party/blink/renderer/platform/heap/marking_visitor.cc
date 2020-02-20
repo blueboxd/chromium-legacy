@@ -211,9 +211,9 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
   DCHECK(thread_state->CurrentVisitor());
   // No weak handling for write barriers. Modifying weakly reachable objects
   // strongifies them for the current cycle.
-  GCInfoTable::Get()
-      .GCInfoFromIndex(header->GcInfoIndex())
-      ->trace(thread_state->CurrentVisitor(), value);
+
+  GCInfo::From(header->GcInfoIndex())
+      .trace(thread_state->CurrentVisitor(), value);
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
@@ -226,11 +226,9 @@ void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(address);
   DCHECK(header);
   DCHECK(!IsInConstruction(header));
-  const GCInfo* gc_info =
-      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   if (MarkHeaderNoTracing(header)) {
-    marking_worklist_.Push(
-        {reinterpret_cast<void*>(header->Payload()), gc_info->trace});
+    marking_worklist_.Push({reinterpret_cast<void*>(header->Payload()),
+                            GCInfo::From(header->GcInfoIndex()).trace});
   }
 }
 
@@ -249,10 +247,9 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
 
   // Simple case for fully constructed objects. This just adds the object to the
   // regular marking worklist.
-  const GCInfo* gc_info =
-      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   if (!IsInConstruction(header)) {
-    MarkHeader(header, {header->Payload(), gc_info->trace});
+    MarkHeader(header,
+               {header->Payload(), GCInfo::From(header->GcInfoIndex()).trace});
     return;
   }
 

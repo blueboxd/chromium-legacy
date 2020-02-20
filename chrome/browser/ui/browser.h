@@ -516,6 +516,10 @@ class Browser : public TabStripModelObserver,
   // Saving can be disabled e.g. for the DevTools window.
   bool CanSaveContents(content::WebContents* web_contents) const;
 
+  std::unique_ptr<content::WebContents> SwapWebContents(
+      content::WebContents* old_contents,
+      std::unique_ptr<content::WebContents> new_contents);
+
   /////////////////////////////////////////////////////////////////////////////
 
   // Called by Navigate() when a navigation has occurred in a tab in
@@ -600,11 +604,9 @@ class Browser : public TabStripModelObserver,
       const viz::SurfaceId&,
       const gfx::Size&) override;
   void ExitPictureInPicture() override;
-  std::unique_ptr<content::WebContents> SwapWebContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
+      content::WebContents* predecessor_contents,
+      std::unique_ptr<content::WebContents> portal_contents) override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
   bool IsFrameLowPriority(
       const content::WebContents* web_contents,

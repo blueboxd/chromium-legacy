@@ -711,6 +711,9 @@ extern const char kNewUsbBackendDescription[];
 extern const char kNewTabstripAnimationName[];
 extern const char kNewTabstripAnimationDescription[];
 
+extern const char kTextureLayerSkipWaitForActivationName[];
+extern const char kTextureLayerSkipWaitForActivationDescription[];
+
 extern const char kNotificationIndicatorName[];
 extern const char kNotificationIndicatorDescription[];
 

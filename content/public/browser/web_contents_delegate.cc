@@ -325,12 +325,10 @@ bool WebContentsDelegate::ShouldAllowLazyLoad() {
   return true;
 }
 
-std::unique_ptr<WebContents> WebContentsDelegate::SwapWebContents(
-    WebContents* old_contents,
-    std::unique_ptr<WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  return new_contents;
+std::unique_ptr<WebContents> WebContentsDelegate::ActivatePortalWebContents(
+    WebContents* predecessor_contents,
+    std::unique_ptr<WebContents> portal_contents) {
+  return portal_contents;
 }
 
 bool WebContentsDelegate::ShouldShowStaleContentOnEviction(

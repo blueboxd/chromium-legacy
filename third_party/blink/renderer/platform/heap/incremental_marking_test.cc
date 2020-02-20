@@ -39,9 +39,8 @@ class BackingVisitor : public Visitor {
   void ProcessBackingStore(HeapObjectHeader* header) {
     EXPECT_TRUE(header->IsMarked());
     header->Unmark();
-    GCInfoTable::Get()
-        .GCInfoFromIndex(header->GcInfoIndex())
-        ->trace(this, header->Payload());
+
+    GCInfo::From(header->GcInfoIndex()).trace(this, header->Payload());
   }
 
   void Visit(void* obj, TraceDescriptor desc) final {

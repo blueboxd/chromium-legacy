@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom";
 import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
 
@@ -15,7 +16,7 @@ import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
 struct FramePolicy {
   blink.mojom.WebSandboxFlags sandbox_flags;
   array<blink.mojom.ParsedFeaturePolicyDeclaration> container_policy;
-  map<blink.mojom.FeaturePolicyFeature, blink.mojom.PolicyValue> required_document_policy;
+  map<blink.mojom.DocumentPolicyFeature, blink.mojom.PolicyValue> required_document_policy;
   bool allowed_to_download = true;
   bool disallow_document_access = false;
 };

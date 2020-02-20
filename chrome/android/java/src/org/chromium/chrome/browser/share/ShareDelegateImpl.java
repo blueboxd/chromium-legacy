@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -45,7 +45,6 @@ public class ShareDelegateImpl implements ShareDelegate {
     private final BottomSheetController mBottomSheetController;
     private final ShareSheetDelegate mDelegate;
     private final ActivityTabProvider mActivityTabProvider;
-    private final TabCreatorManager.TabCreator mTabCreator;
     private long mShareStartTime;
 
     private static boolean sScreenshotCaptureSkippedForTesting;
@@ -58,11 +57,10 @@ public class ShareDelegateImpl implements ShareDelegate {
      * @param tabCreator The TabCreator for the current selected {@link TabModel}.
      */
     public ShareDelegateImpl(BottomSheetController controller, ActivityTabProvider tabProvider,
-            ShareSheetDelegate delegate, TabCreatorManager.TabCreator tabCreator) {
+            ShareSheetDelegate delegate) {
         mBottomSheetController = controller;
         mDelegate = delegate;
         mActivityTabProvider = tabProvider;
-        mTabCreator = tabCreator;
     }
 
     // ShareDelegate implementation.
@@ -71,8 +69,7 @@ public class ShareDelegateImpl implements ShareDelegate {
         if (mShareStartTime == 0L) {
             mShareStartTime = System.currentTimeMillis();
         }
-        mDelegate.share(
-                params, mBottomSheetController, mActivityTabProvider, mTabCreator, mShareStartTime);
+        mDelegate.share(params, mBottomSheetController, mActivityTabProvider, mShareStartTime);
         mShareStartTime = 0;
     }
 
@@ -261,13 +258,12 @@ public class ShareDelegateImpl implements ShareDelegate {
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params, BottomSheetController controller,
-                ActivityTabProvider tabProvider, TabCreatorManager.TabCreator tabCreator,
-                long shareStartTime) {
+                ActivityTabProvider tabProvider, long shareStartTime) {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
                 ShareSheetCoordinator coordinator =
-                        new ShareSheetCoordinator(controller, tabProvider, tabCreator,
+                        new ShareSheetCoordinator(controller, tabProvider,
                                 new ShareSheetPropertyModelBuilder(controller,
                                         ContextUtils.getApplicationContext().getPackageManager()));
                 // TODO(crbug/1009124): open custom share sheet.

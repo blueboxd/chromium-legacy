@@ -60,7 +60,7 @@ class StreamFactory final : public mojom::StreamFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
-      mojo::ScopedSharedBufferHandle key_press_count_buffer,
+      base::ReadOnlySharedMemoryRegion key_press_count_buffer,
       mojom::AudioProcessingConfigPtr processing_config,
       CreateInputStreamCallback created_callback) final;
 

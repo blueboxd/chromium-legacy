@@ -62,6 +62,10 @@ class ServiceContext {
   virtual scoped_refptr<base::SequencedTaskRunner> main_task_runner() = 0;
 
   virtual PowerManagerClient* power_manager_client() = 0;
+
+  // Returns the Gaia ID of the primary account (which is used by the
+  // Assistant).
+  virtual std::string primary_account_gaia_id() = 0;
 };
 }  // namespace assistant
 }  // namespace chromeos

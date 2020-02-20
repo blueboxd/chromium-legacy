@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "scrollbar.cc": [
-    "+ui/base/ui_base_features.h",
-  ],
-}

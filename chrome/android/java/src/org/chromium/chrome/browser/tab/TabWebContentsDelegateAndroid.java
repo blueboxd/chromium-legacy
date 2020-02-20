@@ -224,15 +224,6 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     @CalledByNative
     protected abstract void setOverlayMode(boolean useOverlayMode);
 
-    /**
-     *  This is currently called when committing a pre-rendered page or activating a portal.
-     */
-    @CalledByNative
-    private void swapWebContents(
-            WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        mTab.swapWebContents(webContents, didStartLoad, didFinishLoad);
-    }
-
     private float getDipScale() {
         return mTab.getWindowAndroid().getDisplay().getDipScale();
     }

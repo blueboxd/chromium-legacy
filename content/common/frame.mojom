@@ -25,6 +25,7 @@ import "services/viz/public/mojom/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
+import "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom";
 import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
@@ -442,7 +443,7 @@ interface FrameHost {
   DidSetFramePolicyHeaders(
       blink.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> feature_policy_header,
-      map<blink.mojom.FeaturePolicyFeature, blink.mojom.PolicyValue>
+      map<blink.mojom.DocumentPolicyFeature, blink.mojom.PolicyValue>
         document_policy_header);
 
   // If a cross-process navigation was started for the initial history load in

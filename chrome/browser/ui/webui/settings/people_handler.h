@@ -95,10 +95,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterWrongExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterBlankExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            UnrecoverableErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GaiaErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, DisplayBasicLogin);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, RestartSyncAfterDashboardClear);
@@ -112,6 +112,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
                            StoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerGuestModeTest, GetStoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOffSync);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GetStoredAccountsList);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;

@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +99,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
     const media::AudioParameters params;
     uint32_t shared_memory_count;
     bool enable_agc;
-    mojo::ScopedSharedBufferHandle key_press_count_buffer;
+    base::ReadOnlySharedMemoryRegion key_press_count_buffer;
     CreateInputStreamCallback created_callback;
   };
 
@@ -118,7 +117,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool enable_agc,
-      mojo::ScopedSharedBufferHandle key_press_count_buffer,
+      base::ReadOnlySharedMemoryRegion key_press_count_buffer,
       audio::mojom::AudioProcessingConfigPtr processing_config,
       CreateInputStreamCallback created_callback) override {
     // No way to cleanly exit the test here in case of failure, so use CHECK.

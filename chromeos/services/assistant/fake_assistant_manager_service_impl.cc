@@ -18,19 +18,25 @@ void FakeAssistantManagerServiceImpl::FinishStart() {
 }
 
 void FakeAssistantManagerServiceImpl::Start(
-    const base::Optional<std::string>& access_token,
+    const base::Optional<UserInfo>& user,
     bool enable_hotword) {
   SetStateAndInformObservers(State::STARTING);
-  access_token_ = access_token;
+  SetUser(user);
 }
 
 void FakeAssistantManagerServiceImpl::Stop() {
   SetStateAndInformObservers(State::STOPPED);
 }
 
-void FakeAssistantManagerServiceImpl::SetAccessToken(
-    const base::Optional<std::string>& access_token) {
-  access_token_ = access_token;
+void FakeAssistantManagerServiceImpl::SetUser(
+    const base::Optional<UserInfo>& user) {
+  if (user) {
+    gaia_id_ = user.value().gaia_id;
+    access_token_ = user.value().access_token;
+  } else {
+    gaia_id_ = base::nullopt;
+    access_token_ = base::nullopt;
+  }
 }
 
 void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}

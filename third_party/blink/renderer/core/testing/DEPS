@@ -17,7 +17,4 @@ specific_include_rules = {
     'internals\.cc' : [
         "+third_party/blink/renderer/core/exported/web_view_impl.h",
     ],
-    "internals.cc": [
-        "+ui/base/ui_base_features.h",
-    ],
 }

@@ -661,6 +661,15 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
                    bounds.height());
 }
 
+gfx::Rect ShelfWidget::GetVisibleShelfBounds() const {
+  gfx::Rect shelf_region = GetWindowBoundsInScreen();
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeWindow());
+  DCHECK(!display.bounds().IsEmpty());
+  shelf_region.Intersect(display.bounds());
+  return screen_util::SnapBoundsToDisplayEdge(shelf_region, GetNativeWindow());
+}
+
 ApplicationDragAndDropHost* ShelfWidget::GetDragAndDropHostForAppList() {
   return hotseat_widget()->GetShelfView();
 }

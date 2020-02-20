@@ -38,62 +38,62 @@ class PinBase : public IPin,
 
   // Called when new media is received. Note that this is not on the same
   // thread as where the pin is created.
-  STDMETHODIMP Receive(IMediaSample* sample) override = 0;
+  IFACEMETHODIMP Receive(IMediaSample* sample) override = 0;
 
-  STDMETHODIMP Connect(IPin* receive_pin,
-                       const AM_MEDIA_TYPE* media_type) override;
+  IFACEMETHODIMP Connect(IPin* receive_pin,
+                         const AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHODIMP ReceiveConnection(IPin* connector,
-                                 const AM_MEDIA_TYPE* media_type) override;
+  IFACEMETHODIMP ReceiveConnection(IPin* connector,
+                                   const AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHODIMP Disconnect() override;
+  IFACEMETHODIMP Disconnect() override;
 
-  STDMETHODIMP ConnectedTo(IPin** pin) override;
+  IFACEMETHODIMP ConnectedTo(IPin** pin) override;
 
-  STDMETHODIMP ConnectionMediaType(AM_MEDIA_TYPE* media_type) override;
+  IFACEMETHODIMP ConnectionMediaType(AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHODIMP QueryPinInfo(PIN_INFO* info) override;
+  IFACEMETHODIMP QueryPinInfo(PIN_INFO* info) override;
 
-  STDMETHODIMP QueryDirection(PIN_DIRECTION* pin_dir) override;
+  IFACEMETHODIMP QueryDirection(PIN_DIRECTION* pin_dir) override;
 
-  STDMETHODIMP QueryId(LPWSTR* id) override;
+  IFACEMETHODIMP QueryId(LPWSTR* id) override;
 
-  STDMETHODIMP QueryAccept(const AM_MEDIA_TYPE* media_type) override;
+  IFACEMETHODIMP QueryAccept(const AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHODIMP EnumMediaTypes(IEnumMediaTypes** types) override;
+  IFACEMETHODIMP EnumMediaTypes(IEnumMediaTypes** types) override;
 
-  STDMETHODIMP QueryInternalConnections(IPin** pins, ULONG* no_pins) override;
+  IFACEMETHODIMP QueryInternalConnections(IPin** pins, ULONG* no_pins) override;
 
-  STDMETHODIMP EndOfStream() override;
+  IFACEMETHODIMP EndOfStream() override;
 
-  STDMETHODIMP BeginFlush() override;
+  IFACEMETHODIMP BeginFlush() override;
 
-  STDMETHODIMP EndFlush() override;
+  IFACEMETHODIMP EndFlush() override;
 
-  STDMETHODIMP NewSegment(REFERENCE_TIME start,
-                          REFERENCE_TIME stop,
-                          double dRate) override;
+  IFACEMETHODIMP NewSegment(REFERENCE_TIME start,
+                            REFERENCE_TIME stop,
+                            double dRate) override;
 
   // Inherited from IMemInputPin.
-  STDMETHODIMP GetAllocator(IMemAllocator** allocator) override;
+  IFACEMETHODIMP GetAllocator(IMemAllocator** allocator) override;
 
-  STDMETHODIMP NotifyAllocator(IMemAllocator* allocator,
-                               BOOL read_only) override;
+  IFACEMETHODIMP NotifyAllocator(IMemAllocator* allocator,
+                                 BOOL read_only) override;
 
-  STDMETHODIMP GetAllocatorRequirements(
+  IFACEMETHODIMP GetAllocatorRequirements(
       ALLOCATOR_PROPERTIES* properties) override;
 
-  STDMETHODIMP ReceiveMultiple(IMediaSample** samples,
-                               long sample_count,
-                               long* processed) override;
-  STDMETHODIMP ReceiveCanBlock() override;
+  IFACEMETHODIMP ReceiveMultiple(IMediaSample** samples,
+                                 long sample_count,
+                                 long* processed) override;
+  IFACEMETHODIMP ReceiveCanBlock() override;
 
   // Inherited from IUnknown.
-  STDMETHODIMP QueryInterface(REFIID id, void** object_ptr) override;
+  IFACEMETHODIMP QueryInterface(REFIID id, void** object_ptr) override;
 
-  STDMETHODIMP_(ULONG) AddRef() override;
+  IFACEMETHODIMP_(ULONG) AddRef() override;
 
-  STDMETHODIMP_(ULONG) Release() override;
+  IFACEMETHODIMP_(ULONG) Release() override;
 
  protected:
   friend class base::RefCounted<PinBase>;

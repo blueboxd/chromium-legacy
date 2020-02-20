@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/features.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
@@ -111,7 +112,9 @@ void TextureLayer::SetTransferableResourceInternal(
   UpdateDrawsContent(HasDrawableContent());
   // The active frame needs to be replaced and the mailbox returned before the
   // commit is called complete.
-  SetNextCommitWaitsForActivation();
+  if (!base::FeatureList::IsEnabled(
+          features::kTextureLayerSkipWaitForActivation))
+    SetNextCommitWaitsForActivation();
 }
 
 void TextureLayer::SetTransferableResource(
@@ -139,10 +142,12 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     needs_set_resource_ = true;
     // The active frame needs to be replaced and the mailbox returned before the
     // commit is called complete.
-    SetNextCommitWaitsForActivation();
+    if (!base::FeatureList::IsEnabled(
+            features::kTextureLayerSkipWaitForActivation))
+      SetNextCommitWaitsForActivation();
   }
   if (host) {
-    // When attached to a new LayerTreHost, all previously registered
+    // When attached to a new LayerTreeHost, all previously registered
     // SharedBitmapIds will need to be re-sent to the new TextureLayerImpl
     // representing this layer on the compositor thread.
     to_register_bitmaps_.insert(

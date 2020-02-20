@@ -28,10 +28,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void FinishStart();
 
   // assistant::AssistantManagerService overrides
-  void Start(const base::Optional<std::string>& access_token,
+  void Start(const base::Optional<UserInfo>& user,
              bool enable_hotword) override;
   void Stop() override;
-  void SetAccessToken(const base::Optional<std::string>& access_token) override;
+  void SetUser(const base::Optional<UserInfo>& user) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
   void EnableAmbientMode(bool enabled) override;
@@ -77,8 +77,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   // |AssistantStateObserver| of the change.
   void SetStateAndInformObservers(State new_state);
 
-  // Return the |access_token| that was passed to |SetAccessToken|.
+  // Return the access token that was passed to |SetUser|.
   base::Optional<std::string> access_token() { return access_token_; }
+  // Return the Gaia ID that was passed to |SetUser|.
+  base::Optional<std::string> gaia_id() { return gaia_id_; }
 
  private:
   // Send out a |AssistantStateObserver::OnStateChange(state)| event if we are
@@ -86,6 +88,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void MaybeSendStateChange(State state, State old_state, State target_state);
 
   State state_ = State::STOPPED;
+  base::Optional<std::string> gaia_id_;
   base::Optional<std::string> access_token_;
   FakeAssistantSettingsManagerImpl assistant_settings_manager_;
   base::ObserverList<StateObserver> state_observers_;

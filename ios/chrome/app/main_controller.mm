@@ -46,7 +46,6 @@
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
-#import "ios/chrome/app/firebase_utils.h"
 #import "ios/chrome/app/main_controller_private.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
@@ -922,12 +921,18 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   block:^{
                     auto URLLoaderFactory =
                         self.mainBrowserState->GetSharedURLLoaderFactory();
-                    bool is_first_run = FirstRun::IsChromeFirstRun();
+                    const bool is_first_run = FirstRun::IsChromeFirstRun();
                     ios::GetChromeBrowserProvider()
                         ->GetAppDistributionProvider()
                         ->ScheduleDistributionNotifications(URLLoaderFactory,
                                                             is_first_run);
-                    InitializeFirebase(is_first_run);
+
+                    const int64_t install_date =
+                        GetApplicationContext()->GetLocalState()->GetInt64(
+                            metrics::prefs::kInstallDate);
+                    ios::GetChromeBrowserProvider()
+                        ->GetAppDistributionProvider()
+                        ->InitializeFirebase(install_date, is_first_run);
                   }];
 }
 

@@ -189,6 +189,10 @@ void MediaClientImpl::HandleMediaPause() {
   HandleMediaAction(ui::VKEY_MEDIA_PAUSE);
 }
 
+void MediaClientImpl::HandleMediaStop() {
+  HandleMediaAction(ui::VKEY_MEDIA_STOP);
+}
+
 void MediaClientImpl::HandleMediaPrevTrack() {
   HandleMediaAction(ui::VKEY_MEDIA_PREV_TRACK);
 }
@@ -303,10 +307,11 @@ void MediaClientImpl::HandleMediaAction(ui::KeyboardCode keycode) {
     case ui::VKEY_MEDIA_PLAY_PAUSE:
       router->NotifyTogglePlayState();
       break;
-    // TODO(https://crbug.com/1053777): Handle media action for VKEY_MEDIA_PLAY
-    // and VKEY_MEDIA_PAUSE.
+    // TODO(https://crbug.com/1053777): Handle media action for VKEY_MEDIA_PLAY,
+    // VKEY_MEDIA_PAUSE, and VKEY_MEDIA_STOP.
     case ui::VKEY_MEDIA_PLAY:
     case ui::VKEY_MEDIA_PAUSE:
+    case ui::VKEY_MEDIA_STOP:
       break;
     default:
       break;

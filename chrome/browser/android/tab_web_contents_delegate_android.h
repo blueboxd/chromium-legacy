@@ -114,11 +114,9 @@ class TabWebContentsDelegateAndroid
       const viz::SurfaceId&,
       const gfx::Size&) override;
   void ExitPictureInPicture() override;
-  std::unique_ptr<content::WebContents> SwapWebContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
+      content::WebContents* predecessor_contents,
+      std::unique_ptr<content::WebContents> portal_contents) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(

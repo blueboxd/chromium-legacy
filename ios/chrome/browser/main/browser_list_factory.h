@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_FACTORY_H_
 #define IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -21,10 +22,6 @@ class BrowserListFactory : public BrowserStateKeyedServiceFactory {
   // Getter for singleton instance.
   static BrowserListFactory* GetInstance();
 
-  // Not copyable or moveable.
-  BrowserListFactory(const BrowserListFactory&) = delete;
-  BrowserListFactory& operator=(const BrowserListFactory&) = delete;
-
  private:
   friend class base::NoDestructor<BrowserListFactory>;
 
@@ -36,7 +33,7 @@ class BrowserListFactory : public BrowserStateKeyedServiceFactory {
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
 
-  void BrowserStateShutdown(web::BrowserState* context) override;
+  DISALLOW_COPY_AND_ASSIGN(BrowserListFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_MAIN_BROWSER_LIST_FACTORY_H_

@@ -24,6 +24,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   class StateObserver;
   class CommunicationErrorObserver;
 
+  struct UserInfo {
+    UserInfo(const std::string& gaia_id, const std::string& access_token)
+        : gaia_id(gaia_id), access_token(access_token) {}
+
+    std::string gaia_id;
+    std::string access_token;
+  };
+
   enum State {
     // Initial state, the service is created but not started yet.
     STOPPED = 0,
@@ -44,12 +52,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   ~AssistantManagerService() override = default;
 
-  // Start the Assistant in the background with |access_token|, where the
-  // token can be nullopt when the service is being started under the signed
-  // out mode.
+  // Start the Assistant in the background with the given |user|.
+  // If the user is nullopt, the service will be started in signed-out mode.
   // If you want to know when the service is started, use
   // |AddAndFireStateObserver| to add an observer.
-  virtual void Start(const base::Optional<std::string>& access_token,
+  virtual void Start(const base::Optional<UserInfo>& user,
                      bool enable_hotword) = 0;
 
   // Stop the Assistant.
@@ -58,11 +65,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Return the current state.
   virtual State GetState() const = 0;
 
-  // Set access token for Assistant. Passing a nullopt will reconfigure
+  // Set user information for Assistant. Passing a nullopt will reconfigure
   // Libassistant to run in signed-out mode, and passing a valid non-empty value
   // will switch the mode back to normal.
-  virtual void SetAccessToken(
-      const base::Optional<std::string>& access_token) = 0;
+  virtual void SetUser(const base::Optional<UserInfo>& user) = 0;
 
   // Enable/disable ambient mode for Assistant.
   virtual void EnableAmbientMode(bool enabled) = 0;

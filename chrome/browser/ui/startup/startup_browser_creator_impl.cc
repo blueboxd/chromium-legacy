@@ -16,7 +16,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -365,10 +364,6 @@ StartupBrowserCreatorImpl::~StartupBrowserCreatorImpl() {
 bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                                        const std::vector<GURL>& urls_to_open,
                                        bool process_startup) {
-  UMA_HISTOGRAM_COUNTS_100(
-      "Startup.BrowserLaunchURLCount",
-      static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
-
   DCHECK(profile);
   profile_ = profile;
 

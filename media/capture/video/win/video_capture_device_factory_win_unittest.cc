@@ -121,58 +121,61 @@ class MockMFActivate : public base::RefCountedThreadSafe<MockMFActivate>,
     return false;
   }
 
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MockMFActivate>::AddRef();
     return 1U;
   }
 
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MockMFActivate>::Release();
     return 1U;
   }
-  STDMETHODIMP GetItem(REFGUID key, PROPVARIANT* value) override {
+  IFACEMETHODIMP GetItem(REFGUID key, PROPVARIANT* value) override {
     return E_FAIL;
   }
-  STDMETHODIMP GetItemType(REFGUID guidKey, MF_ATTRIBUTE_TYPE* pType) override {
+  IFACEMETHODIMP GetItemType(REFGUID guidKey,
+                             MF_ATTRIBUTE_TYPE* pType) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP CompareItem(REFGUID guidKey,
-                           REFPROPVARIANT Value,
-                           BOOL* pbResult) override {
+  IFACEMETHODIMP CompareItem(REFGUID guidKey,
+                             REFPROPVARIANT Value,
+                             BOOL* pbResult) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Compare(IMFAttributes* pTheirs,
-                       MF_ATTRIBUTES_MATCH_TYPE MatchType,
-                       BOOL* pbResult) override {
+  IFACEMETHODIMP Compare(IMFAttributes* pTheirs,
+                         MF_ATTRIBUTES_MATCH_TYPE MatchType,
+                         BOOL* pbResult) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUINT32(REFGUID key, UINT32* value) override {
+  IFACEMETHODIMP GetUINT32(REFGUID key, UINT32* value) override {
     if (key == MF_MT_INTERLACE_MODE) {
       *value = MFVideoInterlace_Progressive;
       return S_OK;
     }
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUINT64(REFGUID key, UINT64* value) override { return E_FAIL; }
-  STDMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
+  IFACEMETHODIMP GetUINT64(REFGUID key, UINT64* value) override {
+    return E_FAIL;
+  }
+  IFACEMETHODIMP GetDouble(REFGUID guidKey, double* pfValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetGUID(REFGUID key, GUID* value) override { return E_FAIL; }
-  STDMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
+  IFACEMETHODIMP GetGUID(REFGUID key, GUID* value) override { return E_FAIL; }
+  IFACEMETHODIMP GetStringLength(REFGUID guidKey, UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetString(REFGUID guidKey,
-                         LPWSTR pwszValue,
-                         UINT32 cchBufSize,
-                         UINT32* pcchLength) override {
+  IFACEMETHODIMP GetString(REFGUID guidKey,
+                           LPWSTR pwszValue,
+                           UINT32 cchBufSize,
+                           UINT32* pcchLength) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetAllocatedString(REFGUID guidKey,
-                                  LPWSTR* ppwszValue,
-                                  UINT32* pcchLength) override {
+  IFACEMETHODIMP GetAllocatedString(REFGUID guidKey,
+                                    LPWSTR* ppwszValue,
+                                    UINT32* pcchLength) override {
     std::wstring value;
     if (guidKey == MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK) {
       value = symbolic_link_;
@@ -187,65 +190,69 @@ class MockMFActivate : public base::RefCountedThreadSafe<MockMFActivate>,
     *pcchLength = value.length();
     return S_OK;
   }
-  STDMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlobSize(REFGUID guidKey, UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetBlob(REFGUID guidKey,
-                       UINT8* pBuf,
-                       UINT32 cbBufSize,
-                       UINT32* pcbBlobSize) override {
+  IFACEMETHODIMP GetBlob(REFGUID guidKey,
+                         UINT8* pBuf,
+                         UINT32 cbBufSize,
+                         UINT32* pcbBlobSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetAllocatedBlob(REFGUID guidKey,
-                                UINT8** ppBuf,
-                                UINT32* pcbSize) override {
+  IFACEMETHODIMP GetAllocatedBlob(REFGUID guidKey,
+                                  UINT8** ppBuf,
+                                  UINT32* pcbSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetUnknown(REFGUID guidKey, REFIID riid, LPVOID* ppv) override {
+  IFACEMETHODIMP GetUnknown(REFGUID guidKey,
+                            REFIID riid,
+                            LPVOID* ppv) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
+  IFACEMETHODIMP SetItem(REFGUID guidKey, REFPROPVARIANT Value) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
-  STDMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
-  STDMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
+  IFACEMETHODIMP DeleteItem(REFGUID guidKey) override { return E_NOTIMPL; }
+  IFACEMETHODIMP DeleteAllItems(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP SetUINT32(REFGUID guidKey, UINT32 unValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
+  IFACEMETHODIMP SetUINT64(REFGUID guidKey, UINT64 unValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
+  IFACEMETHODIMP SetDouble(REFGUID guidKey, double fValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
+  IFACEMETHODIMP SetGUID(REFGUID guidKey, REFGUID guidValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
+  IFACEMETHODIMP SetString(REFGUID guidKey, LPCWSTR wszValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetBlob(REFGUID guidKey,
-                       const UINT8* pBuf,
-                       UINT32 cbBufSize) override {
+  IFACEMETHODIMP SetBlob(REFGUID guidKey,
+                         const UINT8* pBuf,
+                         UINT32 cbBufSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
+  IFACEMETHODIMP SetUnknown(REFGUID guidKey, IUnknown* pUnknown) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP LockStore(void) override { return E_NOTIMPL; }
-  STDMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
-  STDMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
-  STDMETHODIMP GetItemByIndex(UINT32 unIndex,
-                              GUID* pguidKey,
-                              PROPVARIANT* pValue) override {
+  IFACEMETHODIMP LockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP UnlockStore(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetCount(UINT32* pcItems) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetItemByIndex(UINT32 unIndex,
+                                GUID* pguidKey,
+                                PROPVARIANT* pValue) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP CopyAllItems(IMFAttributes* pDest) override { return E_NOTIMPL; }
-  STDMETHODIMP ActivateObject(REFIID riid, void** ppv) override {
+  IFACEMETHODIMP CopyAllItems(IMFAttributes* pDest) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP DetachObject(void) override { return E_NOTIMPL; }
-  STDMETHODIMP ShutdownObject(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP ActivateObject(REFIID riid, void** ppv) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP DetachObject(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP ShutdownObject(void) override { return E_NOTIMPL; }
 
  private:
   friend class base::RefCountedThreadSafe<MockMFActivate>;
@@ -263,20 +270,20 @@ class StubPropertyBag : public base::RefCountedThreadSafe<StubPropertyBag>,
   StubPropertyBag(const wchar_t* device_path, const wchar_t* description)
       : device_path_(device_path), description_(description) {}
 
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef(void) override {
+  IFACEMETHODIMP_(ULONG) AddRef(void) override {
     base::RefCountedThreadSafe<StubPropertyBag>::AddRef();
     return 1U;
   }
-  STDMETHODIMP_(ULONG) Release(void) override {
+  IFACEMETHODIMP_(ULONG) Release(void) override {
     base::RefCountedThreadSafe<StubPropertyBag>::Release();
     return 1U;
   }
-  STDMETHODIMP Read(LPCOLESTR pszPropName,
-                    VARIANT* pVar,
-                    IErrorLog* pErrorLog) override {
+  IFACEMETHODIMP Read(LPCOLESTR pszPropName,
+                      VARIANT* pVar,
+                      IErrorLog* pErrorLog) override {
     if (pszPropName == std::wstring(L"Description")) {
       pVar->vt = VT_BSTR;
       pVar->bstrVal = SysAllocString(description_);
@@ -289,7 +296,7 @@ class StubPropertyBag : public base::RefCountedThreadSafe<StubPropertyBag>,
     }
     return E_NOTIMPL;
   }
-  STDMETHODIMP Write(LPCOLESTR pszPropName, VARIANT* pVar) override {
+  IFACEMETHODIMP Write(LPCOLESTR pszPropName, VARIANT* pVar) override {
     return E_NOTIMPL;
   }
 
@@ -307,90 +314,92 @@ class StubMoniker : public base::RefCountedThreadSafe<StubMoniker>,
   StubMoniker(const wchar_t* device_path, const wchar_t* description)
       : device_path_(device_path), description_(description) {}
 
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef(void) override {
+  IFACEMETHODIMP_(ULONG) AddRef(void) override {
     base::RefCountedThreadSafe<StubMoniker>::AddRef();
     return 1U;
   }
-  STDMETHODIMP_(ULONG) Release(void) override {
+  IFACEMETHODIMP_(ULONG) Release(void) override {
     base::RefCountedThreadSafe<StubMoniker>::Release();
     return 1U;
   }
-  STDMETHODIMP GetClassID(CLSID* pClassID) override { return E_NOTIMPL; }
-  STDMETHODIMP IsDirty(void) override { return E_NOTIMPL; }
-  STDMETHODIMP Load(IStream* pStm) override { return E_NOTIMPL; }
-  STDMETHODIMP Save(IStream* pStm, BOOL fClearDirty) override {
+  IFACEMETHODIMP GetClassID(CLSID* pClassID) override { return E_NOTIMPL; }
+  IFACEMETHODIMP IsDirty(void) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Load(IStream* pStm) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Save(IStream* pStm, BOOL fClearDirty) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetSizeMax(ULARGE_INTEGER* pcbSize) override {
+  IFACEMETHODIMP GetSizeMax(ULARGE_INTEGER* pcbSize) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP BindToObject(IBindCtx* pbc,
-                            IMoniker* pmkToLeft,
-                            REFIID riidResult,
-                            void** ppvResult) override {
+  IFACEMETHODIMP BindToObject(IBindCtx* pbc,
+                              IMoniker* pmkToLeft,
+                              REFIID riidResult,
+                              void** ppvResult) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP BindToStorage(IBindCtx* pbc,
-                             IMoniker* pmkToLeft,
-                             REFIID riid,
-                             void** ppvObj) override {
+  IFACEMETHODIMP BindToStorage(IBindCtx* pbc,
+                               IMoniker* pmkToLeft,
+                               REFIID riid,
+                               void** ppvObj) override {
     StubPropertyBag* propertyBag =
         new StubPropertyBag(device_path_, description_);
     propertyBag->AddRef();
     *ppvObj = propertyBag;
     return S_OK;
   }
-  STDMETHODIMP Reduce(IBindCtx* pbc,
-                      DWORD dwReduceHowFar,
-                      IMoniker** ppmkToLeft,
-                      IMoniker** ppmkReduced) override {
+  IFACEMETHODIMP Reduce(IBindCtx* pbc,
+                        DWORD dwReduceHowFar,
+                        IMoniker** ppmkToLeft,
+                        IMoniker** ppmkReduced) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP ComposeWith(IMoniker* pmkRight,
-                           BOOL fOnlyIfNotGeneric,
-                           IMoniker** ppmkComposite) override {
+  IFACEMETHODIMP ComposeWith(IMoniker* pmkRight,
+                             BOOL fOnlyIfNotGeneric,
+                             IMoniker** ppmkComposite) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Enum(BOOL fForward, IEnumMoniker** ppenumMoniker) override {
+  IFACEMETHODIMP Enum(BOOL fForward, IEnumMoniker** ppenumMoniker) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP IsEqual(IMoniker* pmkOtherMoniker) override { return E_NOTIMPL; }
-  STDMETHODIMP Hash(DWORD* pdwHash) override { return E_NOTIMPL; }
-  STDMETHODIMP IsRunning(IBindCtx* pbc,
-                         IMoniker* pmkToLeft,
-                         IMoniker* pmkNewlyRunning) override {
+  IFACEMETHODIMP IsEqual(IMoniker* pmkOtherMoniker) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetTimeOfLastChange(IBindCtx* pbc,
-                                   IMoniker* pmkToLeft,
-                                   FILETIME* pFileTime) override {
+  IFACEMETHODIMP Hash(DWORD* pdwHash) override { return E_NOTIMPL; }
+  IFACEMETHODIMP IsRunning(IBindCtx* pbc,
+                           IMoniker* pmkToLeft,
+                           IMoniker* pmkNewlyRunning) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP Inverse(IMoniker** ppmk) override { return E_NOTIMPL; }
-  STDMETHODIMP CommonPrefixWith(IMoniker* pmkOther,
-                                IMoniker** ppmkPrefix) override {
+  IFACEMETHODIMP GetTimeOfLastChange(IBindCtx* pbc,
+                                     IMoniker* pmkToLeft,
+                                     FILETIME* pFileTime) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP RelativePathTo(IMoniker* pmkOther,
-                              IMoniker** ppmkRelPath) override {
+  IFACEMETHODIMP Inverse(IMoniker** ppmk) override { return E_NOTIMPL; }
+  IFACEMETHODIMP CommonPrefixWith(IMoniker* pmkOther,
+                                  IMoniker** ppmkPrefix) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP GetDisplayName(IBindCtx* pbc,
-                              IMoniker* pmkToLeft,
-                              LPOLESTR* ppszDisplayName) override {
+  IFACEMETHODIMP RelativePathTo(IMoniker* pmkOther,
+                                IMoniker** ppmkRelPath) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP ParseDisplayName(IBindCtx* pbc,
+  IFACEMETHODIMP GetDisplayName(IBindCtx* pbc,
                                 IMoniker* pmkToLeft,
-                                LPOLESTR pszDisplayName,
-                                ULONG* pchEaten,
-                                IMoniker** ppmkOut) override {
+                                LPOLESTR* ppszDisplayName) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP IsSystemMoniker(DWORD* pdwMksys) override { return E_NOTIMPL; }
+  IFACEMETHODIMP ParseDisplayName(IBindCtx* pbc,
+                                  IMoniker* pmkToLeft,
+                                  LPOLESTR pszDisplayName,
+                                  ULONG* pchEaten,
+                                  IMoniker** ppmkOut) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP IsSystemMoniker(DWORD* pdwMksys) override { return E_NOTIMPL; }
 
  private:
   friend class base::RefCountedThreadSafe<StubMoniker>;
@@ -405,20 +414,20 @@ class StubEnumMoniker : public base::RefCountedThreadSafe<StubEnumMoniker>,
  public:
   void AddMoniker(StubMoniker* moniker) { monikers_.push_back(moniker); }
 
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP_(ULONG) AddRef() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<StubEnumMoniker>::AddRef();
     return 1U;
   }
-  STDMETHODIMP_(ULONG) Release() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<StubEnumMoniker>::Release();
     return 1U;
   }
-  STDMETHODIMP Next(ULONG celt,
-                    IMoniker** rgelt,
-                    ULONG* pceltFetched) override {
+  IFACEMETHODIMP Next(ULONG celt,
+                      IMoniker** rgelt,
+                      ULONG* pceltFetched) override {
     cursor_position_ = cursor_position_ + celt;
     if (cursor_position_ >= monikers_.size())
       return E_FAIL;
@@ -427,12 +436,12 @@ class StubEnumMoniker : public base::RefCountedThreadSafe<StubEnumMoniker>,
     moniker->AddRef();
     return S_OK;
   }
-  STDMETHODIMP Skip(ULONG celt) override { return E_NOTIMPL; }
-  STDMETHODIMP Reset(void) override {
+  IFACEMETHODIMP Skip(ULONG celt) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Reset(void) override {
     cursor_position_ = unsigned(-1);
     return S_OK;
   }
-  STDMETHODIMP Clone(IEnumMoniker** ppenum) override { return E_NOTIMPL; }
+  IFACEMETHODIMP Clone(IEnumMoniker** ppenum) override { return E_NOTIMPL; }
 
  private:
   friend class base::RefCountedThreadSafe<StubEnumMoniker>;

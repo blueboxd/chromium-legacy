@@ -314,8 +314,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
 
   RenderFrameHostImpl* creator_render_frame_host =
       RenderFrameHostImpl::FromID(creator_render_frame_host_id);
-  url::Origin origin(
-      creator_render_frame_host->frame_tree_node()->current_origin());
+  url::Origin worker_origin = url::Origin::Create(host->instance().url());
 
   base::WeakPtr<SharedWorkerHost> weak_host = host->AsWeakPtr();
   // Cloning before std::move() so that the object can be used in two functions.
@@ -326,10 +325,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // cross-site contexts. Fix this.
   WorkerScriptFetchInitiator::Start(
       worker_process_host->GetID(), host->instance().url(),
-      creator_render_frame_host,
-      net::SiteForCookies::FromUrl(host->instance().url()),
+      creator_render_frame_host, net::SiteForCookies::FromOrigin(worker_origin),
       host->instance().constructor_origin(),
-      net::NetworkIsolationKey(origin, origin), credentials_mode,
+      net::NetworkIsolationKey(worker_origin, worker_origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, std::move(appcache_host),

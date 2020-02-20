@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.share.qrcode.scan_tab;
 import android.Manifest.permission;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.provider.Browser;
 import android.util.SparseArray;
 import android.webkit.URLUtil;
 
@@ -20,6 +23,9 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
@@ -43,7 +49,6 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
     private final PropertyModel mPropertyModel;
     private final BarcodeDetector mDetector;
     private final NavigationObserver mNavigationObserver;
-    private final TabCreator mTabCreator;
     private final Handler mMainThreadHandler;
     private final AndroidPermissionDelegate mPermissionDelegate;
 
@@ -54,8 +59,7 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
      * @param propertyModel The property modelto use to communicate with views.
      * @param observer The observer for navigation event.
      */
-    QrCodeScanMediator(Context context, PropertyModel propertyModel, NavigationObserver observer,
-            TabCreator tabCreator) {
+    QrCodeScanMediator(Context context, PropertyModel propertyModel, NavigationObserver observer) {
         mContext = context;
         mPropertyModel = propertyModel;
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
@@ -63,7 +67,6 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
         updatePermissionSettings();
         mDetector = new BarcodeDetector.Builder(context).build();
         mNavigationObserver = observer;
-        mTabCreator = tabCreator;
         mMainThreadHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -160,8 +163,21 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
 
         /** Tab creation should happen on the main thread. */
         mMainThreadHandler.post(() -> {
-            mTabCreator.createNewTab(firstCode.rawValue);
+            openUrl(firstCode.rawValue);
             mNavigationObserver.onNavigation();
         });
+    }
+
+    private void openUrl(String url) {
+        Intent intent =
+                new Intent()
+                        .setAction(Intent.ACTION_VIEW)
+                        .setData(Uri.parse(url))
+                        .setClass(mContext, ChromeLauncherActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+                        .putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName())
+                        .putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+        IntentHandler.addTrustedIntentExtras(intent);
+        mContext.startActivity(intent);
     }
 }

@@ -21,8 +21,6 @@ component("lib") {
     "assistant_settings_manager.h",
     "assistant_state_proxy.cc",
     "assistant_state_proxy.h",
-    "constants.cc",
-    "constants.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",
     "fake_assistant_settings_manager_impl.cc",

@@ -25,7 +25,6 @@
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
-#include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -59,6 +58,7 @@ namespace assistant {
 
 class AssistantSettingsManager;
 class ServiceContext;
+class ScopedAshSessionObserver;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -141,7 +141,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateAssistantManagerState();
 
-  CoreAccountInfo RetrievePrimaryAccountInfo();
+  CoreAccountInfo RetrievePrimaryAccountInfo() const;
   void RequestAccessToken();
   void GetAccessTokenCallback(GoogleServiceAuthError error,
                               signin::AccessTokenInfo access_token_info);
@@ -159,6 +159,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateListeningState();
 
+  base::Optional<AssistantManagerService::UserInfo> GetUserInfo() const;
+
   ServiceContext* context() { return context_.get(); }
 
   // Returns the "actual" hotword status. In addition to the hotword pref, this
@@ -173,7 +175,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojo::Remote<mojom::DeviceActions> device_actions_;
 
   signin::IdentityManager* const identity_manager_;
-  AccountId account_id_;
+  std::unique_ptr<ScopedAshSessionObserver> scoped_ash_session_observer_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;

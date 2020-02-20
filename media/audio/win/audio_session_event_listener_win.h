@@ -27,27 +27,27 @@ class MEDIA_EXPORT AudioSessionEventListener : public IAudioSessionEvents {
  private:
   friend class AudioSessionEventListenerTest;
 
-  STDMETHODIMP_(ULONG) AddRef() override;
-  STDMETHODIMP_(ULONG) Release() override;
-  STDMETHODIMP QueryInterface(REFIID iid, void** object) override;
+  IFACEMETHODIMP_(ULONG) AddRef() override;
+  IFACEMETHODIMP_(ULONG) Release() override;
+  IFACEMETHODIMP QueryInterface(REFIID iid, void** object) override;
 
   // IAudioSessionEvents implementation.
-  STDMETHODIMP OnChannelVolumeChanged(DWORD channel_count,
-                                      float new_channel_volume_array[],
-                                      DWORD changed_channel,
+  IFACEMETHODIMP OnChannelVolumeChanged(DWORD channel_count,
+                                        float new_channel_volume_array[],
+                                        DWORD changed_channel,
+                                        LPCGUID event_context) override;
+  IFACEMETHODIMP OnDisplayNameChanged(LPCWSTR new_display_name,
                                       LPCGUID event_context) override;
-  STDMETHODIMP OnDisplayNameChanged(LPCWSTR new_display_name,
-                                    LPCGUID event_context) override;
-  STDMETHODIMP OnGroupingParamChanged(LPCGUID new_grouping_param,
-                                      LPCGUID event_context) override;
-  STDMETHODIMP OnIconPathChanged(LPCWSTR new_icon_path,
-                                 LPCGUID event_context) override;
-  STDMETHODIMP OnSessionDisconnected(
+  IFACEMETHODIMP OnGroupingParamChanged(LPCGUID new_grouping_param,
+                                        LPCGUID event_context) override;
+  IFACEMETHODIMP OnIconPathChanged(LPCWSTR new_icon_path,
+                                   LPCGUID event_context) override;
+  IFACEMETHODIMP OnSessionDisconnected(
       AudioSessionDisconnectReason disconnect_reason) override;
-  STDMETHODIMP OnSimpleVolumeChanged(float new_volume,
-                                     BOOL new_mute,
-                                     LPCGUID event_context) override;
-  STDMETHODIMP OnStateChanged(AudioSessionState new_state) override;
+  IFACEMETHODIMP OnSimpleVolumeChanged(float new_volume,
+                                       BOOL new_mute,
+                                       LPCGUID event_context) override;
+  IFACEMETHODIMP OnStateChanged(AudioSessionState new_state) override;
 
   base::OnceClosure device_change_cb_;
   Microsoft::WRL::ComPtr<IAudioSessionControl> audio_session_control_;

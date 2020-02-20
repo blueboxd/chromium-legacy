@@ -887,6 +887,11 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
 }
 
 void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
+  // Notify any oobe dialog state observers (e.g. login shelf) that the UI is
+  // hidden (so they can reset any cached OOBE dialog state.)
+  ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+      ash::OobeDialogState::HIDDEN);
+
   // Make sure to reset the |login_view_| pointer first; it is owned by
   // |login_window_|. Closing |login_window_| could immediately invalidate the
   // |login_view_| pointer.

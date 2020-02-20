@@ -38,6 +38,8 @@ class IOSChromeUpdatePasswordInfoBarDelegate
 
   ~IOSChromeUpdatePasswordInfoBarDelegate() override;
 
+  bool ShouldExpire(const NavigationDetails& details) const override;
+
   // Returns whether the user has multiple saved credentials, of which the
   // infobar affects just one. If so, the infobar should clarify which
   // credential is being affected.

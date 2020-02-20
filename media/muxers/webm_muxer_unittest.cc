@@ -50,7 +50,8 @@ class WebmMuxerTest : public TestWithParam<TestParams> {
             GetParam().audio_codec,
             GetParam().num_video_tracks,
             GetParam().num_audio_tracks,
-            base::Bind(&WebmMuxerTest::WriteCallback, base::Unretained(this)))),
+            base::BindRepeating(&WebmMuxerTest::WriteCallback,
+                                base::Unretained(this)))),
         last_encoded_length_(0),
         accumulated_position_(0) {
     EXPECT_EQ(webm_muxer_->Position(), 0);

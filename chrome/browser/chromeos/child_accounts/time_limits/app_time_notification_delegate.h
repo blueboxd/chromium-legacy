@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TIME_NOTIFICATION_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TIME_NOTIFICATION_DELEGATE_H_
 
+#include "base/optional.h"
+
 namespace base {
 class TimeDelta;
 }  // namespace base
@@ -25,9 +27,10 @@ class AppTimeNotificationDelegate {
 
   virtual ~AppTimeNotificationDelegate() = default;
 
-  virtual void ShowAppTimeLimitNotification(const AppId& app_id,
-                                            base::TimeDelta time_limit,
-                                            AppNotification notification) = 0;
+  virtual void ShowAppTimeLimitNotification(
+      const AppId& app_id,
+      const base::Optional<base::TimeDelta>& time_limit,
+      AppNotification notification) = 0;
 };
 
 }  // namespace app_time

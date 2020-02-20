@@ -111,12 +111,12 @@ Polymer({
       zippy.setAttribute('toggle-style', true);
       zippy.id = 'zippy-' + data['id'];
       var title = document.createElement('div');
-      title.className = 'zippy-title';
+      title.slot = 'title';
       title.textContent = data['title'];
       zippy.appendChild(title);
 
       var toggle = document.createElement('cr-toggle');
-      toggle.className = 'zippy-toggle';
+      toggle.slot = 'toggle';
       toggle.id = 'toggle-' + data['id'];
       if (data['defaultEnabled']) {
         toggle.setAttribute('checked', '');
@@ -127,7 +127,7 @@ Polymer({
       zippy.appendChild(toggle);
 
       var description = document.createElement('div');
-      description.className = 'zippy-description';
+      description.slot = 'content';
       description.textContent = data['description'];
       if (data['legalText']) {
         var legalText = document.createElement('p');

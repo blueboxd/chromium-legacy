@@ -2536,7 +2536,6 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:72-'],
-      'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,

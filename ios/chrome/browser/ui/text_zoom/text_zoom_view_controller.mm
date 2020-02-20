@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_constants.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -20,6 +21,9 @@
 namespace {
 // Horizontal padding between all elements (except the previous/next buttons).
 const CGFloat kPadding = 8;
+// Horizontal padding between buttons and an adjacent superview edge in a
+// Regular x Regular environment.
+const CGFloat kIPadButtonEdgeSpacing = 17;
 const CGFloat kButtonFontSize = 17;
 const CGFloat kButtonSize = 44;
 // Spacing between the increment/decrement buttons and the central divider.
@@ -64,13 +68,16 @@ const CGFloat kDividerWidth = 1;
   [self.view addSubview:self.centerItemsStackView];
   [self.view addSubview:self.closeButton];
 
+  const CGFloat buttonEdgeSpacing =
+      ShouldShowCompactToolbar() ? kPadding : kIPadButtonEdgeSpacing;
+
   [NSLayoutConstraint activateConstraints:@[
     // Reset button.
     [self.resetButton.centerYAnchor
         constraintEqualToAnchor:self.view.centerYAnchor],
     [self.resetButton.leadingAnchor
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor
-                       constant:kPadding],
+                       constant:buttonEdgeSpacing],
     // Use button intrinsic width.
     [self.resetButton.heightAnchor constraintEqualToConstant:kButtonSize],
     // Center items stack view.
@@ -85,7 +92,7 @@ const CGFloat kDividerWidth = 1;
         constraintEqualToAnchor:self.view.centerYAnchor],
     [self.closeButton.trailingAnchor
         constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor
-                       constant:-kPadding],
+                       constant:-buttonEdgeSpacing],
     // Use button intrinsic width.
     [self.closeButton.heightAnchor constraintEqualToConstant:kButtonSize],
   ]];

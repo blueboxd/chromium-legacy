@@ -16,7 +16,6 @@
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
-#include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "chromeos/services/assistant/test_support/fake_assistant_manager_service_delegate.h"
@@ -38,8 +37,15 @@ namespace assistant {
 using media_session::mojom::MediaSessionAction;
 using testing::StrictMock;
 using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
+using UserInfo = AssistantManagerService::UserInfo;
 
 namespace {
+
+const char* kGaiaId = "<fake-gaia-id>";
+const char* kNoValue = FakeAssistantManager::kNoValue;
+
+#define EXPECT_STATE(_state) \
+  EXPECT_EQ(_state, assistant_manager_service()->GetState());
 
 // Return the list of all libassistant error codes that are considered to be
 // authentication errors. This list is created on demand as there is no clear
@@ -132,10 +138,13 @@ class FakeServiceContext : public ServiceContext {
     return power_manager_client_;
   }
 
+  std::string primary_account_gaia_id() override { return gaia_id; }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   ash::AssistantState* const assistant_state_;
   PowerManagerClient* const power_manager_client_;
+  std::string gaia_id = kGaiaId;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceContext);
 };
@@ -226,7 +235,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
   }
 
   void Start() {
-    assistant_manager_service()->Start("dummy-access-token",
+    assistant_manager_service()->Start(UserInfo("<user-id>", "<access-token>"),
                                        /*enable_hotword=*/false);
   }
 
@@ -305,16 +314,14 @@ class AssistantManagerServiceImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(AssistantManagerServiceImplTest, StateShouldStartAsStopped) {
-  EXPECT_EQ(AssistantManagerService::STOPPED,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STOPPED);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
        StateShouldChangeToStartingAfterCallingStart) {
   Start();
 
-  EXPECT_EQ(AssistantManagerService::STARTING,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STARTING);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
@@ -324,14 +331,12 @@ TEST_F(AssistantManagerServiceImplTest,
   fake_assistant_manager()->BlockStartCalls();
   RunUntilIdle();
 
-  EXPECT_EQ(AssistantManagerService::STARTING,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STARTING);
 
   fake_assistant_manager()->UnblockStartCalls();
   WaitUntilStartIsFinished();
 
-  EXPECT_EQ(AssistantManagerService::STARTED,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STARTED);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
@@ -341,19 +346,16 @@ TEST_F(AssistantManagerServiceImplTest,
 
   fake_assistant_manager()->device_state_listener()->OnStartFinished();
 
-  EXPECT_EQ(AssistantManagerService::RUNNING,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::RUNNING);
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldSetStateToStoppedAfterStopping) {
   Start();
   WaitUntilStartIsFinished();
-  ASSERT_EQ(AssistantManagerService::STARTED,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STARTED);
 
   assistant_manager_service()->Stop();
-  EXPECT_EQ(AssistantManagerService::STOPPED,
-            assistant_manager_service()->GetState());
+  EXPECT_STATE(AssistantManagerService::STOPPED);
 }
 
 TEST_F(AssistantManagerServiceImplTest,
@@ -376,30 +378,45 @@ TEST_F(AssistantManagerServiceImplTest,
 }
 
 TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotCrashWhenSettingAuthTokenBeforeStartFinished) {
-  Start();
+       ShouldPassUserInfoToAssistantManagerWhenStarting) {
+  assistant_manager_service()->Start(UserInfo("<user-id>", "<access-token>"),
+                                     /*enable_hotword=*/false);
+  WaitUntilStartIsFinished();
 
-  assistant_manager_service()->SetAccessToken("<this-should-not-crash>");
+  EXPECT_EQ("<user-id>", fake_assistant_manager()->user_id());
+  EXPECT_EQ("<access-token>", fake_assistant_manager()->access_token());
 }
 
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldPassAccessTokenToAssistantManager) {
+TEST_F(AssistantManagerServiceImplTest, ShouldPassUserInfoToAssistantManager) {
   Start();
   WaitUntilStartIsFinished();
 
-  assistant_manager_service()->SetAccessToken("<the-access-token>");
+  assistant_manager_service()->SetUser(
+      UserInfo("<new-user-id>", "<new-access-token>"));
 
-  EXPECT_EQ("<the-access-token>", fake_assistant_manager()->access_token());
+  EXPECT_EQ("<new-user-id>", fake_assistant_manager()->user_id());
+  EXPECT_EQ("<new-access-token>", fake_assistant_manager()->access_token());
 }
 
 TEST_F(AssistantManagerServiceImplTest,
-       ShouldPassDefaultUserIdToAssistantManagerWhenSettingAccessToken) {
+       ShouldPassEmptyUserInfoToAssistantManager) {
   Start();
   WaitUntilStartIsFinished();
 
-  assistant_manager_service()->SetAccessToken("<the-access-token>");
+  assistant_manager_service()->SetUser(base::nullopt);
 
-  EXPECT_EQ(kUserID, fake_assistant_manager()->user_id());
+  EXPECT_EQ(kNoValue, fake_assistant_manager()->user_id());
+  EXPECT_EQ(kNoValue, fake_assistant_manager()->access_token());
+}
+
+TEST_F(AssistantManagerServiceImplTest,
+       ShouldNotCrashWhenSettingUserInfoBeforeStartIsFinished) {
+  EXPECT_STATE(AssistantManagerService::STOPPED);
+  assistant_manager_service()->SetUser(UserInfo("<user-id>", "<access-token>"));
+
+  Start();
+  EXPECT_STATE(AssistantManagerService::STARTING);
+  assistant_manager_service()->SetUser(UserInfo("<user-id>", "<access-token>"));
 }
 
 TEST_F(AssistantManagerServiceImplTest,

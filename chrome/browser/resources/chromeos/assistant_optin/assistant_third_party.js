@@ -154,17 +154,17 @@ Polymer({
       zippy.setAttribute('expand-style', true);
 
       var title = document.createElement('div');
-      title.className = 'zippy-title';
+      title.slot = 'title';
       title.innerHTML = this.sanitizer_.sanitizeHtml(data['title']);
       zippy.appendChild(title);
 
       var description = document.createElement('div');
-      description.className = 'zippy-description';
+      description.slot = 'content';
       description.innerHTML = this.sanitizer_.sanitizeHtml(data['description']);
       zippy.appendChild(description);
 
       var additional = document.createElement('div');
-      additional.className = 'zippy-additional';
+      additional.slot = 'additional';
       additional.innerHTML =
           this.sanitizer_.sanitizeHtml(data['additionalInfo']);
       zippy.appendChild(additional);

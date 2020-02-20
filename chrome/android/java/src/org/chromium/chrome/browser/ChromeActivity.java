@@ -437,9 +437,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                             mManualFillingComponent.getKeyboardExtensionViewResizer());
 
             // Should be called after TabModels are initialized.
-            ShareDelegate shareDelegate = new ShareDelegateImpl(
-                    mRootUiCoordinator.getBottomSheetController(), getActivityTabProvider(),
-                    new ShareDelegateImpl.ShareSheetDelegate(), getCurrentTabCreator());
+            ShareDelegate shareDelegate =
+                    new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
+                            getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate());
             mShareDelegateSupplier.set(shareDelegate);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a

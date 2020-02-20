@@ -57,9 +57,8 @@ void MicView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Logo view container.
-  views::View* logo_view_container = new views::View();
+  auto logo_view_container = std::make_unique<views::View>();
   logo_view_container->set_can_process_events_within_subtree(false);
-  AddChildView(logo_view_container);
 
   views::BoxLayout* layout_manager =
       logo_view_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -74,6 +73,8 @@ void MicView::InitLayout() {
   // Logo view.
   logo_view_ = logo_view_container->AddChildView(LogoView::Create());
   logo_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+
+  AddChildView(std::move(logo_view_container));
 
   // Initialize state.
   UpdateState(/*animate=*/false);

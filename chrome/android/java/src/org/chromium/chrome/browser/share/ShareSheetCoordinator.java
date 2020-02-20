@@ -20,10 +20,7 @@ import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
@@ -36,20 +33,17 @@ import java.util.ArrayList;
 public class ShareSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final ActivityTabProvider mActivityTabProvider;
-    private final TabCreatorManager.TabCreator mTabCreator;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
 
     /**
      * Constructs a new ShareSheetCoordinator.
      * @param controller The BottomSheetController for the current activity.
      * @param provider The ActivityTabProvider for the current visible tab.
-     * @param tabCreator The TabCreator for the current selected {@link TabModel}.
      */
     public ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
-            TabCreatorManager.TabCreator tabCreator, ShareSheetPropertyModelBuilder modelBuilder) {
+            ShareSheetPropertyModelBuilder modelBuilder) {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
-        mTabCreator = tabCreator;
         mPropertyModelBuilder = modelBuilder;
     }
 
@@ -86,8 +80,7 @@ public class ShareSheetCoordinator {
                 (currentActivity)
                         -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
-                    QrCodeCoordinator qrCodeCoordinator =
-                            new QrCodeCoordinator(activity, this::createNewTab);
+                    QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
                     qrCodeCoordinator.show();
                 },
                 /*isFirstParty=*/true);
@@ -170,10 +163,5 @@ public class ShareSheetCoordinator {
         models.add(morePropertyModel);
 
         return models;
-    }
-
-    private void createNewTab(String url) {
-        mTabCreator.createNewTab(
-                new LoadUrlParams(url), TabLaunchType.FROM_LINK, mActivityTabProvider.get());
     }
 }

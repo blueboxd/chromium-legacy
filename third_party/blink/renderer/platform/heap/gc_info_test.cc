@@ -10,20 +10,36 @@ namespace blink {
 
 TEST(GCInfoTest, InitialEmpty) {
   GCInfoTable table;
-  EXPECT_EQ(0u, table.GcInfoIndex());
+  EXPECT_EQ(GCInfoTable::kMinIndex, table.NumberOfGCInfos());
 }
 
 TEST(GCInfoTest, ResizeToMaxIndex) {
   GCInfoTable table;
   GCInfo info = {nullptr, nullptr, nullptr, false};
-  std::atomic<std::uint32_t> slot{0};
-  for (uint32_t i = 0; i < (GCInfoTable::kMaxIndex - 1); i++) {
+  std::atomic<GCInfoIndex> slot{0};
+  for (GCInfoIndex i = GCInfoTable::kMinIndex; i < GCInfoTable::kMaxIndex;
+       i++) {
     slot = 0;
-    uint32_t index = table.EnsureGCInfoIndex(&info, &slot);
+    GCInfoIndex index = table.EnsureGCInfoIndex(&info, &slot);
     EXPECT_EQ(index, slot);
     EXPECT_LT(0u, slot);
-    EXPECT_EQ(&info, table.GCInfoFromIndex(slot));
+    EXPECT_EQ(&info, &table.GCInfoFromIndex(index));
   }
+}
+
+TEST(GCInfoDeathTest, MoreThanMaxIndexInfos) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GCInfoTable table;
+  GCInfo info = {nullptr, nullptr, nullptr, false};
+  std::atomic<GCInfoIndex> slot{0};
+  // Create GCInfoTable::kMaxIndex entries.
+  for (GCInfoIndex i = GCInfoTable::kMinIndex; i < GCInfoTable::kMaxIndex;
+       i++) {
+    slot = 0;
+    table.EnsureGCInfoIndex(&info, &slot);
+  }
+  slot = 0;
+  EXPECT_DEATH(table.EnsureGCInfoIndex(&info, &slot), "");
 }
 
 }  // namespace blink

@@ -175,7 +175,7 @@ void AssistantProgressIndicator::InitLayout() {
 
   // Initialize dots.
   for (int i = 0; i < kDotCount; ++i) {
-    views::View* dot_view = new views::View();
+    auto dot_view = std::make_unique<views::View>();
     dot_view->SetBackground(std::make_unique<DotBackground>());
     dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
 
@@ -183,7 +183,7 @@ void AssistantProgressIndicator::InitLayout() {
     dot_view->SetPaintToLayer();
     dot_view->layer()->SetFillsBoundsOpaquely(false);
 
-    AddChildView(dot_view);
+    AddChildView(std::move(dot_view));
   }
 }
 

@@ -3135,7 +3135,7 @@
             ]
         }
     ],
-    "LegacyTLSDeprecation": [
+    "LegacyTLSDeprecation2": [
         {
             "platforms": [
                 "android",
@@ -4636,27 +4636,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PrioritizedSimpleCacheTasks"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PrivacySettingsRedesignTest": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android",
-                "android_webview",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PrivacySettingsRedesign"
                     ]
                 }
             ]

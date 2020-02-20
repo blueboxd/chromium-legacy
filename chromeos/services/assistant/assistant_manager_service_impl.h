@@ -109,11 +109,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides:
-  void Start(const base::Optional<std::string>& access_token,
+  void Start(const base::Optional<UserInfo>& user,
              bool enable_hotword) override;
   void Stop() override;
   State GetState() const override;
-  void SetAccessToken(const base::Optional<std::string>& access_token) override;
+  void SetUser(const base::Optional<UserInfo>& user) override;
   void EnableAmbientMode(bool enabled) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
@@ -242,7 +242,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
  private:
   class AssistantMediaSessionObserver;
-  void StartAssistantInternal(const base::Optional<std::string>& access_token);
+  void StartAssistantInternal(const base::Optional<UserInfo>& user);
   void PostInitAssistant();
 
   // Update device id, type and locale

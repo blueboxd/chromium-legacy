@@ -14,7 +14,6 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.v4.view.ViewCompat;
@@ -64,8 +63,8 @@ import java.util.List;
 /**
  * The PaymentRequest UI.
  */
-public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
-        PaymentRequestSection.SectionDelegate {
+public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.OnClickListener,
+                                         PaymentRequestSection.SectionDelegate {
     @IntDef({DataType.SHIPPING_ADDRESSES, DataType.SHIPPING_OPTIONS, DataType.CONTACT_DETAILS,
             DataType.PAYMENT_METHODS})
     @Retention(RetentionPolicy.SOURCE)
@@ -876,6 +875,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /**
      * Called when user clicks anything in the dialog.
      */
+    // View.OnClickListener implementation.
     @Override
     public void onClick(View v) {
         if (!isAcceptingCloseButton()) return;
@@ -1189,8 +1189,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *      window.</li>
      * </ul>
      */
+    // DimmingDialog.OnDismissListener implementation.
     @Override
-    public void onDismiss(DialogInterface dialog) {
+    public void onDismiss() {
         mIsClosing = true;
         if (mEditorDialog.isShowing()) mEditorDialog.dismiss();
         if (mCardEditorDialog.isShowing()) mCardEditorDialog.dismiss();

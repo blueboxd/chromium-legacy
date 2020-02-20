@@ -9,6 +9,7 @@ import "media/mojo/mojom/audio_input_stream.mojom";
 import "media/mojo/mojom/audio_logging.mojom";
 import "media/mojo/mojom/audio_output_stream.mojom";
 import "media/mojo/mojom/audio_parameters.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/audio/public/mojom/audio_processing.mojom";
 
@@ -45,7 +46,7 @@ interface StreamFactory {
     pending_remote<media.mojom.AudioLog>? log,
     string device_id, media.mojom.AudioParameters params,
     uint32 shared_memory_count, bool enable_agc,
-    handle<shared_buffer>? key_press_count_buffer,
+    mojo_base.mojom.ReadOnlySharedMemoryRegion? key_press_count_buffer,
     audio.mojom.AudioProcessingConfig? processing_config)
       => (media.mojom.ReadOnlyAudioDataPipe? data_pipe, bool initially_muted,
           mojo_base.mojom.UnguessableToken? stream_id);

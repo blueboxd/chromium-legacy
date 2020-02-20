@@ -78,7 +78,7 @@ public final class ShareSheetCoordinatorTest {
     @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
     public void testCreateTopRowPropertyModelsScreenshotsDisabled() {
         ShareSheetCoordinator coordinator =
-                new ShareSheetCoordinator(null, null, null, mPropertyModelBuilder);
+                new ShareSheetCoordinator(null, null, mPropertyModelBuilder);
         Activity activity = mActivityTestRule.getActivity();
 
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
@@ -108,7 +108,7 @@ public final class ShareSheetCoordinatorTest {
     @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
     public void testCreateTopRowPropertyModelsScreenshotsEnabled() {
         ShareSheetCoordinator coordinator =
-                new ShareSheetCoordinator(null, null, null, mPropertyModelBuilder);
+                new ShareSheetCoordinator(null, null, mPropertyModelBuilder);
         Activity activity = mActivityTestRule.getActivity();
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
@@ -141,7 +141,7 @@ public final class ShareSheetCoordinatorTest {
     @MediumTest
     public void testCreateBottomRowPropertyModels() {
         ShareSheetCoordinator coordinator =
-                new ShareSheetCoordinator(null, null, null, mPropertyModelBuilder);
+                new ShareSheetCoordinator(null, null, mPropertyModelBuilder);
         Activity activity = mActivityTestRule.getActivity();
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 

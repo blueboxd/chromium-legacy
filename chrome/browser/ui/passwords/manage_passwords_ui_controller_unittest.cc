@@ -274,12 +274,14 @@ void ManagePasswordsUIControllerTest::TestNotChangingStateOnAutofill(
   std::unique_ptr<MockPasswordFormManagerForUI> test_form_manager =
       CreateFormManagerWithBestMatches(&best_matches);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  if (state == password_manager::ui::PENDING_PASSWORD_STATE)
+  if (state == password_manager::ui::PENDING_PASSWORD_STATE) {
     controller()->OnPasswordSubmitted(std::move(test_form_manager));
-  else if (state == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
+  } else if (state == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    best_matches.push_back(&test_local_form());
     controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
-  else  // password_manager::ui::CONFIRMATION_STATE
+  } else {  // password_manager::ui::CONFIRMATION_STATE
     controller()->OnAutomaticPasswordSave(std::move(test_form_manager));
+  }
   ASSERT_EQ(state, controller()->GetState());
 
   // Autofill happens.
@@ -835,7 +837,7 @@ TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, UpdatePasswordSubmitted) {
-  std::vector<const PasswordForm*> best_matches;
+  std::vector<const PasswordForm*> best_matches = {&test_local_form()};
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
@@ -844,7 +846,7 @@ TEST_F(ManagePasswordsUIControllerTest, UpdatePasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
-  std::vector<const PasswordForm*> best_matches;
+  std::vector<const PasswordForm*> best_matches = {&test_local_form()};
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   EXPECT_CALL(*test_form_manager, Save());
@@ -910,7 +912,9 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     auto recorder =
         base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
             true /*is_main_frame_secure*/, source_id);
-    std::vector<const PasswordForm*> matches;
+    std::vector<const PasswordForm*> matches = {&test_local_form()};
+    if (is_update)
+      matches.push_back(&test_local_form());
     auto test_form_manager = CreateFormManagerWithBestMatches(&matches);
     EXPECT_CALL(*test_form_manager, GetMetricsRecorder)
         .WillRepeatedly(Return(recorder.get()));
@@ -1204,7 +1208,7 @@ TEST_F(ManagePasswordsUIControllerTest, AuthenticateUserToRevealPasswords) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
-  std::vector<const PasswordForm*> matches;
+  std::vector<const PasswordForm*> matches = {&test_local_form()};
   auto test_form_manager = CreateFormManagerWithBestMatches(&matches);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));

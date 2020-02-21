@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -27,13 +26,6 @@ void V8ConstructorAttributeGetter(
     return;
   V8SetReturnValue(info,
                    per_context_data->ConstructorForType(wrapper_type_info));
-}
-
-v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
-                                   SerializedScriptValue* value) {
-  if (value)
-    return value->Deserialize(isolate);
-  return v8::Null(isolate);
 }
 
 namespace {

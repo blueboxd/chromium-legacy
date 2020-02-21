@@ -4,24 +4,35 @@
 
 package org.chromium.chrome.browser.share;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountId;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.IdentityManagerJni;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests of {@link LensUtils}.
+ * TODO(https://crbug.com/1054738): Reimplement LensUtilsTest as robolectric tests
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
@@ -29,25 +40,38 @@ public class LensUtilsTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
+    @Rule
+    public final JniMocker mocker = new JniMocker();
+
+    @Mock
+    private IdentityManager.Natives mIdentityManagerNativesMock;
+
+    private final CoreAccountInfo mCoreAccountInfo =
+            new CoreAccountInfo(new CoreAccountId("gaia_id"), "test@gmail.com", "gaia_id");
+
+    @Before
+    public void setUp() {
+        initMocks(this);
+        mocker.mock(IdentityManagerJni.TEST_HOOKS, mIdentityManagerNativesMock);
+    }
+
     /**
      * Test {@link LensUtils#getShareWithGoogleLensIntent()} method when user is signed in.
      */
     @Test
     @SmallTest
     public void getShareWithGoogleLensIntentSignedInTest() {
-        SigninTestUtil.addAndSignInTestAccount();
-        Assert.assertEquals("Chrome should be signed into the test account", "test@gmail.com",
-                ChromeSigninController.get().getSignedInAccountName());
+        when(mIdentityManagerNativesMock.getPrimaryAccountInfo(anyLong()))
+                .thenReturn(mCoreAccountInfo);
+        Intent intentNoUri = getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY, false);
 
-        Intent intentNoUri =
-                LensUtils.getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
         Assert.assertEquals("Intent without image has incorrect URI", "googleapp://lens",
                 intentNoUri.getData().toString());
         Assert.assertEquals("Intent without image has incorrect action", Intent.ACTION_VIEW,
                 intentNoUri.getAction());
 
         final String contentUrl = "content://image-url";
-        Intent intentWithContentUri = LensUtils.getShareWithGoogleLensIntent(
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(
                 Uri.parse(contentUrl), /* isIncognito= */ false);
         Assert.assertEquals("Intent with image has incorrect URI",
                 "googleapp://lens?LensBitmapUriKey=content%3A%2F%2Fimage-url&AccountNameUriKey="
@@ -63,19 +87,17 @@ public class LensUtilsTest {
     @Test
     @SmallTest
     public void getShareWithGoogleLensIntentIncognitoTest() {
-        SigninTestUtil.addAndSignInTestAccount();
-        Assert.assertEquals("Chrome should be signed into the test account", "test@gmail.com",
-                ChromeSigninController.get().getSignedInAccountName());
-
+        when(mIdentityManagerNativesMock.getPrimaryAccountInfo(anyLong()))
+                .thenReturn(mCoreAccountInfo);
         Intent intentNoUri =
-                LensUtils.getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ true);
+                getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY, /* isIncognito= */ true);
         Assert.assertEquals("Intent without image has incorrect URI", "googleapp://lens",
                 intentNoUri.getData().toString());
         Assert.assertEquals("Intent without image has incorrect action", Intent.ACTION_VIEW,
                 intentNoUri.getAction());
 
         final String contentUrl = "content://image-url";
-        Intent intentWithContentUri = LensUtils.getShareWithGoogleLensIntent(
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(
                 Uri.parse(contentUrl), /* isIncognito= */ true);
         // The account name should not be included in the intent because the uesr is incognito.
         Assert.assertEquals("Intent with image has incorrect URI",
@@ -92,18 +114,15 @@ public class LensUtilsTest {
     @Test
     @SmallTest
     public void getShareWithGoogleLensIntentNotSignedInTest() {
-        Assert.assertNull("Chrome should not be signed in",
-                ChromeSigninController.get().getSignedInAccountName());
-
         Intent intentNoUri =
-                LensUtils.getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
+                getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY, /* isIncognito= */ false);
         Assert.assertEquals("Intent without image has incorrect URI", "googleapp://lens",
                 intentNoUri.getData().toString());
         Assert.assertEquals("Intent without image has incorrect action", Intent.ACTION_VIEW,
                 intentNoUri.getAction());
 
         final String contentUrl = "content://image-url";
-        Intent intentWithContentUri = LensUtils.getShareWithGoogleLensIntent(
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(
                 Uri.parse(contentUrl), /* isIncognito= */ false);
         Assert.assertEquals("Intent with image has incorrect URI",
                 "googleapp://lens?LensBitmapUriKey=content%3A%2F%2Fimage-url&AccountNameUriKey="
@@ -111,5 +130,10 @@ public class LensUtilsTest {
                 intentWithContentUri.getData().toString());
         Assert.assertEquals("Intent with image has incorrect action", Intent.ACTION_VIEW,
                 intentWithContentUri.getAction());
+    }
+
+    private Intent getShareWithGoogleLensIntentOnUiThread(Uri imageUri, boolean isIncognito) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> LensUtils.getShareWithGoogleLensIntent(imageUri, isIncognito));
     }
 }

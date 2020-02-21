@@ -178,7 +178,8 @@ WorkletAnimation* WorkletAnimation::Create(
     const AnimationEffectOrAnimationEffectSequence& effects,
     ExceptionState& exception_state) {
   return Create(script_state, animator_name, effects,
-                DocumentTimelineOrScrollTimeline(), nullptr, exception_state);
+                DocumentTimelineOrScrollTimeline(), ScriptValue(),
+                exception_state);
 }
 
 WorkletAnimation* WorkletAnimation::Create(
@@ -187,7 +188,7 @@ WorkletAnimation* WorkletAnimation::Create(
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
     ExceptionState& exception_state) {
-  return Create(script_state, animator_name, effects, timeline, nullptr,
+  return Create(script_state, animator_name, effects, timeline, ScriptValue(),
                 exception_state);
 }
 WorkletAnimation* WorkletAnimation::Create(
@@ -195,7 +196,7 @@ WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
-    scoped_refptr<SerializedScriptValue> options,
+    const ScriptValue& options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -230,9 +231,20 @@ WorkletAnimation* WorkletAnimation::Create(
   AnimationTimeline* animation_timeline =
       ConvertAnimationTimeline(document, timeline);
 
+  scoped_refptr<SerializedScriptValue> animation_options;
+  if (!options.IsEmpty()) {
+    animation_options = SerializedScriptValue::Serialize(
+        script_state->GetIsolate(), options.V8Value(),
+        SerializedScriptValue::SerializeOptions(
+            SerializedScriptValue::kNotForStorage),
+        exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+  }
+
   WorkletAnimation* animation = MakeGarbageCollected<WorkletAnimation>(
       id, animator_name, document, keyframe_effects, animation_timeline,
-      std::move(options));
+      std::move(animation_options));
 
   return animation;
 }

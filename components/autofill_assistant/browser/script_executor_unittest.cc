@@ -105,7 +105,8 @@ class ScriptExecutorTest : public testing::Test,
     interruptible.set_global_payload("main script global payload");
     interruptible.set_script_payload("main script payload");
     auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-    wait_action->mutable_wait_until()->add_selectors(element);
+    wait_action->mutable_wait_condition()->mutable_match()->add_selectors(
+        element);
     wait_action->set_allow_interrupt(true);
     interruptible.add_actions()->mutable_tell()->set_message(path);
     EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
@@ -135,7 +136,9 @@ class ScriptExecutorTest : public testing::Test,
     auto interrupt = std::make_unique<Script>();
     interrupt->handle.path = path;
     ScriptPreconditionProto interrupt_preconditions;
-    interrupt_preconditions.add_elements_exist()->add_selectors(trigger);
+    interrupt_preconditions.mutable_element_condition()
+        ->mutable_match()
+        ->add_selectors(trigger);
     interrupt->precondition =
         ScriptPrecondition::FromProto(path, interrupt_preconditions);
 
@@ -493,7 +496,8 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnError) {
 TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
@@ -512,35 +516,6 @@ TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
-  EXPECT_CALL(executor_callback_, Run(_));
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-
-  ASSERT_EQ(1u, processed_actions_capture.size());
-  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
-}
-
-TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
-  ActionsResponseProto actions_response;
-  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_while()->add_selectors("element");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
-      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
-                      RunOnceCallback<4>(true, "")));
-
-  // First check finds the element, wait for dom waits 1s, then the element
-  // disappears, and the action succeeds.
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
-  executor_->Run(&user_data_, executor_callback_.Get());
-
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<1>(ClientStatus()));
   EXPECT_CALL(executor_callback_, Run(_));
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
@@ -624,7 +599,8 @@ TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
   ActionsResponseProto interruptible;
   for (int i = 0; i < 3; i++) {
     auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-    wait_action->mutable_wait_until()->add_selectors("element");
+    wait_action->mutable_wait_condition()->mutable_match()->add_selectors(
+        "element");
     wait_action->set_allow_interrupt(true);
   }
   EXPECT_CALL(mock_service_, OnGetActions(StrEq("script_path"), _, _, _, _, _))
@@ -727,7 +703,8 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
   // The main script has a wait_for_dom, but it is not interruptible.
   ActionsResponseProto interruptible;
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->mutable_wait_until()->add_selectors("element");
+  wait_action->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
   // allow_interrupt is not set
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -820,7 +797,8 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
   auto* prompt_action = interruptible.add_actions()->mutable_prompt();
   prompt_action->set_allow_interrupt(true);
   prompt_action->add_choices()
-      ->mutable_auto_select_if_element_exists()
+      ->mutable_auto_select_when()
+      ->mutable_match()
       ->add_selectors("end_prompt");
   interruptible.add_actions()->mutable_tell()->set_message("done");
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
@@ -899,7 +877,8 @@ TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
   auto* prompt_action = interruptible.add_actions()->mutable_prompt();
   prompt_action->set_allow_interrupt(true);
   prompt_action->add_choices()
-      ->mutable_auto_select_if_element_exists()
+      ->mutable_auto_select_when()
+      ->mutable_match()
       ->add_selectors("end_prompt");
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -1062,7 +1041,8 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
   interruptible.add_actions()->mutable_tell()->set_message(
       "pre-interrupt status");
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->mutable_wait_until()->add_selectors("element");
+  wait_action->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
   wait_action->set_allow_interrupt(true);
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -1090,7 +1070,8 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   interruptible.add_actions()->mutable_tell()->set_message(
       "pre-interrupt status");
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->mutable_wait_until()->add_selectors("element");
+  wait_action->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
   wait_action->set_allow_interrupt(true);
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -1110,7 +1091,8 @@ TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   wait_for_dom->set_timeout_ms(2000);
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
@@ -1148,7 +1130,8 @@ TEST_F(ScriptExecutorTest, StartWaitForDomWhileNavigating) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
   wait_for_dom->set_timeout_ms(2000);
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
@@ -1258,7 +1241,8 @@ TEST_F(ScriptExecutorTest, ReportNavigationErrors) {
 TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
@@ -1295,7 +1279,8 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
 TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
@@ -1329,7 +1314,8 @@ TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_expect_navigation();
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_until()->add_selectors("element");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "element");
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));

@@ -350,19 +350,6 @@ class CORE_EXPORT SerializedScriptValue
 #endif
 };
 
-template <>
-struct NativeValueTraits<SerializedScriptValue>
-    : public NativeValueTraitsBase<SerializedScriptValue> {
-  CORE_EXPORT static inline scoped_refptr<SerializedScriptValue> NativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      const SerializedScriptValue::SerializeOptions& options,
-      ExceptionState& exception_state) {
-    return SerializedScriptValue::Serialize(isolate, value, options,
-                                            exception_state);
-  }
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_H_

@@ -54,6 +54,7 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   V(InvokePreFinalizers)              \
   V(LazySweepInIdle)                  \
   V(LazySweepOnAllocation)            \
+  V(MarkBailOutObjects)               \
   V(MarkInvokeEphemeronCallbacks)     \
   V(MarkProcessWorklist)              \
   V(MarkNotFullyConstructedObjects)   \

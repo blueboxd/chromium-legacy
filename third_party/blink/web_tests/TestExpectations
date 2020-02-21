@@ -3237,6 +3237,8 @@ crbug.com/400829 virtual/audio-service/media/stable/video-object-fit-stable.html
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
 crbug.com/1032016 http/tests/devtools/sources/debugger/live-edit-breakpoints.js [ Pass Failure ]
+crbug.com/1032016 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
+crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]

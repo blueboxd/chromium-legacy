@@ -425,7 +425,8 @@ TEST_F(ControllerTest, NoRelevantScriptYet) {
   AddRunnableScript(&script_response, "no_match_yet")
       ->mutable_presentation()
       ->mutable_precondition()
-      ->add_elements_exist()
+      ->mutable_element_condition()
+      ->mutable_match()
       ->add_selectors("#element");
   SetNextScriptResponse(script_response);
 
@@ -722,7 +723,8 @@ TEST_F(ControllerTest, KeepCheckingForElement) {
   AddRunnableScript(&script_response, "no_match_yet")
       ->mutable_presentation()
       ->mutable_precondition()
-      ->add_elements_exist()
+      ->mutable_element_condition()
+      ->mutable_match()
       ->add_selectors("#element");
   SetNextScriptResponse(script_response);
 
@@ -750,7 +752,8 @@ TEST_F(ControllerTest, ScriptTimeoutError) {
   AddRunnableScript(&script_response, "will_never_match")
       ->mutable_presentation()
       ->mutable_precondition()
-      ->add_elements_exist()
+      ->mutable_element_condition()
+      ->mutable_match()
       ->add_selectors("#element");
   script_response.mutable_script_timeout_error()->set_timeout_ms(30000);
   script_response.mutable_script_timeout_error()->set_script_path(
@@ -783,7 +786,8 @@ TEST_F(ControllerTest, ScriptTimeoutWarning) {
   AddRunnableScript(&script_response, "will_never_match")
       ->mutable_presentation()
       ->mutable_precondition()
-      ->add_elements_exist()
+      ->mutable_element_condition()
+      ->mutable_match()
       ->add_selectors("#element");
   script_response.mutable_script_timeout_error()->set_timeout_ms(4000);
   script_response.mutable_script_timeout_error()->set_script_path(
@@ -1244,7 +1248,8 @@ TEST_F(ControllerTest, TrackReportsNoScriptsForNow) {
   AddRunnableScript(&script_response, "no_match_yet")
       ->mutable_presentation()
       ->mutable_precondition()
-      ->add_elements_exist()
+      ->mutable_element_condition()
+      ->mutable_match()
       ->add_selectors("#element");
   SetNextScriptResponse(script_response);
 

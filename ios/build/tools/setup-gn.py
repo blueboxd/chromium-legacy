@@ -205,9 +205,7 @@ class GnGenerator(object):
     if generate_xcode_project:
       gn_command.append('--ide=xcode')
       gn_command.append('--root-target=gn_all')
-      if self._settings.getboolean('goma', 'enabled'):
-        ninja_jobs = self._settings.getint('xcode', 'jobs') or 200
-        gn_command.append('--ninja-extra-args=-j%s' % ninja_jobs)
+      gn_command.append('--ninja-executable=autoninja')
       if self._settings.has_section('filters'):
         target_filters = self._settings.values('filters')
         if target_filters:

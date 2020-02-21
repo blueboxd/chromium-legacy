@@ -17,8 +17,8 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -57,7 +57,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 }  // namespace
 
-@interface PrivacyTableViewController () <ClearBrowsingDataLocalCommands,
+@interface PrivacyTableViewController () <ClearBrowsingDataUIDelegate,
                                           PrefObserverDelegate> {
   ChromeBrowserState* _browserState;  // weak
 
@@ -211,7 +211,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
       ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
           [[ClearBrowsingDataTableViewController alloc]
               initWithBrowserState:_browserState];
-      clearBrowsingDataViewController.localDispatcher = self;
+      clearBrowsingDataViewController.delegate = self;
       controller = clearBrowsingDataViewController;
       break;
     }
@@ -227,7 +227,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-#pragma mark - ClearBrowsingDataLocalCommands
+#pragma mark - ClearBrowsingDataUIDelegate
 
 - (void)openURL:(const GURL&)URL {
   DCHECK(self.dispatcher);

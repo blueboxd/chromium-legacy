@@ -91,7 +91,8 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     if (!selector.empty()) {
       script->mutable_presentation()
           ->mutable_precondition()
-          ->add_elements_exist()
+          ->mutable_element_condition()
+          ->mutable_match()
           ->add_selectors(selector);
     }
     ScriptStatusMatchProto dont_run_twice_precondition;
@@ -374,7 +375,8 @@ TEST_F(ScriptTrackerTest, UpdateInterruptList) {
 
   ActionsResponseProto actions_response;
   auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->mutable_wait_until()->add_selectors("exists");
+  wait_for_dom->mutable_wait_condition()->mutable_match()->add_selectors(
+      "exists");
   wait_for_dom->set_allow_interrupt(true);
 
   SupportedScriptProto* interrupt_proto =

@@ -175,17 +175,6 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
   EXPECT_EQ(nullptr, ScriptPrecondition::FromProto("unused", proto));
 }
 
-TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
-  EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
-
-  ScriptPreconditionProto proto;
-  proto.add_elements_exist()->add_selectors("exists");
-  proto.add_elements_exist();
-
-  EXPECT_TRUE(Check(proto));
-}
-
 TEST_F(ScriptPreconditionTest, WrongScriptStatusEqualComparator) {
   ScriptPreconditionProto proto;
 
@@ -306,7 +295,7 @@ TEST_F(ScriptPreconditionTest, MultipleConditions) {
   ScriptPreconditionProto proto;
   proto.add_domain("http://match.example.com");
   proto.add_path_pattern("/path");
-  proto.add_elements_exist()->add_selectors("exists");
+  proto.mutable_element_condition()->mutable_match()->add_selectors("exists");
 
   // Domain and path don't match.
   EXPECT_FALSE(Check(proto));
@@ -314,7 +303,8 @@ TEST_F(ScriptPreconditionTest, MultipleConditions) {
   SetUrl("http://match.example.com/path");
   EXPECT_TRUE(Check(proto)) << "Domain, path and selector must match.";
 
-  proto.mutable_elements_exist(0)->set_selectors(0, "does_not_exist");
+  proto.mutable_element_condition()->mutable_match()->set_selectors(
+      0, "does_not_exist");
   EXPECT_FALSE(Check(proto)) << "Element can not match.";
 }
 

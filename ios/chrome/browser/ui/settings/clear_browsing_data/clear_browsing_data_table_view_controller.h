@@ -10,7 +10,7 @@
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
 class ChromeBrowserState;
-@protocol ClearBrowsingDataLocalCommands;
+@protocol ClearBrowsingDataUIDelegate;
 
 // TableView for clearing browsing data (including history,
 // cookies, caches, passwords, and autofill).
@@ -27,7 +27,7 @@ class ChromeBrowserState;
 - (void)prepareForDismissal;
 
 // Local Dispatcher for this ClearBrowsingDataTableView.
-@property(nonatomic, weak) id<ClearBrowsingDataLocalCommands> localDispatcher;
+@property(nonatomic, weak) id<ClearBrowsingDataUIDelegate> delegate;
 
 // The dispatcher used by this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>

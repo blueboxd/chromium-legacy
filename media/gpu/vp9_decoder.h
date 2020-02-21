@@ -117,9 +117,8 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // Get frame context state after decoding |pic| from the accelerator, and call
   // |context_refresh_cb| with the acquired state.
-  void UpdateFrameContext(
-      scoped_refptr<VP9Picture> pic,
-      const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb);
+  void UpdateFrameContext(scoped_refptr<VP9Picture> pic,
+                          Vp9Parser::ContextRefreshCallback context_refresh_cb);
 
   // Called on error, when decoding cannot continue. Sets state_ to kError and
   // releases current state.

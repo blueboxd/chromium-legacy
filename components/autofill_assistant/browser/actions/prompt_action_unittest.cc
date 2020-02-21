@@ -206,7 +206,7 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   ok_proto->mutable_chip()->set_text("Ok");
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
-  ok_proto->add_show_only_if_element_exists()->add_selectors("element");
+  ok_proto->mutable_show_only_when()->mutable_match()->add_selectors("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -232,7 +232,7 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   ok_proto->set_allow_disabling(true);
-  ok_proto->add_show_only_if_element_exists()->add_selectors("element");
+  ok_proto->mutable_show_only_when()->mutable_match()->add_selectors("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -256,7 +256,7 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
 TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
+  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
       "element");
 
   PromptAction action(&mock_action_delegate_, proto_);
@@ -277,36 +277,6 @@ TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-TEST_F(PromptActionTest, AutoSelectWhenElementDisappears) {
-  auto* choice_proto = prompt_proto_->add_choices();
-  choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_if_element_disappears()->add_selectors(
-      "element");
-
-  PromptAction action(&mock_action_delegate_, proto_);
-  action.ProcessAction(callback_.Get());
-  EXPECT_THAT(user_actions_, Pointee(SizeIs(0)));
-
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(Eq(Selector({"element"})), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus()))
-      .WillRepeatedly(
-          RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
-
-  // First round of element checks: element exists.
-  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-
-  // Second round of element checks: element has gone.
-  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt());
-  EXPECT_CALL(
-      callback_,
-      Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
-                        Property(&ProcessedActionProto::prompt_choice,
-                                 Property(&PromptProto::Choice::server_payload,
-                                          "auto-select"))))));
-  task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-}
-
 TEST_F(PromptActionTest, AutoSelectWithButton) {
   auto* ok_proto = prompt_proto_->add_choices();
   ok_proto->mutable_chip()->set_text("Ok");
@@ -315,7 +285,7 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
 
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
+  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
       "element");
 
   PromptAction action(&mock_action_delegate_, proto_);
@@ -428,7 +398,7 @@ TEST_F(PromptActionTest, ForwardInterruptFailure) {
   prompt_proto_->set_allow_interrupt(true);
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_if_element_exists()->add_selectors(
+  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
       "element");
 
   PromptAction action(&mock_action_delegate_, proto_);

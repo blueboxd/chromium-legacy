@@ -32,19 +32,21 @@
   const recordTypes = new Set(['TimerInstall', 'TimerRemove', 'FunctionCall']);
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
-  PerformanceTestRunner.walkTimelineEventTree(formatter);
+  await PerformanceTestRunner.walkTimelineEventTree(formatter);
   TestRunner.completeTest();
 
-  function formatter(event) {
+  async function formatter(event) {
     if (!recordTypes.has(event.name))
       return;
 
-    var detailsText = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
+    var detailsText = await Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
         event, PerformanceTestRunner.timelineModel().targetByEvent(event));
+    await TestRunner.waitForPendingLiveLocationUpdates();
     TestRunner.addResult('detailsTextContent for ' + event.name + ' event: \'' + detailsText + '\'');
 
-    var details = Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(
+    var details = await Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(
         event, PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier);
+    await TestRunner.waitForPendingLiveLocationUpdates();
     if (!details)
       return;
     TestRunner.addResult(

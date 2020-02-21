@@ -13,5 +13,5 @@
   `);
 
   UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-  PerformanceTestRunner.performActionsAndPrint('performActions()', 'FunctionCall');
+  await PerformanceTestRunner.performActionsAndPrint('performActions()', 'FunctionCall');
 })();

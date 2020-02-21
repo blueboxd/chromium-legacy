@@ -411,7 +411,7 @@
     },
     {
       name: "CSSCascade",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Support for the CSS color-scheme property from the css-color-adjust spec.

@@ -235,7 +235,7 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
   return object_payload_size;
 }
 
-void BaseArena::PrepareForSweep() {
+void BaseArena::PrepareForSweep(BlinkGC::CollectionType collection_type) {
   DCHECK(GetThreadState()->InAtomicMarkingPause());
   DCHECK(SweepingAndFinalizationCompleted());
 
@@ -244,10 +244,23 @@ void BaseArena::PrepareForSweep() {
   // Verification depends on the allocation point being cleared.
   VerifyObjectStartBitmap();
 
+  if (collection_type == BlinkGC::CollectionType::kMinor) {
+    auto** first_young =
+        std::partition(swept_pages_.begin(), swept_pages_.end(),
+                       [](BasePage* page) { return !page->IsYoung(); });
+    for (auto** it = first_young; it != swept_pages_.end(); ++it) {
+      BasePage* page = *it;
+      page->MarkAsUnswept();
+      page->SetAsYoung(false);
+      unswept_pages_.Push(page);
+    }
+    swept_pages_.erase(first_young, swept_pages_.end());
+    return;
+  }
+
   for (BasePage* page : swept_pages_) {
     page->MarkAsUnswept();
   }
-
   // Move all pages to a list of unswept pages.
   unswept_pages_.MoveFrom(std::move(swept_pages_));
   DCHECK(swept_pages_.IsEmpty());
@@ -884,6 +897,8 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
     // clearing the allocation point.
     NormalPage* page = reinterpret_cast<NormalPage*>(PageFromObject(point));
     page->object_start_bit_map()->ClearBit(point);
+    // Mark page as containing young objects.
+    page->SetAsYoung(true);
   }
 }
 
@@ -1008,6 +1023,8 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
       large_object->size());
   GetThreadState()->Heap().stats_collector()->IncreaseAllocatedObjectSize(
       large_object->PayloadSize());
+  // Add page to the list of young pages.
+  large_object->SetAsYoung(true);
   return result;
 }
 

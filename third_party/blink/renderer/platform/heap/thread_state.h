@@ -449,7 +449,8 @@ class PLATFORM_EXPORT ThreadState final {
                             BlinkGC::GCReason);
   void AtomicPauseMarkTransitiveClosure();
   void AtomicPauseMarkEpilogue(BlinkGC::MarkingType);
-  void AtomicPauseSweepAndCompact(BlinkGC::MarkingType marking_type,
+  void AtomicPauseSweepAndCompact(BlinkGC::CollectionType,
+                                  BlinkGC::MarkingType marking_type,
                                   BlinkGC::SweepingType sweeping_type);
   void AtomicPauseEpilogue();
 

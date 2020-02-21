@@ -6,6 +6,8 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/ChildAccountFeedbackReporter_jni.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/view_android.h"
@@ -28,6 +30,10 @@ void ReportChildAccountFeedback(content::WebContents* web_contents,
       base::android::ConvertUTF8ToJavaString(env, description);
   ScopedJavaLocalRef<jstring> jurl =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  ProfileAndroid* profile_android = ProfileAndroid::FromProfile(profile);
+  ScopedJavaLocalRef<jobject> jprofile = profile_android->GetJavaObject();
   Java_ChildAccountFeedbackReporter_reportFeedbackWithWindow(
-      env, window->GetJavaObject(), jdesc, jurl);
+      env, window->GetJavaObject(), jdesc, jurl, jprofile);
 }

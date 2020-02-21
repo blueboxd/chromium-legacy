@@ -109,7 +109,7 @@ struct GCInfoTrait {
     // This is more complicated than using threadsafe initialization, but this
     // is instantiated many times (once for every GC type).
     static std::atomic<GCInfoIndex> gc_info_index{0};
-    GCInfoIndex index = gc_info_index.load(std::memory_order_relaxed);
+    GCInfoIndex index = gc_info_index.load(std::memory_order_acquire);
     if (!index) {
       index = GCInfoTable::GetMutable()->EnsureGCInfoIndex(&kGcInfo,
                                                            &gc_info_index);

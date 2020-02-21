@@ -23,7 +23,7 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  PerformanceTestRunner.printTimelineRecordsWithDetails('XHRReadyStateChange');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('XHRLoad');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('XHRReadyStateChange');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('XHRLoad');
   TestRunner.completeTest();
 })();

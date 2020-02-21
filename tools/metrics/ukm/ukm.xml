@@ -7715,7 +7715,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="PaintPreviewCapture">
+<event name="PaintPreviewCapture" singular="True">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
@@ -7727,6 +7727,13 @@ be describing additional metrics about the same event.
     <summary>
       The amount of time spent painting in Blink to record a Paint Preview of
       the main frame.
+    </summary>
+  </metric>
+  <metric name="CompressedOnDiskSize">
+    <summary>
+      The compressed on-disk size in KB of the captured artifacts. This is
+      rounded down to the nearest exponential bucket (with a bucket ratio of
+      1.3).
     </summary>
   </metric>
 </event>

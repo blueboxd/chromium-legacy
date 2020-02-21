@@ -335,16 +335,19 @@ message ScriptStatusMatchProto {
 }
 
 message ScriptPreconditionProto {
-  // Combined with AND: the elements referenced here must be present.
-  repeated ElementReferenceProto elements_exist = 3;
   // Pattern of the path parts of the URL, including query and '#''.
   repeated string path_pattern = 5;
   // Domain (exact match) excluding the last '/' character.
   repeated string domain = 6;
+
   // Combined with AND: all matches must be true for precondition to hold.
   repeated ScriptParameterMatchProto script_parameter_match = 7;
   repeated ScriptStatusMatchProto script_status_match = 8;
-  repeated FormValueMatchProto form_value_match = 9;
+
+  // Script can only run if the given condition match.
+  optional ElementConditionProto element_condition = 10;
+
+  reserved 3, 9;
 }
 
 message ScriptParameterMatchProto {
@@ -357,17 +360,6 @@ message ScriptParameterMatchProto {
   // Checks whether the script parameter has exact value. Empty or missing value
   // is treated as wildcard - any value will pass.
   optional string value_equals = 3;
-}
-
-message FormValueMatchProto {
-  // Required. The selector associated to the form element whose value should be
-  // checked.
-  optional ElementReferenceProto element = 1;
-
-  // Optional value. If specified, the element value must match the given value,
-  // even if it's empty. If not specified, we just check that the element value
-  // is non empty.
-  optional string value = 2;
 }
 
 enum PolicyType {
@@ -1086,57 +1078,48 @@ message WaitForDomProto {
   // Fail after waiting this amount of time.
   optional int32 timeout_ms = 1;
 
-  oneof wait_on {
-    // Wait until there exists at least one element that matches the given
-    // selector.
-    ElementReferenceProto wait_until = 5;
-
-    // Wait as long as there's at least one element that matches the given
-    // reference.
-    ElementReferenceProto wait_while = 6;
-
-    // Wait until at least one condition is met.
-    //
-    // If, at the end of the timeout, no conditions are not met, the action
-    // returns ELEMENT_RESOLUTION_FAILED.
-    ElementConditions wait_for_any = 7;
-
-    // Wait until all conditions are met.
-    //
-    // If, at the end of the timeout, not all condition are met, the action
-    // returns ELEMENT_RESOLUTION_FAILED.
-    ElementConditions wait_for_all = 8;
-  }
+  // Wait until this condition becomes true. If, at the end of the timeout, the
+  // condition is not true, returns ELEMENT_RESOLUTION_FAILED.
+  optional ElementConditionProto wait_condition = 9;
 
   // If true, run scripts flagged with 'interrupt=true' as soon as their
   // preconditions match.
   optional bool allow_interrupt = 3;
 
-  reserved 4;
-
-  // Multiple element conditions.
-  message ElementConditions { repeated ElementCondition conditions = 1; }
-
-  // A single element condition.
-  message ElementCondition {
-    oneof condition {
-      // There must be at least one matching element.
-      ElementReferenceProto must_match = 1;
-
-      // There must not be any matching elements.
-      ElementReferenceProto must_not_match = 2;
-    }
-
-    // If this condition is met and this is nonempty, put the following payload
-    // into the result.
-    optional bytes server_payload = 5;
-  }
+  reserved 4 to 8;
 
   // Result to include into ProcessedActionProto.
   message Result {
     // Payload of all matching conditions, if one is set.
     repeated bytes matching_condition_payloads = 1;
   }
+}
+
+// A condition that expects a specific combination of elements. An empty
+// condition is true.
+message ElementConditionProto {
+  oneof type {
+    // The condition matches if all of these conditions match.
+    ElementConditionsProto all_of = 1;
+
+    // The condition matches if at least one of these conditions matches.
+    ElementConditionsProto any_of = 2;
+
+    // The condition matches if none of these conditions match.
+    ElementConditionsProto none_of = 3;
+
+    // The condition matches if the given element exists. An empty
+    // ElementReference never match.
+    ElementReferenceProto match = 4;
+  }
+
+  // A payload that identifies this condition. WaitForDom puts this payload
+  // into the result. This is ignored outside of WaitForDom.
+  optional bytes payload = 5;
+}
+
+message ElementConditionsProto {
+  repeated ElementConditionProto conditions = 1;
 }
 
 // Volatile upload of a portion of the dom for backend analysis, does not store
@@ -1265,7 +1248,7 @@ message PromptProto {
   // A choice that can be triggered:
   // - by clicking on a chip, if a chip is set
   // - by triggering a direct action, if direct action names are set
-  // - indirectly, DOM change, if auto_select_if_element_exists if set
+  // - indirectly, DOM change, if auto_select_when if set
   //
   // One of these protos must is transmitted as-is back to the server as part of
   // ProcessedActionProto.
@@ -1276,19 +1259,11 @@ message PromptProto {
     // Map this choice to a direct action.
     optional DirectActionProto direct_action = 12;
 
-    oneof auto_select {
-      // Auto-select this choice if the given element exist.
-      ElementReferenceProto auto_select_if_element_exists = 4;
+    // Auto-select this choice when the condition is met.
+    optional ElementConditionProto auto_select_when = 15;
 
-      // Auto-select this choice if the given element disappears.
-      ElementReferenceProto auto_select_if_element_disappears = 14;
-    }
-
-    // The chip is only visible or enabled if all the given element exists.
-    repeated ElementReferenceProto show_only_if_element_exists = 6;
-
-    // The chip is only visible or enabled if all the form values match.
-    repeated FormValueMatchProto show_only_if_form_value_matches = 8;
+    // This chip is only visible or enabled if this condition is met.
+    optional ElementConditionProto show_only_when = 16;
 
     // Disable the chip instead of hiding it completely, if the preconditions
     // don't match.
@@ -1298,7 +1273,7 @@ message PromptProto {
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
-    reserved 13;
+    reserved 4, 6, 8, 13, 14;
   }
   repeated Choice choices = 4;
 

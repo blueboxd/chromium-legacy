@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
@@ -38,10 +39,10 @@ void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
     delegate_->SetStatusMessage(proto_.prompt().message());
   }
 
-  SetupPreconditions();
+  SetupConditions();
   UpdateUserActions();
 
-  if (HasNonemptyPreconditions() || HasAutoSelect() ||
+  if (HasNonemptyPreconditions() || auto_select_ ||
       proto_.prompt().allow_interrupt()) {
     delegate_->WaitForDom(base::TimeDelta::Max(),
                           proto_.prompt().allow_interrupt(),
@@ -69,46 +70,41 @@ void PromptAction::RegisterChecks(
                                             weak_ptr_factory_.GetWeakPtr(), i));
   }
 
-  auto_select_choice_index_ = -1;
-  for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    const PromptProto::Choice& choice = proto_.prompt().choices(i);
-    switch (choice.auto_select_case()) {
-      case PromptProto::Choice::kAutoSelectIfElementExists:
-        checker->AddElementCheck(
-            Selector(choice.auto_select_if_element_exists()),
-            base::BindOnce(&PromptAction::OnAutoSelectElementExists,
-                           weak_ptr_factory_.GetWeakPtr(), i,
-                           /* must_exist= */ true));
-        break;
-
-      case PromptProto::Choice::kAutoSelectIfElementDisappears:
-        checker->AddElementCheck(
-            Selector(choice.auto_select_if_element_disappears()),
-            base::BindOnce(&PromptAction::OnAutoSelectElementExists,
-                           weak_ptr_factory_.GetWeakPtr(), i,
-                           /* must_exist= */ false));
-        break;
-
-      case PromptProto::Choice::AUTO_SELECT_NOT_SET:
-        break;
-    }
+  if (auto_select_) {
+    auto_select_->Check(checker,
+                        base::BindOnce(&PromptAction::OnAutoSelectCondition,
+                                       weak_ptr_factory_.GetWeakPtr()));
   }
-
   checker->AddAllDoneCallback(base::BindOnce(&PromptAction::OnElementChecksDone,
                                              weak_ptr_factory_.GetWeakPtr(),
                                              std::move(wait_for_dom_callback)));
 }
 
-void PromptAction::SetupPreconditions() {
+void PromptAction::SetupConditions() {
   int choice_count = proto_.prompt().choices_size();
   preconditions_.resize(choice_count);
   precondition_results_.resize(choice_count);
+
   for (int i = 0; i < choice_count; i++) {
     auto& choice_proto = proto_.prompt().choices(i);
-    preconditions_[i] = std::make_unique<ElementPrecondition>(
-        choice_proto.show_only_if_element_exists(),
-        choice_proto.show_only_if_form_value_matches());
+    preconditions_[i] =
+        std::make_unique<ElementPrecondition>(choice_proto.show_only_when());
     precondition_results_[i] = preconditions_[i]->empty();
+  }
+
+  ElementConditionsProto auto_select;
+  for (int i = 0; i < choice_count; i++) {
+    auto& choice_proto = proto_.prompt().choices(i);
+    if (choice_proto.has_auto_select_when()) {
+      ElementConditionProto* condition = auto_select.add_conditions();
+      *condition = choice_proto.auto_select_when();
+      condition->set_payload(base::NumberToString(i));
+    }
+  }
+  if (!auto_select.conditions().empty()) {
+    ElementConditionProto auto_select_condition;
+    *auto_select_condition.mutable_any_of() = auto_select;
+    auto_select_ = std::make_unique<ElementPrecondition>(auto_select_condition);
   }
 }
 
@@ -120,11 +116,15 @@ bool PromptAction::HasNonemptyPreconditions() {
   return false;
 }
 
-void PromptAction::OnPreconditionResult(size_t choice_index, bool result) {
-  if (precondition_results_[choice_index] == result)
+void PromptAction::OnPreconditionResult(
+    size_t choice_index,
+    const ClientStatus& status,
+    const std::vector<std::string>& ignored_payloads) {
+  bool precondition_is_met = status.ok();
+  if (precondition_results_[choice_index] == precondition_is_met)
     return;
 
-  precondition_results_[choice_index] = result;
+  precondition_results_[choice_index] = precondition_is_met;
   precondition_changed_ = true;
 }
 
@@ -153,25 +153,15 @@ void PromptAction::UpdateUserActions() {
   precondition_changed_ = false;
 }
 
-bool PromptAction::HasAutoSelect() {
-  for (int i = 0; i < proto_.prompt().choices_size(); i++) {
-    if (proto_.prompt().choices(i).auto_select_case() !=
-        PromptProto::Choice::AUTO_SELECT_NOT_SET) {
-      return true;
-    }
-  }
-  return false;
-}
+void PromptAction::OnAutoSelectCondition(
+    const ClientStatus& status,
+    const std::vector<std::string>& payloads) {
+  if (payloads.empty())
+    return;
 
-void PromptAction::OnAutoSelectElementExists(
-    int choice_index,
-    bool must_exist,
-    const ClientStatus& element_status) {
-  if ((must_exist && element_status.ok()) ||
-      (!must_exist &&
-       element_status.proto_status() == ELEMENT_RESOLUTION_FAILED)) {
-    auto_select_choice_index_ = choice_index;
-  }
+  // We want to select the first matching choice, so only the first entry of
+  // payloads matter.
+  base::StringToInt(payloads[0], &auto_select_choice_index_);
 
   // Calling OnSuggestionChosen() is delayed until try_done, as it indirectly
   // deletes the batch element checker, which isn't supported from an element

@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '6684a9fe21ec90c793129ee1424e1729a6361e9e',
+  'v8_revision': 'f33bae8784c75ff55c2433068ae34ad89281358d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c58458e633e180c4c53024665efdbef1f1334216',
+  'angle_revision': '61194f9321a7114fcffe2d8ecc20567abdb93488',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -329,7 +329,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:97cc440d84f050f99ff0161f9414bfa2ffa38f65',
+  'gn_version': 'git_revision:4166e9fbc1fa5ceab69b69710a0f8b430c50127b',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -530,7 +530,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '559a3893cb58d0b1a5feede7b09c8dabc0d3b89c',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '1dc20d1399a0cac7bd5656acc0d5ed5c03f4ac50',
       'condition': 'checkout_ios',
   },
 
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7f33fcf39e5ff0d1e17c4d92d1b533453db5a71b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@114bd00a2bb180a51c9e0c20bf4773a79af01162',
     'condition': 'checkout_src_internal',
   },
 

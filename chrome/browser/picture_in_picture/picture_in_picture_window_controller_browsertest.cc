@@ -2579,8 +2579,8 @@ IN_PROC_BROWSER_TEST_P(
     AutoPictureInPictureNotTriggeredIfDocumentNotInWebAppScope) {
   // We open a web app with a different scope
   // Then go to our usual test page.
-  Browser* app_browser = InstallAndLaunchPWA(https_server()->GetURL(
-      "www.foobar.com", "/banners/manifest_test_page.html"));
+  Browser* app_browser = InstallAndLaunchPWA(
+      https_server()->GetURL("www.foobar.com", "/web_apps/basic.html"));
   web_app::NavigateToURLAndWait(app_browser, main_url());
   EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
 

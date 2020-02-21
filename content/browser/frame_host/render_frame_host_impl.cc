@@ -2100,6 +2100,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   if (params->previous_routing_id == MSG_ROUTING_NONE &&
       params->parent_routing_id == MSG_ROUTING_NONE) {
     base::debug::DumpWithoutCrashing();
+    NOTREACHED();
   }
   GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
 

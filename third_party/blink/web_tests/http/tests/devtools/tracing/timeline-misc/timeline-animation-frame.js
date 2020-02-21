@@ -24,8 +24,8 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  PerformanceTestRunner.printTimelineRecordsWithDetails('RequestAnimationFrame');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('FireAnimationFrame');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('CancelAnimationFrame');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('RequestAnimationFrame');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('FireAnimationFrame');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('CancelAnimationFrame');
   TestRunner.completeTest();
 })();

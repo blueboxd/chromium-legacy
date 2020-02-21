@@ -20,21 +20,22 @@ import org.chromium.ui.base.WindowAndroid;
 public final class ChildAccountFeedbackReporter {
     private static FeedbackReporter sFeedbackReporter;
 
-    public static void reportFeedback(Activity activity, String description, String url) {
+    public static void reportFeedback(
+            Activity activity, String description, String url, Profile profile) {
         ThreadUtils.assertOnUiThread();
         if (sFeedbackReporter == null) {
             sFeedbackReporter = AppHooks.get().createFeedbackReporter();
         }
 
-        new FeedbackCollector(activity, Profile.getLastUsedProfile(), url, null /* categoryTag */,
-                description, null, true /* takeScreenshot */, null /* feed context */,
+        new FeedbackCollector(activity, profile, url, null /* categoryTag */, description, null,
+                true /* takeScreenshot */, null /* feed context */,
                 collector -> { sFeedbackReporter.reportFeedback(collector); });
     }
 
     @CalledByNative
     public static void reportFeedbackWithWindow(
-            WindowAndroid window, String description, String url) {
-        reportFeedback(window.getActivity().get(), description, url);
+            WindowAndroid window, String description, String url, Profile profile) {
+        reportFeedback(window.getActivity().get(), description, url, profile);
     }
 
     private ChildAccountFeedbackReporter() {}

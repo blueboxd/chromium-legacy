@@ -5,6 +5,7 @@ include_rules = [
   "+components/services/paint_preview_compositor/public/mojom",
   "+components/strings/grit/components_strings.h",
   "+components/ukm/content",
+  "+components/ukm/test_ukm_recorder.h",
   "+content/public/browser",
   "+content/public/test",
   "+services/metrics/public/cpp",

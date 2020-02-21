@@ -270,8 +270,9 @@ class TestGCScope : public TestGCCollectGarbageScope {
   }
   ~TestGCScope() {
     ThreadState::Current()->AtomicPauseMarkEpilogue(BlinkGC::kAtomicMarking);
-    ThreadState::Current()->AtomicPauseSweepAndCompact(BlinkGC::kAtomicMarking,
-                                                       BlinkGC::kEagerSweeping);
+    ThreadState::Current()->AtomicPauseSweepAndCompact(
+        BlinkGC::CollectionType::kMajor, BlinkGC::kAtomicMarking,
+        BlinkGC::kEagerSweeping);
     ThreadState::Current()->AtomicPauseEpilogue();
   }
 };

@@ -75,7 +75,7 @@ GCInfoIndex GCInfoTable::EnsureGCInfoIndex(
   CHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
 
   table_[gc_info_index] = gc_info;
-  gc_info_index_slot->store(gc_info_index, std::memory_order_relaxed);
+  gc_info_index_slot->store(gc_info_index, std::memory_order_release);
   return gc_info_index;
 }
 

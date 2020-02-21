@@ -70,12 +70,11 @@ WorkletAnimation* CreateWorkletAnimation(
   DocumentTimelineOrScrollTimeline timeline;
   if (scroll_timeline)
     timeline.SetScrollTimeline(scroll_timeline);
-  scoped_refptr<SerializedScriptValue> options;
+  ScriptValue options;
 
   ScriptState::Scope scope(script_state);
   return WorkletAnimation::Create(script_state, animator_name, effects,
-                                  timeline, std::move(options),
-                                  ASSERT_NO_EXCEPTION);
+                                  timeline, options, ASSERT_NO_EXCEPTION);
 }
 
 base::TimeDelta ToTimeDelta(double milliseconds) {

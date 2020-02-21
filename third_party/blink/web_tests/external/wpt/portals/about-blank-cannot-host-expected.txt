@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL about:blank cannot host a portal promise_rejects_dom: function "function() { throw e }" threw an exception from the wrong global
+Harness: the test ran to completion.
+

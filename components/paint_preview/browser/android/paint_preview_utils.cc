@@ -12,16 +12,21 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/android/jni_headers/PaintPreviewUtils_jni.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
 #include "components/paint_preview/buildflags/buildflags.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace paint_preview {
 
@@ -34,7 +39,8 @@ const char kProtoFilename[] = "proto.pb";
 
 struct CaptureMetrics {
   int compressed_size_bytes;
-  int capture_time_us;
+  base::TimeDelta capture_time;
+  ukm::SourceId source_id;
 };
 
 void CleanupOnFailure(const base::FilePath& root_dir,
@@ -50,10 +56,21 @@ void CleanupAndLogResult(const base::FilePath& zip_path,
                          bool keep_zip) {
   VLOG(1) << kPaintPreviewTestTag << "Capture Finished Successfully:\n"
           << "Compressed size " << metrics.compressed_size_bytes << " bytes\n"
-          << "Time taken in native " << metrics.capture_time_us << " us";
+          << "Time taken in native " << metrics.capture_time.InMilliseconds()
+          << " ms";
 
   if (!keep_zip)
     base::DeleteFileRecursively(zip_path.DirName());
+
+  base::UmaHistogramMemoryKB(
+      "Browser.PaintPreview.CaptureExperiment.CompressedOnDiskSize",
+      metrics.compressed_size_bytes / 1000);
+  if (metrics.source_id != ukm::kInvalidSourceId) {
+    ukm::builders::PaintPreviewCapture(metrics.source_id)
+        .SetCompressedOnDiskSize(
+            ukm::GetExponentialBucketMinForBytes(metrics.compressed_size_bytes))
+        .Record(ukm::UkmRecorder::Get());
+  }
   std::move(finished).Run(zip_path);
 }
 
@@ -85,6 +102,7 @@ void CompressAndMeasureSize(const base::FilePath& root_dir,
 void OnCaptured(base::TimeTicks start_time,
                 const base::FilePath& root_dir,
                 const GURL& url,
+                ukm::SourceId source_id,
                 FinishedCallback finished,
                 bool keep_zip,
                 base::UnguessableToken guid,
@@ -92,14 +110,17 @@ void OnCaptured(base::TimeTicks start_time,
                 std::unique_ptr<PaintPreviewProto> proto) {
   base::TimeDelta time_delta = base::TimeTicks::Now() - start_time;
 
-  if (status != mojom::PaintPreviewStatus::kOk) {
+  bool success = status == mojom::PaintPreviewStatus::kOk;
+  base::UmaHistogramBoolean("Browser.PaintPreview.CaptureExperiment.Success",
+                            success);
+  if (!success) {
     base::PostTask(
         FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&CleanupOnFailure, root_dir, std::move(finished)));
     return;
   }
 
-  CaptureMetrics result = {0, time_delta.InMicroseconds()};
+  CaptureMetrics result = {0, time_delta, source_id};
   base::PostTask(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&CompressAndMeasureSize, root_dir, url, std::move(proto),
@@ -139,12 +160,13 @@ void InitiateCapture(content::WebContents* contents,
   params.is_main_frame = true;
   params.root_dir = url_path.value();
 
+  ukm::SourceId source_id = ukm::GetSourceIdForWebContentsDocument(contents);
   auto start_time = base::TimeTicks::Now();
   client->CapturePaintPreview(
       params, contents->GetMainFrame(),
       base::BindOnce(&OnCaptured, start_time, params.root_dir.DirName(),
-                     contents->GetLastCommittedURL(), std::move(finished),
-                     keep_zip));
+                     contents->GetLastCommittedURL(), source_id,
+                     std::move(finished), keep_zip));
 }
 
 }  // namespace

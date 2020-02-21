@@ -79,7 +79,7 @@
     }
     UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
     await PerformanceTestRunner.evaluateWithTimeline(actions);
-    PerformanceTestRunner.walkTimelineEventTree(dumpName);
+    await PerformanceTestRunner.walkTimelineEventTree(dumpName);
     next();
 }
 })();

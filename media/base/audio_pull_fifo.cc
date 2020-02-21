@@ -11,8 +11,8 @@
 
 namespace media {
 
-AudioPullFifo::AudioPullFifo(int channels, int frames, const ReadCB& read_cb)
-    : read_cb_(read_cb),
+AudioPullFifo::AudioPullFifo(int channels, int frames, ReadCB read_cb)
+    : read_cb_(std::move(read_cb)),
       fifo_(AudioBus::Create(channels, frames)),
       fifo_index_(frames) {}
 

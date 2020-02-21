@@ -83,6 +83,7 @@ void UnifiedHeapController::TraceEpilogue(
     thread_state_->AtomicPauseMarkEpilogue(
         BlinkGC::kIncrementalAndConcurrentMarking);
     thread_state_->AtomicPauseSweepAndCompact(
+        BlinkGC::CollectionType::kMajor,
         BlinkGC::kIncrementalAndConcurrentMarking,
         BlinkGC::kConcurrentAndLazySweeping);
 

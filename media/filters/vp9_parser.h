@@ -272,7 +272,8 @@ class MEDIA_EXPORT Vp9Parser {
  public:
   // If context update is needed after decoding a frame, the client must
   // execute this callback, passing the updated context state.
-  using ContextRefreshCallback = base::Callback<void(const Vp9FrameContext&)>;
+  using ContextRefreshCallback =
+      base::OnceCallback<void(const Vp9FrameContext&)>;
 
   // ParseNextFrame() return values. See documentation for ParseNextFrame().
   enum Result {

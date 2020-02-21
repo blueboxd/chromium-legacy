@@ -266,8 +266,8 @@
 
     DOMString markerTextForListItem(Element element);
 
-    SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);
-    ArrayBuffer serializeObject(SerializedScriptValue obj);
+    [CallWith=Isolate, RaisesException] ArrayBuffer serializeObject(any obj);
+    [CallWith=Isolate] any deserializeBuffer(ArrayBuffer buffer);
 
     void forceReload(boolean endToEnd);
 

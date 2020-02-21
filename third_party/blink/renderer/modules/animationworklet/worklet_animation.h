@@ -22,6 +22,7 @@
 namespace blink {
 
 class AnimationEffectOrAnimationEffectSequence;
+class ScriptValue;
 class SerializedScriptValue;
 
 // The main-thread controller for a single AnimationWorklet animator instance.
@@ -60,7 +61,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
-      scoped_refptr<SerializedScriptValue>,
+      const ScriptValue& options,
       ExceptionState&);
 
   WorkletAnimation(WorkletAnimationId id,
@@ -68,7 +69,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    Document&,
                    const HeapVector<Member<KeyframeEffect>>&,
                    AnimationTimeline*,
-                   scoped_refptr<SerializedScriptValue>);
+                   scoped_refptr<SerializedScriptValue> options);
   ~WorkletAnimation() override = default;
 
   String animatorName() { return animator_name_; }

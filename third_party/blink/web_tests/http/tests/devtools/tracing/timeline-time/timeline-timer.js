@@ -29,10 +29,10 @@
   UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerInstall');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerFire');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerRemove');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('TimerInstall');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('TimerFire');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('TimerRemove');
   PerformanceTestRunner.printTimelineRecords('FunctionCall');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('EvaluateScript');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('EvaluateScript');
   TestRunner.completeTest();
 })();

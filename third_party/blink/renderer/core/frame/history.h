@@ -53,18 +53,20 @@ class CORE_EXPORT History final : public ScriptWrappable,
   explicit History(LocalFrame*);
 
   unsigned length(ExceptionState&) const;
-  SerializedScriptValue* state(ExceptionState&);
+  ScriptValue state(v8::Isolate*, ExceptionState&);
 
   void back(ScriptState*, ExceptionState&);
   void forward(ScriptState*, ExceptionState&);
   void go(ScriptState*, int delta, ExceptionState&);
 
-  void pushState(scoped_refptr<SerializedScriptValue>,
+  void pushState(v8::Isolate* isolate,
+                 const ScriptValue& data,
                  const String& title,
                  const String& url,
                  ExceptionState&);
 
-  void replaceState(scoped_refptr<SerializedScriptValue> data,
+  void replaceState(v8::Isolate* isolate,
+                    const ScriptValue& data,
                     const String& title,
                     const String& url,
                     ExceptionState& exception_state);

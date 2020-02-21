@@ -25,13 +25,14 @@ class MEDIA_EXPORT AudioPullFifo {
   // to be completely filled with data upon return; zero padded if not enough
   // frames are available to satisfy the request.  |frame_delay| is the number
   // of output frames already processed and can be used to estimate delay.
-  typedef base::Callback<void(int frame_delay, AudioBus* audio_bus)> ReadCB;
+  using ReadCB =
+      base::RepeatingCallback<void(int frame_delay, AudioBus* audio_bus)>;
 
   // Constructs an AudioPullFifo with the specified |read_cb|, which is used to
   // read audio data to the FIFO if data is not already available. The internal
   // FIFO can contain |channel| number of channels, where each channel is of
   // length |frames| audio frames.
-  AudioPullFifo(int channels, int frames, const ReadCB& read_cb);
+  AudioPullFifo(int channels, int frames, ReadCB read_cb);
   virtual ~AudioPullFifo();
 
   // Consumes |frames_to_consume| audio frames from the FIFO and copies

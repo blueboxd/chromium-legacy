@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -231,8 +232,8 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRequired);
 
   // Make no changes if the new deadline is not in the future and the browser is
-  // within the grace period of the previous deadline. The user has already been
-  // given the fifteen-minutes countdown so just let it go.
+  // within the grace period of the previous deadline. The user has already seen
+  // the one-hour countdown so just let it go.
   const base::Time now = clock_->Now();
   if (timer_.IsRunning()) {
     const base::Time& desired_run_time = timer_.desired_run_time();
@@ -241,7 +242,7 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
       return;
   }
 
-  // Compute the new deadline (minimally fifteen minutes into the future).
+  // Compute the new deadline (minimally one hour into the future).
   const base::Time deadline =
       std::max(high_deadline, now) + kRelaunchGracePeriod;
 
@@ -250,7 +251,6 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
                &RelaunchNotificationController::OnRelaunchDeadlineExpired);
 
   if (platform_impl_.IsRequiredNotificationShown()) {
-    // Tell the notification to update its title if it is showing.
     platform_impl_.SetDeadline(deadline);
   } else {
     // Otherwise, show the dialog if there has been a level change or if the
@@ -259,6 +259,22 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
       NotifyRelaunchRequired();
   }
 }
+
+base::Time RelaunchNotificationController::IncreaseRelaunchDeadlineOnShow() {
+  DCHECK(timer_.IsRunning());
+  DCHECK(!timer_.desired_run_time().is_null());
+  base::Time relaunch_deadline = timer_.desired_run_time();
+
+  // Push the dealdine back if needed so that the user has at least the grace
+  // period to decide what to do.
+  relaunch_deadline =
+      std::max(clock_->Now() + kRelaunchGracePeriod, relaunch_deadline);
+
+  timer_.Start(FROM_HERE, relaunch_deadline, this,
+               &RelaunchNotificationController::OnRelaunchDeadlineExpired);
+  return relaunch_deadline;
+}
+
 void RelaunchNotificationController::StartReshowTimer() {
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRecommended);
   DCHECK(!last_relaunch_notification_time_.is_null());
@@ -292,16 +308,26 @@ void RelaunchNotificationController::DoNotifyRelaunchRecommended(
 void RelaunchNotificationController::NotifyRelaunchRequired() {
   DCHECK(timer_.IsRunning());
   DCHECK(!timer_.desired_run_time().is_null());
-  DoNotifyRelaunchRequired(timer_.desired_run_time());
+  DoNotifyRelaunchRequired(
+      timer_.desired_run_time(),
+      base::BindOnce(
+          &RelaunchNotificationController::IncreaseRelaunchDeadlineOnShow,
+          base::Unretained(this)));
 }
 
 void RelaunchNotificationController::DoNotifyRelaunchRequired(
-    base::Time deadline) {
-  platform_impl_.NotifyRelaunchRequired(deadline);
+    base::Time relaunch_deadline,
+    base::OnceCallback<base::Time()> on_visible) {
+  platform_impl_.NotifyRelaunchRequired(relaunch_deadline,
+                                        std::move(on_visible));
 }
 
 void RelaunchNotificationController::Close() {
   platform_impl_.CloseRelaunchNotification();
+}
+
+void RelaunchNotificationController::SetDeadline(base::Time deadline) {
+  platform_impl_.SetDeadline(deadline);
 }
 
 void RelaunchNotificationController::OnRelaunchDeadlineExpired() {

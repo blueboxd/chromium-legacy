@@ -290,21 +290,21 @@
     TestRunner.addResult(' '.repeat(level) + text);
   }
 
-  function dumpRecords() {
-    PerformanceTestRunner.walkTimelineEventTreeUnderNode(printEventMessage, view._currentTree);
+  async function dumpRecords() {
+    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(printEventMessage, view._currentTree);
     TestRunner.addResult('');
   }
 
   TestRunner.addResult('Initial:');
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.addResult(`Filtered by 'bar':`);
   view._textFilterUI.setValue('bar', true);
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.addResult(`Filtered by 'foo':`);
   view._textFilterUI.setValue('foo', true);
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.completeTest();
 })();

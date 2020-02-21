@@ -69,19 +69,6 @@ using signin_metrics::PromoAction;
 
   [self.unifiedConsentCoordinator start];
 
-  self.addAccountSigninCoordinator = [SigninCoordinator
-      addAccountCoordinatorWithBaseViewController:self.viewController
-                                          browser:self.browser
-                                      accessPoint:self.accessPoint];
-
-  __weak UserSigninCoordinator* weakSelf = self;
-  self.addAccountSigninCoordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
-        if (signinResult == SigninCoordinatorResultSuccess) {
-          weakSelf.defaultIdentity = identity;
-        }
-      };
-
   // Display UnifiedConsentViewController within the host.
   self.viewController.unifiedConsentViewController =
       self.unifiedConsentCoordinator.viewController;
@@ -113,7 +100,7 @@ using signin_metrics::PromoAction;
 - (void)unifiedConsentCoordinatorDidTapOnAddAccount:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
-  [self.addAccountSigninCoordinator start];
+  [self userSigninViewControllerDidTapOnAddAccount];
 }
 
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
@@ -126,6 +113,28 @@ using signin_metrics::PromoAction;
 
 - (BOOL)unifiedConsentCoordinatorHasIdentity {
   return self.unifiedConsentCoordinator.selectedIdentity != nil;
+}
+
+- (void)userSigninViewControllerDidTapOnAddAccount {
+  self.addAccountSigninCoordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:self.viewController
+                                          browser:self.browser
+                                      accessPoint:self.accessPoint];
+
+  __weak UserSigninCoordinator* weakSelf = self;
+  self.addAccountSigninCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        if (signinResult == SigninCoordinatorResultSuccess) {
+          weakSelf.unifiedConsentCoordinator.selectedIdentity = identity;
+          [weakSelf.addAccountSigninCoordinator stop];
+          weakSelf.addAccountSigninCoordinator = nil;
+        }
+      };
+  [self.addAccountSigninCoordinator start];
+}
+
+- (void)userSigninViewControllerDidScrollOnUnifiedConsent {
+  [self.unifiedConsentCoordinator scrollToBottom];
 }
 
 @end

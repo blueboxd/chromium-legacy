@@ -16,9 +16,9 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketCreate');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketSendHandshakeRequest');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketReceiveHandshakeResponse');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketDestroy');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketCreate');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketSendHandshakeRequest');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketReceiveHandshakeResponse');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketDestroy');
   TestRunner.completeTest();
 })();

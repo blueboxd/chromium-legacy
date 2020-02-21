@@ -11,5 +11,5 @@
     function performActions() {
       var e = document.elementFromPoint(10, 10);
     }`);
-  PerformanceTestRunner.performActionsAndPrint('performActions()', 'HitTest');
+  await PerformanceTestRunner.performActionsAndPrint('performActions()', 'HitTest');
 })();

@@ -9,10 +9,11 @@
 [
     RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
-  [CallWith=ScriptState, RaisesException, MeasureAs=WorkletAnimationConstructor] constructor(DOMString animatorName,
-                (AnimationEffect or sequence<AnimationEffect>) effects,
-                optional (DocumentTimeline or ScrollTimeline) timeline,
-                optional SerializedScriptValue options);
+  [CallWith=ScriptState, RaisesException, MeasureAs=WorkletAnimationConstructor]
+  constructor(DOMString animatorName,
+              (AnimationEffect or sequence<AnimationEffect>) effects,
+              optional (DocumentTimeline or ScrollTimeline) timeline,
+              optional any options);
   readonly attribute DOMString animatorName;
   readonly attribute AnimationEffect? effect;
   readonly attribute AnimationTimeline? timeline;

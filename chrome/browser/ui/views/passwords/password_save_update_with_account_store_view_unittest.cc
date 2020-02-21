@@ -140,14 +140,18 @@ void PasswordSaveUpdateWithAccountStoreViewTest::CreateViewAndShow() {
   views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
 }
 
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, HasTitleAndTwoButtons) {
+// TODO(crbug.com/1054629): Flakily times out on all platforms.
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
+       DISABLED_HasTitleAndTwoButtons) {
   CreateViewAndShow();
   EXPECT_TRUE(view()->ShouldShowWindowTitle());
   EXPECT_TRUE(view()->GetOkButton());
   EXPECT_TRUE(view()->GetCancelButton());
 }
 
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldNotShowAccountPicker) {
+// TODO(crbug.com/1054629): Flakily times out on all platforms.
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
+       DISABLED_ShouldNotShowAccountPicker) {
   ON_CALL(*feature_manager(), ShouldShowPasswordStorePicker)
       .WillByDefault(Return(false));
   CreateViewAndShow();
@@ -164,8 +168,9 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
   EXPECT_EQ(0, account_picker()->GetSelectedIndex());
 }
 
+// TODO(crbug.com/1054629): Flakily times out on all platforms.
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       ShouldSelectAccountStoreByDefault) {
+       DISABLED_ShouldSelectAccountStoreByDefault) {
   ON_CALL(*feature_manager(), ShouldShowPasswordStorePicker)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager(), GetDefaultPasswordStore)

@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateTimeRangeProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementConditionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
@@ -277,14 +278,15 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                     .setTermsAndConditionsState(
                                                             TermsAndConditionsState.ACCEPTED))
                         .build());
-        Choice toggle_chip = Choice.newBuilder()
-                                     .setChip(ChipProto.newBuilder().setText("Toggle"))
-                                     .addShowOnlyIfElementExists(
-                                             ElementReferenceProto.newBuilder()
-                                                     .addSelectors("div#toggle_on")
-                                                     .setVisibilityRequirement(
-                                                             VisibilityRequirement.MUST_BE_VISIBLE))
-                                     .build();
+        Choice toggle_chip =
+                Choice.newBuilder()
+                        .setChip(ChipProto.newBuilder().setText("Toggle"))
+                        .setShowOnlyWhen(ElementConditionProto.newBuilder().setMatch(
+                                ElementReferenceProto.newBuilder()
+                                        .addSelectors("div#toggle_on")
+                                        .setVisibilityRequirement(
+                                                VisibilityRequirement.MUST_BE_VISIBLE)))
+                        .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()
                                             .setMessage("Finish")

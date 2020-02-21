@@ -77,13 +77,13 @@ class RecordTest;
 class ScriptPromiseResolver;
 class ScrollState;
 class SequenceTest;
-class SerializedScriptValue;
 class ShadowRoot;
-template <typename NodeType>
-class StaticNodeTypeList;
 class StaticSelection;
 class TypeConversions;
 class UnionTypesTest;
+
+template <typename NodeType>
+class StaticNodeTypeList;
 
 using StaticNodeList = StaticNodeTypeList<Node>;
 
@@ -430,8 +430,10 @@ class Internals final : public ScriptWrappable {
   DOMRectList* draggableRegions(Document*, ExceptionState&);
   DOMRectList* nonDraggableRegions(Document*, ExceptionState&);
 
-  DOMArrayBuffer* serializeObject(scoped_refptr<SerializedScriptValue>) const;
-  scoped_refptr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
+  DOMArrayBuffer* serializeObject(v8::Isolate* isolate,
+                                  const ScriptValue&,
+                                  ExceptionState& exception_state) const;
+  ScriptValue deserializeBuffer(v8::Isolate* isolate, DOMArrayBuffer*) const;
 
   String getCurrentCursorInfo();
 

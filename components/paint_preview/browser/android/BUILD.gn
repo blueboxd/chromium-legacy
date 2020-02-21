@@ -36,7 +36,9 @@ source_set("android") {
     "//base",
     "//components/paint_preview/browser",
     "//components/paint_preview/buildflags",
+    "//components/ukm/content",
     "//content/public/browser",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }
 
@@ -51,8 +53,11 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/paint_preview/common:test_utils",
     "//components/paint_preview/common/mojom",
+    "//components/ukm:test_support",
+    "//components/ukm/content",
     "//content/public/browser",
     "//content/test:test_support",
+    "//services/metrics/public/cpp:ukm_builders",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",

@@ -23,6 +23,6 @@
   `);
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
-  PerformanceTestRunner.printTimelineRecordsWithDetails(TimelineModel.TimelineModel.RecordType.CompileScript);
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(TimelineModel.TimelineModel.RecordType.CompileScript);
   TestRunner.completeTest();
 })();

@@ -22,8 +22,9 @@ std::vector<uint32_t> GetSpatialLayerFrameSize(
 #if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
   const uint32_t* cue_data =
       reinterpret_cast<const uint32_t*>(decoder_buffer.side_data());
-  if (!cue_data)
+  if (!cue_data) {
     return {};
+  }
   if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
     DLOG(ERROR) << "Vp9Parser doesn't support parsing SVC stream";
     return {};
@@ -104,8 +105,9 @@ void VP9Decoder::Reset() {
 
   parser_.Reset();
 
-  if (state_ == kDecoding)
+  if (state_ == kDecoding) {
     state_ = kAfterReset;
+  }
 }
 
 VP9Decoder::DecodeResult VP9Decoder::Decode() {
@@ -236,8 +238,9 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     }
 
     scoped_refptr<VP9Picture> pic = accelerator_->CreateVP9Picture();
-    if (!pic)
+    if (!pic) {
       return kRanOutOfSurfaces;
+    }
     DVLOG(2) << "Render resolution: " << new_render_rect.ToString();
 
     pic->set_visible_rect(new_render_rect);
@@ -262,7 +265,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
 void VP9Decoder::UpdateFrameContext(
     scoped_refptr<VP9Picture> pic,
-    const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb) {
+    Vp9Parser::ContextRefreshCallback context_refresh_cb) {
   DCHECK(context_refresh_cb);
   Vp9FrameContext frame_ctx;
   memset(&frame_ctx, 0, sizeof(frame_ctx));
@@ -272,7 +275,7 @@ void VP9Decoder::UpdateFrameContext(
     return;
   }
 
-  context_refresh_cb.Run(frame_ctx);
+  std::move(context_refresh_cb).Run(frame_ctx);
 }
 
 bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
@@ -280,11 +283,13 @@ bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
   DCHECK(pic->frame_hdr);
 
   base::OnceClosure done_cb;
-  const auto& context_refresh_cb =
+  Vp9Parser::ContextRefreshCallback context_refresh_cb =
       parser_.GetContextRefreshCb(pic->frame_hdr->frame_context_idx);
-  if (context_refresh_cb)
-    done_cb = base::BindOnce(&VP9Decoder::UpdateFrameContext,
-                             base::Unretained(this), pic, context_refresh_cb);
+  if (context_refresh_cb) {
+    done_cb =
+        base::BindOnce(&VP9Decoder::UpdateFrameContext, base::Unretained(this),
+                       pic, std::move(context_refresh_cb));
+  }
 
   const Vp9Parser::Context& context = parser_.context();
   if (!accelerator_->SubmitDecode(pic, context.segmentation(),
@@ -294,8 +299,9 @@ bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
   }
 
   if (pic->frame_hdr->show_frame) {
-    if (!accelerator_->OutputPicture(pic))
+    if (!accelerator_->OutputPicture(pic)) {
       return false;
+    }
   }
 
   ref_frames_.Refresh(std::move(pic));

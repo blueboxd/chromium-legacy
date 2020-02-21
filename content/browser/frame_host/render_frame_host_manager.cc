@@ -2109,6 +2109,8 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
   RenderViewHostImpl* render_view_host =
       new_render_frame_host->render_view_host();
+  // TODO(https://crbug.com/1006814): Remove this.
+  bool recreated_main_frame = false;
   if (frame_tree_node_->IsMainFrame()) {
     if (render_view_host == render_frame_host_->render_view_host()) {
       // We are replacing the main frame's host with |new_render_frame_host|.
@@ -2118,6 +2120,7 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       // GetFrameHostForNavigation() before yielding to other tasks.
       render_view_host->SetMainFrameRoutingId(
           new_render_frame_host->GetRoutingID());
+      recreated_main_frame = true;
     }
 
     if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
@@ -2131,10 +2134,20 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     // And since we are reusing the RenderViewHost make sure it is hidden, like
     // a new RenderViewHost would be, until navigation commits.
     render_view_host->GetWidget()->GetView()->Hide();
-  } else {
-    DCHECK(render_view_host->IsRenderViewLive());
   }
 
+  DCHECK(render_view_host->IsRenderViewLive());
+  // TODO(https://crbug.com/1006814): Remove this.
+  if (recreated_main_frame && !new_render_frame_host->IsRenderFrameLive()) {
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "IsRenderFrameLive crash key", base::debug::CrashKeySize::Size32);
+    std::string message = base::StringPrintf(
+        "process=%d,created=%d", new_render_frame_host->IsRenderFrameCreated(),
+        new_render_frame_host->GetProcess()->IsInitializedAndNotDead());
+    base::debug::SetCrashKeyString(crash_key, message);
+    base::debug::DumpWithoutCrashing();
+    NOTREACHED() << message;
+  }
   // RenderViewHost for |instance| might exist prior to calling
   // CreateRenderFrame. In such a case, InitRenderView will not create the
   // RenderFrame in the renderer process and it needs to be done

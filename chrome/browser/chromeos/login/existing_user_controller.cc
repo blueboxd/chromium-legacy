@@ -429,9 +429,6 @@ ExistingUserController::ExistingUserController()
           kAccountsPrefDeviceLocalAccountAutoLoginDelay,
           base::Bind(&ExistingUserController::ConfigureAutoLogin,
                      base::Unretained(this)));
-  minimum_version_policy_handler_ =
-      std::make_unique<policy::MinimumVersionPolicyHandler>(cros_settings_);
-  minimum_version_policy_handler_->AddObserver(this);
 
   observed_user_manager_.Add(user_manager::UserManager::Get());
 }
@@ -589,26 +586,10 @@ void ExistingUserController::OnKioskAppsSettingsChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, policy::MinimumVersionPolicyHandler::Observer
-// implementation:
-//
-
-void ExistingUserController::OnMinimumVersionStateChanged() {
-  if (is_login_in_progress_) {
-    // Too late, but there is another check in user session.
-    return;
-  }
-  if (!minimum_version_policy_handler_->RequirementsAreSatisfied()) {
-    ShowUpdateRequiredScreen();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
   UserSessionManager::GetInstance()->DelegateDeleted(this);
-  minimum_version_policy_handler_->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

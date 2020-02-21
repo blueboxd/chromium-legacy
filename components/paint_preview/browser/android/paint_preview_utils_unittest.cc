@@ -10,10 +10,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/zlib/google/zip.h"
@@ -76,6 +82,7 @@ class PaintPreviewUtilsRenderViewHostTest
     RenderViewHostTestHarness::SetUp();
     content::RenderFrameHostTester::For(main_rfh())
         ->InitializeRenderFrameIfNeeded();
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
   }
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {
@@ -89,7 +96,10 @@ class PaintPreviewUtilsRenderViewHostTest
 };
 
 TEST_F(PaintPreviewUtilsRenderViewHostTest, CaptureSingleFrameAndKeep) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://www.example.com"));
   auto* contents = content::WebContents::FromRenderFrameHost(main_rfh());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   MockPaintPreviewRecorder service;
   service.SetResponseStatus(mojom::PaintPreviewStatus::kOk);
@@ -132,10 +142,17 @@ TEST_F(PaintPreviewUtilsRenderViewHostTest, CaptureSingleFrameAndKeep) {
               loop.QuitClosure()),
           true);
   loop.Run();
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::PaintPreviewCapture::kEntryName);
+  EXPECT_EQ(2U, entries.size());
 }
 
 TEST_F(PaintPreviewUtilsRenderViewHostTest, CaptureSingleFrameAndDelete) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://www.example.com"));
   auto* contents = content::WebContents::FromRenderFrameHost(main_rfh());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   MockPaintPreviewRecorder service;
   service.SetResponseStatus(mojom::PaintPreviewStatus::kOk);
@@ -158,10 +175,17 @@ TEST_F(PaintPreviewUtilsRenderViewHostTest, CaptureSingleFrameAndDelete) {
               loop.QuitClosure()),
           false);
   loop.Run();
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::PaintPreviewCapture::kEntryName);
+  EXPECT_EQ(2U, entries.size());
 }
 
 TEST_F(PaintPreviewUtilsRenderViewHostTest, SingleFrameFailure) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://www.example.com"));
   auto* contents = content::WebContents::FromRenderFrameHost(main_rfh());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   MockPaintPreviewRecorder service;
   service.SetResponseStatus(mojom::PaintPreviewStatus::kFailed);
@@ -171,13 +195,17 @@ TEST_F(PaintPreviewUtilsRenderViewHostTest, SingleFrameFailure) {
   Capture(contents,
           base::BindOnce(
               [](base::OnceClosure quit,
-                 const base::Optional<base::FilePath>& zip_path) {
-                EXPECT_FALSE(zip_path.has_value());
+                 const base::Optional<base::FilePath>& path) {
+                EXPECT_FALSE(path.has_value());
                 std::move(quit).Run();
               },
               loop.QuitClosure()),
           false);
   loop.Run();
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::PaintPreviewCapture::kEntryName);
+  EXPECT_EQ(0U, entries.size());
 }
 
 }  // namespace paint_preview

@@ -101,22 +101,34 @@ TEST(VectorTest, EraseAtIndex) {
 }
 
 TEST(VectorTest, Erase) {
-  Vector<int> int_vector({0, 1, 2, 3});
+  Vector<int> int_vector({0, 1, 2, 3, 4, 5});
 
-  EXPECT_EQ(4u, int_vector.size());
+  EXPECT_EQ(6u, int_vector.size());
   EXPECT_EQ(0, int_vector[0]);
   EXPECT_EQ(1, int_vector[1]);
   EXPECT_EQ(2, int_vector[2]);
   EXPECT_EQ(3, int_vector[3]);
+  EXPECT_EQ(4, int_vector[4]);
+  EXPECT_EQ(5, int_vector[5]);
 
   auto* first = int_vector.erase(int_vector.begin());
-  EXPECT_EQ(3u, int_vector.size());
+  EXPECT_EQ(5u, int_vector.size());
   EXPECT_EQ(1, *first);
   EXPECT_EQ(int_vector.begin(), first);
 
-  auto* last = std::lower_bound(int_vector.begin(), int_vector.end(), 3);
+  auto* last = std::lower_bound(int_vector.begin(), int_vector.end(), 5);
   auto* end = int_vector.erase(last);
+  EXPECT_EQ(4u, int_vector.size());
+  EXPECT_EQ(int_vector.end(), end);
+
+  auto* item2 = std::lower_bound(int_vector.begin(), int_vector.end(), 2);
+  auto* item4 = int_vector.erase(item2, item2 + 2);
   EXPECT_EQ(2u, int_vector.size());
+  EXPECT_EQ(4, *item4);
+
+  last = std::lower_bound(int_vector.begin(), int_vector.end(), 4);
+  end = int_vector.erase(last, int_vector.end());
+  EXPECT_EQ(1u, int_vector.size());
   EXPECT_EQ(int_vector.end(), end);
 }
 

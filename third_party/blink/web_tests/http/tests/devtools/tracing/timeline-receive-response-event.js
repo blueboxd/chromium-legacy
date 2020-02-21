@@ -56,6 +56,6 @@
     if (typesToDump.has(traceEvent.name) && (traceEvent.name !== 'FunctionCall' || traceEvent.args['data']['url']))
       TestRunner.addResult('  '.repeat(level - 1) + traceEvent.name);
   }
-  PerformanceTestRunner.walkTimelineEventTree(dumpEvent);
+  await PerformanceTestRunner.walkTimelineEventTree(dumpEvent);
   TestRunner.completeTest();
 })();

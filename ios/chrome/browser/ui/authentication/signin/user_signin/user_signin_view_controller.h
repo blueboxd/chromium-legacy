@@ -9,9 +9,17 @@
 
 // Delegate that interacts with the user sign-in coordinator.
 @protocol UserSigninViewControllerDelegate
+
 // Returns whether the user has selected an identity from the unified consent
 // screen.
 - (BOOL)unifiedConsentCoordinatorHasIdentity;
+
+// Performs add account operation.
+- (void)userSigninViewControllerDidTapOnAddAccount;
+
+// Performs scroll operation on unified consent screen.
+- (void)userSigninViewControllerDidScrollOnUnifiedConsent;
+
 @end
 
 // View controller used to show sign-in UI.

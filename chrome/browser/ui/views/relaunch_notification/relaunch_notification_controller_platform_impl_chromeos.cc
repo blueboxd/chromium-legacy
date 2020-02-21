@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.h"
 
 #include "ash/public/cpp/update_types.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"
@@ -35,7 +36,8 @@ void RelaunchNotificationControllerPlatformImpl::RecordRecommendedShowResult() {
 }
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
-    base::Time deadline) {
+    base::Time deadline,
+    base::OnceCallback<base::Time()> on_visible) {
   if (!relaunch_required_timer_) {
     relaunch_required_timer_ = std::make_unique<RelaunchRequiredTimer>(
         deadline,
@@ -48,6 +50,13 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
   }
 
   RefreshRelaunchRequiredTitle();
+
+  if (!CanScheduleReboot()) {
+    on_visible_ = std::move(on_visible);
+    StartObserving();
+  } else {
+    StopObserving();
+  }
 }
 
 void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
@@ -55,11 +64,14 @@ void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
       ash::NotificationStyle::kDefault, base::string16(), base::string16());
   recorded_shown_ = false;
   relaunch_required_timer_.reset();
+  on_visible_.Reset();
+  StopObserving();
 }
 
 void RelaunchNotificationControllerPlatformImpl::SetDeadline(
     base::Time deadline) {
-  relaunch_required_timer_->SetDeadline(deadline);
+  if (relaunch_required_timer_)
+    relaunch_required_timer_->SetDeadline(deadline);
 }
 
 void RelaunchNotificationControllerPlatformImpl::
@@ -77,15 +89,53 @@ void RelaunchNotificationControllerPlatformImpl::
   }
 }
 
-void RelaunchNotificationControllerPlatformImpl::
-    RefreshRelaunchRequiredTitle() {
-  SystemTrayClient::Get()->SetUpdateNotificationState(
-      ash::NotificationStyle::kAdminRequired,
-      relaunch_required_timer_->GetWindowTitle(),
-      l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_BODY));
-}
-
 bool RelaunchNotificationControllerPlatformImpl::IsRequiredNotificationShown()
     const {
   return relaunch_required_timer_ != nullptr;
+}
+
+void RelaunchNotificationControllerPlatformImpl::
+    RefreshRelaunchRequiredTitle() {
+  // SystemTrayClient may not exist in unit tests.
+  if (SystemTrayClient::Get()) {
+    SystemTrayClient::Get()->SetUpdateNotificationState(
+        ash::NotificationStyle::kAdminRequired,
+        relaunch_required_timer_->GetWindowTitle(),
+        l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_BODY));
+  }
+}
+
+void RelaunchNotificationControllerPlatformImpl::OnPowerStateChanged(
+    chromeos::DisplayPowerState power_state) {
+  if (CanScheduleReboot() && on_visible_) {
+    base::Time new_deadline = std::move(on_visible_).Run();
+    SetDeadline(new_deadline);
+    StopObserving();
+  }
+}
+
+void RelaunchNotificationControllerPlatformImpl::OnSessionStateChanged() {
+  if (CanScheduleReboot() && on_visible_) {
+    base::Time new_deadline = std::move(on_visible_).Run();
+    SetDeadline(new_deadline);
+    StopObserving();
+  }
+}
+
+bool RelaunchNotificationControllerPlatformImpl::CanScheduleReboot() {
+  return ash::Shell::Get()->display_configurator()->IsDisplayOn() &&
+         session_manager::SessionManager::Get()->session_state() ==
+             session_manager::SessionState::ACTIVE;
+}
+
+void RelaunchNotificationControllerPlatformImpl::StartObserving() {
+  if (!display_observer_.IsObservingSources())
+    display_observer_.Add(ash::Shell::Get()->display_configurator());
+  if (!session_observer_.IsObservingSources())
+    session_observer_.Add(session_manager::SessionManager::Get());
+}
+
+void RelaunchNotificationControllerPlatformImpl::StopObserving() {
+  display_observer_.RemoveAll();
+  session_observer_.RemoveAll();
 }

@@ -2814,8 +2814,19 @@ bool Internals::cursorUpdatePending() const {
 }
 
 DOMArrayBuffer* Internals::serializeObject(
-    scoped_refptr<SerializedScriptValue> value) const {
-  base::span<const uint8_t> span = value->GetWireData();
+    v8::Isolate* isolate,
+    const ScriptValue& value,
+    ExceptionState& exception_state) const {
+  scoped_refptr<SerializedScriptValue> serialized_value =
+      SerializedScriptValue::Serialize(
+          isolate, value.V8Value(),
+          SerializedScriptValue::SerializeOptions(
+              SerializedScriptValue::kNotForStorage),
+          exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  base::span<const uint8_t> span = serialized_value->GetWireData();
   DOMArrayBuffer* buffer = DOMArrayBuffer::CreateUninitializedOrNull(
       SafeCast<uint32_t>(span.size()), sizeof(uint8_t));
   if (buffer)
@@ -2823,10 +2834,12 @@ DOMArrayBuffer* Internals::serializeObject(
   return buffer;
 }
 
-scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
-    DOMArrayBuffer* buffer) const {
-  return SerializedScriptValue::Create(static_cast<const char*>(buffer->Data()),
-                                       buffer->ByteLengthAsSizeT());
+ScriptValue Internals::deserializeBuffer(v8::Isolate* isolate,
+                                         DOMArrayBuffer* buffer) const {
+  scoped_refptr<SerializedScriptValue> serialized_value =
+      SerializedScriptValue::Create(static_cast<const char*>(buffer->Data()),
+                                    buffer->ByteLengthAsSizeT());
+  return ScriptValue(isolate, serialized_value->Deserialize(isolate));
 }
 
 void Internals::forceReload(bool bypass_cache) {

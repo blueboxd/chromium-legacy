@@ -361,7 +361,7 @@ class PLATFORM_EXPORT ThreadHeap {
   bool AdvanceLazySweep(base::TimeTicks deadline);
   bool AdvanceConcurrentSweep(base::JobDelegate*);
 
-  void PrepareForSweep();
+  void PrepareForSweep(BlinkGC::CollectionType);
   void RemoveAllPages();
   void InvokeFinalizersOnSweptPages();
   void CompleteSweep();

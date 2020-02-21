@@ -488,6 +488,11 @@ class BasePage {
     return page_type_ == PageType::kLargeObjectPage;
   }
 
+  // Young pages are pages that contain at least a single young object.
+  bool IsYoung() const { return is_young_; }
+
+  void SetAsYoung(bool young) { is_young_ = young; }
+
   virtual void VerifyMarking() = 0;
 
  private:
@@ -498,6 +503,7 @@ class BasePage {
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true upon completion of sweeping that page.
   bool swept_ = true;
+  bool is_young_ = false;
 
   PageType page_type_;
 
@@ -527,8 +533,11 @@ class PageStack : Vector<BasePage*> {
   }
 
   using Base::begin;
-  using Base::clear;
   using Base::end;
+
+  using Base::clear;
+  using Base::erase;
+
   using Base::IsEmpty;
   using Base::size;
 };
@@ -934,7 +943,7 @@ class PLATFORM_EXPORT BaseArena {
   virtual bool IsConsistentForGC() = 0;
 #endif
   size_t ObjectPayloadSizeForTesting();
-  void PrepareForSweep();
+  void PrepareForSweep(BlinkGC::CollectionType);
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects();
 #endif

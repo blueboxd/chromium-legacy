@@ -36,7 +36,7 @@
 
   const debuggerModel = SDK.targetManager.mainTarget().model(SDK.DebuggerModel);
   const rawLocation = debuggerModel.createRawLocationByScriptId(scriptId, 0, 0);
-  const uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+  const uiLocation = await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
   await SourcesTestRunner.showUISourceCodePromise(uiLocation.uiSourceCode);
 
   function decorationAdded(line, type, element) {

@@ -65,8 +65,7 @@ source_set("primary_module") {
 
 # A source set for use by modules in a process that fetch the process-wide
 # InstallDetails instance from the primary module by way of
-# GetInstallDetailsPayload (i.e., chrome.exe, chrome.dll, chrome_child.dll, and
-# chrome_watcher.dll).
+# GetInstallDetailsPayload (i.e., chrome.exe and chrome.dll).
 source_set("secondary_module") {
   sources = [
     "initialize_from_primary_module.cc",

@@ -12,45 +12,63 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 class BatchElementChecker;
-struct Selector;
 
 class ElementPrecondition {
  public:
-  ElementPrecondition(
-      const google::protobuf::RepeatedPtrField<ElementReferenceProto>&
-          element_exists,
-      const google::protobuf::RepeatedPtrField<FormValueMatchProto>&
-          form_value_match);
+  ElementPrecondition(const ElementConditionProto& proto);
   ~ElementPrecondition();
 
-  // Check whether the conditions satisfied and return the result through
+  // Check whether the conditions are satisfied and return the result through
   // |callback|. |batch_checks| must remain valid until the callback is run.
   //
   // Calling Check() while another check is in progress cancels the previously
   // running check.
-  void Check(BatchElementChecker* batch_checks,
-             base::OnceCallback<void(bool)> callback);
+  //
+  // The callback gets a status, which is ACTION_APPLIED if the overall
+  // condition matched, and the payloads of specific conditions that matched.
+  // Note that payloads can still be sent out even though the overall condition
+  // did not match.
+  void Check(
+      BatchElementChecker* batch_checks,
+      base::OnceCallback<void(const ClientStatus&,
+                              const std::vector<std::string>&)> callback);
 
-  bool empty() { return elements_exist_.empty() && form_value_match_.empty(); }
+  bool empty() {
+    return proto_.type_case() == ElementConditionProto::TYPE_NOT_SET;
+  }
 
  private:
-  void OnCheckElementExists(const ClientStatus& element_status);
-  void OnGetFieldValue(int index,
-                       const ClientStatus& element_status,
-                       const std::string& value);
-  void ReportCheckResult(bool success);
+  // Selector that should be checked and the result of checking that selector.
+  struct Result {
+    Selector selector;
+    bool match = false;
+  };
 
-  std::vector<Selector> elements_exist_;
-  std::vector<FormValueMatchProto> form_value_match_;
+  // Add selectors from |proto| to |results_|, doing a depth-first search.
+  void AddResults(const ElementConditionProto& proto);
 
-  // Number of checks for which there's still no result.
-  int pending_check_count_;
+  void OnCheckElementExists(size_t result_index,
+                            const ClientStatus& element_status);
 
-  base::OnceCallback<void(bool)> callback_;
+  void OnAllElementChecksDone(
+      base::OnceCallback<void(const ClientStatus&,
+                              const std::vector<std::string>& payloads)>
+          callback);
+
+  bool EvaluateResults(const ElementConditionProto& proto_,
+                       size_t* next_result_index,
+                       std::vector<std::string>* payloads);
+
+  const ElementConditionProto proto_;
+
+  // Maps ElementConditionProto.match from proto_ to result. Results appear in
+  // the same order as in proto_, assuming a depth first search.
+  std::vector<Result> results_;
 
   base::WeakPtrFactory<ElementPrecondition> weak_ptr_factory_{this};
 

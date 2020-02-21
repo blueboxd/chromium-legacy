@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
@@ -51,7 +51,7 @@
           initWithBrowserState:self.browser->GetBrowserState()];
   self.clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars =
       YES;
-  self.clearBrowsingDataTableViewController.localDispatcher = self;
+  self.clearBrowsingDataTableViewController.delegate = self;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.clearBrowsingDataTableViewController.dispatcher =
@@ -115,7 +115,7 @@
   }
 }
 
-#pragma mark - ClearBrowsingDataLocalCommands
+#pragma mark - ClearBrowsingDataUIDelegate
 
 - (void)openURL:(const GURL&)URL {
   DCHECK(self.historyClearBrowsingDataNavigationController);

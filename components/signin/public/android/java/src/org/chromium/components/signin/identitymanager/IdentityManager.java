@@ -223,11 +223,12 @@ public class IdentityManager {
     }
 
     @NativeMethods
-    interface Natives {
-        public @Nullable CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager);
-        public @Nullable CoreAccountInfo
-        findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+    public interface Natives {
+        @Nullable
+        CoreAccountInfo getPrimaryAccountInfo(long nativeIdentityManager);
+        @Nullable
+        CoreAccountInfo findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                 long nativeIdentityManager, String email);
-        public CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
+        CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
     }
 }

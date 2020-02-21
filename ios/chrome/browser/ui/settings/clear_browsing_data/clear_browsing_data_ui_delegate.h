@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_LOCAL_COMMANDS_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_LOCAL_COMMANDS_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_UI_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_UI_DELEGATE_H_
 
 #include "base/ios/block_types.h"
 
 class GURL;
 
-@protocol ClearBrowsingDataLocalCommands
+@protocol ClearBrowsingDataUIDelegate
 
 // Opens URL in a new non-incognito tab and dismisses the clear browsing data
 // view.
@@ -19,4 +19,4 @@ class GURL;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_LOCAL_COMMANDS_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_UI_DELEGATE_H_

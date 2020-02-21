@@ -101,21 +101,21 @@
 
   TestRunner.addResult('Original records');
   filtersControl._notifyFiltersChanged();
-  dumpVisibleRecords();
+  await dumpVisibleRecords();
 
   TestRunner.addResult(`Visible records when 'loading' is disabled`);
   Timeline.TimelineUIUtils.categories().loading.hidden = true;
   filtersControl._notifyFiltersChanged();
-  dumpVisibleRecords();
+  await dumpVisibleRecords();
 
   TestRunner.addResult(`Visible records when 'scripting' is disabled`);
   Timeline.TimelineUIUtils.categories().scripting.hidden = true;
   filtersControl._notifyFiltersChanged();
-  dumpVisibleRecords();
+  await dumpVisibleRecords();
 
   TestRunner.completeTest();
 
-  function dumpVisibleRecords() {
-    PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view._currentTree);
+  async function dumpVisibleRecords() {
+    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(event => TestRunner.addResult(event.name), view._currentTree);
   }
 })();

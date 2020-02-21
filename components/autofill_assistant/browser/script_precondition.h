@@ -45,10 +45,7 @@ class ScriptPrecondition {
           status_match,
       const google::protobuf::RepeatedPtrField<ScriptParameterMatchProto>&
           parameter_match,
-      const google::protobuf::RepeatedPtrField<ElementReferenceProto>&
-          element_exists,
-      const google::protobuf::RepeatedPtrField<FormValueMatchProto>&
-          form_value_match);
+      const ElementConditionProto& must_match);
 
   ~ScriptPrecondition();
 

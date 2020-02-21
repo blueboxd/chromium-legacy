@@ -100,22 +100,22 @@
     TestRunner.addResult(' '.repeat(level) + text);
   }
 
-  function dumpRecords() {
-    PerformanceTestRunner.walkTimelineEventTreeUnderNode(
+  async function dumpRecords() {
+    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(
         printEventMessage, view._root);
     TestRunner.addResult('');
   }
 
   TestRunner.addResult('Initial:');
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.addResult(`Filtered by 'AAA':`);
   view._textFilterUI.setValue('AAA', true);
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.addResult(`Filtered by 'BBB':`);
   view._textFilterUI.setValue('BBB', true);
-  dumpRecords();
+  await dumpRecords();
 
   TestRunner.completeTest();
 })();

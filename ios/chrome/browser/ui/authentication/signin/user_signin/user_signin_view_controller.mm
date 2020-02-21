@@ -44,7 +44,14 @@ const AuthenticationViewConstants kRegularConstants = {
     32,  // ButtonTopPadding
     32,  // ButtonBottomPadding
 };
-}
+
+// The style applied to a button type.
+enum AuthenticationButtonType {
+  AuthenticationButtonTypeMore,
+  AuthenticationButtonTypeAddAccount,
+  AuthenticationButtonTypeConfirmation,
+};
+}  // namespace
 
 @interface UserSigninViewController ()
 
@@ -80,16 +87,22 @@ const AuthenticationViewConstants kRegularConstants = {
     [self.confirmationButton setTitle:self.addAccountButtonTitle
                              forState:UIControlStateNormal];
     [self setConfirmationStylingWithButton:self.confirmationButton];
+    self.confirmationButton.tag = AuthenticationButtonTypeAddAccount;
   } else if (!self.hasUnifiedConsentScreenReachedBottom) {
     // User has not scrolled to the bottom of the user consent screen.
     // Display 'more' button.
     [self updateButtonAsMoreButton:self.confirmationButton];
+    self.confirmationButton.tag = AuthenticationButtonTypeMore;
   } else {
     // By default display 'Yes I'm in' button.
     [self.confirmationButton setTitle:self.confirmationButtonTitle
                              forState:UIControlStateNormal];
     [self setConfirmationStylingWithButton:self.confirmationButton];
+    self.confirmationButton.tag = AuthenticationButtonTypeConfirmation;
   }
+  [self.confirmationButton addTarget:self
+                              action:@selector(onConfirmationButtonPressed:)
+                    forControlEvents:UIControlEventTouchUpInside];
 }
 
 #pragma mark - UIViewController
@@ -203,18 +216,16 @@ const AuthenticationViewConstants kRegularConstants = {
   [self.skipSigninButton setTitle:self.skipSigninButtonTitle
                          forState:UIControlStateNormal];
   [self setSkipSigninStylingWithButton:self.skipSigninButton];
+  [self.skipSigninButton addTarget:self
+                            action:@selector(onSkipSigninButtonPressed:)
+                  forControlEvents:UIControlEventTouchUpInside];
 }
 
 // Sets up button properties and adds it to view.
 - (void)addSubviewWithButton:(UIButton*)button {
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
-
   [self.view addSubview:button];
-  [button addTarget:self
-                action:@selector(onButtonPressed:)
-      forControlEvents:UIControlEventTouchUpInside];
-
   button.translatesAutoresizingMaskIntoConstraints = NO;
 }
 
@@ -245,9 +256,28 @@ const AuthenticationViewConstants kRegularConstants = {
 
 #pragma mark - Events
 
-- (void)onButtonPressed:(id)sender {
+- (void)onSkipSigninButtonPressed:(id)sender {
   // TODO(crbug.com/971989): Populate action.
   NOTIMPLEMENTED();
+}
+
+- (void)onConfirmationButtonPressed:(id)sender {
+  DCHECK_EQ(self.confirmationButton, sender);
+  switch (self.confirmationButton.tag) {
+    case AuthenticationButtonTypeMore: {
+      [self.delegate userSigninViewControllerDidScrollOnUnifiedConsent];
+      break;
+    }
+    case AuthenticationButtonTypeAddAccount: {
+      [self.delegate userSigninViewControllerDidTapOnAddAccount];
+      break;
+    }
+    case AuthenticationButtonTypeConfirmation: {
+      // TODO(crbug.com/971989): Populate action.
+      NOTIMPLEMENTED();
+      break;
+    }
+  }
 }
 
 @end

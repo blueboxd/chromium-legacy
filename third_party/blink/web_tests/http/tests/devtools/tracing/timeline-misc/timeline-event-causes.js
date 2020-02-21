@@ -35,6 +35,7 @@
           PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
       Timeline.TimelineUIUtils._generateCauses(
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+      await TestRunner.waitForPendingLiveLocationUpdates();
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
       checkStringContains(causes, 'Timer Installed\n(anonymous) @ setTimeoutFunction.js:');
@@ -58,6 +59,7 @@
           PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
       Timeline.TimelineUIUtils._generateCauses(
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+      await TestRunner.waitForPendingLiveLocationUpdates();
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
       checkStringContains(causes, 'Animation Frame Requested\n(anonymous) @ requestAnimationFrameFunction.js:');
@@ -83,6 +85,7 @@
           PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
       Timeline.TimelineUIUtils._generateCauses(
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+      await TestRunner.waitForPendingLiveLocationUpdates();
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
       checkStringContains(causes, 'First Invalidated\nstyleRecalcFunction @ styleRecalcFunction.js:');
@@ -108,6 +111,7 @@
           PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
       Timeline.TimelineUIUtils._generateCauses(
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+      await TestRunner.waitForPendingLiveLocationUpdates();
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
       checkStringContains(causes, 'Layout Forced\nlayoutFunction @ layoutFunction.js:');

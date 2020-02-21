@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -60,14 +59,12 @@ class NetworkStateHelper;
 // ExistingUserController is used to handle login when someone has already
 // logged into the machine. ExistingUserController is created and owned by
 // LoginDisplayHost.
-class ExistingUserController
-    : public LoginDisplay::Delegate,
-      public content::NotificationObserver,
-      public LoginPerformer::Delegate,
-      public KioskAppManagerObserver,
-      public UserSessionManagerDelegate,
-      public user_manager::UserManager::Observer,
-      public policy::MinimumVersionPolicyHandler::Observer {
+class ExistingUserController : public LoginDisplay::Delegate,
+                               public content::NotificationObserver,
+                               public LoginPerformer::Delegate,
+                               public KioskAppManagerObserver,
+                               public UserSessionManagerDelegate,
+                               public user_manager::UserManager::Observer {
  public:
   // Returns the current existing user controller fetched from the current
   // LoginDisplayHost instance.
@@ -129,9 +126,6 @@ class ExistingUserController
 
   // KioskAppManagerObserver overrides.
   void OnKioskAppsSettingsChanged() override;
-
-  // policy::MinimumVersionPolicyHandler::Observer overrides.
-  void OnMinimumVersionStateChanged() override;
 
   // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
@@ -425,8 +419,6 @@ class ExistingUserController
       local_account_auto_login_id_subscription_;
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_delay_subscription_;
-  std::unique_ptr<policy::MinimumVersionPolicyHandler>
-      minimum_version_policy_handler_;
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_CLEAR_BROWSING_DATA_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 
 enum class UrlLoadStrategy;
 
@@ -17,7 +17,7 @@ enum class UrlLoadStrategy;
 // Coordinator that presents Clear Browsing Data Table View from History.
 // Delegates are hooked up to History coordinator-specific methods.
 @interface HistoryClearBrowsingDataCoordinator
-    : ChromeCoordinator<ClearBrowsingDataLocalCommands>
+    : ChromeCoordinator <ClearBrowsingDataUIDelegate>
 
 // Unavailable, use -initWithBaseViewController:browser:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

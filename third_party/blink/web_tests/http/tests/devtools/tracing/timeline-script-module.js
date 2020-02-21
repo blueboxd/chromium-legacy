@@ -21,8 +21,13 @@
 
   const events = new Set([TimelineModel.TimelineModel.RecordType.CompileModule, TimelineModel.TimelineModel.RecordType.EvaluateModule]);
   const tracingModel = PerformanceTestRunner.tracingModel();
+
+  const eventsToPrint = [];
   tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t =>
-      t.events().filter(event => events.has(event.name)).forEach(PerformanceTestRunner.printTraceEventPropertiesWithDetails)));
+      eventsToPrint.push(...t.events().filter(event => events.has(event.name)))));
+  for (const event of eventsToPrint) {
+    await PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
+  }
 
   TestRunner.completeTest();
 })();

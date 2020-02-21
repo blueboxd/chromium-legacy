@@ -801,7 +801,7 @@ void ThreadState::CompleteSweep() {
   if (!IsSweepingInProgress())
     return;
 
-  // completeSweep() can be called recursively if finalizers can allocate
+  // CompleteSweep() can be called recursively if finalizers can allocate
   // memory and the allocation triggers completeSweep(). This check prevents
   // the sweeping from being executed recursively.
   if (SweepForbidden())
@@ -1463,6 +1463,7 @@ class ClearReferencesInDeadObjectsVisitor final
 }  // namespace
 
 void ThreadState::AtomicPauseSweepAndCompact(
+    BlinkGC::CollectionType collection_type,
     BlinkGC::MarkingType marking_type,
     BlinkGC::SweepingType sweeping_type) {
   ThreadHeapStatsCollector::EnabledScope stats(
@@ -1474,7 +1475,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
 
   DCHECK(InAtomicMarkingPause());
   DCHECK(CheckThread());
-  Heap().PrepareForSweep();
+  Heap().PrepareForSweep(collection_type);
 
   // We have to set the GCPhase to Sweeping before calling pre-finalizers
   // to disallow a GC during the pre-finalizers.
@@ -1491,9 +1492,9 @@ void ThreadState::AtomicPauseSweepAndCompact(
 
   InvokePreFinalizers();
 
-  // Slots filtering requires liveness information which is only present before
-  // sweeping any arena.
-  {
+  if (collection_type == BlinkGC::CollectionType::kMajor) {
+    // Slots filtering requires liveness information which is only present
+    // before sweeping any arena.
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kAtomicPauseCompaction);
@@ -1504,14 +1505,14 @@ void ThreadState::AtomicPauseSweepAndCompact(
   // Last point where all mark bits are present.
   VerifyMarking(marking_type);
 
-  // Any sweep compaction must happen after pre-finalizers, as it will
-  // finalize dead objects in compactable arenas (e.g., backing stores
-  // for container objects.)
-  //
-  // As per-contract for prefinalizers, those finalizable objects must
-  // still be accessible when the prefinalizer runs, hence we cannot
-  // schedule compaction until those have run.
-  {
+  if (collection_type == BlinkGC::CollectionType::kMajor) {
+    // Any sweep compaction must happen after pre-finalizers, as it will
+    // finalize dead objects in compactable arenas (e.g., backing stores
+    // for container objects.)
+    //
+    // As per-contract for prefinalizers, those finalizable objects must
+    // still be accessible when the prefinalizer runs, hence we cannot
+    // schedule compaction until those have run.
     SweepForbiddenScope scope(this);
     NoAllocationScope no_allocation_scope(this);
     Heap().Compact();
@@ -1624,7 +1625,7 @@ void ThreadState::RunAtomicPause(BlinkGC::CollectionType collection_type,
   AtomicPauseMarkRoots(stack_state, marking_type, reason);
   AtomicPauseMarkTransitiveClosure();
   AtomicPauseMarkEpilogue(marking_type);
-  AtomicPauseSweepAndCompact(marking_type, sweeping_type);
+  AtomicPauseSweepAndCompact(collection_type, marking_type, sweeping_type);
   AtomicPauseEpilogue();
 }
 

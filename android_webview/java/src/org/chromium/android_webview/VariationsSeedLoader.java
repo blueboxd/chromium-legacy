@@ -26,9 +26,6 @@ import org.chromium.android_webview.common.variations.VariationsServiceMetricsHe
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.metrics.CachedMetrics.CustomCountHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.variations.LoadSeedResult;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -122,30 +119,26 @@ public class VariationsSeedLoader {
         int NUM_ENTRIES = 4;
     }
 
-    private static void recordLoadSeedResult(int result) {
-        EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
-                SEED_LOAD_RESULT_HISTOGRAM_NAME, LoadSeedResult.ENUM_SIZE);
-        histogram.record(result);
+    private static void recordLoadSeedResult(@LoadSeedResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                SEED_LOAD_RESULT_HISTOGRAM_NAME, result, LoadSeedResult.ENUM_SIZE);
     }
 
     private static void recordSeedLoadBlockingTime(long timeMs) {
-        TimesHistogramSample histogram =
-                new TimesHistogramSample(SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME);
-        histogram.record(timeMs);
+        RecordHistogram.recordTimesHistogram(SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME, timeMs);
     }
 
     private static void recordSeedRequestState(@AppSeedRequestState int state) {
-        EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
-                APP_SEED_REQUEST_STATE_HISTOGRAM_NAME, AppSeedRequestState.NUM_ENTRIES);
-        histogram.record(state);
+        RecordHistogram.recordEnumeratedHistogram(
+                APP_SEED_REQUEST_STATE_HISTOGRAM_NAME, state, AppSeedRequestState.NUM_ENTRIES);
     }
 
     private static void recordAppSeedFreshness(long freshnessMinutes) {
         // Bucket parameters should match Variations.SeedFreshness.
         // See variations::RecordSeedFreshness.
-        CustomCountHistogramSample histogram = new CustomCountHistogramSample(
-                APP_SEED_FRESHNESS_HISTOGRAM_NAME, 1, (int) TimeUnit.DAYS.toMinutes(30), 50);
-        histogram.record((int) freshnessMinutes);
+        RecordHistogram.recordCustomCountHistogram(APP_SEED_FRESHNESS_HISTOGRAM_NAME,
+                (int) freshnessMinutes, /*min=*/1, /*max=*/(int) TimeUnit.DAYS.toMinutes(30),
+                /*numBuckets=*/50);
     }
 
     private static boolean shouldThrottleRequests(long now) {

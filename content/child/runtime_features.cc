@@ -305,6 +305,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kBrowserVerifiedUserActivationKeyboard, kEnableOnly},
           {wf::EnableBrowserVerifiedUserActivationMouse,
            features::kBrowserVerifiedUserActivationMouse, kEnableOnly},
+          {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling,
+           kUseFeatureState},
 #if defined(OS_ANDROID)
           {wf::EnableWebNfc,
            features::kWebNfc, kDisableOnly},

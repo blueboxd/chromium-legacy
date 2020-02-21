@@ -53,6 +53,7 @@ const FilesQuickView = Polymer({
   },
 
   listeners: {
+    'files-safe-media-tap-inside': 'tapInside',
     'files-safe-media-tap-outside': 'close',
     'files-safe-media-load-error': 'loaderror',
   },
@@ -130,6 +131,13 @@ const FilesQuickView = Polymer({
     }
   },
 
+  tapInside: function(e) {
+    if (this.type === 'image') {
+      const dialog = this.shadowRoot.querySelector('#dialog');
+      dialog.focus();
+    }
+  },
+
   /**
    * @return {!FilesMetadataBox}
    */
@@ -185,6 +193,11 @@ const FilesQuickView = Polymer({
 
     if (this.hasAttribute('files-ng')) {
       this.metadataBoxActive = !this.metadataBoxActive;
+      if (this.metadataBoxActive) {
+        event.target.setAttribute('toogle', '');
+      } else {
+        event.target.removeAttribute('toogle');
+      }
     }
   },
 

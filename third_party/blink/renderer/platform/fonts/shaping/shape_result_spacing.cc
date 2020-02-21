@@ -28,7 +28,7 @@ bool ShapeResultSpacing<TextContainerType>::SetSpacing(
 template <typename TextContainerType>
 void ShapeResultSpacing<TextContainerType>::SetExpansion(
     float expansion,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     TextJustify text_justify,
     bool allows_leading_expansion,
     bool allows_trailing_expansion) {
@@ -70,7 +70,7 @@ template <typename TextContainerType>
 void ShapeResultSpacing<TextContainerType>::ComputeExpansion(
     bool allows_leading_expansion,
     bool allows_trailing_expansion,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     TextJustify text_justify) {
   DCHECK_GT(expansion_, 0);
 

@@ -234,7 +234,7 @@ void NGInlineItemSegments::ComputeItemIndex(const Vector<NGInlineItem>& items) {
 scoped_refptr<ShapeResult> NGInlineItemSegments::ShapeText(
     const HarfBuzzShaper* shaper,
     const Font* font,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     unsigned start_offset,
     unsigned end_offset,
     unsigned item_index) const {

@@ -1104,18 +1104,18 @@ bool HTMLElement::HasDirectionAuto() const {
          EqualIgnoringASCIICase(direction, "auto");
 }
 
-TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
+base::i18n::TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
     bool& is_auto) const {
   is_auto = HasDirectionAuto();
   if (!is_auto)
-    return TextDirection::kLtr;
+    return base::i18n::TextDirection::LEFT_TO_RIGHT;
   return Directionality();
 }
 
-TextDirection HTMLElement::Directionality() const {
+base::i18n::TextDirection HTMLElement::Directionality() const {
   if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
     bool has_strong_directionality;
-    TextDirection text_direction = DetermineDirectionality(
+    base::i18n::TextDirection text_direction = DetermineDirectionality(
         input_element->value(), &has_strong_directionality);
     return text_direction;
   }
@@ -1144,14 +1144,14 @@ TextDirection HTMLElement::Directionality() const {
 
     if (node->IsTextNode()) {
       bool has_strong_directionality;
-      TextDirection text_direction = DetermineDirectionality(
+      base::i18n::TextDirection text_direction = DetermineDirectionality(
           node->textContent(true), &has_strong_directionality);
       if (has_strong_directionality)
         return text_direction;
     }
     node = FlatTreeTraversal::Next(*node, this);
   }
-  return TextDirection::kLtr;
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
 bool HTMLElement::SelfOrAncestorHasDirAutoAttribute() const {
@@ -1182,7 +1182,7 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
 }
 
 void HTMLElement::CalculateAndAdjustDirectionality() {
-  TextDirection text_direction = Directionality();
+  base::i18n::TextDirection text_direction = Directionality();
   const ComputedStyle* style = GetComputedStyle();
   if (style && style->Direction() != text_direction) {
     SetNeedsStyleRecalc(kLocalStyleChange,

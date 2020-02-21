@@ -43,16 +43,16 @@ bool IsLogicalHeightTreatedAsAuto(const ComputedStyle& style) {
 // vrl ltr => top right
 // vrl rtl => bottom right
 bool IsLeftDominant(const WritingMode container_writing_mode,
-                    const TextDirection container_direction) {
+                    const base::i18n::TextDirection container_direction) {
   return (container_writing_mode != WritingMode::kVerticalRl) &&
          !(container_writing_mode == WritingMode::kHorizontalTb &&
-           container_direction == TextDirection::kRtl);
+           container_direction == base::i18n::TextDirection::RIGHT_TO_LEFT);
 }
 
 bool IsTopDominant(const WritingMode container_writing_mode,
-                   const TextDirection container_direction) {
+                   const base::i18n::TextDirection container_direction) {
   return (container_writing_mode == WritingMode::kHorizontalTb) ||
-         (container_direction != TextDirection::kRtl);
+         (container_direction != base::i18n::TextDirection::RIGHT_TO_LEFT);
 }
 
 // A direction agnostic version of |NGLogicalStaticPosition::InlineEdge|, and
@@ -390,7 +390,7 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const TextDirection container_direction) {
+    const base::i18n::TextDirection container_direction) {
   NGLogicalOutOfFlowPosition position;
 
   base::Optional<LayoutUnit> inline_size;
@@ -449,7 +449,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const TextDirection container_direction,
+    const base::i18n::TextDirection container_direction,
     NGLogicalOutOfFlowPosition* position) {
   // After partial size has been computed, child block size is either unknown,
   // or fully computed, there is no minmax. To express this, a 'fixed' minmax

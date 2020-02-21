@@ -18,7 +18,6 @@
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -48,6 +47,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -126,7 +126,8 @@ class RenderFrameImplTest : public RenderViewTest {
         std::move(stub_browser_interface_broker), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
         base::UnguessableToken::Create(), frame_replication_state,
-        &compositor_deps_, &widget_params, FrameOwnerProperties(),
+        &compositor_deps_, &widget_params,
+        blink::mojom::FrameOwnerProperties::New(),
         /*has_committed_real_load=*/true);
 
     frame_ = static_cast<TestRenderFrame*>(
@@ -212,44 +213,31 @@ TEST_F(RenderFrameImplTest, SubframeWidget) {
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
 TEST_F(RenderFrameImplTest, FrameResize) {
-  // Make an update where the widget's size and the visible_viewport_size
-  // are not the same.
   VisualProperties visual_properties;
-  gfx::Size widget_size(400, 200);
-  gfx::Size visible_size(350, 170);
-  visual_properties.new_size = widget_size;
-  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(widget_size);
-  visual_properties.visible_viewport_size = visible_size;
-
-  RenderWidget* main_frame_widget =
-      GetMainRenderFrame()->GetLocalRootRenderWidget();
+  gfx::Size size(200, 200);
+  visual_properties.screen_info = ScreenInfo();
+  visual_properties.new_size = size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(size);
+  visual_properties.visible_viewport_size = size;
+  visual_properties.is_fullscreen_granted = false;
 
   // The main frame's widget will receive the resize message before the
   // subframe's widget, and it will set the size for the WebView.
-  {
-    WidgetMsg_UpdateVisualProperties resize_message(
-        main_frame_widget->routing_id(), visual_properties);
-    main_frame_widget->OnMessageReceived(resize_message);
-  }
-  // The main frame widget's size is the "widget size", not the visible viewport
-  // size, which is given to blink separately.
-  EXPECT_EQ(gfx::Size(view_->GetWebView()->MainFrameWidget()->Size()),
-            widget_size);
-  EXPECT_EQ(gfx::SizeF(view_->GetWebView()->VisualViewportSize()),
-            gfx::SizeF(visible_size));
-  // The main frame doesn't change other local roots directly.
-  EXPECT_NE(gfx::Size(frame_widget()->GetWebWidget()->Size()), visible_size);
+  RenderWidget* main_frame_widget =
+      GetMainRenderFrame()->GetLocalRootRenderWidget();
+  WidgetMsg_UpdateVisualProperties resize_message(
+      main_frame_widget->routing_id(), visual_properties);
 
-  // A subframe in the same process does not modify the WebView.
-  {
-    WidgetMsg_UpdateVisualProperties resize_message_subframe(
-        frame_widget()->routing_id(), visual_properties);
-    frame_widget()->OnMessageReceived(resize_message_subframe);
-  }
-  EXPECT_EQ(gfx::Size(frame_widget()->GetWebWidget()->Size()), widget_size);
+  main_frame_widget->OnMessageReceived(resize_message);
+  EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
+            blink::WebSize(size));
+  EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 
-  // A subframe in another process would use the |visible_viewport_size| as its
-  // size.
+  // The subframe sets the size only for itself.
+  WidgetMsg_UpdateVisualProperties resize_message_subframe(
+      frame_widget()->routing_id(), visual_properties);
+  frame_widget()->OnMessageReceived(resize_message_subframe);
+  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.

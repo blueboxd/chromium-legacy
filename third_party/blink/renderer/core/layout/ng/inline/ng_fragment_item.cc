@@ -53,7 +53,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       ink_overflow_computed_(false) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
-                               TextDirection resolved_direction)
+                               base::i18n::TextDirection resolved_direction)
     : layout_object_(box.GetLayoutObject()),
       box_({&box, 1}),
       rect_({PhysicalOffset(), box.Size()}),
@@ -71,7 +71,8 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
       type_(kBox),
       style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
       is_hidden_for_paint_(false),
-      text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
+      text_direction_(
+          static_cast<unsigned>(base::i18n::TextDirection::LEFT_TO_RIGHT)),
       ink_overflow_computed_(false) {
   DCHECK_EQ(inline_item.Type(), NGInlineItem::kOpenTag);
   DCHECK(layout_object_);
@@ -244,14 +245,14 @@ NGTextFragmentPaintInfo NGFragmentItem::TextPaintInfo(
   return {};
 }
 
-TextDirection NGFragmentItem::BaseDirection() const {
+base::i18n::TextDirection NGFragmentItem::BaseDirection() const {
   DCHECK_EQ(Type(), kLine);
-  return static_cast<TextDirection>(text_direction_);
+  return static_cast<base::i18n::TextDirection>(text_direction_);
 }
 
-TextDirection NGFragmentItem::ResolvedDirection() const {
+base::i18n::TextDirection NGFragmentItem::ResolvedDirection() const {
   DCHECK(Type() == kText || Type() == kGeneratedText || IsAtomicInline());
-  return static_cast<TextDirection>(text_direction_);
+  return static_cast<base::i18n::TextDirection>(text_direction_);
 }
 
 String NGFragmentItem::DebugName() const {

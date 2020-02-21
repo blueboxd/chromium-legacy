@@ -49,7 +49,7 @@ static_assert(sizeof(NGPaintFragment) == sizeof(SameSizeAsNGPaintFragment),
 
 LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
                                   WritingMode writing_mode,
-                                  TextDirection text_direction,
+                                  base::i18n::TextDirection text_direction,
                                   const PhysicalSize& outer_size) {
   const LogicalOffset logical_offset = physical_rect.offset.ConvertToLogical(
       writing_mode, text_direction, outer_size, physical_rect.size);
@@ -78,7 +78,7 @@ LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
 
 PhysicalRect ComputePhysicalRectFor(const LogicalRect& logical_rect,
                                     WritingMode writing_mode,
-                                    TextDirection text_direction,
+                                    base::i18n::TextDirection text_direction,
                                     const PhysicalSize& outer_size) {
   const PhysicalSize physical_size =
       ToPhysicalSize(logical_rect.size, writing_mode);

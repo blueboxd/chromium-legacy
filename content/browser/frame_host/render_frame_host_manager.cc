@@ -41,7 +41,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
@@ -59,6 +58,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -1058,16 +1058,18 @@ void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
 }
 
 void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
-    const FrameOwnerProperties& properties) {
+    const blink::mojom::FrameOwnerProperties& properties) {
   // FrameOwnerProperties exist only for frames that have a parent.
   CHECK(frame_tree_node_->parent());
   SiteInstance* parent_instance =
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
 
+  auto properties_for_local_frame = properties.Clone();
+
   // Notify the RenderFrame if it lives in a different process from its parent.
   if (render_frame_host_->GetSiteInstance() != parent_instance) {
-    render_frame_host_->Send(new FrameMsg_SetFrameOwnerProperties(
-        render_frame_host_->GetRoutingID(), properties));
+    render_frame_host_->GetAssociatedLocalFrame()->SetFrameOwnerProperties(
+        std::move(properties_for_local_frame));
   }
 
   // Notify this frame's proxies if they live in a different process from its
@@ -1078,8 +1080,10 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
   // in the current FrameTree.
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_instance) {
-      pair.second->Send(new FrameMsg_SetFrameOwnerProperties(
-          pair.second->GetRoutingID(), properties));
+      auto properties_for_remote_frame = properties.Clone();
+      RenderFrameProxyHost* proxy = pair.second.get();
+      proxy->GetAssociatedRemoteFrame()->SetFrameOwnerProperties(
+          std::move(properties_for_remote_frame));
     }
   }
 }

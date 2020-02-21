@@ -15,7 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.CachedMetrics.LinearCountHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 
 import java.io.File;
@@ -33,8 +33,6 @@ abstract class AwDataDirLock {
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
     private static final int LOCK_RETRIES = 5;
     private static final int LOCK_SLEEP_MS = 100;
-    private static final String LOCK_ATTEMPTS_HISTOGRAM_NAME =
-            "Android.WebView.Startup.DataDirLockAttempts";
 
     private static RandomAccessFile sLockFile;
     private static FileLock sExclusiveFileLock;
@@ -111,9 +109,8 @@ abstract class AwDataDirLock {
         // We log values from [0, LOCK_RETRIES]. Histogram samples are expected to be [0, max).
         // 0 just goes to the underflow bucket, so min=1 and max=LOCK_RETRIES+1.
         // To get bucket width 1, buckets must be max-min+2
-        LinearCountHistogramSample histogram = new LinearCountHistogramSample(
-                LOCK_ATTEMPTS_HISTOGRAM_NAME, 1, LOCK_RETRIES + 1, LOCK_RETRIES + 2);
-        histogram.record(attempts);
+        RecordHistogram.recordLinearCountHistogram("Android.WebView.Startup.DataDirLockAttempts",
+                attempts, 1, LOCK_RETRIES + 1, LOCK_RETRIES + 2);
     }
 
     private static String getLockFailureReason(final RandomAccessFile file) {

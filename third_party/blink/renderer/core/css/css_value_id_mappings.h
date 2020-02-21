@@ -489,6 +489,28 @@ inline CSSValueID PlatformEnumToCSSValueID(EListStyleType v) {
   return CSSValueID::kDisc;
 }
 
+template <>
+inline CSSValueID PlatformEnumToCSSValueID(base::i18n::TextDirection v) {
+  if (v == base::i18n::TextDirection::LEFT_TO_RIGHT)
+    return CSSValueID::kLtr;
+  if (v == base::i18n::TextDirection::RIGHT_TO_LEFT)
+    return CSSValueID::kRtl;
+
+  NOTREACHED();
+  return CSSValueID::kLtr;
+}
+
+template <>
+inline base::i18n::TextDirection CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueID::kLtr)
+    return base::i18n::TextDirection::LEFT_TO_RIGHT;
+  if (v == CSSValueID::kRtl)
+    return base::i18n::TextDirection::RIGHT_TO_LEFT;
+
+  NOTREACHED();
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
+}
+
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_ID_MAPPINGS_H_

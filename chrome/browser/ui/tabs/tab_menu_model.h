@@ -31,6 +31,7 @@ class TabMenuModel : public ui::SimpleMenuModel {
   void Build(TabStripModel* tab_strip, int index);
 
   std::unique_ptr<ui::SimpleMenuModel> add_to_existing_group_submenu_;
+  std::unique_ptr<ui::SimpleMenuModel> add_to_existing_window_submenu_;
 
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>

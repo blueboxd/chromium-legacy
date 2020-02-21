@@ -387,8 +387,8 @@
   },
   {
     "name": "camera-system-web-app",
-    "owners": [ "calamity", "ortuno" ],
-    "expiry_milestone": 82
+    "owners": [ "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "cast-media-route-provider",

@@ -42,7 +42,6 @@ class ChildFrameCompositingHelper;
 class RenderFrameImpl;
 class RenderViewImpl;
 class RenderWidget;
-struct FrameOwnerProperties;
 struct FrameReplicationState;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
@@ -128,17 +127,21 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
-  // Propagate VisualProperties updates from a local root RenderWidget to the
-  // child RenderWidget represented by this proxy, which is hosted in another
-  // renderer frame tree.
-  // TODO(danakj): These should all be grouped into a single method, then we
-  // would only get one update per UpdateVisualProperties IPC received in the
-  // RenderWidget, and we would only need to send one update to the browser as
-  // a result.
+  // Out-of-process child frames receive a signal from RenderWidget when the
+  // ScreenInfo has changed.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
+
+  // Out-of-process child frames receive a signal from RenderWidget when the
+  // zoom level has changed.
   void OnZoomLevelChanged(double zoom_level);
+
+  // Out-of-process child frames receive a signal from RenderWidget when the
+  // page scale factor has changed, and/or a pinch-zoom gesture starts/ends.
   void OnPageScaleFactorChanged(float page_scale_factor,
                                 bool is_pinch_gesture_active);
+
+  // Invoked by RenderWidget when a new capture sequence number was set,
+  // indicating that surfaces should be synchronized.
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // Pass replicated information, such as security origin, to this
@@ -225,7 +228,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
-  void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
   void OnTransferUserActivationFrom(int32_t source_routing_id);
 
   // mojom::RenderFrameProxy implementation:

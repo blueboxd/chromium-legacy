@@ -37,11 +37,12 @@
 
 namespace blink {
 
-PLATFORM_EXPORT TextDirection
-DirectionForRun(TextRun&, bool* has_strong_directionality = nullptr);
-PLATFORM_EXPORT TextDirection
-DetermineDirectionality(const String& value,
-                        bool* has_strong_directionality = nullptr);
+PLATFORM_EXPORT base::i18n::TextDirection DirectionForRun(
+    TextRun&,
+    bool* has_strong_directionality = nullptr);
+PLATFORM_EXPORT base::i18n::TextDirection DetermineDirectionality(
+    const String& value,
+    bool* has_strong_directionality = nullptr);
 PLATFORM_EXPORT TextRun
 TextRunWithDirectionality(const String& value,
                           bool* has_strong_directionality = nullptr);

@@ -152,14 +152,14 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                       unsigned len,
                       const Font&,
                       LayoutUnit x_pos,
-                      TextDirection,
+                      base::i18n::TextDirection,
                       HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
                       FloatRect* glyph_bounds = nullptr,
                       float expansion = 0) const;
   virtual float Width(unsigned from,
                       unsigned len,
                       LayoutUnit x_pos,
-                      TextDirection,
+                      base::i18n::TextDirection,
                       bool first_line = false,
                       HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
                       FloatRect* glyph_bounds = nullptr,
@@ -180,7 +180,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          LayoutUnit& min_width,
                          LayoutUnit& max_width,
                          bool& strip_front_spaces,
-                         TextDirection);
+                         base::i18n::TextDirection);
 
   virtual PhysicalRect PhysicalLinesBoundingBox() const;
 
@@ -284,7 +284,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void SetHasAbstractInlineTextBox() { has_abstract_inline_text_box_ = true; }
 
-  float HyphenWidth(const Font&, TextDirection);
+  float HyphenWidth(const Font&, base::i18n::TextDirection);
 
   PhysicalRect DebugRect() const override;
 
@@ -389,7 +389,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                       int len,
                       float lead_width,
                       float text_width_so_far,
-                      TextDirection,
+                      base::i18n::TextDirection,
                       HashSet<const SimpleFontData*>* fallback_fonts,
                       FloatRect* glyph_bounds_accumulation,
                       float expansion = 0) const;
@@ -514,7 +514,7 @@ inline UChar32 LayoutText::CodepointAt(unsigned i) const {
 }
 
 inline float LayoutText::HyphenWidth(const Font& font,
-                                     TextDirection direction) {
+                                     base::i18n::TextDirection direction) {
   const ComputedStyle& style = StyleRef();
   return font.Width(ConstructTextRun(font, style.HyphenString().GetString(),
                                      style, direction));

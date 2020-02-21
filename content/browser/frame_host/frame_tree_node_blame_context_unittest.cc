@@ -13,11 +13,11 @@
 #include "base/trace_event/traced_value.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
 
@@ -104,7 +104,8 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
           blink::WebTreeScopeType::kDocument, std::string(),
           base::StringPrintf("uniqueName%d", child_id), false,
           base::UnguessableToken::Create(), blink::FramePolicy(),
-          FrameOwnerProperties(), false, blink::FrameOwnerElementType::kIframe);
+          blink::mojom::FrameOwnerProperties(), false,
+          blink::FrameOwnerElementType::kIframe);
       FrameTreeNode* child = node->child_at(child_num - 1);
       consumption += CreateSubframes(child, child_id, shape + consumption);
     }

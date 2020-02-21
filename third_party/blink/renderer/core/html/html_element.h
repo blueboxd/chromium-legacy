@@ -105,7 +105,8 @@ class CORE_EXPORT HTMLElement : public Element {
   HTMLFormElement* FindFormAncestor() const;
 
   bool HasDirectionAuto() const;
-  TextDirection DirectionalityIfhasDirAutoAttribute(bool& is_auto) const;
+  base::i18n::TextDirection DirectionalityIfhasDirAutoAttribute(
+      bool& is_auto) const;
 
   virtual bool IsHTMLUnknownElement() const { return false; }
   virtual bool IsPluginElement() const { return false; }
@@ -202,7 +203,7 @@ class CORE_EXPORT HTMLElement : public Element {
   bool SelfOrAncestorHasDirAutoAttribute() const;
   void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
   void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
-  TextDirection Directionality() const;
+  base::i18n::TextDirection Directionality() const;
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 

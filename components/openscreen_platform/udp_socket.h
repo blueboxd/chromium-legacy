@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_UDP_SOCKET_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_UDP_SOCKET_H_
+#ifndef COMPONENTS_OPENSCREEN_PLATFORM_UDP_SOCKET_H_
+#define COMPONENTS_OPENSCREEN_PLATFORM_UDP_SOCKET_H_
 
 #include <memory>
 
@@ -21,17 +21,17 @@ namespace net {
 class IPEndPoint;
 }
 
-namespace media_router {
+namespace openscreen_platform {
 
-class ChromeUdpSocket : public openscreen::UdpSocket,
-                        network::mojom::UDPSocketListener {
+class UdpSocket : public openscreen::UdpSocket,
+                  network::mojom::UDPSocketListener {
  public:
-  ChromeUdpSocket(Client* client,
-                  const openscreen::IPEndpoint& local_endpoint,
-                  mojo::Remote<network::mojom::UDPSocket> udp_socket,
-                  mojo::PendingReceiver<network::mojom::UDPSocketListener>
-                      pending_listener);
-  ~ChromeUdpSocket() final;
+  UdpSocket(Client* client,
+            const openscreen::IPEndpoint& local_endpoint,
+            mojo::Remote<network::mojom::UDPSocket> udp_socket,
+            mojo::PendingReceiver<network::mojom::UDPSocketListener>
+                pending_listener);
+  ~UdpSocket() final;
 
   // Implementations of openscreen::UdpSocket methods.
   bool IsIPv4() const final;
@@ -69,9 +69,9 @@ class ChromeUdpSocket : public openscreen::UdpSocket,
   // gets bound.
   mojo::PendingReceiver<network::mojom::UDPSocketListener> pending_listener_;
   mojo::Receiver<network::mojom::UDPSocketListener> listener_{this};
-  base::WeakPtrFactory<ChromeUdpSocket> weak_ptr_factory_{this};
+  base::WeakPtrFactory<UdpSocket> weak_ptr_factory_{this};
 };
 
-}  // namespace media_router
+}  // namespace openscreen_platform
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_UDP_SOCKET_H_
+#endif  // COMPONENTS_OPENSCREEN_PLATFORM_UDP_SOCKET_H_

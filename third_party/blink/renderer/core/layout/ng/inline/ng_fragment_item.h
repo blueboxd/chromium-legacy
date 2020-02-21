@@ -65,7 +65,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // TODO(kojii): Should be able to create without once creating fragments.
   NGFragmentItem(const NGPhysicalTextFragment& text);
   NGFragmentItem(const NGPhysicalBoxFragment& box,
-                 TextDirection resolved_direction);
+                 base::i18n::TextDirection resolved_direction);
   NGFragmentItem(const NGInlineItem& inline_item, const PhysicalSize& size);
   NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
 
@@ -299,11 +299,11 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // be different from the direction of the container box when first-line style
   // is used, or when 'unicode-bidi: plaintext' is used.
   // Note: This is valid only for |LineItem|.
-  TextDirection BaseDirection() const;
+  base::i18n::TextDirection BaseDirection() const;
 
   // Direction of this item valid for |TextItem| and |IsAtomicInline()|.
   // Note: <span> doesn't have text direction.
-  TextDirection ResolvedDirection() const;
+  base::i18n::TextDirection ResolvedDirection() const;
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.
@@ -347,7 +347,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   unsigned is_hidden_for_paint_ : 1;
   // Note: For |TextItem| and |GeneratedTextItem|, |text_direction_| equals to
   // |ShapeResult::Direction()|.
-  unsigned text_direction_ : 1;  // TextDirection.
+  unsigned text_direction_ : 2;  // base::i18n::TextDirection.
 
   // Used only when |IsText()| to avoid re-computing ink overflow.
   unsigned ink_overflow_computed_ : 1;

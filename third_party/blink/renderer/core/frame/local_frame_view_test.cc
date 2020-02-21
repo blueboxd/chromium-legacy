@@ -36,10 +36,11 @@ class AnimationMockChromeClient : public RenderingTestChromeClient {
   // ChromeClient
   MOCK_METHOD2(AttachRootGraphicsLayer,
                void(GraphicsLayer*, LocalFrame* localRoot));
-  MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
+  MOCK_METHOD3(MockSetToolTip,
+               void(LocalFrame*, const String&, base::i18n::TextDirection));
   void SetToolTip(LocalFrame& frame,
                   const String& tooltip_text,
-                  TextDirection dir) override {
+                  base::i18n::TextDirection dir) override {
     MockSetToolTip(&frame, tooltip_text, dir);
   }
 

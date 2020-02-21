@@ -53,13 +53,18 @@ class ShapeCache {
 
     SmallStringKey()
         : length_(kEmptyValueLength),
-          direction_(static_cast<unsigned>(TextDirection::kLtr)) {}
+          direction_(
+              static_cast<unsigned>(base::i18n::TextDirection::LEFT_TO_RIGHT)) {
+    }
 
     SmallStringKey(WTF::HashTableDeletedValueType)
         : length_(kDeletedValueLength),
-          direction_(static_cast<unsigned>(TextDirection::kLtr)) {}
+          direction_(
+              static_cast<unsigned>(base::i18n::TextDirection::LEFT_TO_RIGHT)) {
+    }
 
-    SmallStringKey(base::span<const LChar> characters, TextDirection direction)
+    SmallStringKey(base::span<const LChar> characters,
+                   base::i18n::TextDirection direction)
         : length_(static_cast<uint16_t>(characters.size())),
           direction_(static_cast<unsigned>(direction)) {
       DCHECK(characters.size() <= kCapacity);
@@ -72,7 +77,8 @@ class ShapeCache {
           base::as_bytes(base::make_span(characters_, length_))));
     }
 
-    SmallStringKey(base::span<const UChar> characters, TextDirection direction)
+    SmallStringKey(base::span<const UChar> characters,
+                   base::i18n::TextDirection direction)
         : length_(static_cast<uint16_t>(characters.size())),
           direction_(static_cast<unsigned>(direction)) {
       DCHECK(characters.size() <= kCapacity);
@@ -83,8 +89,8 @@ class ShapeCache {
 
     const UChar* Characters() const { return characters_; }
     uint16_t length() const { return length_; }
-    TextDirection Direction() const {
-      return static_cast<TextDirection>(direction_);
+    base::i18n::TextDirection Direction() const {
+      return static_cast<base::i18n::TextDirection>(direction_);
     }
     unsigned GetHash() const { return hash_; }
 
@@ -100,7 +106,7 @@ class ShapeCache {
 
     unsigned hash_;
     unsigned length_ : 15;
-    unsigned direction_ : 1;
+    unsigned direction_ : 2;
     UChar characters_[kCapacity];
   };
 
@@ -152,9 +158,9 @@ class ShapeCache {
     ShapeCacheEntry* value;
     if (run.length() == 1) {
       uint32_t key = run[0];
-      // All current codepoints in UTF-32 are bewteen 0x0 and 0x10FFFF,
+      // All current codepoints in UTF-32 are between 0x0 and 0x10FFFF,
       // as such use bit 31 (zero-based) to indicate direction.
-      if (run.Direction() == TextDirection::kRtl)
+      if (run.Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT)
         key |= (1u << 31);
       SingleCharMap::AddResult add_result =
           single_char_map_.insert(key, std::move(entry));

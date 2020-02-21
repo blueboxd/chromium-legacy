@@ -537,15 +537,11 @@ HTMLOptionElement* HTMLSelectElement::PreviousSelectableOption(
 }
 
 HTMLOptionElement* HTMLSelectElement::FirstSelectableOption() const {
-  // TODO(tkent): This is not efficient.  nextSlectableOption(nullptr) is
-  // faster.
-  return NextValidOption(GetListItems().size(), kSkipBackwards, INT_MAX);
+  return NextValidOption(-1, kSkipForwards, 1);
 }
 
 HTMLOptionElement* HTMLSelectElement::LastSelectableOption() const {
-  // TODO(tkent): This is not efficient.  previousSlectableOption(nullptr) is
-  // faster.
-  return NextValidOption(-1, kSkipForwards, INT_MAX);
+  return NextValidOption(GetListItems().size(), kSkipBackwards, 1);
 }
 
 // Returns the index of the next valid item one page away from |startIndex| in
@@ -571,21 +567,7 @@ HTMLOptionElement* HTMLSelectElement::NextSelectableOptionPageAway(
 }
 
 void HTMLSelectElement::SelectAll() {
-  DCHECK(!UsesMenuList());
-  if (!GetLayoutObject() || !is_multiple_)
-    return;
-
-  // Save the selection so it can be compared to the new selectAll selection
-  // when dispatching change events.
-  SaveLastSelection();
-
-  active_selection_state_ = true;
-  SetActiveSelectionAnchor(NextSelectableOption(nullptr));
-  SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
-
-  UpdateListBoxSelection(false, false);
-  ListBoxOnChange();
-  SetNeedsValidityCheck();
+  select_type_->SelectAll();
 }
 
 void HTMLSelectElement::SaveLastSelection() {

@@ -24,6 +24,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
@@ -42,7 +43,6 @@ class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class TestWebContents;
-struct FrameOwnerProperties;
 struct FrameReplicationState;
 
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
@@ -362,7 +362,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // changed a property (such as allowFullscreen) on its <iframe> element.
   // Sends updated FrameOwnerProperties to the RenderFrame and to all proxies,
   // skipping the parent process.
-  void OnDidUpdateFrameOwnerProperties(const FrameOwnerProperties& properties);
+  void OnDidUpdateFrameOwnerProperties(
+      const blink::mojom::FrameOwnerProperties& properties);
 
   // Notify the proxies that the active sandbox flags or feature policy header
   // on the frame have been changed during page load. Sandbox flags can change

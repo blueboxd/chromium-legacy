@@ -34,7 +34,8 @@ class ShapeResultViewTest : public testing::Test {
 TEST_F(ShapeResultViewTest, LatinSingleView) {
   String string =
       To16Bit("Test run with multiple words and breaking opportunities.", 56);
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -83,7 +84,8 @@ TEST_F(ShapeResultViewTest, LatinSingleView) {
 
 TEST_F(ShapeResultViewTest, ArabicSingleView) {
   String string = To16Bit("عربى نص", 7);
-  TextDirection direction = TextDirection::kRtl;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::RIGHT_TO_LEFT;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -127,7 +129,8 @@ TEST_F(ShapeResultViewTest, ArabicSingleView) {
 }
 
 TEST_F(ShapeResultViewTest, LatinMultiRun) {
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
   HarfBuzzShaper shaper_a(To16Bit("hello", 5));
   HarfBuzzShaper shaper_b(To16Bit(" w", 2));
   HarfBuzzShaper shaper_c(To16Bit("orld", 4));
@@ -198,7 +201,8 @@ TEST_F(ShapeResultViewTest, LatinMultiRun) {
 TEST_F(ShapeResultViewTest, LatinCompositeView) {
   String string =
       To16Bit("Test run with multiple words and breaking opportunities.", 56);
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -251,7 +255,8 @@ TEST_F(ShapeResultViewTest, LatinCompositeView) {
 TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
   String string_a = To16Bit("Test with multiple 字体 ", 22);
   String string_b = To16Bit("and 本書.", 7);
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
 
   HarfBuzzShaper shaper_a(string_a);
   scoped_refptr<const ShapeResult> result_a = shaper_a.Shape(&font, direction);
@@ -295,7 +300,8 @@ TEST_F(ShapeResultViewTest, MixedScriptsCompositeView) {
 
 TEST_F(ShapeResultViewTest, TrimEndOfView) {
   String string = To16Bit("12345678901234567890", 20);
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
 

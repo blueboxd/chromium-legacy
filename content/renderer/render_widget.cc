@@ -668,57 +668,6 @@ void RenderWidget::OnUpdateVisualProperties(
     const VisualProperties& visual_properties_from_browser) {
   TRACE_EVENT0("renderer", "RenderWidget::OnUpdateVisualProperties");
 
-  // UpdateVisualProperties is used to receive properties from the browser
-  // process for this RenderWidget. There are roughly 4 types of
-  // VisualProperties.
-  // TODO(danakj): Splitting these 4 types of properties apart and making them
-  // more explicit could be super useful to understanding this code.
-  // 1. Unique to each RenderWidget. Computed by the RenderWidgetHost and passed
-  //    to the RenderWidget which consumes it here.
-  //    Example: new_size.
-  // 2. Global properties, which are given to each RenderWidget (to maintain
-  //    the requirement that a RenderWidget is updated atomically). These
-  //    properties are usually the same for every RenderWidget, except when
-  //    device emulation changes them in the main frame RenderWidget only.
-  //    Example: screen_info.
-  // 3. Computed in the renderer of the main frame RenderWidget (in blink
-  //    usually). Passed down through the waterfall dance to child frame
-  //    RenderWidgets. Here that step is performed by passing the value along
-  //    to all RenderFrameProxy objects that are below this RenderWidgets in the
-  //    frame tree. The main frame (top level) RenderWidget ignores this value
-  //    from its RenderWidgetHost since it is controlled in the renderer. Child
-  //    frame RenderWidgets consume the value from their RenderWidgetHost.
-  //    Example: page_scale_factor.
-  // 4. Computed independently in the renderer for each RenderWidget (in blink
-  //    usually). Passed down from the parent to the child RenderWidgets through
-  //    the waterfall dance, but the value only travels one step - the child
-  //    frame RenderWidget would compute values for grandchild RenderWidgets
-  //    independently. Here the value is passed to child frame RenderWidgets by
-  //    passing the value along to all RenderFrameProxy objects that are below
-  //    this RenderWidget in the frame tree. Each RenderWidget consumes this
-  //    value when it is received from its RenderWidgetHost.
-  //    Example: compositor_viewport_pixel_rect.
-  // For each of these properties:
-  //   If the RenderView/WebView also knows these properties, each RenderWidget
-  //   will pass them along to the RenderView as it receives it, even if there
-  //   are multiple RenderWidgets related to the same RenderView.
-  //   TODO(danakj): This does create a race if there are multiple
-  //   UpdateVisualProperties updates flowing through the RenderWidget tree at
-  //   the same time, and it seems that only one RenderWidget for each
-  //   RenderView should be responsible for this update.
-  //
-  //   This operation is done by going through RenderFrameImpl to pass the value
-  //   to the RenderViewImpl. While this class does not use RenderViewImpl
-  //   directly, it speaks through the RenderFrameImpl::*OnRenderView() methods.
-  //   TODO(danakj): A more explicit API to give values from here to RenderView
-  //   and/or WebView would be nice. Also a more explicit API to give values to
-  //   the RenderFrameProxy in one go, instead of setting each property
-  //   independently, causing an update IPC from the RenderFrameProxy for each
-  //   one.
-  //
-  //   See also:
-  //   https://docs.google.com/document/d/1G_fR1D_0c1yke8CqDMddoKrDGr3gy5t_ImEH4hKNIII/edit#
-
   VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
   if (device_scale_factor_for_testing_) {
@@ -1614,43 +1563,27 @@ void RenderWidget::ResizeWebWidget() {
         size_, GetOriginalScreenInfo().device_scale_factor);
   }
 
-  // The visual viewport size given to blink is scaled by the (non-emulated,
-  // see https://crbug.com/819903) device scale factor (if UseZoomForDSF is
-  // enabled).
-  gfx::Size visible_viewport_size_for_blink;
-  if (!compositor_deps_->IsUseZoomForDSFEnabled()) {
-    visible_viewport_size_for_blink = visible_viewport_size_;
-  } else {
-    visible_viewport_size_for_blink = gfx::ScaleToCeiledSize(
-        visible_viewport_size_, GetOriginalScreenInfo().device_scale_factor);
-  }
-
   if (delegate()) {
+    // The visual viewport size given to blink is scaled by the (non-emulated,
+    // see https://crbug.com/819903) device scale factor (if UseZoomForDSF is
+    // enabled).
+    gfx::Size visible_viewport_size_for_blink;
+    if (!compositor_deps_->IsUseZoomForDSFEnabled()) {
+      visible_viewport_size_for_blink = visible_viewport_size_;
+    } else {
+      visible_viewport_size_for_blink = gfx::ScaleToCeiledSize(
+          visible_viewport_size_, GetOriginalScreenInfo().device_scale_factor);
+    }
+
     // When associated with a RenderView, the RenderView is in control of the
     // main frame's size, because it includes other factors for top and bottom
     // controls.
     delegate()->ResizeWebWidgetForWidget(size_for_blink,
                                          browser_controls_params_);
-
-    RenderFrameImpl* render_frame =
-        RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
-    render_frame->SetVisibleViewportSizeOnRenderView(
-        visible_viewport_size_for_blink);
+    delegate()->ResizeVisualViewportForWidget(visible_viewport_size_for_blink);
   } else {
-    // Child frames set the visible_viewport_size on the RenderView/WebView to
-    // limit the size blink tries to composite when the widget is not visible,
-    // such as when it is scrolled out of the main frame's view.
-    if (for_frame()) {
-      RenderFrameImpl* render_frame =
-          RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
-      // TODO(danakj): Only the top-most RenderWidget per RenderView should
-      // be responsible for setting values onto the RenderView.
-      render_frame->SetVisibleViewportSizeOnRenderView(
-          visible_viewport_size_for_blink);
-    }
-
-    // For child frame widgets, popups, and pepper, the RenderWidget is in
-    // control of the WebWidget's size.
+    // When not associated with a RenderView, the RenderWidget is in control of
+    // the frame's (or other type of widget's) size.
     GetWebWidget()->Resize(size_for_blink);
   }
 }

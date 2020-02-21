@@ -29,6 +29,9 @@ void FakeRemoteFrame::ResetReplicatedContentSecurityPolicy() {}
 void FakeRemoteFrame::EnforceInsecureNavigationsSet(
     const std::vector<uint32_t>& set) {}
 
+void FakeRemoteFrame::SetFrameOwnerProperties(
+    blink::mojom::FrameOwnerPropertiesPtr properties) {}
+
 void FakeRemoteFrame::SetReplicatedOrigin(
     const url::Origin& origin,
     bool is_potentially_trustworthy_unique_origin) {}

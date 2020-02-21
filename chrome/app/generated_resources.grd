@@ -6397,6 +6397,14 @@ the Bookmarks menu.">
           =1 {Move tab to new window}
           other {Move tabs to new window}}
         </message>
+        <message name="IDS_TAB_CXMENU_MOVETOANOTHERWINDOW" desc="The label of the 'Move tabs to another window' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural,
+          =1 {Move tab to another window}
+          other {Move tabs to another window}}
+        </message>
+        <message name="IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW" desc="The label for the Tab context item to move items to a new window from the 'Move tabs to another window' submenu.">
+          New window
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item.">
@@ -6448,6 +6456,32 @@ the Bookmarks menu.">
           {NUM_TABS, plural,
           =1 {Move Tab to New Window}
           other {Move Tabs to New Window}}
+        </message>
+        <message name="IDS_TAB_CXMENU_MOVETOANOTHERWINDOW" desc="In Title Case: The label of the 'Move tabs to another window' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural,
+          =1 {Move Tab to Another Window}
+          other {Move Tabs to Another Window}}
+        </message>
+        <message name="IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW" desc="In Title Case: The label for the Tab context item to move items to a new window from the 'Move tabs to another window' submenu.">
+          New Window
+        </message>
+      </if>
+
+      <!-- Strings for Window Titles in Menus -->
+      <if expr="not use_titlecase">
+        <message name="IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY" desc="The format for details of the title displayed in tabs and popup windows. [ICU Syntax]">
+          {NUM_PAGES, plural,
+            =0 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph>}
+            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 more page}
+            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # more pages}}
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY" desc="In Title Case: The format for details of the title displayed in tabs and popup windows. [ICU Syntax]">
+          {NUM_PAGES, plural,
+            =0 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph>}
+            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 More Page}
+            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # More Pages}}
         </message>
       </if>
 

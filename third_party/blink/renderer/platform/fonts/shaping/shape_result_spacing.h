@@ -44,7 +44,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
 
   // Set the expansion for the justification.
   void SetExpansion(float expansion,
-                    TextDirection,
+                    base::i18n::TextDirection,
                     TextJustify,
                     bool allows_leading_expansion = false,
                     bool allows_trailing_expansion = false);
@@ -64,7 +64,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
 
   void ComputeExpansion(bool allows_leading_expansion,
                         bool allows_trailing_expansion,
-                        TextDirection,
+                        base::i18n::TextDirection,
                         TextJustify);
 
   float NextExpansion();

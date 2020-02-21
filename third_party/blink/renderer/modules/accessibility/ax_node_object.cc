@@ -2639,6 +2639,8 @@ void AXNodeObject::AddChildren() {
   AXObjectVector owned_children;
   ComputeAriaOwnsChildren(owned_children);
 
+  AddListMarker();
+
   for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
        child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
     if (child->IsMarkerPseudoElement() && AccessibilityIsIgnored())

@@ -63,9 +63,9 @@ ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
     Page& main_page,
     const Element& anchor,
     const String& message,
-    TextDirection message_dir,
+    base::i18n::TextDirection message_dir,
     const String& sub_message,
-    TextDirection sub_message_dir)
+    base::i18n::TextDirection sub_message_dir)
     : main_page_(main_page),
       anchor_(anchor),
       message_(message),
@@ -218,14 +218,16 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
       "<main id=bubble-body>",
       data);
   data->Append(UncompressResourceAsBinary(IDR_VALIDATION_BUBBLE_ICON));
-  PagePopupClient::AddString(message_dir_ == TextDirection::kLtr
-                                 ? "<div dir=ltr id=main-message></div>"
-                                 : "<div dir=rtl id=main-message></div>",
-                             data);
-  PagePopupClient::AddString(sub_message_dir_ == TextDirection::kLtr
-                                 ? "<div dir=ltr id=sub-message></div>"
-                                 : "<div dir=rtl id=sub-message></div>",
-                             data);
+  PagePopupClient::AddString(
+      message_dir_ == base::i18n::TextDirection::LEFT_TO_RIGHT
+          ? "<div dir=ltr id=main-message></div>"
+          : "<div dir=rtl id=main-message></div>",
+      data);
+  PagePopupClient::AddString(
+      sub_message_dir_ == base::i18n::TextDirection::LEFT_TO_RIGHT
+          ? "<div dir=ltr id=sub-message></div>"
+          : "<div dir=rtl id=sub-message></div>",
+      data);
   PagePopupClient::AddString(
       "</main>"
       "<div id=outer-arrow-bottom></div>"

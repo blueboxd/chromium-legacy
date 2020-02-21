@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 
 namespace blink {
 struct FramePolicy;
@@ -28,7 +29,6 @@ struct FramePolicy;
 
 namespace content {
 
-struct FrameOwnerProperties;
 class Navigator;
 class RenderFrameHostDelegate;
 class RenderViewHostDelegate;
@@ -164,7 +164,7 @@ class CONTENT_EXPORT FrameTree {
       bool is_created_by_script,
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
-      const FrameOwnerProperties& frame_owner_properties,
+      const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       bool was_discarded,
       blink::FrameOwnerElementType owner_type);
 

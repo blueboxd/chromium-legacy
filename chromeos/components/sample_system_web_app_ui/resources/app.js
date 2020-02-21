@@ -2,5 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var header = document.getElementById('header');
+var header = document.getElementById('title');
 header.textContent = 'Sample System Web App';

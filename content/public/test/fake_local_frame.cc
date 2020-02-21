@@ -28,6 +28,9 @@ void FakeLocalFrame::GetTextSurroundingSelection(
 void FakeLocalFrame::SendInterventionReport(const std::string& id,
                                             const std::string& message) {}
 
+void FakeLocalFrame::SetFrameOwnerProperties(
+    blink::mojom::FrameOwnerPropertiesPtr properties) {}
+
 void FakeLocalFrame::NotifyUserActivation() {}
 
 void FakeLocalFrame::AddMessageToConsole(

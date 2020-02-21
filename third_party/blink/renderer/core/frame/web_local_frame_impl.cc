@@ -1136,10 +1136,10 @@ bool WebLocalFrameImpl::SelectionTextDirection(
           .ToNormalizedEphemeralRange()
           .IsNull())
     return false;
-  start = ToBaseTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
-  end = ToBaseTextDirection(PrimaryDirectionOf(
-      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
+  start = PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode());
+  end = PrimaryDirectionOf(
+      *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode());
   return true;
 }
 

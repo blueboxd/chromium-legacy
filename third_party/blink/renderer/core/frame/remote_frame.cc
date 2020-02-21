@@ -7,6 +7,7 @@
 #include "cc/layers/surface_layer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -371,6 +372,11 @@ void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
 void RemoteFrame::EnforceInsecureNavigationsSet(
     const WTF::Vector<uint32_t>& set) {
   security_context_.SetInsecureNavigationsSet(set);
+}
+
+void RemoteFrame::SetFrameOwnerProperties(
+    mojom::blink::FrameOwnerPropertiesPtr properties) {
+  Frame::ApplyFrameOwnerProperties(std::move(properties));
 }
 
 void RemoteFrame::SetReplicatedOrigin(

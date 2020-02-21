@@ -140,7 +140,7 @@ class CORE_EXPORT NGInlineItemSegments {
   // Shape runs in the range and return the concatenated |ShapeResult|.
   scoped_refptr<ShapeResult> ShapeText(const HarfBuzzShaper* shaper,
                                        const Font* font,
-                                       TextDirection direction,
+                                       base::i18n::TextDirection direction,
                                        unsigned start_offset,
                                        unsigned end_offset,
                                        unsigned item_index) const;

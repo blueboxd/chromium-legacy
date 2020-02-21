@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_or_array_buffer_view_or_json_web_key.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -62,29 +63,6 @@ static bool ParseAlgorithm(const AlgorithmIdentifier& raw,
   return success;
 }
 
-static bool CopyStringProperty(const char* property,
-                               const Dictionary& source,
-                               JSONObject* destination) {
-  String value;
-  if (!DictionaryHelper::Get(source, property, value))
-    return false;
-  destination->SetString(property, value);
-  return true;
-}
-
-static bool CopySequenceOfStringProperty(const char* property,
-                                         const Dictionary& source,
-                                         JSONObject* destination) {
-  Vector<String> value;
-  if (!DictionaryHelper::Get(source, property, value))
-    return false;
-  auto json_array = std::make_unique<JSONArray>();
-  for (unsigned i = 0; i < value.size(); ++i)
-    json_array->PushString(value[i]);
-  destination->SetArray(property, std::move(json_array));
-  return true;
-}
-
 // Parses a JsonWebKey dictionary. On success writes the result to
 // |jsonUtf8| as a UTF8-encoded JSON octet string and returns true.
 // On failure sets an error on |result| and returns false.
@@ -92,66 +70,51 @@ static bool CopySequenceOfStringProperty(const char* property,
 // Note: The choice of output as an octet string is to facilitate interop
 // with the non-JWK formats, but does mean there is a second parsing step.
 // This design choice should be revisited after crbug.com/614385).
-//
-// Defined by the WebCrypto spec as:
-//
-//    dictionary JsonWebKey {
-//      DOMString kty;
-//      DOMString use;
-//      sequence<DOMString> key_ops;
-//      DOMString alg;
-//
-//      boolean ext;
-//
-//      DOMString crv;
-//      DOMString x;
-//      DOMString y;
-//      DOMString d;
-//      DOMString n;
-//      DOMString e;
-//      DOMString p;
-//      DOMString q;
-//      DOMString dp;
-//      DOMString dq;
-//      DOMString qi;
-//      sequence<RsaOtherPrimesInfo> oth;
-//      DOMString k;
-//    };
-//
-//    dictionary RsaOtherPrimesInfo {
-//      DOMString r;
-//      DOMString d;
-//      DOMString t;
-//    };
-static bool ParseJsonWebKey(const Dictionary& dict,
+static bool ParseJsonWebKey(const JsonWebKey& key,
                             WebVector<uint8_t>& json_utf8,
                             CryptoResult* result) {
-  // TODO(eroman): This implementation is incomplete and not spec compliant:
-  //  * Properties need to be read in the definition order above
-  //  * Preserve the type of optional parameters (crbug.com/385376)
-  //  * Parse "oth" (crbug.com/441396)
-  //  * Fail with TypeError (not DataError) if the input does not conform
-  //    to a JsonWebKey
   auto json_object = std::make_unique<JSONObject>();
 
-  if (!CopyStringProperty("kty", dict, json_object.get())) {
-    result->CompleteWithError(kWebCryptoErrorTypeData,
-                              "The required JWK member \"kty\" was missing");
-    return false;
+  if (key.hasKty())
+    json_object->SetString("kty", key.kty());
+  if (key.hasUse())
+    json_object->SetString("use", key.use());
+  if (key.hasKeyOps()) {
+    auto json_array = std::make_unique<JSONArray>();
+    for (auto&& value : key.keyOps())
+      json_array->PushString(value);
+    json_object->SetArray("key_ops", std::move(json_array));
   }
+  if (key.hasAlg())
+    json_object->SetString("alg", key.alg());
+  if (key.hasExt())
+    json_object->SetBoolean("ext", key.ext());
 
-  CopyStringProperty("use", dict, json_object.get());
-  CopySequenceOfStringProperty("key_ops", dict, json_object.get());
-  CopyStringProperty("alg", dict, json_object.get());
-
-  bool ext;
-  if (DictionaryHelper::Get(dict, "ext", ext))
-    json_object->SetBoolean("ext", ext);
-
-  const char* const kPropertyNames[] = {"d",  "n",  "e", "p",   "q", "dp",
-                                        "dq", "qi", "k", "crv", "x", "y"};
-  for (unsigned i = 0; i < base::size(kPropertyNames); ++i)
-    CopyStringProperty(kPropertyNames[i], dict, json_object.get());
+  if (key.hasCrv())
+    json_object->SetString("crv", key.crv());
+  if (key.hasX())
+    json_object->SetString("x", key.x());
+  if (key.hasY())
+    json_object->SetString("y", key.y());
+  if (key.hasD())
+    json_object->SetString("d", key.d());
+  if (key.hasN())
+    json_object->SetString("n", key.n());
+  if (key.hasE())
+    json_object->SetString("e", key.e());
+  if (key.hasP())
+    json_object->SetString("p", key.p());
+  if (key.hasQ())
+    json_object->SetString("q", key.q());
+  if (key.hasDp())
+    json_object->SetString("dp", key.dp());
+  if (key.hasDq())
+    json_object->SetString("dq", key.dq());
+  if (key.hasQi())
+    json_object->SetString("qi", key.qi());
+  // TODO(eroman): Parse "oth" (crbug.com/441396)
+  if (key.hasK())
+    json_object->SetString("k", key.k());
 
   String json = json_object->ToJSONString();
   json_utf8 = WebVector<uint8_t>(json.Utf8().c_str(), json.Utf8().length());
@@ -406,7 +369,7 @@ ScriptPromise SubtleCrypto::generateKey(
 ScriptPromise SubtleCrypto::importKey(
     ScriptState* script_state,
     const String& raw_format,
-    const ArrayBufferOrArrayBufferViewOrDictionary& raw_key_data,
+    const ArrayBufferOrArrayBufferViewOrJsonWebKey& raw_key_data,
     const AlgorithmIdentifier& raw_algorithm,
     bool extractable,
     const Vector<String>& raw_key_usages) {
@@ -458,11 +421,8 @@ ScriptPromise SubtleCrypto::importKey(
     //  (2) Let keyData be the keyData parameter passed to the importKey
     //      method.
     case kWebCryptoKeyFormatJwk:
-      if (raw_key_data.IsDictionary()) {
-        // TODO(eroman): To match the spec error order, parsing of the
-        // JsonWebKey should be done earlier (at the WebIDL layer of
-        // parameter checking), regardless of the format being "jwk".
-        if (!ParseJsonWebKey(raw_key_data.GetAsDictionary(), key_data, result))
+      if (raw_key_data.IsJsonWebKey()) {
+        if (!ParseJsonWebKey(*raw_key_data.GetAsJsonWebKey(), key_data, result))
           return promise;
       } else {
         result->CompleteWithError(kWebCryptoErrorTypeType,

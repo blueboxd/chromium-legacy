@@ -54,7 +54,6 @@
 #include "content/common/edit_command.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_gesture.h"
@@ -98,7 +97,7 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
-#include "content/renderer/frame_owner_properties.h"
+#include "content/renderer/frame_owner_properties_converter.h"
 #include "content/renderer/gpu_benchmarking_extension.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
@@ -170,6 +169,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
@@ -1427,7 +1427,7 @@ void RenderFrameImpl::CreateFrame(
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
     const mojom::CreateFrameWidgetParams* widget_params,
-    const FrameOwnerProperties& frame_owner_properties,
+    blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
     bool has_committed_real_load) {
   // TODO(danakj): Split this method into two pieces. The first block makes a
   // WebLocalFrame and collects the RenderView and RenderFrame for it. The
@@ -1472,8 +1472,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.frame_policy, render_frame,
         render_frame->blink_interface_registry_.get(),
         previous_sibling_web_frame,
-        ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
-            frame_owner_properties),
+        frame_owner_properties->To<blink::WebFrameOwnerProperties>(),
         replicated_state.frame_owner_element_type,
         ResolveOpener(opener_routing_id));
 
@@ -2163,8 +2162,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
-                        OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
@@ -2667,14 +2664,6 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
   frame_->SetOpener(opener);
 }
 
-void RenderFrameImpl::OnSetFrameOwnerProperties(
-    const FrameOwnerProperties& frame_owner_properties) {
-  DCHECK(frame_);
-  frame_->SetFrameOwnerProperties(
-      ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
-          frame_owner_properties));
-}
-
 void RenderFrameImpl::OnAdvanceFocus(blink::mojom::FocusType type,
                                      int32_t source_routing_id) {
   RenderFrameProxy* source_frame =
@@ -2961,11 +2950,6 @@ void RenderFrameImpl::SetDeviceScaleFactorOnRenderView(
     bool use_zoom_for_dsf,
     float device_scale_factor) {
   render_view_->SetDeviceScaleFactor(use_zoom_for_dsf, device_scale_factor);
-}
-
-void RenderFrameImpl::SetVisibleViewportSizeOnRenderView(
-    const gfx::Size& visible_viewport_size) {
-  render_view_->SetVisibleViewportSize(visible_viewport_size);
 }
 
 void RenderFrameImpl::AddMessageToConsole(
@@ -3934,8 +3918,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       params.is_created_by_script);
   params.frame_policy = frame_policy;
   params.frame_owner_properties =
-      ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
-          frame_owner_properties);
+      *(blink::mojom::FrameOwnerProperties::From(frame_owner_properties).get());
   params.frame_owner_element_type = frame_owner_element_type;
   if (!Send(new FrameHostMsg_CreateChildFrame(params, &params_reply))) {
     // Allocation of routing id failed, so we can't create a child frame. This
@@ -4140,8 +4123,8 @@ void RenderFrameImpl::DidChangeFrameOwnerProperties(
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   Send(new FrameHostMsg_DidChangeFrameOwnerProperties(
       routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame),
-      ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
-          frame_owner_properties)));
+      *(blink::mojom::FrameOwnerProperties::From(frame_owner_properties)
+            .get())));
 }
 
 void RenderFrameImpl::DidMatchCSS(

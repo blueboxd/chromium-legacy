@@ -52,7 +52,6 @@ class WebView;
 namespace mojom {
 enum class WebSandboxFlags;
 }
-struct WebFrameOwnerProperties;
 
 // Frames may be rendered in process ('local') or out of process ('remote').
 // A remote frame is always cross-site; a local frame may be either same-site or
@@ -103,13 +102,6 @@ class BLINK_EXPORT WebFrame {
 
   // The frame's upgrade insecure navigations set.
   WebVector<unsigned> GetInsecureRequestToUpgrade() const;
-
-  // Updates this frame's FrameOwner properties, such as scrolling, margin,
-  // or allowfullscreen.  This is used when this frame's parent is in
-  // another process and it dynamically updates these properties.
-  // TODO(dcheng): Currently, the update only takes effect on next frame
-  // navigation.  This matches the in-process frame behavior.
-  void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
 
   // Hierarchy ----------------------------------------------------------
 

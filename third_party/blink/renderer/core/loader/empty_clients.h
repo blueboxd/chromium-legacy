@@ -182,7 +182,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void ShowMouseOverURL(const HitTestResult&) override {}
 
-  void SetToolTip(LocalFrame&, const String&, TextDirection) override {}
+  void SetToolTip(LocalFrame&,
+                  const String&,
+                  base::i18n::TextDirection) override {}
 
   void PrintDelegate(LocalFrame*) override {}
 

@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8a3055586e275f09dd75dbcf2fa3662c593cdeb2',
+  'v8_revision': 'c7aa5ac705d57489cec91c862dbc1f1594d14636',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -191,7 +191,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'adfb1574077de65db68d2ef4ffea7e1fbabaaadf',
+  'pdfium_revision': 'd41bcabd124f06c919f38849d6258960eb635f20',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '4a3fef3b687528a01dd1f415aceaee8527114b59',
+  'catapult_revision': 'c5d36f2533740cdb7e146be938b65131435e72f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '2de1869d1c21ce67440e14eb4ecd659580972429',
+  'devtools_frontend_revision': '5e4f0910c1bfa78b2686c3358a91623a5ece9817',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -334,9 +334,11 @@ vars = {
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
-  'libcxx_revision': '78d6a7767ed57b50122a161b91f59f19c9bd0d19',
-  'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
-  'libunwind_revision': '69d9b84cca8354117b9fe9705a4430d789ee599b',
+  # TODO(crbug.com/1054245): Rename these vars back to their original name
+  # once libassistant's copy of buildtools rolls up to the rename.
+  'libcxx_revision_v2':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
+  'libcxxabi_revision_v2':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
+  'libunwind_revision_v2':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -381,14 +383,17 @@ deps = {
     'condition': 'host_os == "mac"',
   },
   'src/buildtools/third_party/libc++/trunk':
-    Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +
-    Var('libcxx_revision'),
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libcxx.git' + '@' +
+    Var('libcxx_revision_v2'),
   'src/buildtools/third_party/libc++abi/trunk':
-    Var('chromium_git') + '/chromium/llvm-project/libcxxabi.git' + '@' +
-    Var('libcxxabi_revision'),
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libcxxabi.git' + '@' +
+    Var('libcxxabi_revision_v2'),
   'src/buildtools/third_party/libunwind/trunk':
-    Var('chromium_git') + '/external/llvm.org/libunwind.git' + '@' +
-    Var('libunwind_revision'),
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libunwind.git' + '@' +
+    Var('libunwind_revision_v2'),
   'src/buildtools/win': {
     'packages': [
       {
@@ -886,7 +891,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7aa682406ad41624826d76a7285d1ccdc0940fab',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7e4c38a48b04677803505d759ba4b0623141f661',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1225,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'c681b47a0955c52eacdbe6739c724be697ab0137',
+    Var('chromium_git') + '/openscreen' + '@' + 'e060aaf770ca8bc122fca0a561a219fda1cfdba9',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1513,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ccc1f15fb9159044659c69095ff642d187642ca6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8adb09deb15baf46fde3eecdc82cf92920f7840e',
     'condition': 'checkout_src_internal',
   },
 

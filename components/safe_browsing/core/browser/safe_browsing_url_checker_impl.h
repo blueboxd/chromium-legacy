@@ -176,6 +176,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // case none of the members of this object should be touched again.
   bool RunNextCallback(bool proceed, bool showed_interstitial);
 
+  // Perform the hash based check for the url.
+  void PerformHashBasedCheck(const GURL& url);
+
   // Called when the |request| from the real-time lookup service is sent.
   void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request);
 
@@ -232,6 +235,13 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // Whether real time lookup is enabled for this request.
   bool real_time_lookup_enabled_;
+
+  // Whether the browse url check request is sent to |database_manager_|.
+  // This boolean is set to true once the first url check is sent, and never
+  // reset to false, because there are separate pending checks for each request
+  // to |database_manager_|. As long as the redirection is still happening,
+  // there is at least one check that needs to be cancelled.
+  bool browse_url_check_sent_ = false;
 
   // Unowned object used for getting and storing real time url check cache.
   // Must be NOT nullptr when real time url check is enabled and profile is not

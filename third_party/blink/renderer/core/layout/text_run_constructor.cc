@@ -38,11 +38,12 @@
 namespace blink {
 
 template <typename CharacterType>
-static inline TextRun ConstructTextRunInternal(const Font& font,
-                                               const CharacterType* characters,
-                                               int length,
-                                               const ComputedStyle& style,
-                                               TextDirection direction) {
+static inline TextRun ConstructTextRunInternal(
+    const Font& font,
+    const CharacterType* characters,
+    int length,
+    const ComputedStyle& style,
+    base::i18n::TextDirection direction) {
   TextRun::ExpansionBehavior expansion =
       TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion;
   bool directional_override = style.RtlOrdering() == EOrder::kVisual;
@@ -52,13 +53,14 @@ static inline TextRun ConstructTextRunInternal(const Font& font,
 }
 
 template <typename CharacterType>
-static inline TextRun ConstructTextRunInternal(const Font& font,
-                                               const CharacterType* characters,
-                                               int length,
-                                               const ComputedStyle& style,
-                                               TextDirection direction,
-                                               TextRunFlags flags) {
-  TextDirection text_direction = direction;
+static inline TextRun ConstructTextRunInternal(
+    const Font& font,
+    const CharacterType* characters,
+    int length,
+    const ComputedStyle& style,
+    base::i18n::TextDirection direction,
+    TextRunFlags flags) {
+  base::i18n::TextDirection text_direction = direction;
   bool directional_override = style.RtlOrdering() == EOrder::kVisual;
   if (flags != kDefaultTextRunFlags) {
     if (flags & kRespectDirection)
@@ -78,7 +80,7 @@ TextRun ConstructTextRun(const Font& font,
                          const LChar* characters,
                          int length,
                          const ComputedStyle& style,
-                         TextDirection direction) {
+                         base::i18n::TextDirection direction) {
   return ConstructTextRunInternal(font, characters, length, style, direction);
 }
 
@@ -86,7 +88,7 @@ TextRun ConstructTextRun(const Font& font,
                          const UChar* characters,
                          int length,
                          const ComputedStyle& style,
-                         TextDirection direction) {
+                         base::i18n::TextDirection direction) {
   return ConstructTextRunInternal(font, characters, length, style, direction);
 }
 
@@ -95,7 +97,7 @@ TextRun ConstructTextRun(const Font& font,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle& style,
-                         TextDirection direction) {
+                         base::i18n::TextDirection direction) {
   DCHECK_LE(offset + length, text->TextLength());
   if (text->HasEmptyText())
     return ConstructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
@@ -110,7 +112,7 @@ TextRun ConstructTextRun(const Font& font,
 TextRun ConstructTextRun(const Font& font,
                          const String& string,
                          const ComputedStyle& style,
-                         TextDirection direction,
+                         base::i18n::TextDirection direction,
                          TextRunFlags flags) {
   unsigned length = string.length();
   if (!length)
@@ -129,7 +131,7 @@ TextRun ConstructTextRun(const Font& font,
                          TextRunFlags flags) {
   return ConstructTextRun(font, string, style,
                           string.IsEmpty() || string.Is8Bit()
-                              ? TextDirection::kLtr
+                              ? base::i18n::TextDirection::LEFT_TO_RIGHT
                               : DetermineDirectionality(string),
                           flags);
 }
@@ -142,15 +144,18 @@ TextRun ConstructTextRun(const Font& font,
   SECURITY_DCHECK(offset + length <= text.TextLength());
   if (text.HasEmptyText()) {
     return ConstructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
-                                    style, TextDirection::kLtr);
+                                    style,
+                                    base::i18n::TextDirection::LEFT_TO_RIGHT);
   }
   if (text.Is8Bit()) {
     return ConstructTextRunInternal(font, text.Characters8() + offset, length,
-                                    style, TextDirection::kLtr);
+                                    style,
+                                    base::i18n::TextDirection::LEFT_TO_RIGHT);
   }
 
-  TextRun run = ConstructTextRunInternal(font, text.Characters16() + offset,
-                                         length, style, TextDirection::kLtr);
+  TextRun run =
+      ConstructTextRunInternal(font, text.Characters16() + offset, length,
+                               style, base::i18n::TextDirection::LEFT_TO_RIGHT);
   run.SetDirection(DirectionForRun(run));
   return run;
 }

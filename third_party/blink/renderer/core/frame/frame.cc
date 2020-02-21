@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -341,6 +343,22 @@ void Frame::FocusImpl() {
   // which already knows the latest focused frame.
   GetPage()->GetFocusController().FocusDocumentView(
       this, false /* notify_embedder */);
+}
+
+void Frame::ApplyFrameOwnerProperties(
+    mojom::blink::FrameOwnerPropertiesPtr properties) {
+  // At the moment, this is only used to replicate frame owner properties
+  // for frames with a remote owner.
+  auto* owner = To<RemoteFrameOwner>(Owner());
+
+  owner->SetBrowsingContextContainerName(properties->name);
+  owner->SetScrollbarMode(properties->scrollbar_mode);
+  owner->SetMarginWidth(properties->margin_width);
+  owner->SetMarginHeight(properties->margin_height);
+  owner->SetAllowFullscreen(properties->allow_fullscreen);
+  owner->SetAllowPaymentRequest(properties->allow_payment_request);
+  owner->SetIsDisplayNone(properties->is_display_none);
+  owner->SetRequiredCsp(properties->required_csp);
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,

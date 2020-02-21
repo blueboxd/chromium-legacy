@@ -71,6 +71,13 @@ int ScrollableArea::MaxOverlapBetweenPages() const {
 }
 
 // static
+float ScrollableArea::DirectionBasedScrollDelta(ScrollGranularity granularity) {
+  return (granularity == ScrollGranularity::kScrollByPercentage)
+             ? kPercentDeltaForDirectionalScroll
+             : 1;
+}
+
+// static
 mojom::blink::ScrollBehavior ScrollableArea::DetermineScrollBehavior(
     mojom::blink::ScrollBehavior behavior_from_param,
     mojom::blink::ScrollBehavior behavior_from_style) {

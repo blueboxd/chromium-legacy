@@ -41,10 +41,8 @@ const int kCMarkerPaddingPx = 7;
 // Recommended UA margin for list markers.
 const int kCUAMarkerMarginEm = 1;
 
-LayoutListMarker::LayoutListMarker(Element* element) : LayoutBox(element) {
-  LayoutObject* list_item = element->parentNode()->GetLayoutObject();
-  DCHECK(list_item->IsListItem());
-  list_item_ = ToLayoutListItem(list_item);
+LayoutListMarker::LayoutListMarker(LayoutListItem* item)
+    : LayoutBox(nullptr), list_item_(item), line_offset_() {
   SetInline(true);
   SetIsAtomicInlineLevel(true);
 }
@@ -55,6 +53,13 @@ void LayoutListMarker::WillBeDestroyed() {
   if (image_)
     image_->RemoveClient(this);
   LayoutBox::WillBeDestroyed();
+}
+
+LayoutListMarker* LayoutListMarker::CreateAnonymous(LayoutListItem* item) {
+  Document& document = item->GetDocument();
+  LayoutListMarker* layout_object = new LayoutListMarker(item);
+  layout_object->SetDocumentForAnonymous(&document);
+  return layout_object;
 }
 
 LayoutSize LayoutListMarker::ImageBulletSize() const {
@@ -496,6 +501,16 @@ LayoutRect LayoutListMarker::RelativeSymbolMarkerRect(
     relative_rect.SetX(width - relative_rect.X() - relative_rect.Width());
   }
   return relative_rect;
+}
+
+void LayoutListMarker::ListItemStyleDidChange() {
+  Element* list_item = To<Element>(list_item_->GetNode());
+  const ComputedStyle* cached_marker_style =
+      list_item->CachedStyleForPseudoElement(kPseudoIdMarker);
+  if (cached_marker_style)
+    SetStyle(cached_marker_style);
+  else
+    SetStyle(list_item->StyleForPseudoElement(kPseudoIdMarker));
 }
 
 }  // namespace blink

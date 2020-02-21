@@ -75,7 +75,7 @@ class FragmentChildIterator {
 
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingMode writing_mode,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     LogicalSize size,
     bool shrink_to_fit = false,
     bool is_new_formatting_context = false,

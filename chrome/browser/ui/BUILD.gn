@@ -1160,6 +1160,8 @@ jumbo_static_library("ui") {
       "tab_sharing/tab_sharing_ui.h",
       "tabs/existing_tab_group_sub_menu_model.cc",
       "tabs/existing_tab_group_sub_menu_model.h",
+      "tabs/existing_window_sub_menu_model.cc",
+      "tabs/existing_window_sub_menu_model.h",
       "tabs/hover_tab_selector.cc",
       "tabs/hover_tab_selector.h",
       "tabs/pinned_tab_codec.cc",

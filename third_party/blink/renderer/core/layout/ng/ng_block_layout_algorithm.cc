@@ -133,14 +133,14 @@ LayoutUnit LogicalFromBfcLineOffset(LayoutUnit child_bfc_line_offset,
                                     LayoutUnit parent_bfc_line_offset,
                                     LayoutUnit child_inline_size,
                                     LayoutUnit parent_inline_size,
-                                    TextDirection direction) {
+                                    base::i18n::TextDirection direction) {
   // We need to respect the current text direction to calculate the logical
   // offset correctly.
   LayoutUnit relative_line_offset =
       child_bfc_line_offset - parent_bfc_line_offset;
 
   LayoutUnit inline_offset =
-      direction == TextDirection::kLtr
+      direction == base::i18n::TextDirection::LEFT_TO_RIGHT
           ? relative_line_offset
           : parent_inline_size - relative_line_offset - child_inline_size;
 
@@ -151,7 +151,7 @@ LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
                                     const NGBfcOffset& parent_bfc_offset,
                                     LayoutUnit child_inline_size,
                                     LayoutUnit parent_inline_size,
-                                    TextDirection direction) {
+                                    base::i18n::TextDirection direction) {
   LayoutUnit inline_offset = LogicalFromBfcLineOffset(
       child_bfc_offset.line_offset, parent_bfc_offset.line_offset,
       child_inline_size, parent_inline_size, direction);
@@ -209,7 +209,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
           ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
 
-  const TextDirection direction = Style().Direction();
+  const base::i18n::TextDirection direction = Style().Direction();
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
   LayoutUnit float_right_inline_size = input.float_right_inline_size;
 
@@ -341,7 +341,7 @@ LogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
     LayoutUnit child_bfc_line_offset,
     const base::Optional<LayoutUnit>& child_bfc_block_offset) {
   LayoutUnit inline_size = container_builder_.Size().inline_size;
-  TextDirection direction = ConstraintSpace().Direction();
+  base::i18n::TextDirection direction = ConstraintSpace().Direction();
 
   if (child_bfc_block_offset && container_builder_.BfcBlockOffset()) {
     return LogicalFromBfcOffsets(
@@ -878,7 +878,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   DCHECK(container_builder_.BfcBlockOffset());
 
   WritingMode writing_mode = container_builder_.GetWritingMode();
-  TextDirection direction = container_builder_.Direction();
+  base::i18n::TextDirection direction = container_builder_.Direction();
   DCHECK_EQ(writing_mode, lineboxes->Style().GetWritingMode());
   DCHECK_EQ(direction, lineboxes->Style().Direction());
   const PhysicalSize outer_size = lineboxes->Size();
@@ -1077,7 +1077,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   DCHECK(child.IsBlock());
 
   const ComputedStyle& child_style = child.Style();
-  const TextDirection direction = ConstraintSpace().Direction();
+  const base::i18n::TextDirection direction = ConstraintSpace().Direction();
   NGInflowChildData child_data =
       ComputeChildData(*previous_inflow_position, child, child_break_token,
                        /* is_new_fc */ true);
@@ -1291,7 +1291,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     bool abort_if_cleared,
     NGBfcOffset* out_child_bfc_offset) {
   const ComputedStyle& child_style = child.Style();
-  const TextDirection direction = ConstraintSpace().Direction();
+  const base::i18n::TextDirection direction = ConstraintSpace().Direction();
   const WritingMode writing_mode = ConstraintSpace().GetWritingMode();
 
   // The origin offset is where we should start looking for layout

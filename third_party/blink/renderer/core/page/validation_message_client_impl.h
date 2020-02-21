@@ -51,11 +51,12 @@ class CORE_EXPORT ValidationMessageClientImpl final
   explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
-  void ShowValidationMessage(const Element& anchor,
-                             const String& message,
-                             TextDirection message_dir,
-                             const String& sub_message,
-                             TextDirection sub_message_dir) override;
+  void ShowValidationMessage(
+      const Element& anchor,
+      const String& message,
+      base::i18n::TextDirection message_dir,
+      const String& sub_message,
+      base::i18n::TextDirection sub_message_dir) override;
 
   void Trace(Visitor*) override;
 

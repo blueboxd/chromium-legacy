@@ -151,12 +151,6 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
       const Continuation continuation) override;
-  ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* rewritten_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
 
   // Generate a new key event from an original key event and the replacement
   // state determined by a key rewriter.
@@ -262,9 +256,15 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // Take the keys being pressed into consideration, in contrast to
   // RewriteKeyEvent which computes the rewritten event and event rewrite
   // status in stateless way.
-  void RewriteKeyEventInContext(const ui::KeyEvent& event,
-                                std::unique_ptr<ui::Event>* rewritten_event,
-                                ui::EventRewriteStatus* status);
+  ui::EventDispatchDetails RewriteKeyEventInContext(
+      const ui::KeyEvent& event,
+      std::unique_ptr<ui::Event> rewritten_event,
+      ui::EventRewriteStatus status,
+      const Continuation continuation);
+
+  ui::EventDispatchDetails SendStickyKeysReleaseEvents(
+      std::unique_ptr<ui::Event> rewritten_event,
+      const Continuation continuation);
 
   // A set of device IDs whose press event has been rewritten.
   // This is to ensure that press and release events are rewritten consistently.
@@ -284,9 +284,6 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // one is the original key state. If no key event rewriting happens, the first
   // element and the second element are identical.
   std::list<std::pair<MutableKeyState, MutableKeyState>> pressed_key_states_;
-
-  // Store key events when there are more than one key events to be dispatched.
-  std::vector<std::unique_ptr<ui::KeyEvent>> dispatched_key_events_;
 
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.

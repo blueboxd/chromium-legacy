@@ -303,7 +303,7 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
 
   void SetToolTip(LocalFrame& frame,
                   const String& tooltip,
-                  TextDirection direction) override {
+                  base::i18n::TextDirection direction) override {
     DCHECK_EQ(&frame, overlay_->OverlayMainFrame());
     client_->SetToolTip(*overlay_->GetFrame(), tooltip, direction);
   }

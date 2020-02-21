@@ -9,15 +9,57 @@ source_set("openscreen_platform") {
     "logging.cc",
     "network_util.cc",
     "network_util.h",
-    "platform_task_runner.cc",
-    "platform_task_runner.h",
+    "task_runner.cc",
+    "task_runner.h",
     "time.cc",
     "trace_logging_platform.cc",
+  ]
+
+  public_deps = [
+    "//third_party/openscreen/src/platform",
   ]
 
   deps = [
     "//base",
     "//net",
-    "//third_party/openscreen/src/platform",
+  ]
+}
+
+source_set("openscreen_platform_network_service") {
+  sources = [
+    "tls_client_connection.cc",
+    "tls_client_connection.h",
+    "tls_connection_factory.cc",
+    "tls_connection_factory.h",
+    "udp_socket.cc",
+    "udp_socket.h",
+  ]
+
+  public_deps = [
+    ":openscreen_platform",
+    "//mojo/public/cpp/bindings",
+    "//services/network/public/mojom",
+  ]
+
+  deps = [
+    "//base",
+    "//services/network:network_service",
+  ]
+}
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "tls_client_connection_unittest.cc",
+    "tls_connection_factory_unittest.cc",
+  ]
+
+  deps = [
+    ":openscreen_platform_network_service",
+    "//base/test:test_support",
+    "//services/network:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

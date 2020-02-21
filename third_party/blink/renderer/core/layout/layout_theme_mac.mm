@@ -854,7 +854,7 @@ void LayoutThemeMac::SetPopupButtonCellState(const Node* node,
   UpdatePressedState(popup_button, node);
 
   popup_button.userInterfaceLayoutDirection =
-      style.Direction() == TextDirection::kLtr
+      style.Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT
           ? NSUserInterfaceLayoutDirectionLeftToRight
           : NSUserInterfaceLayoutDirectionRightToLeft;
 }

@@ -139,7 +139,8 @@ void NGFragmentItemsBuilder::AddListMarker(
 
   // Resolved direction matters only for inline items, and outside list markers
   // are not inline.
-  const TextDirection resolved_direction = TextDirection::kLtr;
+  const base::i18n::TextDirection resolved_direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
   items_.push_back(
       std::make_unique<NGFragmentItem>(marker_fragment, resolved_direction));
   offsets_.push_back(offset);
@@ -147,7 +148,7 @@ void NGFragmentItemsBuilder::AddListMarker(
 
 const Vector<std::unique_ptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
     WritingMode writing_mode,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     const PhysicalSize& outer_size) {
   ConvertToPhysical(writing_mode, direction, outer_size);
   return items_;
@@ -155,9 +156,10 @@ const Vector<std::unique_ptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
 
 // Convert internal logical offsets to physical. Items are kept with logical
 // offset until outer box size is determined.
-void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
-                                               TextDirection direction,
-                                               const PhysicalSize& outer_size) {
+void NGFragmentItemsBuilder::ConvertToPhysical(
+    WritingMode writing_mode,
+    base::i18n::TextDirection direction,
+    const PhysicalSize& outer_size) {
   CHECK_EQ(items_.size(), offsets_.size());
   if (is_converted_to_physical_)
     return;
@@ -190,10 +192,11 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
           item = item_iter->get();
           // Use `kLtr` because inline items are after bidi-reoder, and that
           // their offset is visual, not logical.
-          item->SetOffset(
-              offset->ConvertToPhysical(line_writing_mode, TextDirection::kLtr,
-                                        line_box_bounds.size, item->Size()) +
-              line_box_bounds.offset);
+          item->SetOffset(offset->ConvertToPhysical(
+                              line_writing_mode,
+                              base::i18n::TextDirection::LEFT_TO_RIGHT,
+                              line_box_bounds.size, item->Size()) +
+                          line_box_bounds.offset);
         }
       }
     }
@@ -202,10 +205,11 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   is_converted_to_physical_ = true;
 }
 
-void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
-                                             TextDirection direction,
-                                             const PhysicalSize& outer_size,
-                                             void* data) {
+void NGFragmentItemsBuilder::ToFragmentItems(
+    WritingMode writing_mode,
+    base::i18n::TextDirection direction,
+    const PhysicalSize& outer_size,
+    void* data) {
   ConvertToPhysical(writing_mode, direction, outer_size);
   AssociateNextForSameLayoutObject();
   new (data) NGFragmentItems(this);

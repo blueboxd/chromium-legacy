@@ -24,7 +24,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/navigation_gesture.h"
@@ -58,6 +57,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
@@ -198,7 +198,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::FrameOwnerProperties)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(scrollbar_mode)
   IPC_STRUCT_TRAITS_MEMBER(margin_width)
@@ -211,17 +211,16 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameVisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
-  IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
   IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)
   IPC_STRUCT_TRAITS_MEMBER(max_size_for_auto_resize)
+  IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
+  IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
+  IPC_STRUCT_TRAITS_MEMBER(compositor_viewport)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(is_pinch_gesture_active)
-  IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
-  IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
-  IPC_STRUCT_TRAITS_MEMBER(compositor_viewport)
   IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
 IPC_STRUCT_TRAITS_END()
 
@@ -450,7 +449,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(std::string, frame_unique_name)
   IPC_STRUCT_MEMBER(bool, is_created_by_script)
   IPC_STRUCT_MEMBER(blink::FramePolicy, frame_policy)
-  IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
+  IPC_STRUCT_MEMBER(blink::mojom::FrameOwnerProperties, frame_owner_properties)
   IPC_STRUCT_MEMBER(blink::FrameOwnerElementType, frame_owner_element_type)
 IPC_STRUCT_END()
 
@@ -588,9 +587,6 @@ IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap,
                     bool /* save_with_empty_url */)
 
-IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
-                    content::FrameOwnerProperties /* frame_owner_properties */)
-
 // Request to continue running the sequential focus navigation algorithm in
 // this frame.  |source_routing_id| identifies the frame that issued this
 // request.  This message is sent when pressing <tab> or <shift-tab> needs to
@@ -674,9 +670,10 @@ IPC_MESSAGE_ROUTED2(
 
 // Notifies the browser that frame owner properties have changed for a subframe
 // of this frame.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
-                    int32_t /* subframe_routing_id */,
-                    content::FrameOwnerProperties /* frame_owner_properties */)
+IPC_MESSAGE_ROUTED2(
+    FrameHostMsg_DidChangeFrameOwnerProperties,
+    int32_t /* subframe_routing_id */,
+    blink::mojom::FrameOwnerProperties /* frame_owner_properties */)
 
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.

@@ -363,7 +363,8 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     const ComputedStyle* inline_cb_style = block_info.key->Style();
     DCHECK(inline_cb_style);
 
-    TextDirection container_direction = default_containing_block_.direction;
+    base::i18n::TextDirection container_direction =
+        default_containing_block_.direction;
     NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
 
     bool is_same_direction =
@@ -467,10 +468,12 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
          node.GetLayoutBox()->ContainingBlock()->IsTable());
 
   const ContainingBlockInfo& container_info = GetContainingBlockInfo(candidate);
-  const TextDirection default_direction = default_containing_block_.direction;
+  const base::i18n::TextDirection default_direction =
+      default_containing_block_.direction;
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
-  const TextDirection candidate_direction = candidate_style.Direction();
+  const base::i18n::TextDirection candidate_direction =
+      candidate_style.Direction();
 
   LogicalSize container_content_size =
       container_info.ContentSize(candidate_style.GetPosition());
@@ -553,11 +556,14 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     LogicalSize container_content_size,
     const ContainingBlockInfo& container_info,
     const LayoutBox* only_layout) {
-  const TextDirection default_direction = default_containing_block_.direction;
+  const base::i18n::TextDirection default_direction =
+      default_containing_block_.direction;
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
-  const TextDirection candidate_direction = candidate_style.Direction();
-  const TextDirection container_direction = container_info.direction;
+  const base::i18n::TextDirection candidate_direction =
+      candidate_style.Direction();
+  const base::i18n::TextDirection container_direction =
+      container_info.direction;
 
   PhysicalSize container_physical_content_size =
       ToPhysicalSize(container_content_size, writing_mode_);

@@ -294,7 +294,7 @@ TEST_F(ShapeResultBloberizerTest, CommonAccentRightToLeftFillGlyphBuffer) {
   // "[] []" with an accent mark over the last square bracket.
   const UChar kStr[] = {0x5B, 0x5D, 0x20, 0x5B, 0x301, 0x5D, 0x0};
   TextRun text_run(kStr, 6);
-  text_run.SetDirection(TextDirection::kRtl);
+  text_run.SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   TextRunPaintInfo run_info(text_run);
   run_info.from = 1;
 

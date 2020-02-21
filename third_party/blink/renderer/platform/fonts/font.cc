@@ -200,7 +200,8 @@ bool Font::DrawBidiText(cc::PaintCanvas* canvas,
     TextRun subrun =
         run.SubRun(bidi_run->Start(), bidi_run->Stop() - bidi_run->Start());
     bool is_rtl = bidi_run->Level() % 2;
-    subrun.SetDirection(is_rtl ? TextDirection::kRtl : TextDirection::kLtr);
+    subrun.SetDirection(is_rtl ? base::i18n::TextDirection::RIGHT_TO_LEFT
+                               : base::i18n::TextDirection::LEFT_TO_RIGHT);
     subrun.SetDirectionalOverride(bidi_run->DirOverride(false));
 
     TextRunPaintInfo subrun_info(subrun);

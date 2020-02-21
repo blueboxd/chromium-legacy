@@ -24,7 +24,7 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  void ComputeFragmentOffsetOnLine(TextDirection,
+  void ComputeFragmentOffsetOnLine(base::i18n::TextDirection,
                                    LayoutUnit* offset_on_line,
                                    LayoutUnit* total_width) const;
 
@@ -104,8 +104,9 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
 
   const virtual NGBorderEdges BorderEdges() const = 0;
 
-  PhysicalRect PaintRectForImageStrip(const PhysicalRect&,
-                                      TextDirection direction) const override;
+  PhysicalRect PaintRectForImageStrip(
+      const PhysicalRect&,
+      base::i18n::TextDirection direction) const override;
 
   BorderPaintingType GetBorderPaintType(
       const PhysicalRect& adjusted_frame_rect,

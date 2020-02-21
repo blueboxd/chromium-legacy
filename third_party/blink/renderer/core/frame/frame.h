@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
@@ -307,6 +308,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   virtual void DidChangeVisibleToHitTesting() = 0;
 
   void FocusImpl();
+
+  void ApplyFrameOwnerProperties(
+      mojom::blink::FrameOwnerPropertiesPtr properties);
 
   mutable FrameTree tree_node_;
 

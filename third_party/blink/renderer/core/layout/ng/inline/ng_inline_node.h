@@ -112,7 +112,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
       LayoutBlockFlow* layout_block_flow);
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
-  TextDirection BaseDirection() const { return Data().BaseDirection(); }
+  base::i18n::TextDirection BaseDirection() const {
+    return Data().BaseDirection();
+  }
 
   bool IsEmptyInline() { return EnsureData().is_empty_inline_; }
 

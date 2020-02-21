@@ -111,10 +111,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   USING_FAST_MALLOC(ShapeResult);
 
  public:
-  static scoped_refptr<ShapeResult> Create(const Font* font,
-                                           unsigned start_index,
-                                           unsigned num_characters,
-                                           TextDirection direction) {
+  static scoped_refptr<ShapeResult> Create(
+      const Font* font,
+      unsigned start_index,
+      unsigned num_characters,
+      base::i18n::TextDirection direction) {
     return base::AdoptRef(
         new ShapeResult(font, start_index, num_characters, direction));
   }
@@ -132,16 +133,17 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       unsigned length);
   static scoped_refptr<ShapeResult> CreateForTabulationCharacters(
       const Font* font,
-      TextDirection direction,
+      base::i18n::TextDirection direction,
       const TabSize& tab_size,
       float position,
       unsigned start_index,
       unsigned length);
-  static scoped_refptr<ShapeResult> CreateForSpaces(const Font* font,
-                                                    TextDirection direction,
-                                                    unsigned start_index,
-                                                    unsigned length,
-                                                    float width);
+  static scoped_refptr<ShapeResult> CreateForSpaces(
+      const Font* font,
+      base::i18n::TextDirection direction,
+      unsigned start_index,
+      unsigned length,
+      float width);
   ~ShapeResult();
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,
@@ -163,10 +165,12 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned StartIndex() const { return start_index_; }
   unsigned EndIndex() const { return start_index_ + num_characters_; }
   void FallbackFonts(HashSet<const SimpleFontData*>*) const;
-  TextDirection Direction() const {
-    return static_cast<TextDirection>(direction_);
+  base::i18n::TextDirection Direction() const {
+    return static_cast<base::i18n::TextDirection>(direction_);
   }
-  bool Rtl() const { return Direction() == TextDirection::kRtl; }
+  bool Rtl() const {
+    return Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  }
 
   // True if at least one glyph in this result has vertical offsets.
   //
@@ -197,7 +201,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                  BreakGlyphsOption) const;
   // Returns the offset that can fit to between |x| and the left or the right
   // edge. The side of the edge is determined by |line_direction|.
-  unsigned OffsetToFit(float x, TextDirection line_direction) const;
+  unsigned OffsetToFit(float x, base::i18n::TextDirection line_direction) const;
   unsigned OffsetForPosition(float x,
                              const StringView& text,
                              IncludePartialGlyphsOption include_partial_glyphs,
@@ -338,7 +342,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   struct RunInfo;
   RunInfo* InsertRunForTesting(unsigned start_index,
                                unsigned num_characters,
-                               TextDirection,
+                               base::i18n::TextDirection,
                                Vector<uint16_t> safe_break_offsets = {});
 #if DCHECK_IS_ON()
   void CheckConsistency() const;
@@ -348,17 +352,18 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   ShapeResult(scoped_refptr<const SimpleFontData>,
               unsigned start_index,
               unsigned num_characters,
-              TextDirection);
+              base::i18n::TextDirection);
   ShapeResult(const Font*,
               unsigned start_index,
               unsigned num_characters,
-              TextDirection);
+              base::i18n::TextDirection);
   ShapeResult(const ShapeResult&);
 
-  static scoped_refptr<ShapeResult> Create(const SimpleFontData* font_data,
-                                           unsigned start_index,
-                                           unsigned num_characters,
-                                           TextDirection direction) {
+  static scoped_refptr<ShapeResult> Create(
+      const SimpleFontData* font_data,
+      unsigned start_index,
+      unsigned num_characters,
+      base::i18n::TextDirection direction) {
     return base::AdoptRef(
         new ShapeResult(font_data, start_index, num_characters, direction));
   }
@@ -484,7 +489,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Overall direction for the TextRun, dictates which order each individual
   // sub run (represented by RunInfo structs in the m_runs vector) can have a
   // different text direction.
-  unsigned direction_ : 1;
+  unsigned direction_ : 2;
 
   // Tracks whether any runs contain glyphs with a y-offset != 0.
   unsigned has_vertical_offsets_ : 1;

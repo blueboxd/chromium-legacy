@@ -14,7 +14,7 @@
 namespace blink {
 
 LogicalRect PhysicalRect::ConvertToLogical(WritingMode mode,
-                                           TextDirection direction,
+                                           base::i18n::TextDirection direction,
                                            PhysicalSize outer_size,
                                            PhysicalSize inner_size) const {
   return LogicalRect(

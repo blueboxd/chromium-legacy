@@ -50,9 +50,6 @@ import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.CachedMetrics;
-import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.Count100HistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
@@ -183,9 +180,8 @@ public class WebViewChromiumAwInit {
             String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
             boolean isDeveloperModeEnabled =
                     DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
-            final BooleanHistogramSample developerModeSample =
-                    new BooleanHistogramSample("Android.WebView.DevUi.DeveloperModeEnabled");
-            developerModeSample.record(isDeveloperModeEnabled);
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
             if (isDeveloperModeEnabled) {
                 long start = SystemClock.elapsedRealtime();
                 try {
@@ -195,9 +191,8 @@ public class WebViewChromiumAwInit {
                             DeveloperModeUtils.getFlagOverrides(webViewPackageName);
                     helper.applyFlagOverrides(flagOverrides);
 
-                    final Count100HistogramSample flagOverrideSample =
-                            new Count100HistogramSample("Android.WebView.DevUi.ToggledFlagCount");
-                    flagOverrideSample.record(flagOverrides.size());
+                    RecordHistogram.recordCount100Histogram(
+                            "Android.WebView.DevUi.ToggledFlagCount", flagOverrides.size());
                 } finally {
                     long end = SystemClock.elapsedRealtime();
                     RecordHistogram.recordTimesHistogram(
@@ -222,10 +217,6 @@ public class WebViewChromiumAwInit {
                     });
 
             mStarted = true;
-
-            // Make sure to record any cached metrics, now that we know that the native
-            // library has been loaded and initialized.
-            CachedMetrics.commitCachedMetrics();
 
             RecordHistogram.recordSparseHistogram("Android.WebView.TargetSdkVersion",
                     context.getApplicationInfo().targetSdkVersion);

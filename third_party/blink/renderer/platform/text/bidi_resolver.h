@@ -128,15 +128,17 @@ struct BidiStatus final {
         last(WTF::unicode::kOtherNeutral) {}
 
   // Creates a BidiStatus representing a new paragraph root with a default
-  // direction.  Uses TextDirection as it only has two possibilities instead of
-  // WTF::unicode::Direction which has 19.
-  BidiStatus(TextDirection text_direction, bool is_override) {
+  // direction.  Usesbase::i18n::TextDirection as it only has two possibilities
+  // instead of WTF::unicode::Direction which has 19.
+  BidiStatus(base::i18n::TextDirection text_direction, bool is_override) {
     WTF::unicode::CharDirection direction =
-        text_direction == TextDirection::kLtr ? WTF::unicode::kLeftToRight
-                                              : WTF::unicode::kRightToLeft;
+        text_direction == base::i18n::TextDirection::LEFT_TO_RIGHT
+            ? WTF::unicode::kLeftToRight
+            : WTF::unicode::kRightToLeft;
     eor = last_strong = last = direction;
-    context = BidiContext::Create(text_direction == TextDirection::kLtr ? 0 : 1,
-                                  direction, is_override);
+    context = BidiContext::Create(
+        text_direction == base::i18n::TextDirection::LEFT_TO_RIGHT ? 0 : 1,
+        direction, is_override);
   }
 
   BidiStatus(WTF::unicode::CharDirection eor_dir,
@@ -150,11 +152,11 @@ struct BidiStatus final {
 
   // Creates a BidiStatus for Isolates (RLI/LRI).
   // The rule X5a ans X5b of UAX#9: http://unicode.org/reports/tr9/#X5a
-  static BidiStatus CreateForIsolate(TextDirection text_direction,
+  static BidiStatus CreateForIsolate(base::i18n::TextDirection text_direction,
                                      bool is_override,
                                      unsigned char level) {
     WTF::unicode::CharDirection direction;
-    if (text_direction == TextDirection::kRtl) {
+    if (text_direction == base::i18n::TextDirection::RIGHT_TO_LEFT) {
       level = NextGreaterOddLevel(level);
       direction = WTF::unicode::kRightToLeft;
     } else {
@@ -259,8 +261,8 @@ class BidiResolver final {
     DCHECK(s.context);
     status_ = s;
     paragraph_directionality_ = s.context->Dir() == WTF::unicode::kLeftToRight
-                                    ? TextDirection::kLtr
-                                    : TextDirection::kRtl;
+                                    ? base::i18n::TextDirection::LEFT_TO_RIGHT
+                                    : base::i18n::TextDirection::RIGHT_TO_LEFT;
   }
 
   MidpointState<Iterator>& GetMidpointState() { return midpoint_state_; }
@@ -295,13 +297,13 @@ class BidiResolver final {
     return current_ == end || current_.AtEnd();
   }
 
-  TextDirection DetermineParagraphDirectionality(
+  base::i18n::TextDirection DetermineParagraphDirectionality(
       bool* has_strong_directionality = nullptr) {
     bool break_on_paragraph = true;
     return DetermineDirectionalityInternal(break_on_paragraph,
                                            has_strong_directionality);
   }
-  TextDirection DetermineDirectionality(
+  base::i18n::TextDirection DetermineDirectionality(
       bool* has_strong_directionality = nullptr) {
     bool break_on_paragraph = false;
     return DetermineDirectionalityInternal(break_on_paragraph,
@@ -328,7 +330,7 @@ class BidiResolver final {
                       int,
                       Run*,
                       BidiContext*,
-                      TextDirection) const {
+                      base::i18n::TextDirection) const {
     return nullptr;
   }
   Iterator current_;
@@ -356,7 +358,7 @@ class BidiResolver final {
   Vector<IsolatedRun> isolated_runs_;
   Run* trailing_space_run_;
   bool needs_trailing_space_;
-  TextDirection paragraph_directionality_;
+  base::i18n::TextDirection paragraph_directionality_;
 
  private:
   void RaiseExplicitEmbeddingLevel(BidiRunList<Run>&,
@@ -374,7 +376,7 @@ class BidiResolver final {
   // http://www.unicode.org/reports/tr9/#L1
   void ComputeTrailingSpace(BidiRunList<Run>&);
 
-  TextDirection DetermineDirectionalityInternal(
+  base::i18n::TextDirection DetermineDirectionalityInternal(
       bool break_on_paragraph,
       bool* has_strong_directionality);
 
@@ -562,9 +564,10 @@ void BidiResolver<Iterator, Run, IsolatedRun>::ComputeTrailingSpace(
     return;
 
   bool should_reorder =
-      trailing_space_run != (paragraph_directionality_ == TextDirection::kLtr
-                                 ? runs.LastRun()
-                                 : runs.FirstRun());
+      trailing_space_run !=
+      (paragraph_directionality_ == base::i18n::TextDirection::LEFT_TO_RIGHT
+           ? runs.LastRun()
+           : runs.FirstRun());
   if (first_space != trailing_space_run->Start()) {
     BidiContext* base_context = Context();
     while (BidiContext* parent = base_context->Parent())
@@ -583,7 +586,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::ComputeTrailingSpace(
   }
 
   // Apply L1 rule.
-  if (paragraph_directionality_ == TextDirection::kLtr) {
+  if (paragraph_directionality_ == base::i18n::TextDirection::LEFT_TO_RIGHT) {
     runs.MoveRunToEnd(trailing_space_run);
     trailing_space_run->level_ = 0;
   } else {
@@ -732,7 +735,7 @@ inline void BidiResolver<Iterator, Run, IsolatedRun>::ReorderRunsFromLevels(
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-TextDirection
+base::i18n::TextDirection
 BidiResolver<Iterator, Run, IsolatedRun>::DetermineDirectionalityInternal(
     bool break_on_paragraph,
     bool* has_strong_directionality) {
@@ -765,28 +768,28 @@ BidiResolver<Iterator, Run, IsolatedRun>::DetermineDirectionalityInternal(
     if (char_direction == WTF::unicode::kLeftToRight) {
       if (has_strong_directionality)
         *has_strong_directionality = true;
-      return TextDirection::kLtr;
+      return base::i18n::TextDirection::LEFT_TO_RIGHT;
     }
     if (char_direction == WTF::unicode::kRightToLeft ||
         char_direction == WTF::unicode::kRightToLeftArabic) {
       if (has_strong_directionality)
         *has_strong_directionality = true;
-      return TextDirection::kRtl;
+      return base::i18n::TextDirection::RIGHT_TO_LEFT;
     }
     Increment();
   }
   if (has_strong_directionality)
     *has_strong_directionality = false;
-  return TextDirection::kLtr;
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
-inline TextDirection DirectionForCharacter(UChar32 character) {
+inline base::i18n::TextDirection DirectionForCharacter(UChar32 character) {
   WTF::unicode::CharDirection char_direction =
       WTF::unicode::Direction(character);
   if (char_direction == WTF::unicode::kRightToLeft ||
       char_direction == WTF::unicode::kRightToLeftArabic)
-    return TextDirection::kRtl;
-  return TextDirection::kLtr;
+    return base::i18n::TextDirection::RIGHT_TO_LEFT;
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
 template <class Iterator, class Run, class IsolatedRun>

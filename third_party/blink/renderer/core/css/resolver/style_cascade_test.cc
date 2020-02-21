@@ -1927,8 +1927,9 @@ TEST_F(StyleCascadeTest, WebkitBorderImageMixedOrder) {
 TEST_F(StyleCascadeTest, AllLogicalPropertiesSlot) {
   TestCascade cascade(GetDocument());
 
-  static const TextDirection directions[] = {TextDirection::kLtr,
-                                             TextDirection::kRtl};
+  static const base::i18n::TextDirection directions[] = {
+      base::i18n::TextDirection::LEFT_TO_RIGHT,
+      base::i18n::TextDirection::RIGHT_TO_LEFT};
 
   static const WritingMode modes[] = {WritingMode::kHorizontalTb,
                                       WritingMode::kVerticalRl,
@@ -1940,7 +1941,7 @@ TEST_F(StyleCascadeTest, AllLogicalPropertiesSlot) {
     if (!property.IsLonghand())
       continue;
 
-    for (TextDirection direction : directions) {
+    for (base::i18n::TextDirection direction : directions) {
       for (WritingMode mode : modes) {
         const CSSProperty& physical =
             property.ResolveDirectionAwareProperty(direction, mode);

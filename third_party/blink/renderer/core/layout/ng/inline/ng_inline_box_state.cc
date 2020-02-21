@@ -648,7 +648,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // Because children are already in the visual order, use LTR for the
   // fragment builder so that it should not transform the coordinates for RTL.
   NGBoxFragmentBuilder box(item->GetLayoutObject(), &style,
-                           style.GetWritingMode(), TextDirection::kLtr);
+                           style.GetWritingMode(),
+                           base::i18n::TextDirection::LEFT_TO_RIGHT);
   box.SetInitialFragmentGeometry(fragment_geometry);
   box.SetBoxType(NGPhysicalFragment::kInlineBox);
   box.SetStyleVariant(item->StyleVariant());

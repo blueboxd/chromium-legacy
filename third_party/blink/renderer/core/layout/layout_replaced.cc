@@ -260,7 +260,8 @@ void LayoutReplaced::ComputePositionedLogicalWidth(
 
   // To match WinIE, in quirks mode use the parent's 'direction' property
   // instead of the the container block's.
-  TextDirection container_direction = container_block->StyleRef().Direction();
+  base::i18n::TextDirection container_direction =
+      container_block->StyleRef().Direction();
 
   // Variables to solve.
   bool is_horizontal = IsHorizontalWritingMode();
@@ -339,7 +340,7 @@ void LayoutReplaced::ComputePositionedLogicalWidth(
     } else {
       // Use the containing block's direction rather than the parent block's
       // per CSS 2.1 reference test abspos-replaced-width-margin-000.
-      if (container_direction == TextDirection::kLtr) {
+      if (container_direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
         margin_logical_left_alias = LayoutUnit();
         margin_logical_right_alias = difference;  // will be negative
       } else {
@@ -408,7 +409,7 @@ void LayoutReplaced::ComputePositionedLogicalWidth(
     logical_left_value = ValueForLength(logical_left, container_logical_width);
     // If the containing block is right-to-left, then push the left position as
     // far to the right as possible
-    if (container_direction == TextDirection::kRtl) {
+    if (container_direction == base::i18n::TextDirection::RIGHT_TO_LEFT) {
       int total_logical_width =
           (computed_values.extent_ + logical_left_value + logical_right_value +
            margin_logical_left_alias + margin_logical_right_alias)
@@ -977,7 +978,7 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
     // if we still want to distinguish line and selection heights in NG.
     const ComputedStyle& line_style = line_box.Current().Style();
     const WritingMode writing_mode = line_style.GetWritingMode();
-    const TextDirection text_direction = line_style.Direction();
+    const base::i18n::TextDirection text_direction = line_style.Direction();
     const PhysicalOffset line_box_offset =
         line_box.Current().OffsetInContainerBlock();
     const PhysicalSize line_box_size = line_box.Current().Size();

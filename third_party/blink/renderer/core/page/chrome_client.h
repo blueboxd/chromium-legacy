@@ -300,7 +300,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   void MouseDidMoveOverElement(LocalFrame&,
                                const HitTestLocation&,
                                const HitTestResult&);
-  virtual void SetToolTip(LocalFrame&, const String&, TextDirection) = 0;
+  virtual void SetToolTip(LocalFrame&,
+                          const String&,
+                          base::i18n::TextDirection) = 0;
   void ClearToolTip(LocalFrame&);
 
   bool Print(LocalFrame*);

@@ -49,25 +49,25 @@ class CSSDirectionAwareResolver {
 
   // These resolvers expect a PhysicalGroup with box sides, in the following
   // order: top, right, bottom, left.
-  static const CSSProperty& ResolveInlineStart(TextDirection,
+  static const CSSProperty& ResolveInlineStart(base::i18n::TextDirection,
                                                WritingMode,
                                                const PhysicalGroup<4>&);
-  static const CSSProperty& ResolveInlineEnd(TextDirection,
+  static const CSSProperty& ResolveInlineEnd(base::i18n::TextDirection,
                                              WritingMode,
                                              const PhysicalGroup<4>&);
-  static const CSSProperty& ResolveBlockStart(TextDirection,
+  static const CSSProperty& ResolveBlockStart(base::i18n::TextDirection,
                                               WritingMode,
                                               const PhysicalGroup<4>&);
-  static const CSSProperty& ResolveBlockEnd(TextDirection,
+  static const CSSProperty& ResolveBlockEnd(base::i18n::TextDirection,
                                             WritingMode,
                                             const PhysicalGroup<4>&);
 
   // These resolvers expect a PhysicalGroup with dimensions, in the following
   // order: horizontal, vertical.
-  static const CSSProperty& ResolveInline(TextDirection,
+  static const CSSProperty& ResolveInline(base::i18n::TextDirection,
                                           WritingMode,
                                           const PhysicalGroup<2>&);
-  static const CSSProperty& ResolveBlock(TextDirection,
+  static const CSSProperty& ResolveBlock(base::i18n::TextDirection,
                                          WritingMode,
                                          const PhysicalGroup<2>&);
 };

@@ -71,7 +71,7 @@ class InlineBoxPainterBase {
 
   virtual PhysicalRect PaintRectForImageStrip(
       const PhysicalRect&,
-      TextDirection direction) const = 0;
+      base::i18n::TextDirection direction) const = 0;
 
   enum BorderPaintingType {
     kDontPaintBorders,

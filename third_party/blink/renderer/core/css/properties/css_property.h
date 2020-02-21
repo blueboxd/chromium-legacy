@@ -83,8 +83,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
       const ComputedStyle& computed_style,
       const LayoutObject* layout_object,
       bool allow_visited_style) const;
-  virtual const CSSProperty& ResolveDirectionAwareProperty(TextDirection,
-                                                           WritingMode) const {
+  virtual const CSSProperty& ResolveDirectionAwareProperty(
+      base::i18n::TextDirection,
+      WritingMode) const {
     return *this;
   }
   virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }

@@ -391,6 +391,9 @@ class Browser : public TabStripModelObserver,
   // window is an app window.
   base::string16 GetWindowTitleForTab(bool include_app_name, int index) const;
 
+  // Gets a list of window titles for the "Move to another window" menu.
+  std::vector<base::string16> GetExistingWindowsForMoveMenu();
+
   // Gets the window title from the provided WebContents.
   // Disables additional formatting when |include_app_name| is false or if the
   // window is an app window.
@@ -519,6 +522,11 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<content::WebContents> SwapWebContents(
       content::WebContents* old_contents,
       std::unique_ptr<content::WebContents> new_contents);
+
+  // Move tabs to the browser at an index in the list previously returned by
+  // GetExistingWindowsForMoveMenu.
+  void MoveTabsToExistingWindow(const std::vector<int> tab_indices,
+                                int browser_index);
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -1051,6 +1059,13 @@ class Browser : public TabStripModelObserver,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);
 
+  // Gets the window title for the current tab, to display in a menu. If the
+  // title is too long to fit in the required space,
+  // the tab title will be elided. The result title might still be a larger
+  // width than specified, as at least a few characters of the title are always
+  // shown.
+  base::string16 GetWindowTitleForMenu() const;
+
   // Data members /////////////////////////////////////////////////////////////
 
   std::vector<InterstitialObserver*> interstitial_observers_;
@@ -1192,6 +1207,9 @@ class Browser : public TabStripModelObserver,
 #endif
 
   const base::ElapsedTimer creation_timer_;
+
+  // Stores the list of browser windows showing via a menu.
+  std::vector<base::WeakPtr<Browser>> existing_browsers_for_menu_list_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

@@ -634,7 +634,7 @@ void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
       style.SetEffectiveAppearance(kNoControlPart);
       style.SetWritingMode(WritingMode::kVerticalRl);
       // It's always in RTL because the slider value increases up even in LTR.
-      style.SetDirection(TextDirection::kRtl);
+      style.SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
     } else {
       style.SetTouchAction(TouchAction::kPanY);
       style.SetEffectiveAppearance(kNoControlPart);

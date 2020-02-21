@@ -287,11 +287,12 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void SetBidiLevel(unsigned char level) {
     bitfields_.SetBidiEmbeddingLevel(level);
   }
-  TextDirection Direction() const {
-    return BidiLevel() % 2 ? TextDirection::kRtl : TextDirection::kLtr;
+  base::i18n::TextDirection Direction() const {
+    return BidiLevel() % 2 ? base::i18n::TextDirection::RIGHT_TO_LEFT
+                           : base::i18n::TextDirection::LEFT_TO_RIGHT;
   }
   bool IsLeftToRightDirection() const {
-    return Direction() == TextDirection::kLtr;
+    return Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT;
   }
   int CaretLeftmostOffset() const {
     return IsLeftToRightDirection() ? CaretMinOffset() : CaretMaxOffset();

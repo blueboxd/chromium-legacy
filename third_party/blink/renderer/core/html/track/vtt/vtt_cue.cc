@@ -552,11 +552,13 @@ class VTTTextRunIterator : public TextRunIterator {
 
 // Almost the same as determineDirectionality in core/html/html_element.cc, but
 // that one uses a "plain" TextRunIterator (which only checks for '\n').
-static TextDirection DetermineDirectionality(const String& value,
-                                             bool& has_strong_directionality) {
+static base::i18n::TextDirection DetermineDirectionality(
+    const String& value,
+    bool& has_strong_directionality) {
   TextRun run(value);
   BidiResolver<VTTTextRunIterator, BidiCharacterRun> bidi_resolver;
-  bidi_resolver.SetStatus(BidiStatus(TextDirection::kLtr, false));
+  bidi_resolver.SetStatus(
+      BidiStatus(base::i18n::TextDirection::LEFT_TO_RIGHT, false));
   bidi_resolver.SetPositionIgnoringNestedIsolates(VTTTextRunIterator(&run, 0));
   return bidi_resolver.DetermineDirectionality(&has_strong_directionality);
 }
@@ -568,7 +570,8 @@ static CSSValueID DetermineTextDirection(DocumentFragment* vtt_root) {
   // concatenation of the values of each WebVTT Text Object in nodes, in a
   // pre-order, depth-first traversal, excluding WebVTT Ruby Text Objects and
   // their descendants.
-  TextDirection text_direction = TextDirection::kLtr;
+  base::i18n::TextDirection text_direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
   Node* node = NodeTraversal::Next(*vtt_root);
   while (node) {
     DCHECK(node->IsDescendantOf(vtt_root));

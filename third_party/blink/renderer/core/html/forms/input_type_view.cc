@@ -98,7 +98,7 @@ LayoutObject* InputTypeView::CreateLayoutObject(const ComputedStyle& style,
 
 void InputTypeView::CustomStyleForLayoutObject(ComputedStyle&) {}
 
-TextDirection InputTypeView::ComputedTextDirection() {
+base::i18n::TextDirection InputTypeView::ComputedTextDirection() {
   return GetElement().ComputedStyleRef().Direction();
 }
 

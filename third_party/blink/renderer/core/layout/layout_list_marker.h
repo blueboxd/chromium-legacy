@@ -35,7 +35,7 @@ class LayoutListItem;
 // The LayoutListMarker always has to be a child of a LayoutListItem.
 class CORE_EXPORT LayoutListMarker final : public LayoutBox {
  public:
-  explicit LayoutListMarker(Element*);
+  static LayoutListMarker* CreateAnonymous(LayoutListItem*);
   ~LayoutListMarker() override;
 
   // Marker text without suffix, e.g. "1".
@@ -75,6 +75,8 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   const LayoutListItem* ListItem() const { return list_item_; }
   LayoutSize ImageBulletSize() const;
 
+  void ListItemStyleDidChange();
+
   const char* GetName() const override { return "LayoutListMarker"; }
 
   LayoutUnit LineOffset() const { return line_offset_; }
@@ -83,6 +85,8 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   void WillBeDestroyed() override;
 
  private:
+  LayoutListMarker(LayoutListItem*);
+
   void ComputePreferredLogicalWidths() override;
 
   bool IsOfType(LayoutObjectType type) const override {

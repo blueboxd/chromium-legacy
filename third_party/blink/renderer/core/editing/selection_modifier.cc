@@ -55,17 +55,19 @@ namespace {
 const unsigned kMaxIterationForPageGranularityMovement = 1024;
 
 VisiblePosition LeftBoundaryOfLine(const VisiblePosition& c,
-                                   TextDirection direction) {
+                                   base::i18n::TextDirection direction) {
   DCHECK(c.IsValid()) << c;
-  return direction == TextDirection::kLtr ? LogicalStartOfLine(c)
-                                          : LogicalEndOfLine(c);
+  return direction == base::i18n::TextDirection::LEFT_TO_RIGHT
+             ? LogicalStartOfLine(c)
+             : LogicalEndOfLine(c);
 }
 
 VisiblePosition RightBoundaryOfLine(const VisiblePosition& c,
-                                    TextDirection direction) {
+                                    base::i18n::TextDirection direction) {
   DCHECK(c.IsValid()) << c;
-  return direction == TextDirection::kLtr ? LogicalEndOfLine(c)
-                                          : LogicalStartOfLine(c);
+  return direction == base::i18n::TextDirection::LEFT_TO_RIGHT
+             ? LogicalEndOfLine(c)
+             : LogicalStartOfLine(c);
 }
 
 }  // namespace
@@ -135,7 +137,7 @@ static VisiblePosition ComputeVisibleExtent(
                                visible_selection.Affinity());
 }
 
-TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
+base::i18n::TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
   const Position& selection_extent = selection_.Extent();
 
   // TODO(editing-dev): Check for Position::IsNotNull is an easy fix for few
@@ -146,12 +148,13 @@ TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
   // or do not allow null selection in SelectionModifier at all.
   return selection_extent.IsNotNull()
              ? DirectionOfEnclosingBlockOf(selection_extent)
-             : TextDirection::kLtr;
+             : base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
 namespace {
 
-base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
+base::Optional<base::i18n::TextDirection> DirectionAt(
+    const VisiblePosition& position) {
   if (position.IsNull())
     return base::nullopt;
   const PositionWithAffinity adjusted = ComputeInlineAdjustedPosition(position);
@@ -173,7 +176,8 @@ base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
 }
 
 // TODO(xiaochengh): Deduplicate code with |DirectionAt()|.
-base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
+base::Optional<base::i18n::TextDirection> LineDirectionAt(
+    const VisiblePosition& position) {
   if (position.IsNull())
     return base::nullopt;
   const PositionWithAffinity adjusted = ComputeInlineAdjustedPosition(position);
@@ -196,10 +200,11 @@ base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
   return base::nullopt;
 }
 
-TextDirection DirectionOf(const VisibleSelection& visible_selection) {
-  base::Optional<TextDirection> maybe_start_direction =
+base::i18n::TextDirection DirectionOf(
+    const VisibleSelection& visible_selection) {
+  base::Optional<base::i18n::TextDirection> maybe_start_direction =
       DirectionAt(visible_selection.VisibleStart());
-  base::Optional<TextDirection> maybe_end_direction =
+  base::Optional<base::i18n::TextDirection> maybe_end_direction =
       DirectionAt(visible_selection.VisibleEnd());
   if (maybe_start_direction.has_value() && maybe_end_direction.has_value() &&
       maybe_start_direction.value() == maybe_end_direction.value())
@@ -210,11 +215,11 @@ TextDirection DirectionOf(const VisibleSelection& visible_selection) {
 
 }  // namespace
 
-TextDirection SelectionModifier::DirectionOfSelection() const {
+base::i18n::TextDirection SelectionModifier::DirectionOfSelection() const {
   return DirectionOf(selection_);
 }
 
-TextDirection SelectionModifier::LineDirectionOfExtent() const {
+base::i18n::TextDirection SelectionModifier::LineDirectionOfExtent() const {
   return LineDirectionAt(selection_.VisibleExtent())
       .value_or(DirectionOfEnclosingBlockOf(selection_.Extent()));
 }
@@ -223,11 +228,13 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
                         SelectionModifyDirection direction) {
   switch (direction) {
     case SelectionModifyDirection::kRight:
-      return DirectionOf(visible_selection) == TextDirection::kLtr;
+      return DirectionOf(visible_selection) ==
+             base::i18n::TextDirection::LEFT_TO_RIGHT;
     case SelectionModifyDirection::kForward:
       return true;
     case SelectionModifyDirection::kLeft:
-      return DirectionOf(visible_selection) != TextDirection::kLtr;
+      return DirectionOf(visible_selection) !=
+             base::i18n::TextDirection::LEFT_TO_RIGHT;
     case SelectionModifyDirection::kBackward:
       return false;
   }
@@ -333,21 +340,24 @@ VisiblePosition SelectionModifier::ModifyExtendingRightInternal(
   // block is RTL direction.
   switch (granularity) {
     case TextGranularity::kCharacter:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr) {
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT) {
         return NextPositionOf(ComputeVisibleExtent(selection_),
                               kCanSkipOverEditingBoundary);
       }
       return PreviousPositionOf(ComputeVisibleExtent(selection_),
                                 kCanSkipOverEditingBoundary);
     case TextGranularity::kWord:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr) {
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT) {
         return CreateVisiblePosition(NextWordPositionForPlatform(
             ComputeVisibleExtent(selection_).DeepEquivalent()));
       }
       return CreateVisiblePosition(PreviousWordPosition(
           ComputeVisibleExtent(selection_).DeepEquivalent()));
     case TextGranularity::kLineBoundary:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT)
         return ModifyExtendingForwardInternal(granularity);
       return ModifyExtendingBackwardInternal(granularity);
     case TextGranularity::kSentence:
@@ -366,7 +376,7 @@ VisiblePosition SelectionModifier::ModifyExtendingRightInternal(
 VisiblePosition SelectionModifier::ModifyExtendingRight(
     TextGranularity granularity) {
   const VisiblePosition& pos = ModifyExtendingRightInternal(granularity);
-  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+  if (DirectionOfEnclosingBlock() == base::i18n::TextDirection::LEFT_TO_RIGHT)
     return AdjustForwardPositionForUserSelectAll(pos);
   return AdjustBackwardPositionForUserSelectAll(pos);
 }
@@ -411,7 +421,7 @@ VisiblePosition SelectionModifier::ModifyExtendingForwardInternal(
 VisiblePosition SelectionModifier::ModifyExtendingForward(
     TextGranularity granularity) {
   const VisiblePosition pos = ModifyExtendingForwardInternal(granularity);
-  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+  if (DirectionOfEnclosingBlock() == base::i18n::TextDirection::LEFT_TO_RIGHT)
     return AdjustForwardPositionForUserSelectAll(pos);
   return AdjustBackwardPositionForUserSelectAll(pos);
 }
@@ -421,15 +431,15 @@ VisiblePosition SelectionModifier::ModifyMovingRight(
   switch (granularity) {
     case TextGranularity::kCharacter:
       if (!selection_.IsRange()) {
-        if (LineDirectionOfExtent() == TextDirection::kLtr)
+        if (LineDirectionOfExtent() == base::i18n::TextDirection::LEFT_TO_RIGHT)
           return ModifyMovingForward(granularity);
         return ModifyMovingBackward(granularity);
       }
-      if (DirectionOfSelection() == TextDirection::kLtr)
+      if (DirectionOfSelection() == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return CreateVisiblePosition(selection_.End(), selection_.Affinity());
       return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
     case TextGranularity::kWord:
-      if (LineDirectionOfExtent() == TextDirection::kLtr)
+      if (LineDirectionOfExtent() == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return ModifyMovingForward(granularity);
       return ModifyMovingBackward(granularity);
     case TextGranularity::kSentence:
@@ -505,21 +515,24 @@ VisiblePosition SelectionModifier::ModifyExtendingLeftInternal(
   // block is RTL direction.
   switch (granularity) {
     case TextGranularity::kCharacter:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr) {
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT) {
         return PreviousPositionOf(ComputeVisibleExtent(selection_),
                                   kCanSkipOverEditingBoundary);
       }
       return NextPositionOf(ComputeVisibleExtent(selection_),
                             kCanSkipOverEditingBoundary);
     case TextGranularity::kWord:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr) {
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT) {
         return CreateVisiblePosition(PreviousWordPosition(
             ComputeVisibleExtent(selection_).DeepEquivalent()));
       }
       return CreateVisiblePosition(NextWordPositionForPlatform(
           ComputeVisibleExtent(selection_).DeepEquivalent()));
     case TextGranularity::kLineBoundary:
-      if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+      if (DirectionOfEnclosingBlock() ==
+          base::i18n::TextDirection::LEFT_TO_RIGHT)
         return ModifyExtendingBackwardInternal(granularity);
       return ModifyExtendingForwardInternal(granularity);
     case TextGranularity::kSentence:
@@ -537,7 +550,7 @@ VisiblePosition SelectionModifier::ModifyExtendingLeftInternal(
 VisiblePosition SelectionModifier::ModifyExtendingLeft(
     TextGranularity granularity) {
   const VisiblePosition& pos = ModifyExtendingLeftInternal(granularity);
-  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+  if (DirectionOfEnclosingBlock() == base::i18n::TextDirection::LEFT_TO_RIGHT)
     return AdjustBackwardPositionForUserSelectAll(pos);
   return AdjustForwardPositionForUserSelectAll(pos);
 }
@@ -585,7 +598,7 @@ VisiblePosition SelectionModifier::ModifyExtendingBackwardInternal(
 VisiblePosition SelectionModifier::ModifyExtendingBackward(
     TextGranularity granularity) {
   const VisiblePosition pos = ModifyExtendingBackwardInternal(granularity);
-  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+  if (DirectionOfEnclosingBlock() == base::i18n::TextDirection::LEFT_TO_RIGHT)
     return AdjustBackwardPositionForUserSelectAll(pos);
   return AdjustForwardPositionForUserSelectAll(pos);
 }
@@ -595,15 +608,15 @@ VisiblePosition SelectionModifier::ModifyMovingLeft(
   switch (granularity) {
     case TextGranularity::kCharacter:
       if (!selection_.IsRange()) {
-        if (LineDirectionOfExtent() == TextDirection::kLtr)
+        if (LineDirectionOfExtent() == base::i18n::TextDirection::LEFT_TO_RIGHT)
           return ModifyMovingBackward(granularity);
         return ModifyMovingForward(granularity);
       }
-      if (DirectionOfSelection() == TextDirection::kLtr)
+      if (DirectionOfSelection() == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
       return CreateVisiblePosition(selection_.End(), selection_.Affinity());
     case TextGranularity::kWord:
-      if (LineDirectionOfExtent() == TextDirection::kLtr)
+      if (LineDirectionOfExtent() == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return ModifyMovingBackward(granularity);
       return ModifyMovingForward(granularity);
     case TextGranularity::kSentence:
@@ -778,11 +791,11 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                                  .Extend(position.DeepEquivalent())
                                  .Build();
       } else {
-        TextDirection text_direction = DirectionOfEnclosingBlock();
+        base::i18n::TextDirection text_direction = DirectionOfEnclosingBlock();
         if (direction == SelectionModifyDirection::kForward ||
-            (text_direction == TextDirection::kLtr &&
+            (text_direction == base::i18n::TextDirection::LEFT_TO_RIGHT &&
              direction == SelectionModifyDirection::kRight) ||
-            (text_direction == TextDirection::kRtl &&
+            (text_direction == base::i18n::TextDirection::RIGHT_TO_LEFT &&
              direction == SelectionModifyDirection::kLeft)) {
           current_selection_ =
               SelectionInDOMTree::Builder()

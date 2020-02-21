@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -97,6 +96,10 @@ LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
 LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
                                                     const ComputedStyle& style,
                                                     LegacyLayout legacy) {
+  // TODO(obrufau): allow ::marker pseudo-elements to generate legacy layout.
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled() ||
+      legacy == LegacyLayout::kForce)
+    return nullptr;
   const Node* parent = node.parentNode();
   const ComputedStyle* parent_style = parent->GetComputedStyle();
   bool is_inside =
@@ -104,9 +107,9 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
       (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
   if (is_inside) {
     return CreateObject<LayoutObject, LayoutNGInsideListMarker,
-                        LayoutListMarker>(node, style, legacy);
+                        LayoutNGInsideListMarker>(node, style, legacy);
   }
-  return CreateObject<LayoutObject, LayoutNGListMarker, LayoutListMarker>(
+  return CreateObject<LayoutObject, LayoutNGListMarker, LayoutNGListMarker>(
       node, style, legacy);
 }
 

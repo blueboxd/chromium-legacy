@@ -262,7 +262,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
     }
     popup_item.enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);
-    popup_item.text_direction = ToBaseTextDirection(style.Direction());
+    popup_item.text_direction = style.Direction();
     popup_item.has_text_direction_override = IsOverride(style.GetUnicodeBidi());
   }
 
@@ -276,7 +276,8 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
       menu_style.GetFont().GetFontDescription().ComputedSize());
   info.selected_index = ToExternalPopupMenuItemIndex(
       owner_element.SelectedListIndex(), owner_element);
-  info.right_aligned = menu_style.Direction() == TextDirection::kRtl;
+  info.right_aligned =
+      menu_style.Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
   info.allow_multiple_selection = owner_element.IsMultiple();
   if (count < item_count)
     items.Shrink(count);

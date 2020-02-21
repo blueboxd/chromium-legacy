@@ -59,7 +59,8 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansion_behavior = kAllowTrailingExpansion |
                                                  kForbidLeadingExpansion,
-          TextDirection direction = TextDirection::kLtr,
+          base::i18n::TextDirection direction =
+              base::i18n::TextDirection::LEFT_TO_RIGHT,
           bool directional_override = false)
       : characters_length_(len),
         len_(len),
@@ -83,7 +84,8 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansion_behavior = kAllowTrailingExpansion |
                                                  kForbidLeadingExpansion,
-          TextDirection direction = TextDirection::kLtr,
+          base::i18n::TextDirection direction =
+              base::i18n::TextDirection::LEFT_TO_RIGHT,
           bool directional_override = false)
       : characters_length_(len),
         len_(len),
@@ -106,7 +108,8 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansion_behavior = kAllowTrailingExpansion |
                                                  kForbidLeadingExpansion,
-          TextDirection direction = TextDirection::kLtr,
+          base::i18n::TextDirection direction =
+              base::i18n::TextDirection::LEFT_TO_RIGHT,
           bool directional_override = false)
       : characters_length_(string.length()),
         len_(string.length()),
@@ -250,16 +253,20 @@ class PLATFORM_EXPORT TextRun final {
   bool AllowsTrailingExpansion() const {
     return expansion_behavior_ & kAllowTrailingExpansion;
   }
-  TextDirection Direction() const {
-    return static_cast<TextDirection>(direction_);
+  base::i18n::TextDirection Direction() const {
+    return static_cast<base::i18n::TextDirection>(direction_);
   }
-  bool Rtl() const { return Direction() == TextDirection::kRtl; }
-  bool Ltr() const { return Direction() == TextDirection::kLtr; }
+  bool Rtl() const {
+    return Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  }
+  bool Ltr() const {
+    return Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT;
+  }
   bool DirectionalOverride() const { return directional_override_; }
   bool SpacingDisabled() const { return disable_spacing_; }
 
   void DisableSpacing() { disable_spacing_ = true; }
-  void SetDirection(TextDirection direction) {
+  void SetDirection(base::i18n::TextDirection direction) {
     direction_ = static_cast<unsigned>(direction);
   }
   void SetDirectionalOverride(bool override) {
@@ -298,7 +305,7 @@ class PLATFORM_EXPORT TextRun final {
   ExpansionBehavior expansion_behavior_ : 2;
   unsigned is_8bit_ : 1;
   unsigned allow_tabs_ : 1;
-  unsigned direction_ : 1;
+  unsigned direction_ : 2;
   // Was this direction set by an override character.
   unsigned directional_override_ : 1;
   unsigned disable_spacing_ : 1;

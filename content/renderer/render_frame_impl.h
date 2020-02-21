@@ -88,6 +88,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -167,7 +168,6 @@ class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
 struct CustomContextMenuContext;
-struct FrameOwnerProperties;
 struct FrameReplicationState;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -226,7 +226,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const FrameReplicationState& replicated_state,
       CompositorDependencies* compositor_deps,
       const mojom::CreateFrameWidgetParams* widget_params,
-      const FrameOwnerProperties& frame_owner_properties,
+      blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
       bool has_committed_real_load);
 
   // Returns the RenderFrameImpl for the given routing ID.
@@ -807,23 +807,14 @@ class CONTENT_EXPORT RenderFrameImpl
   media::MediaPermission* GetMediaPermission();
 
   // Proxies the call to set the zoom level over to the RenderViewImpl and
-  // returns its result. Meant to be called by the |render_widget_| in order to
-  // get access to the RenderViewImpl.
+  // returns its result.
   bool SetZoomLevelOnRenderView(double zoom_level);
   // Proxies the call to set the prefer compositing flag over to the
-  // RenderViewImpl. Meant to be called by the |render_widget_| in order to get
-  // access to the RenderViewImpl.
+  // RenderViewImpl.
   void SetPreferCompositingToLCDTextEnabledOnRenderView(bool prefer);
   // Proxies the call to set the device scale factor over to the RenderViewImpl.
-  // Meant to be called by the |render_widget_| in order to get access to the
-  // RenderViewImpl.
   void SetDeviceScaleFactorOnRenderView(bool use_zoom_for_dsf,
                                         float device_scale_factor);
-  // Proxies the call to set the visible viewport size over to the
-  // RenderViewImpl. Meant to be called by the |render_widget_| in order to get
-  // access to the RenderViewImpl.
-  void SetVisibleViewportSizeOnRenderView(
-      const gfx::Size& visible_viewport_size);
 
   // Sends the current frame's navigation state to the browser.
   void SendUpdateState();
@@ -1043,8 +1034,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnReload();
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);
-  void OnSetFrameOwnerProperties(
-      const FrameOwnerProperties& frame_owner_properties);
   void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);

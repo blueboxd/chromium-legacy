@@ -869,7 +869,7 @@ LayoutRect LayoutText::LocalCaretRect(
   // Find an InlineBox before caret position, which is used to get caret height.
   const InlineBox* caret_box = box;
   if (box->GetLineLayoutItem().Style(box->IsFirstLineStyle())->Direction() ==
-      TextDirection::kLtr) {
+      base::i18n::TextDirection::LEFT_TO_RIGHT) {
     if (box->PrevLeafChild() && caret_offset == 0)
       caret_box = box->PrevLeafChild();
   } else {
@@ -963,7 +963,7 @@ ALWAYS_INLINE float LayoutText::WidthFromFont(
     int len,
     float lead_width,
     float text_width_so_far,
-    TextDirection text_direction,
+    base::i18n::TextDirection text_direction,
     HashSet<const SimpleFontData*>* fallback_fonts,
     FloatRect* glyph_bounds_accumulation,
     float expansion) const {
@@ -1004,10 +1004,10 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
                                    LayoutUnit& min_width,
                                    LayoutUnit& max_width,
                                    bool& strip_front_spaces,
-                                   TextDirection direction) {
+                                   base::i18n::TextDirection direction) {
   float float_min_width = 0.0f, float_max_width = 0.0f;
 
-  // Convert leadWidth to a float here, to avoid multiple implict conversions
+  // Convert leadWidth to a float here, to avoid multiple implicit conversions
   // below.
   float lead_width = lead_width_layout_unit.ToFloat();
 
@@ -1129,7 +1129,7 @@ static float MinWordFragmentWidthForBreakAll(
     LayoutText* layout_text,
     const ComputedStyle& style,
     const Font& font,
-    TextDirection text_direction,
+    base::i18n::TextDirection text_direction,
     int start,
     int length,
     EWordBreak break_all_or_break_word) {
@@ -1172,7 +1172,7 @@ static float MinWordFragmentWidthForBreakAll(
 static float MaxWordFragmentWidth(LayoutText* layout_text,
                                   const ComputedStyle& style,
                                   const Font& font,
-                                  TextDirection text_direction,
+                                  base::i18n::TextDirection text_direction,
                                   Hyphenation& hyphenation,
                                   wtf_size_t word_offset,
                                   wtf_size_t word_length,
@@ -1268,8 +1268,9 @@ void LayoutText::ComputePreferredLogicalWidths(
 
   BidiResolver<TextRunIterator, BidiCharacterRun> bidi_resolver;
   BidiCharacterRun* run;
-  TextDirection text_direction = style_to_use.Direction();
-  if ((Is8Bit() && text_direction == TextDirection::kLtr) ||
+  base::i18n::TextDirection text_direction = style_to_use.Direction();
+  if ((Is8Bit() &&
+       text_direction == base::i18n::TextDirection::LEFT_TO_RIGHT) ||
       IsOverride(style_to_use.GetUnicodeBidi())) {
     run = nullptr;
   } else {
@@ -1292,8 +1293,8 @@ void LayoutText::ComputePreferredLogicalWidths(
 
     if (run) {
       // Treat adjacent runs with the same resolved directionality
-      // (TextDirection as opposed to WTF::unicode::Direction) as belonging
-      // to the same run to avoid breaking unnecessarily.
+      // (base::i18n::TextDirection as opposed to WTF::unicode::Direction) as
+      // belonging to the same run to avoid breaking unnecessarily.
       while (i >= run->Stop() ||
              (run->Next() && run->Next()->Direction() == run->Direction()))
         run = run->Next();
@@ -1390,7 +1391,7 @@ void LayoutText::ComputePreferredLogicalWidths(
       if (is_space &&
           (f.GetFontDescription().GetTypesettingFeatures() & kKerning)) {
         const unsigned text_direction_index =
-            static_cast<unsigned>(text_direction);
+            static_cast<unsigned>(text_direction) - 1;
         DCHECK_GE(text_direction_index, 0U);
         DCHECK_LE(text_direction_index, 1U);
         if (!cached_word_trailing_space_width[text_direction_index]) {
@@ -2009,7 +2010,7 @@ void LayoutText::PositionLineBox(InlineBox* box) {
 float LayoutText::Width(unsigned from,
                         unsigned len,
                         LayoutUnit x_pos,
-                        TextDirection text_direction,
+                        base::i18n::TextDirection text_direction,
                         bool first_line,
                         HashSet<const SimpleFontData*>* fallback_fonts,
                         FloatRect* glyph_bounds,
@@ -2028,7 +2029,7 @@ float LayoutText::Width(unsigned from,
                         unsigned len,
                         const Font& f,
                         LayoutUnit x_pos,
-                        TextDirection text_direction,
+                        base::i18n::TextDirection text_direction,
                         HashSet<const SimpleFontData*>* fallback_fonts,
                         FloatRect* glyph_bounds,
                         float expansion) const {

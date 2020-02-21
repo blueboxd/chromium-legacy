@@ -37,14 +37,14 @@ class PLATFORM_EXPORT ShapeResultBuffer {
                         IncludePartialGlyphsOption,
                         BreakGlyphsOption) const;
   CharacterRange GetCharacterRange(const StringView& text,
-                                   TextDirection,
+                                   base::i18n::TextDirection,
                                    float total_width,
                                    unsigned from,
                                    unsigned to) const;
-  Vector<CharacterRange> IndividualCharacterRanges(TextDirection,
+  Vector<CharacterRange> IndividualCharacterRanges(base::i18n::TextDirection,
                                                    float total_width) const;
   Vector<double> IndividualCharacterAdvances(const StringView&,
-                                             TextDirection,
+                                             base::i18n::TextDirection,
                                              float total_width) const;
 
   Vector<ShapeResult::RunFontData> GetRunFontData() const;

@@ -79,8 +79,9 @@ struct BidiCharacterRun {
   bool DirOverride(bool visually_ordered) {
     return override_ || visually_ordered;
   }
-  TextDirection Direction() const {
-    return Reversed(false) ? TextDirection::kRtl : TextDirection::kLtr;
+  base::i18n::TextDirection Direction() const {
+    return Reversed(false) ? base::i18n::TextDirection::RIGHT_TO_LEFT
+                           : base::i18n::TextDirection::LEFT_TO_RIGHT;
   }
 
   BidiCharacterRun* Next() const { return next_; }

@@ -14,6 +14,10 @@
 static constexpr int kPixelsPerLineStep = 40;
 static constexpr float kMinFractionToStepWhenPaging = 0.875f;
 
+// Each directional scroll for percentage-based units should scroll 1/8th of
+// the scrollable area.
+static constexpr float kPercentDeltaForDirectionalScroll = 0.125f;
+
 // Autoscrolling (on the main thread) happens by applying a delta every 50ms.
 // Hence, pixels per second for a autoscroll cc animation can be calculated as:
 // autoscroll velocity = delta / 0.05 sec = delta x 20

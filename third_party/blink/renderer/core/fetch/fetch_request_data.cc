@@ -102,7 +102,11 @@ FetchRequestData* FetchRequestData::Create(
         nullptr /* AbortSignal */));
   }
 
-  request->SetContext(fetch_api_request.request_context_type);
+  // Context is always set to FETCH later, so we don't copy it
+  // from fetch_api_request here.
+  // TODO(crbug.com/1045925): Remove this comment too when
+  // we deprecate SetContext.
+
   request->SetDestination(fetch_api_request.destination);
   request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
   if (fetch_api_request.referrer) {

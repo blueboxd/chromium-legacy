@@ -112,7 +112,7 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
 
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingMode writing_mode,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     LogicalSize size,
     bool shrink_to_fit,
     bool is_new_formatting_context,

@@ -212,7 +212,7 @@ void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
 void NGContainerFragmentBuilder::AddOutOfFlowInlineChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
-    TextDirection inline_container_direction) {
+    base::i18n::TextDirection inline_container_direction) {
   DCHECK(node_.IsInline() || layout_object_->IsLayoutInline());
 
   // As all inline-level fragments are built in the line-logical coordinate

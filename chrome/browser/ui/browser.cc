@@ -158,6 +158,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -228,7 +229,10 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
@@ -720,6 +724,70 @@ base::string16 Browser::GetWindowTitleForTab(bool include_app_name,
       include_app_name, tab_strip_model_->GetWebContentsAt(index));
 }
 
+std::vector<base::string16> Browser::GetExistingWindowsForMoveMenu() {
+  std::vector<base::string16> window_titles;
+  existing_browsers_for_menu_list_.clear();
+
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_reverse_iterator it =
+           browser_list->begin_last_active();
+       it != browser_list->end_last_active(); ++it) {
+    Browser* browser = *it;
+
+    // We can only move into a tabbed view of the same profile, and not the same
+    // window we're currently in.
+    if (browser->is_type_normal() && browser->profile() == profile() &&
+        browser != this) {
+      existing_browsers_for_menu_list_.push_back(
+          browser->weak_factory_.GetWeakPtr());
+      window_titles.push_back(browser->GetWindowTitleForMenu());
+    }
+  }
+
+  return window_titles;
+}
+
+base::string16 Browser::GetWindowTitleForMenu() const {
+  static constexpr unsigned int kWindowTitleForMenuMaxWidth = 400;
+  static constexpr unsigned int kMinTitleCharacters = 4;
+  const gfx::FontList font_list;
+  const auto num_more_tabs = tab_strip_model_->count() - 1;
+  int title_pixel_width = kWindowTitleForMenuMaxWidth;
+  const base::string16 format_string = l10n_util::GetPluralStringFUTF16(
+      IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY, num_more_tabs);
+
+  // First, format with an empty string to see how much space we have available.
+  base::string16 temp_window_title =
+      base::ReplaceStringPlaceholders(format_string, base::string16(), nullptr);
+  title_pixel_width -= GetStringWidth(temp_window_title, font_list);
+
+  base::string16 title;
+  content::WebContents* contents = tab_strip_model_->GetActiveWebContents();
+  // |contents| can be NULL if GetWindowTitleForMenu is called during the
+  // window's creation (before tabs have been added).
+  if (contents)
+    title = FormatTitleForDisplay(app_controller_ ? app_controller_->GetTitle()
+                                                  : contents->GetTitle());
+
+  // If there is no title, leave it empty for apps.
+  if (title.empty() && (is_type_normal() || is_type_popup()))
+    title = CoreTabHelper::GetDefaultTitle();
+
+  // Try to elide the title to fit the pixel width. If that will make the title
+  // shorter than the minimum character limit, use a character elided title
+  // instead.
+  base::string16 pixel_elided_title = gfx::ElideText(
+      title, font_list, title_pixel_width, gfx::ElideBehavior::ELIDE_TAIL);
+  base::string16 character_elided_title =
+      gfx::TruncateString(title, kMinTitleCharacters, gfx::CHARACTER_BREAK);
+  title = pixel_elided_title.size() > character_elided_title.size()
+              ? pixel_elided_title
+              : character_elided_title;
+
+  // Finally, add the page title.
+  return base::ReplaceStringPlaceholders(format_string, title, nullptr);
+}
+
 base::string16 Browser::GetWindowTitleFromWebContents(
     bool include_app_name,
     content::WebContents* contents) const {
@@ -1011,6 +1079,17 @@ bool Browser::CanReloadContents(content::WebContents* web_contents) const {
 
 bool Browser::CanSaveContents(content::WebContents* web_contents) const {
   return chrome::CanSavePage(this);
+}
+
+void Browser::MoveTabsToExistingWindow(const std::vector<int> tab_indices,
+                                       int browser_index) {
+  size_t existing_browser_count = existing_browsers_for_menu_list_.size();
+  if (static_cast<size_t>(browser_index) < existing_browser_count &&
+      existing_browsers_for_menu_list_[browser_index]) {
+    chrome::MoveToExistingWindow(
+        this, existing_browsers_for_menu_list_[browser_index].get(),
+        tab_indices);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

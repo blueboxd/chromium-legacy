@@ -435,7 +435,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   NGInlineItemsBuilder builder(&items);
   scoped_refptr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
-  block_style->SetDirection(TextDirection::kRtl);
+  block_style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   builder.EnterBlock(block_style.get());
   AppendText("Hello", &builder);
   builder.ExitBlock();
@@ -467,7 +467,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   LayoutInline* const isolate_rtl =
       CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolate);
-        style->SetDirection(TextDirection::kRtl);
+        style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
       });
   builder.EnterInline(isolate_rtl);
   AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);
@@ -492,7 +492,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   LayoutInline* const isolate_override_rtl =
       CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolateOverride);
-        style->SetDirection(TextDirection::kRtl);
+        style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
       });
   builder.EnterInline(isolate_override_rtl);
   AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);

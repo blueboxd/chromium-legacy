@@ -30,14 +30,14 @@ class NGFieldsetLayoutAlgorithmTest
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-        WritingMode::kHorizontalTb, TextDirection::kLtr,
+        WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
     return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-        WritingMode::kHorizontalTb, TextDirection::kLtr,
+        WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
         LogicalSize(LayoutUnit(), LayoutUnit()));
     NGFragmentGeometry fragment_geometry =
         CalculateInitialMinMaxFragmentGeometry(space, node);
@@ -527,7 +527,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, NoFragmentation) {
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("fieldset")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
       node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 
@@ -554,7 +554,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SimpleFragmentation) {
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("fieldset")));
   NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
       LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
       node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
 

@@ -52,7 +52,8 @@ TEST_F(NGRelativeUtilsTest, HorizontalTB) {
   // Everything auto defaults to kZero,kZero
   SetTRBL(kAuto, kAuto, kAuto, kAuto);
   offset = ComputeRelativeOffset(*style_, WritingMode::kHorizontalTb,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.left, kZero);
   EXPECT_EQ(offset.top, kZero);
 
@@ -61,20 +62,23 @@ TEST_F(NGRelativeUtilsTest, HorizontalTB) {
 
   // kLtr
   offset = ComputeRelativeOffset(*style_, WritingMode::kHorizontalTb,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.left, kLeft);
   EXPECT_EQ(offset.top, kTop);
 
   // kRtl
   offset = ComputeRelativeOffset(*style_, WritingMode::kHorizontalTb,
-                                 TextDirection::kRtl, container_size_);
+                                 base::i18n::TextDirection::RIGHT_TO_LEFT,
+                                 container_size_);
   EXPECT_EQ(offset.left, -kRight);
   EXPECT_EQ(offset.top, kTop);
 
   // Set only non-default sides
   SetTRBL(kAuto, kRight, kBottom, kAuto);
   offset = ComputeRelativeOffset(*style_, WritingMode::kHorizontalTb,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.left, -kRight);
   EXPECT_EQ(offset.top, -kBottom);
 }
@@ -87,20 +91,23 @@ TEST_F(NGRelativeUtilsTest, VerticalRightLeft) {
 
   // kLtr
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalRl,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.top, kTop);
   EXPECT_EQ(offset.left, kLeft);
 
   // kRtl
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalRl,
-                                 TextDirection::kRtl, container_size_);
+                                 base::i18n::TextDirection::RIGHT_TO_LEFT,
+                                 container_size_);
   EXPECT_EQ(offset.top, -kBottom);
   EXPECT_EQ(offset.left, kLeft);
 
   // Set only non-default sides
   SetTRBL(kAuto, kRight, kBottom, kAuto);
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalRl,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.top, -kBottom);
   EXPECT_EQ(offset.left, -kRight);
 }
@@ -113,20 +120,23 @@ TEST_F(NGRelativeUtilsTest, VerticalLeftRight) {
 
   // kLtr
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalLr,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.top, kTop);
   EXPECT_EQ(offset.left, kLeft);
 
   // kRtl
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalLr,
-                                 TextDirection::kRtl, container_size_);
+                                 base::i18n::TextDirection::RIGHT_TO_LEFT,
+                                 container_size_);
   EXPECT_EQ(offset.top, -kBottom);
   EXPECT_EQ(offset.left, kLeft);
 
   // Set only non-default sides
   SetTRBL(kAuto, kRight, kBottom, kAuto);
   offset = ComputeRelativeOffset(*style_, WritingMode::kVerticalLr,
-                                 TextDirection::kLtr, container_size_);
+                                 base::i18n::TextDirection::LEFT_TO_RIGHT,
+                                 container_size_);
   EXPECT_EQ(offset.top, -kBottom);
   EXPECT_EQ(offset.left, -kRight);
 }

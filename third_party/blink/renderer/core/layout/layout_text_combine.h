@@ -53,7 +53,7 @@ class LayoutTextCombine final : public LayoutText {
               unsigned length,
               const Font&,
               LayoutUnit x_position,
-              TextDirection,
+              base::i18n::TextDirection,
               HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
               FloatRect* glyph_bounds = nullptr,
               float expansion = 0) const override;

@@ -192,7 +192,7 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
 }
 
 void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     LayoutUnit* offset_on_line,
     LayoutUnit* total_width) const {
   WritingMode writing_mode = inline_box_fragment_.Style().GetWritingMode();
@@ -231,12 +231,13 @@ void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
 
   // We're iterating over the fragments in physical order before so we need to
   // swap before and after for RTL.
-  *offset_on_line = direction == TextDirection::kLtr ? before : after;
+  *offset_on_line =
+      direction == base::i18n::TextDirection::LEFT_TO_RIGHT ? before : after;
 }
 
 PhysicalRect NGInlineBoxFragmentPainterBase::PaintRectForImageStrip(
     const PhysicalRect& paint_rect,
-    TextDirection direction) const {
+    base::i18n::TextDirection direction) const {
   // We have a fill/border/mask image that spans multiple lines.
   // We need to adjust the offset by the width of all previous lines.
   // Think of background painting on inlines as though you had one long line, a

@@ -993,7 +993,7 @@ Element* EnclosingBlockFlowElement(const Node& node) {
 }
 
 template <typename Strategy>
-TextDirection DirectionOfEnclosingBlockOfAlgorithm(
+base::i18n::TextDirection DirectionOfEnclosingBlockOfAlgorithm(
     const PositionTemplate<Strategy>& position) {
   DCHECK(position.IsNotNull());
   Element* enclosing_block_element =
@@ -1001,23 +1001,26 @@ TextDirection DirectionOfEnclosingBlockOfAlgorithm(
                          *position.ComputeContainerNode()),
                      kCannotCrossEditingBoundary);
   if (!enclosing_block_element)
-    return TextDirection::kLtr;
+    return base::i18n::TextDirection::LEFT_TO_RIGHT;
   LayoutObject* layout_object = enclosing_block_element->GetLayoutObject();
   return layout_object ? layout_object->Style()->Direction()
-                       : TextDirection::kLtr;
+                       : base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
-TextDirection DirectionOfEnclosingBlockOf(const Position& position) {
+base::i18n::TextDirection DirectionOfEnclosingBlockOf(
+    const Position& position) {
   return DirectionOfEnclosingBlockOfAlgorithm<EditingStrategy>(position);
 }
 
-TextDirection DirectionOfEnclosingBlockOf(const PositionInFlatTree& position) {
+base::i18n::TextDirection DirectionOfEnclosingBlockOf(
+    const PositionInFlatTree& position) {
   return DirectionOfEnclosingBlockOfAlgorithm<EditingInFlatTreeStrategy>(
       position);
 }
 
-TextDirection PrimaryDirectionOf(const Node& node) {
-  TextDirection primary_direction = TextDirection::kLtr;
+base::i18n::TextDirection PrimaryDirectionOf(const Node& node) {
+  base::i18n::TextDirection primary_direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
   for (const LayoutObject* r = node.GetLayoutObject(); r; r = r->Parent()) {
     if (r->IsLayoutBlockFlow()) {
       primary_direction = r->Style()->Direction();

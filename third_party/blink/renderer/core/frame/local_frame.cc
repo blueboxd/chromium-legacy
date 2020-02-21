@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
@@ -2043,6 +2044,15 @@ void LocalFrame::GetTextSurroundingSelection(
 void LocalFrame::SendInterventionReport(const String& id,
                                         const String& message) {
   Intervention::GenerateReport(this, id, message);
+}
+
+void LocalFrame::SetFrameOwnerProperties(
+    mojom::blink::FrameOwnerPropertiesPtr properties) {
+  GetDocument()->WillChangeFrameOwnerProperties(
+      properties->margin_width, properties->margin_height,
+      properties->scrollbar_mode, properties->is_display_none);
+
+  Frame::ApplyFrameOwnerProperties(std::move(properties));
 }
 
 void LocalFrame::NotifyUserActivation() {

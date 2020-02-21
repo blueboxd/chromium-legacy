@@ -72,7 +72,8 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
     const NGBoxFragmentBuilder* container_builder) {
   const LayoutBoxModelObject* css_container =
       ToLayoutBoxModelObject(box.Container());
-  const TextDirection parent_direction = box.Parent()->StyleRef().Direction();
+  const base::i18n::TextDirection parent_direction =
+      box.Parent()->StyleRef().Direction();
 
   // These two values represent the available-size for the OOF-positioned
   // descandant, in the *descendant's* writing mode.
@@ -134,16 +135,19 @@ NGLogicalStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
                                    : box.ContainingBlock();
   const WritingMode container_writing_mode =
       container->StyleRef().GetWritingMode();
-  const TextDirection container_direction = container->StyleRef().Direction();
+  const base::i18n::TextDirection container_direction =
+      container->StyleRef().Direction();
 
   // We perform a logical-physical-logical conversion to convert the
   // static-position into the correct writing-mode, and direction combination.
   //
   // At the moment the static-position is in line-relative coordinates which is
-  // why we use |TextDirection::kLtr| for the first conversion.
+  // why we use |base::i18n::TextDirection::LEFT_TO_RIGHT| for the first
+  // conversion.
   logical_static_position =
       logical_static_position
-          .ConvertToPhysical(container_writing_mode, TextDirection::kLtr,
+          .ConvertToPhysical(container_writing_mode,
+                             base::i18n::TextDirection::LEFT_TO_RIGHT,
                              container_size)
           .ConvertToLogical(container_writing_mode, container_direction,
                             container_size);

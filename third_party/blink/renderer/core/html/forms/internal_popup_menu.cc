@@ -316,7 +316,9 @@ void InternalPopupMenu::AddElementStyle(ItemIterationContext& context,
   if (base_style.Direction() != style->Direction()) {
     AddProperty(
         "direction",
-        String(style->Direction() == TextDirection::kRtl ? "rtl" : "ltr"),
+        String(style->Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT
+                   ? "rtl"
+                   : "ltr"),
         data);
   }
   if (IsOverride(style->GetUnicodeBidi()))

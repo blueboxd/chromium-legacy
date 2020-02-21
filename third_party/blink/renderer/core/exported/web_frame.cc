@@ -8,7 +8,6 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
@@ -167,31 +166,6 @@ WebVector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
   const SecurityContext::InsecureNavigationsSet& set =
       ToCoreFrame(*this)->GetSecurityContext()->InsecureNavigationsToUpgrade();
   return SecurityContext::SerializeInsecureNavigationSet(set);
-}
-
-void WebFrame::SetFrameOwnerProperties(
-    const WebFrameOwnerProperties& properties) {
-  // At the moment, this is only used to replicate frame owner properties
-  // for frames with a remote owner.
-  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
-
-  Frame* frame = ToCoreFrame(*this);
-  DCHECK(frame);
-
-  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    local_frame->GetDocument()->WillChangeFrameOwnerProperties(
-        properties.margin_width, properties.margin_height,
-        properties.scrollbar_mode, properties.is_display_none);
-  }
-
-  owner->SetBrowsingContextContainerName(properties.name);
-  owner->SetScrollbarMode(properties.scrollbar_mode);
-  owner->SetMarginWidth(properties.margin_width);
-  owner->SetMarginHeight(properties.margin_height);
-  owner->SetAllowFullscreen(properties.allow_fullscreen);
-  owner->SetAllowPaymentRequest(properties.allow_payment_request);
-  owner->SetIsDisplayNone(properties.is_display_none);
-  owner->SetRequiredCsp(properties.required_csp);
 }
 
 WebFrame* WebFrame::Opener() const {

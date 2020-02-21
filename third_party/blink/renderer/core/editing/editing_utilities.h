@@ -169,10 +169,11 @@ bool IsRenderedAsNonInlineTableImageOrHR(const Node*);
 bool IsNonTableCellHTMLBlockElement(const Node*);
 bool IsBlockFlowElement(const Node&);
 bool IsInPasswordField(const Position&);
-CORE_EXPORT TextDirection DirectionOfEnclosingBlockOf(const Position&);
-CORE_EXPORT TextDirection
-DirectionOfEnclosingBlockOf(const PositionInFlatTree&);
-CORE_EXPORT TextDirection PrimaryDirectionOf(const Node&);
+CORE_EXPORT base::i18n::TextDirection DirectionOfEnclosingBlockOf(
+    const Position&);
+CORE_EXPORT base::i18n::TextDirection DirectionOfEnclosingBlockOf(
+    const PositionInFlatTree&);
+CORE_EXPORT base::i18n::TextDirection PrimaryDirectionOf(const Node&);
 
 // -------------------------------------------------------------------------
 // Position

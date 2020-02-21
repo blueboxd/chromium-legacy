@@ -18,12 +18,12 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "url/gurl.h"
@@ -70,16 +70,17 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Callers are are expected to initialize sandbox flags separately after
   // calling the constructor.
-  FrameTreeNode(FrameTree* frame_tree,
-                Navigator* navigator,
-                FrameTreeNode* parent,
-                blink::WebTreeScopeType scope,
-                const std::string& name,
-                const std::string& unique_name,
-                bool is_created_by_script,
-                const base::UnguessableToken& devtools_frame_token,
-                const FrameOwnerProperties& frame_owner_properties,
-                blink::FrameOwnerElementType owner_type);
+  FrameTreeNode(
+      FrameTree* frame_tree,
+      Navigator* navigator,
+      FrameTreeNode* parent,
+      blink::WebTreeScopeType scope,
+      const std::string& name,
+      const std::string& unique_name,
+      bool is_created_by_script,
+      const base::UnguessableToken& devtools_frame_token,
+      const blink::mojom::FrameOwnerProperties& frame_owner_properties,
+      blink::FrameOwnerElementType owner_type);
 
   ~FrameTreeNode();
 
@@ -233,12 +234,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // while leaving pending_frame_policy_ untouched.
   bool CommitFramePolicy(const blink::FramePolicy& frame_policy);
 
-  const FrameOwnerProperties& frame_owner_properties() {
+  const blink::mojom::FrameOwnerProperties& frame_owner_properties() {
     return frame_owner_properties_;
   }
 
   void set_frame_owner_properties(
-      const FrameOwnerProperties& frame_owner_properties) {
+      const blink::mojom::FrameOwnerProperties& frame_owner_properties) {
     frame_owner_properties_ = frame_owner_properties;
   }
 
@@ -532,7 +533,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // properties, we update them here too.
   //
   // Note that dynamic updates only take effect on the next frame navigation.
-  FrameOwnerProperties frame_owner_properties_;
+  blink::mojom::FrameOwnerProperties frame_owner_properties_;
 
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.

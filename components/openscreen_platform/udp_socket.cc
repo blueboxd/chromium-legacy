@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_udp_socket.h"
+#include "components/openscreen_platform/udp_socket.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/openscreen_platform/network_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
@@ -26,30 +25,14 @@ ErrorOr<std::unique_ptr<UdpSocket>> UdpSocket::Create(
     TaskRunner* task_runner,
     Client* client,
     const IPEndpoint& local_endpoint) {
-  auto* const manager = SystemNetworkContextManager::GetInstance();
-  network::mojom::NetworkContext* const network_context =
-      manager ? manager->GetContext() : nullptr;
-  if (!network_context) {
-    return Error::Code::kInitializationFailure;
-  }
-
-  mojo::PendingRemote<network::mojom::UDPSocketListener> listener_remote;
-  mojo::PendingReceiver<network::mojom::UDPSocketListener> pending_listener =
-      listener_remote.InitWithNewPipeAndPassReceiver();
-
-  mojo::Remote<network::mojom::UDPSocket> socket;
-  network_context->CreateUDPSocket(socket.BindNewPipeAndPassReceiver(),
-                                   std::move(listener_remote));
-
-  return ErrorOr<std::unique_ptr<UdpSocket>>(
-      std::make_unique<media_router::ChromeUdpSocket>(
-          client, local_endpoint, std::move(socket),
-          std::move(pending_listener)));
+  // TODO(btolsch): Replace initialization code with NetworkContext follow-up
+  // patch.
+  return Error::Code::kInitializationFailure;
 }
 
 }  // namespace openscreen
 
-namespace media_router {
+namespace openscreen_platform {
 
 namespace {
 
@@ -59,7 +42,7 @@ using openscreen::IPEndpoint;
 using openscreen::UdpPacket;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("open_screen_message", R"(
+    net::DefineNetworkTrafficAnnotation("openscreen_message", R"(
         semantics {
           sender: "Open Screen"
           description:
@@ -87,7 +70,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 }  // namespace
 
-ChromeUdpSocket::ChromeUdpSocket(
+UdpSocket::UdpSocket(
     Client* client,
     const IPEndpoint& local_endpoint,
     mojo::Remote<network::mojom::UDPSocket> udp_socket,
@@ -97,46 +80,45 @@ ChromeUdpSocket::ChromeUdpSocket(
       udp_socket_(std::move(udp_socket)),
       pending_listener_(std::move(pending_listener)) {}
 
-ChromeUdpSocket::~ChromeUdpSocket() = default;
+UdpSocket::~UdpSocket() = default;
 
-bool ChromeUdpSocket::IsIPv4() const {
+bool UdpSocket::IsIPv4() const {
   return local_endpoint_.address.IsV4();
 }
 
-bool ChromeUdpSocket::IsIPv6() const {
+bool UdpSocket::IsIPv6() const {
   return local_endpoint_.address.IsV6();
 }
 
-IPEndpoint ChromeUdpSocket::GetLocalEndpoint() const {
+IPEndpoint UdpSocket::GetLocalEndpoint() const {
   return local_endpoint_;
 }
 
-void ChromeUdpSocket::Bind() {
-  udp_socket_->Bind(openscreen_platform::ToNetEndPoint(local_endpoint_),
-                    nullptr /* socket_options */,
-                    base::BindOnce(&ChromeUdpSocket::BindCallback,
-                                   weak_ptr_factory_.GetWeakPtr()));
+void UdpSocket::Bind() {
+  udp_socket_->Bind(
+      openscreen_platform::ToNetEndPoint(local_endpoint_),
+      nullptr /* socket_options */,
+      base::BindOnce(&UdpSocket::BindCallback, weak_ptr_factory_.GetWeakPtr()));
 }
 
 // mojom::UDPSocket doesn't have a concept of network interface indices, so
 // this is a noop.
-void ChromeUdpSocket::SetMulticastOutboundInterface(
+void UdpSocket::SetMulticastOutboundInterface(
     openscreen::NetworkInterfaceIndex ifindex) {}
 
 // mojom::UDPSocket doesn't have a concept of network interface indices, so
 // the ifindex argument is ignored here.
-void ChromeUdpSocket::JoinMulticastGroup(
-    const IPAddress& address,
-    openscreen::NetworkInterfaceIndex ifindex) {
+void UdpSocket::JoinMulticastGroup(const IPAddress& address,
+                                   openscreen::NetworkInterfaceIndex ifindex) {
   const auto join_address = openscreen_platform::ToNetAddress(address);
   udp_socket_->JoinGroup(join_address,
-                         base::BindOnce(&ChromeUdpSocket::JoinGroupCallback,
+                         base::BindOnce(&UdpSocket::JoinGroupCallback,
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ChromeUdpSocket::SendMessage(const void* data,
-                                  size_t length,
-                                  const IPEndpoint& dest) {
+void UdpSocket::SendMessage(const void* data,
+                            size_t length,
+                            const IPEndpoint& dest) {
   const auto send_to_address = openscreen_platform::ToNetEndPoint(dest);
   base::span<const uint8_t> data_span(static_cast<const uint8_t*>(data),
                                       length);
@@ -144,14 +126,13 @@ void ChromeUdpSocket::SendMessage(const void* data,
   udp_socket_->SendTo(
       send_to_address, data_span,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
-      base::BindOnce(&ChromeUdpSocket::SendCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&UdpSocket::SendCallback, weak_ptr_factory_.GetWeakPtr()));
 }
 
 // mojom::UDPSocket doesn't have a concept of DSCP, so this is a noop.
-void ChromeUdpSocket::SetDscp(openscreen::UdpSocket::DscpMode state) {}
+void UdpSocket::SetDscp(openscreen::UdpSocket::DscpMode state) {}
 
-void ChromeUdpSocket::OnReceived(
+void UdpSocket::OnReceived(
     int32_t net_result,
     const base::Optional<net::IPEndPoint>& source_endpoint,
     base::Optional<base::span<const uint8_t>> data) {
@@ -174,9 +155,8 @@ void ChromeUdpSocket::OnReceived(
   udp_socket_->ReceiveMore(1);
 }
 
-void ChromeUdpSocket::BindCallback(
-    int32_t result,
-    const base::Optional<net::IPEndPoint>& address) {
+void UdpSocket::BindCallback(int32_t result,
+                             const base::Optional<net::IPEndPoint>& address) {
   if (result != net::OK) {
     if (client_) {
       client_->OnError(this, Error(Error::Code::kSocketBindFailure,
@@ -202,18 +182,18 @@ void ChromeUdpSocket::BindCallback(
   }
 }
 
-void ChromeUdpSocket::JoinGroupCallback(int32_t result) {
+void UdpSocket::JoinGroupCallback(int32_t result) {
   if (result != net::OK && client_) {
     client_->OnError(this, Error(Error::Code::kSocketOptionSettingFailure,
                                  net::ErrorToString(result)));
   }
 }
 
-void ChromeUdpSocket::SendCallback(int32_t result) {
+void UdpSocket::SendCallback(int32_t result) {
   if (result != net::OK && client_) {
     client_->OnSendError(this, Error(Error::Code::kSocketSendFailure,
                                      net::ErrorToString(result)));
   }
 }
 
-}  // namespace media_router
+}  // namespace openscreen_platform

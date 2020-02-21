@@ -39,6 +39,8 @@ class SelectType : public GarbageCollected<SelectType> {
   // Update :-internal-multi-select-focus state of selected OPTIONs.
   virtual void UpdateMultiSelectFocus();
 
+  virtual void SelectAll();
+
   // TODO(crbug.com/1052232): Add more virtual functions.
 
  protected:

@@ -76,7 +76,7 @@ float LayoutTextCombine::Width(unsigned from,
                                unsigned length,
                                const Font& font,
                                LayoutUnit x_position,
-                               TextDirection direction,
+                               base::i18n::TextDirection direction,
                                HashSet<const SimpleFontData*>* fallback_fonts,
                                FloatRect* glyph_bounds,
                                float) const {

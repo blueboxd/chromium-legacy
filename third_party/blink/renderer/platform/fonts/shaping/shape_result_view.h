@@ -111,10 +111,12 @@ class PLATFORM_EXPORT ShapeResultView final
   unsigned NumGlyphs() const { return num_glyphs_; }
   float Width() const { return width_; }
   LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
-  TextDirection Direction() const {
-    return static_cast<TextDirection>(direction_);
+  base::i18n::TextDirection Direction() const {
+    return static_cast<base::i18n::TextDirection>(direction_);
   }
-  bool Rtl() const { return Direction() == TextDirection::kRtl; }
+  bool Rtl() const {
+    return Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  }
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
   void FallbackFonts(HashSet<const SimpleFontData*>* fallback) const;
 
@@ -183,7 +185,7 @@ class PLATFORM_EXPORT ShapeResultView final
   // Overall direction for the TextRun, dictates which order each individual
   // sub run (represented by RunInfo structs in the m_runs vector) can
   // have a different text direction.
-  unsigned direction_ : 1;
+  unsigned direction_ : 2;
 
   // Tracks whether any runs contain glyphs with a y-offset != 0.
   unsigned has_vertical_offsets_ : 1;

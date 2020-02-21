@@ -38,6 +38,11 @@ window.onload = () => {
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
   const SCROLL_CORNER = TRACK_WIDTH;
+  assert_equals(standardDivFast.clientHeight, standardDivFast.clientWidth,
+      "This test assumes that the height and width of 'standardDivFast' are equivalent. If this changes please update SCROLL_AMOUNT to be X/Y specific");
+  const SCROLL_AMOUNT = internals.runtimeFlags.percentBasedScrollingEnabled ?
+      Math.floor(standardDivFast.clientHeight * SCROLLBAR_SCROLL_PERCENTAGE) :
+      SCROLLBAR_SCROLL_PIXELS;
 
   promise_test (async () => {
     // Scrollbars on Mac don't have arrows. This test is irrelevant.
@@ -52,7 +57,7 @@ window.onload = () => {
     let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
     await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
-    assert_equals(standardDivFast.scrollTop, 40, "Pressing the down arrow didn't scroll.");
+    assert_equals(standardDivFast.scrollTop, SCROLL_AMOUNT, "Pressing the down arrow didn't scroll.");
 
     // Click on the Up arrow for standardRectFast.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
@@ -66,7 +71,7 @@ window.onload = () => {
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
     await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollLeft;});
-    assert_equals(standardDivFast.scrollLeft, 40, "Pressing the right arrow didn't scroll.");
+    assert_equals(standardDivFast.scrollLeft, SCROLL_AMOUNT, "Pressing the right arrow didn't scroll.");
 
     // Click on the Left arrow for standardRectFast.
     x = standardRectFast.left + BUTTON_WIDTH / 2;

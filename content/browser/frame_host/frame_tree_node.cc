@@ -94,16 +94,17 @@ FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   return it == nodes->end() ? nullptr : it->second;
 }
 
-FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
-                             Navigator* navigator,
-                             FrameTreeNode* parent,
-                             blink::WebTreeScopeType scope,
-                             const std::string& name,
-                             const std::string& unique_name,
-                             bool is_created_by_script,
-                             const base::UnguessableToken& devtools_frame_token,
-                             const FrameOwnerProperties& frame_owner_properties,
-                             blink::FrameOwnerElementType owner_type)
+FrameTreeNode::FrameTreeNode(
+    FrameTree* frame_tree,
+    Navigator* navigator,
+    FrameTreeNode* parent,
+    blink::WebTreeScopeType scope,
+    const std::string& name,
+    const std::string& unique_name,
+    bool is_created_by_script,
+    const base::UnguessableToken& devtools_frame_token,
+    const blink::mojom::FrameOwnerProperties& frame_owner_properties,
+    blink::FrameOwnerElementType owner_type)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this, frame_tree->manager_delegate()),

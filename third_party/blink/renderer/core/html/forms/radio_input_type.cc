@@ -131,9 +131,10 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
   Document& document = GetElement().GetDocument();
   if (IsSpatialNavigationEnabled(document.GetFrame()))
     return;
-  bool forward = ComputedTextDirection() == TextDirection::kRtl
-                     ? (key == "ArrowDown" || key == "ArrowLeft")
-                     : (key == "ArrowDown" || key == "ArrowRight");
+  bool forward =
+      ComputedTextDirection() == base::i18n::TextDirection::RIGHT_TO_LEFT
+          ? (key == "ArrowDown" || key == "ArrowLeft")
+          : (key == "ArrowDown" || key == "ArrowRight");
 
   // Force layout for isFocusable() in findNextFocusableRadioButtonInGroup().
   document.UpdateStyleAndLayout(DocumentUpdateReason::kInput);

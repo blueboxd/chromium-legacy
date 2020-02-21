@@ -36,6 +36,9 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   int GetDragActions() const override;
   bool CanDuplicateContentsAt(int index) override;
   void DuplicateContentsAt(int index) override;
+  void MoveToExistingWindow(const std::vector<int>& indices,
+                            int browser_index) override;
+  std::vector<base::string16> GetExistingWindowsForMoveMenu() const override;
   bool CanMoveTabsToWindow(const std::vector<int>& indices) override;
   void MoveTabsToNewWindow(const std::vector<int>& indices) override;
   void CreateHistoricalTab(content::WebContents* contents) override;

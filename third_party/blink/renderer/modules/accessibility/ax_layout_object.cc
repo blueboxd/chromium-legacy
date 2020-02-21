@@ -1096,22 +1096,19 @@ ax::mojom::TextDirection AXLayoutObject::GetTextDirection() const {
   if (!style)
     return AXNodeObject::GetTextDirection();
 
-  if (style->IsHorizontalWritingMode()) {
-    switch (style->Direction()) {
-      case TextDirection::kLtr:
-        return ax::mojom::TextDirection::kLtr;
-      case TextDirection::kRtl:
-        return ax::mojom::TextDirection::kRtl;
-    }
-  } else {
-    switch (style->Direction()) {
-      case TextDirection::kLtr:
-        return ax::mojom::TextDirection::kTtb;
-      case TextDirection::kRtl:
-        return ax::mojom::TextDirection::kBtt;
-    }
+  switch (style->Direction()) {
+    case base::i18n::TextDirection::LEFT_TO_RIGHT:
+      return style->IsHorizontalWritingMode()
+                 ? ax::mojom::blink::TextDirection::kLtr
+                 : ax::mojom::blink::TextDirection::kTtb;
+    case base::i18n::TextDirection::RIGHT_TO_LEFT:
+      return style->IsHorizontalWritingMode()
+                 ? ax::mojom::blink::TextDirection::kRtl
+                 : ax::mojom::blink::TextDirection::kBtt;
+    default:
+      NOTREACHED();
+      break;
   }
-
   return AXNodeObject::GetTextDirection();
 }
 
@@ -3081,6 +3078,18 @@ void AXLayoutObject::AddImageMapChildren() {
         AXObjectCache().Remove(area_object->AXObjectID());
     }
   }
+}
+
+void AXLayoutObject::AddListMarker() {
+  if (!CanHaveChildren() || !GetLayoutObject() || AccessibilityIsIgnored() ||
+      !GetLayoutObject()->IsListItem()) {
+    return;
+  }
+  LayoutListItem* list_item = ToLayoutListItem(GetLayoutObject());
+  LayoutObject* list_marker = list_item->Marker();
+  AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
+  if (list_marker_obj)
+    children_.push_back(list_marker_obj);
 }
 
 void AXLayoutObject::AddPopupChildren() {

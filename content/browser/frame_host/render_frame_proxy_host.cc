@@ -26,7 +26,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
@@ -34,6 +33,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 
 namespace content {
@@ -250,10 +250,13 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.
   bool should_send_properties =
-      frame_tree_node_->frame_owner_properties() != FrameOwnerProperties();
+      !frame_tree_node_->frame_owner_properties().Equals(
+          blink::mojom::FrameOwnerProperties());
   if (frame_tree_node_->parent() && should_send_properties) {
-    Send(new FrameMsg_SetFrameOwnerProperties(
-        routing_id_, frame_tree_node_->frame_owner_properties()));
+    auto frame_owner_properties =
+        frame_tree_node_->frame_owner_properties().Clone();
+    GetAssociatedRemoteFrame()->SetFrameOwnerProperties(
+        std::move(frame_owner_properties));
   }
 
   return true;

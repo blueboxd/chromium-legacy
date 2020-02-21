@@ -22,25 +22,35 @@ struct CONTENT_EXPORT FrameVisualProperties {
 
   FrameVisualProperties& operator=(const FrameVisualProperties& other);
 
-  // These fields are values from VisualProperties, see comments there for
-  // descriptions. They exist here to propagate from each RenderWidget to its
-  // child RenderWidgets. Here they flow back from RenderWidget to the host
-  // in order to find a child RenderWidget.
+  // Information about the screen (dpi, depth, etc..).
   ScreenInfo screen_info;
-  gfx::Size visible_viewport_size;
+
+  // Whether or not blink should be in auto-resize mode.
   bool auto_resize_enabled = false;
+
+  // The minimum size for Blink if auto-resize is enabled.
   gfx::Size min_size_for_auto_resize;
+
+  // The maximum size for Blink if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize;
-  uint32_t capture_sequence_number = 0u;
-  double zoom_level = 0;
-  float page_scale_factor = 1.f;
-  bool is_pinch_gesture_active = false;
+
+  gfx::Rect screen_space_rect;
+
+  gfx::Size local_frame_size;
 
   // The size of the compositor viewport, to match the sub-frame's surface.
   gfx::Rect compositor_viewport;
 
-  gfx::Rect screen_space_rect;
-  gfx::Size local_frame_size;
+  uint32_t capture_sequence_number = 0u;
+
+  // This represents the page zoom level for a WebContents.
+  // (0 is the default value which results in 1.0 zoom factor.)
+  double zoom_level = 0;
+
+  // Tracks the page-scale factor and whether the frame is currently in an
+  // active pinch-zoom gesture.
+  float page_scale_factor = 1.f;
+  bool is_pinch_gesture_active = false;
 
   // The time at which the viz::LocalSurfaceId used to submit this was
   // allocated.

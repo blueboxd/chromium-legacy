@@ -383,6 +383,7 @@ class ListBoxSelectType final : public SelectType {
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
   void UpdateMultiSelectFocus() override;
+  void SelectAll() override;
 
  private:
   bool is_in_non_contiguous_selection_ = false;
@@ -654,6 +655,23 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
   select_->ScrollToSelection();
 }
 
+void ListBoxSelectType::SelectAll() {
+  if (!select_->GetLayoutObject() || !select_->is_multiple_)
+    return;
+
+  // Save the selection so it can be compared to the new selectAll selection
+  // when dispatching change events.
+  select_->SaveLastSelection();
+
+  select_->active_selection_state_ = true;
+  select_->SetActiveSelectionAnchor(select_->NextSelectableOption(nullptr));
+  select_->SetActiveSelectionEnd(select_->PreviousSelectableOption(nullptr));
+
+  select_->UpdateListBoxSelection(false, false);
+  select_->ListBoxOnChange();
+  select_->SetNeedsValidityCheck();
+}
+
 // ============================================================================
 
 SelectType::SelectType(HTMLSelectElement& select) : select_(select) {}
@@ -690,5 +708,9 @@ const ComputedStyle* SelectType::OptionStyle() const {
 }
 
 void SelectType::UpdateMultiSelectFocus() {}
+
+void SelectType::SelectAll() {
+  NOTREACHED();
+}
 
 }  // namespace blink

@@ -279,15 +279,20 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
     ScrollableArea* scrollable_area = ScrollableArea::GetForScrolling(box);
     DCHECK(scrollable_area);
 
-    ScrollOffset delta = ToScrollDelta(physical_direction, 1);
+    ScrollOffset delta =
+        ToScrollDelta(physical_direction,
+                      ScrollableArea::DirectionBasedScrollDelta(granularity));
     delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
                 scrollable_area->ScrollStep(granularity, kVerticalScrollbar));
     // Pressing the arrow key is considered as a scroll with intended direction
-    // only. Pressing the PgUp/PgDn key is considered as a scroll with intended
-    // direction and end position. Pressing the Home/End key is considered as a
-    // scroll with intended end position only.
+    // only (this results in kScrollByLine or kScrollByPercentage, depending on
+    // REF::PercentBasedScrollingEnabled). Pressing the PgUp/PgDn key is
+    // considered as a scroll with intended direction and end position. Pressing
+    // the Home/End key is considered as a scroll with intended end position
+    // only.
     switch (granularity) {
-      case ScrollGranularity::kScrollByLine: {
+      case ScrollGranularity::kScrollByLine:
+      case ScrollGranularity::kScrollByPercentage: {
         if (scrollable_area->SnapForDirection(delta))
           return true;
         break;
@@ -319,7 +324,10 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
         },
         WrapWeakPersistent(scrollable_area)));
     ScrollResult result = scrollable_area->UserScroll(
-        granularity, ToScrollDelta(physical_direction, 1), std::move(callback));
+        granularity,
+        ToScrollDelta(physical_direction,
+                      ScrollableArea::DirectionBasedScrollDelta(granularity)),
+        std::move(callback));
 
     if (result.DidScroll())
       return true;

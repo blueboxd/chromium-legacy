@@ -62,7 +62,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
@@ -1893,7 +1892,8 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
       params->opener_routing_id, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,
       params->replication_state, compositor_deps, params->widget_params.get(),
-      params->frame_owner_properties, params->has_committed_real_load);
+      std::move(params->frame_owner_properties),
+      params->has_committed_real_load);
 }
 
 void RenderThreadImpl::CreateFrameProxy(

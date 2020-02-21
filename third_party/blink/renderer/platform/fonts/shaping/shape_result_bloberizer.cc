@@ -347,7 +347,7 @@ bool ShapeResultBloberizer::CanUseFastPath(
 
 float ShapeResultBloberizer::FillFastHorizontalGlyphs(
     const ShapeResultBuffer& result_buffer,
-    TextDirection text_direction) {
+    base::i18n::TextDirection text_direction) {
   DCHECK(!result_buffer.HasVerticalOffsets());
   DCHECK_NE(GetType(), ShapeResultBloberizer::Type::kTextIntercepts);
 

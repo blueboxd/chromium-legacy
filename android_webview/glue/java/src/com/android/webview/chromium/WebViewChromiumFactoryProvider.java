@@ -48,7 +48,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.VerifiesOnN;
 import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.base.library_loader.NativeLibraries;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.AutofillProviderImpl;
@@ -339,9 +339,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             setSingleton(this);
         }
 
-        TimesHistogramSample histogram =
-                new TimesHistogramSample("Android.WebView.Startup.CreationTime.Stage1.FactoryInit");
-        histogram.record(SystemClock.elapsedRealtime() - startTime);
+        RecordHistogram.recordTimesHistogram(
+                "Android.WebView.Startup.CreationTime.Stage1.FactoryInit",
+                SystemClock.elapsedRealtime() - startTime);
     }
 
     /* package */ static void checkStorageIsNotDeviceProtected(Context context) {

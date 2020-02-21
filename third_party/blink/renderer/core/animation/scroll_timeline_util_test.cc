@@ -120,11 +120,13 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationPhysicalCases) {
   Vector<WritingMode> writing_modes = {WritingMode::kHorizontalTb,
                                        WritingMode::kVerticalLr,
                                        WritingMode::kVerticalRl};
-  Vector<TextDirection> directions = {TextDirection::kLtr, TextDirection::kRtl};
+  Vector<base::i18n::TextDirection> directions = {
+      base::i18n::TextDirection::LEFT_TO_RIGHT,
+      base::i18n::TextDirection::RIGHT_TO_LEFT};
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   for (const WritingMode& writing_mode : writing_modes) {
-    for (const TextDirection& direction : directions) {
+    for (const base::i18n::TextDirection& direction : directions) {
       style->SetWritingMode(writing_mode);
       style->SetDirection(direction);
       EXPECT_EQ(ConvertOrientation(ScrollTimeline::Vertical, style.get()),
@@ -140,7 +142,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // horizontal-tb, ltr
   style->SetWritingMode(WritingMode::kHorizontalTb);
-  style->SetDirection(TextDirection::kLtr);
+  style->SetDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollDown);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),
@@ -148,7 +150,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // vertical-lr, ltr
   style->SetWritingMode(WritingMode::kVerticalLr);
-  style->SetDirection(TextDirection::kLtr);
+  style->SetDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollRight);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),
@@ -156,7 +158,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // vertical-rl, ltr
   style->SetWritingMode(WritingMode::kVerticalRl);
-  style->SetDirection(TextDirection::kLtr);
+  style->SetDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollLeft);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),
@@ -164,7 +166,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // horizontal-tb, rtl
   style->SetWritingMode(WritingMode::kHorizontalTb);
-  style->SetDirection(TextDirection::kRtl);
+  style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollDown);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),
@@ -172,7 +174,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // vertical-lr, rtl
   style->SetWritingMode(WritingMode::kVerticalLr);
-  style->SetDirection(TextDirection::kRtl);
+  style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollRight);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),
@@ -180,7 +182,7 @@ TEST_F(ScrollTimelineUtilTest, ConvertOrientationLogical) {
 
   // vertical-rl, rtl
   style->SetWritingMode(WritingMode::kVerticalRl);
-  style->SetDirection(TextDirection::kRtl);
+  style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Block, style.get()),
             CompositorScrollTimeline::ScrollLeft);
   EXPECT_EQ(ConvertOrientation(ScrollTimeline::Inline, style.get()),

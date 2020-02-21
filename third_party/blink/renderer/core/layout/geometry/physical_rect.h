@@ -54,7 +54,7 @@ struct CORE_EXPORT PhysicalRect {
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
   LogicalRect ConvertToLogical(WritingMode,
-                               TextDirection,
+                               base::i18n::TextDirection,
                                PhysicalSize outer_size,
                                PhysicalSize inner_size) const;
 

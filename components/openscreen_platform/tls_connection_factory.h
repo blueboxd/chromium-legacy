@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CONNECTION_FACTORY_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CONNECTION_FACTORY_H_
+#ifndef COMPONENTS_OPENSCREEN_PLATFORM_TLS_CONNECTION_FACTORY_H_
+#define COMPONENTS_OPENSCREEN_PLATFORM_TLS_CONNECTION_FACTORY_H_
 
 #include <memory>
 
@@ -30,17 +30,17 @@ struct TlsListenOptions;
 
 }  // namespace openscreen
 
-namespace media_router {
+namespace openscreen_platform {
 
-class ChromeTlsConnectionFactory : public openscreen::TlsConnectionFactory {
+class TlsConnectionFactory : public openscreen::TlsConnectionFactory {
  public:
   // If provided, the network context is stored and dereferenced when attempting
   // to connect. If not provided, the network context is dynamically looked up.
-  ChromeTlsConnectionFactory(openscreen::TlsConnectionFactory::Client* client,
-                             openscreen::TaskRunner* task_runner,
-                             network::mojom::NetworkContext* network_context);
+  TlsConnectionFactory(openscreen::TlsConnectionFactory::Client* client,
+                       openscreen::TaskRunner* task_runner,
+                       network::mojom::NetworkContext* network_context);
 
-  ~ChromeTlsConnectionFactory() final;
+  ~TlsConnectionFactory() final;
 
   // TlsConnectionFactory overrides
   void Connect(const openscreen::IPEndpoint& remote_address,
@@ -109,9 +109,9 @@ class ChromeTlsConnectionFactory : public openscreen::TlsConnectionFactory {
   openscreen::TlsConnectionFactory::Client* client_;
   openscreen::TaskRunner* const task_runner_;
   network::mojom::NetworkContext* const network_context_;
-  base::WeakPtrFactory<ChromeTlsConnectionFactory> weak_factory_{this};
+  base::WeakPtrFactory<TlsConnectionFactory> weak_factory_{this};
 };
 
-}  // namespace media_router
+}  // namespace openscreen_platform
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CONNECTION_FACTORY_H_
+#endif  // COMPONENTS_OPENSCREEN_PLATFORM_TLS_CONNECTION_FACTORY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CLIENT_CONNECTION_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CLIENT_CONNECTION_H_
+#ifndef COMPONENTS_OPENSCREEN_PLATFORM_TLS_CLIENT_CONNECTION_H_
+#define COMPONENTS_OPENSCREEN_PLATFORM_TLS_CLIENT_CONNECTION_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -15,11 +15,11 @@
 #include "third_party/openscreen/src/platform/base/error.h"
 #include "third_party/openscreen/src/platform/base/ip_address.h"
 
-namespace media_router {
+namespace openscreen_platform {
 
-class ChromeTlsClientConnection : public openscreen::TlsConnection {
+class TlsClientConnection : public openscreen::TlsConnection {
  public:
-  ChromeTlsClientConnection(
+  TlsClientConnection(
       openscreen::TaskRunner* task_runner,
       openscreen::IPEndpoint local_address,
       openscreen::IPEndpoint remote_address,
@@ -28,7 +28,7 @@ class ChromeTlsClientConnection : public openscreen::TlsConnection {
       mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket,
       mojo::Remote<network::mojom::TLSClientSocket> tls_socket);
 
-  ~ChromeTlsClientConnection() final;
+  ~TlsClientConnection() final;
 
   // TlsConnection overrides.
   void SetClient(Client* client) final;
@@ -64,6 +64,6 @@ class ChromeTlsClientConnection : public openscreen::TlsConnection {
   Client* client_ = nullptr;
 };
 
-}  // namespace media_router
+}  // namespace openscreen_platform
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_PLATFORM_CHROME_TLS_CLIENT_CONNECTION_H_
+#endif  // COMPONENTS_OPENSCREEN_PLATFORM_TLS_CLIENT_CONNECTION_H_

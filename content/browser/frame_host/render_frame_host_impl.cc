@@ -124,7 +124,6 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
@@ -205,6 +204,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -2069,7 +2069,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
       frame_tree_node()->pending_frame_policy();
 
   params->frame_owner_properties =
-      FrameOwnerProperties(frame_tree_node()->frame_owner_properties());
+      frame_tree_node()->frame_owner_properties().Clone();
 
   params->has_committed_real_load =
       frame_tree_node()->has_committed_real_load();
@@ -2264,7 +2264,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
-    const FrameOwnerProperties& frame_owner_properties,
+    const blink::mojom::FrameOwnerProperties& frame_owner_properties,
     const blink::FrameOwnerElementType owner_type) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
@@ -3627,7 +3627,7 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
 
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
     int32_t frame_routing_id,
-    const FrameOwnerProperties& properties) {
+    const blink::mojom::FrameOwnerProperties& properties) {
   FrameTreeNode* child =
       FindAndVerifyChild(frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
   if (!child)
@@ -4151,6 +4151,19 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
   }
 }
 
+bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
+  static constexpr base::TimeDelta kMaxInterval =
+      base::TimeDelta::FromSeconds(1);
+  base::TimeDelta delta = base::TimeTicks::Now() - last_xr_overlay_setup_time_;
+  DVLOG(2) << __func__ << ": return " << (delta <= kMaxInterval);
+  return delta <= kMaxInterval;
+}
+
+void RenderFrameHostImpl::SetIsXrOverlaySetup() {
+  DVLOG(2) << __func__;
+  last_xr_overlay_setup_time_ = base::TimeTicks::Now();
+}
+
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
 void RenderFrameHostImpl::EnterFullscreen(
@@ -4168,6 +4181,7 @@ void RenderFrameHostImpl::EnterFullscreen(
   // TODO(lanwei): Investigate whether we can terminate the renderer when the
   // user activation has already been consumed.
   if (!delegate_->HasSeenRecentScreenOrientationChange() &&
+      !HasSeenRecentXrOverlaySetup() &&
       !GetContentClient()
            ->browser()
            ->CanEnterFullscreenWithoutUserActivation()) {
@@ -4175,7 +4189,7 @@ void RenderFrameHostImpl::EnterFullscreen(
         blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
     if (!is_consumed) {
       DLOG(ERROR) << "Cannot enter fullscreen because there is no transient "
-                  << "user activation and no orientation change.";
+                  << "user activation, orientation change, or XR overlay.";
       return;
     }
   }

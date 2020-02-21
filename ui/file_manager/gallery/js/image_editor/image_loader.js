@@ -32,6 +32,14 @@ ImageUtil.ImageLoader = function(document, metadataModel) {
   this.timeout_ = 0;
 
   /**
+   * Cleanup function for Blink EXIF changes in m81. See comments in
+   * convertImage_() and https://crbug.com/1043561.
+   *
+   * @type {function()}
+   */
+  this.onCancelForExifWorkaround_ = () => {};
+
+  /**
    * @type {?function(!HTMLCanvasElement, string=)}
    * @private
    */
@@ -245,6 +253,7 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
   }
   this.callback_ = null;
   if (this.timeout_) {
+    this.onCancelForExifWorkaround_();
     clearTimeout(this.timeout_);
     this.timeout_ = 0;
   }
@@ -265,6 +274,17 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
     this.callback_ = null;
     return;
   }
+
+  // Helper to suppress JSC_USELESS_CODE below. Like goog.reflect.sinkValue().
+  function sinkValue(value) {}
+
+  // If the <img> is not in the DOM (and style calculated for it). Chrome m81+
+  // provides width/height that already accounts for EXIF orientations.
+  image.style.imageOrientation = 'none';
+  image.style.visibility = 'hidden';
+  document.body.appendChild(image);
+  sinkValue(image.clientWidth);  // Ensure style resolves.
+
   var canvas = this.document_.createElement('canvas');
 
   if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
@@ -274,6 +294,24 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
     canvas.width = image.width;
     canvas.height = image.height;
   }
+
+  // Before getting context, apply style to ignore EXIF orientation from source
+  // pixel data. The <canvas> also needs to be in the DOM when getContext() is
+  // called for this to take effect.
+  canvas.style.imageOrientation = 'none';
+  canvas.style.visibility = 'hidden';
+  document.body.appendChild(canvas);
+  sinkValue(canvas.clientWidth);  // Ensure style resolves.
+
+  // Remove image and canvas from the DOM once the content is drawn. Note the
+  // canvas may be added back later. Doing this earlier causes the elements to
+  // "forget' their image-orientation style attribute.
+  this.onCancelForExifWorkaround_ = () => {
+    image.remove();
+    canvas.remove();
+    canvas.style.visibility = 'unset';
+    this.onCancelForExifWorkaround_ = () => {};
+  };
 
   var context = canvas.getContext('2d');
   context.save();
@@ -308,6 +346,7 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     if (this.entry_.toURL().substr(0, 5) !== 'data:') {  // Ignore data urls.
       metrics.recordInterval(ImageUtil.getMetricName('LoadTime'));
     }
+    this.onCancelForExifWorkaround_();
     setTimeout(this.callback_, 0, context.canvas);
     this.callback_ = null;
   } else {

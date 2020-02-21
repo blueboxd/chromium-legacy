@@ -43,8 +43,6 @@ process_version_rc_template("version_resources") {
 
 source_set("base") {
   sources = [
-    "constants.cc",
-    "constants.h",
     "scoped_handle.h",
     "task_scheduler.cc",
     "task_scheduler.h",
@@ -57,14 +55,26 @@ source_set("base") {
   defines = [ "SECURITY_WIN32" ]
 
   deps = [
+    ":constants",
     "//base",
     "//chrome/updater:common",
-    "//chrome/updater:version_header",
   ]
 
   libs = [
     "secur32.lib",
     "taskschd.lib",
+  ]
+}
+
+source_set("constants") {
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/updater:version_header",
   ]
 }
 

@@ -77,9 +77,9 @@ class CORE_EXPORT SelectionModifier {
   static bool ShouldAlwaysUseDirectionalSelection(const LocalFrame&);
   VisibleSelection PrepareToModifySelection(SelectionModifyAlteration,
                                             SelectionModifyDirection) const;
-  TextDirection DirectionOfEnclosingBlock() const;
-  TextDirection DirectionOfSelection() const;
-  TextDirection LineDirectionOfExtent() const;
+  base::i18n::TextDirection DirectionOfEnclosingBlock() const;
+  base::i18n::TextDirection DirectionOfSelection() const;
+  base::i18n::TextDirection LineDirectionOfExtent() const;
   VisiblePosition PositionForPlatform(bool is_get_start) const;
   VisiblePosition StartForPlatform() const;
   VisiblePosition EndForPlatform() const;

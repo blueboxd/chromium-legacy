@@ -30,9 +30,10 @@
 
 namespace blink {
 
-TextDirection DeterminePlaintextDirectionality(LineLayoutItem root,
-                                               LineLayoutItem current = nullptr,
-                                               unsigned pos = 0);
+base::i18n::TextDirection DeterminePlaintextDirectionality(
+    LineLayoutItem root,
+    LineLayoutItem current = nullptr,
+    unsigned pos = 0);
 
 void ConstructBidiRunsForLine(InlineBidiResolver&,
                               BidiRunList<BidiRun>&,

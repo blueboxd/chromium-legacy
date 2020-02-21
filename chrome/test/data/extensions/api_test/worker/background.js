@@ -83,6 +83,10 @@ chrome.test.getConfig(function(config) {
       undefined,
       () => { return new SharedWorker(sharedWorkerUrl) },
       sharedWorkerUrl),
+    noRedirectTest.bind(
+      undefined,
+      () => { return new SharedWorker(sharedWorkerUrl, {type: 'module'}) },
+      sharedWorkerUrl),
 
     sameOriginRedirectTest.bind(
       undefined,
@@ -96,6 +100,12 @@ chrome.test.getConfig(function(config) {
       undefined,
       () => { return new SharedWorker(redirectedSharedWorkerUrl) },
       sharedWorkerUrl),
+    sameOriginRedirectTest.bind(
+      undefined,
+      () => {
+        return new SharedWorker(redirectedSharedWorkerUrl, {type: 'module'});
+      },
+      sharedWorkerUrl),
 
     crossOriginRedirectTest.bind(
       undefined,
@@ -108,5 +118,11 @@ chrome.test.getConfig(function(config) {
     crossOriginRedirectTest.bind(
       undefined,
       () => { return new SharedWorker(crossOriginRedirectedSharedWorkerUrl) }),
+    crossOriginRedirectTest.bind(
+      undefined,
+      () => {
+        return new SharedWorker(crossOriginRedirectedSharedWorkerUrl,
+                                {type: 'module'});
+      }),
   ]);
 });

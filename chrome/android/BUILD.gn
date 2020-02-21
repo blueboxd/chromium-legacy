@@ -1865,7 +1865,7 @@ if (public_android_sdk) {
   }
 }
 
-# TODO(estevenson): Remove this once we switch to using bundle targets to
+# TODO(agrieve): Remove this once we switch to using bundle targets to
 # generate APK stubs.
 android_resources("trichrome_dummy_resources") {
   custom_package = "org.chromium.trichromelibrary"

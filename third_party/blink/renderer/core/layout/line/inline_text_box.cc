@@ -404,7 +404,8 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
     LayoutUnit width_of_visible_text(GetLineLayoutItem().Width(
         ltr == flow_is_ltr ? start_ : start_ + offset,
         ltr == flow_is_ltr ? offset : len_ - offset, TextPos(),
-        flow_is_ltr ? TextDirection::kLtr : TextDirection::kRtl,
+        flow_is_ltr ? base::i18n::TextDirection::LEFT_TO_RIGHT
+                    : base::i18n::TextDirection::RIGHT_TO_LEFT,
         IsFirstLineStyle(), nullptr, nullptr, Expansion()));
 
     // The ellipsis needs to be placed just after the last visible character.

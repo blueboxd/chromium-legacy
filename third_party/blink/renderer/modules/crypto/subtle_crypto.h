@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
 #include "third_party/blink/renderer/bindings/modules/v8/dictionary_or_string.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -41,10 +40,11 @@
 
 namespace blink {
 
+class ArrayBufferOrArrayBufferViewOrJsonWebKey;
 class CryptoKey;
 
-typedef ArrayBufferOrArrayBufferView BufferSource;
-typedef DictionaryOrString AlgorithmIdentifier;
+using BufferSource = ArrayBufferOrArrayBufferView;
+using AlgorithmIdentifier = DictionaryOrString;
 
 class SubtleCrypto final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -81,7 +81,7 @@ class SubtleCrypto final : public ScriptWrappable {
                             const Vector<String>& key_usages);
   ScriptPromise importKey(ScriptState*,
                           const String&,
-                          const ArrayBufferOrArrayBufferViewOrDictionary&,
+                          const ArrayBufferOrArrayBufferViewOrJsonWebKey&,
                           const AlgorithmIdentifier&,
                           bool extractable,
                           const Vector<String>& key_usages);

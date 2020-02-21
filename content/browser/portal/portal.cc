@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
 
@@ -125,7 +126,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
           .InitWithNewPipeAndPassReceiver(),
       blink::WebTreeScopeType::kDocument, "", "", true,
       base::UnguessableToken::Create(), blink::FramePolicy(),
-      FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);
+      blink::mojom::FrameOwnerProperties(), false,
+      blink::FrameOwnerElementType::kPortal);
   outer_node->AddObserver(this);
 
   bool web_contents_created = false;

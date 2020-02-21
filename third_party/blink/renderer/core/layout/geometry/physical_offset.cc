@@ -12,27 +12,28 @@
 
 namespace blink {
 
-LogicalOffset PhysicalOffset::ConvertToLogical(WritingMode mode,
-                                               TextDirection direction,
-                                               PhysicalSize outer_size,
-                                               PhysicalSize inner_size) const {
+LogicalOffset PhysicalOffset::ConvertToLogical(
+    WritingMode mode,
+    base::i18n::TextDirection direction,
+    PhysicalSize outer_size,
+    PhysicalSize inner_size) const {
   switch (mode) {
     case WritingMode::kHorizontalTb:
-      if (direction == TextDirection::kLtr)
+      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return LogicalOffset(left, top);
       return LogicalOffset(outer_size.width - left - inner_size.width, top);
     case WritingMode::kVerticalRl:
     case WritingMode::kSidewaysRl:
-      if (direction == TextDirection::kLtr)
+      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return LogicalOffset(top, outer_size.width - left - inner_size.width);
       return LogicalOffset(outer_size.height - top - inner_size.height,
                            outer_size.width - left - inner_size.width);
     case WritingMode::kVerticalLr:
-      if (direction == TextDirection::kLtr)
+      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return LogicalOffset(top, left);
       return LogicalOffset(outer_size.height - top - inner_size.height, left);
     case WritingMode::kSidewaysLr:
-      if (direction == TextDirection::kLtr)
+      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
         return LogicalOffset(outer_size.height - top - inner_size.height, left);
       return LogicalOffset(top, left);
     default:

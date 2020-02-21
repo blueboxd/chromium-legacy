@@ -219,7 +219,9 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
   RecordCheckUrlTimeout(/*timed_out=*/true);
 
-  database_manager_->CancelCheck(this);
+  if (browse_url_check_sent_) {
+    database_manager_->CancelCheck(this);
+  }
 
   // Any pending callbacks on this URL check should be skipped.
   weak_factory_.InvalidateWeakPtrs();
@@ -340,6 +342,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     } else {
       safe_synchronously = database_manager_->CheckBrowseUrl(
           url, url_checker_delegate_->GetThreatTypes(), this);
+      browse_url_check_sent_ = true;
     }
 
     if (safe_synchronously) {
@@ -428,12 +431,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
   if (did_match_allowlist) {
     // If the URL matches the high-confidence allowlist, still do the hash based
     // checks.
-    if (database_manager_->CheckBrowseUrl(
-            url, url_checker_delegate_->GetThreatTypes(), this)) {
-      // No match found in the local database. Safe to call |OnUrlResult| here
-      // directly.
-      OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
-    }
+    PerformHashBasedCheck(url);
     return;
   }
 
@@ -510,6 +508,17 @@ void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
   url_web_ui_token_ = token;
+}
+
+void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  browse_url_check_sent_ = true;
+  if (database_manager_->CheckBrowseUrl(
+          url, url_checker_delegate_->GetThreatTypes(), this)) {
+    // No match found in the local database. Safe to call |OnUrlResult| here
+    // directly.
+    OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
+  }
 }
 
 }  // namespace safe_browsing

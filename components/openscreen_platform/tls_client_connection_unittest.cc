@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
+#include "components/openscreen_platform/tls_client_connection.h"
 
 #include <cstring>
 #include <iterator>
@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
-#include "components/openscreen_platform/platform_task_runner.h"
+#include "components/openscreen_platform/task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +23,7 @@ using ::testing::_;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
-namespace media_router {
+namespace openscreen_platform {
 
 using openscreen::Error;
 using openscreen::TlsConnection;
@@ -68,7 +68,7 @@ class FakeSocketStreams {
 
   ~FakeSocketStreams() = default;
 
-  // These should be passed to the ChromeTlsClientConnection constructor.
+  // These should be passed to the TlsClientConnection constructor.
   mojo::ScopedDataPipeConsumerHandle TakeReceiveStream() {
     return std::move(receive_stream_);
   }
@@ -77,7 +77,7 @@ class FakeSocketStreams {
   }
 
   // Writes data into the inbound data pipe, which should ultimately result in a
-  // ChromeTlsClientConnection::Client's OnRead() method being called.
+  // TlsClientConnection::Client's OnRead() method being called.
   void SimulateSocketReceive(const void* data, uint32_t num_bytes) {
     const MojoResult result = inbound_stream_->WriteData(
         data, &num_bytes, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
@@ -85,7 +85,7 @@ class FakeSocketStreams {
   }
 
   // Closes the inbound (or outbound) data pipe to allow the unit tests to check
-  // the error handling of ChromeTlsClientConnection.
+  // the error handling of TlsClientConnection.
   void SimulateInboundClose() { inbound_stream_.reset(); }
   void SimulateOutboundClose() { outbound_stream_.reset(); }
 
@@ -138,16 +138,16 @@ class MockTlsConnectionClient : public TlsConnection::Client {
 
 }  // namespace
 
-class ChromeTlsClientConnectionTest : public ::testing::Test {
+class TlsClientConnectionTest : public ::testing::Test {
  public:
-  ChromeTlsClientConnectionTest() = default;
-  ~ChromeTlsClientConnectionTest() override = default;
+  TlsClientConnectionTest() = default;
+  ~TlsClientConnectionTest() override = default;
 
   void SetUp() override {
-    task_runner_ = std::make_unique<openscreen_platform::PlatformTaskRunner>(
+    task_runner_ = std::make_unique<openscreen_platform::TaskRunner>(
         task_environment_.GetMainThreadTaskRunner());
     socket_streams_ = std::make_unique<FakeSocketStreams>();
-    connection_ = std::make_unique<ChromeTlsClientConnection>(
+    connection_ = std::make_unique<TlsClientConnection>(
         task_runner_.get(), kValidEndpointOne, kValidEndpointTwo,
         socket_streams_->TakeReceiveStream(), socket_streams_->TakeSendStream(),
         mojo::Remote<network::mojom::TCPConnectedSocket>{},
@@ -161,17 +161,17 @@ class ChromeTlsClientConnectionTest : public ::testing::Test {
   }
 
   FakeSocketStreams* socket_streams() const { return socket_streams_.get(); }
-  ChromeTlsClientConnection* connection() const { return connection_.get(); }
+  TlsClientConnection* connection() const { return connection_.get(); }
 
  private:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<openscreen_platform::PlatformTaskRunner> task_runner_;
+  std::unique_ptr<openscreen_platform::TaskRunner> task_runner_;
 
   std::unique_ptr<FakeSocketStreams> socket_streams_;
-  std::unique_ptr<ChromeTlsClientConnection> connection_;
+  std::unique_ptr<TlsClientConnection> connection_;
 };
 
-TEST_F(ChromeTlsClientConnectionTest, CallsClientOnReadForInboundData) {
+TEST_F(TlsClientConnectionTest, CallsClientOnReadForInboundData) {
   // Test multiple reads to confirm the data pipe watcher is being re-armed
   // correctly after each read.
   constexpr int kNumReads = 3;
@@ -194,8 +194,7 @@ TEST_F(ChromeTlsClientConnectionTest, CallsClientOnReadForInboundData) {
   }
 }
 
-TEST_F(ChromeTlsClientConnectionTest,
-       CallsClientOnErrorWhenSocketInboundCloses) {
+TEST_F(TlsClientConnectionTest, CallsClientOnErrorWhenSocketInboundCloses) {
   StrictMock<MockTlsConnectionClient> client;
   EXPECT_CALL(client, OnError(connection(), _)).Times(1);
   connection()->SetClient(&client);
@@ -204,7 +203,7 @@ TEST_F(ChromeTlsClientConnectionTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ChromeTlsClientConnectionTest, SendsUntilBlocked) {
+TEST_F(TlsClientConnectionTest, SendsUntilBlocked) {
   StrictMock<MockTlsConnectionClient> client;
   // Note: Client::OnError() should not be called during this test since an
   // outbound-blocked socket is not a fatal error.
@@ -249,7 +248,7 @@ TEST_F(ChromeTlsClientConnectionTest, SendsUntilBlocked) {
   EXPECT_EQ(message, socket_streams()->TakeAccumulatedOutboundData());
 }
 
-TEST_F(ChromeTlsClientConnectionTest,
+TEST_F(TlsClientConnectionTest,
        CallsClientOnErrorWhenSendingToClosedOutboundStream) {
   StrictMock<MockTlsConnectionClient> client;
   EXPECT_CALL(client, OnError(connection(), _)).Times(0);
@@ -268,9 +267,9 @@ TEST_F(ChromeTlsClientConnectionTest,
   EXPECT_FALSE(connection()->Send(kTestMessage, sizeof(kTestMessage)));
 }
 
-TEST_F(ChromeTlsClientConnectionTest, CanRetrieveAddresses) {
+TEST_F(TlsClientConnectionTest, CanRetrieveAddresses) {
   EXPECT_EQ(kValidEndpointOne, connection()->GetLocalEndpoint());
   EXPECT_EQ(kValidEndpointTwo, connection()->GetRemoteEndpoint());
 }
 
-}  // namespace media_router
+}  // namespace openscreen_platform

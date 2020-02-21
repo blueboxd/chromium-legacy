@@ -364,7 +364,7 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
 ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
                          unsigned start_index,
                          unsigned num_characters,
-                         TextDirection direction)
+                         base::i18n::TextDirection direction)
     : width_(0),
       primary_font_(font_data),
       start_index_(start_index),
@@ -376,7 +376,7 @@ ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
 ShapeResult::ShapeResult(const Font* font,
                          unsigned start_index,
                          unsigned num_characters,
-                         TextDirection direction)
+                         base::i18n::TextDirection direction)
     : ShapeResult(font->PrimaryFont(), start_index, num_characters, direction) {
 }
 
@@ -558,7 +558,9 @@ unsigned ShapeResult::CaretOffsetForHitTest(
   return result.right_character_index;
 }
 
-unsigned ShapeResult::OffsetToFit(float x, TextDirection line_direction) const {
+unsigned ShapeResult::OffsetToFit(
+    float x,
+    base::i18n::TextDirection line_direction) const {
   GlyphIndexResult result;
   OffsetForPosition(x, DontBreakGlyphs, &result);
 
@@ -769,7 +771,7 @@ float ShapeResult::ForEachGraphemeClusters(const StringView& text,
     float cluster_advance = 0;
 
     // FIXME: should this be run->direction_?
-    bool rtl = Direction() == TextDirection::kRtl;
+    bool rtl = Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
 
     // A "cluster" in this context means a cluster as it is used by HarfBuzz:
     // The minimal group of characters and corresponding glyphs, that cannot be
@@ -1142,7 +1144,7 @@ void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run) {
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
     unsigned start_index,
     unsigned num_characters,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     Vector<uint16_t> safe_break_offsets) {
   auto run = RunInfo::Create(
       nullptr, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
@@ -1379,7 +1381,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
 
 scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     const Font* font,
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     const TabSize& tab_size,
     float position,
     unsigned start_index,
@@ -1422,11 +1424,12 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   return result;
 }
 
-scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
-                                                        TextDirection direction,
-                                                        unsigned start_index,
-                                                        unsigned length,
-                                                        float width) {
+scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(
+    const Font* font,
+    base::i18n::TextDirection direction,
+    unsigned start_index,
+    unsigned length,
+    float width) {
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
   DCHECK(font_data);
@@ -1576,7 +1579,7 @@ void ShapeResult::EnsurePositionData() const {
 
   character_position_ =
       std::make_unique<CharacterPositionData>(num_characters_, width_);
-  if (Direction() == TextDirection::kLtr)
+  if (Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT)
     ComputePositionData<false>();
   else
     ComputePositionData<true>();

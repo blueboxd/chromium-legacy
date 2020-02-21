@@ -96,6 +96,7 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
@@ -206,7 +207,6 @@ class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
 class WebBundleHandle;
 struct ContextMenuParams;
-struct FrameOwnerProperties;
 struct PendingNavigation;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
@@ -357,6 +357,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& relying_party_id) override;
   blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
       const std::string& relying_party_id) override;
+  void SetIsXrOverlaySetup() override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -474,7 +475,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool is_created_by_script,
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
-      const FrameOwnerProperties& frame_owner_properties,
+      const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType owner_type);
 
   // Update this frame's state at the appropriate time when a navigation
@@ -1562,8 +1563,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
                               const blink::FramePolicy& frame_policy);
-  void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
-                                       const FrameOwnerProperties& properties);
+  void OnDidChangeFrameOwnerProperties(
+      int32_t frame_routing_id,
+      const blink::mojom::FrameOwnerProperties& properties);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnAccessibilityEvents(
@@ -2067,6 +2069,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void JavaScriptDialogClosed(JavaScriptDialogCallback response_callback,
                               bool success,
                               const base::string16& user_input);
+
+  // See |SetIsXrOverlaySetup()|
+  bool HasSeenRecentXrOverlaySetup();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -2690,6 +2695,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   scoped_refptr<WebAuthRequestSecurityChecker>
       webauth_request_security_checker_;
+
+  // This time is used to record the last WebXR DOM Overlay setup request.
+  base::TimeTicks last_xr_overlay_setup_time_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

@@ -25,9 +25,9 @@ class MockFormValidationMessageClient
  public:
   void ShowValidationMessage(const Element& anchor,
                              const String&,
-                             TextDirection,
+                             base::i18n::TextDirection,
                              const String&,
-                             TextDirection) override {
+                             base::i18n::TextDirection) override {
     anchor_ = anchor;
     ++operation_count_;
   }
@@ -81,38 +81,40 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
 
   String message = input->validationMessage().StripWhiteSpace();
   String sub_message = input->ValidationSubMessage().StripWhiteSpace();
-  TextDirection message_dir = TextDirection::kRtl;
-  TextDirection sub_message_dir = TextDirection::kLtr;
+  base::i18n::TextDirection message_dir =
+      base::i18n::TextDirection::RIGHT_TO_LEFT;
+  base::i18n::TextDirection sub_message_dir =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
 
   input->FindCustomValidationMessageTextDirection(message, message_dir,
                                                   sub_message, sub_message_dir);
-  EXPECT_EQ(TextDirection::kRtl, message_dir);
-  EXPECT_EQ(TextDirection::kLtr, sub_message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT, message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, sub_message_dir);
 
   scoped_refptr<ComputedStyle> rtl_style =
       ComputedStyle::Clone(input->GetLayoutObject()->StyleRef());
-  rtl_style->SetDirection(TextDirection::kRtl);
+  rtl_style->SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
   input->GetLayoutObject()->SetStyle(std::move(rtl_style));
   input->FindCustomValidationMessageTextDirection(message, message_dir,
                                                   sub_message, sub_message_dir);
-  EXPECT_EQ(TextDirection::kRtl, message_dir);
-  EXPECT_EQ(TextDirection::kLtr, sub_message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT, message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, sub_message_dir);
 
   input->setCustomValidity(String::FromUTF8("Main message."));
   message = input->validationMessage().StripWhiteSpace();
   sub_message = input->ValidationSubMessage().StripWhiteSpace();
   input->FindCustomValidationMessageTextDirection(message, message_dir,
                                                   sub_message, sub_message_dir);
-  EXPECT_EQ(TextDirection::kLtr, message_dir);
-  EXPECT_EQ(TextDirection::kLtr, sub_message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, sub_message_dir);
 
   input->setCustomValidity(String());
   message = input->validationMessage().StripWhiteSpace();
   sub_message = input->ValidationSubMessage().StripWhiteSpace();
   input->FindCustomValidationMessageTextDirection(message, message_dir,
                                                   sub_message, sub_message_dir);
-  EXPECT_EQ(TextDirection::kLtr, message_dir);
-  EXPECT_EQ(TextDirection::kRtl, sub_message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, message_dir);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT, sub_message_dir);
 }
 
 TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {

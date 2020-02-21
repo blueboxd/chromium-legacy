@@ -461,6 +461,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}
+  void ResizeVisualViewportForWidget(const gfx::Size& viewport_size) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is

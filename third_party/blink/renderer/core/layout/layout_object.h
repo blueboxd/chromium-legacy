@@ -1918,8 +1918,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // generating an anonymous block box for the whitespace between the marker
   // and the <ol>.
   bool AffectsWhitespaceSiblings() const {
-    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGListMarker() &&
-           !IsOutsideListMarker();
+    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGListMarker();
   }
 
   bool HasReflection() const { return bitfields_.HasReflection(); }

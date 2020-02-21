@@ -112,10 +112,10 @@ PhysicalGroup<4> CSSDirectionAwareResolver::VisitedBorderColorGroup() {
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveInlineStart(
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     WritingMode writing_mode,
     const PhysicalGroup<4>& group) {
-  if (direction == TextDirection::kLtr) {
+  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
     if (IsHorizontalWritingMode(writing_mode))
       return group.GetProperty(kLeftSide);
     return group.GetProperty(kTopSide);
@@ -126,10 +126,10 @@ const CSSProperty& CSSDirectionAwareResolver::ResolveInlineStart(
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveInlineEnd(
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     WritingMode writing_mode,
     const PhysicalGroup<4>& group) {
-  if (direction == TextDirection::kLtr) {
+  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
     if (IsHorizontalWritingMode(writing_mode))
       return group.GetProperty(kRightSide);
     return group.GetProperty(kBottomSide);
@@ -140,7 +140,7 @@ const CSSProperty& CSSDirectionAwareResolver::ResolveInlineEnd(
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveBlockStart(
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     WritingMode writing_mode,
     const PhysicalGroup<4>& group) {
   if (IsHorizontalWritingMode(writing_mode))
@@ -151,7 +151,7 @@ const CSSProperty& CSSDirectionAwareResolver::ResolveBlockStart(
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveBlockEnd(
-    TextDirection direction,
+    base::i18n::TextDirection direction,
     WritingMode writing_mode,
     const PhysicalGroup<4>& group) {
   if (IsHorizontalWritingMode(writing_mode))
@@ -162,7 +162,7 @@ const CSSProperty& CSSDirectionAwareResolver::ResolveBlockEnd(
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveInline(
-    TextDirection,
+    base::i18n::TextDirection,
     WritingMode writing_mode,
     const PhysicalGroup<2>& group) {
   if (IsHorizontalWritingMode(writing_mode))
@@ -171,7 +171,7 @@ const CSSProperty& CSSDirectionAwareResolver::ResolveInline(
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveBlock(
-    TextDirection,
+    base::i18n::TextDirection,
     WritingMode writing_mode,
     const PhysicalGroup<2>& group) {
   if (IsHorizontalWritingMode(writing_mode))

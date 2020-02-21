@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
+#include "components/openscreen_platform/tls_client_connection.h"
 
 #include <algorithm>
 #include <limits>
@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 
-namespace media_router {
+namespace openscreen_platform {
 
 using openscreen::Error;
 
-ChromeTlsClientConnection::ChromeTlsClientConnection(
+TlsClientConnection::TlsClientConnection(
     openscreen::TaskRunner* task_runner,
     openscreen::IPEndpoint local_address,
     openscreen::IPEndpoint remote_address,
@@ -41,19 +41,19 @@ ChromeTlsClientConnection::ChromeTlsClientConnection(
         MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
             MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
         MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&ChromeTlsClientConnection::ReceiveMore,
+        base::BindRepeating(&TlsClientConnection::ReceiveMore,
                             base::Unretained(this)));
     receive_stream_watcher_.ArmOrNotify();
   }
 }
 
-ChromeTlsClientConnection::~ChromeTlsClientConnection() = default;
+TlsClientConnection::~TlsClientConnection() = default;
 
-void ChromeTlsClientConnection::SetClient(Client* client) {
+void TlsClientConnection::SetClient(Client* client) {
   client_ = client;
 }
 
-bool ChromeTlsClientConnection::Send(const void* data, size_t len) {
+bool TlsClientConnection::Send(const void* data, size_t len) {
   if (!send_stream_.is_valid()) {
     if (client_) {
       client_->OnError(this, Error(Error::Code::kSocketSendFailure,
@@ -69,17 +69,16 @@ bool ChromeTlsClientConnection::Send(const void* data, size_t len) {
          Error::Code::kNone;
 }
 
-openscreen::IPEndpoint ChromeTlsClientConnection::GetLocalEndpoint() const {
+openscreen::IPEndpoint TlsClientConnection::GetLocalEndpoint() const {
   return local_address_;
 }
 
-openscreen::IPEndpoint ChromeTlsClientConnection::GetRemoteEndpoint() const {
+openscreen::IPEndpoint TlsClientConnection::GetRemoteEndpoint() const {
   return remote_address_;
 }
 
-void ChromeTlsClientConnection::ReceiveMore(
-    MojoResult result,
-    const mojo::HandleSignalsState& state) {
+void TlsClientConnection::ReceiveMore(MojoResult result,
+                                      const mojo::HandleSignalsState& state) {
   if (!receive_stream_.is_valid()) {
     if (client_) {
       client_->OnError(this, Error(Error::Code::kSocketReadFailure,
@@ -112,7 +111,7 @@ void ChromeTlsClientConnection::ReceiveMore(
   }
 }
 
-Error::Code ChromeTlsClientConnection::ProcessMojoResult(
+Error::Code TlsClientConnection::ProcessMojoResult(
     MojoResult result,
     Error::Code error_code_if_fatal) {
   switch (result) {
@@ -138,6 +137,6 @@ Error::Code ChromeTlsClientConnection::ProcessMojoResult(
 }
 
 // static
-constexpr uint32_t ChromeTlsClientConnection::kMaxBytesPerRead;
+constexpr uint32_t TlsClientConnection::kMaxBytesPerRead;
 
-}  // namespace media_router
+}  // namespace openscreen_platform

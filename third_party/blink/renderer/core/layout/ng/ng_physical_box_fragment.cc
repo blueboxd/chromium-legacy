@@ -168,7 +168,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow() const {
     // Inline overflow is a union of child overflows.
     PhysicalRect overflow({}, Size());
     WritingMode container_writing_mode = Style().GetWritingMode();
-    TextDirection container_direction = Style().Direction();
+    base::i18n::TextDirection container_direction = Style().Direction();
     for (const auto& child_fragment : Children()) {
       PhysicalRect child_overflow =
           child_fragment->ScrollableOverflowForPropagation(*this);
@@ -291,7 +291,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
     const NGPhysicalBoxFragment& container;
     const ComputedStyle& style;
     const WritingMode writing_mode;
-    const TextDirection direction;
+    const base::i18n::TextDirection direction;
     const LayoutUnit border_inline_start;
     const LayoutUnit border_block_start;
     base::Optional<NGPhysicalBoxStrut> padding_strut;

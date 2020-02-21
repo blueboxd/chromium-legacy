@@ -286,9 +286,9 @@ class MockDocumentValidationMessageClient
   // ValidationMessageClient functions.
   void ShowValidationMessage(const Element& anchor,
                              const String& main_message,
-                             TextDirection,
+                             base::i18n::TextDirection,
                              const String& sub_message,
-                             TextDirection) override {
+                             base::i18n::TextDirection) override {
     show_validation_message_was_called = true;
   }
   void HideValidationMessage(const Element& anchor) override {}

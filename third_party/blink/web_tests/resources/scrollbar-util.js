@@ -37,4 +37,12 @@ function resetScrollOffset(scrollElement) {
   }
 }
 
+// The percentage scrollbar arrows will scroll, if percent-based scrolling
+// is enabled.
+const SCROLLBAR_SCROLL_PERCENTAGE = 0.125;
+
+// The number of pixels scrollbar arrows will scroll when percent-based
+// scrolling is not enabled.
+const SCROLLBAR_SCROLL_PIXELS = 40;
+
 // TODO(arakeri): Add helpers for arrow widths.

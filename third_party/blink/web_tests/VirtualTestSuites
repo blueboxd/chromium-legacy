@@ -299,6 +299,13 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "percent-based-scrolling",
+    "bases": ["fast/scrolling/scrollbars"],
+    "args": ["--enable-features=PercentBasedScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
     "prefix": "smooth_compositor_threaded_scrollbar_scrolling",
     "bases": ["fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html"],
     "args": ["--enable-features=CompositorThreadedScrollbarScrolling",

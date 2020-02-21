@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 
 namespace gfx {
@@ -34,6 +35,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       GetTextSurroundingSelectionCallback callback) override;
   void SendInterventionReport(const std::string& id,
                               const std::string& message) override;
+  void SetFrameOwnerProperties(
+      blink::mojom::FrameOwnerPropertiesPtr properties) override;
   void NotifyUserActivation() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message,

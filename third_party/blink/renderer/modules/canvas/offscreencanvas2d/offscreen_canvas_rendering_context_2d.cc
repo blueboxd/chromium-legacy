@@ -468,22 +468,23 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   }
 }
 
-static inline TextDirection ToTextDirection(
+static inline base::i18n::TextDirection ToTextDirection(
     CanvasRenderingContext2DState::Direction direction) {
   switch (direction) {
     case CanvasRenderingContext2DState::kDirectionInherit:
-      return TextDirection::kLtr;
+      return base::i18n::TextDirection::LEFT_TO_RIGHT;
     case CanvasRenderingContext2DState::kDirectionRTL:
-      return TextDirection::kRtl;
+      return base::i18n::TextDirection::RIGHT_TO_LEFT;
     case CanvasRenderingContext2DState::kDirectionLTR:
-      return TextDirection::kLtr;
+      return base::i18n::TextDirection::LEFT_TO_RIGHT;
   }
   NOTREACHED();
-  return TextDirection::kLtr;
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
 String OffscreenCanvasRenderingContext2D::direction() const {
-  return ToTextDirection(GetState().GetDirection()) == TextDirection::kRtl
+  return ToTextDirection(GetState().GetDirection()) ==
+                 base::i18n::TextDirection::RIGHT_TO_LEFT
              ? kRtlDirectionString
              : kLtrDirectionString;
 }
@@ -558,8 +559,9 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
 
   // FIXME: Need to turn off font smoothing.
 
-  TextDirection direction = ToTextDirection(GetState().GetDirection());
-  bool is_rtl = direction == TextDirection::kRtl;
+  base::i18n::TextDirection direction =
+      ToTextDirection(GetState().GetDirection());
+  bool is_rtl = direction == base::i18n::TextDirection::RIGHT_TO_LEFT;
   TextRun text_run(text, 0, 0, TextRun::kAllowTrailingExpansion, direction,
                    false);
   text_run.SetNormalizeSpace(true);
@@ -624,7 +626,7 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
     const String& text) {
   const Font& font = AccessFont();
 
-  TextDirection direction;
+  base::i18n::TextDirection direction;
   if (GetState().GetDirection() ==
       CanvasRenderingContext2DState::kDirectionInherit)
     direction = DetermineDirectionality(text);

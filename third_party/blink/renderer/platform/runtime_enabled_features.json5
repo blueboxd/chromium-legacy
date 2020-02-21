@@ -1317,6 +1317,10 @@
       status: "stable",
     },
     {
+      name: "PercentBasedScrolling",
+      settable_from_internals: true,
+    },
+    {
       name: "PerformanceManagerInstrumentation",
     },
     {

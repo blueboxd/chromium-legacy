@@ -11,40 +11,38 @@
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
 
-#include "components/openscreen_platform/platform_task_runner.h"
+#include "components/openscreen_platform/task_runner.h"
 
 namespace openscreen_platform {
 
 using openscreen::Clock;
-using openscreen::TaskRunner;
+using Task = openscreen::TaskRunner::Task;
 
 namespace {
-void ExecuteTask(TaskRunner::Task task) {
+void ExecuteTask(Task task) {
   task();
 }
 }  // namespace
 
-PlatformTaskRunner::PlatformTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+TaskRunner::TaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner) {
   task_runner_ = task_runner;
 }
 
-PlatformTaskRunner::~PlatformTaskRunner() = default;
+TaskRunner::~TaskRunner() = default;
 
-void PlatformTaskRunner::PostPackagedTask(TaskRunner::Task task) {
+void TaskRunner::PostPackagedTask(Task task) {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(ExecuteTask, std::move(task)));
 }
 
-void PlatformTaskRunner::PostPackagedTaskWithDelay(TaskRunner::Task task,
-                                                   Clock::duration delay) {
+void TaskRunner::PostPackagedTaskWithDelay(Task task, Clock::duration delay) {
   auto time_delta = base::TimeDelta::FromMicroseconds(
       std::chrono::duration_cast<std::chrono::microseconds>(delay).count());
   task_runner_->PostDelayedTask(
       FROM_HERE, base::BindOnce(ExecuteTask, std::move(task)), time_delta);
 }
 
-bool PlatformTaskRunner::IsRunningOnTaskRunner() {
+bool TaskRunner::IsRunningOnTaskRunner() {
   return task_runner_->RunsTasksInCurrentSequence();
 }
 

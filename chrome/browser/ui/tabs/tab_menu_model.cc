@@ -12,6 +12,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
+#include "chrome/browser/ui/tabs/existing_window_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -60,9 +61,22 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       }
     }
   }
-  AddItem(TabStripModel::CommandMoveTabsToNewWindow,
-          l10n_util::GetPluralStringFUTF16(
-              IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_affected_tabs));
+
+  if (!ExistingWindowSubMenuModel::ShouldShowSubmenu(tab_strip->profile())) {
+    AddItem(TabStripModel::CommandMoveTabsToNewWindow,
+            l10n_util::GetPluralStringFUTF16(
+                IDS_TAB_CXMENU_MOVE_TABS_TO_NEW_WINDOW, num_affected_tabs));
+  } else {
+    // Create submenu with existing windows
+    add_to_existing_window_submenu_ =
+        std::make_unique<ExistingWindowSubMenuModel>(delegate(), tab_strip,
+                                                     index);
+    AddSubMenu(TabStripModel::CommandMoveToExistingWindow,
+               l10n_util::GetPluralStringFUTF16(
+                   IDS_TAB_CXMENU_MOVETOANOTHERWINDOW, num_affected_tabs),
+               add_to_existing_window_submenu_.get());
+  }
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,

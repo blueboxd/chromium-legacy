@@ -1533,13 +1533,6 @@ config("default_warnings") {
           ]
         }
 
-        if (is_chromeos || is_chromecast) {
-          cflags += [
-            # TODO(https://crbug.com/1031169): Clean up and enable.
-            "-Wno-misleading-indentation",
-          ]
-        }
-
         if (llvm_force_head_revision) {
           cflags += [
             # TODO(https://crbug.com/1050281): Clean up, enable.

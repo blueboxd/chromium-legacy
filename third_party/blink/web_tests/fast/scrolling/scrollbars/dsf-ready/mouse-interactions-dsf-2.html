@@ -91,7 +91,11 @@ window.onload = () => {
     // Click on the Down arrow for standardRectFast.
     await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, SCROLLBAR_BUTTON_FWD.y);
     await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
-    assert_equals(standardDivFast.scrollTop, 40, "Pressing the down arrow didn't scroll.");
+
+    const EXPECTED_SCROLL = (internals.runtimeFlags.percentBasedScrollingEnabled) ?
+        Math.floor(standardDivFast.clientHeight * SCROLLBAR_SCROLL_PERCENTAGE) : SCROLLBAR_SCROLL_PIXELS;
+
+    assert_equals(standardDivFast.scrollTop, EXPECTED_SCROLL, "Pressing the down arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
   promise_test (async () => {

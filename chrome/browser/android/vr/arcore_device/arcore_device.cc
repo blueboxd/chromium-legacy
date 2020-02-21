@@ -22,6 +22,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "components/permissions/permission_result.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;
@@ -130,6 +131,16 @@ void ArCoreDevice::RequestSession(
 
   bool use_dom_overlay = base::Contains(
       options->enabled_features, device::mojom::XRSessionFeature::DOM_OVERLAY);
+
+  if (use_dom_overlay) {
+    // Tell RenderFrameHostImpl that we're setting up the WebXR DOM Overlay,
+    // it checks for this in EnterFullscreen via HasSeenRecentXrOverlaySetup().
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(options->render_process_id,
+                                         options->render_frame_id);
+    DCHECK(render_frame_host);
+    render_frame_host->SetIsXrOverlaySetup();
+  }
 
   // mailbox_bridge_ is either supplied from the constructor, or recreated in
   // OnSessionEnded().

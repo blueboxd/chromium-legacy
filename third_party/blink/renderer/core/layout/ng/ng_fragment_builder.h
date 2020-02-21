@@ -38,7 +38,7 @@ class CORE_EXPORT NGFragmentBuilder {
   }
 
   WritingMode GetWritingMode() const { return writing_mode_; }
-  TextDirection Direction() const { return direction_; }
+  base::i18n::TextDirection Direction() const { return direction_; }
 
   LayoutUnit InlineSize() const { return size_.inline_size; }
   LayoutUnit BlockSize() const { return size_.block_size; }
@@ -52,14 +52,15 @@ class CORE_EXPORT NGFragmentBuilder {
  protected:
   NGFragmentBuilder(scoped_refptr<const ComputedStyle> style,
                     WritingMode writing_mode,
-                    TextDirection direction)
+                    base::i18n::TextDirection direction)
       : style_(std::move(style)),
         writing_mode_(writing_mode),
         direction_(direction),
         style_variant_(NGStyleVariant::kStandard) {
     DCHECK(style_);
   }
-  NGFragmentBuilder(WritingMode writing_mode, TextDirection direction)
+  NGFragmentBuilder(WritingMode writing_mode,
+                    base::i18n::TextDirection direction)
       : writing_mode_(writing_mode), direction_(direction) {}
 
   NGFragmentBuilder(const NGPhysicalFragment& fragment)
@@ -74,7 +75,7 @@ class CORE_EXPORT NGFragmentBuilder {
  protected:
   scoped_refptr<const ComputedStyle> style_;
   WritingMode writing_mode_;
-  TextDirection direction_;
+  base::i18n::TextDirection direction_;
   NGStyleVariant style_variant_;
   LogicalSize size_;
   LayoutObject* layout_object_ = nullptr;

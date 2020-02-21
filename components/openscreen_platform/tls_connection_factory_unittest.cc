@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_connection_factory.h"
+#include "components/openscreen_platform/tls_connection_factory.h"
 
 #include <iostream>
 #include <memory>
@@ -12,8 +12,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
-#include "components/openscreen_platform/platform_task_runner.h"
+#include "components/openscreen_platform/task_runner.h"
+#include "components/openscreen_platform/tls_client_connection.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/test/test_network_context.h"
@@ -26,35 +26,39 @@ using ::testing::StrictMock;
 
 using openscreen::Error;
 using openscreen::TlsConnection;
-using openscreen::TlsConnectionFactory;
 using openscreen::TlsConnectOptions;
 
-namespace media_router {
+namespace openscreen_platform {
 
 namespace {
 
 const openscreen::IPEndpoint kValidOpenscreenEndpoint{
     openscreen::IPAddress{192, 168, 0, 1}, 80};
 
-class MockTlsConnectionFactoryClient : public TlsConnectionFactory::Client {
+class MockTlsConnectionFactoryClient
+    : public openscreen::TlsConnectionFactory::Client {
  public:
   MOCK_METHOD(void,
               OnAccepted,
-              (TlsConnectionFactory*,
+              (openscreen::TlsConnectionFactory*,
                std::vector<uint8_t>,
                std::unique_ptr<TlsConnection>),
               (override));
   MOCK_METHOD(void,
               OnConnected,
-              (TlsConnectionFactory*,
+              (openscreen::TlsConnectionFactory*,
                std::vector<uint8_t>,
                std::unique_ptr<TlsConnection>),
               (override));
   MOCK_METHOD(void,
               OnConnectionFailed,
-              (TlsConnectionFactory*, const openscreen::IPEndpoint&),
+              (openscreen::TlsConnectionFactory*,
+               const openscreen::IPEndpoint&),
               (override));
-  MOCK_METHOD(void, OnError, (TlsConnectionFactory*, Error), (override));
+  MOCK_METHOD(void,
+              OnError,
+              (openscreen::TlsConnectionFactory*, Error),
+              (override));
 };
 
 class FakeNetworkContext : public network::TestNetworkContext {
@@ -86,28 +90,28 @@ class FakeNetworkContext : public network::TestNetworkContext {
 
 }  // namespace
 
-class ChromeTlsConnectionFactoryTest : public ::testing::Test {
+class TlsConnectionFactoryTest : public ::testing::Test {
  public:
   void SetUp() override {
     task_environment_ = std::make_unique<base::test::TaskEnvironment>();
 
-    task_runner = std::make_unique<openscreen_platform::PlatformTaskRunner>(
+    task_runner = std::make_unique<openscreen_platform::TaskRunner>(
         task_environment_->GetMainThreadTaskRunner());
 
     mock_network_context = std::make_unique<FakeNetworkContext>();
   }
 
-  std::unique_ptr<openscreen_platform::PlatformTaskRunner> task_runner;
+  std::unique_ptr<openscreen_platform::TaskRunner> task_runner;
   std::unique_ptr<FakeNetworkContext> mock_network_context;
 
  private:
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
-TEST_F(ChromeTlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
+TEST_F(TlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
   StrictMock<MockTlsConnectionFactoryClient> mock_client;
-  ChromeTlsConnectionFactory factory(&mock_client, task_runner.get(),
-                                     mock_network_context.get());
+  TlsConnectionFactory factory(&mock_client, task_runner.get(),
+                               mock_network_context.get());
 
   factory.Connect(kValidOpenscreenEndpoint, TlsConnectOptions{});
 
@@ -115,11 +119,11 @@ TEST_F(ChromeTlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
   EXPECT_EQ(1, mock_network_context->times_called());
 }
 
-TEST_F(ChromeTlsConnectionFactoryTest,
+TEST_F(TlsConnectionFactoryTest,
        CallsOnConnectionFailedWhenNetworkContextReportsError) {
   StrictMock<MockTlsConnectionFactoryClient> mock_client;
-  ChromeTlsConnectionFactory factory(&mock_client, task_runner.get(),
-                                     mock_network_context.get());
+  TlsConnectionFactory factory(&mock_client, task_runner.get(),
+                               mock_network_context.get());
   EXPECT_CALL(mock_client,
               OnConnectionFailed(&factory, kValidOpenscreenEndpoint));
 
@@ -130,4 +134,4 @@ TEST_F(ChromeTlsConnectionFactoryTest,
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace media_router
+}  // namespace openscreen_platform

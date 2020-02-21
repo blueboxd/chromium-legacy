@@ -106,6 +106,17 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
   DuplicateTabAt(browser_, index);
 }
 
+void BrowserTabStripModelDelegate::MoveToExistingWindow(
+    const std::vector<int>& indices,
+    int browser_index) {
+  browser_->MoveTabsToExistingWindow(indices, browser_index);
+}
+
+std::vector<base::string16>
+BrowserTabStripModelDelegate::GetExistingWindowsForMoveMenu() const {
+  return browser_->GetExistingWindowsForMoveMenu();
+}
+
 bool BrowserTabStripModelDelegate::CanMoveTabsToWindow(
     const std::vector<int>& indices) {
   return CanMoveTabsToNewWindow(browser_, indices);

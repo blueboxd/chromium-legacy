@@ -11,8 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/extensions/browsertest_util.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +20,9 @@
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
 #include "chrome/browser/ui/views/overlay/track_image_button.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -41,6 +42,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/media_session/public/cpp/features.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,6 +62,7 @@
 #endif
 
 using ::testing::_;
+using web_app::ControllerType;
 
 namespace {
 
@@ -2500,55 +2503,38 @@ class ChromeContentBrowserClientOverrideWebAppScope
 }  // namespace
 
 class WebAppPictureInPictureWindowControllerBrowserTest
-    : public extensions::ExtensionBrowserTest {
+    : public web_app::WebAppControllerBrowserTest {
  public:
   WebAppPictureInPictureWindowControllerBrowserTest() = default;
   ~WebAppPictureInPictureWindowControllerBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    web_app::WebAppControllerBrowserTest::SetUpCommandLine(command_line);
   }
 
-  void InstallAndLaunchPWA() {
-    // Install PWA
-    ASSERT_TRUE(embedded_test_server()->Start());
-    GURL app_url = embedded_test_server()->GetURL(
+  void SetUpOnMainThread() override {
+    web_app::WebAppControllerBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(https_server()->Start());
+  }
+
+  GURL main_url() {
+    return https_server()->GetURL(
         "/extensions/auto_picture_in_picture/main.html");
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = app_url;
-    web_app_info.scope = app_url.GetWithoutFilename();
-    web_app_info.open_as_window = true;
-    const extensions::Extension* extension =
-        extensions::browsertest_util::InstallBookmarkApp(
-            browser()->profile(), std::move(web_app_info));
-    ASSERT_TRUE(extension);
+  }
 
-    // Launch PWA
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), extension);
-    url_observer.Wait();
+  Browser* InstallAndLaunchPWA(const GURL& app_url) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetOrigin();
+    web_app_info->open_as_window = true;
+    const web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
 
+    Browser* app_browser = LaunchWebAppBrowserAndWait(app_id);
     web_contents_ = app_browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::WaitForLoadStop(web_contents_));
-    ASSERT_NE(nullptr, web_contents_);
-
-    SetWebAppScope(app_url.GetOrigin());
-  }
-
-  void SetWebAppScope(const GURL web_app_scope) {
-    ChromeContentBrowserClientOverrideWebAppScope browser_client_;
-    browser_client_.set_web_app_scope(web_app_scope);
-
-    content::ContentBrowserClient* original_browser_client_ =
-        content::SetBrowserClientForTesting(&browser_client_);
-
-    web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
-
-    content::SetBrowserClientForTesting(original_browser_client_);
+    return app_browser;
   }
 
   content::WebContents* web_contents() { return web_contents_; }
@@ -2560,9 +2546,9 @@ class WebAppPictureInPictureWindowControllerBrowserTest
 };
 
 // Show/hide pwa page and check that Auto Picture-in-Picture is triggered.
-IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebAppPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPicture) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
                                                    "playVideo();", &result));
@@ -2588,11 +2574,16 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
 
 // Show pwa page and check that Auto Picture-in-Picture is not triggered if
 // document is not inside the scope specified in the Web App Manifest.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredIfDocumentNotInWebAppScope) {
-  InstallAndLaunchPWA();
-  SetWebAppScope(GURL("http://www.foobar.com"));
+  // We open a web app with a different scope
+  // Then go to our usual test page.
+  Browser* app_browser = InstallAndLaunchPWA(https_server()->GetURL(
+      "www.foobar.com", "/banners/manifest_test_page.html"));
+  web_app::NavigateToURLAndWait(app_browser, main_url());
+  EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
+
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
                                                    "playVideo();", &result));
@@ -2616,9 +2607,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Show pwa page and check that Auto Picture-in-Picture is not triggered if
 // video is not playing.
-IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebAppPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPictureNotTriggeredIfVideoNotPlaying) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
   bool is_paused = false;
@@ -2642,10 +2633,10 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
 
 // Check that Auto Picture-in-Picture is not triggered if there's already a
 // video in Picture-in-Picture.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
 
   // Enter Picture-in-Picture for the first video and set Auto
   // Picture-in-Picture for the second video.
@@ -2679,10 +2670,10 @@ IN_PROC_BROWSER_TEST_F(
 
 // Check that video does not leave Picture-in-Picture automatically when it
 // doesn't have the Auto Picture-in-Picture attribute set.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNoAttribute) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
                                                    "playVideo();", &result));
@@ -2720,9 +2711,9 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(http://crbug/1001249): flaky.
 // Check that Auto Picture-in-Picture applies only to the video element whose
 // autoPictureInPicture attribute was set most recently
-IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebAppPictureInPictureWindowControllerBrowserTest,
                        DISABLED_AutoPictureInPictureAttributeApplies) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
                                                    "playVideo();", &result));
@@ -2799,10 +2790,10 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
 
 // Check that video does not leave Picture-in-Picture automatically when it
 // not the most recent element with the Auto Picture-in-Picture attribute set.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNotEnteredAutoPictureInPicture) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
                                                    "playVideo();", &result));
@@ -2842,10 +2833,10 @@ IN_PROC_BROWSER_TEST_F(
 
 // Check that video with no audio that is paused when hidden is still eligible
 // to enter Auto Picture-in-Picture and resumes playback.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureTriggeredOnPageHiddenIfVideoPausedWhenHidden) {
-  InstallAndLaunchPWA();
+  InstallAndLaunchPWA(main_url());
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -3027,3 +3018,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppPictureInPictureWindowControllerBrowserTest,
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp),
+    web_app::ControllerTypeParamToString);

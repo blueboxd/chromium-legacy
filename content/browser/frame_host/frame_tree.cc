@@ -26,9 +26,9 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
 
@@ -111,7 +111,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               std::string(),
                               false,
                               base::UnguessableToken::Create(),
-                              FrameOwnerProperties(),
+                              blink::mojom::FrameOwnerProperties(),
                               blink::FrameOwnerElementType::kNone)),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0) {}
@@ -187,7 +187,7 @@ FrameTreeNode* FrameTree::AddFrame(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
-    const FrameOwnerProperties& frame_owner_properties,
+    const blink::mojom::FrameOwnerProperties& frame_owner_properties,
     bool was_discarded,
     blink::FrameOwnerElementType owner_type) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);

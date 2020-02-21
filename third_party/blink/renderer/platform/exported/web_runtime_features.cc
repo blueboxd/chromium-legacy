@@ -344,6 +344,10 @@ void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
   }
 }
 
+void WebRuntimeFeatures::EnablePercentBasedScrolling(bool enable) {
+  RuntimeEnabledFeatures::SetPercentBasedScrollingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(bool enable) {
   RuntimeEnabledFeatures::SetPerformanceManagerInstrumentationEnabled(enable);
 }

@@ -135,7 +135,7 @@ class CORE_EXPORT HitTestResult {
   }
 
   bool IsSelected(const HitTestLocation& location) const;
-  String Title(TextDirection&) const;
+  String Title(base::i18n::TextDirection&) const;
   const AtomicString& AltDisplayString() const;
   Image* GetImage() const;
   IntRect ImageRect() const;

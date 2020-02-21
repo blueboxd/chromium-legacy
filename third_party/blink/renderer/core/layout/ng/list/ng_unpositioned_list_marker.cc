@@ -170,8 +170,9 @@ LayoutUnit NGUnpositionedListMarker::ComputeIntrudedFloatOffset(
       space.ExclusionSpace().FindLayoutOpportunity(origin_offset,
                                                    available_size);
   DCHECK(marker_layout_object_);
-  const TextDirection direction = marker_layout_object_->StyleRef().Direction();
-  if (direction == TextDirection::kLtr) {
+  const base::i18n::TextDirection direction =
+      marker_layout_object_->StyleRef().Direction();
+  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
     // If Ltr, compare the left side.
     if (opportunity.rect.LineStartOffset() > origin_offset.line_offset)
       return opportunity.rect.LineStartOffset() - origin_offset.line_offset;

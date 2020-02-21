@@ -36,7 +36,9 @@ if (is_ios) {
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/ui_test.pak",
     ]
-    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
   }
 }
 
@@ -46,7 +48,9 @@ if (is_ios) {
 # test target if convenient.
 test("components_unittests") {
   if (is_android || is_linux || is_mac || is_win) {
-    data = [ "test/data/" ]
+    data = [
+      "test/data/",
+    ]
   }
 
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
@@ -111,6 +115,7 @@ test("components_unittests") {
     "//components/offline_items_collection/core:unit_tests",
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
+    "//components/openscreen_platform:unittests",
     "//components/os_crypt:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",

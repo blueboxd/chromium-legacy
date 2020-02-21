@@ -649,7 +649,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
     NGBoxFragment fragment(
         container_writing_mode,
-        TextDirection::kLtr,  // irrelevant here
+        base::i18n::TextDirection::LEFT_TO_RIGHT,  // irrelevant here
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
     return sizes;
@@ -694,7 +694,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   layout_result = Layout(infinite_constraint_space);
   NGBoxFragment max_fragment(
       container_writing_mode,
-      TextDirection::kLtr,  // irrelevant here
+      base::i18n::TextDirection::LEFT_TO_RIGHT,  // irrelevant here
       To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
   return sizes;

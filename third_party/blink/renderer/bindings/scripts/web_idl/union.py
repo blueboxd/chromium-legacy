@@ -74,7 +74,7 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
 
         def collect_primary_component(idl_type):
             type_definition_object = idl_type.type_definition_object
-            if type_definition_object:
+            if type_definition_object and type_definition_object.components:
                 components.add(type_definition_object.components[0])
 
         for idl_type in flattened_members:

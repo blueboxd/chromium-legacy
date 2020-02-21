@@ -486,9 +486,14 @@ class TabStripModel : public TabGroupController {
     CommandAddToNewGroup,
     CommandAddToExistingGroup,
     CommandRemoveFromGroup,
+    CommandMoveToExistingWindow,
     CommandMoveTabsToNewWindow,
     CommandLast
   };
+
+  // Range of command IDs reserved for the "Move to another window" submenu.
+  static const int kMinExistingWindowCommandId = 1001;
+  static const int kMaxExistingWindowCommandId = 1200;
 
   // Returns true if the specified command is enabled. If |context_index| is
   // selected the response applies to all selected tabs.
@@ -505,6 +510,13 @@ class TabStripModel : public TabGroupController {
   // |context_index| is selected the command applies to all selected tabs.
   void ExecuteAddToExistingGroupCommand(int context_index,
                                         const tab_groups::TabGroupId& group);
+
+  // Adds the tab at |context_index| to the browser window at |browser_index|.
+  // If |context_index| is selected the command applies to all selected tabs.
+  void ExecuteAddToExistingWindowCommand(int context_index, int browser_index);
+
+  // Get the list of existing windows that tabs can be moved to.
+  std::vector<base::string16> GetExistingWindowsForMoveMenu();
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.

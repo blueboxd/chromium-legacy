@@ -84,6 +84,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   static float MinFractionToStepWhenPaging();
   int MaxOverlapBetweenPages() const;
 
+  // Returns the amount of delta, in |granularity| units, for a direction-based
+  // (i.e. keyboard or scrollbar arrow) scroll.
+  static float DirectionBasedScrollDelta(ScrollGranularity granularity);
+
   // Convert a non-finite scroll value (Infinity, -Infinity, NaN) to 0 as
   // per https://drafts.csswg.org/cssom-view/#normalize-non-finite-values.
   static float NormalizeNonFiniteScroll(float value) {

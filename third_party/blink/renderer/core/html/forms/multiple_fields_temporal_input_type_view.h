@@ -120,7 +120,7 @@ class MultipleFieldsTemporalInputTypeView final
   void ValueAttributeChanged() override;
   void ListAttributeTargetChanged() final;
   void UpdateClearButtonVisibility() final;
-  TextDirection ComputedTextDirection() final;
+  base::i18n::TextDirection ComputedTextDirection() final;
   AXObject* PopupRootAXObject() final;
   bool TypeShouldForceLegacyLayout() const final;
 

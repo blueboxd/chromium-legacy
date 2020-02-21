@@ -25,6 +25,7 @@ import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/media_player_action.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
+import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
@@ -320,6 +321,13 @@ interface LocalFrame {
   // can provide additional context to the cause of the intervention.
   SendInterventionReport(string id, string message);
 
+  // Updates this frame's FrameOwner properties, such as scrolling, margin,
+  // or allowfullscreen.  This is used when this frame's parent is in
+  // another process and it dynamically updates these properties.
+  // TODO(dcheng): Currently, the update only takes effect on next frame
+  // navigation.  This matches the in-process frame behavior.
+  SetFrameOwnerProperties(FrameOwnerProperties properties);
+
   // Notifies the RenderFrame about a user activation detected in the browser
   // side (e.g. during Android voice search).
   NotifyUserActivation();
@@ -479,6 +487,13 @@ interface RemoteFrame {
   // is a hashed set of host/port pairs. See
   // SecurityContext::SetInsecureNavigationsSet.
   EnforceInsecureNavigationsSet(array<uint32> set);
+
+  // Updates this frame's FrameOwner properties, such as scrolling, margin,
+  // or allowfullscreen.  This is used when this frame's parent is in
+  // another process and it dynamically updates these properties.
+  // TODO(dcheng): Currently, the update only takes effect on next frame
+  // navigation.  This matches the in-process frame behavior.
+  SetFrameOwnerProperties(FrameOwnerProperties properties);
 
   // Update the replicated origin. Used when the frame is navigated to a
   // new origin.

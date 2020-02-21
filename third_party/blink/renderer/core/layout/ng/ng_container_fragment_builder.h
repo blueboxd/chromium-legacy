@@ -127,7 +127,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   void AddOutOfFlowInlineChildCandidate(
       NGBlockNode,
       const LogicalOffset& child_offset,
-      TextDirection inline_container_direction);
+      base::i18n::TextDirection inline_container_direction);
 
   void AddOutOfFlowDescendant(
       const NGLogicalOutOfFlowPositionedNode& descendant);
@@ -191,7 +191,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
                              scoped_refptr<const ComputedStyle> style,
                              const NGConstraintSpace* space,
                              WritingMode writing_mode,
-                             TextDirection direction)
+                             base::i18n::TextDirection direction)
       : NGFragmentBuilder(std::move(style), writing_mode, direction),
         node_(node),
         space_(space) {

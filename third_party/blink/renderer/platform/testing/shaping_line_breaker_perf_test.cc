@@ -39,7 +39,7 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story) {
 struct HarfBuzzShaperCallbackContext {
   const HarfBuzzShaper* shaper;
   const Font* font;
-  TextDirection direction;
+  base::i18n::TextDirection direction;
 };
 
 scoped_refptr<ShapeResult> HarfBuzzShaperCallback(void* untyped_context,
@@ -147,7 +147,8 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
       "Shall in the shadows mourn your lost estate.");
   unsigned len = string.length();
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
-  TextDirection direction = TextDirection::kLtr;
+  base::i18n::TextDirection direction =
+      base::i18n::TextDirection::LEFT_TO_RIGHT;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> reference_result =

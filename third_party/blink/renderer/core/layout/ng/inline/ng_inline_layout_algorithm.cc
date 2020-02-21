@@ -58,7 +58,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           space,
           // Use LTR direction since inline layout handles bidi by itself and
           // lays out in visual order.
-          TextDirection::kLtr,
+          base::i18n::TextDirection::LEFT_TO_RIGHT,
           break_token),
       box_states_(nullptr),
       context_(context),
@@ -278,7 +278,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
       // An inline-level OOF child positions itself based on its direction, a
       // block-level OOF child positions itself based on the direction of its
       // block-level container.
-      TextDirection direction =
+      base::i18n::TextDirection direction =
           item.GetLayoutObject()->StyleRef().IsOriginalDisplayInlineType()
               ? item.Direction()
               : ConstraintSpace().Direction();
@@ -1060,7 +1060,8 @@ NGPositionedFloat NGInlineLayoutAlgorithm::PositionFloat(
   return ::blink::PositionFloat(&unpositioned_float, exclusion_space);
 }
 
-void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
+void NGInlineLayoutAlgorithm::BidiReorder(
+    base::i18n::TextDirection base_direction) {
   if (line_box_.IsEmpty())
     return;
 

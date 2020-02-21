@@ -159,8 +159,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
   const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
-  TextDirection Direction() const {
-    return static_cast<TextDirection>(bitfields_.direction);
+  base::i18n::TextDirection Direction() const {
+    return static_cast<base::i18n::TextDirection>(bitfields_.direction);
   }
 
   WritingMode GetWritingMode() const {
@@ -1018,7 +1018,8 @@ class CORE_EXPORT NGConstraintSpace final {
         : has_rare_data(false),
           adjoining_object_types(static_cast<unsigned>(kAdjoiningNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
-          direction(static_cast<unsigned>(TextDirection::kLtr)),
+          direction(
+              static_cast<unsigned>(base::i18n::TextDirection::LEFT_TO_RIGHT)),
           is_table_cell(false),
           is_anonymous(false),
           is_new_formatting_context(false),
@@ -1069,7 +1070,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned has_rare_data : 1;
     unsigned adjoining_object_types : 3;  // NGAdjoiningObjectTypes
     unsigned writing_mode : 3;
-    unsigned direction : 1;
+    unsigned direction : 2;
 
     unsigned is_table_cell : 1;
     unsigned is_anonymous : 1;

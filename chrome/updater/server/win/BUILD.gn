@@ -18,6 +18,7 @@ source_set("win") {
   deps = [
     ":updater_idl_idl",
     "//base",
+    "//chrome/updater/win:constants",
   ]
 }
 

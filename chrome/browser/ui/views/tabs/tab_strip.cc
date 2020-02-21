@@ -1555,8 +1555,20 @@ void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOf(tab);
 
   if (IsValidModelIndex(model_index)) {
-    if (tab->group().has_value() && !tab->IsActive())
-      base::RecordAction(base::UserMetricsAction("TabGroups_SwitchGroupedTab"));
+    if (!tab->IsActive()) {
+      int current_selection = selected_tabs_.active();
+      base::UmaHistogramSparse("Tabs.DesktopTabOffsetOfSwitch",
+                               current_selection - model_index);
+      base::UmaHistogramSparse("Tabs.DesktopTabOffsetFromLeftOfSwitch",
+                               model_index);
+      base::UmaHistogramSparse("Tabs.DesktopTabOffsetFromRightOfSwitch",
+                               GetModelCount() - model_index - 1);
+
+      if (tab->group().has_value()) {
+        base::RecordAction(
+            base::UserMetricsAction("TabGroups_SwitchGroupedTab"));
+      }
+    }
 
     // Report histogram metrics for the number of tab hover cards seen before
     // a tab is selected by mouse press.

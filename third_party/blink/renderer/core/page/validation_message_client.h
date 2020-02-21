@@ -45,9 +45,9 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   // some period.
   virtual void ShowValidationMessage(const Element& anchor,
                                      const String& main_message,
-                                     TextDirection,
+                                     base::i18n::TextDirection,
                                      const String& sub_message,
-                                     TextDirection) = 0;
+                                     base::i18n::TextDirection) = 0;
 
   // Hide validation message for the specified anchor if the message for the
   // anchor is already visible.

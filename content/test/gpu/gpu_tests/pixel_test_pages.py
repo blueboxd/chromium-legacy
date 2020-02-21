@@ -757,6 +757,36 @@ class PixelTestPages(object):
             },
         ]),
 
+      PixelTestPage(
+        'pixel_offscreen_canvas_ibrc_webgl_main.html',
+        base_name + '_OffscreenCanvasIBRCWebGLMain',
+        test_rect=[0, 0, 300, 300],
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'solid green',
+            'location': [100, 100],
+            'size': [100, 100],
+            'color': [0, 255, 0],
+          }
+        ],
+        optional_action='RunOffscreenCanvasIBRCWebGLTest'),
+
+      PixelTestPage(
+        'pixel_offscreen_canvas_ibrc_webgl_worker.html',
+        base_name + '_OffscreenCanvasIBRCWebGLWorker',
+        test_rect=[0, 0, 300, 300],
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'solid green',
+            'location': [100, 100],
+            'size': [100, 100],
+            'color': [0, 255, 0],
+          }
+        ],
+        optional_action='RunOffscreenCanvasIBRCWebGLTest'),
+
     ]
 
 
@@ -1336,6 +1366,36 @@ class PixelTestPages(object):
           }
         ],
         optional_action='RunLowToHighPowerTest'),
+
+      PixelTestPage(
+        'pixel_offscreen_canvas_ibrc_webgl_main.html',
+        base_name + '_OffscreenCanvasIBRCWebGLHighPerfMain',
+        test_rect=[0, 0, 300, 300],
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'solid green',
+            'location': [100, 100],
+            'size': [100, 100],
+            'color': [0, 255, 0],
+          }
+        ],
+        optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
+
+      PixelTestPage(
+        'pixel_offscreen_canvas_ibrc_webgl_worker.html',
+        base_name + '_OffscreenCanvasIBRCWebGLHighPerfWorker',
+        test_rect=[0, 0, 300, 300],
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'solid green',
+            'location': [100, 100],
+            'size': [100, 100],
+            'color': [0, 255, 0],
+          }
+        ],
+        optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
     ]
 
   @staticmethod

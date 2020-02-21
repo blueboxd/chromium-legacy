@@ -26,7 +26,11 @@
         width: 320px;
       }
 
-      .category {
+      :host([files-ng]) #box {
+        padding-top: 16px;
+      }
+
+      :host(:not([files-ng])) .category {
         color: #E6E6E6;
         font-size: 108%;
         font-weight: 500;
@@ -34,7 +38,15 @@
         vertical-align: bottom;
       }
 
-      :host(:not([files-ng])) hr {
+      :host([files-ng]) .category {
+        color: var(--google-grey-200);
+        font-family: 'Roboto Medium';
+        font-size: 14px;
+        line-height: 56px;
+        margin-inline-start: 32px;
+      }
+
+      hr {
         border-color: white;
         margin-top: 31px;
         opacity: 0.24;

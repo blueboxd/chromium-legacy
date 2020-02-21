@@ -41,7 +41,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   font.Update(nullptr);
 
   HarfBuzzShaper shaper(String(converted_input_buffer, converted_length));
-  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  scoped_refptr<ShapeResult> result =
+      shaper.Shape(&font, base::i18n::TextDirection::LEFT_TO_RIGHT);
   return 0;
 }
 

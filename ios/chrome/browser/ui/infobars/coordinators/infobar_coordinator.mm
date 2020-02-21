@@ -446,7 +446,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
       self.baseViewController.presentedViewController ==
           self.bannerViewController) {
     [self infobarBannerWillBeDismissed:userInitiated];
-    [self.baseViewController dismissViewControllerAnimated:YES
+    [self.baseViewController dismissViewControllerAnimated:animated
                                                 completion:completion];
   } else if (completion) {
     completion();

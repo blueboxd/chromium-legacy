@@ -1004,12 +1004,8 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
-  // Lists of RenderFrameProxy objects for which this RenderWidget is their
-  // local root. Each of these represents a child local root RenderWidget in
-  // another RenderView frame tree. For values that are propagated from
-  // a parent RenderWidget to its children, they are plumbed through the
-  // RenderFrameProxys in this list, which bounce those values through the
-  // browser to the child RenderWidget in the correct process.
+  // Lists of RenderFrameProxy objects that need to be notified of
+  // compositing-related events (e.g. DidCommitCompositorFrame).
   base::ObserverList<RenderFrameProxy>::Unchecked render_frame_proxies_;
 
   // A list of RenderFrames associated with this RenderWidget. Notifications

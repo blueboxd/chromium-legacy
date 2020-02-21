@@ -165,6 +165,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
+  void AddListMarker() override;
   void AddInlineTextBoxChildren(bool force) override;
   void AddImageMapChildren() override;
   void AddHiddenChildren() override;

@@ -25,7 +25,7 @@ struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
   void* layout_object;
   PhysicalSize size;
-  unsigned flags;
+  unsigned flags[2];
 };
 
 static_assert(sizeof(NGPhysicalFragment) ==
@@ -472,7 +472,7 @@ UBiDiLevel NGPhysicalFragment::BidiLevel() const {
   return 0;
 }
 
-TextDirection NGPhysicalFragment::ResolvedDirection() const {
+base::i18n::TextDirection NGPhysicalFragment::ResolvedDirection() const {
   switch (Type()) {
     case kFragmentText:
       return To<NGPhysicalTextFragment>(*this).ResolvedDirection();
@@ -484,7 +484,7 @@ TextDirection NGPhysicalFragment::ResolvedDirection() const {
       break;
   }
   NOTREACHED();
-  return TextDirection::kLtr;
+  return base::i18n::TextDirection::LEFT_TO_RIGHT;
 }
 
 bool NGPhysicalFragment::ShouldPaintCursorCaret() const {

@@ -210,7 +210,7 @@ void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
       query_set = MediaQueryParser::ParseMediaQuerySetInMode(
           CSSParserTokenRange(
               CSSTokenizer(test_cases[i].input).TokenizeToEOF()),
-          mode);
+          mode, nullptr);
     }
     EXPECT_EQ(test_cases[i].output, media_query_evaluator.Eval(*query_set))
         << "Query: " << test_cases[i].input;
@@ -300,7 +300,8 @@ TEST(MediaQueryEvaluatorTest, DynamicNoView) {
   page_holder.reset();
   ASSERT_EQ(nullptr, frame->View());
   MediaQueryEvaluator media_query_evaluator(frame);
-  scoped_refptr<MediaQuerySet> query_set = MediaQuerySet::Create("foobar");
+  scoped_refptr<MediaQuerySet> query_set =
+      MediaQuerySet::Create("foobar", nullptr);
   EXPECT_FALSE(media_query_evaluator.Eval(*query_set));
 }
 

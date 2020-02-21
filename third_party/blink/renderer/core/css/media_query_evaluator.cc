@@ -687,6 +687,15 @@ static bool AnyHoverMediaFeatureEval(const MediaQueryExpValue& value,
   }
 }
 
+static bool OriginTrialTestMediaFeatureEval(const MediaQueryExpValue& value,
+                                            MediaFeaturePrefix,
+                                            const MediaValues& media_values) {
+  // The test feature only supports a 'no-value' parsing. So if we've gotten
+  // to this point it will always match.
+  DCHECK(!value.IsValid());
+  return true;
+}
+
 static bool PointerMediaFeatureEval(const MediaQueryExpValue& value,
                                     MediaFeaturePrefix,
                                     const MediaValues& media_values) {

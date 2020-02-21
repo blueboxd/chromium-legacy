@@ -79,6 +79,7 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   scoped_refptr<RootFrameSink> without_gpu_;
   viz::BeginFrameSource* const begin_frame_source_;
   bool had_input_event_ = false;
+  bool observing_bfs_ = false;
 
   THREAD_CHECKER(ui_thread_checker_);
   THREAD_CHECKER(viz_thread_checker_);

@@ -30,11 +30,6 @@ typedef void (^SigninCoordinatorCompletionCallback)(
 // directly, this should be done using the class methods.
 @interface SigninCoordinator : ChromeCoordinator
 
-// Dispatcher.
-@property(nonatomic, strong, readonly)
-    id<ApplicationCommands, BrowsingDataCommands>
-        dispatcher;
-
 // Called when the sign-in dialog is interrupted, canceled or successful.
 // This completion needs to be set before calling -[SigninCoordinator start].
 @property(nonatomic, copy) SigninCoordinatorCompletionCallback signinCompletion;

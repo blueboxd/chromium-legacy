@@ -76,7 +76,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   };
 
   // The maximum size DownloadToString will accept.
-  static const size_t kMaxBoundedStringDownloadSize;
+  static constexpr size_t kMaxBoundedStringDownloadSize = 5 * 1024 * 1024;
 
   // Maximum upload body size to send as a block to the URLLoaderFactory. This
   // data may appear in memory twice for a while, in the retry case, and there
@@ -86,7 +86,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // service's copy.
   //
   // Only exposed for tests.
-  static const size_t kMaxUploadStringSizeToCopy;
+  static constexpr size_t kMaxUploadStringSizeToCopy = 256 * 1024;
 
   // Callback used when downloading the response body as a std::string.
   // |response_body| is the body of the response, or nullptr on failure. Note
@@ -154,9 +154,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // Starts the request using |url_loader_factory|. The SimpleURLLoader will
   // accumulate all downloaded data in an in-memory string of bounded size. If
   // |max_body_size| is exceeded, the request will fail with
-  // net::ERR_INSUFFICIENT_RESOURCES. |max_body_size| must be no greater than 5
-  // MiB. For anything larger, it's recommended to either save to a temp file,
-  // or consume the data as it is received.
+  // net::ERR_INSUFFICIENT_RESOURCES. |max_body_size| must be no greater than
+  // |kMaxBoundedStringDownloadSize|. For anything larger, it's recommended to
+  // either save to a temp file, or consume the data as it is received.
   //
   // Whether the request succeeds or fails, the URLLoaderFactory pipe is closed,
   // or the body exceeds |max_body_size|, |body_as_string_callback| will be

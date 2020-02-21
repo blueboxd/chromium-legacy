@@ -11,9 +11,14 @@
 
 namespace blink {
 
-SizesAttributeParser::SizesAttributeParser(MediaValues* media_values,
-                                           const String& attribute)
-    : media_values_(media_values), length_(0), length_was_set_(false) {
+SizesAttributeParser::SizesAttributeParser(
+    MediaValues* media_values,
+    const String& attribute,
+    const ExecutionContext* execution_context)
+    : media_values_(media_values),
+      execution_context_(execution_context),
+      length_(0),
+      length_was_set_(false) {
   DCHECK(media_values_);
   is_valid_ =
       Parse(CSSParserTokenRange(CSSTokenizer(attribute).TokenizeToEOF()));
@@ -83,7 +88,8 @@ bool SizesAttributeParser::Parse(CSSParserTokenRange range) {
       continue;
     scoped_refptr<MediaQuerySet> media_condition =
         MediaQueryParser::ParseMediaCondition(
-            range.MakeSubRange(media_condition_start, length_token_start));
+            range.MakeSubRange(media_condition_start, length_token_start),
+            execution_context_);
     if (!media_condition || !MediaConditionMatches(*media_condition))
       continue;
     length_ = length;

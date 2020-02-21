@@ -285,8 +285,8 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
       nullptr,                            // No adapter.
       D3D_DRIVER_TYPE_HARDWARE, nullptr,  // No software rasterizer.
       0,                                  // flags, none.
-      feature_levels, base::size(feature_levels), D3D11_SDK_VERSION,
-      device_.GetAddressOf(), nullptr, device_context_.GetAddressOf());
+      feature_levels, base::size(feature_levels), D3D11_SDK_VERSION, &device_,
+      nullptr, &device_context_);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to create the D3D11Device:" << hresult;
     failed();
@@ -306,7 +306,7 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
     return;
   }
 
-  hresult = device_.CopyTo(video_device_.GetAddressOf());
+  hresult = device_.As(&video_device_);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to get ID3D11VideoDevice: " << hresult;
     failed();
@@ -319,21 +319,21 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
     return;
   }
 
-  hresult = device_context_.CopyTo(video_context_.GetAddressOf());
+  hresult = device_context_.As(&video_context_);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to get ID3D11VideoContext: " << hresult;
     failed();
     return;
   }
 
-  hresult = device_.CopyTo(video_device1_.GetAddressOf());
+  hresult = device_.As(&video_device1_);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to get ID3D11VideoDevice1: " << hresult;
     failed();
     return;
   }
 
-  hresult = device_context_.CopyTo(video_context1_.GetAddressOf());
+  hresult = device_context_.As(&video_context1_);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to get ID3D11VideoContext1: " << hresult;
     failed();
@@ -343,7 +343,7 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
   ComD3D11CryptoSession csme_crypto_session;
   hresult = video_device_->CreateCryptoSession(
       &crypto_type_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
-      &D3D11_KEY_EXCHANGE_HW_PROTECTION, csme_crypto_session.GetAddressOf());
+      &D3D11_KEY_EXCHANGE_HW_PROTECTION, &csme_crypto_session);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to Create CryptoSession: " << hresult;
     failed();
@@ -462,7 +462,7 @@ void D3D11CdmProxy::CreateMediaCryptoSession(
   ComD3D11CryptoSession media_crypto_session;
   HRESULT hresult = video_device_->CreateCryptoSession(
       &crypto_type_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT, &crypto_type_,
-      media_crypto_session.GetAddressOf());
+      &media_crypto_session);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to create a crypto session: " << hresult;
     failed();
@@ -597,15 +597,14 @@ bool D3D11CdmProxy::HardwareEventWatcher::StartWatching() {
 bool D3D11CdmProxy::HardwareEventWatcher::
     RegisterHardwareContentProtectionTeardown(ComD3D11Device device) {
   device_ = device;
-  HRESULT hresult = device_.CopyTo(dxgi_device_.ReleaseAndGetAddressOf());
+  HRESULT hresult = device_.As(&dxgi_device_);
   if (FAILED(hresult)) {
     DVLOG(1) << "Failed to get dxgi device from device: "
              << logging::SystemErrorCodeToString(hresult);
     return false;
   }
 
-  hresult = dxgi_device_->GetParent(
-      IID_PPV_ARGS(dxgi_adapter_.ReleaseAndGetAddressOf()));
+  hresult = dxgi_device_->GetParent(IID_PPV_ARGS(&dxgi_adapter_));
   if (FAILED(hresult)) {
     DVLOG(1) << "Failed to get dxgi adapter from dxgi device: "
              << logging::SystemErrorCodeToString(hresult);

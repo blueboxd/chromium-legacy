@@ -70,6 +70,8 @@ RootFrameSinkProxy::~RootFrameSinkProxy() {
   VizCompositorThreadRunnerWebView::GetInstance()->PostTaskAndBlock(
       FROM_HERE, base::BindOnce(&RootFrameSinkProxy::DestroyOnViz,
                                 base::Unretained(this)));
+  if (observing_bfs_)
+    begin_frame_source_->RemoveObserver(this);
 }
 
 void RootFrameSinkProxy::DestroyOnViz() {
@@ -90,6 +92,11 @@ void RootFrameSinkProxy::SetNeedsBeginFramesOnViz(bool needs_begin_frames) {
 
 void RootFrameSinkProxy::SetNeedsBeginFramesOnUI(bool needs_begin_frames) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  if (observing_bfs_ == needs_begin_frames)
+    return;
+
+  observing_bfs_ = needs_begin_frames;
+
   if (needs_begin_frames)
     begin_frame_source_->AddObserver(this);
   else

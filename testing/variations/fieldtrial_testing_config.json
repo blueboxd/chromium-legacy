@@ -97,6 +97,21 @@
             ]
         }
     ],
+    "AndroidBlockIntentNonSafelistedHeaders": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AndroidBlockIntentNonSafelistedHeaders"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidClipboardSuggestionsRemoval": [
         {
             "platforms": [
@@ -5669,28 +5684,6 @@
             ]
         }
     ],
-    "SimpleCacheTrailerPrefetchHint": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled0",
-                    "params": {
-                        "TrailerPrefetchHint": "true"
-                    },
-                    "enable_features": [
-                        "SimpleCachePrefetchExperiment2"
-                    ]
-                }
-            ]
-        }
-    ],
     "SmartDimModelV3": [
         {
             "platforms": [
@@ -6439,7 +6432,8 @@
     "UseSkiaRenderer": [
         {
             "platforms": [
-                "linux"
+                "linux",
+                "windows"
             ],
             "experiments": [
                 {

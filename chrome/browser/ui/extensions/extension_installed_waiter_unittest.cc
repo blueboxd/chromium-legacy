@@ -140,3 +140,23 @@ TEST_F(ExtensionInstalledWaiterTest, BrowserShutdownWhileWaiting) {
   EXPECT_EQ(1, giving_up_called_);
   EXPECT_EQ(0, done_called_);
 }
+
+// Regression test for https://crbug.com/1049190.
+TEST_F(ExtensionInstalledWaiterTest, BrowserShutdownWhileWaitingDoesntCrash) {
+  std::unique_ptr<BrowserWindow> window = CreateBrowserWindow();
+  std::unique_ptr<Browser> browser =
+      CreateBrowser(profile(), Browser::TYPE_NORMAL, false, window.get());
+
+  auto foo = MakeExtensionNamed("foo");
+  WaitFor(foo, browser.get());
+
+  // Null out the giving-up callback, which is how the class is actually used in
+  // production.
+  ExtensionInstalledWaiter::SetGivingUpCallbackForTesting({});
+
+  // If the fix for https://crbug.com/1049190 regresses, this will crash:
+  browser->OnWindowClosing();
+
+  EXPECT_EQ(0, giving_up_called_);
+  EXPECT_EQ(0, done_called_);
+}

@@ -187,6 +187,7 @@ class PLATFORM_EXPORT ThreadState final {
   class StatisticsCollector;
   struct Statistics;
   class SweepForbiddenScope;
+  class HeapPointersOnStackScope;
 
   using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
   using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
@@ -551,6 +552,13 @@ class PLATFORM_EXPORT ThreadState final {
            reason == BlinkGC::GCReason::kForcedGCForTesting;
   }
 
+  // Returns whether stack scanning is forced. This is currently only used in
+  // platform tests where non nested tasks can be run with heap pointers on
+  // stack.
+  bool HeapPointersOnStackForced() const {
+    return heap_pointers_on_stack_forced_;
+  }
+
 #if defined(ADDRESS_SANITIZER)
   // Poisons payload of unmarked objects.
   //
@@ -571,6 +579,7 @@ class PLATFORM_EXPORT ThreadState final {
 
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;
+  bool heap_pointers_on_stack_forced_ = false;
   bool incremental_marking_ = false;
   bool should_optimize_for_load_time_ = false;
   size_t no_allocation_count_ = 0;

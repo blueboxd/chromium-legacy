@@ -12,7 +12,7 @@
       encodeURIComponent(
         'http://127.0.0.1:8000/loading/sxg/resources/sxg-location.sxg');
   await TestRunner.addIframe(url);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   TestRunner.completeTest();
 })();

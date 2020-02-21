@@ -64,7 +64,7 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerNode(), nullptr);
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 2U);
-  EXPECT_EQ(sheet->media()->mediaText(), init->media().GetAsString());
+  EXPECT_EQ(sheet->media()->mediaText(nullptr), init->media().GetAsString());
   EXPECT_EQ(sheet->title(), init->title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());

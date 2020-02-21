@@ -1833,6 +1833,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
         Unlock with fingerprint
       </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_TOUCH_SENSOR" desc="Text shown in the user pod to warn the user he should touch the fingerprint sensor instead of the fingerprint icon">
+        Please touch the sensor
+      </message>
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
         Signing in
       </message>

@@ -20,11 +20,11 @@
   ConsoleTestRunner.addConsoleSniffer(messageAdded);
   TestRunner.evaluateInPage('readBlob();');
 
-  function messageAdded(payload) {
+  async function messageAdded(payload) {
     var requests = NetworkTestRunner.networkRequests();
     TestRunner.addResult('requests in the network panel: ' + requests.length);
     TestRunner.assertTrue(requests.length == 0, 'Blob load request to the browser is shown in the network panel.');
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

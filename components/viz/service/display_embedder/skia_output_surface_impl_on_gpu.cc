@@ -56,7 +56,7 @@
 #include "skia/buildflags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/private/SkDeferredDisplayList.h"
+#include "third_party/skia/include/private/SkDDLTmpRedirect.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"

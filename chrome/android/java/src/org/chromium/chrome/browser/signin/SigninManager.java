@@ -601,7 +601,7 @@ public class SigninManager
      */
     void reloadAllAccountsFromSystem() {
         mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
-                mIdentityManager.getPrimaryAccountId());
+                CoreAccountInfo.getIdFrom(mIdentityManager.getPrimaryAccountInfo()));
     }
 
     /**

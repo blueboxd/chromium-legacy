@@ -100,7 +100,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const DecryptCB& decrypt_cb) final;
+               DecryptCB decrypt_cb) final;
   void CancelDecrypt(StreamType stream_type) final;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
                               const DecoderInitCB& init_cb) final;

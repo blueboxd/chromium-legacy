@@ -22,6 +22,14 @@ struct EnumTraits<gpu::mojom::Direct3DFeatureLevel, D3D_FEATURE_LEVEL> {
 #endif  // OS_WIN
 
 template <>
+struct EnumTraits<gpu::mojom::HasDiscreteGpu, gpu::HasDiscreteGpu> {
+  static gpu::mojom::HasDiscreteGpu ToMojom(
+      gpu::HasDiscreteGpu has_discrete_gpu);
+  static bool FromMojom(gpu::mojom::HasDiscreteGpu input,
+                        gpu::HasDiscreteGpu* out);
+};
+
+template <>
 struct StructTraits<gpu::mojom::DevicePerfInfoDataView, gpu::DevicePerfInfo> {
   static bool Read(gpu::mojom::DevicePerfInfoDataView data,
                    gpu::DevicePerfInfo* out);
@@ -48,7 +56,7 @@ struct StructTraits<gpu::mojom::DevicePerfInfoDataView, gpu::DevicePerfInfo> {
     return info.d3d11_feature_level;
   }
 
-  static bool has_discrete_gpu(const gpu::DevicePerfInfo& info) {
+  static gpu::HasDiscreteGpu has_discrete_gpu(const gpu::DevicePerfInfo& info) {
     return info.has_discrete_gpu;
   }
 #endif

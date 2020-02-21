@@ -107,14 +107,14 @@ void MojoDecryptor::RegisterNewKeyCB(StreamType stream_type,
 
 void MojoDecryptor::Decrypt(StreamType stream_type,
                             scoped_refptr<DecoderBuffer> encrypted,
-                            const DecryptCB& decrypt_cb) {
+                            DecryptCB decrypt_cb) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   mojom::DecoderBufferPtr mojo_buffer =
       decrypt_buffer_writer_->WriteDecoderBuffer(std::move(encrypted));
   if (!mojo_buffer) {
-    decrypt_cb.Run(kError, nullptr);
+    std::move(decrypt_cb).Run(kError, nullptr);
     return;
   }
 
@@ -123,7 +123,7 @@ void MojoDecryptor::Decrypt(StreamType stream_type,
       base::BindOnce(&MojoDecryptor::OnBufferDecrypted,
                      weak_factory_.GetWeakPtr(),
                      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                         ToOnceCallback(decrypt_cb), kError, nullptr)));
+                         std::move(decrypt_cb), kError, nullptr)));
 }
 
 void MojoDecryptor::CancelDecrypt(StreamType stream_type) {
@@ -219,7 +219,7 @@ void MojoDecryptor::OnKeyAdded() {
     new_video_key_cb_.Run();
 }
 
-void MojoDecryptor::OnBufferDecrypted(DecryptOnceCB decrypt_cb,
+void MojoDecryptor::OnBufferDecrypted(DecryptCB decrypt_cb,
                                       Status status,
                                       mojom::DecoderBufferPtr buffer) {
   DVLOG_IF(1, status != kSuccess) << __func__ << "(" << status << ")";
@@ -237,7 +237,7 @@ void MojoDecryptor::OnBufferDecrypted(DecryptOnceCB decrypt_cb,
                      std::move(decrypt_cb), status));
 }
 
-void MojoDecryptor::OnBufferRead(DecryptOnceCB decrypt_cb,
+void MojoDecryptor::OnBufferRead(DecryptCB decrypt_cb,
                                  Status status,
                                  scoped_refptr<DecoderBuffer> buffer) {
   if (!buffer) {

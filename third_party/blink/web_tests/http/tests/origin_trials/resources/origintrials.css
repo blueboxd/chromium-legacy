@@ -3,3 +3,9 @@
         origin-trial-test-property: none;
     }
 }
+
+@media (origin-trial-test) {
+    html {
+        opacity: 0.8;
+    }
+}

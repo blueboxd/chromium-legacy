@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -273,6 +274,50 @@ TEST_F(PerUserTopicSubscriptionRequestTest, ShouldUnsubscribe) {
 
   EXPECT_EQ(status.code, StatusCode::SUCCESS);
   EXPECT_EQ(status.message, std::string());
+}
+
+// Regression test for crbug.com/1054590, |completed_callback| destroys
+// |request|.
+TEST_F(PerUserTopicSubscriptionRequestTest, ShouldDestroyOnFailure) {
+  std::string token = "1234567890";
+  std::string base_url = "http://valid-url.test";
+  std::string topic = "test";
+  std::string project_id = "smarty-pants-12345";
+  PerUserTopicSubscriptionRequest::RequestType type =
+      PerUserTopicSubscriptionRequest::SUBSCRIBE;
+
+  std::unique_ptr<PerUserTopicSubscriptionRequest> request;
+  bool callback_called = false;
+  auto completed_callback = base::BindLambdaForTesting(
+      [&](const Status& status, const std::string& topic_name) {
+        request.reset();
+        callback_called = true;
+      });
+
+  PerUserTopicSubscriptionRequest::Builder builder;
+  request = builder.SetInstanceIdToken(token)
+                .SetScope(base_url)
+                .SetPublicTopicName(topic)
+                .SetProjectId(project_id)
+                .SetType(type)
+                .Build();
+  std::string response_body = R"(
+    {
+      "privateTopicName": "test-pr"
+    }
+  )";
+
+  network::URLLoaderCompletionStatus response_status(net::ERR_TIMED_OUT);
+  response_status.decoded_body_length = response_body.size();
+
+  url_loader_factory()->AddResponse(url(request.get()),
+                                    CreateHeadersForTest(net::HTTP_OK),
+                                    response_body, response_status);
+  request->Start(std::move(completed_callback), url_loader_factory());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_called);
+  // The main expectation is that there is no crash.
 }
 
 class PerUserTopicSubscriptionRequestParamTest

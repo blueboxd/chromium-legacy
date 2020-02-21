@@ -9,7 +9,7 @@
   await TestRunner.showPanel('network');
 
   TestRunner.addResult('Console messages:');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.addResult('');
 
   TestRunner.addResult('Enabling data saver');
@@ -18,13 +18,13 @@
   await TestRunner.reloadPagePromise();
 
   TestRunner.addResult('Console messages:');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.addResult('');
 
   TestRunner.addResult('Reloading Page');
   await TestRunner.reloadPagePromise();
   TestRunner.addResult('Console messages:');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
 })();

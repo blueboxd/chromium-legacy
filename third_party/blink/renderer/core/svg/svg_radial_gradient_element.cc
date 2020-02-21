@@ -105,7 +105,6 @@ LayoutObject* SVGRadialGradientElement::CreateLayoutObject(const ComputedStyle&,
 static void SetGradientAttributes(const SVGGradientElement& element,
                                   RadialGradientAttributes& attributes,
                                   bool is_radial) {
-  element.SynchronizeAnimatedSVGAttribute(AnyQName());
   element.CollectCommonAttributes(attributes);
 
   if (!is_radial)

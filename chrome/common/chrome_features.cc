@@ -314,7 +314,7 @@ const base::Feature kEnableAmbientAuthenticationInGuestSession{
 #if !defined(OS_ANDROID)
 // Upload enterprise cloud reporting without the extension.
 const base::Feature kEnterpriseReportingInBrowser{
-    "EnterpriseReportingInBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnterpriseReportingInBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_CHROMEOS)

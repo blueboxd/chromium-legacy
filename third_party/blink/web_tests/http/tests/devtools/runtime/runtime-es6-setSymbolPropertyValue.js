@@ -20,8 +20,8 @@
 
   var obj1, name;
 
-  function dumpAndClearConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function dumpAndClearConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     Console.ConsoleView.clearConsole();
   }
 
@@ -34,7 +34,7 @@
         obj1 = TestRunner.runtimeModel.createRemoteObject(result);
         result = await TestRunner.RuntimeAgent.evaluate('symbol1');
         name = SDK.RemoteObject.toCallArgument(TestRunner.runtimeModel.createRemoteObject(result));
-        dumpAndClearConsoleMessages();
+        await dumpAndClearConsoleMessages();
         next();
       }
     },
@@ -42,14 +42,14 @@
     async function testSetSymbolPropertyValue(next) {
       await obj1.setPropertyValue(name, '3');
       await TestRunner.evaluateInPage('dumpSymbolProperty(\'Set property\')');
-      dumpAndClearConsoleMessages();
+      await dumpAndClearConsoleMessages();
       next();
     },
 
     async function testDeleteSymbolProperty(next) {
       await obj1.deleteProperty(name);
       await TestRunner.evaluateInPagePromise('dumpSymbolProperty(\'Delete property\')');
-      dumpAndClearConsoleMessages();
+      await dumpAndClearConsoleMessages();
       next();
     }
   ]);

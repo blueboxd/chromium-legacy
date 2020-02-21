@@ -23,6 +23,8 @@
   var viewMessages = consoleView._visibleViewMessages;
   for (var i = 0; i < viewMessages.length; ++i) {
     var messageElement = viewMessages[i].element();
+    // Console messages contain live locations.
+    await TestRunner.waitForPendingLiveLocationUpdates();
     TestRunner.addResult('Message text: ' + messageElement.deepTextContent());
     if (messageElement.querySelector('.console-view-object-properties-section'))
       TestRunner.addResult('Message is expandable');

@@ -14,11 +14,13 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 class CORE_EXPORT SizesAttributeParser {
   STACK_ALLOCATED();
 
  public:
-  SizesAttributeParser(MediaValues*, const String&);
+  SizesAttributeParser(MediaValues*, const String&, const ExecutionContext*);
 
   float length();
 
@@ -31,6 +33,7 @@ class CORE_EXPORT SizesAttributeParser {
 
   scoped_refptr<MediaQuerySet> media_condition_;
   MediaValues* media_values_;
+  const ExecutionContext* execution_context_;
   float length_;
   bool length_was_set_;
   bool is_valid_;

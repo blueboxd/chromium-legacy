@@ -478,6 +478,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Leak detection failed: signed out";
     case STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR:
       return "Leak detection failed: can't get a token";
+    case STRING_LEAK_DETECTION_NETWORK_ERROR:
+      return "Leak detection failed: network error";
     case SavePasswordProgressLogger::
         STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE:
       return "Uploading password requirements vote for using lowercase letters";

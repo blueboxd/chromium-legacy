@@ -10,5 +10,9 @@ PASS "require-corp" top-level: fetch() to CORP: cross-origin response should suc
 FAIL "require-corp" top-level: fetch() to response without CORP should fail assert_unreached: Should have rejected: undefined Reached unreachable code
 FAIL "require-corp" top-level: fetch() to response without CORP through a WindowProxy should fail assert_unreached: Should have rejected: undefined Reached unreachable code
 FAIL "require-corp" top-level: navigating an iframe to a page without CORP, through a WindowProxy, should fail assert_equals: expected null but got Document node with 1 child
+PASS CORP: same-site is checked and allowed.
+FAIL CORP: same-site is checked and blocked. assert_false: expected false got true
+PASS navigation CORP is checked with the parent frame, not the navigation source - to be allowed
+PASS navigation CORP is checked with the parent frame, not the navigation source - to be blocked
 Harness: the test ran to completion.
 

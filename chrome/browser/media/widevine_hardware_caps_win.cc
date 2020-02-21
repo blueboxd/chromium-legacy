@@ -130,15 +130,14 @@ void GetWidevineHardwareCaps(
   // Create device and populate |device|.
   HRESULT hresult = D3D11CreateDevice(
       nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels,
-      base::size(feature_levels), D3D11_SDK_VERSION, device.GetAddressOf(),
-      nullptr, nullptr);
+      base::size(feature_levels), D3D11_SDK_VERSION, &device, nullptr, nullptr);
 
   if (FAILED(hresult)) {
     DVLOG(1) << "Failed to create the D3D11Device: " << PrintHr(hresult);
     return;
   }
 
-  hresult = device.CopyTo(video_device.GetAddressOf());
+  hresult = device.As(&video_device);
   if (FAILED(hresult)) {
     DVLOG(1) << "Failed to get ID3D11VideoDevice: " << PrintHr(hresult);
     return;

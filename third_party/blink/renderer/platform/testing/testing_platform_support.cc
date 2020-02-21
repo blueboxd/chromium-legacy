@@ -135,6 +135,7 @@ TestingPlatformSupport::GetBrowserInterfaceBroker() {
 }
 
 void TestingPlatformSupport::RunUntilIdle() {
+  ThreadState::HeapPointersOnStackScope scan_stack(ThreadState::Current());
   base::RunLoop().RunUntilIdle();
 }
 

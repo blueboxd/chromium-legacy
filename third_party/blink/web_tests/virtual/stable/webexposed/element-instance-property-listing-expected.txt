@@ -37,6 +37,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaColIndex
     property ariaColSpan
     property ariaCurrent
+    property ariaDescription
     property ariaDisabled
     property ariaExpanded
     property ariaHasPopup
@@ -1192,6 +1193,7 @@ namespace http://www.w3.org/2000/svg
     property ariaColIndex
     property ariaColSpan
     property ariaCurrent
+    property ariaDescription
     property ariaDisabled
     property ariaExpanded
     property ariaHasPopup

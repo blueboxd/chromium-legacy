@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_decoder_config.h"
@@ -23,20 +22,6 @@
 
 namespace media {
 namespace test {
-
-// The structure for IVF frame header. IVF is a video file format.
-// The helpful description is in https://wiki.multimedia.cx/index.php/IVF.
-struct EncodedDataHelper::IVFHeader {
-  uint32_t frame_size;
-  uint64_t timestamp;
-};
-
-// The structure for IVF frame data and header.
-// The data to be read is |header.frame_size| bytes from |data|.
-struct EncodedDataHelper::IVFFrame {
-  const char* data;
-  IVFHeader header;
-};
 
 EncodedDataHelper::EncodedDataHelper(const std::vector<uint8_t>& stream,
                                      VideoCodecProfile profile)
@@ -118,118 +103,39 @@ bool EncodedDataHelper::LookForSPS(size_t* skipped_fragments_count) {
 scoped_refptr<DecoderBuffer> EncodedDataHelper::GetNextFrame() {
   // Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
   constexpr size_t kIVFHeaderSize = 32;
+  constexpr size_t kIVFFrameHeaderSize = 12;
+
+  size_t pos = next_pos_to_decode_;
+
   // Only IVF video files are supported. The first 4bytes of an IVF video file's
   // header should be "DKIF".
-  if (next_pos_to_decode_ == 0) {
+  if (pos == 0) {
     if ((data_.size() < kIVFHeaderSize) || strncmp(&data_[0], "DKIF", 4) != 0) {
       LOG(ERROR) << "Unexpected data encountered while parsing IVF header";
       return nullptr;
     }
-    next_pos_to_decode_ = kIVFHeaderSize;  // Skip IVF header.
+    pos = kIVFHeaderSize;  // Skip IVF header.
   }
-
-  // Group IVF data whose timestamps are the same. Spatial layers in a
-  // spatial-SVC stream may separately be stored in IVF data, where the
-  // timestamps of the IVF frame headers are the same. However, it is necessary
-  // for VD(A) to feed the spatial layers by a single DecoderBuffer. So this
-  // grouping is required.
-  std::vector<IVFFrame> ivf_frames;
-  while (!ReachEndOfStream()) {
-    auto frame_header = GetNextIVFFrameHeader();
-    if (!frame_header)
-      return nullptr;
-
-    // Timestamp is different from the current one. The next IVF data must be
-    // grouped in the next group.
-    if (!ivf_frames.empty() &&
-        frame_header->timestamp != ivf_frames[0].header.timestamp) {
-      break;
-    }
-
-    auto frame_data = ReadNextIVFFrame();
-    if (!frame_data)
-      return nullptr;
-
-    ivf_frames.push_back(*frame_data);
-  }
-
-  if (ivf_frames.empty()) {
-    LOG(ERROR) << "No IVF frame is available";
-    return nullptr;
-  }
-
-  // Standard stream case.
-  if (ivf_frames.size() == 1) {
-    return DecoderBuffer::CopyFrom(
-        reinterpret_cast<const uint8_t*>(ivf_frames[0].data),
-        ivf_frames[0].header.frame_size);
-  }
-
-  if (ivf_frames.size() > 3) {
-    LOG(ERROR) << "Number of IVF frames with same timestamps exceeds maximum of"
-               << "3: ivf_frames.size()=" << ivf_frames.size();
-    return nullptr;
-  }
-
-  std::string data;
-  std::vector<uint32_t> frame_sizes;
-  frame_sizes.reserve(ivf_frames.size());
-  for (const IVFFrame& ivf : ivf_frames) {
-    data.append(ivf.data, ivf.header.frame_size);
-    frame_sizes.push_back(ivf.header.frame_size);
-  }
-
-  // Copy frame_sizes information to DecoderBuffer's side data. Since side_data
-  // is uint8_t*, we need to copy as uint8_t from uint32_t. The copied data is
-  // recognized as uint32_t in VD(A).
-  const uint8_t* side_data =
-      reinterpret_cast<const uint8_t*>(frame_sizes.data());
-  size_t side_data_size =
-      frame_sizes.size() * sizeof(uint32_t) / sizeof(uint8_t);
-
-  return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8_t*>(data.data()),
-                                 data.size(), side_data, side_data_size);
-}
-
-base::Optional<EncodedDataHelper::IVFHeader>
-EncodedDataHelper::GetNextIVFFrameHeader() const {
-  constexpr size_t kIVFFrameHeaderSize = 12;
-
-  const size_t pos = next_pos_to_decode_;
 
   // Read VP8/9 frame size from IVF header.
   if (pos + kIVFFrameHeaderSize > data_.size()) {
     LOG(ERROR) << "Unexpected data encountered while parsing IVF frame header";
-    return base::nullopt;
+    return nullptr;
   }
-
-  const uint32_t frame_size = *reinterpret_cast<const uint32_t*>(&data_[pos]);
-  const uint64_t timestamp =
-      *reinterpret_cast<const uint64_t*>(&data_[pos + 4]);
-  return IVFHeader{frame_size, timestamp};
-}
-
-base::Optional<EncodedDataHelper::IVFFrame>
-EncodedDataHelper::ReadNextIVFFrame() {
-  constexpr size_t kIVFFrameHeaderSize = 12;
-  auto frame_header = GetNextIVFFrameHeader();
-  if (!frame_header)
-    return base::nullopt;
-
-  // Skip IVF frame header.
-  const size_t pos = next_pos_to_decode_ + kIVFFrameHeaderSize;
+  const uint32_t frame_size = *reinterpret_cast<uint32_t*>(&data_[pos]);
+  pos += kIVFFrameHeaderSize;  // Skip IVF frame header.
 
   // Make sure we are not reading out of bounds.
-  if (pos + frame_header->frame_size > data_.size()) {
+  if (pos + frame_size > data_.size()) {
     LOG(ERROR) << "Unexpected data encountered while parsing IVF frame header";
     next_pos_to_decode_ = data_.size();
-    return base::nullopt;
+    return nullptr;
   }
 
   // Update next_pos_to_decode_.
-  next_pos_to_decode_ = pos + frame_header->frame_size;
-
-  return IVFFrame{&data_[pos], *frame_header};
+  next_pos_to_decode_ = pos + frame_size;
+  return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8_t*>(&data_[pos]),
+                                 frame_size);
 }
 
 // static

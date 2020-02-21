@@ -1640,6 +1640,7 @@ interface Element : Node
     getter ariaColIndex
     getter ariaColSpan
     getter ariaCurrent
+    getter ariaDescription
     getter ariaDisabled
     getter ariaExpanded
     getter ariaHasPopup
@@ -1765,6 +1766,7 @@ interface Element : Node
     setter ariaColIndex
     setter ariaColSpan
     setter ariaCurrent
+    setter ariaDescription
     setter ariaDisabled
     setter ariaExpanded
     setter ariaHasPopup
@@ -1821,6 +1823,7 @@ interface ElementInternals
     getter ariaColIndex
     getter ariaColSpan
     getter ariaCurrent
+    getter ariaDescription
     getter ariaDisabled
     getter ariaExpanded
     getter ariaHasPopup
@@ -1867,6 +1870,7 @@ interface ElementInternals
     setter ariaColIndex
     setter ariaColSpan
     setter ariaCurrent
+    setter ariaDescription
     setter ariaDisabled
     setter ariaExpanded
     setter ariaHasPopup

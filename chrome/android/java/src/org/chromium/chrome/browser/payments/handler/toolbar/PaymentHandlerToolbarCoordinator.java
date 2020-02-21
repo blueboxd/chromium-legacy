@@ -26,6 +26,7 @@ import org.chromium.url.URI;
 public class PaymentHandlerToolbarCoordinator {
     private Runnable mHider;
     private PaymentHandlerToolbarView mToolbarView;
+    private PaymentHandlerToolbarMediator mMediator;
     private final WebContents mWebContents;
 
     /**
@@ -47,8 +48,8 @@ public class PaymentHandlerToolbarCoordinator {
      *         "PaymentRequestEvent.openWindow(url)".
      * @param observer The observer of this toolbar.
      */
-    public PaymentHandlerToolbarCoordinator(ChromeActivity context, WebContents webContents,
-            URI url, PaymentHandlerToolbarObserver observer) {
+    public PaymentHandlerToolbarCoordinator(
+            ChromeActivity context, WebContents webContents, URI url) {
         mWebContents = webContents;
         OnClickListener securityIconOnClickListener = v -> {
             if (context == null) return;
@@ -57,8 +58,7 @@ public class PaymentHandlerToolbarCoordinator {
                     /*offlinePageLoadUrlDelegate=*/
                     new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(webContents));
         };
-        mToolbarView =
-                new PaymentHandlerToolbarView(context, securityIconOnClickListener, observer);
+        mToolbarView = new PaymentHandlerToolbarView(context, securityIconOnClickListener);
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
                                       .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
                                       .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
@@ -68,16 +68,26 @@ public class PaymentHandlerToolbarCoordinator {
                                       .with(PaymentHandlerToolbarProperties.URL, url)
                                       .build();
         boolean isSmallDevice = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
-        PaymentHandlerToolbarMediator mediator =
-                new PaymentHandlerToolbarMediator(model, webContents, observer, isSmallDevice);
-        webContents.addObserver(mediator);
+        mMediator = new PaymentHandlerToolbarMediator(model, webContents, isSmallDevice);
+        webContents.addObserver(mMediator);
         PropertyModelChangeProcessor changeProcessor = PropertyModelChangeProcessor.create(
                 model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);
+    }
+
+    /** Set an observer for PaymentHandlerToolbar. */
+    public void setObserver(PaymentHandlerToolbarObserver observer) {
+        mMediator.setObserver(observer);
+        mToolbarView.setObserver(observer);
     }
 
     /** @return The height of the toolbar in px. */
     public int getToolbarHeightPx() {
         return mToolbarView.getToolbarHeightPx();
+    }
+
+    /** @return The height of the toolbar shadow height in px. */
+    public int getShadowHeightPx() {
+        return mToolbarView.getShadowHeightPx();
     }
 
     /** @return The toolbar of the PaymentHandler. */

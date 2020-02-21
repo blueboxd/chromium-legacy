@@ -21,7 +21,9 @@ enum class LeakDetectionError {
   kHashingFailure = 2,
   // Error obtaining a valid server response.
   kInvalidServerResponse = 3,
-  kMaxValue = kInvalidServerResponse,
+  // Error related to network connection.
+  kNetworkError = 4,
+  kMaxValue = kNetworkError,
 };
 
 using IsLeaked = util::StrongAlias<class IsLeakedTag, bool>;

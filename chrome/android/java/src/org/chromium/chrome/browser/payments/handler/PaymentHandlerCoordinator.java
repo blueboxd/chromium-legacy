@@ -78,15 +78,21 @@ public class PaymentHandlerCoordinator {
         webContentsObserver.onWebContentsInitialized(mWebContents);
         mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
 
+        PaymentHandlerToolbarCoordinator toolbarCoordinator =
+                new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);
+
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
-        PaymentHandlerMediator mediator =
-                new PaymentHandlerMediator(model, this::hide, mWebContents, uiObserver);
+        PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
+                mWebContents, uiObserver, activity.getActivityTab().getView(),
+                toolbarCoordinator.getView(), toolbarCoordinator.getShadowHeightPx());
+        activity.getActivityTab().getView().addOnLayoutChangeListener(mediator);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
         mWebContents.addObserver(mediator);
 
-        PaymentHandlerToolbarCoordinator toolbarCoordinator = new PaymentHandlerToolbarCoordinator(
-                activity, mWebContents, url, /*observer=*/mediator);
+        // Observer is designed to set here rather than in the constructor because
+        // PaymentHandlerMediator and PaymentHandlerToolbarCoordinator have mutual dependencies.
+        toolbarCoordinator.setObserver(mediator);
         PaymentHandlerView view = new PaymentHandlerView(
                 activity, mWebContents, webContentView, toolbarCoordinator.getView());
         assert toolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
@@ -98,6 +104,7 @@ public class PaymentHandlerCoordinator {
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
             mWebContents.destroy();
             uiObserver.onPaymentHandlerUiClosed();
+            activity.getActivityTab().getView().removeOnLayoutChangeListener(mediator);
             mediator.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);

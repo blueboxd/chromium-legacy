@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -26,6 +27,11 @@ using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionStatus;
 
 namespace {
+
+void RunWithStack(base::RunLoop* run_loop) {
+  ThreadState::HeapPointersOnStackScope scan_stack(ThreadState::Current());
+  run_loop->Run();
+}
 
 // Helper class for WaitForPromise{Fulfillment,Rejection}(). It provides a
 // function that invokes |callback| when a ScriptPromise is resolved.
@@ -88,14 +94,14 @@ void MockWakeLock::WaitForRequest() {
   DCHECK(!request_wake_lock_callback_);
   base::RunLoop run_loop;
   request_wake_lock_callback_ = run_loop.QuitClosure();
-  run_loop.Run();
+  RunWithStack(&run_loop);
 }
 
 void MockWakeLock::WaitForCancelation() {
   DCHECK(!cancel_wake_lock_callback_);
   base::RunLoop run_loop;
   cancel_wake_lock_callback_ = run_loop.QuitClosure();
-  run_loop.Run();
+  RunWithStack(&run_loop);
 }
 
 void MockWakeLock::OnConnectionError() {
@@ -191,7 +197,7 @@ void MockPermissionService::WaitForPermissionRequest(WakeLockType type) {
   DCHECK(!request_permission_callbacks_[pos]);
   base::RunLoop run_loop;
   request_permission_callbacks_[pos] = run_loop.QuitClosure();
-  run_loop.Run();
+  RunWithStack(&run_loop);
 }
 
 void MockPermissionService::HasPermission(PermissionDescriptorPtr permission,
@@ -293,7 +299,7 @@ ScriptPromise WakeLockTestingContext::WaitForPromiseFulfillment(
   // Execute pending microtasks, otherwise it can take a few seconds for the
   // promise to resolve.
   v8::MicrotasksScope::PerformCheckpoint(GetScriptState()->GetIsolate());
-  run_loop.Run();
+  RunWithStack(&run_loop);
   return return_promise;
 }
 
@@ -306,7 +312,7 @@ void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
   // Execute pending microtasks, otherwise it can take a few seconds for the
   // promise to resolve.
   v8::MicrotasksScope::PerformCheckpoint(GetScriptState()->GetIsolate());
-  run_loop.Run();
+  RunWithStack(&run_loop);
 }
 
 // ScriptPromiseUtils

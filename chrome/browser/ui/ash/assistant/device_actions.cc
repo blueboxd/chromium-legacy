@@ -185,6 +185,15 @@ void DeviceActions::SetNightLightEnabled(bool enabled) {
   profile->GetPrefs()->SetBoolean(ash::prefs::kNightLightEnabled, enabled);
 }
 
+void DeviceActions::SetSwitchAccessEnabled(bool enabled) {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(profile);
+  profile->GetPrefs()->SetBoolean(ash::prefs::kAccessibilitySwitchAccessEnabled,
+                                  enabled);
+}
+
 void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
                                    OpenAndroidAppCallback callback) {
   app_info->status = GetAndroidAppStatus(app_info->package_name);

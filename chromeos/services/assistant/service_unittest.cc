@@ -95,6 +95,7 @@ class FakeDeviceActions : mojom::DeviceActions {
   }
   void SetScreenBrightnessLevel(double level, bool gradual) override {}
   void SetNightLightEnabled(bool enabled) override {}
+  void SetSwitchAccessEnabled(bool enabled) override {}
   void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
                       OpenAndroidAppCallback callback) override {}
   void VerifyAndroidApp(

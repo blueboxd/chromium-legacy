@@ -14,6 +14,7 @@
 #include <windows.h>
 
 #include <d3d11.h>
+#include <d3d11_3.h>
 #include <d3d12.h>
 #include <dxgi.h>
 #include <wrl/client.h>
@@ -457,6 +458,70 @@ void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
     name.append(vulkan_extensions[i]);
     base::UmaHistogramBoolean(name, extension_support[i]);
   }
+}
+
+bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
+                             bool* has_discrete_gpu) {
+  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
+  if (FAILED(::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory))))
+    return false;
+
+  base::ScopedNativeLibrary d3d11_library(
+      base::FilePath(FILE_PATH_LITERAL("d3d11.dll")));
+  if (!d3d11_library.is_valid())
+    return false;
+  PFN_D3D11_CREATE_DEVICE D3D11CreateDevice =
+      reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
+          d3d11_library.GetFunctionPointer("D3D11CreateDevice"));
+  if (!D3D11CreateDevice)
+    return false;
+
+  // The order of feature levels to attempt to create in D3D CreateDevice
+  const D3D_FEATURE_LEVEL kFeatureLevels[] = {
+      D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
+      D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
+      D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,  D3D_FEATURE_LEVEL_9_1};
+
+  bool detected_discrete_gpu = false;
+  D3D_FEATURE_LEVEL max_level = D3D_FEATURE_LEVEL_1_0_CORE;
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+  for (UINT ii = 0; SUCCEEDED(dxgi_factory->EnumAdapters(ii, &dxgi_adapter));
+       ++ii) {
+    DXGI_ADAPTER_DESC desc;
+    if (SUCCEEDED(dxgi_adapter->GetDesc(&desc)) && desc.VendorId == 0x1414) {
+      // Bypass Microsoft software renderer.
+      continue;
+    }
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
+    D3D_FEATURE_LEVEL returned_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
+    if (FAILED(D3D11CreateDevice(dxgi_adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN,
+                                 /*Software=*/0,
+                                 /*Flags=*/0, kFeatureLevels,
+                                 _countof(kFeatureLevels), D3D11_SDK_VERSION,
+                                 &d3d11_device, &returned_feature_level,
+                                 /*ppImmediateContext=*/nullptr))) {
+      continue;
+    }
+    if (returned_feature_level > max_level)
+      max_level = returned_feature_level;
+    Microsoft::WRL::ComPtr<ID3D11Device3> d3d11_device_3;
+    if (FAILED(d3d11_device.As(&d3d11_device_3)))
+      continue;
+    D3D11_FEATURE_DATA_D3D11_OPTIONS2 data = {};
+    if (FAILED(d3d11_device_3->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2,
+                                                   &data, sizeof(data)))) {
+      continue;
+    }
+    if (!data.UnifiedMemoryArchitecture)
+      detected_discrete_gpu = true;
+  }
+
+  if (max_level > D3D_FEATURE_LEVEL_1_0_CORE) {
+    *d3d11_feature_level = max_level;
+    *has_discrete_gpu = detected_discrete_gpu;
+    return true;
+  }
+  return false;
 }
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {

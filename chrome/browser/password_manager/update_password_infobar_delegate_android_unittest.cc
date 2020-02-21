@@ -202,20 +202,3 @@ TEST_F(UpdatePasswordInfoBarDelegateTest, EmptyUsername) {
   EXPECT_THAT(usernames, ElementsAre(default_username, empty_username));
 }
 
-TEST_F(UpdatePasswordInfoBarDelegateTest, DefaultUsernameNotFound) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> current_forms;
-  current_forms.push_back(std::make_unique<autofill::PasswordForm>(test_form_));
-
-  base::string16 default_username = base::ASCIIToUTF16("not found username");
-
-  std::vector<base::string16> usernames;
-  unsigned int selected_username =
-      UpdatePasswordInfoBarDelegate::GetDisplayUsernames(
-          current_forms, default_username, &usernames);
-  base::string16 empty_username =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
-
-  EXPECT_EQ(default_username, usernames[selected_username]);
-  EXPECT_THAT(usernames,
-              ElementsAre(test_form_.username_value, default_username));
-}

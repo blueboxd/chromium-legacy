@@ -13,7 +13,9 @@
 #include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/public/profile.h"
 
-class PrefRegistrySimple;
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 class PrefService;
 
 namespace weblayer {
@@ -65,7 +67,7 @@ class BrowserContextImpl : public content::BrowserContext {
   void CreateUserPrefService();
 
   // Registers the preferences that WebLayer accesses.
-  void RegisterPrefs(PrefRegistrySimple* pref_registry);
+  void RegisterPrefs(user_prefs::PrefRegistrySyncable* pref_registry);
 
   ProfileImpl* const profile_impl_;
   base::FilePath path_;

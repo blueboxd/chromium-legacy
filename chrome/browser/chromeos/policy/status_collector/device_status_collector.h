@@ -415,6 +415,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_cpu_info_ = false;
   bool report_graphics_status_ = false;
   bool report_timezone_info_ = false;
+  bool report_memory_info_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;
@@ -442,6 +443,8 @@ class DeviceStatusCollector : public StatusCollector,
       graphics_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       timezone_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      memory_info_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

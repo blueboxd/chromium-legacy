@@ -258,8 +258,7 @@ class MidiManagerWinrt::MidiPortManager {
       return false;
     }
 
-    hr = dev_info_statics->CreateWatcherAqsFilter(device_selector,
-                                                  watcher_.GetAddressOf());
+    hr = dev_info_statics->CreateWatcherAqsFilter(device_selector, &watcher_);
     if (FAILED(hr)) {
       VLOG(1) << "CreateWatcherAqsFilter failed: " << PrintHr(hr);
       return false;
@@ -669,14 +668,14 @@ class MidiManagerWinrt::MidiInPortManager final
               std::string dev_id = GetDeviceIdString(handle);
 
               WRL::ComPtr<Win::Devices::Midi::IMidiMessage> message;
-              HRESULT hr = args->get_Message(message.GetAddressOf());
+              HRESULT hr = args->get_Message(&message);
               if (FAILED(hr)) {
                 VLOG(1) << "get_Message failed: " << PrintHr(hr);
                 return hr;
               }
 
               WRL::ComPtr<Win::Storage::Streams::IBuffer> buffer;
-              hr = message->get_RawData(buffer.GetAddressOf());
+              hr = message->get_RawData(&buffer);
               if (FAILED(hr)) {
                 VLOG(1) << "get_RawData failed: " << PrintHr(hr);
                 return hr;

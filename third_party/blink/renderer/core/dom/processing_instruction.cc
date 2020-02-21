@@ -218,7 +218,8 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(
           title_);
     }
-    css_sheet->SetMediaQueries(MediaQuerySet::Create(media_));
+    css_sheet->SetMediaQueries(
+        MediaQuerySet::Create(media_, GetDocument().ToExecutionContext()));
     sheet_ = css_sheet;
     // We don't need the cross-origin security check here because we are
     // getting the sheet text in "strict" mode. This enforces a valid CSS MIME

@@ -40,7 +40,7 @@
   // cache on second fetch and consume it in the third fetch. We may have to
   // change this if the heuristics change.
   await PerformanceTestRunner.invokeAsyncWithTimeline('loadScript');
-  PerformanceTestRunner.printTimelineRecordsWithDetails(
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
 
   // Second navigation
@@ -64,7 +64,7 @@
 
   await TestRunner.addIframe(localhost_scope, {id: frameId});
   await PerformanceTestRunner.invokeAsyncWithTimeline('loadScript');
-  PerformanceTestRunner.printTimelineRecordsWithDetails(
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
 
   TestRunner.completeTest();

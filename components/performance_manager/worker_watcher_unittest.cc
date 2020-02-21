@@ -76,7 +76,7 @@ class TestDedicatedWorkerService : public content::DedicatedWorkerService {
  private:
   base::ObserverList<Observer> observer_list_;
 
-  // The ID that the next dedicated worker will be assigned.
+  // Generates IDs for new dedicated workers.
   content::DedicatedWorkerId::Generator dedicated_worker_id_generator_;
 
   // Maps each running worker to its client RenderFrameHost ID.
@@ -174,8 +174,8 @@ class TestSharedWorkerService : public content::SharedWorkerService {
  private:
   base::ObserverList<Observer> observer_list_;
 
-  // The ID that the next SharedWorkerInstance will be assigned.
-  int64_t next_shared_worker_instance_id_ = 0;
+  // Generates IDs for new shared workers.
+  content::SharedWorkerId::Generator shared_worker_id_generator_;
 
   // Contains the set of clients for each running workers.
   base::flat_map<content::SharedWorkerInstance,
@@ -215,7 +215,7 @@ content::SharedWorkerInstance TestSharedWorkerService::StartSharedWorker(
   // Create a new SharedWorkerInstance and add it to the map.
   GURL worker_url = GenerateWorkerUrl();
   content::SharedWorkerInstance instance(
-      next_shared_worker_instance_id_++, worker_url,
+      shared_worker_id_generator_.GenerateNextId(), worker_url,
       blink::mojom::ScriptType::kClassic,
       network::mojom::CredentialsMode::kSameOrigin, "SharedWorker",
       url::Origin::Create(worker_url), "",

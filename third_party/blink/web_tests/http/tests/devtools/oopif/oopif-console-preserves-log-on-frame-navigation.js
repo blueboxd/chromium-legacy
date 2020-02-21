@@ -12,6 +12,6 @@
   await TestRunner.evaluateInPage(`console.log('Before navigation')`);
   await TestRunner.addIframe('http://devtools.oopif.test:8000/devtools/oopif/resources/empty.html');
   await TestRunner.evaluateInPage(`console.log('After navigation')`);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

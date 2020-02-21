@@ -86,6 +86,9 @@
   <message name="IDS_SETTINGS_SIGNIN_ALLOWED_DESC" desc="The description of the preference to allow to sign-in to Chrome">
     By turning this off, you can sign in to Google sites like Gmail without signing in to Chrome
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
+    Chrome can help keep you safe from data breaches, bad extensions, and more
+  </message>
 
   <!-- People Page -->
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITH_COUNTS_SINGULAR" desc="Warning message displayed in the Sign out of Chrome dialog that indicates profile browsing data will be removed from the device.">

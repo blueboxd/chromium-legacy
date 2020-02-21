@@ -150,10 +150,10 @@ const int kLocationAuthorizationStatusCount = 5;
   _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
   _editController->SetURLLoader(self);
 
-  self.omniboxCoordinator = [[OmniboxCoordinator alloc] init];
+  self.omniboxCoordinator =
+      [[OmniboxCoordinator alloc] initWithBaseViewController:nil
+                                                     browser:self.browser];
   self.omniboxCoordinator.editController = _editController.get();
-  self.omniboxCoordinator.browserState = self.browserState;
-  self.omniboxCoordinator.dispatcher = self.dispatcher;
   [self.omniboxCoordinator start];
 
   [self.omniboxCoordinator.managedViewController

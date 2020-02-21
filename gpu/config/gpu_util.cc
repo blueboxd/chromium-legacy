@@ -876,7 +876,13 @@ void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info) {
 
 #if defined(OS_WIN)
   device_perf_info->system_commit_limit_mb = GetSystemCommitLimitMb();
-  // TODO(zmo): Collect |d3d11_feature_level| and |has_discrete_gpu|.
+  D3D_FEATURE_LEVEL d3d11_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
+  bool has_discrete_gpu = false;
+  if (CollectD3D11FeatureInfo(&d3d11_feature_level, &has_discrete_gpu)) {
+    device_perf_info->d3d11_feature_level = d3d11_feature_level;
+    device_perf_info->has_discrete_gpu =
+        has_discrete_gpu ? HasDiscreteGpu::kYes : HasDiscreteGpu::kNo;
+  }
 #endif
 }
 

@@ -96,7 +96,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
     if (sheet_)
       ClearSheet();
     sheet_ = MakeGarbageCollected<CSSStyleSheet>(parsed_sheet, *owner_);
-    sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
+    sheet_->SetMediaQueries(MediaQuerySet::Create(
+        owner_->Media(), GetDocument().ToExecutionContext()));
     if (owner_->IsInDocumentTree())
       SetSheetTitle(owner_->title());
 
@@ -113,7 +114,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
     ClearSheet();
 
   sheet_ = MakeGarbageCollected<CSSStyleSheet>(style_sheet, *owner_);
-  sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
+  sheet_->SetMediaQueries(MediaQuerySet::Create(
+      owner_->Media(), GetDocument().ToExecutionContext()));
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());
 
@@ -262,7 +264,8 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   bool media_query_matches = true;
   LocalFrame* frame = LoadingFrame();
   if (!owner_->Media().IsEmpty() && frame) {
-    scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create(owner_->Media());
+    scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create(
+        owner_->Media(), GetDocument().ToExecutionContext());
     MediaQueryEvaluator evaluator(frame);
     media_query_matches = evaluator.Eval(*media);
   }

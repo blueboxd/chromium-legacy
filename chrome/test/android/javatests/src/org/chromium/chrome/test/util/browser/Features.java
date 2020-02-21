@@ -91,6 +91,7 @@ public class Features {
     }
 
     private void applyForInstrumentation() {
+        ChromeFeatureList.setTestCanUseDefaultsForTesting();
         mergeFeatureLists("enable-features", true);
         mergeFeatureLists("disable-features", false);
     }
@@ -121,6 +122,7 @@ public class Features {
     private static void reset() {
         sInstance = null;
         ChromeFeatureList.setTestFeatures(null);
+        ChromeFeatureList.resetTestCanUseDefaultsForTesting();
     }
 
     /**

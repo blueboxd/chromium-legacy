@@ -2086,6 +2086,18 @@
       },
     },
 
+    # Very small set of test that exercise GLRenderer and produce pixels for CQ.
+    # For use where SkiaRenderer is enabled by field trial or default.
+    'gpu_gl_renderer_telemetry_tests': {
+      'gl_renderer_screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'telemetry_test_name': 'screenshot_sync',
+      },
+    },
+
     'gpu_gles2_conform_d3d11_test': {
       'gles2_conform_d3d11_test': {
         'args': [
@@ -3155,17 +3167,6 @@
       },
     },
 
-    # Very small set of test that exercise SkiaRenderer and produce pixels.
-    'skia_renderer_gpu_telemetry_tests': {
-      'skia_renderer_screenshot_sync': {
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer',
-        ],
-        'telemetry_test_name': 'screenshot_sync',
-      },
-    },
-
     'skia_renderer_gtests': {
       'skia_renderer_content_browsertests': {
         'args': [
@@ -3976,7 +3977,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-      'skia_renderer_gpu_telemetry_tests',
+      'gpu_gl_renderer_telemetry_tests',
     ],
 
     'gpu_dawn_deps_isolated_scripts': [

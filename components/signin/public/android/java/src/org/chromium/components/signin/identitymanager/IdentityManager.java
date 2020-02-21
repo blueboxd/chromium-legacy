@@ -14,7 +14,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
 /**
@@ -134,14 +133,6 @@ public class IdentityManager {
      */
     public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
         return IdentityManagerJni.get().getPrimaryAccountInfo(mNativeIdentityManager);
-    }
-
-    /**
-     * Provides access to the account ID of the user's primary account. Returns null if no such info
-     * is available.
-     */
-    public @Nullable CoreAccountId getPrimaryAccountId() {
-        return CoreAccountInfo.getIdFrom(getPrimaryAccountInfo());
     }
 
     /**

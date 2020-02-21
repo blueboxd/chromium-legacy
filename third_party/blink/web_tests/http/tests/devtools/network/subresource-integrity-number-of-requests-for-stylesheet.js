@@ -21,10 +21,10 @@
   ConsoleTestRunner.addConsoleSniffer(step1);
   TestRunner.evaluateInPage('loadIFrame()');
 
-  function step1() {
+  async function step1() {
     var requests = NetworkTestRunner.findRequestsByURLPattern(/style.css/);
     TestRunner.assertTrue(requests.length === 1);
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

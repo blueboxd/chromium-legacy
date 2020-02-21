@@ -21,7 +21,7 @@
     NetworkTestRunner.networkRequests().pop().requestContent().then(step3);
   }
 
-  function step3() {
+  async function step3() {
     var request = NetworkTestRunner.networkRequests().pop();
     TestRunner.addResult('URL: ' + request.url());
     TestRunner.addResult('Finished: ' + request.finished);
@@ -30,7 +30,7 @@
     TestRunner.addResult('Status: ' + request.statusCode + ' ' + request.statusText);
     TestRunner.addResult('Has raw request headers: ' + (typeof request.requestHeadersText() === 'string'));
     TestRunner.addResult('Has raw response headers: ' + (typeof request.responseHeadersText === 'string'));
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

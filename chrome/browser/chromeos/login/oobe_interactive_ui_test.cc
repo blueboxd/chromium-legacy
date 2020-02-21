@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -342,6 +344,31 @@ void HandleAssistantOptInScreen() {
   LOG(INFO) << "OobeInteractiveUITest: 'assistant-optin' screen done.";
 }
 
+// Waits for gesture navigation to get shown, runs through all pages in the
+// screen, and waits for the screen to exit.
+void HandleGestureNavigationScreen() {
+  OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
+
+  struct {
+    std::string page_id;
+    std::string button_id;
+  } kPages[] = {{"gestureIntro", "gesture-intro-next-button"},
+                {"gestureHome", "gesture-home-next-button"},
+                {"gestureBack", "gesture-back-next-button"},
+                {"gestureOverview", "gesture-overview-next-button"}};
+
+  for (const auto& page : kPages) {
+    SCOPED_TRACE(page.page_id);
+
+    test::OobeJS()
+        .CreateVisibilityWaiter(true, {"gesture-navigation", page.page_id})
+        ->Wait();
+    test::OobeJS().TapOnPath({"gesture-navigation", page.button_id});
+  }
+
+  OobeScreenExitWaiter(GestureNavigationScreenView::kScreenId).Wait();
+}
+
 class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
  public:
   explicit FakeRecommendAppsFetcher(RecommendAppsFetcherDelegate* delegate)
@@ -452,12 +479,15 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   struct Parameters {
     bool is_tablet;
     bool is_quick_unlock_enabled;
+    bool hide_shelf_controls_in_tablet_mode;
     ArcState arc_state;
 
     std::string ToString() const {
       return std::string("{is_tablet: ") + (is_tablet ? "true" : "false") +
              ", is_quick_unlock_enabled: " +
              (is_quick_unlock_enabled ? "true" : "false") +
+             ", hide_shelf_controls_in_tablet_mode: " +
+             (hide_shelf_controls_in_tablet_mode ? "true" : "false") +
              ", arc_state: " + ArcStateToString(arc_state) + "}";
     }
   };
@@ -465,10 +495,18 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   explicit OobeEndToEndTestSetupMixin(
       InProcessBrowserTestMixinHost* mixin_host,
       net::EmbeddedTestServer* arc_tos_server,
-      const std::tuple<bool, bool, ArcState>& parameters)
+      const std::tuple<bool, bool, bool, ArcState>& parameters)
       : InProcessBrowserTestMixin(mixin_host), arc_tos_server_(arc_tos_server) {
     std::tie(params_.is_tablet, params_.is_quick_unlock_enabled,
-             params_.arc_state) = parameters;
+             params_.hide_shelf_controls_in_tablet_mode, params_.arc_state) =
+        parameters;
+    if (params_.hide_shelf_controls_in_tablet_mode) {
+      feature_list_.InitAndEnableFeature(
+          ash::features::kHideShelfControlsInTabletMode);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          ash::features::kHideShelfControlsInTabletMode);
+    }
   }
   ~OobeEndToEndTestSetupMixin() override = default;
 
@@ -557,6 +595,10 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
     return params_.is_quick_unlock_enabled;
   }
 
+  bool hide_shelf_controls_in_tablet_mode() const {
+    return params_.hide_shelf_controls_in_tablet_mode;
+  }
+
   ArcState arc_state() const { return params_.arc_state; }
 
  private:
@@ -573,9 +615,9 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
 
 }  // namespace
 
-class OobeInteractiveUITest
-    : public OobeBaseTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
+class OobeInteractiveUITest : public OobeBaseTest,
+                              public ::testing::WithParamInterface<
+                                  std::tuple<bool, bool, bool, ArcState>> {
  public:
   OobeInteractiveUITest() = default;
   ~OobeInteractiveUITest() override = default;
@@ -680,6 +722,11 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(
   }
 
   HandleAssistantOptInScreen();
+
+  if (test_setup()->is_tablet() &&
+      test_setup()->hide_shelf_controls_in_tablet_mode()) {
+    HandleGestureNavigationScreen();
+  }
 }
 
 void OobeInteractiveUITest::SimpleEndToEnd() {
@@ -698,6 +745,7 @@ INSTANTIATE_TEST_SUITE_P(
     OobeInteractiveUITestImpl,
     OobeInteractiveUITest,
     testing::Combine(testing::Bool(),
+                     testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kAcceptTerms,
@@ -764,13 +812,14 @@ INSTANTIATE_TEST_SUITE_P(
     OobeZeroTouchInteractiveUITest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
+                     testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kAcceptTerms,
                                      ArcState::kDeclineTerms)));
 
-class PublicSessionOobeTest
-    : public MixinBasedInProcessBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
+class PublicSessionOobeTest : public MixinBasedInProcessBrowserTest,
+                              public ::testing::WithParamInterface<
+                                  std::tuple<bool, bool, bool, ArcState>> {
  public:
   PublicSessionOobeTest()
       : PublicSessionOobeTest(false /*requires_terms_of_service*/) {}
@@ -857,6 +906,7 @@ INSTANTIATE_TEST_SUITE_P(
     PublicSessionOobeTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
+                     testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kDeclineTerms)));
 
@@ -891,12 +941,13 @@ INSTANTIATE_TEST_SUITE_P(
     PublicSessionWithTermsOfServiceOobeTest,
     testing::Combine(testing::Bool(),
                      testing::Bool(),
+                     testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kDeclineTerms)));
 
-class EphemeralUserOobeTest
-    : public MixinBasedInProcessBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
+class EphemeralUserOobeTest : public MixinBasedInProcessBrowserTest,
+                              public ::testing::WithParamInterface<
+                                  std::tuple<bool, bool, bool, ArcState>> {
  public:
   EphemeralUserOobeTest() { login_manager_.set_should_launch_browser(true); }
   ~EphemeralUserOobeTest() override = default;
@@ -984,6 +1035,11 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
 
   HandleAssistantOptInScreen();
 
+  if (test_setup()->is_tablet() &&
+      test_setup()->hide_shelf_controls_in_tablet_mode()) {
+    HandleGestureNavigationScreen();
+  }
+
   WaitForActiveSession();
 }
 
@@ -991,6 +1047,7 @@ INSTANTIATE_TEST_SUITE_P(
     EphemeralUserOobeTestImpl,
     EphemeralUserOobeTest,
     testing::Combine(testing::Bool(),
+                     testing::Bool(),
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kAcceptTerms,

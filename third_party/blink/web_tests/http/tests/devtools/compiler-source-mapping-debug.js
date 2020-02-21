@@ -36,8 +36,8 @@
       TestRunner.evaluateInPage('setTimeout(clickButton, 0)');
     }
 
-    function paused(callFrames) {
-      SourcesTestRunner.captureStackTrace(callFrames);
+    async function paused(callFrames) {
+      await SourcesTestRunner.captureStackTrace(callFrames);
       SourcesTestRunner.resumeExecution(next);
     }
   }]);

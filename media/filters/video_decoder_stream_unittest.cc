@@ -297,10 +297,10 @@ class VideoDecoderStreamTest
   // but removes the DecryptConfig to make the buffer unencrypted.
   void Decrypt(Decryptor::StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const Decryptor::DecryptCB& decrypt_cb) {
+               Decryptor::DecryptCB decrypt_cb) {
     DCHECK(encrypted->decrypt_config());
     if (has_no_key_) {
-      decrypt_cb.Run(Decryptor::kNoKey, nullptr);
+      std::move(decrypt_cb).Run(Decryptor::kNoKey, nullptr);
       return;
     }
 
@@ -311,7 +311,7 @@ class VideoDecoderStreamTest
       decrypted->set_is_key_frame(true);
     decrypted->set_timestamp(encrypted->timestamp());
     decrypted->set_duration(encrypted->duration());
-    decrypt_cb.Run(Decryptor::kSuccess, decrypted);
+    std::move(decrypt_cb).Run(Decryptor::kSuccess, decrypted);
   }
 
   // Callback for VideoDecoderStream::Read().

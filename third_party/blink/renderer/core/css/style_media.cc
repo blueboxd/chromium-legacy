@@ -54,7 +54,7 @@ bool StyleMedia::matchMedium(const String& query) const {
     return false;
 
   scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create();
-  if (!media->Set(query))
+  if (!media->Set(query, document->ToExecutionContext()))
     return false;
 
   MediaQueryEvaluator screen_eval(GetFrame());

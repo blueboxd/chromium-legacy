@@ -106,7 +106,12 @@ enum class FingerprintState {
   //  - the device does not have a fingerprint sensor
   UNAVAILABLE,
   // Fingerprint can be used to unlock the device.
-  AVAILABLE,
+  AVAILABLE_DEFAULT,
+  // Fingerprint can be used to unlock the device but the user touched the
+  // fingerprint icon instead of the fingerprint sensor. A warning message
+  // should be displayed for 3 seconds before getting back to AVAILABLE_DEFAULT
+  // state.
+  AVAILABLE_WITH_TOUCH_SENSOR_WARNING,
   // There have been too many attempts, so now fingerprint is disabled.
   DISABLED_FROM_ATTEMPTS,
   // It has been too long since the device was last used.

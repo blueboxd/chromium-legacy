@@ -57,15 +57,18 @@ MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     queries_[i] = o.queries_[i]->Copy();
 }
 
-scoped_refptr<MediaQuerySet> MediaQuerySet::Create(const String& media_string) {
+scoped_refptr<MediaQuerySet> MediaQuerySet::Create(
+    const String& media_string,
+    const ExecutionContext* execution_context) {
   if (media_string.IsEmpty())
     return MediaQuerySet::Create();
 
-  return MediaQueryParser::ParseMediaQuerySet(media_string);
+  return MediaQueryParser::ParseMediaQuerySet(media_string, execution_context);
 }
 
-bool MediaQuerySet::Set(const String& media_string) {
-  scoped_refptr<MediaQuerySet> result = Create(media_string);
+bool MediaQuerySet::Set(const String& media_string,
+                        const ExecutionContext* execution_context) {
+  scoped_refptr<MediaQuerySet> result = Create(media_string, execution_context);
   // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
   for (const auto& query : result->queries_) {
     CHECK(query);
@@ -74,11 +77,12 @@ bool MediaQuerySet::Set(const String& media_string) {
   return true;
 }
 
-bool MediaQuerySet::Add(const String& query_string) {
+bool MediaQuerySet::Add(const String& query_string,
+                        const ExecutionContext* execution_context) {
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  scoped_refptr<MediaQuerySet> result = Create(query_string);
+  scoped_refptr<MediaQuerySet> result = Create(query_string, execution_context);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
@@ -100,11 +104,13 @@ bool MediaQuerySet::Add(const String& query_string) {
   return true;
 }
 
-bool MediaQuerySet::Remove(const String& query_string_to_remove) {
+bool MediaQuerySet::Remove(const String& query_string_to_remove,
+                           const ExecutionContext* execution_context) {
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  scoped_refptr<MediaQuerySet> result = Create(query_string_to_remove);
+  scoped_refptr<MediaQuerySet> result =
+      Create(query_string_to_remove, execution_context);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
@@ -161,10 +167,11 @@ MediaList::MediaList(scoped_refptr<MediaQuerySet> media_queries,
       parent_style_sheet_(nullptr),
       parent_rule_(parent_rule) {}
 
-void MediaList::setMediaText(const String& value) {
+void MediaList::setMediaText(const ExecutionContext* execution_context,
+                             const String& value) {
   CSSStyleSheet::RuleMutationScope mutation_scope(parent_rule_);
 
-  media_queries_->Set(value);
+  media_queries_->Set(value, execution_context);
 
   if (parent_style_sheet_)
     parent_style_sheet_->DidMutate();
@@ -178,11 +185,12 @@ String MediaList::item(unsigned index) const {
   return String();
 }
 
-void MediaList::deleteMedium(const String& medium,
+void MediaList::deleteMedium(const ExecutionContext* execution_context,
+                             const String& medium,
                              ExceptionState& exception_state) {
   CSSStyleSheet::RuleMutationScope mutation_scope(parent_rule_);
 
-  bool success = media_queries_->Remove(medium);
+  bool success = media_queries_->Remove(medium, execution_context);
   if (!success) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "Failed to delete '" + medium + "'.");
@@ -192,10 +200,11 @@ void MediaList::deleteMedium(const String& medium,
     parent_style_sheet_->DidMutate();
 }
 
-void MediaList::appendMedium(const String& medium) {
+void MediaList::appendMedium(const ExecutionContext* execution_context,
+                             const String& medium) {
   CSSStyleSheet::RuleMutationScope mutation_scope(parent_rule_);
 
-  bool added = media_queries_->Add(medium);
+  bool added = media_queries_->Add(medium, execution_context);
   if (!added)
     return;
 

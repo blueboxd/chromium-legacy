@@ -448,14 +448,16 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
 
 String CreateMarkup(const Node* node,
                     ChildrenOnly children_only,
-                    AbsoluteURLs should_resolve_urls) {
+                    AbsoluteURLs should_resolve_urls,
+                    IncludeShadowRoots include_shadow_roots) {
   if (!node)
     return "";
 
   MarkupAccumulator accumulator(should_resolve_urls,
                                 IsA<HTMLDocument>(node->GetDocument())
                                     ? SerializationType::kHTML
-                                    : SerializationType::kXML);
+                                    : SerializationType::kXML,
+                                include_shadow_roots);
   return accumulator.SerializeNodes<EditingStrategy>(*node, children_only);
 }
 

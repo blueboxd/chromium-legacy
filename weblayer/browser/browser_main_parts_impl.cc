@@ -23,6 +23,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/public/main.h"
 
@@ -59,6 +60,8 @@ namespace {
 // especially important for services that should be created at profile
 // creation time as compared to lazily on first access.
 static void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+  HostContentSettingsMapFactory::GetInstance();
+
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalServiceFactory::GetInstance();
 #endif

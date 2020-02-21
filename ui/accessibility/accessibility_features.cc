@@ -27,4 +27,14 @@ bool IsAccessibilityExposeDisplayNoneEnabled() {
       ::features::kEnableAccessibilityExposeDisplayNone);
 }
 
+// Serializes accessibility information from the Views tree and deserializes it
+// into an AXTree in the browser process.
+const base::Feature kEnableAccessibilityTreeForViews{
+    "AccessibilityTreeForViews", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityTreeForViewsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableAccessibilityTreeForViews);
+}
+
 }  // namespace features

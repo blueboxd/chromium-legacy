@@ -24,12 +24,19 @@ function initialize(runningOnDualGPUMacBookPro) {
 }
 
 function notifyHarness() {
-  assertRunningOnHighPerformanceGpu();
+  if (!assertRunningOnHighPerformanceGpu())
+    return;
   sendResult("READY", "Ready for second tab to be closed");
 }
 
 function runToCompletion() {
-  assertRunningOnLowPowerGpu();
+  if (!assertRunningOnLowPowerGpu()) {
+    // This test expects to be notified even on non-dual-GPU systems.
+    if (isRunningOnDualGpuSystem()) {
+      // Failure has been reported.
+      return;
+    }
+  }
   drawSomeFrames(waitForFinish);
 }
 
@@ -51,5 +58,6 @@ function waitForFinish()
 </head>
 <body onload="ready()">
 <canvas id="c" width="300" height="300" class="nomargin" style="position:absolute; top:0px; left:0px;"></canvas>
+</div>
 </body>
 </html>

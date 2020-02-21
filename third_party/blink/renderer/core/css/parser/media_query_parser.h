@@ -38,7 +38,7 @@ class MediaQueryData {
  public:
   MediaQueryData();
   void Clear();
-  void AddExpression(CSSParserTokenRange&);
+  void AddExpression(CSSParserTokenRange&, const ExecutionContext*);
   bool LastExpressionValid();
   void RemoveLastExpression();
   void SetMediaType(const String&);
@@ -62,12 +62,19 @@ class CORE_EXPORT MediaQueryParser {
   STACK_ALLOCATED();
 
  public:
-  static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(const String&);
-  static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(CSSParserTokenRange);
-  static scoped_refptr<MediaQuerySet> ParseMediaCondition(CSSParserTokenRange);
+  static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(
+      const String&,
+      const ExecutionContext*);
+  static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(
+      CSSParserTokenRange,
+      const ExecutionContext*);
+  static scoped_refptr<MediaQuerySet> ParseMediaCondition(
+      CSSParserTokenRange,
+      const ExecutionContext*);
   static scoped_refptr<MediaQuerySet> ParseMediaQuerySetInMode(
       CSSParserTokenRange,
-      CSSParserMode);
+      CSSParserMode,
+      const ExecutionContext*);
 
  private:
   enum ParserType {
@@ -75,7 +82,7 @@ class CORE_EXPORT MediaQueryParser {
     kMediaConditionParser,
   };
 
-  MediaQueryParser(ParserType, CSSParserMode);
+  MediaQueryParser(ParserType, CSSParserMode, const ExecutionContext*);
   virtual ~MediaQueryParser();
 
   scoped_refptr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
@@ -130,6 +137,7 @@ class CORE_EXPORT MediaQueryParser {
   scoped_refptr<MediaQuerySet> query_set_;
   MediaQueryBlockWatcher block_watcher_;
   CSSParserMode mode_;
+  const ExecutionContext* execution_context_;
 
   const static State kReadRestrictor;
   const static State kReadMediaNot;

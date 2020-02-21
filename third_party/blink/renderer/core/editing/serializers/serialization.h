@@ -46,6 +46,7 @@ class Node;
 class CSSPropertyValueSet;
 
 enum ChildrenOnly { kIncludeNode, kChildrenOnly };
+enum IncludeShadowRoots { kNoShadowRoots, kIncludeShadowRoots };
 
 DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
                                          const String& text);
@@ -85,7 +86,8 @@ void ReplaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
 CORE_EXPORT String CreateMarkup(const Node*,
                                 ChildrenOnly = kIncludeNode,
-                                AbsoluteURLs = kDoNotResolveURLs);
+                                AbsoluteURLs = kDoNotResolveURLs,
+                                IncludeShadowRoots = kNoShadowRoots);
 
 CORE_EXPORT String
 CreateMarkup(const Position& start,

@@ -7,37 +7,13 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
-#include "printing/backend/print_backend_consts.h"
-#include "url/gurl.h"
 
 #if defined(USE_CUPS)
+#include "printing/backend/cups_ipp_utils.h"
 #include "printing/backend/print_backend_cups_ipp.h"
 #endif  // defined(USE_CUPS)
 
 namespace printing {
-namespace {
-
-#if defined(USE_CUPS)
-std::unique_ptr<CupsConnection> CreateConnection(
-    const base::DictionaryValue* print_backend_settings) {
-  std::string print_server_url_str;
-  std::string cups_blocking;
-  int encryption = HTTP_ENCRYPT_NEVER;
-  if (print_backend_settings) {
-    print_backend_settings->GetString(kCUPSPrintServerURL,
-                                      &print_server_url_str);
-    print_backend_settings->GetString(kCUPSBlocking, &cups_blocking);
-    print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
-  }
-  GURL print_server_url(print_server_url_str);
-
-  return std::make_unique<CupsConnection>(
-      print_server_url, static_cast<http_encryption_t>(encryption),
-      cups_blocking == kValueTrue);
-}
-#endif  // defined(USE_CUPS)
-
-}  // namespace
 
 // Provides either a stubbed out PrintBackend implementation or a CUPS IPP
 // implementation for use on ChromeOS.

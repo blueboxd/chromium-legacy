@@ -97,6 +97,7 @@ group("closure_compile") {
     "printing_page:closure_compile",
     "privacy_page:closure_compile",
     "reset_page:closure_compile",
+    "safety_check_page:closure_compile",
     "search_engines_page:closure_compile",
     "search_page:closure_compile",
     "settings_main:closure_compile",

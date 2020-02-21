@@ -854,6 +854,7 @@
         'ReportDeviceBoardStatus',
         'ReportDeviceCpuInfo',
         'ReportDeviceTimezoneInfo',
+        'ReportDeviceMemoryInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -7920,6 +7921,27 @@
 
       If the policy is set to false or left unset, the information will not be reported.
       If set to true, the device's currently set timezone will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceMemoryInfo',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:82-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 682,
+      'caption': '''Report memory info''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report information about a device's memory.
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the device's memory information will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -19519,7 +19541,7 @@
           },
           'reset_at': {
             'type': 'object',
-            'description' : '''The time of the day in UTC timezone when usage quota is renewed.''',
+            'description' : '''The time of the day in local time when usage quota is renewed.''',
             'properties': {
               'hour': {
                 'type': 'integer',
@@ -19532,7 +19554,11 @@
                 'maximum': 59
               }
             }
-          }
+          },
+          'activity_reporting_enabled' : {
+            'type': 'boolean',
+            'description': '''The value of app activity collection toggle. If set to true user app activity will be reported to the server with purpose of being displayed in child and parent <ph name="PRODUCT_NAME">$1<ex>Family Link</ex></ph> app. If set to false Per-app time limits feature will still work, but no data will be reported to the server and therefore displayed in <ph name="PRODUCT_NAME">$1<ex>Family Link</ex></ph>.'''
+          },
         }
       },
       'supported_on': ['chrome_os: 80-'],
@@ -19572,7 +19598,8 @@
         'reset_at': {
           'hour': 6,
           'minute': 0
-        }
+        },
+        'activity_reporting_enabled': False
       },
       'id': 641,
       'caption': '''Per-App Time Limits''',
@@ -20506,6 +20533,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceBoardStatus': 'device_reporting.report_board_status',
     'ReportDeviceCpuInfo': 'device_reporting.report_cpu_info',
     'ReportDeviceTimezoneInfo': 'device_reporting.report_timezone_info',
+    'ReportDeviceMemoryInfo': 'device_reporting.report_memory_info',
     'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
     'ReportDevicePowerStatus': 'device_reporting.report_power_status',
     'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
@@ -20907,6 +20935,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceBoardStatus',
         'ReportDeviceCpuInfo',
         'ReportDeviceTimezoneInfo',
+        'ReportDeviceMemoryInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -20980,6 +21009,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 681,
+  'highest_id_currently_used': 682,
   'highest_atomic_group_id_currently_used': 38
 }

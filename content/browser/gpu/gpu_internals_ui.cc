@@ -430,22 +430,44 @@ std::unique_ptr<base::ListValue> GetDisplayInfo() {
 
 #if defined(OS_WIN)
 const char* D3dFeatureLevelToString(D3D_FEATURE_LEVEL level) {
-#define MAP_D3D_FEATURE_LEVEL_TO_STRING(LEVEL) \
-  case LEVEL:                                  \
-    return #LEVEL;
   switch (level) {
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_1_0_CORE)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_9_1)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_9_2)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_9_3)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_10_0)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_10_1)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_11_0)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_11_1)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_12_0)
-    MAP_D3D_FEATURE_LEVEL_TO_STRING(D3D_FEATURE_LEVEL_12_1)
+    case D3D_FEATURE_LEVEL_1_0_CORE:
+      return "Unknown";
+    case D3D_FEATURE_LEVEL_9_1:
+      return "9_1";
+    case D3D_FEATURE_LEVEL_9_2:
+      return "9_2";
+    case D3D_FEATURE_LEVEL_9_3:
+      return "9_3";
+    case D3D_FEATURE_LEVEL_10_0:
+      return "10_0";
+    case D3D_FEATURE_LEVEL_10_1:
+      return "10_1";
+    case D3D_FEATURE_LEVEL_11_0:
+      return "11_0";
+    case D3D_FEATURE_LEVEL_11_1:
+      return "11_1";
+    case D3D_FEATURE_LEVEL_12_0:
+      return "12_0";
+    case D3D_FEATURE_LEVEL_12_1:
+      return "12_1";
+    default:
+      NOTREACHED();
+      return "";
   }
-#undef MAP_D3D_FEATURE_LEVEL_TO_STRING
+}
+
+const char* HasDiscreteGpuToString(gpu::HasDiscreteGpu has_discrete_gpu) {
+  switch (has_discrete_gpu) {
+    case gpu::HasDiscreteGpu::kUnknown:
+      return "unknown";
+    case gpu::HasDiscreteGpu::kNo:
+      return "no";
+    case gpu::HasDiscreteGpu::kYes:
+      return "yes";
+  }
+  NOTREACHED();
+  return "";
 }
 #endif  // OS_WIN
 
@@ -473,7 +495,8 @@ std::unique_ptr<base::ListValue> GetDevicePerfInfo() {
         "D3D11 Feature Level",
         D3dFeatureLevelToString(device_perf_info->d3d11_feature_level)));
     list->Append(NewDescriptionValuePair(
-        "Has Discrete GPU", device_perf_info->has_discrete_gpu ? "Yes" : "No"));
+        "Has Discrete GPU",
+        HasDiscreteGpuToString(device_perf_info->has_discrete_gpu)));
 #endif  // OS_WIN
 
     if (device_perf_info->intel_gpu_generation !=

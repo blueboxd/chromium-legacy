@@ -90,15 +90,17 @@ void SafetyCheckHandler::CheckSafeBrowsing() {
     observer_->OnSafeBrowsingCheckStart();
   }
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  bool enabled = pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kSafeBrowsingEnabled);
   SafeBrowsingStatus status;
-  if (!enabled) {
-    bool disabled_by_admin =
-        pref_service->IsManagedPreference(prefs::kSafeBrowsingEnabled);
-    status = disabled_by_admin ? SafeBrowsingStatus::kDisabledByAdmin
-                               : SafeBrowsingStatus::kDisabled;
-  } else {
+  if (pref_service->GetBoolean(prefs::kSafeBrowsingEnabled)) {
     status = SafeBrowsingStatus::kEnabled;
+  } else if (pref->IsManaged()) {
+    status = SafeBrowsingStatus::kDisabledByAdmin;
+  } else if (pref->IsExtensionControlled()) {
+    status = SafeBrowsingStatus::kDisabledByExtension;
+  } else {
+    status = SafeBrowsingStatus::kDisabled;
   }
   OnSafeBrowsingCheckResult(status);
 }

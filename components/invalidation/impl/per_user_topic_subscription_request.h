@@ -86,18 +86,34 @@ class PerUserTopicSubscriptionRequest {
  private:
   PerUserTopicSubscriptionRequest();
 
+  // The methods below may end up calling RunCompletedCallbackAndMaybeDie(),
+  // which potentially lead to destroying |this|. Hence, |this| object must
+  // assume that it is dead after invoking any of these methods and must not
+  // run any more code.
   void OnURLFetchComplete(std::unique_ptr<std::string> response_body);
   void OnURLFetchCompleteInternal(int net_error,
                                   int response_code,
                                   std::unique_ptr<std::string> response_body);
-
   void OnJsonParse(data_decoder::DataDecoder::ValueOrError result);
 
+  // Invokes |request_completed_callback_| with (|status|, |topic_name|). Per
+  // the contract of this class, it is allowed for clients to delete this
+  // object as part of the invocation of |request_completed_callback_|. Hence,
+  // this object must assume that it is dead after invoking this method and
+  // must not run any more code. See crbug.com/1054590 as sample issue for
+  // violation of this rule.
+  // |status| and |topic_name| are intentionally taken by value to avoid
+  // references to members.
+  void RunCompletedCallbackAndMaybeDie(Status status, std::string topic_name);
   // The fetcher for subscribing.
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
   // The callback to notify when URLFetcher finished and results are available.
   // When the request is finished/aborted/destroyed, it's called in the dtor!
+  // Note: This callback should only be invoked from
+  // RunCompletedCallbackAndMaybeDie(), as invoking it has the potential to
+  // destroy this object per this class's contract.
+  // TODO(crbug.com/1054759): find a way to avoid this fragile logic.
   CompletedCallback request_completed_callback_;
 
   // Full URL. Used in tests only.

@@ -114,6 +114,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   base::Optional<ScopedPaintChunkProperties> scoped_properties;
 
   bool painted_separate_backdrop = false;
+  bool painted_separate_effect = false;
 
   bool should_apply_root_background_behavior =
       layout_view_.GetDocument().IsHTMLDocument() ||
@@ -151,6 +152,10 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     // group's. Otherwise we can usually avoid both a separate
     // PaintChunk and a BeginLayer/EndLayer.
     if (document_element_state != root_element_background_painting_state) {
+      if (&document_element_state.Effect() !=
+          &root_element_background_painting_state.Effect())
+        painted_separate_effect = true;
+
       root_element_background_painting_state = document_element_state;
       PaintRootGroup(paint_info, pixel_snapped_background_rect, document,
                      *background_client,
@@ -168,7 +173,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   if (should_paint_background) {
     PaintRootElementGroup(paint_info, pixel_snapped_background_rect,
-                          *background_client, painted_separate_backdrop);
+                          *background_client, painted_separate_backdrop,
+                          painted_separate_effect);
   }
   if (has_touch_action_rect) {
     BoxPainter(layout_view_)
@@ -223,7 +229,8 @@ void ViewPainter::PaintRootElementGroup(
     const PaintInfo& paint_info,
     const IntRect& pixel_snapped_background_rect,
     const DisplayItemClient& background_client,
-    bool painted_separate_backdrop) {
+    bool painted_separate_backdrop,
+    bool painted_separate_effect) {
   GraphicsContext& context = paint_info.context;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, background_client, DisplayItem::kDocumentBackground)) {
@@ -313,7 +320,7 @@ void ViewPainter::PaintRootElementGroup(
               reversed_paint_list, layout_view_.StyleRef().BackgroundLayers());
   DCHECK(reversed_paint_list.size());
 
-  if (painted_separate_backdrop) {
+  if (painted_separate_effect) {
     should_draw_background_in_separate_buffer = true;
   } else {
     // If the root background color is opaque, isolation group can be skipped
@@ -333,7 +340,7 @@ void ViewPainter::PaintRootElementGroup(
   // painted when there is any effect on the root element, such as a blend
   // mode. An extra BeginLayer will result in incorrect blend isolation if
   // it is added on top of any effect on the root element.
-  if (should_draw_background_in_separate_buffer && !painted_separate_backdrop) {
+  if (should_draw_background_in_separate_buffer && !painted_separate_effect) {
     if (base_background_color.Alpha()) {
       context.FillRect(
           paint_rect, base_background_color,
@@ -378,7 +385,7 @@ void ViewPainter::PaintRootElementGroup(
                                      geometry);
   }
 
-  if (should_draw_background_in_separate_buffer && !painted_separate_backdrop)
+  if (should_draw_background_in_separate_buffer && !painted_separate_effect)
     context.EndLayer();
 }
 

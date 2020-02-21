@@ -37,7 +37,7 @@ class MojoDecryptor : public Decryptor {
   void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) final;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const DecryptCB& decrypt_cb) final;
+               DecryptCB decrypt_cb) final;
   void CancelDecrypt(StreamType stream_type) final;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
                               const DecoderInitCB& init_cb) final;
@@ -61,16 +61,15 @@ class MojoDecryptor : public Decryptor {
   // TODO(xhwang): Update Decryptor to use OnceCallback. The change is easy,
   // but updating tests is hard given gmock doesn't support move-only types.
   // See http://crbug.com/751838
-  using DecryptOnceCB = base::OnceCallback<DecryptCB::RunType>;
   using DecoderInitOnceCB = base::OnceCallback<DecoderInitCB::RunType>;
   using AudioDecodeOnceCB = base::OnceCallback<AudioDecodeCB::RunType>;
   using VideoDecodeOnceCB = base::OnceCallback<VideoDecodeCB::RunType>;
 
   // Called when a buffer is decrypted.
-  void OnBufferDecrypted(DecryptOnceCB decrypt_cb,
+  void OnBufferDecrypted(DecryptCB decrypt_cb,
                          Status status,
                          mojom::DecoderBufferPtr buffer);
-  void OnBufferRead(DecryptOnceCB decrypt_cb,
+  void OnBufferRead(DecryptCB decrypt_cb,
                     Status status,
                     scoped_refptr<DecoderBuffer> buffer);
   void OnAudioDecoded(AudioDecodeOnceCB audio_decode_cb,

@@ -1212,4 +1212,48 @@ TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
   EXPECT_FALSE(CcLayerByDOMElementId("child_iframe"));
 }
 
+TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
+  // TODO(crbug.com/1046544): This test fails with CompositeAfterPaint because
+  // PaintArtifactCompositor::Update is run for scroll offset changes. When we
+  // have an early-out to avoid SetNeedsCommit for non-changing interest-rects,
+  // this test will pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+    <div id='scroller' style='will-change: transform; overflow: scroll;
+        width: 100px; height: 100px'>
+      <div style='height: 1000px'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* scroller = GetDocument().getElementById("scroller");
+  auto* scrollable_area = scroller->GetLayoutBox()->GetScrollableArea();
+  auto element_id = scrollable_area->GetScrollElementId();
+
+  EXPECT_FALSE(Compositor().layer_tree_host().CommitRequested());
+
+  // Simulate the scroll update with scroll delta from impl-side.
+  cc::ScrollAndScaleSet scroll_and_scale;
+  scroll_and_scale.scrolls.push_back(cc::ScrollAndScaleSet::ScrollUpdateInfo(
+      element_id, gfx::ScrollOffset(0, 10), base::nullopt));
+  Compositor().layer_tree_host().ApplyScrollAndScale(&scroll_and_scale);
+  EXPECT_EQ(FloatPoint(0, 10), scrollable_area->ScrollPosition());
+  EXPECT_EQ(gfx::ScrollOffset(0, 10),
+            GetPropertyTrees()->scroll_tree.current_scroll_offset(element_id));
+
+  // Update just the blink lifecycle because a full frame would clear the bit
+  // for whether a commit was requested.
+  UpdateAllLifecyclePhases();
+
+  // A main frame is needed to call UpdateLayers which updates property trees,
+  // re-calculating cached to/from-screen transforms.
+  EXPECT_TRUE(
+      Compositor().layer_tree_host().RequestedMainFramePendingForTesting());
+
+  // A full commit is not needed.
+  EXPECT_FALSE(Compositor().layer_tree_host().CommitRequested());
+}
+
 }  // namespace blink

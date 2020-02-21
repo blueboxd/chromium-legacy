@@ -15,10 +15,30 @@
 #include "base/task_runner_util.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "crypto/sha2.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace password_manager {
 namespace {
+
+constexpr char kAPIScope[] =
+    "https://www.googleapis.com/auth/identity.passwords.leak.check";
+
+// Returns a Google account that can be used for getting a token.
+CoreAccountId GetAccountForRequest(
+    const signin::IdentityManager* identity_manager) {
+  CoreAccountInfo result = identity_manager->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
+  if (result.IsEmpty()) {
+    std::vector<CoreAccountInfo> all_accounts =
+        identity_manager->GetAccountsWithRefreshTokens();
+    if (!all_accounts.empty())
+      result = all_accounts.front();
+  }
+  return result.account_id;
+}
 
 // Produce |username_hash_prefix| and scrypt hash of the arguments.
 // Scrypt computation is actually long.
@@ -138,6 +158,15 @@ void AnalyzeResponse(std::unique_ptr<SingleLookupResponse> response,
       base::BindOnce(&CheckIfCredentialWasLeaked, std::move(response),
                      encryption_key),
       std::move(callback));
+}
+
+std::unique_ptr<signin::AccessTokenFetcher> RequestAccessToken(
+    signin::IdentityManager* identity_manager,
+    signin::AccessTokenFetcher::TokenCallback callback) {
+  return identity_manager->CreateAccessTokenFetcherForAccount(
+      GetAccountForRequest(identity_manager),
+      /*consumer_name=*/"leak_detection_service", {kAPIScope},
+      std::move(callback), signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 }  // namespace password_manager

@@ -91,7 +91,6 @@ LayoutObject* SVGLinearGradientElement::CreateLayoutObject(const ComputedStyle&,
 static void SetGradientAttributes(const SVGGradientElement& element,
                                   LinearGradientAttributes& attributes,
                                   bool is_linear) {
-  element.SynchronizeAnimatedSVGAttribute(AnyQName());
   element.CollectCommonAttributes(attributes);
 
   if (!is_linear)

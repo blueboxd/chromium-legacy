@@ -13,6 +13,10 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_export.h"
 
+#if defined(OS_WIN)
+#include <d3dcommon.h>
+#endif  // OS_WIN
+
 namespace angle {
 struct SystemInfo;
 }
@@ -43,6 +47,15 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
 GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(
     Dx12VulkanVersionInfo* dx12_vulkan_version_info);
+
+// Iterate through all adapters and create a hardware D3D11 device on each
+// adapter. If succeeded, query the highest feature level it supports and
+// weather it's a discrete GPU.
+// Set |d3d11_feature_level| to the highest from all adapters.
+// Set |is_discrete_gpu| to true if one of the adapters is discrete.
+// Return false if info collection fails.
+GPU_EXPORT bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
+                                        bool* has_discrete_gpu);
 
 // Collect the hardware overlay support flags.
 GPU_EXPORT void CollectHardwareOverlayInfo(OverlayInfo* overlay_info);

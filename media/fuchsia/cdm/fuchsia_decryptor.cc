@@ -38,9 +38,9 @@ void FuchsiaDecryptor::RegisterNewKeyCB(StreamType stream_type,
 
 void FuchsiaDecryptor::Decrypt(StreamType stream_type,
                                scoped_refptr<DecoderBuffer> encrypted,
-                               const DecryptCB& decrypt_cb) {
+                               DecryptCB decrypt_cb) {
   if (stream_type != StreamType::kAudio) {
-    decrypt_cb.Run(Status::kError, nullptr);
+    std::move(decrypt_cb).Run(Status::kError, nullptr);
     return;
   }
 
@@ -49,7 +49,7 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
     audio_decryptor_ = FuchsiaClearStreamDecryptor::Create(cdm_);
   }
 
-  audio_decryptor_->Decrypt(std::move(encrypted), decrypt_cb);
+  audio_decryptor_->Decrypt(std::move(encrypted), std::move(decrypt_cb));
 }
 
 void FuchsiaDecryptor::CancelDecrypt(StreamType stream_type) {

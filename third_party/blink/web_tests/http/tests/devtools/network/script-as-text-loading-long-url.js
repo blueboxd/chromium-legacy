@@ -17,6 +17,6 @@
 
   TestRunner.evaluateInPage('loadScript()');
   await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

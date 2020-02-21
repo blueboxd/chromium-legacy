@@ -197,9 +197,11 @@ class LargeStickyAdBrowserTestScrollingTopPageReverseMovingGrandchildAd
 // effect is that C is sticky to the browser viewport. The test is parameterized
 // by whether the B is local or remote to A and whether C is local to B (or
 // remote to both A and B).
+
+// Flaky timeout on most/all platforms: crbug.com/1049073
 IN_PROC_BROWSER_TEST_P(
     LargeStickyAdBrowserTestScrollingTopPageReverseMovingGrandchildAd,
-    StickyAdDetected) {
+    DISABLED_StickyAdDetected) {
   bool remote_subframe;
   bool remote_grandchild;
   std::tie(remote_subframe, remote_grandchild) = GetParam();

@@ -2584,7 +2584,7 @@ class DesksAcceleratorsTest : public DesksTest,
     auto* event_rewriter_controller = EventRewriterController::Get();
     event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(
-            this, Shell::Get()->sticky_keys_controller()));
+            this, Shell::Get()->sticky_keys_controller(), false));
   }
 
   // ui::EventRewriterChromeOS::Delegate:

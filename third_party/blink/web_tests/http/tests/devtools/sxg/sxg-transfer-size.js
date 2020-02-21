@@ -8,7 +8,7 @@
   await TestRunner.showPanel('network');
   SDK.networkLog.reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-larger-than-10k.sxg');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   var requests = NetworkTestRunner.findRequestsByURLPattern(/sxg-larger-than-10k.sxg/);
   TestRunner.assertTrue(requests.length === 1);

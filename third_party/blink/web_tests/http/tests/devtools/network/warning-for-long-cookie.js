@@ -28,6 +28,6 @@
 
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

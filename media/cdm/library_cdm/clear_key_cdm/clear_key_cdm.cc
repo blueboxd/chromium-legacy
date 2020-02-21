@@ -814,7 +814,7 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   // for both audio and video decryption.
   cdm_->GetCdmContext()->GetDecryptor()->Decrypt(
       media::Decryptor::kVideo, std::move(buffer),
-      base::Bind(&CopyDecryptResults, &status, decrypted_buffer));
+      base::BindOnce(&CopyDecryptResults, &status, decrypted_buffer));
 
   if (status == media::Decryptor::kError)
     return cdm::kDecryptError;

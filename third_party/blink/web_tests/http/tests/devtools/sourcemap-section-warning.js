@@ -9,6 +9,6 @@
   const url = 'http://127.0.0.1:8000/devtools/resources/source-map-warning.html';
   await TestRunner.navigatePromise(url);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

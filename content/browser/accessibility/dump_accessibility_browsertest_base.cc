@@ -108,11 +108,12 @@ void DumpAccessibilityTestBase::SetUp() {
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
 
-  // Enable exposing "display: none" nodes to the browser process for testing.
-  enabled_features.emplace_back(
-      features::kEnableAccessibilityExposeARIAAnnotations);
-
   // Enable exposing ARIA Annotation roles.
+  // TODO(aleventhal) Remove when we completely remove runtime flag around m83.
+  // enabled_features.emplace_back(
+  //     features::kEnableAccessibilityExposeARIAAnnotations);
+
+  // Enable exposing "display: none" nodes to the browser process for testing.
   enabled_features.emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
 

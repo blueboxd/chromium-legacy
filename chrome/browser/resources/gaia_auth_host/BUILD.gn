@@ -1,0 +1,26 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/test/base/js2gtest.gni")
+
+js2gtest("login_unitjs_tests") {
+  # These could be unit tests, except they need a browser context in order
+  # to construct a DOMParser object - so they are webui tests.
+  test_type = "webui"
+  sources = [
+    "saml_password_attributes_test.unitjs",
+    "saml_timestamps_test.unitjs",
+  ]
+  gen_include_files = [
+    "saml_password_attributes.js",
+    "saml_timestamps.js",
+    "//ui/webui/resources/js/cr.js",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+  deps = [ ":login_unitjs_tests" ]
+}

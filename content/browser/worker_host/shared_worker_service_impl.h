@@ -126,8 +126,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       const std::string& error_message);
 
-  // The ID that the next SharedWorkerInstance will be assigned.
-  int64_t next_shared_worker_instance_id_ = 0;
+  // Generates IDs for new shared workers.
+  SharedWorkerId::Generator shared_worker_id_generator_;
 
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;

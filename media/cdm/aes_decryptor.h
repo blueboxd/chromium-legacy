@@ -71,7 +71,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   void RegisterNewKeyCB(StreamType stream_type, NewKeyCB key_added_cb) override;
   void Decrypt(StreamType stream_type,
                scoped_refptr<DecoderBuffer> encrypted,
-               const DecryptCB& decrypt_cb) override;
+               DecryptCB decrypt_cb) override;
   void CancelDecrypt(StreamType stream_type) override;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
                               const DecoderInitCB& init_cb) override;

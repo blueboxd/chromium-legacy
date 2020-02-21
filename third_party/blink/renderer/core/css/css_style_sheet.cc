@@ -106,10 +106,12 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   sheet->ClearOwnerRule();
   contents->RegisterClient(sheet);
   scoped_refptr<MediaQuerySet> media_query_set;
-  if (options->media().IsString())
-    media_query_set = MediaQuerySet::Create(options->media().GetAsString());
-  else
+  if (options->media().IsString()) {
+    media_query_set = MediaQuerySet::Create(options->media().GetAsString(),
+                                            document.ToExecutionContext());
+  } else {
     media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
+  }
   auto* media_list = MakeGarbageCollected<MediaList>(
       media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);

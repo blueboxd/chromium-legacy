@@ -21,7 +21,7 @@
         TestRunner.addResult('XHR with logging enabled: ');
         // Sorting console messages to prevent flakiness.
         await ConsoleTestRunner.waitForPendingViewportUpdates();
-        TestRunner.addResults(ConsoleTestRunner.dumpConsoleMessagesIntoArray().sort());
+        TestRunner.addResults((await ConsoleTestRunner.dumpConsoleMessagesIntoArray()).sort());
         Console.ConsoleView.clearConsole();
         step2();
       });
@@ -31,9 +31,9 @@
   function step2() {
     Common.settingForTest('monitoringXHREnabled').set(false);
     makeRequest(() => {
-      TestRunner.deprecatedRunAfterPendingDispatches(() => {
+      TestRunner.deprecatedRunAfterPendingDispatches(async () => {
         TestRunner.addResult('XHR with logging disabled: ');
-        ConsoleTestRunner.dumpConsoleMessages();
+        await ConsoleTestRunner.dumpConsoleMessages();
         TestRunner.completeTest();
       });
     });

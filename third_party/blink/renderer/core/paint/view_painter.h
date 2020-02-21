@@ -31,7 +31,8 @@ class ViewPainter {
   void PaintRootElementGroup(const PaintInfo&,
                              const IntRect& pixel_snapped_background_rect,
                              const DisplayItemClient& background_client,
-                             bool painted_separate_backdrop);
+                             bool painted_separate_backdrop,
+                             bool painted_separate_effect);
 
   void PaintRootGroup(const PaintInfo& paint_info,
                       const IntRect& pixel_snapped_background_rect,

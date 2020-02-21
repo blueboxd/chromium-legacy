@@ -35,6 +35,13 @@ enum class IntelGpuGeneration {
   kMaxValue = kGen12,
 };
 
+enum class HasDiscreteGpu {
+  kUnknown = -1,
+  kNo = 0,
+  kYes = 1,
+  kMaxValue = kYes,
+};
+
 struct GPU_EXPORT DevicePerfInfo {
   uint32_t total_physical_memory_mb = 0u;
   uint32_t total_disk_space_mb = 0u;
@@ -44,7 +51,7 @@ struct GPU_EXPORT DevicePerfInfo {
   uint32_t system_commit_limit_mb = 0u;
   // If multiple GPUs are detected, this holds the highest feature level.
   D3D_FEATURE_LEVEL d3d11_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
-  bool has_discrete_gpu = false;
+  HasDiscreteGpu has_discrete_gpu = HasDiscreteGpu::kUnknown;
 #endif
 
   // The following fields are only filled on the browser side. They don't

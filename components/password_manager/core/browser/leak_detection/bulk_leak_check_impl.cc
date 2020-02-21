@@ -12,9 +12,28 @@
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
+namespace {
+
+std::unique_ptr<BulkLeakCheckImpl::CredentialHolder> RemoveFromQueue(
+    BulkLeakCheckImpl::CredentialHolder* weak_holder,
+    base::circular_deque<std::unique_ptr<BulkLeakCheckImpl::CredentialHolder>>*
+        queue) {
+  auto it = std::find_if(queue->begin(), queue->end(),
+                         [weak_holder](const auto& element) {
+                           return element.get() == weak_holder;
+                         });
+  DCHECK(it != queue->end());
+  std::unique_ptr<BulkLeakCheckImpl::CredentialHolder> holder = std::move(*it);
+  queue->erase(it);
+  return holder;
+}
+
+}  // namespace
 
 // Holds all necessary payload for the request to the server for one credential.
 struct BulkLeakCheckImpl::CredentialHolder {
@@ -29,6 +48,9 @@ struct BulkLeakCheckImpl::CredentialHolder {
 
   // Payload to be sent to the server.
   LookupSingleLeakPayload payload;
+
+  // Request for the needed access token.
+  std::unique_ptr<signin::AccessTokenFetcher> token_fetcher;
 };
 
 LeakCheckCredential::LeakCheckCredential(base::string16 username,
@@ -82,9 +104,41 @@ size_t BulkLeakCheckImpl::GetPendingChecksCount() const {
   return 0;
 }
 
-void BulkLeakCheckImpl::OnPayloadReady(CredentialHolder* holder,
+void BulkLeakCheckImpl::OnPayloadReady(CredentialHolder* weak_holder,
                                        LookupSingleLeakPayload payload) {
-  // TODO(crbug.com/1049185): request an access token.
+  std::unique_ptr<CredentialHolder> holder =
+      RemoveFromQueue(weak_holder, &waiting_encryption_);
+  if (payload.encrypted_payload.empty() ||
+      payload.username_hash_prefix.empty()) {
+    delegate_->OnError(LeakDetectionError::kHashingFailure);
+    // |this| can be destroyed here.
+    return;
+  }
+
+  holder->payload = std::move(payload);
+  holder->token_fetcher = RequestAccessToken(
+      identity_manager_,
+      base::BindOnce(&BulkLeakCheckImpl::OnTokenReady,
+                     weak_ptr_factory_.GetWeakPtr(), holder.get()));
+  DCHECK(holder->token_fetcher);
+  waiting_token_.push_back(std::move(holder));
+}
+
+void BulkLeakCheckImpl::OnTokenReady(
+    CredentialHolder* weak_holder,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
+  std::unique_ptr<CredentialHolder> holder =
+      RemoveFromQueue(weak_holder, &waiting_token_);
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
+      delegate_->OnError(LeakDetectionError::kNetworkError);
+    else
+      delegate_->OnError(LeakDetectionError::kTokenRequestFailure);
+    // |this| can be destroyed here.
+    return;
+  }
+  // TODO(crbug.com/1049185): make a network request.
 }
 
 }  // namespace password_manager

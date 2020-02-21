@@ -32,14 +32,14 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('registerServiceWorkerAndwaitForActivated');
   TestRunner.addResult('--- Trace events while installing -------------');
-  PerformanceTestRunner.printTimelineRecordsWithDetails(
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
   TestRunner.addResult('-----------------------------------------------');
   await ApplicationTestRunner.waitForActivated(scope);
   await TestRunner.addIframe(scope, {id: frameId});
   await PerformanceTestRunner.invokeAsyncWithTimeline('loadScript');
   TestRunner.addResult('--- Trace events while executing scripts ------');
-  PerformanceTestRunner.printTimelineRecordsWithDetails(
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
   TestRunner.addResult('-----------------------------------------------');
   TestRunner.completeTest();

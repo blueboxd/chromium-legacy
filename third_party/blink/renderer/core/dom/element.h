@@ -736,6 +736,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void outerHTML(StringOrTrustedHTML&) const;
   void setInnerHTML(const StringOrTrustedHTML&, ExceptionState&);
   void setInnerHTML(const StringOrTrustedHTML&);
+  void getInnerHTML(bool include_shadow_roots, StringOrTrustedHTML& result);
   void setOuterHTML(const StringOrTrustedHTML&, ExceptionState&);
   void insertAdjacentHTML(const String& where,
                           const StringOrTrustedHTML&,

@@ -8,6 +8,10 @@ import("//build/util/process_version.gni")
 import("//chrome/updater/branding.gni")
 import("//testing/test.gni")
 
+# Run 'gn check out\Default --check-generated //chrome/updater/*' every time
+# dependencies are modified until a presubmit is written to automatically
+# check that the C++ includes match the build dependency graph.
+
 # TODO(sorin): make the code build on Linux. https://crbug.com/1014320
 group("updater") {
   if (is_win) {
@@ -44,6 +48,8 @@ if (is_win || is_mac) {
       "unzipper.h",
       "update_apps.cc",
       "update_apps.h",
+      "update_service_in_process.cc",
+      "update_service_in_process.h",
       "updater.cc",
       "updater.h",
       "updater_constants.cc",
@@ -69,21 +75,16 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
+
+    if (is_win) {
+      deps += [ "//chrome/updater/server/win" ]
+    }
   }
 
   source_set("update_service") {
-    sources = [
-      "update_service.h",
-      "update_service_in_process.cc",
-      "update_service_in_process.h",
-    ]
+    sources = [ "update_service.h" ]
 
-    deps = [
-      "//base",
-      "//components/crx_file",
-      "//components/prefs",
-      "//components/update_client",
-    ]
+    deps = [ "//base" ]
   }
 
   process_version("version_header") {
@@ -117,6 +118,7 @@ if (is_win || is_mac) {
     deps = [
       ":common",
       ":updater",
+      ":version_header",
       "//base",
       "//base/test:test_support",
       "//chrome/common:constants",

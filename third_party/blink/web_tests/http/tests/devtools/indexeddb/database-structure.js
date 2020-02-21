@@ -173,8 +173,8 @@
     ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, step22);
   }
 
-  function step22() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step22() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

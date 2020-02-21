@@ -81,8 +81,6 @@ fake_idl_output = ("""// Copyright %s The Chromium Authors. All rights reserved.
 
 /** @fileoverview Interface for fakeApi that can be overriden. */
 
-assertNotReached('Interface file for Closure Compiler should not be executed.');
-
 /** @interface */
 function FakeApi() {}
 
@@ -94,7 +92,7 @@ FakeApi.prototype = {
    * @param {function():void} callback
    * @see https://developer.chrome.com/extensions/fakeApi#method-doSomething
    */
-  doSomething: assertNotReached,
+  doSomething: function(baz, callback) {},
 
   /**
    * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek):void=}
@@ -103,7 +101,7 @@ FakeApi.prototype = {
    *     null.
    * @see https://developer.chrome.com/extensions/fakeApi#method-bazGreek
    */
-  bazGreek: assertNotReached,
+  bazGreek: function(callback) {},
 };
 
 /**

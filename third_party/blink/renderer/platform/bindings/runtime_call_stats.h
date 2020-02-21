@@ -249,6 +249,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
 #define CALLBACK_COUNTERS(V)                       \
   BINDINGS_METHOD(V, ElementGetBoundingClientRect) \
+  BINDINGS_METHOD(V, ElementGetInnerHTML)          \
   BINDINGS_METHOD(V, EventTargetDispatchEvent)     \
   BINDINGS_METHOD(V, HTMLElementClick)             \
   BINDINGS_METHOD(V, NodeAppendChild)              \

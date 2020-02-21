@@ -252,12 +252,10 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(USE_X11)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 // TODO(pkasting): https://crbug.com/911374 On ChromeOS, menu controller thinks
 // the mouse is already down when handling the left click.
 // TODO(https://crbug.com/1046028): Fails on Windows 7.
-// TODO(https://crbug.com/1047484): Became flaky on Aura/X11 after
-// PlatformEvent migration to ui::Event.
 #define MAYBE_TestContextMenuOnOverflowedAction \
   DISABLED_TestContextMenuOnOverflowedAction
 #else

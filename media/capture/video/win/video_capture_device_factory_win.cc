@@ -186,8 +186,7 @@ bool CreateVideoCaptureDeviceMediaFoundation(const Descriptor& descriptor,
   // We allocate attributes_data.size() + 1 (+1 is for sym_link below) elements
   // in attributes store.
   if (!PrepareVideoCaptureAttributesMediaFoundation(
-          attributes_data, attributes_data.size() + 1,
-          attributes.GetAddressOf())) {
+          attributes_data, attributes_data.size() + 1, &attributes)) {
     return false;
   }
 
@@ -286,14 +285,12 @@ void GetDeviceSupportedFormatsMediaFoundation(const Descriptor& descriptor,
   DVLOG(1) << "GetDeviceSupportedFormatsMediaFoundation for "
            << descriptor.display_name();
   ComPtr<IMFMediaSource> source;
-  if (!CreateVideoCaptureDeviceMediaFoundation(descriptor,
-                                               source.GetAddressOf())) {
+  if (!CreateVideoCaptureDeviceMediaFoundation(descriptor, &source)) {
     return;
   }
 
   ComPtr<IMFSourceReader> reader;
-  HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL,
-                                                   reader.GetAddressOf());
+  HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL, &reader);
   if (FAILED(hr)) {
     DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -304,7 +301,7 @@ void GetDeviceSupportedFormatsMediaFoundation(const Descriptor& descriptor,
   ComPtr<IMFMediaType> type;
   while (SUCCEEDED(hr = reader->GetNativeMediaType(
                        static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM),
-                       stream_index, type.GetAddressOf()))) {
+                       stream_index, &type))) {
     UINT32 width, height;
     hr = MFGetAttributeSize(type.Get(), MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
@@ -418,7 +415,7 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
       DCHECK(PlatformSupportsMediaFoundation());
       ComPtr<IMFMediaSource> source;
       if (!CreateVideoCaptureDeviceMediaFoundation(device_descriptor,
-                                                   source.GetAddressOf())) {
+                                                   &source)) {
         break;
       }
       std::unique_ptr<VideoCaptureDevice> device(
@@ -552,7 +549,7 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
   ComPtr<ABI::Windows::Foundation::Collections::IVectorView<
       ABI::Windows::Devices::Enumeration::DeviceInformation*>>
       devices;
-  operation->GetResults(devices.GetAddressOf());
+  operation->GetResults(&devices);
 
   unsigned int count = 0;
   if (devices) {
@@ -561,7 +558,7 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
 
   for (unsigned int j = 0; j < count; ++j) {
     ComPtr<ABI::Windows::Devices::Enumeration::IDeviceInformation> device_info;
-    HRESULT hr = devices->GetAt(j, device_info.GetAddressOf());
+    HRESULT hr = devices->GetAt(j, &device_info);
     if (SUCCEEDED(hr)) {
       HSTRING id;
       device_info->get_Id(&id);
@@ -573,8 +570,7 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
 
       ComPtr<ABI::Windows::Devices::Enumeration::IEnclosureLocation>
           enclosure_location;
-      hr =
-          device_info->get_EnclosureLocation(enclosure_location.GetAddressOf());
+      hr = device_info->get_EnclosureLocation(&enclosure_location);
       if (FAILED(hr)) {
         break;
       }
@@ -726,7 +722,7 @@ bool VideoCaptureDeviceFactoryWin::EnumerateVideoDevicesMediaFoundation(
     UINT32* count) {
   ComPtr<IMFAttributes> attributes;
   if (!PrepareVideoCaptureAttributesMediaFoundation(
-          attributes_data, attributes_data.size(), attributes.GetAddressOf())) {
+          attributes_data, attributes_data.size(), &attributes)) {
     return false;
   }
   return SUCCEEDED(
@@ -739,15 +735,14 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsDirectShow(
   DVLOG(1) << __func__;
 
   ComPtr<IEnumMoniker> enum_moniker;
-  HRESULT hr = direct_show_enum_devices_func_.Run(enum_moniker.GetAddressOf());
+  HRESULT hr = direct_show_enum_devices_func_.Run(&enum_moniker);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
     return;
 
   // Enumerate all video capture devices.
-  for (ComPtr<IMoniker> moniker;
-       enum_moniker->Next(1, moniker.GetAddressOf(), NULL) == S_OK;
+  for (ComPtr<IMoniker> moniker; enum_moniker->Next(1, &moniker, NULL) == S_OK;
        moniker.Reset()) {
     ComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));

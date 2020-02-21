@@ -47,7 +47,7 @@ ExtensionInstalledWaiter::ExtensionInstalledWaiter(
 }
 
 ExtensionInstalledWaiter::~ExtensionInstalledWaiter() {
-  if (done_callback_)
+  if (done_callback_ && g_giving_up_callback)
     g_giving_up_callback->Run();
 }
 

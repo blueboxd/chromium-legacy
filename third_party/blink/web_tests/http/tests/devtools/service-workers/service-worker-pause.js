@@ -21,8 +21,8 @@
     ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
   }
 
-  function onPaused(frames, reason, breakpointIds, async) {
-    SourcesTestRunner.captureStackTrace(frames, async);
+  async function onPaused(frames, reason, breakpointIds, async) {
+    await SourcesTestRunner.captureStackTrace(frames, async);
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

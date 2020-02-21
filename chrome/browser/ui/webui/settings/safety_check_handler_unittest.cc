@@ -178,3 +178,19 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
       static_cast<int>(
           SafetyCheckHandler::SafeBrowsingStatus::kDisabledByAdmin)));
 }
+
+TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByExtension) {
+  TestingProfile::FromWebUI(&test_web_ui_)
+      ->AsTestingProfile()
+      ->GetTestingPrefService()
+      ->SetExtensionPref(prefs::kSafeBrowsingEnabled,
+                         std::make_unique<base::Value>(false));
+  safety_check_->PerformSafetyCheck();
+  ASSERT_TRUE(observer_.safe_browsing_check_status_.has_value());
+  EXPECT_EQ(SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension,
+            observer_.safe_browsing_check_status_);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kSafeBrowsing),
+      static_cast<int>(
+          SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension)));
+}

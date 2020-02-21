@@ -185,7 +185,7 @@ TEST(MediaQuerySetTest, Basic) {
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
     scoped_refptr<MediaQuerySet> query_set =
-        MediaQuerySet::Create(test_cases[i].input);
+        MediaQuerySet::Create(test_cases[i].input, nullptr);
     TestMediaQuery(test_cases[i], *query_set);
   }
 }
@@ -209,7 +209,7 @@ TEST(MediaQuerySetTest, BehindRuntimeFlag) {
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
     scoped_refptr<MediaQuerySet> query_set =
-        MediaQuerySet::Create(test_cases[i].input);
+        MediaQuerySet::Create(test_cases[i].input, nullptr);
     TestMediaQuery(test_cases[i], *query_set);
   }
 }

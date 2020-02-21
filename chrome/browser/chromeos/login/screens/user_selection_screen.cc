@@ -189,7 +189,7 @@ ash::FingerprintState GetInitialFingerprintState(
 
   // Auth is available.
   if (quick_unlock_storage->IsFingerprintAuthenticationAvailable())
-    return ash::FingerprintState::AVAILABLE;
+    return ash::FingerprintState::AVAILABLE_DEFAULT;
 
   // Default to unavailabe.
   return ash::FingerprintState::UNAVAILABLE;
@@ -406,9 +406,9 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
   user_dict->SetBoolean(kKeyIsActiveDirectory, user->IsActiveDirectoryUser());
-  user_dict->SetBoolean(
-      kKeyAllowFingerprint,
-      GetInitialFingerprintState(user) == ash::FingerprintState::AVAILABLE);
+  user_dict->SetBoolean(kKeyAllowFingerprint,
+                        GetInitialFingerprintState(user) ==
+                            ash::FingerprintState::AVAILABLE_DEFAULT);
 
   FillMultiProfileUserPrefs(user, user_dict, is_signin_to_add);
 

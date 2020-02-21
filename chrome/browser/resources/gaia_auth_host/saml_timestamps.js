@@ -68,9 +68,9 @@ cr.define('samlTimestamps', function() {
     // We don't ask which format integer timestamps are in, because we can guess
     // confidently by choosing the decode function that gives a sane result.
     let result;
-    for (let decodeFunc of [decodeNtfsFiletime,
-                            decodeUnixMilliseconds,
-                            decodeUnixSeconds]) {
+    for (const decodeFunc
+             of [decodeNtfsFiletime, decodeUnixMilliseconds,
+                 decodeUnixSeconds]) {
       result = decodeFunc(num);
       if (result && result >= MIN_SANE_DATE && result <= MAX_SANE_DATE) {
         return result;
@@ -79,9 +79,10 @@ cr.define('samlTimestamps', function() {
     // For dates that fall outside the sane range, we cannot guess which format
     // was used, but at least we can tell if the result should be in the far
     // past or the far future, and return a result that is roughly equivalent.
-    return result && result < MIN_SANE_DATE
-          ? new Date(MIN_SANE_DATE)   // Copy-before-return protects these two
-          : new Date(MAX_SANE_DATE);  // constants (since Date is mutable).
+    return result && result < MIN_SANE_DATE ?
+        new Date(MIN_SANE_DATE)  // Copy-before-return protects these two
+        :
+        new Date(MAX_SANE_DATE);  // constants (since Date is mutable).
   }
 
   /**

@@ -13,7 +13,7 @@
 namespace content {
 
 SharedWorkerInstance::SharedWorkerInstance(
-    int64_t id,
+    SharedWorkerId id,
     const GURL& url,
     blink::mojom::ScriptType script_type,
     network::mojom::CredentialsMode credentials_mode,

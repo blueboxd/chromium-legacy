@@ -45,7 +45,7 @@ StyleRuleImport::StyleRuleImport(const String& href,
       loading_(false),
       origin_clean_(origin_clean) {
   if (!media_queries_)
-    media_queries_ = MediaQuerySet::Create(String());
+    media_queries_ = MediaQuerySet::Create(String(), nullptr);
 }
 
 StyleRuleImport::~StyleRuleImport() = default;

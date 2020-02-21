@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkICC.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/color_space_export.h"
 
 namespace gfx {

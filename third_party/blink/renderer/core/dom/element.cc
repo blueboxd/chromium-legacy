@@ -4714,6 +4714,13 @@ void Element::setInnerHTML(const StringOrTrustedHTML& string_or_html) {
   setInnerHTML(string_or_html, ASSERT_NO_EXCEPTION);
 }
 
+void Element::getInnerHTML(bool include_shadow_roots,
+                           StringOrTrustedHTML& result) {
+  result.SetString(CreateMarkup(
+      this, kChildrenOnly, kDoNotResolveURLs,
+      include_shadow_roots ? kIncludeShadowRoots : kNoShadowRoots));
+}
+
 void Element::SetOuterHTMLFromString(const String& html,
                                      ExceptionState& exception_state) {
   Node* p = parentNode();

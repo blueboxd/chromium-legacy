@@ -40,7 +40,8 @@ TEST(MediaConditionParserTest, Basic) {
     CSSTokenizer tokenizer(test_cases[i].input);
     const auto tokens = tokenizer.TokenizeToEOF();
     scoped_refptr<MediaQuerySet> media_condition_query_set =
-        MediaQueryParser::ParseMediaCondition(CSSParserTokenRange(tokens));
+        MediaQueryParser::ParseMediaCondition(CSSParserTokenRange(tokens),
+                                              nullptr);
     ASSERT_EQ(media_condition_query_set->QueryVector().size(), (unsigned)1);
     String query_text = media_condition_query_set->QueryVector()[0]->CssText();
     ASSERT_EQ(test_cases[i].output, query_text);

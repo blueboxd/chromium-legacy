@@ -464,11 +464,13 @@ EventRewriterChromeOS::MutableKeyState::MutableKeyState(
 
 EventRewriterChromeOS::EventRewriterChromeOS(
     Delegate* delegate,
-    ui::EventRewriter* sticky_keys_controller)
+    ui::EventRewriter* sticky_keys_controller,
+    bool privacy_screen_supported)
     : last_keyboard_device_id_(ui::ED_UNKNOWN_DEVICE),
       ime_keyboard_for_testing_(nullptr),
       delegate_(delegate),
       sticky_keys_controller_(sticky_keys_controller),
+      privacy_screen_supported_(privacy_screen_supported),
       pressed_modifier_latches_(ui::EF_NONE),
       latched_modifier_latches_(ui::EF_NONE),
       used_modifier_latches_(ui::EF_NONE) {}
@@ -1684,12 +1686,14 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     // Incoming key code is a Fn key. Check if it needs to be mapped back to its
     // corresponding action key.
     if (search_is_pressed) {
-      // On Drallion, F12 shares a key with privacy screen toggle. Account for
-      // this before rewriting for Wilco 1.0 layout.
+      // On some Drallion devices, F12 shares a key with privacy screen toggle.
+      // Account for this before rewriting for Wilco 1.0 layout.
       if (layout == kKbdTopRowLayoutDrallion &&
           state->key_code == ui::VKEY_F12) {
-        state->key_code = ui::VKEY_PRIVACY_SCREEN_TOGGLE;
-        state->code = DomCode::PRIVACY_SCREEN_TOGGLE;
+        if (privacy_screen_supported_) {
+          state->key_code = ui::VKEY_PRIVACY_SCREEN_TOGGLE;
+          state->code = DomCode::PRIVACY_SCREEN_TOGGLE;
+        }
         // Clear command flag before returning
         state->flags = (state->flags & ~ui::EF_COMMAND_DOWN);
         return true;
@@ -1715,6 +1719,15 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
       return RewriteWithKeyboardRemappings(kActionToFnKeys,
                                            base::size(kActionToFnKeys),
                                            incoming_without_command, state);
+    }
+    // Remap Privacy Screen Toggle to F12 on Drallion devices that do not have
+    // privacy screens.
+    if (layout == kKbdTopRowLayoutDrallion && !privacy_screen_supported_ &&
+        MatchKeyboardRemapping(*state,
+                               {ui::EF_NONE, ui::VKEY_PRIVACY_SCREEN_TOGGLE})) {
+      state->key_code = ui::VKEY_F12;
+      state->code = DomCode::F12;
+      state->key = ui::DomKey::F12;
     }
     // At this point we know search_is_pressed == ForceTopRowAsFunctionKeys().
     // If they're both true, they cancel each other. Thus we can clear the

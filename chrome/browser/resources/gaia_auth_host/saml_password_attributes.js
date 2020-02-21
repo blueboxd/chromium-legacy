@@ -117,7 +117,9 @@ cr.define('samlPasswordAttributes', function() {
    */
   function extractTimestampFromXml(xmlDom, querySelectorStr) {
     const valueText = extractStringFromXml(xmlDom, querySelectorStr);
-    if (!valueText) return '';
+    if (!valueText) {
+      return '';
+    }
 
     const timestamp = samlTimestamps.decodeTimestamp(valueText);
     return timestamp ? String(timestamp.valueOf()) : '';

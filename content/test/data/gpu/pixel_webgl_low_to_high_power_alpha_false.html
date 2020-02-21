@@ -24,14 +24,22 @@ function initialize(runningOnDualGPUMacBookPro) {
 }
 
 function allocateHighPowerContext() {
-  assertRunningOnLowPowerGpu();
+  if (!assertRunningOnLowPowerGpu()) {
+    // This test expects to be notified even on non-dual-GPU systems.
+    if (!isRunningOnDualGpuSystem()) {
+      // Will override failure report on dual-GPU systems.
+      waitForFinish();
+    }
+    return;
+  }
   c2.getContext("webgl", { powerPreference: "high-performance" });
   // On macOS there is an approximately two second delay between activating the
   // discrete GPU and applications receiving a notification of its activation.
   // Avoid a race condition, and test flakiness, by waiting for twice as long as
   // this delay.
   setTimeout(() => {
-    assertRunningOnHighPerformanceGpu();
+    if (!assertRunningOnHighPerformanceGpu())
+      return;
     drawSomeFrames(waitForFinish);
   }, 4000);
 }
@@ -55,5 +63,6 @@ function waitForFinish()
 <body onload="ready()">
 <canvas id="c" width="300" height="300" class="nomargin" style="position:absolute; top:0px; left:0px;"></canvas>
 <canvas id="c2" width="1" height="1" class="nomargin"></canvas>
+</div>
 </body>
 </html>

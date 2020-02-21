@@ -45,7 +45,7 @@
             formattedSourceFrame);
         await SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 11);
         TestRunner.addResult('Unformatting.');
-        Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        await Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
         var breakpoints = Bindings.breakpointManager._storage._setting.get();
         TestRunner.assertEquals(breakpoints.length, 0, 'There should not be any breakpoints in the storage.');
         next();

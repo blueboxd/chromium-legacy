@@ -45,6 +45,10 @@
 
 namespace blink {
 
+namespace {
+const char kShadowRootAttributeName[] = "shadowroot";
+}
+
 class MarkupAccumulator::NamespaceContext final {
   USING_FAST_MALLOC(MarkupAccumulator::NamespaceContext);
 
@@ -136,8 +140,10 @@ class MarkupAccumulator::ElementSerializationData final {
 };
 
 MarkupAccumulator::MarkupAccumulator(AbsoluteURLs resolve_urls_method,
-                                     SerializationType serialization_type)
-    : formatter_(resolve_urls_method, serialization_type) {}
+                                     SerializationType serialization_type,
+                                     IncludeShadowRoots include_shadow_roots)
+    : formatter_(resolve_urls_method, serialization_type),
+      include_shadow_roots_(include_shadow_roots) {}
 
 MarkupAccumulator::~MarkupAccumulator() = default;
 
@@ -538,7 +544,31 @@ bool MarkupAccumulator::SerializeAsHTML() const {
 
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
     const Element& element) const {
-  return std::pair<Node*, Element*>();
+  ShadowRoot* shadow_root = element.GetShadowRoot();
+  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots)
+    return std::pair<Node*, Element*>();
+  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
+  AtomicString shadowroot_type;
+  switch (shadow_root->GetType()) {
+    case ShadowRootType::V0:
+    case ShadowRootType::kUserAgent:
+      // Don't serialize user agent shadow roots, only explicit shadow roots.
+      return std::pair<Node*, Element*>();
+    case ShadowRootType::kOpen:
+      shadowroot_type = "open";
+      break;
+    case ShadowRootType::kClosed:
+      shadowroot_type = "closed";
+      break;
+  }
+  // Wrap the shadowroot into a declarative Shadow DOM <template shadowroot>
+  // element.
+  auto* template_element = MakeGarbageCollected<Element>(
+      html_names::kTemplateTag, &(element.GetDocument()));
+  template_element->setAttribute(
+      QualifiedName(g_null_atom, kShadowRootAttributeName, g_null_atom),
+      shadowroot_type);
+  return std::pair<Node*, Element*>(shadow_root, template_element);
 }
 
 template <typename Strategy>

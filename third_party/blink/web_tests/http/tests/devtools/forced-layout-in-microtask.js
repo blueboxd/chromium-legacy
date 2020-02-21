@@ -24,6 +24,6 @@
   `);
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
-  PerformanceTestRunner.printTimelineRecordsWithDetails('Layout');
+  await PerformanceTestRunner.printTimelineRecordsWithDetails('Layout');
   TestRunner.completeTest();
 })();

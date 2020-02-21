@@ -45,7 +45,7 @@ void WriteToPickle(content::WebContents& web_contents, base::Pickle* pickle) {
 
   content::NavigationController& controller = web_contents.GetController();
   const int entry_count = controller.GetEntryCount();
-  const int selected_entry = controller.GetCurrentEntryIndex();
+  const int selected_entry = controller.GetLastCommittedEntryIndex();
   DCHECK_GE(entry_count, 0);
   DCHECK_GE(selected_entry, -1);  // -1 is valid
   DCHECK_LT(selected_entry, entry_count);

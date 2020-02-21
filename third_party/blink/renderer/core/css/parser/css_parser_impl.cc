@@ -638,7 +638,9 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
   }
 
   return MakeGarbageCollected<StyleRuleImport>(
-      uri, MediaQueryParser::ParseMediaQuerySet(prelude),
+      uri,
+      MediaQueryParser::ParseMediaQuerySet(
+          prelude, context_->GetDocument()->ToExecutionContext()),
       context_->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
 }
 
@@ -671,7 +673,8 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
   if (style_sheet_)
     style_sheet_->SetHasMediaQueries();
 
-  const auto media = MediaQueryParser::ParseMediaQuerySet(prelude);
+  const auto media = MediaQueryParser::ParseMediaQuerySet(
+      prelude, context_->GetDocument()->ToExecutionContext());
 
   ConsumeRuleList(block, kRegularRuleList,
                   [&rules](StyleRuleBase* rule) { rules.push_back(rule); });

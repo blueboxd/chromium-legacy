@@ -11,10 +11,8 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -44,27 +42,6 @@ OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
           CanvasRenderingContextHost::HostType::kOffscreenCanvasHost),
       execution_context_(context),
       size_(size) {
-  // Other code in Blink watches for destruction of the context; be
-  // robust here as well.
-  if (!context->IsContextDestroyed()) {
-    if (context->IsDocument()) {
-      // If this OffscreenCanvas is being created in the context of a
-      // cross-origin iframe, it should prefer to use the low-power GPU.
-      LocalFrame* frame = Document::From(context)->GetFrame();
-      if (!(frame && frame->IsCrossOriginToMainFrame())) {
-        AllowHighPerformancePowerPreference();
-      }
-    } else if (context->IsDedicatedWorkerGlobalScope()) {
-      // Per spec, dedicated workers can only load same-origin top-level
-      // scripts, so grant them access to the high-performance GPU.
-      //
-      // TODO(crbug.com/1050739): refine this logic. If the worker was
-      // spawned from an iframe, keep track of whether that iframe was
-      // itself cross-origin.
-      AllowHighPerformancePowerPreference();
-    }
-  }
-
   UpdateMemoryUsage();
 }
 

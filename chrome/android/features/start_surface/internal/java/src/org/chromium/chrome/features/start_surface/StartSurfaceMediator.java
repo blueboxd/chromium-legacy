@@ -204,6 +204,16 @@ class StartSurfaceMediator
                             setTabCarouselVisibility(true);
                         }
                     }
+
+                    @Override
+                    public void restoreCompleted() {
+                        if (!(mPropertyModel.get(IS_SHOWING_OVERVIEW)
+                                    && mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE)) {
+                            return;
+                        }
+                        setTabCarouselVisibility(
+                                mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
+                    }
                 };
 
                 mFullScreenListener = new ChromeFullscreenManager.FullscreenListener() {

@@ -1316,17 +1316,17 @@
   {
     "name": "enable-experimental-accessibility-chromevox-language-switching",
     "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "enable-experimental-accessibility-chromevox-search-menus",
     "owners": ["akihiroota"],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
     "owners": [ "akihiroota", "dmazzoni", "dtseng", "//ui/accessibility/OWNERS"],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "enable-experimental-accessibility-language-detection",

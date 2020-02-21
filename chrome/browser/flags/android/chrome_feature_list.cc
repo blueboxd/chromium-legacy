@@ -549,7 +549,7 @@ const base::Feature kServiceManagerForBackgroundPrefetch{
     "ServiceManagerForBackgroundPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForDownload{
-    "ServiceManagerForDownload", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceManagerForDownload", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kShareButtonInTopToolbar{"ShareButtonInTopToolbar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

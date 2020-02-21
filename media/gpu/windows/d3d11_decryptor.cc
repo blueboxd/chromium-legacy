@@ -149,29 +149,29 @@ void D3D11Decryptor::RegisterNewKeyCB(StreamType stream_type,
 
 void D3D11Decryptor::Decrypt(StreamType stream_type,
                              scoped_refptr<DecoderBuffer> encrypted,
-                             const DecryptCB& decrypt_cb) {
+                             DecryptCB decrypt_cb) {
   if (encrypted->end_of_stream()) {
-    decrypt_cb.Run(kSuccess, encrypted);
+    std::move(decrypt_cb).Run(kSuccess, encrypted);
     return;
   }
 
   const auto* decrypt_config = encrypted->decrypt_config();
   if (!decrypt_config) {
     // Not encrypted, nothing to do.
-    decrypt_cb.Run(kSuccess, encrypted);
+    std::move(decrypt_cb).Run(kSuccess, encrypted);
     return;
   }
 
   if (decrypt_config->HasPattern()) {
     DVLOG(3) << "Cannot handle pattern decryption.";
-    decrypt_cb.Run(kError, nullptr);
+    std::move(decrypt_cb).Run(kError, nullptr);
     return;
   }
 
   auto context = cdm_proxy_context_->GetD3D11DecryptContext(
       CdmProxy::KeyType::kDecryptOnly, decrypt_config->key_id());
   if (!context) {
-    decrypt_cb.Run(kNoKey, nullptr);
+    std::move(decrypt_cb).Run(kNoKey, nullptr);
     return;
   }
 
@@ -179,7 +179,7 @@ void D3D11Decryptor::Decrypt(StreamType stream_type,
   // and the crypto session are from the same device, the buffers have to be
   // recreated.
   if (!InitializeDecryptionBuffer(*context)) {
-    decrypt_cb.Run(kError, nullptr);
+    std::move(decrypt_cb).Run(kError, nullptr);
     return;
   }
 
@@ -188,12 +188,12 @@ void D3D11Decryptor::Decrypt(StreamType stream_type,
                              encrypted->data_size())) {
     if (!CtrDecrypt(base::make_span(encrypted->data(), encrypted->data_size()),
                     encrypted->decrypt_config()->iv(), *context, &output)) {
-      decrypt_cb.Run(kError, nullptr);
+      std::move(decrypt_cb).Run(kError, nullptr);
       return;
     }
   } else {
     if (!SubsampleCtrDecrypt(encrypted, *context, &output)) {
-      decrypt_cb.Run(kError, nullptr);
+      std::move(decrypt_cb).Run(kError, nullptr);
       return;
     }
   }
@@ -204,7 +204,7 @@ void D3D11Decryptor::Decrypt(StreamType stream_type,
   decoder_buffer->set_is_key_frame(encrypted->is_key_frame());
   decoder_buffer->CopySideDataFrom(encrypted->side_data(),
                                    encrypted->side_data_size());
-  decrypt_cb.Run(kSuccess, decoder_buffer);
+  std::move(decrypt_cb).Run(kSuccess, decoder_buffer);
 }
 
 void D3D11Decryptor::CancelDecrypt(StreamType stream_type) {

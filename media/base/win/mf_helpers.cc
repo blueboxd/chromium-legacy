@@ -14,7 +14,7 @@ Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
   CHECK_GT(buffer_length, 0U);
 
   Microsoft::WRL::ComPtr<IMFSample> sample;
-  HRESULT hr = MFCreateSample(sample.GetAddressOf());
+  HRESULT hr = MFCreateSample(&sample);
   RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed",
                        Microsoft::WRL::ComPtr<IMFSample>());
 
@@ -22,10 +22,9 @@ Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
   if (align == 0) {
     // Note that MFCreateMemoryBuffer is same as MFCreateAlignedMemoryBuffer
     // with the align argument being 0.
-    hr = MFCreateMemoryBuffer(buffer_length, buffer.GetAddressOf());
+    hr = MFCreateMemoryBuffer(buffer_length, &buffer);
   } else {
-    hr = MFCreateAlignedMemoryBuffer(buffer_length, align - 1,
-                                     buffer.GetAddressOf());
+    hr = MFCreateAlignedMemoryBuffer(buffer_length, align - 1, &buffer);
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample",
                        Microsoft::WRL::ComPtr<IMFSample>());

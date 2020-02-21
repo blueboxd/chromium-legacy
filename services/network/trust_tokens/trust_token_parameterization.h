@@ -23,6 +23,24 @@ constexpr base::TaskPriority kTrustTokenDatabaseTaskPriority =
 constexpr base::TimeDelta kTrustTokenWriteBufferingWindow =
     base::TimeDelta::FromSeconds(2);
 
+// This is the path relative to the issuer origin where this
+// implementation of the Trust Tokens protocol expects key
+// commitments to be stored.
+//
+// This location will eventually be standardized; for now, it is a
+// preliminary value defined in the Trust Tokens design doc.
+//
+// WARNING: The initial '/' is necessary so that the path is "absolute": i.e.,
+// GURL::Resolve will resolve it relative to the issuer origin.
+constexpr char kTrustTokenKeyCommitmentWellKnownPath[] =
+    "/.well-known/trust-token-keys";
+
+// This is the maximum size of key commitment registry that the implementation
+// is willing to download during key commitment checks.
+//
+// A value of 4 MiB should be ample for initial experimentation and can be
+// revisited if necessary.
+constexpr size_t kTrustTokenKeyCommitmentRegistryMaxSizeBytes = 1 << 22;
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PARAMETERIZATION_H_

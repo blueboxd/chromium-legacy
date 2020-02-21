@@ -96,8 +96,8 @@
 
     function testReleaseObjectIsCalled(next) {
       // If failed, this test will time out.
-      TestRunner.addSniffer(TestRunner.RuntimeAgent, 'releaseObject', () => {
-        ConsoleTestRunner.dumpConsoleMessages();
+      TestRunner.addSniffer(TestRunner.RuntimeAgent, 'releaseObject', async () => {
+        await ConsoleTestRunner.dumpConsoleMessages();
         next();
       });
       obj1.setPropertyValue(nameFoo, '[1,2,3]');

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -40,6 +41,16 @@ import org.chromium.url.GURL;
  * This class creates various kinds of new tabs and adds them to the right {@link TabModel}.
  */
 public class ChromeTabCreator extends TabCreatorManager.TabCreator {
+    /**Interface to handle showing overview instead of NTP if needed. */
+    public interface OverviewNTPCreator {
+        /**
+         * Handles showing the StartSurface instead of the NTP if needed.
+         * @param isNTPUrl Whether tab with NTP should be created.
+         * @param isIncognito Whether tab is created in incognito.
+         * @return Whether NTP creation was handled.
+         */
+        boolean handleCreateNTPIfNeeded(boolean isNTP, boolean incognito);
+    }
 
     private final ChromeActivity mActivity;
     private final StartupTabPreloader mStartupTabPreloader;
@@ -49,15 +60,19 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     private TabModel mTabModel;
     private TabModelOrderController mOrderController;
     private Supplier<TabDelegateFactory> mTabDelegateFactorySupplier;
+    @Nullable
+    private OverviewNTPCreator mOverviewNTPCreator;
 
     public ChromeTabCreator(ChromeActivity activity, WindowAndroid nativeWindow,
             StartupTabPreloader startupTabPreloader,
-            Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito) {
+            Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito,
+            OverviewNTPCreator overviewNTPCreator) {
         mActivity = activity;
         mStartupTabPreloader = startupTabPreloader;
         mNativeWindow = nativeWindow;
         mTabDelegateFactorySupplier = tabDelegateFactory;
         mIncognito = incognito;
+        mOverviewNTPCreator = overviewNTPCreator;
     }
 
     @Override
@@ -106,6 +121,11 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      */
     private Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
             int position, Intent intent) {
+        if (mOverviewNTPCreator != null
+                && mOverviewNTPCreator.handleCreateNTPIfNeeded(
+                        NewTabPage.isNTPUrl(loadUrlParams.getUrl()), mIncognito)) {
+            return null;
+        }
         try {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;

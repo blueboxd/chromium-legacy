@@ -263,15 +263,15 @@ bool PbufferPictureBuffer::InitializeTexture(
                          : D3D11_RESOURCE_MISC_SHARED;
 
     HRESULT hr = decoder.d3d11_device_->CreateTexture2D(
-        &desc, nullptr, dx11_decoding_texture_.GetAddressOf());
+        &desc, nullptr, &dx11_decoding_texture_);
     RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
     if (decoder.use_keyed_mutex_) {
-      hr = dx11_decoding_texture_.CopyTo(dx11_keyed_mutex_.GetAddressOf());
+      hr = dx11_decoding_texture_.As(&dx11_keyed_mutex_);
       RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
     }
 
     Microsoft::WRL::ComPtr<IDXGIResource> resource;
-    hr = dx11_decoding_texture_.CopyTo(resource.GetAddressOf());
+    hr = dx11_decoding_texture_.As(&resource);
     DCHECK(SUCCEEDED(hr));
     hr = resource->GetSharedHandle(&texture_share_handle_);
     RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
@@ -282,8 +282,7 @@ bool PbufferPictureBuffer::InitializeTexture(
     hr = decoder.d3d9_device_ex_->CreateTexture(
         picture_buffer_.size().width(), picture_buffer_.size().height(), 1,
         D3DUSAGE_RENDERTARGET, use_rgb ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8,
-        D3DPOOL_DEFAULT, decoding_texture_.GetAddressOf(),
-        &texture_share_handle_);
+        D3DPOOL_DEFAULT, &decoding_texture_, &texture_share_handle_);
     RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
     RETURN_ON_FAILURE(texture_share_handle_, "Failed to query shared handle",
                       false);
@@ -348,7 +347,7 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   // references will be released when we receive a notification that the
   // copy was completed or when the DXVAPictureBuffer instance is destroyed.
   // We hold references here as it is easier to manage their lifetimes.
-  hr = decoding_texture_->GetSurfaceLevel(0, target_surface_.GetAddressOf());
+  hr = decoding_texture_->GetSurfaceLevel(0, &target_surface_);
   RETURN_ON_HR_FAILURE(hr, "Failed to get surface from texture", false);
 
   decoder_surface_ = dest_surface;
@@ -516,16 +515,14 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   Microsoft::WRL::ComPtr<IMFMediaBuffer> output_buffer;
-  HRESULT hr =
-      current_d3d_sample_->GetBufferByIndex(0, output_buffer.GetAddressOf());
+  HRESULT hr = current_d3d_sample_->GetBufferByIndex(0, &output_buffer);
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from output sample", false);
 
   Microsoft::WRL::ComPtr<IMFDXGIBuffer> dxgi_buffer;
-  hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
+  hr = output_buffer.As(&dxgi_buffer);
   RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                        false);
-  hr = dxgi_buffer->GetResource(
-      IID_PPV_ARGS(dx11_decoding_texture_.GetAddressOf()));
+  hr = dxgi_buffer->GetResource(IID_PPV_ARGS(&dx11_decoding_texture_));
   RETURN_ON_HR_FAILURE(hr, "Failed to get texture from output sample", false);
   UINT subresource;
   dxgi_buffer->GetSubresourceIndex(&subresource);
@@ -636,16 +633,14 @@ bool EGLStreamDelayedCopyPictureBuffer::BindSampleToTexture(
   current_d3d_sample_ = sample;
 
   Microsoft::WRL::ComPtr<IMFMediaBuffer> output_buffer;
-  HRESULT hr =
-      current_d3d_sample_->GetBufferByIndex(0, output_buffer.GetAddressOf());
+  HRESULT hr = current_d3d_sample_->GetBufferByIndex(0, &output_buffer);
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from output sample", false);
 
   Microsoft::WRL::ComPtr<IMFDXGIBuffer> dxgi_buffer;
-  hr = output_buffer.CopyTo(dxgi_buffer.GetAddressOf());
+  hr = output_buffer.As(&dxgi_buffer);
   RETURN_ON_HR_FAILURE(hr, "Failed to get DXGIBuffer from output sample",
                        false);
-  hr = dxgi_buffer->GetResource(
-      IID_PPV_ARGS(dx11_decoding_texture_.GetAddressOf()));
+  hr = dxgi_buffer->GetResource(IID_PPV_ARGS(&dx11_decoding_texture_));
   RETURN_ON_HR_FAILURE(hr, "Failed to get texture from output sample", false);
   UINT subresource;
   dxgi_buffer->GetSubresourceIndex(&subresource);
@@ -741,24 +736,24 @@ bool EGLStreamCopyPictureBuffer::Initialize(
   desc.CPUAccessFlags = 0;
   desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
 
-  HRESULT hr = decoder.d3d11_device_->CreateTexture2D(
-      &desc, nullptr, decoder_copy_texture_.GetAddressOf());
+  HRESULT hr = decoder.d3d11_device_->CreateTexture2D(&desc, nullptr,
+                                                      &decoder_copy_texture_);
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture", false);
   DCHECK(decoder.use_keyed_mutex_);
-  hr = decoder_copy_texture_.CopyTo(dx11_keyed_mutex_.GetAddressOf());
+  hr = decoder_copy_texture_.As(&dx11_keyed_mutex_);
   RETURN_ON_HR_FAILURE(hr, "Failed to get keyed mutex", false);
 
   Microsoft::WRL::ComPtr<IDXGIResource> resource;
-  hr = decoder_copy_texture_.CopyTo(resource.GetAddressOf());
+  hr = decoder_copy_texture_.As(&resource);
   DCHECK(SUCCEEDED(hr));
   hr = resource->GetSharedHandle(&texture_share_handle_);
   RETURN_ON_FAILURE(SUCCEEDED(hr) && texture_share_handle_,
                     "Failed to query shared handle", false);
 
   hr = decoder.angle_device_->OpenSharedResource(
-      texture_share_handle_, IID_PPV_ARGS(angle_copy_texture_.GetAddressOf()));
+      texture_share_handle_, IID_PPV_ARGS(&angle_copy_texture_));
   RETURN_ON_HR_FAILURE(hr, "Failed to open shared resource", false);
-  hr = angle_copy_texture_.CopyTo(egl_keyed_mutex_.GetAddressOf());
+  hr = angle_copy_texture_.As(&egl_keyed_mutex_);
   RETURN_ON_HR_FAILURE(hr, "Failed to get ANGLE mutex", false);
   return true;
 }

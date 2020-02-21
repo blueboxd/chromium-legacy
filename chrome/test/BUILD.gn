@@ -1498,7 +1498,7 @@ if (!is_android) {
         "//chrome/browser/resources/chromeos/accessibility/chromevox:browser_tests",
         "//chrome/browser/resources/chromeos/accessibility/select_to_speak:browser_tests",
         "//chrome/browser/resources/chromeos/accessibility/switch_access:browser_tests",
-        "//chrome/browser/resources/chromeos/login:browser_tests",
+        "//chrome/browser/resources/gaia_auth_host:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
         "//chromeos:test_support",
         "//chromeos/components/drivefs:test_support",

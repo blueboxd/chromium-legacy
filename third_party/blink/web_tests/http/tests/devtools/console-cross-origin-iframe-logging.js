@@ -30,9 +30,9 @@
   Common.settingForTest('monitoringXHREnabled').set(true);
   TestRunner.evaluateInPage('accessFrame()');
 
-  function finish() {
+  async function finish() {
     Common.settingForTest('monitoringXHREnabled').set(false);
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

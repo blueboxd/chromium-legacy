@@ -99,6 +99,9 @@ void BulkLeakCheckService::OnError(LeakDetectionError error) {
     case LeakDetectionError::kInvalidServerResponse:
       state_ = State::kServiceError;
       break;
+    case LeakDetectionError::kNetworkError:
+      state_ = State::kNetworkError;
+      break;
   }
   bulk_leak_check_.reset();
   NotifyStateChanged();

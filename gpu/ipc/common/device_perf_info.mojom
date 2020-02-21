@@ -18,6 +18,13 @@ enum Direct3DFeatureLevel {
   k12_1,
 };
 
+// Corresponds to |gpu::HasDisceretGpu| in "gpu/config/device_perf_info.h"
+enum HasDiscreteGpu {
+  kUnknown,
+  kNo,
+  kYes,
+};
+
 // Corresponds to |gpu::DevicePerfInfo| in "gpu/config/device_perf_info.h"
 struct DevicePerfInfo {
   uint32 total_physical_memory_mb;
@@ -29,5 +36,5 @@ struct DevicePerfInfo {
   [EnableIf=is_win]
   Direct3DFeatureLevel d3d11_feature_level;
   [EnableIf=is_win]
-  bool has_discrete_gpu;
+  HasDiscreteGpu has_discrete_gpu;
 };

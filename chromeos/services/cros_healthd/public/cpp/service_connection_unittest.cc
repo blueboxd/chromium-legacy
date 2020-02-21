@@ -117,12 +117,19 @@ mojom::TimezoneInfoPtr MakeTimezoneInfo() {
                                   "America/Denver" /* region */);
 }
 
+mojom::MemoryInfoPtr MakeMemoryInfo() {
+  return mojom::MemoryInfo::New(987123 /* total_memory_kib */,
+                                346432 /* free_memory_kib */,
+                                45863 /* available_memory_kib */,
+                                43264 /* page_faults_since_last_boot */);
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
       MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */,
-      MakeTimezoneInfo() /* timezone_info */
+      MakeTimezoneInfo() /* timezone_info */, MakeMemoryInfo() /* memory_info */
   );
 }
 

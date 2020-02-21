@@ -46,6 +46,7 @@
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -81,6 +82,7 @@ constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
 constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
 constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kIntentActionView[] = "android.intent.action.VIEW";
+constexpr char kSwitchAccessDeviceSettingId[] = "SWITCH_ACCESS";
 
 constexpr base::Feature kChromeOSAssistantDogfood{
     "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1145,6 +1147,12 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
       this->device_actions()->SetNightLightEnabled(enabled);
     });
   }
+
+  if (modify_setting_args.setting_id() == kSwitchAccessDeviceSettingId) {
+    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
+      this->device_actions()->SetSwitchAccessEnabled(enabled);
+    });
+  }
 }
 
 ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
@@ -1160,6 +1168,13 @@ ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
 bool AssistantManagerServiceImpl::IsSettingSupported(
     const std::string& setting_id) {
   DVLOG(2) << "IsSettingSupported=" << setting_id;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilitySwitchAccess) &&
+      setting_id == kSwitchAccessDeviceSettingId) {
+    return true;
+  }
+
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId ||
           setting_id == kVolumeLevelDeviceSettingId ||

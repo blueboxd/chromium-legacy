@@ -4,7 +4,7 @@
 
 // <include src="post_message_channel.js">
 // <include src="webview_event_manager.js">
-// <include src="../chromeos/login/saml_password_attributes.js">
+// <include src="saml_password_attributes.js">
 
 /**
  * @fileoverview Saml support for webview based auth.
@@ -190,7 +190,7 @@ cr.define('cr.login', function() {
 
       /**
        * Whether to attempt to extract password attributes from the SAMLResponse
-       * XML. See ../chromeos/login/saml_password_attributes.js
+       * XML. See saml_password_attributes.js
        * @type {boolean}
        */
       this.extractSamlPasswordAttributes = false;

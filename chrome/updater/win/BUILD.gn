@@ -58,6 +58,7 @@ source_set("base") {
     ":constants",
     "//base",
     "//chrome/updater:common",
+    "//chrome/updater:version_header",
   ]
 
   libs = [
@@ -101,6 +102,7 @@ source_set("core") {
 
   deps = [
     ":base",
+    ":constants",
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:common",
@@ -185,6 +187,7 @@ test("updater_unittests") {
     ":install_app",
     "//base",
     "//base/test:test_support",
+    "//chrome/updater:version_header",
     "//chrome/updater/server/win",
     "//chrome/updater/win/test:test_executables",
     "//chrome/updater/win/test:test_strings",

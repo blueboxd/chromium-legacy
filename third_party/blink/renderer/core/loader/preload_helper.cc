@@ -106,8 +106,11 @@ MediaValues* CreateMediaValues(
   return media_values;
 }
 
-bool MediaMatches(const String& media, MediaValues* media_values) {
-  scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
+bool MediaMatches(const String& media,
+                  MediaValues* media_values,
+                  const ExecutionContext* execution_context) {
+  scoped_refptr<MediaQuerySet> media_queries =
+      MediaQuerySet::Create(media, execution_context);
   MediaQueryEvaluator evaluator(*media_values);
   return evaluator.Eval(*media_queries);
 }
@@ -118,7 +121,9 @@ KURL GetBestFitImageURL(const Document& document,
                         const KURL& href,
                         const String& image_srcset,
                         const String& image_sizes) {
-  float source_size = SizesAttributeParser(media_values, image_sizes).length();
+  float source_size = SizesAttributeParser(media_values, image_sizes,
+                                           document.ToExecutionContext())
+                          .length();
   ImageCandidate candidate = BestFitSourceForImageAttributes(
       media_values->DevicePixelRatio(), source_size, href, image_srcset);
   return base_url.IsNull() ? document.CompleteURL(candidate.ToString())
@@ -274,7 +279,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   if (!params.media.IsEmpty()) {
     if (!media_values)
       media_values = CreateMediaValues(document, viewport_description);
-    if (!MediaMatches(params.media, media_values))
+    if (!MediaMatches(params.media, media_values,
+                      document.ToExecutionContext()))
       return nullptr;
   }
 
@@ -437,7 +443,8 @@ void PreloadHelper::ModulePreloadIfNeeded(
   if (!params.media.IsEmpty()) {
     MediaValues* media_values =
         CreateMediaValues(document, viewport_description);
-    if (!MediaMatches(params.media, media_values))
+    if (!MediaMatches(params.media, media_values,
+                      document.ToExecutionContext()))
       return;
   }
 

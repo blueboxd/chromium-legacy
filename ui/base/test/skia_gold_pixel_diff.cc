@@ -158,10 +158,13 @@ void SkiaGoldPixelDiff::InitSkiaGold() {
   cmd.AppendSwitchPath("failure-file", failure_temp_file);
   cmd.AppendSwitch("passfail");
   cmd.AppendSwitchASCII("commit", build_revision_);
+  // This handles the logic for tryjob.
   if (issue_.length()) {
     cmd.AppendSwitchASCII("issue", issue_);
     cmd.AppendSwitchASCII("patchset", patchset_);
     cmd.AppendSwitchASCII("jobid", job_id_);
+    cmd.AppendSwitchASCII("crs", "gerrit");
+    cmd.AppendSwitchASCII("cis", "buildbucket");
   }
   AppendArgsJustAfterProgram(
       cmd, {FILE_PATH_LITERAL("imgtest"), FILE_PATH_LITERAL("init")});

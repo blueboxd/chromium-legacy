@@ -493,7 +493,7 @@ class MockDecryptor : public Decryptor {
   MOCK_METHOD3(Decrypt,
                void(StreamType stream_type,
                     scoped_refptr<DecoderBuffer> encrypted,
-                    const DecryptCB& decrypt_cb));
+                    DecryptCB decrypt_cb));
   MOCK_METHOD1(CancelDecrypt, void(StreamType stream_type));
   MOCK_METHOD2(InitializeAudioDecoder,
                void(const AudioDecoderConfig& config,

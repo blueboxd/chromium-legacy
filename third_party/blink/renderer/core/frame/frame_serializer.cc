@@ -120,7 +120,8 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     Document& document)
     : MarkupAccumulator(kResolveAllURLs,
                         IsA<HTMLDocument>(document) ? SerializationType::kHTML
-                                                    : SerializationType::kXML),
+                                                    : SerializationType::kXML,
+                        kNoShadowRoots),
       delegate_(delegate),
       resource_delegate_(resource_delegate),
       document_(&document) {}

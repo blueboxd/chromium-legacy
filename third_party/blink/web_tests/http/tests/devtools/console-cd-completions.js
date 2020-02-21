@@ -154,10 +154,10 @@
     ObjectUI.javaScriptAutocomplete._completionsForExpression('Object.', '').then(checkObjectCompletions.bind(this));
   }
 
-  function checkObjectCompletions(completions) {
+  async function checkObjectCompletions(completions) {
     TestRunner.addResult('Object completions:');
     dumpCompletions(completions, ['getOwnPropertyNames', 'getOwnPropertyDescriptor', 'keys']);
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 

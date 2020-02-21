@@ -22,7 +22,12 @@ import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
-/** PaymentHandler UI. */
+/**
+ * The view of the PaymentHandler UI. This view can be divided into the toolbar area and the
+ * content area. The content area does not include the toolbar area; it includes the BottomSheet
+ * area below the toolbar, which includes the part that extends beneath the screen. The ThinWebView
+ * is designed to fit into the visible part of the content area, called content visible area.
+ */
 /* package */ class PaymentHandlerView implements BottomSheetContent {
     private final View mToolbarView;
     private final FrameLayout mContentView;
@@ -31,18 +36,21 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     private final Handler mReflowHandler = new Handler();
     private final int mTabHeight;
     private final int mToolbarHeightPx;
+    private final ChromeActivity mActivity;
 
     /**
      * Construct the PaymentHandlerView.
      *
      * @param activity The activity where the bottome-sheet should be shown.
      * @param webContents The web-content of the payment-handler web-app.
-     * @param webContentView The {@link ContentView} that has been contructed with the web-content.
+     * @param webContentView The {@link ContentView} that has been constructed with the web-content.
+     * @param toolbarView The view of the Payment Handler toolbar.
      */
     /* package */ PaymentHandlerView(ChromeActivity activity, WebContents webContents,
             ContentView webContentView, View toolbarView) {
+        mActivity = activity;
         mWebContents = webContents;
-        mTabHeight = activity.getActivityTab().getView().getHeight();
+        mTabHeight = mActivity.getActivityTab().getView().getHeight();
         mToolbarView = toolbarView;
         mToolbarHeightPx =
                 activity.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
@@ -60,7 +68,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      * @param activity The activity where the bottome-sheet should be shown.
      * @param thinWebView The {@link ThinWebView} that was created with the activity.
      * @param webContents The web-content of the payment-handler web-app.
-     * @param webContentView The {@link ContentView} that has been contructed with the web-content.
+     * @param webContentView The {@link ContentView} that has been constructed with the web-content.
      */
     private void initContentView(ChromeActivity activity, ThinWebView thinWebView,
             WebContents webContents, ContentView webContentView) {
@@ -71,19 +79,24 @@ import org.chromium.ui.base.ActivityWindowAndroid;
         mContentView.addView(thinWebView.getView(), /*index=*/0);
     }
 
-    /* A callback when the heightFraction property changed.*/
-    /* package */ void onHeightFractionChanged(float heightFraction) {
+    /**
+     * Invoked when the visible area of the content container changes.
+     * @param heightPx The height of the visible area of the Payment Handler UI content container,
+     *         in pixels.
+     */
+    /* package */ void onContentVisibleHeightChanged(int heightPx) {
         // Reflow the web-content when the bottom-sheet size stops changing.
         mReflowHandler.removeCallbacksAndMessages(null);
-        mReflowHandler.postDelayed(() -> reflowWebContents(heightFraction), /*delayMillis=*/100);
+        mReflowHandler.postDelayed(() -> reflowWebContents(heightPx), /*delayMillis=*/100);
     }
 
     /* Resize ThinWebView to reflow the web-contents. */
-    private void reflowWebContents(float heightFraction) {
-        // Scale mThinWebView to make the web-content fit into the visible area of the bottom-sheet.
+    private void reflowWebContents(int heightPx) {
+        // Scale mThinWebView to make the web-content fit into the visible content area of the
+        // PaymentHandler UI.
         if (mThinWebView.getView() == null || mWebContents.isDestroyed()) return;
         LayoutParams params = (LayoutParams) mThinWebView.getView().getLayoutParams();
-        params.height = Math.max(0, (int) (mTabHeight * heightFraction) - mToolbarHeightPx);
+        params.height = Math.max(0, heightPx);
         mThinWebView.getView().setLayoutParams(params);
     }
 

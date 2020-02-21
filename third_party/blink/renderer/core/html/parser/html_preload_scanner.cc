@@ -113,8 +113,10 @@ static String InitiatorFor(const StringImpl* tag_impl) {
 
 static bool MediaAttributeMatches(const MediaValuesCached& media_values,
                                   const String& attribute_value) {
+  // Since this is for preload scanning only, ExecutionContext-based origin
+  // trials for media queries are not needed.
   scoped_refptr<MediaQuerySet> media_queries =
-      MediaQuerySet::Create(attribute_value);
+      MediaQuerySet::Create(attribute_value, nullptr);
   MediaQueryEvaluator media_query_evaluator(media_values);
   return media_query_evaluator.Eval(*media_queries);
 }
@@ -161,7 +163,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (Match(tag_impl_, html_names::kImgTag) ||
         Match(tag_impl_, html_names::kSourceTag) ||
         Match(tag_impl_, html_names::kLinkTag)) {
-      source_size_ = SizesAttributeParser(media_values_, String()).length();
+      source_size_ =
+          SizesAttributeParser(media_values_, String(), nullptr).length();
       return;
     }
     if (!Match(tag_impl_, html_names::kInputTag) &&
@@ -693,7 +696,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void ParseSourceSize(const String& attribute_value) {
     source_size_ =
-        SizesAttributeParser(media_values_, attribute_value).length();
+        SizesAttributeParser(media_values_, attribute_value, nullptr).length();
     source_size_set_ = true;
   }
 

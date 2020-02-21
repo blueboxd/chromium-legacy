@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/util/type_safety/id_type.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -18,12 +19,14 @@
 
 namespace content {
 
+using SharedWorkerId = util::IdType64<class SharedWorkerTag>;
+
 // SharedWorkerInstance is the browser-side representation of one instance of a
 // shared worker.
 class CONTENT_EXPORT SharedWorkerInstance {
  public:
   SharedWorkerInstance(
-      int64_t id,
+      SharedWorkerId id,
       const GURL& url,
       blink::mojom::ScriptType script_type,
       network::mojom::CredentialsMode credentials_mode,
@@ -79,7 +82,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   // constructor origin but actually represent different workers. This is
   // possible with a file: |url| or |constructor_origin| since they are treated
   // as opaque in this class.
-  int64_t id_;
+  SharedWorkerId id_;
 
   GURL url_;
   blink::mojom::ScriptType script_type_;

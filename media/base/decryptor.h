@@ -71,7 +71,8 @@ class MEDIA_EXPORT Decryptor {
   // - Only |data|, |data_size| and |timestamp| are set in the returned
   //   DecoderBuffer. The callback handler is responsible for setting other
   //   fields as appropriate.
-  typedef base::Callback<void(Status, scoped_refptr<DecoderBuffer>)> DecryptCB;
+  using DecryptCB =
+      base::OnceCallback<void(Status, scoped_refptr<DecoderBuffer>)>;
 
   // Decrypts the |encrypted| buffer. The decrypt status and decrypted buffer
   // are returned via the provided callback |decrypt_cb|. The |encrypted| buffer
@@ -81,7 +82,7 @@ class MEDIA_EXPORT Decryptor {
   // a time for a given |stream_type|.
   virtual void Decrypt(StreamType stream_type,
                        scoped_refptr<DecoderBuffer> encrypted,
-                       const DecryptCB& decrypt_cb) = 0;
+                       DecryptCB decrypt_cb) = 0;
 
   // Cancels the scheduled decryption operation for |stream_type| and fires the
   // pending DecryptCB immediately with kSuccess and NULL.

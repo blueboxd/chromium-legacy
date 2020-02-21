@@ -211,7 +211,7 @@ constexpr base::FeatureParam<int> kSimpleCacheFullPrefetchSize{
 const char kSimpleCacheTrailerPrefetchHintParam[] = "TrailerPrefetchHint";
 constexpr base::FeatureParam<bool> kSimpleCacheTrailerPrefetchHint{
     &kSimpleCachePrefetchExperiment, kSimpleCacheTrailerPrefetchHintParam,
-    false};
+    true};
 
 const char kSimpleCacheTrailerPrefetchSpeculativeBytesParam[] =
     "TrailerPrefetchSpeculativeBytes";

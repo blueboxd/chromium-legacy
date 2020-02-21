@@ -75,7 +75,7 @@
     async function clearOverride(next) {
       await TestRunner.DeviceOrientationAgent.clearDeviceOrientationOverride();
       await TestRunner.evaluateInPageAsync('cleanUpDeviceOrientation()');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       next();
     },
 
@@ -92,7 +92,7 @@
       // The console message from the call to setDeviceOrientationOverride()
       // above is lost with the reload, but we do not care.
       await TestRunner.reloadPagePromise();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       await TestRunner.DeviceOrientationAgent.clearDeviceOrientationOverride();
       next();

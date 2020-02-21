@@ -66,8 +66,8 @@ struct SerializableBufferingState {
 };
 
 // Used to indicate changes in buffering state;
-typedef base::Callback<void(BufferingState, BufferingStateChangeReason)>
-    BufferingStateCB;
+using BufferingStateCB =
+    base::RepeatingCallback<void(BufferingState, BufferingStateChangeReason)>;
 
 std::string BufferingStateToString(
     BufferingState state,

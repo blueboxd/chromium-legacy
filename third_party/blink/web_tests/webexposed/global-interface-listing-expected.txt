@@ -2092,6 +2092,7 @@ interface Element : Node
     method getElementsByClassName
     method getElementsByTagName
     method getElementsByTagNameNS
+    method getInnerHTML
     method hasAttribute
     method hasAttributeNS
     method hasAttributes

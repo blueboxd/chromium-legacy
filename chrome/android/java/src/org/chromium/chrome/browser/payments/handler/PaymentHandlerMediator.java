@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments.handler;
 
 import android.os.Handler;
+import android.view.View;
 
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
@@ -24,8 +25,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * PaymentHandler mediator, which is responsible for receiving events from the view and notifies the
  * backend (the coordinator).
  */
-/* package */ class PaymentHandlerMediator
-        extends WebContentsObserver implements BottomSheetObserver, PaymentHandlerToolbarObserver {
+/* package */ class PaymentHandlerMediator extends WebContentsObserver
+        implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener {
     private final PropertyModel mModel;
     // Whenever invoked, invoked outside of the WebContentsObserver callbacks.
     private final Runnable mHider;
@@ -38,6 +39,9 @@ import org.chromium.ui.modelutil.PropertyModel;
     // Used to postpone execution of a callback to avoid destroy objects (e.g., WebContents) in
     // their own methods.
     private final Handler mHandler = new Handler();
+    private final int mShadowHeightPx;
+    private final View mToolbarView;
+    private final View mTabView;
 
     /**
      * Build a new mediator that handle events from outside the payment handler component.
@@ -47,12 +51,19 @@ import org.chromium.ui.modelutil.PropertyModel;
      *         hidden.
      * @param webContents The web-contents that loads the payment app.
      * @param observer The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
+     * @param tabView The view of the main tab.
+     * @param toolbarView The view of the PaymentHandler toolbar.
+     * @param shadowHeightPx The height of the toolbar shadow.
      */
     /* package */ PaymentHandlerMediator(PropertyModel model, Runnable hider,
-            WebContents webContents, PaymentHandlerUiObserver observer) {
+            WebContents webContents, PaymentHandlerUiObserver observer, View tabView,
+            View toolbarView, int shadowHeightPx) {
         super(webContents);
         assert webContents != null;
+        mTabView = tabView;
+        mShadowHeightPx = shadowHeightPx;
         mWebContentsRef = webContents;
+        mToolbarView = toolbarView;
         mModel = model;
         mHider = hider;
         mPaymentHandlerUiObserver = observer;
@@ -62,6 +73,13 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void destroy() {
         super.destroy(); // Stops observing the web contents and cleans up associated references.
         mHandler.removeCallbacksAndMessages(null);
+    }
+
+    // View.OnLayoutChangeListener:
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 
     // BottomSheetObserver:
@@ -75,9 +93,23 @@ import org.chromium.ui.modelutil.PropertyModel;
         }
     }
 
+    private static int getYLocationOnScreen(View view) {
+        int[] point = new int[2];
+        view.getLocationOnScreen(point);
+        return point[1];
+    }
+
+    /** @return The height of the content visible area of PaymentHandlerView.*/
+    private int contentVisibleHeight() {
+        int tabViewBottom = getYLocationOnScreen(mTabView) + mTabView.getHeight();
+        int toolbarBottom = getYLocationOnScreen(mToolbarView) + mToolbarView.getHeight();
+        // Exclude the shadow height because the toolbar view height includes it.
+        return tabViewBottom - toolbarBottom + mShadowHeightPx;
+    }
+
     @Override
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-        mModel.set(PaymentHandlerProperties.BOTTOM_SHEET_HEIGHT_FRACTION, heightFraction);
+        mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 
     @Override

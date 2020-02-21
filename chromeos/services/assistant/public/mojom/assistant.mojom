@@ -363,6 +363,9 @@ interface DeviceActions {
   // Enables or disables Night Light.
   SetNightLightEnabled(bool enabled);
 
+  // Enables or disables Switch Access.
+  SetSwitchAccessEnabled(bool enabled);
+
   // Open the Android app if the app is available.
   OpenAndroidApp(AndroidAppInfo app_info) => (bool app_opened);
 

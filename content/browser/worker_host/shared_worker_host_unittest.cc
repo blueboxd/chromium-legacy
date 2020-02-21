@@ -53,7 +53,7 @@ class SharedWorkerHostTest : public testing::Test {
     GURL url("http://www.example.com/w.js");
 
     SharedWorkerInstance instance(
-        service_.next_shared_worker_instance_id_++, url,
+        service_.shared_worker_id_generator_.GenerateNextId(), url,
         blink::mojom::ScriptType::kClassic,
         network::mojom::CredentialsMode::kSameOrigin, "name",
         url::Origin::Create(url), /*content_security_policy=*/"",

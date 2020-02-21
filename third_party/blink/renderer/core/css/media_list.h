@@ -35,6 +35,7 @@ namespace blink {
 class CSSRule;
 class CSSStyleSheet;
 class ExceptionState;
+class ExecutionContext;
 class MediaList;
 class MediaQuery;
 
@@ -43,11 +44,12 @@ class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
   static scoped_refptr<MediaQuerySet> Create() {
     return base::AdoptRef(new MediaQuerySet());
   }
-  static scoped_refptr<MediaQuerySet> Create(const String& media_string);
+  static scoped_refptr<MediaQuerySet> Create(const String& media_string,
+                                             const ExecutionContext*);
 
-  bool Set(const String&);
-  bool Add(const String&);
-  bool Remove(const String&);
+  bool Set(const String&, const ExecutionContext*);
+  bool Add(const String&, const ExecutionContext*);
+  bool Remove(const String&, const ExecutionContext*);
 
   void AddMediaQuery(std::unique_ptr<MediaQuery>);
 
@@ -77,11 +79,18 @@ class MediaList final : public ScriptWrappable {
 
   unsigned length() const { return media_queries_->QueryVector().size(); }
   String item(unsigned index) const;
-  void deleteMedium(const String& old_medium, ExceptionState&);
-  void appendMedium(const String& new_medium);
+  void deleteMedium(const ExecutionContext*,
+                    const String& old_medium,
+                    ExceptionState&);
+  void appendMedium(const ExecutionContext*, const String& new_medium);
 
-  String mediaText() const { return media_queries_->MediaText(); }
-  void setMediaText(const String&);
+  // Note that this getter doesn't require the ExecutionContext, but the
+  // attribute is marked as [CallWith=ExecutionContext] so that the setter can
+  // have access to the ExecutionContext.
+  String mediaText(const ExecutionContext*) const {
+    return media_queries_->MediaText();
+  }
+  void setMediaText(const ExecutionContext*, const String&);
 
   // Not part of CSSOM.
   CSSRule* ParentRule() const { return parent_rule_; }

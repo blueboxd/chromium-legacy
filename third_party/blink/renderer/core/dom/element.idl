@@ -94,6 +94,9 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [Affects=Nothing, CEReactions, CustomElementCallbacks, Custom=Setter] attribute HTMLString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, HTMLString text);
 
+    // Declarative Shadow DOM getInnerHTML() function.
+    [RuntimeEnabled=DeclarativeShadowDOM, RuntimeCallStatsCounter=ElementGetInnerHTML] HTMLString getInnerHTML(boolean includeShadowRoots);
+
     // Pointer Lock
     // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock(optional PointerLockOptions options = {});

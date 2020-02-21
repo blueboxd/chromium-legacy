@@ -196,10 +196,11 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
   SharedWorkerInstance instance(
-      next_shared_worker_instance_id_++, info->url, info->options->type,
-      info->options->credentials, info->options->name, constructor_origin,
-      info->content_security_policy, info->content_security_policy_type,
-      info->creation_address_space, creation_context_type);
+      shared_worker_id_generator_.GenerateNextId(), info->url,
+      info->options->type, info->options->credentials, info->options->name,
+      constructor_origin, info->content_security_policy,
+      info->content_security_policy_type, info->creation_address_space,
+      creation_context_type);
   host = CreateWorker(instance,
                       std::move(info->outside_fetch_client_settings_object),
                       client_render_frame_host_id, storage_domain, message_port,

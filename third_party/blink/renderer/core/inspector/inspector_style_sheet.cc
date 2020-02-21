@@ -1152,7 +1152,8 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
   }
 
   CSSMediaRule* media_rule = InspectorCSSAgent::AsCSSMediaRule(rule);
-  media_rule->media()->setMediaText(text);
+  media_rule->media()->setMediaText(
+      page_style_sheet_->OwnerDocument()->ToExecutionContext(), text);
 
   ReplaceText(source_data->rule_header_range, text, new_range, old_text);
   OnStyleSheetTextChanged();

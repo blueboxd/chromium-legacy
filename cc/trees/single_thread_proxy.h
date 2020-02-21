@@ -190,6 +190,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool defer_main_frame_update_;
   bool defer_commits_;
   bool animate_requested_;
+  bool update_layers_requested_;
   bool commit_requested_;
   bool inside_synchronous_composite_;
   bool needs_impl_frame_;

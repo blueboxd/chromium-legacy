@@ -205,8 +205,6 @@ LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&,
 
 static void SetPatternAttributes(const SVGPatternElement& element,
                                  PatternAttributes& attributes) {
-  element.SynchronizeAnimatedSVGAttribute(AnyQName());
-
   if (!attributes.HasX() && element.x()->IsSpecified())
     attributes.SetX(element.x()->CurrentValue());
 

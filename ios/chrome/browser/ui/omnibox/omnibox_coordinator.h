@@ -5,11 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_COORDINATOR_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-class ChromeBrowserState;
 class WebOmniboxEditController;
-@class CommandDispatcher;
 @protocol EditViewAnimatee;
 @class OmniboxPopupCoordinator;
 @class OmniboxTextFieldIOS;
@@ -17,14 +15,20 @@ class WebOmniboxEditController;
 @protocol OmniboxPopupPresenterDelegate;
 
 // The coordinator for the omnibox.
-@interface OmniboxCoordinator : NSObject
+@interface OmniboxCoordinator : ChromeCoordinator
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // The edit controller interfacing the |textField| and the omnibox components
 // code. Needs to be set before the coordinator is started.
 @property(nonatomic, assign) WebOmniboxEditController* editController;
-// Weak reference to ChromeBrowserState;
-@property(nonatomic, assign) ChromeBrowserState* browserState;
-// The dispatcher for this view controller.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
 // Returns the animatee for the omnibox focus orchestrator.
 @property(nonatomic, strong, readonly) id<EditViewAnimatee> animatee;
 

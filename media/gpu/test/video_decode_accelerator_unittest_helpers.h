@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -50,15 +49,10 @@ class EncodedDataHelper {
   size_t num_skipped_fragments() { return num_skipped_fragments_; }
 
  private:
-  struct IVFHeader;
-  struct IVFFrame;
-
   // For h.264.
   scoped_refptr<DecoderBuffer> GetNextFragment();
   // For VP8/9.
   scoped_refptr<DecoderBuffer> GetNextFrame();
-  base::Optional<IVFHeader> GetNextIVFFrameHeader() const;
-  base::Optional<IVFFrame> ReadNextIVFFrame();
 
   // Helpers for GetBytesForNextFragment above.
   size_t GetBytesForNextNALU(size_t pos);

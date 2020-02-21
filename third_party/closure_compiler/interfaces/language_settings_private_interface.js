@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,6 @@
 //   tools/json_schema_compiler/compiler.py.
 
 /** @fileoverview Interface for languageSettingsPrivate that can be overriden. */
-
-assertNotReached('Interface file for Closure Compiler should not be executed.');
 
 /** @interface */
 function LanguageSettingsPrivate() {}
@@ -17,115 +15,100 @@ LanguageSettingsPrivate.prototype = {
    * Gets languages available for translate, spell checking, input and locale.
    * @param {function(!Array<!chrome.languageSettingsPrivate.Language>):void}
    *     callback
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getLanguageList
    */
-  getLanguageList: assertNotReached,
+  getLanguageList: function(callback) {},
 
   /**
    * Enables a language, adding it to the Accept-Language list (used to decide
    * which languages to translate, generate the Accept-Language header, etc.).
    * @param {string} languageCode
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-enableLanguage
    */
-  enableLanguage: assertNotReached,
+  enableLanguage: function(languageCode) {},
 
   /**
    * Disables a language, removing it from the Accept-Language list.
    * @param {string} languageCode
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-disableLanguage
    */
-  disableLanguage: assertNotReached,
+  disableLanguage: function(languageCode) {},
 
   /**
    * Enables or disables translation for a given language.
    * @param {string} languageCode
    * @param {boolean} enable
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-setEnableTranslationForLanguage
    */
-  setEnableTranslationForLanguage: assertNotReached,
+  setEnableTranslationForLanguage: function(languageCode, enable) {},
 
   /**
    * Moves a language inside the language list.
    * @param {string} languageCode
    * @param {!chrome.languageSettingsPrivate.MoveType} moveType
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-moveLanguage
    */
-  moveLanguage: assertNotReached,
+  moveLanguage: function(languageCode, moveType) {},
 
   /**
    * Gets the current status of the chosen spell check dictionaries.
    * @param {function(!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>):void}
    *     callback
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckDictionaryStatuses
    */
-  getSpellcheckDictionaryStatuses: assertNotReached,
+  getSpellcheckDictionaryStatuses: function(callback) {},
 
   /**
    * Gets the custom spell check words, in sorted order.
    * @param {function(!Array<string>):void} callback
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckWords
    */
-  getSpellcheckWords: assertNotReached,
+  getSpellcheckWords: function(callback) {},
 
   /**
    * Adds a word to the custom dictionary.
    * @param {string} word
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-addSpellcheckWord
    */
-  addSpellcheckWord: assertNotReached,
+  addSpellcheckWord: function(word) {},
 
   /**
    * Removes a word from the custom dictionary.
    * @param {string} word
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-removeSpellcheckWord
    */
-  removeSpellcheckWord: assertNotReached,
+  removeSpellcheckWord: function(word) {},
 
   /**
    * Gets the translate target language (in most cases, the display locale).
    * @param {function(string):void} callback
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getTranslateTargetLanguage
    */
-  getTranslateTargetLanguage: assertNotReached,
+  getTranslateTargetLanguage: function(callback) {},
 
   /**
    * Gets all supported input methods, including third-party IMEs. Chrome OS
    * only.
    * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void}
    *     callback
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getInputMethodLists
    */
-  getInputMethodLists: assertNotReached,
+  getInputMethodLists: function(callback) {},
 
   /**
    * Adds the input method to the current user's list of enabled input methods,
    * enabling the input method for the current user. Chrome OS only.
    * @param {string} inputMethodId
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-addInputMethod
    */
-  addInputMethod: assertNotReached,
+  addInputMethod: function(inputMethodId) {},
 
   /**
    * Removes the input method from the current user's list of enabled input
    * methods, disabling the input method for the current user. Chrome OS only.
    * @param {string} inputMethodId
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-removeInputMethod
    */
-  removeInputMethod: assertNotReached,
+  removeInputMethod: function(inputMethodId) {},
 
   /**
    * Tries to download the dictionary after a failed download.
    * @param {string} languageCode
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-retryDownloadDictionary
    */
-  retryDownloadDictionary: assertNotReached,
+  retryDownloadDictionary: function(languageCode) {},
 };
 
 /**
  * Called when the pref for the dictionaries used for spell checking changes or
  * the status of one of the spell check dictionaries changes.
  * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onSpellcheckDictionariesChanged
  */
 LanguageSettingsPrivate.prototype.onSpellcheckDictionariesChanged;
 
@@ -133,20 +116,17 @@ LanguageSettingsPrivate.prototype.onSpellcheckDictionariesChanged;
  * Called when words are added to and/or removed from the custom spell check
  * dictionary.
  * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onCustomDictionaryChanged
  */
 LanguageSettingsPrivate.prototype.onCustomDictionaryChanged;
 
 /**
  * Called when an input method is added.
  * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onInputMethodAdded
  */
 LanguageSettingsPrivate.prototype.onInputMethodAdded;
 
 /**
  * Called when an input method is removed.
  * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onInputMethodRemoved
  */
 LanguageSettingsPrivate.prototype.onInputMethodRemoved;

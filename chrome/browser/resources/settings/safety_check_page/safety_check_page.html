@@ -1,30 +1,54 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-safety-check-page">
   <template>
+    <!-- // TODO(crbug.com/1010001): Release block M82 beta:
+        Support dark mode. -->
     <style include="settings-shared">
-      #safetyCheckCollapse .list-item.selected {
-        min-height: var(--settings-row-two-line-min-height);
+      .icon-blue {
+        fill: var(--google-blue-600);
+      }
+
+      iron-icon {
+        display: flex;
+        flex-shrink: 0;
+        padding-inline-end: var(--cr-icon-button-margin-start);
+        width: var(--cr-link-row-icon-width, var(--cr-icon-size));
       }
     </style>
-    <div class="settings-box first two-line" id="safetyCheckParent">
-      <div class="start settings-box-text">
-        <div id="safetyCheckParentPrimaryLabel">
-          $i18n{safetyCheckParentPrimaryLabelBeforeCheck}
-        </div>
-        <div class="secondary" id="safetyCheckParentSubLabel">
-          $i18n{safetyCheckParentSubLabelBeforeCheck}
-        </div>
+    <div class="settings-box first two-line">
+      <iron-icon icon="[[getParentIcon_(parentStatus_)]]"
+          src="[[getParentIconSrc_(parentStatus_)]]"
+          class$="[[getParentIconClass_(parentStatus_)]]">
+      </iron-icon>
+      <div class="start settings-box-text" no-search>
+        [[getParentPrimaryLabelText_(parentStatus_)]]
       </div>
-      <div class="separator"></div>
-      <cr-button id="performSafetyCheck"
-          on-click="onRunSafetyCheckClick_">
-        $i18n{safetyCheckParentButtonBeforeCheck}
-      </cr-button>
+      <template is="dom-if" if="[[showParentButton_(parentStatus_)]]" restamp>
+        <div class="separator"></div>
+        <cr-button id="safetyCheckParentButton"
+            on-click="onRunSafetyCheckClick_" no-search>
+          $i18n{safetyCheckParentButton}
+        </cr-button>
+      </template>
+      <template is="dom-if" if="[[showParentIconButton_(parentStatus_)]]"
+          restamp>
+        <div class="separator"></div>
+        <cr-icon-button id="safetyCheckParentIconButton"
+            iron-icon="settings:refresh"
+            on-click="onRunSafetyCheckClick_">
+        </cr-icon-button>
+      </template>
     </div>
-    </template>
+  </template>
   <script src="safety_check_page.js"></script>
 </dom-module>

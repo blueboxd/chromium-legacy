@@ -184,6 +184,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "crbug.com/1038151")
     public void testReenterPip() throws Throwable {
         enterFullscreen();
         triggerAutoPiP();

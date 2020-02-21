@@ -116,7 +116,7 @@
     },
     {
       name: "AccessibilityExposeARIAAnnotations",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AccessibilityExposeDisplayNone",

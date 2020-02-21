@@ -12,6 +12,7 @@ import android.util.SparseArray;
 import android.view.Display;
 import android.view.WindowManager;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -96,6 +97,20 @@ public class DisplayAndroidManager {
     }
 
     public static Display getDefaultDisplayForContext(Context context) {
+        // TODO(boliu): There are other valid display context though they require R APIs to query.
+        // This is good enough for now since nothing in chromium calls Context.createDisplayContext.
+        if (BuildInfo.targetsAtLeastR() && ContextUtils.activityFromContext(context) == null) {
+            return getGlobalDefaultDisplay();
+        }
+        return getDisplayForContextNoChecks(context);
+    }
+
+    private static Display getGlobalDefaultDisplay() {
+        return getDisplayManager().getDisplay(Display.DEFAULT_DISPLAY);
+    }
+
+    // Passing a non-window display may cause problems on newer android versions.
+    private static Display getDisplayForContextNoChecks(Context context) {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         return windowManager.getDefaultDisplay();
@@ -123,16 +138,14 @@ public class DisplayAndroidManager {
     private DisplayAndroidManager() {}
 
     private void initialize() {
-        Display display;
-
         // Make sure the display map contains the built-in primary display.
         // The primary display is never removed.
-        display = getDisplayManager().getDisplay(Display.DEFAULT_DISPLAY);
+        Display display = getGlobalDefaultDisplay();
 
         // Android documentation on Display.DEFAULT_DISPLAY suggests that the above
         // method might return null. In that case we retrieve the default display
         // from the application context and take it as the primary display.
-        if (display == null) display = getDefaultDisplayForContext(getContext());
+        if (display == null) display = getDisplayForContextNoChecks(getContext());
 
         mMainSdkDisplayId = display.getDisplayId();
         addDisplay(display); // Note this display is never removed.

@@ -741,6 +741,11 @@ void ThreadState::AtomicPauseMarkPrologue(
   EnterAtomicPause();
   EnterNoAllocationScope();
   EnterGCForbiddenScope();
+
+  if (HeapPointersOnStackForced()) {
+    stack_state = BlinkGC::kHeapPointersOnStack;
+  }
+
   // Compaction needs to be canceled when incremental marking ends with a
   // conservative GC.
   if (stack_state == BlinkGC::kHeapPointersOnStack)

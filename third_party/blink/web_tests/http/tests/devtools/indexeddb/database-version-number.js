@@ -97,8 +97,8 @@
     ApplicationTestRunner.deleteDatabase(mainFrameId, databaseName, step10);
   }
 
-  function step10() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step10() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

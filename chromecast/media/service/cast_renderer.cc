@@ -217,7 +217,7 @@ void CastRenderer::OnGetMultiroomInfo(
   MediaPipelineClient pipeline_client;
   pipeline_client.error_cb =
       base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
-  pipeline_client.buffering_state_cb = base::Bind(
+  pipeline_client.buffering_state_cb = base::BindRepeating(
       &CastRenderer::OnBufferingStateChange, weak_factory_.GetWeakPtr());
   pipeline_.reset(new MediaPipelineImpl());
   pipeline_->SetClient(pipeline_client);

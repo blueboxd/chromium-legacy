@@ -36,7 +36,7 @@ function wait_for_message(number_of_messages) {
   ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
   await wait_for_message(/*number_of_messages=*/2);
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
 })();

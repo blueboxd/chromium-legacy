@@ -668,16 +668,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                 }
             };
             OnClickListener newTabClickHandler = v -> {
-                // If Start Surface should be shown as the home page, show the start surface home
-                // page.
-                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
-                    showOverview(OverviewModeState.SHOWING_HOMEPAGE);
-                } else {
-                    getTabModelSelector().getModel(false).commitAllTabClosures();
-                    // This assumes that the keyboard can not be seen at the same time as the
-                    // newtab button on the toolbar.
-                    getCurrentTabCreator().launchNTP();
-                }
+                getTabModelSelector().getModel(false).commitAllTabClosures();
+                // This assumes that the keyboard can not be seen at the same time as the
+                // newtab button on the toolbar.
+                getCurrentTabCreator().launchNTP();
                 mLocaleManager.showSearchEnginePromoIfNeeded(ChromeTabbedActivity.this, null);
                 if (getTabModelSelector().isIncognitoSelected()) {
                     RecordUserAction.record("MobileToolbarStackViewNewIncognitoTab");
@@ -697,7 +691,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             Supplier<Boolean> showStartSurfaceSupplier = () -> {
                 if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
                         && !isTablet()) {
-                    assert ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage();
                     showOverview(OverviewModeState.SHOWING_HOMEPAGE);
                     return true;
                 }
@@ -988,7 +981,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
             if (CachedFeatureFlags.isGridTabSwitcherEnabled() && !isTablet()) {
-                assert !getCurrentTabModel().isIncognito();
                 mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
             }
@@ -1006,12 +998,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
-        if (!isMainIntentFromLauncher(getIntent())) return false;
+        if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+            String intentUrl = IntentHandler.getUrlFromIntent(getIntent());
+            if (NewTabPage.isNTPUrl(intentUrl)
+                    || (isMainIntentFromLauncher(getIntent())
+                            && (getTabModelSelector().getTotalTabCount() <= 0))) {
+                return true;
+            }
+        }
 
         long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
-        return (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
-                       && getTabModelSelector().getTotalTabCount() <= 0)
-                || ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
+        return isMainIntentFromLauncher(getIntent())
+                && ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {
@@ -1100,7 +1098,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
             // other parts of Chrome such as sync.
-            boolean activeTabBeingRestored = !mIntentWithEffect;
+            boolean activeTabBeingRestored = !mIntentWithEffect
+                    || (shouldShowTabSwitcherOnStart()
+                            && !mTabModelSelectorImpl.isIncognitoSelected());
 
             mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
@@ -1375,7 +1375,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                     focus ? LocationBar.OmniboxFocusReason.LAUNCH_NEW_INCOGNITO_TAB
                           : LocationBar.OmniboxFocusReason.UNFOCUS);
 
-            if (tabModel.getCount() > 0 && isInOverviewMode() && !isTablet()) {
+            if (tabModel.getCount() > 0 && isInOverviewMode() && !isTablet()
+                    && !shouldShowTabSwitcherOnStart()) {
                 mOverviewModeController.hideOverview(true);
             }
         }
@@ -1568,10 +1569,21 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             return new TabbedModeTabDelegateFactory(
                     this, getAppBrowserControlsVisibilityDelegate(), getShareDelegateSupplier());
         };
+
+        ChromeTabCreator.OverviewNTPCreator overviewNTPCreator = null;
+
+        if (CachedFeatureFlags.isStartSurfaceEnabled()) {
+            overviewNTPCreator = new ChromeTabCreator.OverviewNTPCreator() {
+                @Override
+                public boolean handleCreateNTPIfNeeded(boolean isNTP, boolean incognito) {
+                    return showStartSurfaceHomeForNTP(isNTP, incognito);
+                }
+            };
+        }
         return Pair.create(new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
-                                   tabDelegateFactorySupplier, false),
+                                   tabDelegateFactorySupplier, false, overviewNTPCreator),
                 new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
-                        tabDelegateFactorySupplier, true));
+                        tabDelegateFactorySupplier, true, overviewNTPCreator));
     }
 
     @Override
@@ -1623,13 +1635,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             reportNewTabShortcutUsed(false);
             if (fromMenu) RecordUserAction.record("MobileMenuNewTab.AppMenu");
 
-            // If Start Surface should be shown as the home page, show the start surface home page.
-            if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
-                getTabModelSelector().selectModel(false);
-                showOverview(OverviewModeState.SHOWING_HOMEPAGE);
-            } else {
-                getTabCreator(false).launchNTP();
-            }
+            getTabCreator(false).launchNTP();
 
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
         } else if (id == R.id.new_incognito_tab_menu_id) {
@@ -1641,15 +1647,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                 RecordUserAction.record("MobileNewTabOpened");
                 reportNewTabShortcutUsed(true);
                 if (fromMenu) RecordUserAction.record("MobileMenuNewIncognitoTab.AppMenu");
-
-                // If Start Surface should be shown as the home page, show the start surface home
-                // page.
-                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
-                    getTabModelSelector().selectModel(true);
-                    showOverview(OverviewModeState.SHOWING_HOMEPAGE);
-                } else {
-                    getTabCreator(true).launchNTP();
-                }
+                getTabCreator(true).launchNTP();
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
             // Note that 'currentTab' could be null in overview mode when start surface is
@@ -1967,6 +1965,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             mOverviewModeController.hideOverview(true);
             updateAccessibilityState(true);
         }
+    }
+
+    private boolean showStartSurfaceHomeForNTP(boolean isNTP, boolean incognito) {
+        if (isNTP && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                && !isTablet()) {
+            getTabModelSelector().selectModel(incognito);
+            showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+            return true;
+        }
+        return false;
     }
 
     private void updateAccessibilityState(boolean enabled) {

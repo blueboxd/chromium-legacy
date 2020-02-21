@@ -78,6 +78,41 @@ bool EnumTraits<gpu::mojom::Direct3DFeatureLevel, D3D_FEATURE_LEVEL>::FromMojom(
 }
 #endif  // OS_WIN
 
+gpu::mojom::HasDiscreteGpu
+EnumTraits<gpu::mojom::HasDiscreteGpu, gpu::HasDiscreteGpu>::ToMojom(
+    gpu::HasDiscreteGpu has_discrete_gpu) {
+  switch (has_discrete_gpu) {
+    case gpu::HasDiscreteGpu::kUnknown:
+      return gpu::mojom::HasDiscreteGpu::kUnknown;
+    case gpu::HasDiscreteGpu::kNo:
+      return gpu::mojom::HasDiscreteGpu::kNo;
+    case gpu::HasDiscreteGpu::kYes:
+      return gpu::mojom::HasDiscreteGpu::kYes;
+  }
+  NOTREACHED() << "Invalid gpu::HasDiscreteGpu: "
+               << static_cast<int>(has_discrete_gpu);
+  return gpu::mojom::HasDiscreteGpu::kUnknown;
+}
+
+// static
+bool EnumTraits<gpu::mojom::HasDiscreteGpu, gpu::HasDiscreteGpu>::FromMojom(
+    gpu::mojom::HasDiscreteGpu input,
+    gpu::HasDiscreteGpu* out) {
+  switch (input) {
+    case gpu::mojom::HasDiscreteGpu::kUnknown:
+      *out = gpu::HasDiscreteGpu::kUnknown;
+      return true;
+    case gpu::mojom::HasDiscreteGpu::kNo:
+      *out = gpu::HasDiscreteGpu::kNo;
+      return true;
+    case gpu::mojom::HasDiscreteGpu::kYes:
+      *out = gpu::HasDiscreteGpu::kYes;
+      return true;
+  }
+  NOTREACHED() << "Invalid gpu::mojom::HasDiscreteGpu: " << input;
+  return false;
+}
+
 // static
 bool StructTraits<gpu::mojom::DevicePerfInfoDataView, gpu::DevicePerfInfo>::
     Read(gpu::mojom::DevicePerfInfoDataView data, gpu::DevicePerfInfo* out) {
@@ -88,7 +123,7 @@ bool StructTraits<gpu::mojom::DevicePerfInfoDataView, gpu::DevicePerfInfo>::
 #if defined(OS_WIN)
   out->system_commit_limit_mb = data.system_commit_limit_mb();
   rt &= data.ReadD3d11FeatureLevel(&out->d3d11_feature_level);
-  out->has_discrete_gpu = data.has_discrete_gpu();
+  rt &= data.ReadHasDiscreteGpu(&out->has_discrete_gpu);
 #endif  // OS_WIN
   return rt;
 }

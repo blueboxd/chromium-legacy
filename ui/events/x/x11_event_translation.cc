@@ -118,13 +118,11 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
   if (enter_or_leave && xev.xcrossing.detail == NotifyInferior)
     return nullptr;
 
-  int button_flags =
-      (enter_or_leave) ? GetChangedMouseButtonFlagsFromXEvent(xev) : 0;
   PointerDetails details{EventPointerType::POINTER_TYPE_MOUSE};
   auto event = std::make_unique<MouseEvent>(
       type, EventLocationFromXEvent(xev), EventSystemLocationFromXEvent(xev),
-      GetXEventTimestamp(xev), EventFlagsFromXEvent(xev), button_flags,
-      details);
+      GetXEventTimestamp(xev), EventFlagsFromXEvent(xev),
+      GetChangedMouseButtonFlagsFromXEvent(xev), details);
 
   DCHECK(event);
   SetEventSourceDeviceId(event.get(), xev);

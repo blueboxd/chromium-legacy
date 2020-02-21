@@ -121,7 +121,8 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // nullptr (for testing without ash), in which case sticky key operations
   // don't happen.
   EventRewriterChromeOS(Delegate* delegate,
-                        ui::EventRewriter* sticky_keys_controller);
+                        ui::EventRewriter* sticky_keys_controller,
+                        bool privacy_screen_supported);
   ~EventRewriterChromeOS() override;
 
   // Calls KeyboardDeviceAddedInternal.
@@ -145,6 +146,10 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   void set_ime_keyboard_for_testing(
       ::chromeos::input_method::ImeKeyboard* ime_keyboard) {
     ime_keyboard_for_testing_ = ime_keyboard;
+  }
+
+  void set_privacy_screen_for_testing(bool supported) {
+    privacy_screen_supported_ = supported;
   }
 
   // EventRewriter overrides:
@@ -288,6 +293,10 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.
   ui::EventRewriter* const sticky_keys_controller_;
+
+  // Some drallion devices have digital privacy screens and a corresponding
+  // privacy screen toggle key in the top row.
+  bool privacy_screen_supported_;
 
   // Some keyboard layouts have 'latching' keys, which either apply
   // a modifier while held down (like normal modifiers), or, if no

@@ -4,11 +4,12 @@
 
 #include "weblayer/browser/browser_context_impl.h"
 
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -195,7 +196,7 @@ content::ContentIndexProvider* BrowserContextImpl::GetContentIndexProvider() {
 }
 
 void BrowserContextImpl::CreateUserPrefService() {
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
   RegisterPrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;
@@ -207,13 +208,15 @@ void BrowserContextImpl::CreateUserPrefService() {
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
 
-void BrowserContextImpl::RegisterPrefs(PrefRegistrySimple* pref_registry) {
+void BrowserContextImpl::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* pref_registry) {
   // This pref is used by captive_portal::CaptivePortalService (as well as other
   // potential use cases in the future, as it is used for various purposes
   // through //chrome).
   pref_registry->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
 
+  HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
 }
 

@@ -91,7 +91,7 @@ TEST(SizesAttributeParserTest, Basic) {
   auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
-    SizesAttributeParser parser(media_values, test_cases[i].input);
+    SizesAttributeParser parser(media_values, test_cases[i].input, nullptr);
     ASSERT_EQ(test_cases[i].effective_size, parser.length());
   }
 }
@@ -172,7 +172,7 @@ TEST(SizesAttributeParserTest, FloatViewportWidth) {
   auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
-    SizesAttributeParser parser(media_values, test_cases[i].input);
+    SizesAttributeParser parser(media_values, test_cases[i].input, nullptr);
     ASSERT_EQ(test_cases[i].effective_size, parser.length());
   }
 }

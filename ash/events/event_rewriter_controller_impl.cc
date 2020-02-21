@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/display/mirror_window_controller.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/events/keyboard_driven_event_rewriter.h"
 #include "ash/events/spoken_feedback_event_rewriter.h"
@@ -49,9 +50,15 @@ void EventRewriterControllerImpl::Initialize(
       std::make_unique<KeyboardDrivenEventRewriter>();
   keyboard_driven_event_rewriter_ = keyboard_driven_event_rewriter.get();
 
+  bool privacy_screen_supported = false;
+  if (Shell::Get()->privacy_screen_controller() &&
+      Shell::Get()->privacy_screen_controller()->IsSupported()) {
+    privacy_screen_supported = true;
+  }
   std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos =
       std::make_unique<ui::EventRewriterChromeOS>(
-          event_rewriter_delegate, Shell::Get()->sticky_keys_controller());
+          event_rewriter_delegate, Shell::Get()->sticky_keys_controller(),
+          privacy_screen_supported);
 
   std::unique_ptr<SpokenFeedbackEventRewriter> spoken_feedback_event_rewriter =
       std::make_unique<SpokenFeedbackEventRewriter>(

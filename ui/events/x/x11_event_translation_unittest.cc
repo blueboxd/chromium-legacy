@@ -128,4 +128,31 @@ TEST(XEventTranslationTest, BogusTimestampCorrection) {
   EXPECT_EQ(EventTimeForNow(), keyev3->time_stamp());
 }
 
+// Ensure MouseEvent::changed_button_flags is correctly translated from
+// X{Button,Crossing}Events.
+TEST(XEventTranslationTest, ChangedMouseButtonFlags) {
+  ui::ScopedXI2Event event;
+  // Taking in a ButtonPress XEvent, with left button pressed.
+  event.InitButtonEvent(ui::ET_MOUSE_PRESSED, gfx::Point(500, 500),
+                        ui::EF_LEFT_MOUSE_BUTTON);
+  auto mouseev = ui::BuildMouseEventFromXEvent(*event);
+  EXPECT_TRUE(mouseev);
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, mouseev->changed_button_flags());
+
+  // Taking in a ButtonPress XEvent, with no button pressed.
+  static_cast<XEvent*>(event)->xbutton.button = 0;
+  auto mouseev2 = ui::BuildMouseEventFromXEvent(*event);
+  EXPECT_TRUE(mouseev2);
+  EXPECT_EQ(0, mouseev2->changed_button_flags());
+
+  // Taking in a EnterNotify XEvent
+  auto enter_event = std::make_unique<XEvent>();
+  memset(enter_event.get(), 0, sizeof(XEvent));
+  enter_event->type = EnterNotify;
+  enter_event->xcrossing.detail = NotifyVirtual;
+  auto mouseev3 = ui::BuildMouseEventFromXEvent(*enter_event);
+  EXPECT_TRUE(mouseev3);
+  EXPECT_EQ(0, mouseev3->changed_button_flags());
+}
+
 }  // namespace ui

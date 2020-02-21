@@ -55,7 +55,7 @@
   await TestRunner.addIframe(scope);
 
   await PerformanceTestRunner.stopTimeline();
-  PerformanceTestRunner.printTimelineRecordsWithDetails(
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileModule);
 
   TestRunner.addResult('-----------------------------------------------');

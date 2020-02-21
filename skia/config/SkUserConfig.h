@@ -218,10 +218,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_COLORSPACE_INCLUDES_MATRIX44
-#define SK_SUPPORT_LEGACY_COLORSPACE_INCLUDES_MATRIX44
-#endif
-
 // We're turning this off indefinitely,
 // until we can figure out some fundamental problems with its approach.
 //

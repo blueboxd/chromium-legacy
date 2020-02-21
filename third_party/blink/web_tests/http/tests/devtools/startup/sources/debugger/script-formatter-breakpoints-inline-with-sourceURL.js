@@ -56,10 +56,10 @@
         SourcesTestRunner.showScriptSource('named-inline-script.js:formatted', didShowFormattedScriptSource);
       }
 
-      function didShowFormattedScriptSource(frame) {
+      async function didShowFormattedScriptSource(frame) {
         formattedSourceFrame = frame;
         SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 2);  // Lines here are zero based.
-        Formatter.sourceFormatter.discardFormattedUISourceCode(formattedSourceFrame.uiSourceCode());
+        await Formatter.sourceFormatter.discardFormattedUISourceCode(formattedSourceFrame.uiSourceCode());
         SourcesTestRunner.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
       }
 

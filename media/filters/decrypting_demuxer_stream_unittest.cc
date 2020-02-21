@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -27,18 +28,15 @@ using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::HasSubstr;
 using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::IsNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace media {
-
-ACTION_TEMPLATE(MoveArg,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(out)) {
-  *out = std::move(::testing::get<k>(args));
-}
 
 static const int kFakeBufferSize = 16;
 static const uint8_t kFakeKeyId[] = {0x4b, 0x65, 0x79, 0x20, 0x49, 0x44};
@@ -201,7 +199,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_CALL(*input_audio_stream_, OnRead(_))
         .WillOnce(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, Decrypt(_, _, _))
-        .WillOnce(RunCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
+        .WillOnce(RunOnceCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
 
     ReadAndExpectBufferReadyWith(DemuxerStream::kOk, decrypted_buffer_);
   }
@@ -218,13 +216,16 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_FALSE(!pending_demuxer_read_cb_);
   }
 
-  // Make the decrypt callback pending by saving and not firing it.
+  // Make the decrypt callback pending by intercepting the call and not firing
+  // the callback.
   void EnterPendingDecryptState() {
     EXPECT_TRUE(!pending_decrypt_cb_);
     EXPECT_CALL(*input_audio_stream_, OnRead(_))
         .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-        .WillOnce(SaveArg<2>(&pending_decrypt_cb_));
+        .WillOnce(WithArg<2>(Invoke([&](Decryptor::DecryptCB callback) {
+          pending_decrypt_cb_ = std::move(callback);
+        })));
 
     demuxer_stream_->Read(base::BindOnce(
         &DecryptingDemuxerStreamTest::BufferReady, base::Unretained(this)));
@@ -238,8 +239,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_CALL(*input_audio_stream_, OnRead(_))
         .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-        .WillRepeatedly(
-            RunCallback<2>(Decryptor::kNoKey, scoped_refptr<DecoderBuffer>()));
+        .WillRepeatedly(RunOnceCallback<2>(Decryptor::kNoKey,
+                                           scoped_refptr<DecoderBuffer>()));
     EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: no key for key ID"));
     EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey));
     demuxer_stream_->Read(base::BindOnce(
@@ -354,8 +355,8 @@ TEST_F(DecryptingDemuxerStreamTest, Read_DecryptError) {
   EXPECT_CALL(*input_audio_stream_, OnRead(_))
       .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-      .WillRepeatedly(
-          RunCallback<2>(Decryptor::kError, scoped_refptr<DecoderBuffer>()));
+      .WillRepeatedly(RunOnceCallback<2>(Decryptor::kError,
+                                         scoped_refptr<DecoderBuffer>()));
   EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
   ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
 }
@@ -367,8 +368,8 @@ TEST_F(DecryptingDemuxerStreamTest, Read_DecryptNeedMoreData) {
   EXPECT_CALL(*input_audio_stream_, OnRead(_))
       .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-      .WillRepeatedly(RunCallback<2>(Decryptor::kNeedMoreData,
-                                     scoped_refptr<DecoderBuffer>()));
+      .WillRepeatedly(RunOnceCallback<2>(Decryptor::kNeedMoreData,
+                                         scoped_refptr<DecoderBuffer>()));
   EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
   ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
 }
@@ -395,7 +396,8 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DuringWaitingForKey) {
   EXPECT_MEDIA_LOG(
       HasSubstr("DecryptingDemuxerStream: key was added, resuming decrypt"));
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-      .WillRepeatedly(RunCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
+      .WillRepeatedly(
+          RunOnceCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, decrypted_buffer_));
   key_added_cb_.Run();
   base::RunLoop().RunUntilIdle();
@@ -411,7 +413,8 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DuringPendingDecrypt) {
   EXPECT_MEDIA_LOG(
       HasSubstr("DecryptingDemuxerStream: key was added, resuming decrypt"));
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-      .WillRepeatedly(RunCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
+      .WillRepeatedly(
+          RunOnceCallback<2>(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, decrypted_buffer_));
   // The decrypt callback is returned after the correct decryption key is added.
   key_added_cb_.Run();

@@ -36,6 +36,8 @@ class BulkLeakCheckDelegateInterface;
 // background sequence.
 class BulkLeakCheckImpl : public BulkLeakCheck {
  public:
+  struct CredentialHolder;
+
   BulkLeakCheckImpl(
       BulkLeakCheckDelegateInterface* delegate,
       signin::IdentityManager* identity_manager,
@@ -47,11 +49,14 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   size_t GetPendingChecksCount() const override;
 
  private:
-  struct CredentialHolder;
-
   // Called when a payload for one credential is ready.
-  void OnPayloadReady(CredentialHolder* holder,
+  void OnPayloadReady(CredentialHolder* weak_holder,
                       LookupSingleLeakPayload payload);
+
+  // Called when an access token is ready for |weak_holder|.
+  void OnTokenReady(CredentialHolder* weak_holder,
+                    GoogleServiceAuthError error,
+                    signin::AccessTokenInfo access_token_info);
 
   // Delegate for the instance. Should outlive |this|.
   BulkLeakCheckDelegateInterface* const delegate_;

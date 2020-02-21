@@ -16,6 +16,8 @@
 namespace password_manager {
 namespace {
 
+constexpr char kTestEmail[] = "user@gmail.com";
+
 LeakCheckCredential TestCredential(base::StringPiece username) {
   return LeakCheckCredential(base::ASCIIToUTF16(username),
                              base::ASCIIToUTF16("password123"));
@@ -29,6 +31,11 @@ class BulkLeakCheckTest : public testing::Test {
             identity_test_env_.identity_manager(),
             base::MakeRefCounted<network::TestSharedURLLoaderFactory>()) {}
 
+  void RunUntilIdle() { task_env_.RunUntilIdle(); }
+
+  signin::IdentityTestEnvironment& identity_test_env() {
+    return identity_test_env_;
+  }
   MockBulkLeakCheckDelegateInterface& delegate() { return delegate_; }
   BulkLeakCheckImpl& bulk_check() { return bulk_check_; }
 
@@ -45,13 +52,60 @@ TEST_F(BulkLeakCheckTest, Create) {
   // Destroying |leak_check_| doesn't trigger anything.
 }
 
-TEST_F(BulkLeakCheckTest, CheckCredentials) {
+TEST_F(BulkLeakCheckTest, CheckCredentialsAndDestroyImmediately) {
+  EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
+  EXPECT_CALL(delegate(), OnError).Times(0);
+
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(TestCredential("user1"));
+  credentials.push_back(TestCredential("user2"));
+  bulk_check().CheckCredentials(std::move(credentials));
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsAndDestroyAfterPayload) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
   EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
   EXPECT_CALL(delegate(), OnError).Times(0);
 
   std::vector<LeakCheckCredential> credentials;
   credentials.push_back(TestCredential("user1"));
   bulk_check().CheckCredentials(std::move(credentials));
+  RunUntilIdle();
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenAuthError) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
+  EXPECT_CALL(delegate(), OnError(LeakDetectionError::kTokenRequestFailure));
+
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(TestCredential("user1"));
+  bulk_check().CheckCredentials(std::move(credentials));
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsAccessTokenNetError) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
+  EXPECT_CALL(delegate(), OnError(LeakDetectionError::kNetworkError));
+
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(TestCredential("user1"));
+  bulk_check().CheckCredentials(std::move(credentials));
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
 }
 
 }  // namespace

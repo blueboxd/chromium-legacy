@@ -148,12 +148,18 @@ bool PropertyTreeManager::DirectlyUpdateScrollOffsetTransform(
 
   DCHECK(!cc_transform->is_currently_animating);
 
-  UpdateCcTransformLocalMatrix(*cc_transform, transform);
+  auto translation = transform.Translation2D();
+  auto scroll_offset =
+      gfx::ScrollOffset(-translation.Width(), -translation.Height());
+
   DirectlySetScrollOffset(host, scroll_node->GetCompositorElementId(),
-                          cc_transform->scroll_offset);
-  cc_transform->transform_changed = true;
-  property_trees->transform_tree.set_needs_update(true);
-  host.SetNeedsCommit();
+                          scroll_offset);
+  if (cc_transform->scroll_offset != scroll_offset) {
+    UpdateCcTransformLocalMatrix(*cc_transform, transform);
+    cc_transform->transform_changed = true;
+    property_trees->transform_tree.set_needs_update(true);
+    host.SetNeedsCommit();
+  }
   return true;
 }
 
@@ -203,17 +209,13 @@ bool PropertyTreeManager::DirectlyUpdatePageScaleTransform(
   return true;
 }
 
-bool PropertyTreeManager::DirectlySetScrollOffset(
+void PropertyTreeManager::DirectlySetScrollOffset(
     cc::LayerTreeHost& host,
     CompositorElementId element_id,
     const gfx::ScrollOffset& scroll_offset) {
   auto* property_trees = host.property_trees();
-  if (property_trees->scroll_tree.SetScrollOffset(element_id, scroll_offset)) {
-    if (auto* layer = host.LayerByElementId(element_id))
-      layer->SetNeedsPushProperties();
+  if (property_trees->scroll_tree.SetScrollOffset(element_id, scroll_offset))
     host.SetNeedsCommit();
-  }
-  return true;
 }
 
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {

@@ -4871,6 +4871,8 @@
 
   "ReportDeviceTimezoneInfo": {},
 
+  "ReportDeviceMemoryInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},
@@ -6179,7 +6181,8 @@
             "reset_at": {
               "hour": 6,
               "minute": 0
-            }
+            },
+            "activity_reporting_enabled": true
           }
         },
         "prefs": { "child_user.per_app_time_limits.policy": {} }

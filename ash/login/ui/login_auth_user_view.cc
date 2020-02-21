@@ -88,6 +88,8 @@ constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
 
 constexpr int kFingerprintIconSizeDp = 28;
 constexpr int kResetToDefaultIconDelayMs = 1300;
+constexpr base::TimeDelta kResetToDefaultMessageDelayMs =
+    base::TimeDelta::FromMilliseconds(3000);
 constexpr int kFingerprintIconTopSpacingDp = 20;
 constexpr int kSpacingBetweenFingerprintIconAndLabelDp = 15;
 constexpr int kFingerprintViewWidthDp = 204;
@@ -197,7 +199,8 @@ class FingerprintLabel : public views::Label {
     SetEnabledColor(login_constants::kAuthMethodsTextColor);
     SetMultiLine(true);
 
-    SetTextBasedOnState(FingerprintState::AVAILABLE, false /*can_use_pin*/);
+    SetTextBasedOnState(FingerprintState::AVAILABLE_DEFAULT,
+                        false /*can_use_pin*/);
   }
 
   void SetTextBasedOnAuthAttempt(bool success) {
@@ -213,8 +216,10 @@ class FingerprintLabel : public views::Label {
     auto get_displayed_id = [&]() {
       switch (state) {
         case FingerprintState::UNAVAILABLE:
-        case FingerprintState::AVAILABLE:
+        case FingerprintState::AVAILABLE_DEFAULT:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE;
+        case FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_TOUCH_SENSOR;
         case FingerprintState::DISABLED_FROM_ATTEMPTS:
           return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS;
         case FingerprintState::DISABLED_FROM_TIMEOUT:
@@ -428,6 +433,20 @@ class LoginAuthUserView::FingerprintView : public views::View {
     return size;
   }
 
+  // views::View:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() != ui::ET_GESTURE_TAP)
+      return;
+    if (state_ == FingerprintState::AVAILABLE_DEFAULT ||
+        state_ == FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING) {
+      SetState(FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING);
+      reset_state_.Start(
+          FROM_HERE, kResetToDefaultMessageDelayMs,
+          base::BindOnce(&FingerprintView::SetState, base::Unretained(this),
+                         FingerprintState::AVAILABLE_DEFAULT));
+    }
+  }
+
  private:
   void DisplayCurrentState() {
     SetVisible(state_ != FingerprintState::UNAVAILABLE);
@@ -442,11 +461,14 @@ class LoginAuthUserView::FingerprintView : public views::View {
 
   void SetIcon(FingerprintState state) {
     const SkColor color =
-        (state == FingerprintState::AVAILABLE ? SK_ColorWHITE
-                                              : kDisabledFingerprintIconColor);
+        (state == FingerprintState::AVAILABLE_DEFAULT ||
+                 state == FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING
+             ? SK_ColorWHITE
+             : kDisabledFingerprintIconColor);
     switch (state) {
       case FingerprintState::UNAVAILABLE:
-      case FingerprintState::AVAILABLE:
+      case FingerprintState::AVAILABLE_DEFAULT:
+      case FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING:
       case FingerprintState::DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintIcon,
                                               kFingerprintIconSizeDp, color));
@@ -472,7 +494,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
   FingerprintLabel* label_ = nullptr;
   AnimatedRoundedImageView* icon_ = nullptr;
   base::OneShotTimer reset_state_;
-  FingerprintState state_ = FingerprintState::AVAILABLE;
+  FingerprintState state_ = FingerprintState::AVAILABLE_DEFAULT;
 
   // Affects DISABLED_FROM_TIMEOUT message.
   bool can_use_pin_ = false;

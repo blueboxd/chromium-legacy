@@ -157,6 +157,11 @@ constexpr int kFakeStorageSerial = 789;
 // Timezone test values:
 constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
 constexpr char kTimezoneRegion[] = "America/Denver";
+// Memory test values:
+constexpr uint32_t kFakeTotalMemory = 1287312;
+constexpr uint32_t kFakeFreeMemory = 981239;
+constexpr uint32_t kFakeAvailableMemory = 98719321;
+constexpr uint32_t kFakePageFaults = 896123761;
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -455,9 +460,12 @@ void GetFakeCrosHealthdData(
       block_device_info(std::move(storage_vector));
   chromeos::cros_healthd::mojom::TimezoneInfo timezone_info(kPosixTimezone,
                                                             kTimezoneRegion);
+  chromeos::cros_healthd::mojom::MemoryInfo memory_info(
+      kFakeTotalMemory, kFakeFreeMemory, kFakeAvailableMemory, kFakePageFaults);
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone());
+      cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone(),
+      memory_info.Clone());
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -2505,9 +2513,11 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&GetFakeCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If kReportDeviceCpuInfo, kReportDevicePowerStatus,
+  // If kReportDeviceMemoryInfo, kReportDeviceCpuInfo, kReportDevicePowerStatus,
   // kReportDeviceStorageStatus, and kReportDeviceTimezoneInfo are false, expect
   // that the data from cros_healthd isn't present in the protobuf.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceMemoryInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2520,10 +2530,14 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_FALSE(device_status_.has_system_status());
   EXPECT_FALSE(device_status_.has_timezone_info());
+  EXPECT_FALSE(device_status_.has_memory_info());
 
-  // When kReportDeviceCpuInfo, kReportDevicePowerStatus,
-  // kReportDeviceStorageStatus, and kReportDeviceTimezoneInfo are set, expect
-  // the protobuf to have the data from cros_healthd.
+  // When kReportDeviceMemoryInfo, kReportDeviceCpuInfo,
+  // kReportDevicePowerStatus, kReportDeviceStorageStatus, and
+  // kReportDeviceTimezoneInfo are set, expect the protobuf to have the data
+  // from cros_healthd.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceMemoryInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2588,6 +2602,15 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   ASSERT_TRUE(device_status_.has_timezone_info());
   EXPECT_EQ(device_status_.timezone_info().posix(), kPosixTimezone);
   EXPECT_EQ(device_status_.timezone_info().region(), kTimezoneRegion);
+
+  // Verify the memory info.
+  ASSERT_TRUE(device_status_.has_memory_info());
+  EXPECT_EQ(device_status_.memory_info().total_memory_kib(), kFakeTotalMemory);
+  EXPECT_EQ(device_status_.memory_info().free_memory_kib(), kFakeFreeMemory);
+  EXPECT_EQ(device_status_.memory_info().available_memory_kib(),
+            kFakeAvailableMemory);
+  EXPECT_EQ(device_status_.memory_info().page_faults_since_last_boot(),
+            kFakePageFaults);
 }
 
 // Fake device state.

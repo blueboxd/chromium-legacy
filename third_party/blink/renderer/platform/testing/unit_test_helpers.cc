@@ -64,9 +64,9 @@ void RunPendingTasks() {
   Thread::Current()->GetTaskRunner()->PostTask(FROM_HERE,
                                                WTF::Bind(&ExitRunLoop));
 
-  // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
-  // to run GC with NoHeapPointerOnStack.
-  ThreadState::GCForbiddenScope gc_forbidden(ThreadState::Current());
+  // The following runloop can execute non-nested tasks with heap pointers
+  // living on stack, so we force both Oilpan and Unified GC to visit the stack.
+  ThreadState::HeapPointersOnStackScope scan_stack(ThreadState::Current());
   EnterRunLoop();
 }
 

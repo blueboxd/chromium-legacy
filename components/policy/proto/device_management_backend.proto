@@ -1048,6 +1048,18 @@ message TimezoneInfo {
   optional string region = 2;
 }
 
+// Memory information for the device.
+message MemoryInfo {
+  // Total memory, in KiB.
+  optional uint32 total_memory_kib = 1;
+  // Free memory, in KiB.
+  optional uint32 free_memory_kib = 2;
+  // Available memory, in KiB.
+  optional uint32 available_memory_kib = 3;
+  // Number of page faults since the last boot.
+  optional uint32 page_faults_since_last_boot = 4;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1151,6 +1163,9 @@ message DeviceStatusReportRequest {
 
   // Information of the device's current timezone.
   optional TimezoneInfo timezone_info = 35;
+
+  // Information about the device's memory.
+  optional MemoryInfo memory_info = 36;
 }
 
 message OsUpdateStatus {

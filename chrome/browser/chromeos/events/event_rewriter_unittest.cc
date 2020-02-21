@@ -161,8 +161,8 @@ class EventRewriterTest : public ChromeAshTestBase {
         input_method_manager_mock_);  // pass ownership
     delegate_ = std::make_unique<EventRewriterDelegateImpl>(nullptr);
     delegate_->set_pref_service_for_testing(prefs());
-    rewriter_ =
-        std::make_unique<ui::EventRewriterChromeOS>(delegate_.get(), nullptr);
+    rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(delegate_.get(),
+                                                            nullptr, false);
     ChromeAshTestBase::SetUp();
   }
 
@@ -1994,7 +1994,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
 
-  KeyTestCase wilcoStandardTests[] = {
+  std::vector<KeyTestCase> wilco_standard_tests({
       // F1 -> F1, Search + F1 -> Back
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F1, ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1},
@@ -2147,6 +2147,17 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_ALT_DOWN, ui::DomKey::F11},
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_ALT_DOWN, ui::DomKey::F11}},
+      // F12 -> F12
+      // Search + F12 differs between Wilco devices so it is tested separately.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12}},
       // The number row should not be rewritten without Search key.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_NONE,
@@ -2258,65 +2269,58 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_OEM_PLUS, ui::DomCode::EQUAL, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'='>::Character},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}}};
-
-  KeyTestCase wilco1Tests[] = {
-      // F12 -> F12, Search + F12 -> Ctrl + Launch App 2 (Display toggle)
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+  });
+
+  KeyTestCase wilco_1_test =
+      // Search + F12 -> Ctrl + Launch App 2 (Display toggle)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_COMMAND_DOWN, ui::DomKey::F12},
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
-        ui::DomKey::F12}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12}}};
+        ui::DomKey::F12}};
 
-  KeyTestCase drallionTests[] = {
-      // F12 -> F12, Search + F12 -> Privacy Screen Toggle
+  KeyTestCase drallion_test_no_privacy_screen =
+      // Search + F12 -> F12 (Privacy screen not supported)
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_COMMAND_DOWN, ui::DomKey::F12},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}};
+
+  KeyTestCase drallion_test_privacy_screen =
+      // F12 -> F12, Search + F12 -> Privacy Screen Toggle
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_COMMAND_DOWN, ui::DomKey::F12},
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
-        ui::EF_NONE, ui::DomKey::F12}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_CONTROL_DOWN, ui::DomKey::F12}},
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12},
-       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_ALT_DOWN, ui::DomKey::F12}}};
+        ui::EF_NONE, ui::DomKey::F12}};
 
-  // Run key test cases for Wilco 1.0 keyboard layout
+  // Set keyboard layout to Wilco 1.0
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
                                            kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
-  for (const auto& test : wilcoStandardTests)
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
-  // Wilco 1.0 specific key tests
-  for (const auto& test : wilco1Tests)
-    CheckKeyTestCase(rewriter(), test);
+  CheckKeyTestCase(rewriter(), wilco_1_test);
 
-  // Run key test cases for Drallion (Wilco 1.5) keyboard layout
+  // Set keyboard layout to Drallion (Wilco 1.5)
   rewriter_->KeyboardDeviceAddedForTesting(
       kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
-  // Standard key tests using Drallion keyboard layout
-  for (const auto& test : wilcoStandardTests)
+
+  // Run key tests using Drallion keyboard layout (no privacy screen)
+  rewriter_->set_privacy_screen_for_testing(false);
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
-  // Drallion specific key tests
-  for (const auto& test : drallionTests)
+  CheckKeyTestCase(rewriter(), drallion_test_no_privacy_screen);
+
+  // Run key tests using Drallion keyboard layout (privacy screen supported)
+  rewriter_->set_privacy_screen_for_testing(true);
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
+  CheckKeyTestCase(rewriter(), drallion_test_privacy_screen);
 }
 
 TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
 
-  KeyTestCase wilcoStandardTests[] = {
+  KeyTestCase wilco_standard_tests[] = {
       // Back -> Back, Search + Back -> F1
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_BROWSER_BACK, ui::DomCode::BROWSER_BACK, ui::EF_NONE,
@@ -2422,7 +2426,7 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11},
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}}};
 
-  KeyTestCase wilco1Tests[] = {
+  KeyTestCase wilco_1_tests[] = {
       // Ctrl + Launch App 1 (Display toggle) -> Unchanged
       // Search + Ctrl + Launch App 1 (Display toggle) -> F12
       {ui::ET_KEY_PRESSED,
@@ -2435,7 +2439,31 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::F12},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}}};
 
-  KeyTestCase drallionTests[] = {
+  KeyTestCase drallion_tests_no_privacy_screen[] = {
+      // Privacy Screen Toggle -> F12 (Privacy Screen not supported),
+      // Search + Privacy Screen Toggle -> F12
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
+        ui::EF_NONE, ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
+        ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+      // Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+        ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+        ui::DomKey::UNIDENTIFIED}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE,
+        ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
+        ui::DomKey::UNIDENTIFIED}}};
+
+  KeyTestCase drallion_tests_privacy_screen[] = {
       // Privacy Screen Toggle -> Privacy Screen Toggle,
       // Search + Privacy Screen Toggle -> F12
       {ui::ET_KEY_PRESSED,
@@ -2460,24 +2488,32 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}}};
 
-  // Run key test cases for Wilco 1.0 keyboard layout
+  // Set keyboard layout to Wilco 1.0
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
                                            kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
-  for (const auto& test : wilcoStandardTests)
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
   // Wilco 1.0 specific key tests
-  for (const auto& test : wilco1Tests)
+  for (const auto& test : wilco_1_tests)
     CheckKeyTestCase(rewriter(), test);
 
-  // Run key test cases for Drallion (Wilco 1.5) keyboard layout
+  // Set keyboard layout to Drallion (Wilco 1.5)
   rewriter_->KeyboardDeviceAddedForTesting(
       kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
+
   // Standard key tests using Drallion keyboard layout
-  for (const auto& test : wilcoStandardTests)
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
-  // Drallion specific key tests
-  for (const auto& test : drallionTests)
+
+  // Drallion specific key tests (no privacy screen)
+  rewriter_->set_privacy_screen_for_testing(false);
+  for (const auto& test : drallion_tests_no_privacy_screen)
+    CheckKeyTestCase(rewriter(), test);
+
+  // Drallion specific key tests (privacy screen supported)
+  rewriter_->set_privacy_screen_for_testing(true);
+  for (const auto& test : drallion_tests_privacy_screen)
     CheckKeyTestCase(rewriter(), test);
 }
 
@@ -2491,7 +2527,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
   top_row_as_fn_key.Init(prefs::kLanguageSendFunctionKeys, prefs());
   top_row_as_fn_key.SetValue(true);
 
-  KeyTestCase wilcoStandardTests[] = {
+  KeyTestCase wilco_standard_tests[] = {
       // Back -> F1, Search + Back -> Back
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_BROWSER_BACK, ui::DomCode::BROWSER_BACK, ui::EF_NONE,
@@ -2597,7 +2633,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11},
        {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}}};
 
-  KeyTestCase wilco1Tests[] = {
+  KeyTestCase wilco_1_tests[] = {
       // Ctrl + Launch App 1 (Display toggle) -> F12
       // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
@@ -2610,9 +2646,9 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
         ui::DomKey::F12}}};
 
-  KeyTestCase drallionTests[] = {
+  KeyTestCase drallion_tests_no_privacy_screen[] = {
       // Privacy Screen Toggle -> F12,
-      // Search + Privacy Screen Toggle -> Unchanged
+      // Search + Privacy Screen Toggle -> F12 (Privacy screen not supported)
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
         ui::EF_NONE, ui::DomKey::UNIDENTIFIED},
@@ -2620,8 +2656,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
         ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
-       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
-        ui::EF_NONE, ui::DomKey::UNIDENTIFIED}},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
       // Ctrl + Launch App 1 (Display toggle) -> Unchanged
       // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
       {ui::ET_KEY_PRESSED,
@@ -2635,24 +2670,44 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::NONE, ui::EF_CONTROL_DOWN,
         ui::DomKey::UNIDENTIFIED}}};
 
+  KeyTestCase drallion_tests_privacy_screen[] = {
+      // Privacy Screen Toggle -> F12,
+      // Search + Privacy Screen Toggle -> Unchanged
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
+        ui::EF_NONE, ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
+        ui::EF_COMMAND_DOWN, ui::DomKey::UNIDENTIFIED},
+       {ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::DomCode::PRIVACY_SCREEN_TOGGLE,
+        ui::EF_NONE, ui::DomKey::UNIDENTIFIED}}};
+
   // Run key test cases for Wilco 1.0 keyboard layout
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
                                            kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
-  for (const auto& test : wilcoStandardTests)
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
   // Wilco 1.0 specific key tests
-  for (const auto& test : wilco1Tests)
+  for (const auto& test : wilco_1_tests)
     CheckKeyTestCase(rewriter(), test);
 
   // Run key test cases for Drallion (Wilco 1.5) keyboard layout
   rewriter_->KeyboardDeviceAddedForTesting(
       kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
   // Standard key tests using Drallion keyboard layout
-  for (const auto& test : wilcoStandardTests)
+  for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
-  // Drallion specific key tests
-  for (const auto& test : drallionTests)
+
+  // Drallion specific key tests (no privacy screen)
+  rewriter_->set_privacy_screen_for_testing(false);
+  for (const auto& test : drallion_tests_no_privacy_screen)
+    CheckKeyTestCase(rewriter(), test);
+
+  // Drallion specific key tests (privacy screen supported)
+  rewriter_->set_privacy_screen_for_testing(true);
+  for (const auto& test : drallion_tests_privacy_screen)
     CheckKeyTestCase(rewriter(), test);
 }
 
@@ -2886,7 +2941,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
     delegate_ = std::make_unique<EventRewriterDelegateImpl>(nullptr);
     delegate_->set_pref_service_for_testing(prefs());
     rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
-        delegate_.get(), sticky_keys_controller_);
+        delegate_.get(), sticky_keys_controller_, false);
     chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
     source_.AddEventRewriter(rewriter_.get());
     sticky_keys_controller_->Enable(true);

@@ -16,6 +16,7 @@
 #include "base/sequence_checker.h"
 #include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame_pool.h"
 #include "media/filters/offloading_video_decoder.h"
 
 namespace libgav1 {
@@ -24,7 +25,6 @@ class Decoder;
 
 namespace media {
 class MediaLog;
-class FrameBufferPool;
 
 class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
  public:
@@ -48,6 +48,10 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;
+
+  scoped_refptr<VideoFrame> CreateVideoFrame(VideoPixelFormat format,
+                                             const gfx::Size& coded_size,
+                                             const gfx::Rect& visible_rect);
 
  private:
   enum class DecoderState {
@@ -84,9 +88,9 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
   DecoderState state_ = DecoderState::kUninitialized;
 
   // A decoded buffer used in libgav1 is allocated and managed by
-  // |memory_pool_|. The buffer can be reused only if libgav1's decoder doesn't
+  // |frame_pool_|. The buffer can be reused only if libgav1's decoder doesn't
   //  use the buffer and rendering the frame is complete.
-  scoped_refptr<FrameBufferPool> memory_pool_;
+  VideoFramePool frame_pool_;
 
   base::queue<DecodeRequest> decode_queue_;
 

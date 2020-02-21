@@ -247,8 +247,8 @@ void DecryptingDemuxerStream::DecryptPendingBuffer() {
       pending_buffer_to_decrypt_->timestamp().InMicroseconds());
   decryptor_->Decrypt(
       GetDecryptorStreamType(), pending_buffer_to_decrypt_,
-      BindToCurrentLoop(
-          base::Bind(&DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
+      BindToCurrentLoop(base::BindOnce(
+          &DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
 }
 
 void DecryptingDemuxerStream::OnBufferDecrypted(

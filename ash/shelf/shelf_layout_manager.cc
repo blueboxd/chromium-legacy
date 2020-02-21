@@ -886,7 +886,7 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
   WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // affect the layout in anyway.
-  if (!updating_bounds_ &&
+  if (phase_ != ShelfLayoutPhase::kMoving &&
       ((shelf_widget_->GetNativeWindow() == child) ||
        (shelf_widget_->status_area_widget()->GetNativeWindow() == child))) {
     LayoutShelf(/*animate=*/true);
@@ -1040,7 +1040,7 @@ void ShelfLayoutManager::OnFirstWallpaperShown() {
 void ShelfLayoutManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (updating_bounds_)
+  if (phase_ == ShelfLayoutPhase::kMoving)
     return;
 
   // Update |user_work_area_bounds_| for the new display arrangement.
@@ -1396,11 +1396,11 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
 }
 
 void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
-
+  DCHECK_EQ(phase_, ShelfLayoutPhase::kAiming) << " Aim before moving!";
+  phase_ = ShelfLayoutPhase::kMoving;
   ShelfNavigationWidget* nav_widget = shelf_->navigation_widget();
   HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
-  base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
     shelf_->shelf_widget()->UpdateLayout(animate);
     hotseat_widget->UpdateLayout(animate);
@@ -1436,6 +1436,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
       }
     }
   }
+  phase_ = ShelfLayoutPhase::kAtRest;
 }
 
 bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
@@ -1495,6 +1496,9 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
+  if (phase_ == ShelfLayoutPhase::kMoving)
+    DVLOG(1) << "Careful when switching targets mid-move!";
+  phase_ = ShelfLayoutPhase::kAiming;
   HotseatState hotseat_target_state =
       CalculateHotseatState(visibility_state(), auto_hide_state());
   gfx::Insets shelf_insets =

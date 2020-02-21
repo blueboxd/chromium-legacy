@@ -16,7 +16,6 @@
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -25,23 +24,6 @@ namespace password_manager {
 namespace {
 
 using ::signin::AccessTokenFetcher;
-
-constexpr char kAPIScope[] =
-    "https://www.googleapis.com/auth/identity.passwords.leak.check";
-
-// Returns a Google account that can be used for getting a token.
-CoreAccountId GetAccountForRequest(
-    const signin::IdentityManager* identity_manager) {
-  CoreAccountInfo result = identity_manager->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
-  if (result.IsEmpty()) {
-    std::vector<CoreAccountInfo> all_accounts =
-        identity_manager->GetAccountsWithRefreshTokens();
-    if (!all_accounts.empty())
-      result = all_accounts.front();
-  }
-  return result.account_id;
-}
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to
@@ -128,10 +110,8 @@ AuthenticatedLeakCheck::RequestPayloadHelper::RequestPayloadHelper(
 
 void AuthenticatedLeakCheck::RequestPayloadHelper::RequestAccessToken(
     AccessTokenFetcher::TokenCallback callback) {
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      GetAccountForRequest(identity_manager_),
-      /*consumer_name=*/"leak_detection_service", {kAPIScope},
-      std::move(callback), signin::AccessTokenFetcher::Mode::kImmediate);
+  token_fetcher_ = password_manager::RequestAccessToken(identity_manager_,
+                                                        std::move(callback));
 }
 
 void AuthenticatedLeakCheck::RequestPayloadHelper::PreparePayload(

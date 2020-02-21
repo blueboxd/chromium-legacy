@@ -25,8 +25,8 @@
     TestRunner.evaluateInPage('scheduleScriptLoad()');
   }
 
-  function done(msg) {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function done(msg) {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

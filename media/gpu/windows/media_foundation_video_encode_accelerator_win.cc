@@ -415,7 +415,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples(
   }
 
   // Initialize output parameters.
-  hr = MFCreateMediaType(imf_output_media_type_.GetAddressOf());
+  hr = MFCreateMediaType(&imf_output_media_type_);
   RETURN_ON_HR_FAILURE(hr, "Couldn't create media type", false);
   hr = imf_output_media_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set media type", false);
@@ -441,7 +441,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples(
   RETURN_ON_HR_FAILURE(hr, "Couldn't set output media type", false);
 
   // Initialize input parameters.
-  hr = MFCreateMediaType(imf_input_media_type_.GetAddressOf());
+  hr = MFCreateMediaType(&imf_input_media_type_);
   RETURN_ON_HR_FAILURE(hr, "Couldn't create media type", false);
   hr = imf_input_media_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set media type", false);
@@ -468,7 +468,7 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
   RETURN_ON_FAILURE((encoder_.Get() != nullptr),
                     "No HW encoder instance created", false);
 
-  HRESULT hr = encoder_.CopyTo(codec_api_.GetAddressOf());
+  HRESULT hr = encoder_.As(&codec_api_);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get ICodecAPI", false);
   VARIANT var;
   var.vt = VT_UI4;
@@ -539,7 +539,7 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   Microsoft::WRL::ComPtr<IMFMediaBuffer> input_buffer;
-  input_sample_->GetBufferByIndex(0, input_buffer.GetAddressOf());
+  input_sample_->GetBufferByIndex(0, &input_buffer);
 
   {
     MediaBufferScopedPointer scoped_buffer(input_buffer.Get());
@@ -627,7 +627,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   DVLOG(3) << "Got encoded data " << hr;
 
   Microsoft::WRL::ComPtr<IMFMediaBuffer> output_buffer;
-  hr = output_sample_->GetBufferByIndex(0, output_buffer.GetAddressOf());
+  hr = output_sample_->GetBufferByIndex(0, &output_buffer);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get buffer by index", );
   DWORD size = 0;
   hr = output_buffer->GetCurrentLength(&size);

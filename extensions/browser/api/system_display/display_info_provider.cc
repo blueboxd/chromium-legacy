@@ -60,6 +60,11 @@ void DisplayInfoProvider::InitializeForTesting(
 }
 
 // static
+void DisplayInfoProvider::ResetForTesting() {
+  g_display_info_provider = nullptr;
+}
+
+// static
 // Creates new DisplayUnitInfo struct for |display|.
 api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
     const display::Display& display,

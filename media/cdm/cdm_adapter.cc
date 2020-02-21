@@ -456,7 +456,7 @@ void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
 
 void CdmAdapter::Decrypt(StreamType stream_type,
                          scoped_refptr<DecoderBuffer> encrypted,
-                         const DecryptCB& decrypt_cb) {
+                         DecryptCB decrypt_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -476,7 +476,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
 
   if (status != cdm::kSuccess) {
     DVLOG(1) << __func__ << ": status = " << status;
-    decrypt_cb.Run(ToMediaDecryptorStatus(status), nullptr);
+    std::move(decrypt_cb).Run(ToMediaDecryptorStatus(status), nullptr);
     return;
   }
 
@@ -485,7 +485,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
                               decrypted_block->DecryptedBuffer()->Size()));
   decrypted_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(decrypted_block->Timestamp()));
-  decrypt_cb.Run(Decryptor::kSuccess, std::move(decrypted_buffer));
+  std::move(decrypt_cb).Run(Decryptor::kSuccess, std::move(decrypted_buffer));
 }
 
 void CdmAdapter::CancelDecrypt(StreamType stream_type) {

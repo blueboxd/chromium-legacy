@@ -142,6 +142,9 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
         logger.LogMessage(
             Logger::STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR);
         break;
+      case LeakDetectionError::kNetworkError:
+        logger.LogMessage(Logger::STRING_LEAK_DETECTION_NETWORK_ERROR);
+        break;
     }
   }
 }

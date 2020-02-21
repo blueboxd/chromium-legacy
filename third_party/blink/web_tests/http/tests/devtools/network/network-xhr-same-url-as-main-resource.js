@@ -28,10 +28,10 @@
     });
   }
 
-  function step3() {
+  async function step3() {
     var request1 = NetworkTestRunner.networkRequests().pop();
     TestRunner.addResult(request1.resourceType().name());
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

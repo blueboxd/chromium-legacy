@@ -13,7 +13,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
@@ -51,49 +53,56 @@
   std::unique_ptr<OmniboxViewIOS> _editView;
 }
 @synthesize editController = _editController;
-@synthesize browserState = _browserState;
 @synthesize keyboardDelegate = _keyboardDelegate;
-@synthesize dispatcher = _dispatcher;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
 #pragma mark - public
 
 - (void)start {
-  BOOL isIncognito = self.browserState->IsOffTheRecord();
+  BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
 
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
   self.viewController.defaultLeadingImage =
       GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
-          self.dispatcher);
+          self.browser->GetCommandDispatcher());
   self.viewController.delegate = self;
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.templateURLService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator.faviconLoader =
-      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator.consumer = self.viewController;
 
   DCHECK(self.editController);
 
-  id<OmniboxFocuser> focuser = static_cast<id<OmniboxFocuser>>(self.dispatcher);
+  id<OmniboxFocuser> focuser =
+      static_cast<id<OmniboxFocuser>>(self.browser->GetCommandDispatcher());
   _editView = std::make_unique<OmniboxViewIOS>(
-      self.textField, self.editController, self.mediator, self.browserState,
-      focuser);
+      self.textField, self.editController, self.mediator,
+      self.browser->GetBrowserState(), focuser);
 
   self.viewController.textChangeDelegate = _editView.get();
 
   // Configure the textfield.
   self.textField.suggestionCommandsEndpoint =
-      static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);
+      static_cast<id<OmniboxSuggestionCommands>>(
+          self.browser->GetCommandDispatcher());
 
   self.keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   self.keyboardDelegate.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
+      static_cast<id<ApplicationCommands, BrowserCommands>>(
+          self.browser->GetCommandDispatcher());
   self.keyboardDelegate.omniboxTextField = self.textField;
   ConfigureAssistiveKeyboardViews(self.textField, kDotComTLD,
                                   self.keyboardDelegate);
@@ -154,7 +163,7 @@
 
   OmniboxPopupCoordinator* coordinator =
       [[OmniboxPopupCoordinator alloc] initWithPopupView:std::move(popupView)];
-  coordinator.browserState = self.browserState;
+  coordinator.browserState = self.browser->GetBrowserState();
   coordinator.presenterDelegate = presenterDelegate;
 
   return coordinator;

@@ -677,7 +677,8 @@ static bool SourceSizeValue(const Element* element,
   if (exists)
     UseCounter::Count(current_document, WebFeature::kSizes);
   source_size =
-      SizesAttributeParser(MediaValuesDynamic::Create(current_document), sizes)
+      SizesAttributeParser(MediaValuesDynamic::Create(current_document), sizes,
+                           current_document.ToExecutionContext())
           .length();
   return exists;
 }

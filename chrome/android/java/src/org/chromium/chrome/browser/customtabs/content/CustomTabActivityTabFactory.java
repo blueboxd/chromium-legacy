@@ -87,7 +87,7 @@ public class CustomTabActivityTabFactory {
 
     private ChromeTabCreator createTabCreator(boolean incognito) {
         return new ChromeTabCreator(mActivity, mActivityWindowAndroid.get(), mStartupTabPreloader,
-                mCustomTabDelegateFactory::get, incognito);
+                mCustomTabDelegateFactory::get, incognito, null);
     }
 
     /** Creates a new tab for a Custom Tab activity */

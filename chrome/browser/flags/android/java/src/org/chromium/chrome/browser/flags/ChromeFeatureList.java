@@ -22,8 +22,33 @@ public abstract class ChromeFeatureList {
     /** Map that stores substitution feature flags for tests. */
     private static Map<String, Boolean> sTestFeatures;
 
-    // Prevent instantiation.
+    /** Prevent instantiation. */
     private ChromeFeatureList() {}
+
+    /** Access to default values of the native chrome feature flag. */
+    @VisibleForTesting
+    private static boolean sTestCanUseDefaults;
+
+    /**
+     * This is called explicitly for instrumentation tests
+     * via Features#applyForInstrumentation method. Unit tests and
+     * RoboElectric tests must not invoke this and
+     * should rely on the {@link Features} annotations to enable
+     * or disable any feature flags.
+     */
+    @VisibleForTesting
+    public static void setTestCanUseDefaultsForTesting() {
+        sTestCanUseDefaults = true;
+    }
+
+    /**
+     *  We reset the value to false after the instrumentation test to avoid any unwanted
+     *  persistence of the state. This is invoked by Features#reset method.
+     */
+    @VisibleForTesting
+    public static void resetTestCanUseDefaultsForTesting() {
+        sTestCanUseDefaults = false;
+    }
 
     /**
      * Sets the feature flags to use in JUnit tests, since native calls are not available there.
@@ -44,8 +69,14 @@ public abstract class ChromeFeatureList {
      */
     public static boolean isInitialized() {
         if (sTestFeatures != null) return true;
-        if (!LibraryLoader.getInstance().isInitialized()) return false;
+        return isNativeInitialized();
+    }
 
+    /**
+     * @return Whether the native FeatureList is initialized or not.
+     */
+    private static boolean isNativeInitialized() {
+        if (!LibraryLoader.getInstance().isInitialized()) return false;
         // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
         // In that case, accessing it will not immediately fail, but instead cause a crash later
         // when it is initialized. Return whether the native FeatureList has been initialized,
@@ -55,6 +86,17 @@ public abstract class ChromeFeatureList {
         // The FeatureList is however guaranteed to be initialized by the time
         // AsyncInitializationActivity#finishNativeInitialization is called.
         return ChromeFeatureListJni.get().isInitialized();
+    }
+
+    /*
+     * Returns whether the specified feature is enabled or not in native.
+     *
+     * @param featureName The name of the feature to query.
+     * @return Whether the feature is enabled or not.
+     */
+    private static boolean isEnabledInNative(String featureName) {
+        assert isNativeInitialized();
+        return ChromeFeatureListJni.get().isEnabled(featureName);
     }
 
     /**
@@ -67,14 +109,14 @@ public abstract class ChromeFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
+        /** FeatureFlags set for testing override the native default value. */
         if (sTestFeatures != null) {
             Boolean enabled = sTestFeatures.get(featureName);
-            if (enabled == null) throw new IllegalArgumentException(featureName);
-            return enabled;
+            if (enabled != null) return enabled;
+            if (!sTestCanUseDefaults) throw new IllegalArgumentException(featureName);
         }
 
-        assert isInitialized();
-        return ChromeFeatureListJni.get().isEnabled(featureName);
+        return isEnabledInNative(featureName);
     }
 
     /**
@@ -154,7 +196,7 @@ public abstract class ChromeFeatureList {
                 featureName, paramName, defaultValue);
     }
 
-    // Alphabetical:
+    /** Alphabetical: */
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS =
             "AllowRemoteContextForNotifications";

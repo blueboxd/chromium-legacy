@@ -70,7 +70,7 @@ class MFPhotoCallback final
 
     for (DWORD i = 0; i < buffer_count; ++i) {
       ComPtr<IMFMediaBuffer> buffer;
-      sample->GetBufferByIndex(i, buffer.GetAddressOf());
+      sample->GetBufferByIndex(i, &buffer);
       if (!buffer)
         continue;
 
@@ -336,9 +336,9 @@ const CapabilityWin& GetBestMatchedPhotoCapability(
 
 HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
   ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
-  HRESULT hr = CoCreateInstance(
-      CLSID_MFCaptureEngineClassFactory, NULL, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(capture_engine_class_factory.GetAddressOf()));
+  HRESULT hr = CoCreateInstance(CLSID_MFCaptureEngineClassFactory, NULL,
+                                CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&capture_engine_class_factory));
   if (FAILED(hr))
     return hr;
 
@@ -405,7 +405,7 @@ class MFVideoCallback final
 
     for (DWORD i = 0; i < count; ++i) {
       ComPtr<IMFMediaBuffer> buffer;
-      sample->GetBufferByIndex(i, buffer.GetAddressOf());
+      sample->GetBufferByIndex(i, &buffer);
       if (buffer) {
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
@@ -545,9 +545,8 @@ HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
 
     DWORD media_type_index = 0;
     ComPtr<IMFMediaType> type;
-    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(source, stream_index,
-                                                      media_type_index,
-                                                      type.GetAddressOf()))) {
+    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(
+                         source, stream_index, media_type_index, &type))) {
       VideoCaptureFormat format;
       if (GetFormatFromSourceMediaType(type.Get(), photo, &format))
         capabilities->emplace_back(media_type_index, format, stream_index);
@@ -606,7 +605,7 @@ bool VideoCaptureDeviceMFWin::Init() {
 
   HRESULT hr = S_OK;
   if (!engine_)
-    hr = CreateCaptureEngine(engine_.GetAddressOf());
+    hr = CreateCaptureEngine(&engine_);
 
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
@@ -614,7 +613,7 @@ bool VideoCaptureDeviceMFWin::Init() {
   }
 
   ComPtr<IMFAttributes> attributes;
-  MFCreateAttributes(attributes.GetAddressOf(), 1);
+  MFCreateAttributes(&attributes, 1);
   DCHECK(attributes);
 
   video_callback_ = new MFVideoCallback(this);
@@ -645,7 +644,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationEngineGetSourceFailed,
             FROM_HERE, hr);
@@ -681,10 +680,9 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   const CapabilityWin best_match_video_capability =
       GetBestMatchedCapability(params.requested_format, video_capabilities);
   ComPtr<IMFMediaType> source_video_media_type;
-  hr = GetAvailableDeviceMediaType(source.Get(),
-                                   best_match_video_capability.stream_index,
-                                   best_match_video_capability.media_type_index,
-                                   source_video_media_type.GetAddressOf());
+  hr = GetAvailableDeviceMediaType(
+      source.Get(), best_match_video_capability.stream_index,
+      best_match_video_capability.media_type_index, &source_video_media_type);
   if (FAILED(hr)) {
     OnError(
         VideoCaptureError::kWinMediaFoundationGetAvailableDeviceMediaTypeFailed,
@@ -702,8 +700,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCaptureSink> sink;
-  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
-                        sink.GetAddressOf());
+  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, &sink);
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationEngineGetSinkFailed,
             FROM_HERE, hr);
@@ -711,7 +708,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCapturePreviewSink> preview_sink;
-  hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
+  hr = sink->QueryInterface(IID_PPV_ARGS(&preview_sink));
   if (FAILED(hr)) {
     OnError(VideoCaptureError::
                 kWinMediaFoundationSinkQueryCapturePreviewInterfaceFailed,
@@ -727,7 +724,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFMediaType> sink_video_media_type;
-  hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
+  hr = MFCreateMediaType(&sink_video_media_type);
   if (FAILED(hr)) {
     OnError(
         VideoCaptureError::kWinMediaFoundationCreateSinkVideoMediaTypeFailed,
@@ -808,17 +805,16 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFMediaType> source_media_type;
-  hr = GetAvailableDeviceMediaType(source.Get(),
-                                   selected_photo_capability_->stream_index,
-                                   selected_photo_capability_->media_type_index,
-                                   source_media_type.GetAddressOf());
+  hr = GetAvailableDeviceMediaType(
+      source.Get(), selected_photo_capability_->stream_index,
+      selected_photo_capability_->media_type_index, &source_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -832,7 +828,7 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFMediaType> sink_media_type;
-  hr = MFCreateMediaType(sink_media_type.GetAddressOf());
+  hr = MFCreateMediaType(&sink_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -855,14 +851,14 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFCaptureSink> sink;
-  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO, sink.GetAddressOf());
+  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO, &sink);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFCapturePhotoSink> photo_sink;
-  hr = sink->QueryInterface(IID_PPV_ARGS(photo_sink.GetAddressOf()));
+  hr = sink->QueryInterface(IID_PPV_ARGS(&photo_sink));
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -903,7 +899,7 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
     return;
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -913,7 +909,7 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
   hr = source->GetCurrentDeviceMediaType(
       selected_photo_capability_ ? selected_photo_capability_->stream_index
                                  : selected_video_capability_->stream_index,
-      current_media_type.GetAddressOf());
+      &current_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -948,7 +944,7 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 
   HRESULT hr = S_OK;
   ComPtr<IMFCaptureSource> source;
-  hr = engine_->GetSource(source.GetAddressOf());
+  hr = engine_->GetSource(&source);
 
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
@@ -964,8 +960,7 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 
     ComPtr<IMFMediaType> current_source_media_type;
     hr = source->GetCurrentDeviceMediaType(
-        selected_photo_capability_->stream_index,
-        current_source_media_type.GetAddressOf());
+        selected_photo_capability_->stream_index, &current_source_media_type);
 
     if (FAILED(hr)) {
       LogError(FROM_HERE, hr);

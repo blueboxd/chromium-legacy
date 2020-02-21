@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/color_space_export.h"
 
 // These forward declarations are used to give IPC code friend access to private

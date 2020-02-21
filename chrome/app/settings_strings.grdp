@@ -2356,26 +2356,14 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_SECTION_TITLE" desc="'Safety check' is a noun phrase (sentence case). 'Safety check' refers to an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.">
     Safety check
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE_CHECK" desc="'Safety check' is a noun phrase (sentence case). 'Safety check' refers to an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.">
-    Safety check
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_CHECKING" desc="A message shown on the top of the safety check feature, explaining to the user that the safety check is currently running.">
+    Running...
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_SUB_LABEL_BEFORE_CHECK" desc="This body text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
-    Can help keep you safe from data breaches, bad extensions, and more
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER" desc="A message shown on the top of the safety check feature, explaining to the user that it ran a moment ago.">
+    Safety check ran a moment ago
   </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON_BEFORE_CHECK" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
     Check now
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is a noun. This heading is the title for a subcategory in the safety check.">
-    Updates
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="This heading is the title for a subcategory in the safety check.">
-    Passwords
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_PRIMARY_LABEL" desc="Primary label of the 'Safe Browsing' element in the safety check list.">
-    Safe Browsing
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL" desc="This heading is the title for a subcategory in the safety check.">
-    Extensions
   </message>
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching

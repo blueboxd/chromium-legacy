@@ -11,11 +11,13 @@
 #include "base/json/json_parser.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -889,6 +891,9 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(ExtensionManagementServiceTest, CloudReportingEnabledPolicy) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kEnterpriseReportingInBrowser);
   // Enables the policy put the extension into forced list.
   SetPref(true, prefs::kCloudReportingEnabled,
           std::make_unique<base::Value>(true));
@@ -915,6 +920,9 @@ TEST_F(ExtensionManagementServiceTest, CloudReportingEnabledPolicy) {
 
 TEST_F(ExtensionManagementServiceTest,
        CloudReportingEnabledPolicyOverridesBlacklist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kEnterpriseReportingInBrowser);
   base::ListValue denied_list_pref;
   denied_list_pref.AppendString(extension_misc::kCloudReportingExtensionId);
   SetPref(true, pref_names::kInstallDenyList,
@@ -931,6 +939,9 @@ TEST_F(ExtensionManagementServiceTest,
 
 TEST_F(ExtensionManagementServiceTest,
        CloudReportingEnabledPolicyOverridesAllowedTypes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kEnterpriseReportingInBrowser);
   scoped_refptr<const Extension> extension =
       CreateExtension(Manifest::EXTERNAL_POLICY, "1.0",
                       extension_misc::kCloudReportingExtensionId,
@@ -950,7 +961,10 @@ TEST_F(ExtensionManagementServiceTest,
 }
 
 TEST_F(ExtensionManagementServiceTest,
-       CloudReportingenabledOverridesExtensionSettings) {
+       CloudReportingEnabledOverridesExtensionSettings) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kEnterpriseReportingInBrowser);
   SetExampleDictPref(R"({
         "oempjldejiginopiohodkdoklcjklbaa": {
           "installation_mode": "allowed",

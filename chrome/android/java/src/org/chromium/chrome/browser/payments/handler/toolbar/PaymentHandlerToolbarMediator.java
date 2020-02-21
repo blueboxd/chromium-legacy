@@ -36,7 +36,7 @@ import java.net.URISyntaxException;
     /* package */ static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
     private final PropertyModel mModel;
-    private final PaymentHandlerToolbarObserver mObserver;
+    private PaymentHandlerToolbarObserver mObserver;
     /** The handler to delay hiding the progress bar. */
     private Handler mHideProgressBarHandler;
     /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
@@ -48,15 +48,18 @@ import java.net.URISyntaxException;
      * @param model The {@link PaymentHandlerToolbarProperties} that holds all the view state for
      *         the payment handler toolbar component.
      * @param webContents The web-contents that loads the payment app.
-     * @param observer The observer of this toolbar.
      * @param isSmallDevice Whether the device screen is considered small.
      */
-    /* package */ PaymentHandlerToolbarMediator(PropertyModel model, WebContents webContents,
-            PaymentHandlerToolbarObserver observer, boolean isSmallDevice) {
+    /* package */ PaymentHandlerToolbarMediator(
+            PropertyModel model, WebContents webContents, boolean isSmallDevice) {
         super(webContents);
         mIsSmallDevice = isSmallDevice;
         mWebContentsRef = webContents;
         mModel = model;
+    }
+
+    /** Set an observer for this class. */
+    /* package */ void setObserver(PaymentHandlerToolbarObserver observer) {
         mObserver = observer;
     }
 
@@ -81,19 +84,20 @@ import java.net.URISyntaxException;
     @Override
     public void didFinishNavigation(NavigationHandle navigation) {
         if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
+        String url = mWebContentsRef.getVisibleUrl().getSpec();
+        try {
+            mModel.set(PaymentHandlerToolbarProperties.URL, new URI(url));
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Failed to instantiate a URI with the url \"%s\".", url);
+            assert mObserver != null;
+            mObserver.onToolbarError();
+        }
         mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
     }
 
     @Override
     public void didStartNavigation(NavigationHandle navigation) {
         if (!navigation.isInMainFrame() || navigation.isSameDocument()) return;
-        String url = navigation.getUrl();
-        try {
-            mModel.set(PaymentHandlerToolbarProperties.URL, new URI(url));
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "Failed to instantiate a URI with the url \"%s\".", url);
-            mObserver.onToolbarError();
-        }
         mModel.set(PaymentHandlerToolbarProperties.SECURITY_ICON,
                 getSecurityIconResource(ConnectionSecurityLevel.NONE));
     }

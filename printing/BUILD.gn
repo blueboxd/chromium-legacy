@@ -193,6 +193,8 @@ component("printing") {
         "backend/cups_ipp_constants.h",
         "backend/cups_ipp_helper.cc",
         "backend/cups_ipp_helper.h",
+        "backend/cups_ipp_utils.cc",
+        "backend/cups_ipp_utils.h",
         "backend/cups_jobs.cc",
         "backend/cups_jobs.h",
         "backend/cups_printer.cc",

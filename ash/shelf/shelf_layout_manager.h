@@ -266,7 +266,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   float GetOpacity() const;
 
-  bool updating_bounds() const { return updating_bounds_; }
+  bool updating_bounds() const { return phase_ == ShelfLayoutPhase::kMoving; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
   HotseatState hotseat_state() const {
     return shelf_widget_->hotseat_widget()->state();
@@ -326,6 +326,14 @@ class ASH_EXPORT ShelfLayoutManager
     // True when the system is in the cancelable, pre-lock screen animation.
     bool pre_lock_screen_animation_active;
     session_manager::SessionState session_state;
+  };
+
+  // An enumration describing the various phases in which the shelf can be when
+  // managing the bounds and opacity of its components.
+  enum class ShelfLayoutPhase {
+    kAtRest,  // No activity
+    kAiming,  // Calculating target bounds
+    kMoving,  // Laying out and animating to target bounds
   };
 
   // MessageCenterObserver:
@@ -481,10 +489,6 @@ class ASH_EXPORT ShelfLayoutManager
   void UpdateVisibilityStateForSystemTrayChange(
       message_center::Visibility visibility);
 
-  // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
-  // UpdateBoundsAndOpacity() again from SetChildBounds().
-  bool updating_bounds_ = false;
-
   bool in_shutdown_ = false;
 
   // True if the last mouse event was a mouse drag.
@@ -492,6 +496,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Current state.
   State state_;
+
+  ShelfLayoutPhase phase_ = ShelfLayoutPhase::kAtRest;
 
   float target_opacity_ = 0.0f;
 

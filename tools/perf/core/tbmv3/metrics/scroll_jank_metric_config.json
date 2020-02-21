@@ -1,0 +1,24 @@
+{
+  "name": "Scroll Jank Metric",
+  "description": "Counts the number of janky periods during scroll.",
+  "histograms": [
+    {
+      "name": "all_janks",
+      "description": "Number of all janky periods.",
+      "requiredCategories": ["latencyInfo"],
+      "unit": "count_smallerIsBetter"
+    },
+    {
+      "name": "big_janks",
+      "description": "Number of big janky periods.",
+      "requiredCategories": ["latencyInfo"],
+      "unit": "count_smallerIsBetter"
+    },
+    {
+      "name": "total_jank_duration",
+      "description": "Total duration of all janky periods.",
+      "requiredCategories": ["latencyInfo"],
+      "unit": "ms_smallerIsBetter"
+    }
+  ]
+}

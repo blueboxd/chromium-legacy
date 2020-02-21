@@ -79,19 +79,24 @@ unsigned int UpdatePasswordInfoBarDelegate::GetDisplayUsernames(
     const base::string16& default_username,
     std::vector<base::string16>* usernames) {
   unsigned int selected_username = 0;
-  for (const auto& form : current_forms) {
-    usernames->push_back(GetDisplayUsername(*form));
-    if (form->username_value == default_username) {
-      selected_username = usernames->size() - 1;
+  // TODO(crbug.com/1054410): Fix the update logic to use all best matches,
+  // rather than current_forms which is best_matches without PSL-matched
+  // credentials.
+  if (current_forms.size() > 1) {
+    // If multiple credentials can be updated, we display a dropdown with all the corresponding
+    // usernames.
+    for (const auto& form : current_forms) {
+      usernames->push_back(GetDisplayUsername(*form));
+      if (form->username_value == default_username) {
+        selected_username = usernames->size() - 1;
+      }
     }
-  }
-
-  if (usernames->empty() ||
-      usernames->at(selected_username) != default_username) {
+  } else if (default_username.empty()) {
+    usernames->push_back(
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN));
+  } else {
     usernames->push_back(default_username);
-    selected_username = usernames->size() - 1;
   }
-
   return selected_username;
 }
 

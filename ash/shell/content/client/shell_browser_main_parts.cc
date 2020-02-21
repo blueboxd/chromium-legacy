@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -115,9 +116,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   if (!parameters_.ui_task) {
     // Install Rewriter so that function keys are properly re-mapped.
     auto* event_rewriter_controller = EventRewriterController::Get();
+    bool privacy_screen_supported = false;
+    if (Shell::Get()->privacy_screen_controller() &&
+        Shell::Get()->privacy_screen_controller()->IsSupported()) {
+      privacy_screen_supported = true;
+    }
     event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(
-            nullptr, Shell::Get()->sticky_keys_controller()));
+            nullptr, Shell::Get()->sticky_keys_controller(),
+            privacy_screen_supported));
 
     // Initialize session controller client and create fake user sessions. The
     // fake user sessions makes ash into the logged in state.

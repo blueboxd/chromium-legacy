@@ -958,6 +958,30 @@ GEN('#endif');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/safety_check_page/safety_check_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSafetyCheckPageTest() {}
+
+CrSettingsSafetyCheckPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/safety_check_page/safety_check_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'safety_check_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/site_settings_page/site_settings_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}

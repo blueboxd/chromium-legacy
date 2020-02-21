@@ -62,7 +62,7 @@ class SpokenFeedbackEventRewriterTest
  public:
   SpokenFeedbackEventRewriterTest() {
     event_rewriter_chromeos_ =
-        std::make_unique<ui::EventRewriterChromeOS>(this, nullptr);
+        std::make_unique<ui::EventRewriterChromeOS>(this, nullptr, false);
     spoken_feedback_event_rewriter_ =
         std::make_unique<SpokenFeedbackEventRewriter>(
             event_rewriter_chromeos_.get());

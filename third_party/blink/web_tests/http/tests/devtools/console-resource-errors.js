@@ -38,8 +38,8 @@
   await ConsoleTestRunner.waitForConsoleMessagesPromise(5);
   ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
 
-  function onExpandedMessages() {
-    ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
+  async function onExpandedMessages() {
+    await ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
     TestRunner.completeTest();
   }
 })();

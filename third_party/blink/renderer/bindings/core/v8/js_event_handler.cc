@@ -194,7 +194,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   }
 }
 
-void JSEventHandler::Trace(blink::Visitor* visitor) {
+void JSEventHandler::Trace(Visitor* visitor) {
   visitor->Trace(event_handler_);
   JSBasedEventListener::Trace(visitor);
 }

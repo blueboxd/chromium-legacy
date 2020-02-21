@@ -57,7 +57,7 @@ class PLATFORM_EXPORT ImageLayerBridge
 
   bool IsAccelerated() { return image_ && image_->IsTextureBacked(); }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   // SharedMemory bitmap that was registered with SharedBitmapIdRegistrar. Used

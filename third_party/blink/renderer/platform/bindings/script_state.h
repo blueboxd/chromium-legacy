@@ -98,7 +98,7 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
   ~ScriptState();
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   static ScriptState* Current(v8::Isolate* isolate) {  // DEPRECATED
     return From(isolate->GetCurrentContext());
@@ -215,7 +215,7 @@ class ScriptStateProtectingContext final
     }
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
+  void Trace(Visitor* visitor) { visitor->Trace(script_state_); }
 
   ScriptState* Get() const { return script_state_; }
   void Reset() {

@@ -90,10 +90,11 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
 
 void RemoteFrameView::SetViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
-  if (intersection_state != last_intersection_state_) {
-    last_intersection_state_ = intersection_state;
-    remote_frame_->Client()->UpdateRemoteViewportIntersection(
-        intersection_state);
+  ViewportIntersectionState new_state(intersection_state);
+  new_state.compositor_visible_rect = WebRect(compositing_rect_);
+  if (new_state != last_intersection_state_) {
+    last_intersection_state_ = new_state;
+    remote_frame_->Client()->UpdateRemoteViewportIntersection(new_state);
   }
 }
 
@@ -107,10 +108,11 @@ void RemoteFrameView::SetNeedsOcclusionTracking(bool needs_tracking) {
   }
 }
 
-IntRect RemoteFrameView::GetCompositingRect() {
+void RemoteFrameView::UpdateCompositingRect() {
+  compositing_rect_ = IntRect();
   LocalFrameView* local_root_view = ParentLocalRootFrameView();
   if (!local_root_view || !remote_frame_->OwnerLayoutObject())
-    return IntRect();
+    return;
 
   // For main frames we constrain the rect that gets painted to the viewport.
   // If the local frame root is an OOPIF itself, then we use the root's
@@ -129,7 +131,7 @@ IntRect RemoteFrameView::GetCompositingRect() {
           local_root_view->GetLayoutView(),
           PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
           kTraverseDocumentBoundaries);
-  IntRect compositing_rect = EnclosingIntRect(viewport_rect);
+  compositing_rect_ = EnclosingIntRect(viewport_rect);
   IntSize frame_size = Size();
 
   // Iframes that fit within the window viewport get fully rastered. For
@@ -140,17 +142,15 @@ IntRect RemoteFrameView::GetCompositingRect() {
   // it seems to make guttering rare with slow to medium speed wheel scrolling.
   // Can we collect UMA data to estimate how much extra rastering this causes,
   // and possibly how common guttering is?
-  compositing_rect.InflateX(ceilf(viewport_rect.Width() * 0.15f));
-  compositing_rect.InflateY(ceilf(viewport_rect.Height() * 0.15f));
-  compositing_rect.SetWidth(
-      std::min(frame_size.Width(), compositing_rect.Width()));
-  compositing_rect.SetHeight(
-      std::min(frame_size.Height(), compositing_rect.Height()));
-  IntPoint compositing_rect_location = compositing_rect.Location();
+  compositing_rect_.InflateX(ceilf(viewport_rect.Width() * 0.15f));
+  compositing_rect_.InflateY(ceilf(viewport_rect.Height() * 0.15f));
+  compositing_rect_.SetWidth(
+      std::min(frame_size.Width(), compositing_rect_.Width()));
+  compositing_rect_.SetHeight(
+      std::min(frame_size.Height(), compositing_rect_.Height()));
+  IntPoint compositing_rect_location = compositing_rect_.Location();
   compositing_rect_location.ClampNegativeToZero();
-  compositing_rect.SetLocation(compositing_rect_location);
-
-  return compositing_rect;
+  compositing_rect_.SetLocation(compositing_rect_location);
 }
 
 void RemoteFrameView::Dispose() {

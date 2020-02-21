@@ -11,3 +11,32 @@ static_library("android") {
 java_cpp_enum("cookie_controls_status_javagen") {
   sources = [ "cookie_controls_status.h" ]
 }
+
+android_resources("java_resources") {
+  sources = [
+    "java/res/layout/cookie_controls_view.xml",
+    "java/res/layout/page_info.xml",
+    "java/res/layout/page_info_permission_row.xml",
+    "java/res/values/ids.xml",
+  ]
+  custom_package = "org.chromium.components.page_info"
+  deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+}
+
+android_library("java") {
+  sources = [
+    "java/src/org/chromium/components/page_info/CookieControlsView.java",
+    "java/src/org/chromium/components/page_info/PageInfoView.java",
+  ]
+
+  deps = [
+    ":java_resources",
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//ui/android:ui_java",
+  ]
+
+  srcjar_deps = [ ":cookie_controls_status_javagen" ]
+}

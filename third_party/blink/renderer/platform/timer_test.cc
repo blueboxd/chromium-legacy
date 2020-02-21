@@ -119,7 +119,7 @@ class OnHeapTimerOwner final : public GarbageCollected<OnHeapTimerOwner> {
     timer_.StartOneShot(interval, caller);
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   void Fired(TimerBase*) {

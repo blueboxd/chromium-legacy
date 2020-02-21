@@ -82,8 +82,8 @@ class CONTENT_EXPORT AppCacheRequest {
 
  protected:
   friend class AppCacheRequestHandler;
-  // Enables the AppCacheJob to call GetResourceRequest().
-  friend class AppCacheJob;
+  // Enables the AppCacheURLLoader to call GetResourceRequest().
+  friend class AppCacheURLLoader;
 
   // Returns the underlying ResourceRequest.
   network::ResourceRequest* GetResourceRequest() { return &request_; }

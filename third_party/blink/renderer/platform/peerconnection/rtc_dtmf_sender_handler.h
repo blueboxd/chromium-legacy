@@ -39,7 +39,7 @@ class PLATFORM_EXPORT RtcDtmfSenderHandler final {
     virtual ~Client() = default;
     virtual void DidPlayTone(const String& tone) = 0;
 
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
 
   RtcDtmfSenderHandler(scoped_refptr<base::SingleThreadTaskRunner> main_thread,

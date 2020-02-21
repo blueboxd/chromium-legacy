@@ -32,8 +32,11 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
                                   blink::ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
+  // If |is_immediate| is true, unregister clears the active worker from the
+  // registration without waiting for the controlled clients to unload.
   ServiceWorkerUnregisterJob(ServiceWorkerContextCore* context,
-                             const GURL& scope);
+                             const GURL& scope,
+                             bool is_immediate);
   ~ServiceWorkerUnregisterJob() override;
 
   // Registers a callback to be called when the job completes (whether
@@ -60,6 +63,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;
   const GURL scope_;
+  const bool is_immediate_;
   std::vector<UnregistrationCallback> callbacks_;
   bool is_promise_resolved_;
   base::WeakPtrFactory<ServiceWorkerUnregisterJob> weak_factory_{this};

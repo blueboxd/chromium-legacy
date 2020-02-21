@@ -399,7 +399,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
 
 ResourceLoader::~ResourceLoader() = default;
 
-void ResourceLoader::Trace(blink::Visitor* visitor) {
+void ResourceLoader::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(scheduler_);
   visitor->Trace(resource_);

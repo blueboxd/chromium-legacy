@@ -177,7 +177,7 @@ class PLATFORM_EXPORT BytesConsumer : public GarbageCollected<BytesConsumer> {
   // Returns a BytesConsumer whose state is Errored.
   static BytesConsumer* CreateErrored(const Error&);
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   // This InternalState directly corresponds to the states in the class

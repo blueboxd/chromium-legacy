@@ -713,8 +713,9 @@ void ServiceWorkerRegisterJob::CompleteInternal(
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     if (registration()) {
-      if (should_uninstall_on_failure_)
-        registration()->ClearWhenReady();
+      if (should_uninstall_on_failure_) {
+        registration()->DeleteAndClearWhenReady();
+      }
       if (new_version()) {
         if (status == blink::ServiceWorkerStatusCode::kErrorExists) {
           new_version()->SetStartWorkerStatusCode(

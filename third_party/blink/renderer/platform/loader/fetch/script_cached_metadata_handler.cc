@@ -24,7 +24,7 @@ ScriptCachedMetadataHandler::ScriptCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> sender)
     : sender_(std::move(sender)), encoding_(encoding) {}
 
-void ScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
+void ScriptCachedMetadataHandler::Trace(Visitor* visitor) {
   CachedMetadataHandler::Trace(visitor);
 }
 

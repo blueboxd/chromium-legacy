@@ -107,7 +107,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
    public:
     virtual ~GarbageCollectedData() = default;
     virtual void WillBeDestroyed() {}
-    virtual void Trace(blink::Visitor*) {}
+    virtual void Trace(Visitor*) {}
   };
 
   static v8::Isolate* Initialize(scoped_refptr<base::SingleThreadTaskRunner>,

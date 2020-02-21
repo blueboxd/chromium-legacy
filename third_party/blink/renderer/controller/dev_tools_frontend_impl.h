@@ -68,7 +68,7 @@ class DevToolsFrontendImpl final
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend>);
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DestroyOnHostGone();

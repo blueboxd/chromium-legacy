@@ -147,7 +147,7 @@ class ScriptPromiseProperty final
     resolved_with_undefined_ = false;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     TraceIfNeeded<ResolvedType>::Trace(visitor, resolved_);
     TraceIfNeeded<RejectedType>::Trace(visitor, rejected_);
     visitor->Trace(resolvers_);

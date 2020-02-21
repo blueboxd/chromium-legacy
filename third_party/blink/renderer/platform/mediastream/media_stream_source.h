@@ -121,7 +121,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     return audio_consumers_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Dispose();
 

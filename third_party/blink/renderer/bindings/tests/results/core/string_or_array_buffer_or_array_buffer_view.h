@@ -50,7 +50,7 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&);
   ~StringOrArrayBufferOrArrayBufferView();
   StringOrArrayBufferOrArrayBufferView& operator=(const StringOrArrayBufferOrArrayBufferView&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

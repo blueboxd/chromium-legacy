@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.page_info;
+package org.chromium.components.page_info;
 
 import android.content.Context;
 import android.support.v7.widget.SwitchCompat;
@@ -15,8 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.R;
-import org.chromium.components.page_info.CookieControlsStatus;
 
 /**
  * View showing a toggle and a description for third-party cookie blocking for a site.
@@ -47,7 +45,7 @@ public class CookieControlsView
         mSwitch.setOnCheckedChangeListener(this);
     }
 
-    void setParams(CookieControlsParams params) {
+    public void setParams(CookieControlsParams params) {
         mParams = params;
     }
 

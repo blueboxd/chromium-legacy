@@ -153,7 +153,7 @@ BytesConsumer::PublicState DataPipeBytesConsumer::GetPublicState() const {
   return GetPublicStateFromInternalState(state_);
 }
 
-void DataPipeBytesConsumer::Trace(blink::Visitor* visitor) {
+void DataPipeBytesConsumer::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }

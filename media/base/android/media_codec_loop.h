@@ -107,10 +107,6 @@ namespace media {
 
 class MEDIA_EXPORT MediaCodecLoop {
  public:
-  // TODO(liberato): this exists in video_decoder.h and audio_decoder.h too.
-  using InitCB = base::Callback<void(bool success)>;
-  using DecodeCB = base::Callback<void(DecodeStatus status)>;
-
   // Data that the client wants to put into an input buffer.
   struct InputData {
     InputData();

@@ -11,7 +11,6 @@
     <item name="bookmark_page" type="id"/>
     <item name="foreground_drawable" type="id"/>
     <item name="fre_pager" type="id"/>
-    <item name="page_info_click_callback" type="id" />
     <item name="refine_view_id" type="id"/>
     <item name="tabswitcher_multiple_drawable" type="id"/>
     <item name="tabswitcher_single_drawable" type="id"/>

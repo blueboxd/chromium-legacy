@@ -81,7 +81,7 @@ TestEnumOrTestEnumOrNullSequence::TestEnumOrTestEnumOrNullSequence(const TestEnu
 TestEnumOrTestEnumOrNullSequence::~TestEnumOrTestEnumOrNullSequence() = default;
 TestEnumOrTestEnumOrNullSequence& TestEnumOrTestEnumOrNullSequence::operator=(const TestEnumOrTestEnumOrNullSequence&) = default;
 
-void TestEnumOrTestEnumOrNullSequence::Trace(blink::Visitor* visitor) {
+void TestEnumOrTestEnumOrNullSequence::Trace(Visitor* visitor) {
 }
 
 void V8TestEnumOrTestEnumOrNullSequence::ToImpl(

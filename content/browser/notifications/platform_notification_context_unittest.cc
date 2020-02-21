@@ -583,9 +583,10 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Now drop the Service Worker registration which owns that notification.
   embedded_worker_test_helper->context()->UnregisterServiceWorker(
-      origin, base::BindOnce(
-                  &PlatformNotificationContextTest::DidUnregisterServiceWorker,
-                  base::Unretained(this), &unregister_status));
+      origin, /*is_immediate=*/false,
+      base::BindOnce(
+          &PlatformNotificationContextTest::DidUnregisterServiceWorker,
+          base::Unretained(this), &unregister_status));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, unregister_status);

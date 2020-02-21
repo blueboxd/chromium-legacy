@@ -841,6 +841,64 @@ TEST(BookmarkModelMergerTest, ShouldMergeFolderByGUIDAndNotSemantics) {
   EXPECT_THAT(tracker->GetEntityForBookmarkNode(folder2), NotNull());
 }
 
+TEST(BookmarkModelMergerTest, ShouldIgnoreChildrenForNonFolderNodes) {
+  const std::string kParentId = "parent_id";
+  const std::string kChildId = "child_id";
+  const std::string kParentTitle = "Parent Title";
+  const std::string kChildTitle = "Child Title";
+  const std::string kGuid1 = base::GenerateGUID();
+  const std::string kGuid2 = base::GenerateGUID();
+  const std::string kUrl1 = "http://www.foo.com/";
+  const std::string kUrl2 = "http://www.bar.com/";
+
+  // -------- The remote model --------
+  // bookmark_bar
+  //  | - bookmark (kGuid1/kParentTitle, not a folder)
+  //    | - bookmark
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  const syncer::UniquePosition pos1 =
+      syncer::UniquePosition::InitialPosition(suffix);
+  const syncer::UniquePosition pos2 =
+      syncer::UniquePosition::After(pos1, suffix);
+
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kParentId, /*parent_id=*/kBookmarkBarId, kParentTitle,
+      /*url=*/kUrl1,
+      /*is_folder=*/false,
+      /*unique_position=*/pos1,
+      /*guid=*/kGuid1));
+
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kChildId, /*parent_id=*/kParentId, kChildTitle,
+      /*url=*/kUrl2,
+      /*is_folder=*/false,
+      /*unique_position=*/pos2,
+      /*guid=*/kGuid2));
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      Merge(std::move(updates), bookmark_model.get());
+
+  // -------- The merged model --------
+  // bookmark_bar
+  //  | - bookmark (kGuid1/kParentTitle)
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+
+  ASSERT_EQ(bookmark_bar_node->children().size(), 1u);
+  EXPECT_EQ(bookmark_bar_node->children()[0]->guid(), kGuid1);
+  EXPECT_EQ(bookmark_bar_node->children()[0]->GetTitle(),
+            base::UTF8ToUTF16(kParentTitle));
+  EXPECT_EQ(bookmark_bar_node->children()[0]->children().size(), 0u);
+  EXPECT_EQ(tracker->TrackedEntitiesCountForTest(), 2U);
+}
+
 TEST(
     BookmarkModelMergerTest,
     ShouldIgnoreFolderSemanticsMatchAndLaterMatchByGUIDWithSemanticsNodeFirst) {

@@ -42,7 +42,7 @@ class CORE_EXPORT BooleanOrTestCallbackInterface final {
   BooleanOrTestCallbackInterface(const BooleanOrTestCallbackInterface&);
   ~BooleanOrTestCallbackInterface();
   BooleanOrTestCallbackInterface& operator=(const BooleanOrTestCallbackInterface&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

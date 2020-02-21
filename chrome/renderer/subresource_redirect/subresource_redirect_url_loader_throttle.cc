@@ -175,8 +175,8 @@ void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
 
   auto* subresource_redirect_hints_agent = GetSubresourceRedirectHintsAgent();
   if (subresource_redirect_hints_agent) {
-    subresource_redirect_hints_agent->RecordMetrics(
-        render_frame_id_, content_length, redirect_result_);
+    subresource_redirect_hints_agent->RecordMetricsOnLoadFinished(
+        response_url, content_length, redirect_result_);
   }
 
   if (!IsSubresourceRedirectOrigin(response_url))

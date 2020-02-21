@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.page_info.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -60,7 +60,7 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
     private void loadUrlAndOpenPageInfo(String url) {
         mActivityTestRule.loadUrlInNewTab(url);
-        onView(withId(R.id.location_bar_status_icon)).perform(click());
+        onView(withId(org.chromium.chrome.R.id.location_bar_status_icon)).perform(click());
     }
 
     private void setThirdPartyCookieBlocking(boolean value) {
@@ -87,7 +87,7 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
     @MediumTest
     public void testHiddenOnBlankPage() {
         setThirdPartyCookieBlocking(true);
-        onView(withId(R.id.location_bar_status_icon)).perform(click());
+        onView(withId(org.chromium.chrome.R.id.location_bar_status_icon)).perform(click());
         onView(withId(R.id.page_info_cookie_controls_view))
                 .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }

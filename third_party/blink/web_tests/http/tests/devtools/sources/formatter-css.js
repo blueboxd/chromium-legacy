@@ -25,22 +25,22 @@
     var position = text.positionFromOffset(offset);
     var rawLocation = new SDK.CSSLocation(styleHeader, position.lineNumber, position.columnNumber);
     rawLocations.push(rawLocation);
-    liveLocations.push(Bindings.cssWorkspaceBinding.createLiveLocation(rawLocation, () => {
+    liveLocations.push(await Bindings.cssWorkspaceBinding.createLiveLocation(rawLocation, () => {
       locationUpdateCount++;
     }, liveLocationsPool));
   }
 
   TestRunner.addResult('Location mapping with formatted source:');
-  dumpLocations();
+  await dumpLocations();
 
-  Formatter.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
+  await Formatter.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
 
   TestRunner.addResult('Location mapping without formatted source:');
-  dumpLocations();
+  await dumpLocations();
 
   TestRunner.completeTest();
 
-  function dumpLocations() {
+  async function dumpLocations() {
     TestRunner.addResult('Mapped locations:');
     for (var rawLocation of rawLocations) {
       var uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
@@ -52,7 +52,7 @@
     }
     TestRunner.addResult(`Live locations (updated: ${locationUpdateCount}):`);
     for (var liveLocation of liveLocations) {
-      var uiLocation = liveLocation.uiLocation();
+      var uiLocation = await liveLocation.uiLocation();
       TestRunner.addResult(`${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
     }
   }

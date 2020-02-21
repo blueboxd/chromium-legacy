@@ -537,4 +537,50 @@ TEST_F(ScrollInfacesUseCounterSimTest, ScrollTestAll) {
   }
 }
 
+class ScrollPositionsInNonDefaultWritingModeSimTest : public SimTest {};
+
+// Verify that scrollIntoView() does not trigger the use counter
+// kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive
+// and can be used to feature detect the convention of scroll coordinates.
+TEST_F(ScrollPositionsInNonDefaultWritingModeSimTest,
+       ScrollIntoViewAndCounters) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_frame_resource("https://example.com/subframe.html",
+                                  "text/html");
+  LoadURL("https://example.com/");
+  // Load a page that performs feature detection of scroll behavior by relying
+  // on scrollIntoView().
+  main_resource.Complete(
+      R"HTML(
+        <body>
+             <div style="direction: rtl; position: fixed; left: 0; top: 0; overflow: hidden; width: 1px; height: 1px;"><div style="width: 2px; height: 1px;"><div style="display: inline-block; width: 1px;"></div><div style="display: inline-block; width: 1px;"></div></div></div>
+             <script>
+               var scroller = document.body.firstElementChild;
+               scroller.firstElementChild.children[0].scrollIntoView();
+               var right = scroller.scrollLeft;
+               scroller.firstElementChild.children[1].scrollIntoView();
+               var left = scroller.scrollLeft;
+               if (left < right)
+                   console.log("decreasing");
+               if (left < 0)
+                   console.log("nonpositive");
+             </script>
+        </body>)HTML");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  // Per the CSSOM specification, the standard behavior is:
+  // - decreasing coordinates when scrolling leftward.
+  // - nonpositive coordinates for leftward scroller.
+  EXPECT_TRUE(ConsoleMessages().Contains("decreasing"));
+  EXPECT_TRUE(ConsoleMessages().Contains("nonpositive"));
+  // Reading scrollLeft triggers the first counter:
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::
+          kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop));
+  // However, calling scrollIntoView() should not trigger the second counter:
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::
+          kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive));
+}
+
 }  // namespace blink

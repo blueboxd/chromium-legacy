@@ -247,7 +247,8 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
   // Unregister service worker.
   bool called = false;
   worker_helper_->context()->UnregisterServiceWorker(
-      scope_url, base::BindOnce(&UnregisterServiceWorkerCallback, &called));
+      scope_url, /*is_immediate=*/false,
+      base::BindOnce(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 }

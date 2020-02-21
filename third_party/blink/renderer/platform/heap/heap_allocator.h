@@ -175,6 +175,11 @@ class PLATFORM_EXPORT HeapAllocator {
     return ThreadState::Current()->SweepForbidden();
   }
 
+  static bool IsIncrementalMarking() {
+    return ThreadState::IsAnyIncrementalMarking() &&
+           ThreadState::Current()->IsIncrementalMarking();
+  }
+
   template <typename T>
   static bool IsHeapObjectAlive(T* object) {
     return ThreadHeap::IsHeapObjectAlive(object);

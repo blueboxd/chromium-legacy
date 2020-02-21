@@ -41,7 +41,7 @@ class IsolatedWorldCSPDelegate final
     DCHECK(security_origin_);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(document_);
     ContentSecurityPolicyDelegate::Trace(visitor);
   }

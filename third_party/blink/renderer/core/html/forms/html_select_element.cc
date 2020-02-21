@@ -490,82 +490,6 @@ HTMLOptionElement* HTMLSelectElement::OptionAtListIndex(int list_index) const {
   return DynamicTo<HTMLOptionElement>(items[list_index].Get());
 }
 
-// Returns the 1st valid OPTION |skip| items from |listIndex| in direction
-// |direction| if there is one.
-// Otherwise, it returns the valid OPTION closest to that boundary which is past
-// |listIndex| if there is one.
-// Otherwise, it returns nullptr.
-// Valid means that it is enabled and visible.
-HTMLOptionElement* HTMLSelectElement::NextValidOption(int list_index,
-                                                      SkipDirection direction,
-                                                      int skip) const {
-  DCHECK(direction == kSkipBackwards || direction == kSkipForwards);
-  const ListItems& list_items = GetListItems();
-  HTMLOptionElement* last_good_option = nullptr;
-  int size = list_items.size();
-  for (list_index += direction; list_index >= 0 && list_index < size;
-       list_index += direction) {
-    --skip;
-    HTMLElement* element = list_items[list_index];
-    auto* option_element = DynamicTo<HTMLOptionElement>(element);
-    if (!option_element)
-      continue;
-    if (option_element->IsDisplayNone())
-      continue;
-    if (element->IsDisabledFormControl())
-      continue;
-    if (!UsesMenuList() && !element->GetLayoutObject())
-      continue;
-    last_good_option = option_element;
-    if (skip <= 0)
-      break;
-  }
-  return last_good_option;
-}
-
-HTMLOptionElement* HTMLSelectElement::NextSelectableOption(
-    HTMLOptionElement* start_option) const {
-  return NextValidOption(start_option ? start_option->ListIndex() : -1,
-                         kSkipForwards, 1);
-}
-
-HTMLOptionElement* HTMLSelectElement::PreviousSelectableOption(
-    HTMLOptionElement* start_option) const {
-  return NextValidOption(
-      start_option ? start_option->ListIndex() : GetListItems().size(),
-      kSkipBackwards, 1);
-}
-
-HTMLOptionElement* HTMLSelectElement::FirstSelectableOption() const {
-  return NextValidOption(-1, kSkipForwards, 1);
-}
-
-HTMLOptionElement* HTMLSelectElement::LastSelectableOption() const {
-  return NextValidOption(GetListItems().size(), kSkipBackwards, 1);
-}
-
-// Returns the index of the next valid item one page away from |startIndex| in
-// direction |direction|.
-HTMLOptionElement* HTMLSelectElement::NextSelectableOptionPageAway(
-    HTMLOptionElement* start_option,
-    SkipDirection direction) const {
-  DCHECK(!UsesMenuList());
-  const ListItems& items = GetListItems();
-  // -1 so we still show context.
-  int page_size = ListBoxSize() - 1;
-
-  // One page away, but not outside valid bounds.
-  // If there is a valid option item one page away, the index is chosen.
-  // If there is no exact one page away valid option, returns startIndex or
-  // the most far index.
-  int start_index = start_option ? start_option->ListIndex() : -1;
-  int edge_index = (direction == kSkipForwards) ? 0 : (items.size() - 1);
-  int skip_amount =
-      page_size +
-      ((direction == kSkipForwards) ? start_index : (edge_index - start_index));
-  return NextValidOption(edge_index, direction, skip_amount);
-}
-
 void HTMLSelectElement::SelectAll() {
   select_type_->SelectAll();
 }
@@ -1532,7 +1456,7 @@ HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
     return nullptr;
   HTMLOptionElement* focused_option = ActiveSelectionEnd();
   if (!focused_option)
-    focused_option = FirstSelectableOption();
+    focused_option = select_type_->FirstSelectableOption();
   return focused_option;
 }
 

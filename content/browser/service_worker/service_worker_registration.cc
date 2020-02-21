@@ -310,19 +310,33 @@ void ServiceWorkerRegistration::ClaimClients() {
   }
 }
 
-void ServiceWorkerRegistration::ClearWhenReady() {
+void ServiceWorkerRegistration::DeleteAndClearWhenReady() {
   DCHECK(context_);
   if (is_deleted()) {
     // We already deleted and are waiting to clear, or the registration is
     // already cleared.
     return;
   }
+
   context_->registry()->DeleteRegistration(
       this, scope().GetOrigin(),
       AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
 
   if (!active_version() || !active_version()->HasControllee())
+    Clear();
+}
+
+void ServiceWorkerRegistration::DeleteAndClearImmediately() {
+  DCHECK(context_);
+  if (!is_deleted()) {
+    context_->registry()->DeleteRegistration(
+        this, scope().GetOrigin(),
+        AdaptCallbackForRepeating(base::BindOnce(
+            &ServiceWorkerRegistration::OnDeleteFinished, this)));
+  }
+
+  if (is_uninstalling())
     Clear();
 }
 

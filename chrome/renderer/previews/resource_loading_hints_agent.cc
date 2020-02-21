@@ -54,6 +54,12 @@ void ResourceLoadingHintsAgent::DidStartNavigation(
   subresource_redirect_hints_agent_.DidStartNavigation();
 }
 
+void ResourceLoadingHintsAgent::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
+  subresource_redirect_hints_agent_.ReadyToCommitNavigation(
+      render_frame()->GetRoutingID());
+}
+
 void ResourceLoadingHintsAgent::DidCreateNewDocument() {
   DCHECK(IsMainFrame());
   if (!GetDocumentURL().SchemeIsHTTPOrHTTPS())

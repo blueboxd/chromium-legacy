@@ -32,7 +32,7 @@ ExecutionContext* V8IntersectionObserverDelegate::GetExecutionContext() const {
   return ExecutionContextClient::GetExecutionContext();
 }
 
-void V8IntersectionObserverDelegate::Trace(blink::Visitor* visitor) {
+void V8IntersectionObserverDelegate::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   IntersectionObserverDelegate::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

@@ -66,7 +66,7 @@ class ScheduledAction final : public GarbageCollected<ScheduledAction>,
 
   void Execute(ExecutionContext*);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   const char* NameInHeapSnapshot() const override { return "ScheduledAction"; }
 

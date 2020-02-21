@@ -156,7 +156,8 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
     blink::ServiceWorkerStatusCode status =
         blink::ServiceWorkerStatusCode::kErrorFailed;
     context()->UnregisterServiceWorker(
-        scope, base::BindOnce(&DidUnregisterServiceWorker, &status));
+        scope, /*is_immediate=*/false,
+        base::BindOnce(&DidUnregisterServiceWorker, &status));
     base::RunLoop().RunUntilIdle();
     return status;
   }

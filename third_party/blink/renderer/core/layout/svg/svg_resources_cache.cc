@@ -52,9 +52,9 @@ SVGResources* SVGResourcesCache::AddResourcesFromLayoutObject(
   HashSet<LayoutSVGResourceContainer*> resource_set;
   resources->BuildSetOfResources(resource_set);
 
-  SVGResourcesCycleSolver solver(object);
+  SVGResourcesCycleSolver solver;
   for (auto* resource_container : resource_set) {
-    if (solver.FindCycle(resource_container))
+    if (resource_container->FindCycle(solver))
       resources->ClearReferencesTo(resource_container);
   }
   return resources;

@@ -133,7 +133,7 @@ void MemoryPressureListenerRegistry::ClearThreadSpecificMemory() {
   FontGlobalContext::ClearMemory();
 }
 
-void MemoryPressureListenerRegistry::Trace(blink::Visitor* visitor) {
+void MemoryPressureListenerRegistry::Trace(Visitor* visitor) {
   visitor->Trace(clients_);
 }
 

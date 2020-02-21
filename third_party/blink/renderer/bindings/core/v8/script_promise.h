@@ -142,7 +142,7 @@ class CORE_EXPORT ScriptPromise final {
     void Reject(v8::Local<v8::Value>);
     void Clear() { resolver_.Clear(); }
     ScriptState* GetScriptState() const { return script_state_; }
-    void Trace(blink::Visitor* visitor) {
+    void Trace(Visitor* visitor) {
       visitor->Trace(script_state_);
       visitor->Trace(resolver_);
     }

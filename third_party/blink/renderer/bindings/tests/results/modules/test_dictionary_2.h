@@ -41,7 +41,7 @@ class MODULES_EXPORT TestDictionary2 : public IDLDictionaryBase {
   void setDefaultEmptyDictionaryForUnion(const TestDictionaryOrLong&);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
 

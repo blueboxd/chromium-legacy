@@ -22,7 +22,7 @@
         android:paddingEnd="@dimen/page_info_popup_padding_sides"
         android:paddingStart="@dimen/page_info_popup_padding_sides" >
 
-        <view class="org.chromium.chrome.browser.page_info.PageInfoView$ElidedUrlTextView"
+        <view class="org.chromium.components.page_info.PageInfoView$ElidedUrlTextView"
             android:id="@+id/page_info_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -125,7 +125,7 @@
         android:layout_marginTop="16dp"
         style="@style/HorizontalDivider"/>
 
-    <org.chromium.chrome.browser.page_info.CookieControlsView
+    <org.chromium.components.page_info.CookieControlsView
         android:id="@+id/page_info_cookie_controls_view"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

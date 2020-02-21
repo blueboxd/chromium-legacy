@@ -133,8 +133,9 @@ base::string16 PermissionPromptBubbleView::GetWindowTitle() const {
 }
 
 gfx::Size PermissionPromptBubbleView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_BUBBLE_PREFERRED_WIDTH);
+  const int width = std::min(views::View::CalculatePreferredSize().width(),
+                             ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_BUBBLE_PREFERRED_WIDTH));
   return gfx::Size(width, GetHeightForWidth(width));
 }
 

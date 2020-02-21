@@ -40,7 +40,7 @@ class CORE_EXPORT FloatOrBoolean final {
   FloatOrBoolean(const FloatOrBoolean&);
   ~FloatOrBoolean();
   FloatOrBoolean& operator=(const FloatOrBoolean&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

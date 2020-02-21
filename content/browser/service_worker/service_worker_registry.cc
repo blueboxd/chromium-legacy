@@ -217,6 +217,18 @@ ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
   return nullptr;
 }
 
+std::vector<scoped_refptr<ServiceWorkerRegistration>>
+ServiceWorkerRegistry::GetUninstallingRegistrationsForOrigin(
+    const GURL& origin) {
+  std::vector<scoped_refptr<ServiceWorkerRegistration>> results;
+  for (const auto& registration : uninstalling_registrations_) {
+    if (registration.second->scope().GetOrigin() == origin) {
+      results.push_back(registration.second);
+    }
+  }
+  return results;
+}
+
 void ServiceWorkerRegistry::StoreRegistration(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version,

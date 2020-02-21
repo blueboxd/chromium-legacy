@@ -31,9 +31,9 @@
     TestRunner.evaluateInPage('setTimeout(testFunction, 0)');
   }
 
-  function onSetExecutionLocation(liveLocation) {
+  async function onSetExecutionLocation(liveLocation) {
     TestRunner.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(
-        null, this._textEditor, liveLocation.uiLocation().lineNumber));
+        null, this._textEditor, (await liveLocation.uiLocation()).lineNumber));
   }
 
   function dumpAndContinue(textEditor, lineNumber) {

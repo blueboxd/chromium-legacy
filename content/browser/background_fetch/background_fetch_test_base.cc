@@ -157,6 +157,7 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
   base::RunLoop run_loop;
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
       GetScopeForId(kTestOrigin, service_worker_registration_id),
+      /*is_immediate=*/false,
       base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
   run_loop.Run();
 }

@@ -247,6 +247,8 @@ class BackForwardCacheMetrics
   bool previous_navigation_is_history_ = false;
   bool previous_navigation_is_served_from_bfcache_ = false;
 
+  base::Optional<base::TimeTicks> renderer_killed_timestamp_;
+
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };
 

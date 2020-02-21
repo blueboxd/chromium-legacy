@@ -59,7 +59,7 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
 
   void OnPurgeMemory();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class Internals;

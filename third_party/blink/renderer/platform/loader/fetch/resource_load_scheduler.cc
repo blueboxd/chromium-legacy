@@ -235,7 +235,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;
 
-void ResourceLoadScheduler::Trace(blink::Visitor* visitor) {
+void ResourceLoadScheduler::Trace(Visitor* visitor) {
   visitor->Trace(pending_request_map_);
   visitor->Trace(resource_fetcher_properties_);
   visitor->Trace(console_logger_);

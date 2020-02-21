@@ -40,7 +40,7 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: VMXX edit-me-breakpoints.js, lineNumber: 2, project type: debugger
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: network
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network
 Committing edited source:
@@ -67,7 +67,7 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: VMXX edit-me-breakpoints.js, lineNumber: 2, project type: debugger
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: network
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network
 Committing edited source:
@@ -108,7 +108,7 @@ Editing source:
     Dumping breakpoint storage
         edit-me-breakpoints.js:2, enabled:true
     Dumping breakpoint locations
-        url: VMXX edit-me-breakpoints.js, lineNumber: 2, project type: debugger
+        url: edit-me-breakpoints.js, lineNumber: 2, project type: network
     Dumping breakpoints
         url: edit-me-breakpoints.js, lineNumber: 2, project type: network
 Committing edited source:

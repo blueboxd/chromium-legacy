@@ -32,14 +32,14 @@
   }
 
   var callFrameIndex = 0;
-  function dumpNextCallFrame(next) {
+  async function dumpNextCallFrame(next) {
     var callFrames = TestRunner.debuggerModel.callFrames;
     if (callFrameIndex === callFrames.length) {
       next();
       return;
     }
     var frame = callFrames[callFrameIndex];
-    var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(
+    var uiLocation = await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(
         frame.location());
     SourcesTestRunner.showUISourceCode(
         uiLocation.uiSourceCode, dumpCallFrameLine);

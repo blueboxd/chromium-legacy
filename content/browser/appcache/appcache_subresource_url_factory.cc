@@ -13,7 +13,6 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
-#include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,7 +73,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
   }
 
  private:
-  ~SubresourceLoader() override {}
+  ~SubresourceLoader() override = default;
 
   void OnMojoDisconnect() { delete this; }
 

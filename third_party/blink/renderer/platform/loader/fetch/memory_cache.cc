@@ -66,7 +66,7 @@ MemoryCache* ReplaceMemoryCacheForTesting(MemoryCache* cache) {
   return old_cache;
 }
 
-void MemoryCacheEntry::Trace(blink::Visitor* visitor) {
+void MemoryCacheEntry::Trace(Visitor* visitor) {
   visitor->template RegisterWeakCallbackMethod<
       MemoryCacheEntry, &MemoryCacheEntry::ClearResourceWeak>(this);
 }
@@ -93,7 +93,7 @@ MemoryCache::MemoryCache(
 
 MemoryCache::~MemoryCache() = default;
 
-void MemoryCache::Trace(blink::Visitor* visitor) {
+void MemoryCache::Trace(Visitor* visitor) {
   visitor->Trace(resource_maps_);
   MemoryCacheDumpClient::Trace(visitor);
   MemoryPressureListener::Trace(visitor);

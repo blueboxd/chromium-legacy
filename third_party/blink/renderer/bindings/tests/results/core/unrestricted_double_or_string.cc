@@ -57,7 +57,7 @@ UnrestrictedDoubleOrString::UnrestrictedDoubleOrString(const UnrestrictedDoubleO
 UnrestrictedDoubleOrString::~UnrestrictedDoubleOrString() = default;
 UnrestrictedDoubleOrString& UnrestrictedDoubleOrString::operator=(const UnrestrictedDoubleOrString&) = default;
 
-void UnrestrictedDoubleOrString::Trace(blink::Visitor* visitor) {
+void UnrestrictedDoubleOrString::Trace(Visitor* visitor) {
 }
 
 void V8UnrestrictedDoubleOrString::ToImpl(

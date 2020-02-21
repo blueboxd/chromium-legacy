@@ -43,13 +43,13 @@
       }
 
 
-      function pausedInF2(callFrames) {
+      async function pausedInF2(callFrames) {
         SourcesTestRunner.dumpBreakpointSidebarPane('while paused in pretty printed');
         SourcesTestRunner.waitBreakpointSidebarPane()
             .then(() => SourcesTestRunner.dumpBreakpointSidebarPane('while paused in raw'))
             .then(() => SourcesTestRunner.resumeExecution(next));
         // No need to remove breakpoint since formattedUISourceCode was removed.
-        Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        await Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
       }
     }
   ]);

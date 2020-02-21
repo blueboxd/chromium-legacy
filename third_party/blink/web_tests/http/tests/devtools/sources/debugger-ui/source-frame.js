@@ -38,9 +38,11 @@
         TestRunner.evaluateInPage('addErrorToConsole()');
       }
 
-      function didAddMessage(message) {
+      async function didAddMessage(message) {
         if (this !== shownSourceFrame)
           return;
+        // Messages can contain live locations.
+        await TestRunner.waitForPendingLiveLocationUpdates();
         TestRunner.addResult('Message added to source frame: ' + message.text());
         setImmediate(function() {
           Console.ConsoleView.clearConsole();

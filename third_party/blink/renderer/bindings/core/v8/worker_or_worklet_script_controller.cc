@@ -489,7 +489,7 @@ void WorkerOrWorkletScriptController::RethrowExceptionFromImportedScript(
       error_event->error(script_state_).V8ValueFor(script_state_));
 }
 
-void WorkerOrWorkletScriptController::Trace(blink::Visitor* visitor) {
+void WorkerOrWorkletScriptController::Trace(Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(script_state_);
 }

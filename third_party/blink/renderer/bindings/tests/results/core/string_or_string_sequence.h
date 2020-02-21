@@ -40,7 +40,7 @@ class CORE_EXPORT StringOrStringSequence final {
   StringOrStringSequence(const StringOrStringSequence&);
   ~StringOrStringSequence();
   StringOrStringSequence& operator=(const StringOrStringSequence&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

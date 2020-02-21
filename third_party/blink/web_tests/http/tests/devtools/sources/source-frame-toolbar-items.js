@@ -31,7 +31,10 @@
 
   async function dumpToolbarItems(sourceFrame) {
     const items = await sourceFrame.toolbarItems();
-    for (let item of items)
+    // Toolbar items have live locations.
+    await TestRunner.waitForPendingLiveLocationUpdates();
+    for (let item of items) {
       TestRunner.addResult(item.element.deepTextContent());
+    }
   }
 })();

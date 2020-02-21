@@ -135,6 +135,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
+  std::vector<scoped_refptr<ServiceWorkerRegistration>>
+  GetUninstallingRegistrationsForOrigin(const GURL& origin);
+
   // Commits |registration| with the installed but not activated |version|
   // to storage, overwriting any pre-existing registration data for the scope.
   // A pre-existing version's script resources remain available if that version

@@ -157,7 +157,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   ~Resource() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
   virtual void AppendData(const char*, size_t);

@@ -40,7 +40,7 @@ class CORE_EXPORT DoubleOrDoubleOrNullSequence final {
   DoubleOrDoubleOrNullSequence(const DoubleOrDoubleOrNullSequence&);
   ~DoubleOrDoubleOrNullSequence();
   DoubleOrDoubleOrNullSequence& operator=(const DoubleOrDoubleOrNullSequence&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

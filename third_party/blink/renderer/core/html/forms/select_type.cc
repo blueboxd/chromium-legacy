@@ -124,28 +124,21 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
 
     const String& key = key_event->key();
     bool handled = true;
-    const HTMLSelectElement::ListItems& list_items = select_->GetListItems();
     HTMLOptionElement* option = select_->SelectedOption();
     int list_index = option ? option->ListIndex() : -1;
 
     if (key == "ArrowDown" || key == "ArrowRight") {
-      option = select_->NextValidOption(list_index,
-                                        HTMLSelectElement::kSkipForwards, 1);
+      option = NextValidOption(list_index, kSkipForwards, 1);
     } else if (key == "ArrowUp" || key == "ArrowLeft") {
-      option = select_->NextValidOption(list_index,
-                                        HTMLSelectElement::kSkipBackwards, 1);
+      option = NextValidOption(list_index, kSkipBackwards, 1);
     } else if (key == "PageDown") {
-      option = select_->NextValidOption(list_index,
-                                        HTMLSelectElement::kSkipForwards, 3);
+      option = NextValidOption(list_index, kSkipForwards, 3);
     } else if (key == "PageUp") {
-      option = select_->NextValidOption(list_index,
-                                        HTMLSelectElement::kSkipBackwards, 3);
+      option = NextValidOption(list_index, kSkipBackwards, 3);
     } else if (key == "Home") {
-      option =
-          select_->NextValidOption(-1, HTMLSelectElement::kSkipForwards, 1);
+      option = FirstSelectableOption();
     } else if (key == "End") {
-      option = select_->NextValidOption(list_items.size(),
-                                        HTMLSelectElement::kSkipBackwards, 1);
+      option = LastSelectableOption();
     } else {
       handled = false;
     }
@@ -386,6 +379,9 @@ class ListBoxSelectType final : public SelectType {
   void SelectAll() override;
 
  private:
+  HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
+                                                  SkipDirection) const;
+
   bool is_in_non_contiguous_selection_ = false;
 };
 
@@ -504,48 +500,45 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
         HTMLOptionElement* start_option = select_->LastSelectedOption();
         handled = true;
         if (key == "ArrowDown") {
-          end_option = select_->NextSelectableOption(start_option);
+          end_option = NextSelectableOption(start_option);
         } else {
-          end_option = select_->NextSelectableOptionPageAway(
-              start_option, HTMLSelectElement::kSkipForwards);
+          end_option =
+              NextSelectableOptionPageAway(start_option, kSkipForwards);
         }
       } else if (key == "ArrowUp" || key == "PageUp") {
         HTMLOptionElement* start_option = select_->SelectedOption();
         handled = true;
         if (key == "ArrowUp") {
-          end_option = select_->PreviousSelectableOption(start_option);
+          end_option = PreviousSelectableOption(start_option);
         } else {
-          end_option = select_->NextSelectableOptionPageAway(
-              start_option, HTMLSelectElement::kSkipBackwards);
+          end_option =
+              NextSelectableOptionPageAway(start_option, kSkipBackwards);
         }
       }
     } else {
       // Set the end index based on the current end index.
       if (key == "ArrowDown") {
-        end_option =
-            select_->NextSelectableOption(select_->active_selection_end_.Get());
+        end_option = NextSelectableOption(select_->active_selection_end_.Get());
         handled = true;
       } else if (key == "ArrowUp") {
-        end_option = select_->PreviousSelectableOption(
-            select_->active_selection_end_.Get());
+        end_option =
+            PreviousSelectableOption(select_->active_selection_end_.Get());
         handled = true;
       } else if (key == "PageDown") {
-        end_option = select_->NextSelectableOptionPageAway(
-            select_->active_selection_end_.Get(),
-            HTMLSelectElement::kSkipForwards);
+        end_option = NextSelectableOptionPageAway(
+            select_->active_selection_end_.Get(), kSkipForwards);
         handled = true;
       } else if (key == "PageUp") {
-        end_option = select_->NextSelectableOptionPageAway(
-            select_->active_selection_end_.Get(),
-            HTMLSelectElement::kSkipBackwards);
+        end_option = NextSelectableOptionPageAway(
+            select_->active_selection_end_.Get(), kSkipBackwards);
         handled = true;
       }
     }
     if (key == "Home") {
-      end_option = select_->FirstSelectableOption();
+      end_option = FirstSelectableOption();
       handled = true;
     } else if (key == "End") {
-      end_option = select_->LastSelectableOption();
+      end_option = LastSelectableOption();
       handled = true;
     }
 
@@ -629,7 +622,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       // If there's no active selection,
       // act as if "ArrowDown" had been pressed.
       if (!option)
-        option = select_->NextSelectableOption(select_->LastSelectedOption());
+        option = NextSelectableOption(select_->LastSelectedOption());
       if (option) {
         // Use space to toggle selection change.
         select_->ToggleSelection(*option);
@@ -664,12 +657,33 @@ void ListBoxSelectType::SelectAll() {
   select_->SaveLastSelection();
 
   select_->active_selection_state_ = true;
-  select_->SetActiveSelectionAnchor(select_->NextSelectableOption(nullptr));
-  select_->SetActiveSelectionEnd(select_->PreviousSelectableOption(nullptr));
+  select_->SetActiveSelectionAnchor(NextSelectableOption(nullptr));
+  select_->SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
 
   select_->UpdateListBoxSelection(false, false);
   select_->ListBoxOnChange();
   select_->SetNeedsValidityCheck();
+}
+
+// Returns the index of the next valid item one page away from |start_option|
+// in direction |direction|.
+HTMLOptionElement* ListBoxSelectType::NextSelectableOptionPageAway(
+    HTMLOptionElement* start_option,
+    SkipDirection direction) const {
+  const auto& items = select_->GetListItems();
+  // -1 so we still show context.
+  int page_size = select_->ListBoxSize() - 1;
+
+  // One page away, but not outside valid bounds.
+  // If there is a valid option item one page away, the index is chosen.
+  // If there is no exact one page away valid option, returns start_index or
+  // the most far index.
+  int start_index = start_option ? start_option->ListIndex() : -1;
+  int edge_index = (direction == kSkipForwards) ? 0 : (items.size() - 1);
+  int skip_amount =
+      page_size +
+      ((direction == kSkipForwards) ? start_index : (edge_index - start_index));
+  return NextValidOption(edge_index, direction, skip_amount);
 }
 
 // ============================================================================
@@ -711,6 +725,60 @@ void SelectType::UpdateMultiSelectFocus() {}
 
 void SelectType::SelectAll() {
   NOTREACHED();
+}
+
+// Returns the 1st valid OPTION |skip| items from |list_index| in direction
+// |direction| if there is one.
+// Otherwise, it returns the valid OPTION closest to that boundary which is past
+// |list_index| if there is one.
+// Otherwise, it returns nullptr.
+// Valid means that it is enabled and visible.
+HTMLOptionElement* SelectType::NextValidOption(int list_index,
+                                               SkipDirection direction,
+                                               int skip) const {
+  DCHECK(direction == kSkipBackwards || direction == kSkipForwards);
+  const auto& list_items = select_->GetListItems();
+  HTMLOptionElement* last_good_option = nullptr;
+  int size = list_items.size();
+  for (list_index += direction; list_index >= 0 && list_index < size;
+       list_index += direction) {
+    --skip;
+    HTMLElement* element = list_items[list_index];
+    auto* option_element = DynamicTo<HTMLOptionElement>(element);
+    if (!option_element)
+      continue;
+    if (option_element->IsDisplayNone())
+      continue;
+    if (element->IsDisabledFormControl())
+      continue;
+    if (!select_->UsesMenuList() && !element->GetLayoutObject())
+      continue;
+    last_good_option = option_element;
+    if (skip <= 0)
+      break;
+  }
+  return last_good_option;
+}
+
+HTMLOptionElement* SelectType::NextSelectableOption(
+    HTMLOptionElement* start_option) const {
+  return NextValidOption(start_option ? start_option->ListIndex() : -1,
+                         kSkipForwards, 1);
+}
+
+HTMLOptionElement* SelectType::PreviousSelectableOption(
+    HTMLOptionElement* start_option) const {
+  return NextValidOption(
+      start_option ? start_option->ListIndex() : select_->GetListItems().size(),
+      kSkipBackwards, 1);
+}
+
+HTMLOptionElement* SelectType::FirstSelectableOption() const {
+  return NextValidOption(-1, kSkipForwards, 1);
+}
+
+HTMLOptionElement* SelectType::LastSelectableOption() const {
+  return NextValidOption(select_->GetListItems().size(), kSkipBackwards, 1);
 }
 
 }  // namespace blink

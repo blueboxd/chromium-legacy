@@ -138,7 +138,7 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
   return animations;
 }
 
-void DocumentAnimations::Trace(blink::Visitor* visitor) {
+void DocumentAnimations::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(timelines_);
 }

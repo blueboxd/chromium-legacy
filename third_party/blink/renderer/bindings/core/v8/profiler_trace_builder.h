@@ -80,7 +80,7 @@ class ProfilerTraceBuilder final
                                 const SecurityOrigin* allowed_origin,
                                 base::TimeTicks time_origin);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Adds a stack sample from V8 to the trace, performing necessary filtering

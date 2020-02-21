@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ScriptWrappable
 
   const char* NameInHeapSnapshot() const override;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   template <typename T>
   T* ToImpl() {

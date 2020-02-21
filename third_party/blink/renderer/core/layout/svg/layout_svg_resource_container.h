@@ -25,6 +25,8 @@
 
 namespace blink {
 
+class SVGResourcesCycleSolver;
+
 enum LayoutSVGResourceType {
   kMaskerResourceType,
   kMarkerResourceType,
@@ -64,6 +66,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
                                        SubtreeLayoutScope* = nullptr);
   void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
+  bool FindCycle(SVGResourcesCycleSolver&) const;
+
   static void MarkForLayoutAndParentResourceInvalidation(
       LayoutObject&,
       bool needs_layout = true);
@@ -74,6 +78,11 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  protected:
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
+
+  bool FindCycleFromSelf(SVGResourcesCycleSolver&) const;
+  bool FindCycleInDescendants(SVGResourcesCycleSolver&) const;
+  bool FindCycleInResources(SVGResourcesCycleSolver&,
+                            const LayoutObject&) const;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;

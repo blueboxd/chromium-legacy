@@ -566,9 +566,10 @@ void RenderFrameHostManager::UnloadOldFrame(
   //
   // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
   // implementing back-forward cache.
-  if (old_page_back_forward_cache_metrics)
+  if (old_page_back_forward_cache_metrics) {
     old_page_back_forward_cache_metrics->RecordFeatureUsage(
         old_render_frame_host.get());
+  }
 
   // BackForwardCache:
   //

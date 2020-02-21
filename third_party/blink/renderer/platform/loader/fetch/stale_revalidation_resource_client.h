@@ -24,7 +24,7 @@ class StaleRevalidationResourceClient
 
   // RawResourceClient overloads.
   void NotifyFinished(Resource* resource) override;
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
   String DebugName() const override;
 
  private:

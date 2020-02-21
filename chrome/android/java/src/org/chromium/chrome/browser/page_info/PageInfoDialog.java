@@ -22,6 +22,7 @@ import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.components.page_info.PageInfoView;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;

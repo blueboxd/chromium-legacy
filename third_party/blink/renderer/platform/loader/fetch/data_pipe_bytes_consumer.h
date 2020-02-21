@@ -40,7 +40,7 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
     // written into the pipe.
     void SignalComplete();
     void SignalError(const BytesConsumer::Error& error);
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     const WeakMember<DataPipeBytesConsumer> bytes_consumer_;
@@ -65,7 +65,7 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   }
   String DebugName() const override { return "DataPipeBytesConsumer"; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsReadableOrWaiting() const;

@@ -125,7 +125,7 @@ void DevToolsFrontendImpl::DestroyOnHostGone() {
   GetSupplementable()->RemoveSupplement<DevToolsFrontendImpl>();
 }
 
-void DevToolsFrontendImpl::Trace(blink::Visitor* visitor) {
+void DevToolsFrontendImpl::Trace(Visitor* visitor) {
   visitor->Trace(devtools_host_);
   Supplement<LocalFrame>::Trace(visitor);
 }

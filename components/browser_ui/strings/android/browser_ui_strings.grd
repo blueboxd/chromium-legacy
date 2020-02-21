@@ -336,6 +336,14 @@
       <message name="IDS_ACCESSIBILITY_SECURITY_BTN_DANGEROUS" desc="Content description for the security icon for dangerous pages. The content description also includes the call to action for opening the page info bubble (Site information).">
         This page is dangerous. Site information
       </message>
+
+     <!-- Cookie controls UI -->
+      <message name="IDS_COOKIE_CONTROLS_BLOCKED_COOKIES" desc="Text showing the number of blocked cookies on a site.">
+        {COOKIE_COUNT, plural,
+            =1 {1 cookie blocked}
+            other {# cookies blocked}}
+      </message>
+
     </messages>
   </release>
 </grit>

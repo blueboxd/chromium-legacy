@@ -246,6 +246,6 @@ base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   return base::TimeTicks::Now() - start;
 }
 
-void XRFrameTransport::Trace(blink::Visitor* visitor) {}
+void XRFrameTransport::Trace(Visitor* visitor) {}
 
 }  // namespace blink

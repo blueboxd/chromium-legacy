@@ -57,7 +57,7 @@ StringOrTestDictionary::StringOrTestDictionary(const StringOrTestDictionary&) = 
 StringOrTestDictionary::~StringOrTestDictionary() = default;
 StringOrTestDictionary& StringOrTestDictionary::operator=(const StringOrTestDictionary&) = default;
 
-void StringOrTestDictionary::Trace(blink::Visitor* visitor) {
+void StringOrTestDictionary::Trace(Visitor* visitor) {
   visitor->Trace(test_dictionary_);
 }
 

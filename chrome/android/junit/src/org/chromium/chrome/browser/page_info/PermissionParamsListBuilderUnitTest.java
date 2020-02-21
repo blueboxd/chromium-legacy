@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridgeJni;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.page_info.PageInfoView;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 

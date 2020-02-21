@@ -5,20 +5,20 @@ Gerrit, which is the code review platform for the Chromium project. This
 checklist is designed to be streamlined. See
 [contributing to Chromium][contributing] for a more thorough reference. The
 intended audience is software engineers who are unfamiliar with contributing to
-the Chromium project.
+the Chromium project. Feel free to skip steps that are not applicable to the
+patch set you're currently uploading.
 
 [TOC]
 
 ## 1. Create a new branch
 
 You should create a new branch before starting any development work. It's
-helpful to branch early and to branch often in Git.
+helpful to branch early and to branch often in Git. Use the command
+`git new-branch <branch_name>`. This is equivalent to
+`git checkout -b <branch_name> --track origin/master`.
 
-    git new-branch <branch_name>
-
-which is equivalent to
-
-    git checkout -b <branch_name> --track origin/master
+You may also want to set another local branch as the upstream branch. You can do
+that with `git checkout -b <branch_name> --track <upstream_branch>`.
 
 Mark the associated crbug as "started" so that other people know that you have
 started work on the bug. Doing this can avoid duplicated work.
@@ -52,46 +52,50 @@ Consider automating any manual testing you did in the previous step.
 
 Run `git cl format --js`. The `--js` option also formats JavaScript changes.
 
-## 7. Check over your changes
+## 7. Review your changes
 
-Run `git upstream-diff` to check over all of the changes you've made from the
-most recent checkpoint on the remote repository.
+Use `git diff` to review all of the changes you've made from the previous
+commit. Use `git upstream-diff` to review all of the changes you've made
+from the upstream branch. The output from `git upstream-diff` is what will
+be uploaded to Gerrit.
 
 ## 8. Stage relevant files for commit
 
-Run `git add <path_to_file>` for all of the relevant files you've modified.
-Unlike other version-control systems such as svn, you have to specifically `git
-add` the files you want to commit before calling `git commit`.
+Run `git add <path_to_file>` for all of the files you've modified that you want
+to include in the CL. Unlike other version-control systems such as svn, you have
+to specifically `git add` the files you want to commit before calling
+`git commit`.
 
 ## 9. Commit your changes
 
-Run `git commit`. Here are some
-[tips for writing good commit messages][uploading-a-change-for-review].
+Run `git commit`. Be sure to write a useful commit message. Here are some
+[tips for writing good commit messages][uploading-a-change-for-review]. A
+shortcut for combining steps 8 and 9 is `git commit -a -m <commit_message>`.
 
 ## 10. Squash your commits
 
 If you have many commits on your current branch, and you want to avoid some
-nasty commit-by-commit merge conflicts in the next step, it is recommended to
-squash your commits into a single commit. This is done by running `git rebase -i
-@{u}`. The `@{u}` is a short-hand pointer for the upstream branch, which is
-usually origin/master. After running the git rebase command, you should see a
-list of commits, each commit starting with the word "pick". Make sure the first
-commit says "pick" and change the rest from "pick" to "squash". This will squash
-each commit into the previous commit, which will continue until each commit is
-squashed into the first commit.
+nasty commit-by-commit merge conflicts in the next step, consider collecting all
+your changes into one commit. Run `git rebase -i @{u}`. The `@{u}` is a
+short-hand pointer for the upstream branch, which is usually origin/master.
+After running the `git rebase` command, you should see a list of commits, with
+each commit starting with the word "pick". Make sure the first commit says
+"pick" and change the rest from "pick" to "squash". This will squash each commit
+into the previous commit, which will continue until each commit is squashed into
+the first commit.
 
 ## 11. Rebase your local repository
 
-Run `git rebase-update`. This command updates all of your local branches with
+Rebasing is a neat way to resolve any merge conflict errors on your CL. Run
+`git rebase-update`. This command updates all of your local branches with
 remote changes that have landed since you started development work, which
 could've been a while ago. It also deletes any branches that match the remote
-repository, such as after the CL associated with that branch had merged. You may
-run into rebase conflicts, which should be manually fixed before proceeding with
-`git rebase --continue`. Rebasing prevents unintended changes from creeping into
-your CL.
+repository, such as after the CL associated with that branch has been merged.
+In summary, `git rebse-update` cleans up your local branches.
 
-Note that rebasing has the potential to break your build, so you might want to
-try re-building afterwards.
+You may run into rebase conflicts. Fix them manually before proceeding with
+`git rebase --continue`. Note that rebasing has the potential to break your
+build, so you might want to try re-building afterwards.
 
 ## 12. Upload the CL to Gerrit
 

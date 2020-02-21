@@ -1,21 +1,23 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Blink feature-policy presubmit script.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+
 def _RunUmaHistogramChecks(input_api, output_api):  # pylint: disable=C0103
     import sys
 
     original_sys_path = sys.path
     try:
-        sys.path = sys.path + [input_api.os_path.join(
-            input_api.PresubmitLocalPath(), '..', '..', '..', '..', '..',
-            'tools', 'metrics', 'histograms')]
+        sys.path = sys.path + [
+            input_api.os_path.join(input_api.PresubmitLocalPath(), '..', '..',
+                                   '..', '..', '..', 'tools', 'metrics',
+                                   'histograms')
+        ]
         import update_histogram_enum
     finally:
         sys.path = original_sys_path
@@ -38,14 +40,18 @@ def _RunUmaHistogramChecks(input_api, output_api):  # pylint: disable=C0103
         end_marker=end_marker,
         strip_k_prefix=True)
     if presubmit_error:
-        return [output_api.PresubmitPromptWarning(presubmit_error,
-                                                  items=[source_path])]
+        return [
+            output_api.PresubmitPromptWarning(
+                presubmit_error, items=[source_path])
+        ]
     return []
+
 
 def CheckChangeOnUpload(input_api, output_api):  # pylint: disable=C0103
     results = []
     results.extend(_RunUmaHistogramChecks(input_api, output_api))
     return results
+
 
 def CheckChangeOnCommit(input_api, output_api):  # pylint: disable=C0103
     results = []

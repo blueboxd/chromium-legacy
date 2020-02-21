@@ -40,7 +40,7 @@ class CORE_EXPORT StringTreatNullAsEmptyStringOrLong final {
   StringTreatNullAsEmptyStringOrLong(const StringTreatNullAsEmptyStringOrLong&);
   ~StringTreatNullAsEmptyStringOrLong();
   StringTreatNullAsEmptyStringOrLong& operator=(const StringTreatNullAsEmptyStringOrLong&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

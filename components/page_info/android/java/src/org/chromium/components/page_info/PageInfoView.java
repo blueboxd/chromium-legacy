@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.page_info;
+package org.chromium.components.page_info;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -27,7 +27,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.R;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
@@ -359,7 +358,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         ImageView permissionIcon = permissionRow.findViewById(R.id.page_info_permission_icon);
         permissionIcon.setImageDrawable(UiUtils.getTintedDrawable(getContext(), params.iconResource,
                 params.iconTintColorResource != 0 ? params.iconTintColorResource
-                                                  : R.color.default_icon_color));
+                                                  : org.chromium.ui.R.color.default_icon_color));
 
         if (params.warningTextResource != 0) {
             TextView permissionUnavailable =

@@ -105,7 +105,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   // The purported creation date (as expressed by the Date: header).
   base::Time Date() const { return date_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   blink::mojom::MHTMLLoadResult LoadResult() const { return load_result_; }
 
  private:

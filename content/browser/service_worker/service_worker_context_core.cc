@@ -211,7 +211,7 @@ class ClearAllServiceWorkersHelper
     }
     for (const auto& registration_info : registrations) {
       context->UnregisterServiceWorker(
-          registration_info.scope,
+          registration_info.scope, /*is_immediate=*/false,
           base::BindOnce(&ClearAllServiceWorkersHelper::OnResult, this));
     }
   }
@@ -466,11 +466,13 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& scope,
+    bool is_immediate,
     UnregistrationCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   job_coordinator_->Unregister(
-      scope, base::BindOnce(&ServiceWorkerContextCore::UnregistrationComplete,
-                            AsWeakPtr(), scope, std::move(callback)));
+      scope, is_immediate,
+      base::BindOnce(&ServiceWorkerContextCore::UnregistrationComplete,
+                     AsWeakPtr(), scope, std::move(callback)));
 }
 
 void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
@@ -480,7 +482,7 @@ void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
       origin,
       base::BindOnce(
           &ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin,
-          AsWeakPtr(), std::move(callback)));
+          AsWeakPtr(), origin, std::move(callback)));
 }
 
 void ServiceWorkerContextCore::PerformStorageCleanup(
@@ -490,6 +492,7 @@ void ServiceWorkerContextCore::PerformStorageCleanup(
 }
 
 void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
+    const GURL& origin,
     base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
     blink::ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
@@ -498,6 +501,17 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     std::move(callback).Run(status);
     return;
   }
+
+  // Clear all unregistered registrations that are waiting for controllees to
+  // unload.
+  std::vector<scoped_refptr<ServiceWorkerRegistration>>
+      uninstalling_registrations =
+          registry()->GetUninstallingRegistrationsForOrigin(origin);
+  for (const auto& uninstalling_registration : uninstalling_registrations) {
+    job_coordinator_->Abort(uninstalling_registration->scope());
+    uninstalling_registration->DeleteAndClearImmediately();
+  }
+
   if (registrations.empty()) {
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
     return;
@@ -526,7 +540,8 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
       }
     }
     job_coordinator_->Abort(registration->scope());
-    UnregisterServiceWorker(registration->scope(), barrier);
+    UnregisterServiceWorker(registration->scope(), /*is_immediate=*/true,
+                            barrier);
   }
 }
 

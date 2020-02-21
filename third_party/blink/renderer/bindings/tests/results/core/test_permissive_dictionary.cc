@@ -17,7 +17,7 @@ TestPermissiveDictionary::TestPermissiveDictionary() {
 
 TestPermissiveDictionary::~TestPermissiveDictionary() = default;
 
-void TestPermissiveDictionary::Trace(blink::Visitor* visitor) {
+void TestPermissiveDictionary::Trace(Visitor* visitor) {
   IDLDictionaryBase::Trace(visitor);
 }
 

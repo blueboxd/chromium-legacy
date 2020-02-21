@@ -533,7 +533,7 @@ class BackgroundSyncManagerTest
   void UnregisterServiceWorker(uint64_t sw_registration_id) {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
-        ScopeForSWId(sw_registration_id),
+        ScopeForSWId(sw_registration_id), /*is_immediate=*/false,
         base::BindOnce(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);

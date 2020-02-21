@@ -37,7 +37,7 @@ ModuleRecordProduceCacheData::ModuleRecordProduceCacheData(
   }
 }
 
-void ModuleRecordProduceCacheData::Trace(blink::Visitor* visitor) {
+void ModuleRecordProduceCacheData::Trace(Visitor* visitor) {
   visitor->Trace(cache_handler_);
   visitor->Trace(unbound_script_.UnsafeCast<v8::Value>());
 }

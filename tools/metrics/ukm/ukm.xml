@@ -8599,10 +8599,27 @@ be describing additional metrics about the same event.
       versions to save data.
     </summary>
   </metric>
+  <metric name="IneligibleImageHintsUnavailableAndMissingInHintsBytes">
+    <summary>
+      Total bytes of images that were ineligible to be compressed due to the
+      image hint list was not retrieved in time before the image fetch started,
+      and the image URL was not in the hint list as well, which finished
+      fetching later.
+    </summary>
+  </metric>
+  <metric name="IneligibleImageHintsUnavailableButCompressibleBytes">
+    <summary>
+      Total bytes of images that were ineligible to be compressed due to the
+      image hint list was not retrieved in time before the image fetch started,
+      but the image URL was found in the hint list, which finished fetching
+      later.
+    </summary>
+  </metric>
   <metric name="IneligibleImageHintsUnavailableBytes">
     <summary>
       Total bytes of images that were ineligible to be compressed due to the
-      image hint list was not retrieved in time before the image fetch started.
+      image hint list was not retrieved within within certain time limit of
+      navigation start.
     </summary>
   </metric>
   <metric name="IneligibleMissingInImageHintsBytes">

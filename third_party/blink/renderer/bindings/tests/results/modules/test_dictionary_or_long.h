@@ -41,7 +41,7 @@ class MODULES_EXPORT TestDictionaryOrLong final {
   TestDictionaryOrLong(const TestDictionaryOrLong&);
   ~TestDictionaryOrLong();
   TestDictionaryOrLong& operator=(const TestDictionaryOrLong&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

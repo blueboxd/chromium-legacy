@@ -29,7 +29,7 @@ void StaleRevalidationResourceClient::NotifyFinished(Resource* resource) {
   }
 }
 
-void StaleRevalidationResourceClient::Trace(blink::Visitor* visitor) {
+void StaleRevalidationResourceClient::Trace(Visitor* visitor) {
   visitor->Trace(stale_resource_);
   RawResourceClient::Trace(visitor);
 }

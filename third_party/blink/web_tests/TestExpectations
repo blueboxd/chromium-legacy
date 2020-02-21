@@ -3236,6 +3236,7 @@ crbug.com/400829 virtual/audio-service/media/stable/video-object-fit-stable.html
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
+crbug.com/1032016 http/tests/devtools/sources/debugger/live-edit-breakpoints.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
@@ -3788,6 +3789,12 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
@@ -3963,9 +3970,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-inp
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Failure ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/delay-time-clamping.html [ Failure ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/cycle-without-delay.html [ Failure ]
@@ -5647,6 +5651,20 @@ crbug.com/889798 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
+# Service workers need to handle Clear-Site-Data appropriately.
+crbug.com/1052641 external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052641 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052641 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052641 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052641 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052641 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/unregister-immediately-before-installed.https.html [ Skip ]
+crbug.com/1052642 external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+crbug.com/1052642 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+crbug.com/1052642 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+crbug.com/1052642 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+crbug.com/1052642 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+crbug.com/1052642 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/unregister-immediately-during-extendable-events.https.html [ Skip ]
+
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
@@ -7290,7 +7308,7 @@ crbug.com/1043453 [ Release Win ] virtual/threaded/external/wpt/css/css-animatio
 crbug.com/1043453 [ Release Mac ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
 crbug.com/1043454 [ Release ] http/tests/devtools/console-xhr-logging-async.js [ Pass Timeout ]
 crbug.com/1043463 [ Release ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Timeout ]
-crbug.com/1043488 [ Release ] fast/forms/date/date-appearance-basic.html [ Pass Failure ]
+crbug.com/1043488 fast/forms/date/date-appearance-basic.html [ Pass Failure ]
 crbug.com/1043785 [ Release ] http/tests/devtools/elements/edit/switch-panels-while-editing-as-html.js [ Pass Timeout ]
 crbug.com/1043792 [ Release Win ] http/tests/devtools/template-content-inspect-crash.js [ Pass Timeout ]
 crbug.com/1043792 [ Release Mac ] http/tests/devtools/template-content-inspect-crash.js [ Pass Timeout ]

@@ -223,6 +223,23 @@ TEST_F(WeaknessMarkingTest, EmptyEphemeronCollection) {
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
+TEST_F(WeaknessMarkingTest, ClearWeakHashTableAfterMarking) {
+  // Regression test: https://crbug.com/1054363
+  //
+  // Test ensures that no marked backing with weak pointers to dead object is
+  // left behind after marking. The test creates a backing that is floating
+  // garbage. The marking verifier ensures that all buckets are properly
+  // deleted.
+  using Set = HeapHashSet<WeakMember<IntegerObject>>;
+  Persistent<Set> holder(MakeGarbageCollected<Set>());
+  holder->insert(MakeGarbageCollected<IntegerObject>(1));
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  holder->clear();
+  driver.FinishGC();
+}
+
 }  // namespace weakness_marking_test
 
 }  // namespace blink

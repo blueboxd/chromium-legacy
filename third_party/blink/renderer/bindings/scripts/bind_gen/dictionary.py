@@ -87,6 +87,29 @@ def _member_presence_expr(member):
     return _format(_DICT_MEMBER_PRESENCE_PREDICATES[blink_type], _1)
 
 
+def bind_member_iteration_local_vars(code_node):
+    local_vars = [
+        SymbolNode(
+            "current_context", "v8::Local<v8::Context> ${current_context} = "
+            "${isolate}->GetCurrentContext();"),
+        SymbolNode(
+            "member_names", "const auto* ${member_names} = "
+            "GetV8MemberNames(${isolate}).data();"),
+    ]
+
+    # Execution context
+    node = SymbolNode(
+        "execution_context", "ExecutionContext* ${execution_context} = "
+        "ToExecutionContext(${current_context});")
+    node.accumulate(
+        CodeGenAccumulator.require_include_headers([
+            "third_party/blink/renderer/core/execution_context/execution_context.h"
+        ]))
+    local_vars.append(node)
+
+    code_node.register_code_symbols(local_vars)
+
+
 def make_dict_member_get_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -301,18 +324,8 @@ def make_fill_with_own_dict_members_func(cg_context):
         const=True)
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
-
-    body.register_code_symbols([
-        SymbolNode(
-            "execution_context", "ExecutionContext* ${execution_context} = "
-            "ToExecutionContext(${current_context});"),
-        SymbolNode(
-            "member_names", "const auto* ${member_names} = "
-            "GetV8MemberNames(isolate).data();"),
-        SymbolNode(
-            "current_context", "v8::Local<v8::Context> ${current_context} = "
-            "isolate->GetCurrentContext();"),
-    ])
+    body.add_template_var("isolate", "isolate")
+    bind_member_iteration_local_vars(body)
 
     for key_index, member in enumerate(own_members):
         _1 = _blink_member_name(member).has_api
@@ -485,17 +498,9 @@ def make_fill_dict_members_internal_func(cg_context):
     body = func_def.body
     body.add_template_var("isolate", "isolate")
     body.add_template_var("exception_state", "exception_state")
+    bind_member_iteration_local_vars(body)
     body.register_code_symbols([
-        SymbolNode(
-            "execution_context", "ExecutionContext* ${execution_context} = "
-            "ToExecutionContext(${current_context});"),
-        SymbolNode(
-            "member_names", "const auto* ${member_names} = "
-            "GetV8MemberNames(${isolate}).data();"),
         SymbolNode("try_block", "v8::TryCatch ${try_block}(${isolate});"),
-        SymbolNode(
-            "current_context", "v8::Local<v8::Context> ${current_context} = "
-            "${isolate}->GetCurrentContext();"),
         SymbolNode("v8_value", "v8::Local<v8::Value> ${v8_value};"),
     ])
 
@@ -785,5 +790,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find("ComputedEffectTiming")
+    dictionary = web_idl_database.find("OriginTrialsTestDictionary")
     generate_dictionary(dictionary)

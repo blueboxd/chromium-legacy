@@ -21,14 +21,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_CYCLE_SOLVER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
-
-class LayoutObject;
-class LayoutSVGResourceContainer;
-class SVGResources;
 
 // This class traverses the graph formed by SVGResources of
 // LayoutObjects, maintaining the active path as LayoutObjects are
@@ -38,22 +35,40 @@ class SVGResourcesCycleSolver {
   STACK_ALLOCATED();
 
  public:
-  SVGResourcesCycleSolver(LayoutObject&);
+  SVGResourcesCycleSolver();
   ~SVGResourcesCycleSolver();
 
-  // Traverse the graph starting at the resource container
-  // passed. Returns true if a cycle is detected.
-  bool FindCycle(LayoutSVGResourceContainer*);
+  bool IsKnownAcyclic(const LayoutSVGResourceContainer*) const;
+  void AddAcyclicSubgraph(const LayoutSVGResourceContainer*);
 
-  typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
+  class Scope {
+    STACK_ALLOCATED();
+
+   public:
+    Scope(SVGResourcesCycleSolver& solver)
+        : solver_(solver), resource_(nullptr) {}
+    ~Scope() {
+      if (resource_)
+        solver_.LeaveResource(resource_);
+    }
+
+    bool Enter(const LayoutSVGResourceContainer* resource) {
+      if (!solver_.EnterResource(resource))
+        return false;
+      resource_ = resource;
+      return true;
+    }
+
+   private:
+    SVGResourcesCycleSolver& solver_;
+    const LayoutSVGResourceContainer* resource_;
+  };
 
  private:
-  bool TraverseResourceContainer(LayoutSVGResourceContainer*);
-  bool TraverseResources(LayoutObject&);
-  bool TraverseResources(SVGResources*);
+  bool EnterResource(const LayoutSVGResourceContainer*);
+  void LeaveResource(const LayoutSVGResourceContainer*);
 
-  LayoutObject& layout_object_;
-
+  using ResourceSet = HashSet<const LayoutSVGResourceContainer*>;
   ResourceSet active_resources_;
   ResourceSet dag_cache_;
   DISALLOW_COPY_AND_ASSIGN(SVGResourcesCycleSolver);

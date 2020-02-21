@@ -268,16 +268,7 @@ class CORE_EXPORT HTMLSelectElement final
   // Returns nullptr if listIndex is out of bounds, or it doesn't point an
   // HTMLOptionElement.
   HTMLOptionElement* OptionAtListIndex(int list_index) const;
-  enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
-  HTMLOptionElement* NextValidOption(int list_index,
-                                     SkipDirection,
-                                     int skip) const;
-  HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;
-  HTMLOptionElement* PreviousSelectableOption(HTMLOptionElement*) const;
-  HTMLOptionElement* FirstSelectableOption() const;
-  HTMLOptionElement* LastSelectableOption() const;
-  HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
-                                                  SkipDirection) const;
+
   AutoscrollController* GetAutoscrollController() const;
   LayoutBox* AutoscrollBox() override;
   void StopAutoscroll() override;
@@ -328,10 +319,7 @@ class CORE_EXPORT HTMLSelectElement final
   friend class ListBoxSelectType;
   friend class MenuListSelectType;
   friend class SelectType;
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, FirstSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, LastSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, NextSelectableOption);
-  FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, PreviousSelectableOption);
+  friend class HTMLSelectElementTest;
 };
 
 }  // namespace blink

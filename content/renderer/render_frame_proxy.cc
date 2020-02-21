@@ -682,21 +682,15 @@ void RenderFrameProxy::FrameRectsChanged(
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::ViewportIntersectionState& intersection_state) {
   DCHECK(ancestor_render_widget_);
-
-  // If the remote viewport intersection has changed, then we should check if
-  // the compositing rect has also changed: if it has, then we should update the
-  // visible properties.
-  // TODO(wjmaclean): Maybe we should always call SynchronizeVisualProperties()
-  // here? If nothing has changed, it will early out, and it avoids duplicate
-  // checks here.
-  blink::ViewportIntersectionState new_state(intersection_state);
-  new_state.compositor_visible_rect = web_frame_->GetCompositingRect();
-  if (new_state.compositor_visible_rect !=
-      blink::WebRect(pending_visual_properties_.compositor_viewport)) {
+  // TODO(szager): compositor_viewport is propagated twice, via
+  // ViewportIntersectionState and also via FrameVisualProperties. It should
+  // only go through FrameVisualProperties.
+  if (pending_visual_properties_.compositor_viewport !=
+      gfx::Rect(intersection_state.compositor_visible_rect)) {
     SynchronizeVisualProperties();
   }
-
-  Send(new FrameHostMsg_UpdateViewportIntersection(routing_id_, new_state));
+  Send(new FrameHostMsg_UpdateViewportIntersection(routing_id_,
+                                                   intersection_state));
 }
 
 void RenderFrameProxy::DidChangeOpener(blink::WebFrame* opener) {

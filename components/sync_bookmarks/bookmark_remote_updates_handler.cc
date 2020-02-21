@@ -50,8 +50,10 @@ enum class RemoteBookmarkUpdateError {
   kCreationFailure = 8,
   // The bookmark's GUID did not match the originator client item ID.
   kUnexpectedGuid = 9,
+  // Parent is not a folder.
+  kParentNotFolder = 10,
 
-  kMaxValue = kUnexpectedGuid,
+  kMaxValue = kParentNotFolder,
 };
 
 void LogProblematicBookmark(RemoteBookmarkUpdateError problem) {
@@ -479,6 +481,13 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
     LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentNode);
     return false;
   }
+  if (!parent_node->is_folder()) {
+    DLOG(ERROR) << "Parent node is not a folder. Node title: "
+                << update_entity.specifics.bookmark().title()
+                << ", parent id: " << update_entity.parent_id;
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kParentNotFolder);
+    return false;
+  }
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
           update_entity.specifics.bookmark(), parent_node,
@@ -532,6 +541,11 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
     DLOG(ERROR)
         << "Could not update node. Parent node has been deleted already.";
     LogProblematicBookmark(RemoteBookmarkUpdateError::kMissingParentNode);
+    return;
+  }
+  if (!new_parent->is_folder()) {
+    DLOG(ERROR) << "Could not update node. Parent not is not a folder.";
+    LogProblematicBookmark(RemoteBookmarkUpdateError::kParentNotFolder);
     return;
   }
   // Node update could be either in the node data (e.g. title or

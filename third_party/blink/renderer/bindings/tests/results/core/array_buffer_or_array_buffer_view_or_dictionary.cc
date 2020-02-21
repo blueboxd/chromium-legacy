@@ -75,7 +75,7 @@ ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictiona
 ArrayBufferOrArrayBufferViewOrDictionary::~ArrayBufferOrArrayBufferViewOrDictionary() = default;
 ArrayBufferOrArrayBufferViewOrDictionary& ArrayBufferOrArrayBufferViewOrDictionary::operator=(const ArrayBufferOrArrayBufferViewOrDictionary&) = default;
 
-void ArrayBufferOrArrayBufferViewOrDictionary::Trace(blink::Visitor* visitor) {
+void ArrayBufferOrArrayBufferViewOrDictionary::Trace(Visitor* visitor) {
   visitor->Trace(array_buffer_);
   visitor->Trace(array_buffer_view_);
 }

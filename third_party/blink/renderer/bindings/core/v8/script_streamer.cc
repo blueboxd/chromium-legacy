@@ -554,7 +554,7 @@ void ScriptStreamer::Prefinalize() {
   prefinalizer_called_ = true;
 }
 
-void ScriptStreamer::Trace(blink::Visitor* visitor) {
+void ScriptStreamer::Trace(Visitor* visitor) {
   visitor->Trace(script_resource_);
 }
 

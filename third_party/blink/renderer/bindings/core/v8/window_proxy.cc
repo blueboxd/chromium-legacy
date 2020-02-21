@@ -48,7 +48,7 @@ WindowProxy::~WindowProxy() {
   DCHECK(lifecycle_ != Lifecycle::kContextIsInitialized);
 }
 
-void WindowProxy::Trace(blink::Visitor* visitor) {
+void WindowProxy::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

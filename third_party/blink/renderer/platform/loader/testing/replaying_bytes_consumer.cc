@@ -137,7 +137,7 @@ void ReplayingBytesConsumer::MakeErrored(const Error& e) {
   ++notification_token_;
 }
 
-void ReplayingBytesConsumer::Trace(blink::Visitor* visitor) {
+void ReplayingBytesConsumer::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }

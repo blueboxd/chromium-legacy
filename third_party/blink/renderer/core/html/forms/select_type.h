@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SELECT_TYPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SELECT_TYPE_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -41,10 +42,18 @@ class SelectType : public GarbageCollected<SelectType> {
 
   virtual void SelectAll();
 
-  // TODO(crbug.com/1052232): Add more virtual functions.
+  enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
+  CORE_EXPORT HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;
+  CORE_EXPORT HTMLOptionElement* PreviousSelectableOption(
+      HTMLOptionElement*) const;
+  CORE_EXPORT HTMLOptionElement* FirstSelectableOption() const;
+  CORE_EXPORT HTMLOptionElement* LastSelectableOption() const;
 
  protected:
   explicit SelectType(HTMLSelectElement& select);
+  HTMLOptionElement* NextValidOption(int list_index,
+                                     SkipDirection direction,
+                                     int skip) const;
 
   const Member<HTMLSelectElement> select_;
   bool will_be_destroyed_ = false;

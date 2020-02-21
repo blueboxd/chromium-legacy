@@ -198,10 +198,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       RegistrationCallback callback);
+
+  // If |is_immediate| is true, unregister clears the active worker from the
+  // registration without waiting for the controlled clients to unload.
   void UnregisterServiceWorker(const GURL& scope,
+                               bool is_immediate,
                                UnregistrationCallback callback);
 
-  // Callback is called after all deletions occured. The status code is
+  // Callback is called after all deletions occurred. The status code is
   // blink::ServiceWorkerStatusCode::kOk if all succeed, or
   // SERVICE_WORKER_FAILED if any did not succeed.
   void DeleteForOrigin(const GURL& origin, StatusCallback callback);
@@ -338,6 +342,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               std::string* out_error) const;
 
   void DidGetRegistrationsForDeleteForOrigin(
+      const GURL& origin,
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
       blink::ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&

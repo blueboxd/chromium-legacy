@@ -102,7 +102,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // in ResourceFetcherInit to ensure correctness of this ResourceFetcher.
   explicit ResourceFetcher(const ResourceFetcherInit&);
   virtual ~ResourceFetcher();
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   // - This function returns the same object throughout this fetcher's
   //   entire life.

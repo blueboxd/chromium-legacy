@@ -59,7 +59,7 @@ LongSequenceOrEvent::LongSequenceOrEvent(const LongSequenceOrEvent&) = default;
 LongSequenceOrEvent::~LongSequenceOrEvent() = default;
 LongSequenceOrEvent& LongSequenceOrEvent::operator=(const LongSequenceOrEvent&) = default;
 
-void LongSequenceOrEvent::Trace(blink::Visitor* visitor) {
+void LongSequenceOrEvent::Trace(Visitor* visitor) {
   visitor->Trace(event_);
 }
 

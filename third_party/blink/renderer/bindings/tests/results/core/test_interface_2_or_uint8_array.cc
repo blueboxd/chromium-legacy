@@ -57,7 +57,7 @@ TestInterface2OrUint8Array::TestInterface2OrUint8Array(const TestInterface2OrUin
 TestInterface2OrUint8Array::~TestInterface2OrUint8Array() = default;
 TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInterface2OrUint8Array&) = default;
 
-void TestInterface2OrUint8Array::Trace(blink::Visitor* visitor) {
+void TestInterface2OrUint8Array::Trace(Visitor* visitor) {
   visitor->Trace(test_interface_2_);
   visitor->Trace(uint8_array_);
 }

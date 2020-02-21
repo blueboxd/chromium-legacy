@@ -49,6 +49,8 @@ class ResourceLoadingHintsAgent
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void DidCreateNewDocument() override;
   void OnDestruct() override;
 

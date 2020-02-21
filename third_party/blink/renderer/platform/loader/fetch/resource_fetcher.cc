@@ -2114,7 +2114,7 @@ FrameScheduler* ResourceFetcher::GetFrameScheduler() {
   return frame_scheduler_.get();
 }
 
-void ResourceFetcher::Trace(blink::Visitor* visitor) {
+void ResourceFetcher::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(properties_);
   visitor->Trace(resource_load_observer_);

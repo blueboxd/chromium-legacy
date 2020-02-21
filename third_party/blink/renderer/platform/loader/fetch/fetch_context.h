@@ -75,7 +75,7 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
 
   virtual ~FetchContext() = default;
 
-  virtual void Trace(blink::Visitor*) {}
+  virtual void Trace(Visitor*) {}
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&);
 

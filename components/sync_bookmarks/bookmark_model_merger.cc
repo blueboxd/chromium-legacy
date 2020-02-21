@@ -236,6 +236,13 @@ BookmarkModelMerger::RemoteTreeNode::BuildTree(
   RemoteTreeNode node;
   node.update_ = std::move(update);
 
+  if (!node.update_.entity.is_folder &&
+      node.update_.entity.server_defined_unique_tag.empty()) {
+    // Only folders may have descendants (ignore them otherwise). Treat
+    // permanent nodes as folders explicitly.
+    return node;
+  }
+
   // Populate descendants recursively.
   for (UpdateResponseData& child_update :
        (*updates_per_parent_id)[node.entity().id]) {

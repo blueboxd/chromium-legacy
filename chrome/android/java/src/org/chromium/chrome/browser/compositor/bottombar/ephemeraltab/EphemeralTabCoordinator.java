@@ -62,6 +62,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private boolean mOpened;
     private String mUrl;
     private int mCurrentMaxSheetHeight;
+    private Profile mProfile;
 
     /**
      * Constructor.
@@ -138,6 +139,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     public void requestOpenSheet(String url, String title, boolean isIncognito) {
         mUrl = url;
         mIsIncognito = isIncognito;
+        mProfile = isIncognito ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                               : Profile.getLastUsedRegularProfile();
 
         getContent().loadUrl(url, true);
         getContent().updateBrowserControlsState(true);
@@ -150,7 +153,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
         mSheetContent.updateTitle(title);
         mBottomSheetController.requestShowContent(mSheetContent, true);
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
         if (tracker.isInitialized()) tracker.notifyEvent(EventConstants.EPHEMERAL_TAB_USED);
 
         // TODO(donnd): Collect UMA with OverlayPanel.StateChangeReason.CLICK.
@@ -306,7 +309,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             }
 
             mCurrentUrl = url;
-            mFaviconLoader.loadFavicon(url, (drawable) -> onFaviconAvailable(drawable));
+            mFaviconLoader.loadFavicon(url, (drawable) -> onFaviconAvailable(drawable), mProfile);
         }
 
         @Override
@@ -381,8 +384,10 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
          * the URL, a default favicon will be shown.
          * @param url The URL for which favicon is to be generated.
          * @param callback The callback to be invoked to display the final image.
+         * @param profile The profile for which favicon service is used.
          */
-        public void loadFavicon(final String url, Callback<Drawable> callback) {
+        public void loadFavicon(final String url, Callback<Drawable> callback, Profile profile) {
+            assert profile != null;
             FaviconHelper.FaviconImageCallback imageCallback = (bitmap, iconUrl) -> {
                 Drawable drawable;
                 if (bitmap != null) {
@@ -396,9 +401,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 callback.onResult(drawable);
             };
 
-            mFaviconHelper.getLocalFaviconImageForURL(
-                    Profile.getLastUsedProfile(), url, mFaviconSize, imageCallback);
+            mFaviconHelper.getLocalFaviconImageForURL(profile, url, mFaviconSize, imageCallback);
         }
-
     }
 }

@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ResourceFinishObserver
   // Name for debugging
   virtual String DebugName() const = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 };
 
 }  // namespace blink

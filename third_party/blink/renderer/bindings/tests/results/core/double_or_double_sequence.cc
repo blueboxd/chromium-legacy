@@ -58,7 +58,7 @@ DoubleOrDoubleSequence::DoubleOrDoubleSequence(const DoubleOrDoubleSequence&) = 
 DoubleOrDoubleSequence::~DoubleOrDoubleSequence() = default;
 DoubleOrDoubleSequence& DoubleOrDoubleSequence::operator=(const DoubleOrDoubleSequence&) = default;
 
-void DoubleOrDoubleSequence::Trace(blink::Visitor* visitor) {
+void DoubleOrDoubleSequence::Trace(Visitor* visitor) {
 }
 
 void V8DoubleOrDoubleSequence::ToImpl(

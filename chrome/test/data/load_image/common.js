@@ -9,11 +9,9 @@ function checkImage() {
 function imageLoadedPromise(img_element) {
   return new Promise((resolve, reject) => {
     if (img_element.complete && img_element.src) {
-      console.log("image loaded callback", img_element.src);
       resolve(true);
     } else {
       img_element.addEventListener('load', () => {
-        console.log("image loaded callback", img_element.src);
         resolve(true);
       });
     }

@@ -17,7 +17,7 @@ TestInterfaceEventInit::TestInterfaceEventInit() {
 
 TestInterfaceEventInit::~TestInterfaceEventInit() = default;
 
-void TestInterfaceEventInit::Trace(blink::Visitor* visitor) {
+void TestInterfaceEventInit::Trace(Visitor* visitor) {
   EventInit::Trace(visitor);
 }
 

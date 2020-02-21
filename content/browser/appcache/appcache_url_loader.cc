@@ -1,8 +1,8 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/appcache/appcache_url_loader_job.h"
+#include "content/browser/appcache/appcache_url_loader.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,7 +12,10 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "net/base/ip_endpoint.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -20,20 +23,62 @@
 
 namespace content {
 
-AppCacheURLLoaderJob::~AppCacheURLLoaderJob() {
+AppCacheURLLoader::~AppCacheURLLoader() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (storage_.get())
     storage_->CancelDelegateCallbacks(this);
 }
 
-bool AppCacheURLLoaderJob::IsStarted() const {
+void AppCacheURLLoader::InitializeRangeRequestInfo(
+    const net::HttpRequestHeaders& headers) {
+  std::string value;
+  std::vector<net::HttpByteRange> ranges;
+  if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &value) ||
+      !net::HttpUtil::ParseRangeHeader(value, &ranges)) {
+    return;
+  }
+
+  // If multiple ranges are requested, we play dumb and
+  // return the entire response with 200 OK.
+  if (ranges.size() == 1U)
+    range_requested_ = ranges[0];
+}
+
+void AppCacheURLLoader::SetupRangeResponse() {
+  DCHECK(is_range_request() && reader_.get() && IsDeliveringAppCacheResponse());
+  int resource_size = static_cast<int>(info_->response_data_size());
+  if (resource_size < 0 || !range_requested_.ComputeBounds(resource_size)) {
+    range_requested_ = net::HttpByteRange();
+    return;
+  }
+
+  DCHECK(range_requested_.IsValid());
+  int offset = static_cast<int>(range_requested_.first_byte_position());
+  int length = static_cast<int>(range_requested_.last_byte_position() -
+                                range_requested_.first_byte_position() + 1);
+
+  // Tell the reader about the range to read.
+  reader_->SetReadRange(offset, length);
+
+  // Make a copy of the full response headers and fix them up
+  // for the range we'll be returning.
+  range_response_info_ =
+      std::make_unique<net::HttpResponseInfo>(info_->http_response_info());
+  net::HttpResponseHeaders* headers = range_response_info_->headers.get();
+  headers->UpdateWithNewRange(range_requested_, resource_size,
+                              /*replace_status_line=*/true);
+}
+
+bool AppCacheURLLoader::IsStarted() const {
   return delivery_type_ != DeliveryType::kAwaitingDeliverCall &&
          delivery_type_ != DeliveryType::kNetwork;
 }
 
-void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
-                                                    int64_t cache_id,
-                                                    const AppCacheEntry& entry,
-                                                    bool is_fallback) {
+void AppCacheURLLoader::DeliverAppCachedResponse(const GURL& manifest_url,
+                                                 int64_t cache_id,
+                                                 const AppCacheEntry& entry,
+                                                 bool is_fallback) {
   if (!storage_.get() || !appcache_request_) {
     DeliverErrorResponse();
     return;
@@ -60,7 +105,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
 }
 
-void AppCacheURLLoaderJob::DeliverNetworkResponse() {
+void AppCacheURLLoader::DeliverNetworkResponse() {
   delivery_type_ = DeliveryType::kNetwork;
 
   // In tests we only care about the delivery_type_ state.
@@ -75,7 +120,7 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
   DeleteSoon();
 }
 
-void AppCacheURLLoaderJob::DeliverErrorResponse() {
+void AppCacheURLLoader::DeliverErrorResponse() {
   delivery_type_ = DeliveryType::kError;
 
   // In tests we only care about the delivery_type_ state.
@@ -83,44 +128,36 @@ void AppCacheURLLoaderJob::DeliverErrorResponse() {
     return;
 
   if (loader_callback_) {
-    CallLoaderCallback(base::BindOnce(&AppCacheURLLoaderJob::NotifyCompleted,
-                                      GetDerivedWeakPtr(), net::ERR_FAILED));
+    CallLoaderCallback(base::BindOnce(&AppCacheURLLoader::NotifyCompleted,
+                                      GetWeakPtr(), net::ERR_FAILED));
   } else {
     NotifyCompleted(net::ERR_FAILED);
   }
 }
 
-AppCacheURLLoaderJob* AppCacheURLLoaderJob::AsURLLoaderJob() {
-  return this;
-}
-
-base::WeakPtr<AppCacheJob> AppCacheURLLoaderJob::GetWeakPtr() {
+base::WeakPtr<AppCacheURLLoader> AppCacheURLLoader::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-base::WeakPtr<AppCacheURLLoaderJob> AppCacheURLLoaderJob::GetDerivedWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
-void AppCacheURLLoaderJob::FollowRedirect(
+void AppCacheURLLoader::FollowRedirect(
     const std::vector<std::string>& modified_headers,
     const net::HttpRequestHeaders& removed_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }
 
-void AppCacheURLLoaderJob::SetPriority(net::RequestPriority priority,
-                                       int32_t intra_priority_value) {}
-void AppCacheURLLoaderJob::PauseReadingBodyFromNet() {}
-void AppCacheURLLoaderJob::ResumeReadingBodyFromNet() {}
+void AppCacheURLLoader::SetPriority(net::RequestPriority priority,
+                                    int32_t intra_priority_value) {}
+void AppCacheURLLoader::PauseReadingBodyFromNet() {}
+void AppCacheURLLoader::ResumeReadingBodyFromNet() {}
 
-void AppCacheURLLoaderJob::DeleteIfNeeded() {
+void AppCacheURLLoader::DeleteIfNeeded() {
   if (receiver_.is_bound() || is_deleting_soon_)
     return;
   delete this;
 }
 
-void AppCacheURLLoaderJob::Start(
+void AppCacheURLLoader::Start(
     base::OnceClosure continuation,
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
@@ -132,7 +169,7 @@ void AppCacheURLLoaderJob::Start(
   receiver_.Bind(std::move(receiver));
   client_.Bind(std::move(client));
   receiver_.set_disconnect_handler(
-      base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
+      base::BindOnce(&AppCacheURLLoader::DeleteSoon, GetWeakPtr()));
 
   MojoResult result =
       mojo::CreateDataPipe(nullptr, &response_body_stream_, &consumer_handle_);
@@ -147,14 +184,12 @@ void AppCacheURLLoaderJob::Start(
     std::move(continuation).Run();
 }
 
-AppCacheURLLoaderJob::AppCacheURLLoaderJob(
+AppCacheURLLoader::AppCacheURLLoader(
     AppCacheRequest* appcache_request,
     AppCacheStorage* storage,
     AppCacheRequestHandler::AppCacheLoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
-      cache_id_(blink::mojom::kAppCacheNoCacheId),
-      is_fallback_(false),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()),
@@ -164,15 +199,15 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
           blink::IsResourceTypeFrame(static_cast<blink::mojom::ResourceType>(
               appcache_request->GetResourceType()))) {}
 
-void AppCacheURLLoaderJob::CallLoaderCallback(base::OnceClosure continuation) {
+void AppCacheURLLoader::CallLoaderCallback(base::OnceClosure continuation) {
   DCHECK(loader_callback_);
   DCHECK(!receiver_.is_bound());
   std::move(loader_callback_)
-      .Run(base::BindOnce(&AppCacheURLLoaderJob::Start, GetDerivedWeakPtr(),
+      .Run(base::BindOnce(&AppCacheURLLoader::Start, GetWeakPtr(),
                           std::move(continuation)));
 }
 
-void AppCacheURLLoaderJob::OnResponseInfoLoaded(
+void AppCacheURLLoader::OnResponseInfoLoaded(
     AppCacheResponseInfo* response_info,
     int64_t response_id) {
   DCHECK(IsDeliveringAppCacheResponse());
@@ -184,9 +219,9 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
 
   if (response_info) {
     if (loader_callback_) {
-      CallLoaderCallback(base::BindOnce(
-          &AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded,
-          GetDerivedWeakPtr(), base::WrapRefCounted(response_info)));
+      CallLoaderCallback(
+          base::BindOnce(&AppCacheURLLoader::ContinueOnResponseInfoLoaded,
+                         GetWeakPtr(), base::WrapRefCounted(response_info)));
     } else {
       ContinueOnResponseInfoLoaded(response_info);
     }
@@ -203,7 +238,7 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
   }
   cache_entry_not_found_ = true;
 
-  // We fallback to the network unless this job was falling back to the
+  // We fallback to the network unless this loader was falling back to the
   // appcache from the network which had already failed in some way.
   if (!is_fallback_)
     DeliverNetworkResponse();
@@ -211,7 +246,7 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     DeliverErrorResponse();
 }
 
-void AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded(
+void AppCacheURLLoader::ContinueOnResponseInfoLoaded(
     scoped_refptr<AppCacheResponseInfo> response_info) {
   info_ = response_info;
   reader_ = storage_->CreateResponseReader(manifest_url_, entry_.response_id());
@@ -226,14 +261,14 @@ void AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded(
   // Wait for the data pipe to be ready to accept data.
   writable_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      base::BindRepeating(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
-                          GetDerivedWeakPtr()));
+      base::BindRepeating(&AppCacheURLLoader::OnResponseBodyStreamReady,
+                          GetWeakPtr()));
 
   SendResponseInfo();
   ReadMore();
 }
 
-void AppCacheURLLoaderJob::OnReadComplete(int result) {
+void AppCacheURLLoader::OnReadComplete(int result) {
   if (result > 0) {
     uint32_t bytes_written = static_cast<uint32_t>(result);
     response_body_stream_ = pending_write_->Complete(bytes_written);
@@ -248,7 +283,7 @@ void AppCacheURLLoaderJob::OnReadComplete(int result) {
   NotifyCompleted(result);
 }
 
-void AppCacheURLLoaderJob::OnResponseBodyStreamReady(MojoResult result) {
+void AppCacheURLLoader::OnResponseBodyStreamReady(MojoResult result) {
   // TODO(ananta)
   // Add proper error handling here.
   if (result != MOJO_RESULT_OK) {
@@ -259,7 +294,7 @@ void AppCacheURLLoaderJob::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-void AppCacheURLLoaderJob::DeleteSoon() {
+void AppCacheURLLoader::DeleteSoon() {
   if (storage_.get())
     storage_->CancelDelegateCallbacks(this);
   weak_factory_.InvalidateWeakPtrs();
@@ -267,7 +302,7 @@ void AppCacheURLLoaderJob::DeleteSoon() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void AppCacheURLLoaderJob::SendResponseInfo() {
+void AppCacheURLLoader::SendResponseInfo() {
   // If this is null it means the response information was sent to the client.
   if (!consumer_handle_.is_valid())
     return;
@@ -302,7 +337,7 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
 }
 
-void AppCacheURLLoaderJob::ReadMore() {
+void AppCacheURLLoader::ReadMore() {
   DCHECK(!pending_write_.get());
 
   uint32_t num_bytes;
@@ -313,7 +348,8 @@ void AppCacheURLLoaderJob::ReadMore() {
     // The pipe is full. We need to wait for it to have more space.
     writable_handle_watcher_.ArmOrNotify();
     return;
-  } else if (result != MOJO_RESULT_OK) {
+  }
+  if (result != MOJO_RESULT_OK) {
     NotifyCompleted(net::ERR_FAILED);
     writable_handle_watcher_.Cancel();
     response_body_stream_.reset();
@@ -327,12 +363,12 @@ void AppCacheURLLoaderJob::ReadMore() {
   uint32_t bytes_to_read =
       std::min<uint32_t>(num_bytes, info_->response_data_size());
 
-  reader_->ReadData(buffer.get(), bytes_to_read,
-                    base::BindOnce(&AppCacheURLLoaderJob::OnReadComplete,
-                                   GetDerivedWeakPtr()));
+  reader_->ReadData(
+      buffer.get(), bytes_to_read,
+      base::BindOnce(&AppCacheURLLoader::OnReadComplete, GetWeakPtr()));
 }
 
-void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
+void AppCacheURLLoader::NotifyCompleted(int error_code) {
   if (storage_.get())
     storage_->CancelDelegateCallbacks(this);
 

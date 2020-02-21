@@ -58,7 +58,7 @@ StringOrStringSequence::StringOrStringSequence(const StringOrStringSequence&) = 
 StringOrStringSequence::~StringOrStringSequence() = default;
 StringOrStringSequence& StringOrStringSequence::operator=(const StringOrStringSequence&) = default;
 
-void StringOrStringSequence::Trace(blink::Visitor* visitor) {
+void StringOrStringSequence::Trace(Visitor* visitor) {
 }
 
 void V8StringOrStringSequence::ToImpl(

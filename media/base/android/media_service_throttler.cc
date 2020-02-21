@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/android/media_server_crash_listener.h"
@@ -197,8 +198,8 @@ void MediaServiceThrottler::EnsureCrashListenerStarted() {
     // base::Unretained is safe here because the MediaServiceThrottler will live
     // until the process is terminated.
     crash_listener_ = std::make_unique<MediaServerCrashListener>(
-        base::Bind(&MediaServiceThrottler::OnMediaServerCrash,
-                   base::Unretained(this)),
+        base::BindRepeating(&MediaServiceThrottler::OnMediaServerCrash,
+                            base::Unretained(this)),
         crash_listener_task_runner_);
   } else {
     crash_listener_->EnsureListening();
@@ -225,8 +226,7 @@ void MediaServiceThrottler::SetCrashListenerTaskRunnerForTesting(
 
   // Re-create the crash listener.
   crash_listener_ = std::make_unique<MediaServerCrashListener>(
-      MediaServerCrashListener::OnMediaServerCrashCB(),
-      crash_listener_task_runner_);
+      base::NullCallback(), crash_listener_task_runner_);
 }
 
 }  // namespace media

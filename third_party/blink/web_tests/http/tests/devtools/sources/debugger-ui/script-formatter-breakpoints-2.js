@@ -43,13 +43,13 @@
         TestRunner.evaluateInPageWithTimeout('f2()');
       }
 
-      function pausedInF2(callFrames) {
+      async function pausedInF2(callFrames) {
         SourcesTestRunner.dumpBreakpointSidebarPane('while paused in pretty printed');
         SourcesTestRunner.waitBreakpointSidebarPane()
             .then(() => SourcesTestRunner.dumpBreakpointSidebarPane('while paused in raw'))
             .then(() => SourcesTestRunner.resumeExecution(next));
         SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 3);
-        Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        await Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
       }
     }
   ]);

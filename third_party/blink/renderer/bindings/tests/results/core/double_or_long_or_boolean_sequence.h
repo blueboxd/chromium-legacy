@@ -42,7 +42,7 @@ class CORE_EXPORT DoubleOrLongOrBooleanSequence final {
   DoubleOrLongOrBooleanSequence(const DoubleOrLongOrBooleanSequence&);
   ~DoubleOrLongOrBooleanSequence();
   DoubleOrLongOrBooleanSequence& operator=(const DoubleOrLongOrBooleanSequence&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

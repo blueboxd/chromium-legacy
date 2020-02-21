@@ -24,7 +24,7 @@
   TestRunner.addResult('Location mapping with formatted source:');
   await dumpLocations(positions);
 
-  Formatter.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
+  await Formatter.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
 
   TestRunner.addResult('Location mapping without formatted source:');
   await dumpLocations(positions);
@@ -34,7 +34,7 @@
   async function dumpLocations(positions) {
     for (var position of positions) {
       var rawLocation = TestRunner.debuggerModel.createRawLocation(script, position.lineNumber, position.columnNumber);
-      var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+      var uiLocation = await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
       var reverseRawLocation = (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(
           uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber))[0];
       TestRunner.addResult(

@@ -187,6 +187,9 @@ class ServiceWorkerJobTest : public testing::Test {
       blink::ServiceWorkerStatusCode expected_status =
           blink::ServiceWorkerStatusCode::kOk);
   ServiceWorkerContainerHost* CreateControllee();
+  scoped_refptr<ServiceWorkerRegistration> CreateRegistrationWithControllee(
+      const GURL& script_url,
+      const GURL& scope_url);
 
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -214,7 +217,8 @@ void ServiceWorkerJobTest::RunUnregisterJob(
     blink::ServiceWorkerStatusCode expected_status) {
   base::RunLoop run_loop;
   job_coordinator()->Unregister(
-      scope, SaveUnregistration(expected_status, run_loop.QuitClosure()));
+      scope, /*is_immediate=*/false,
+      SaveUnregistration(expected_status, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -251,6 +255,29 @@ ServiceWorkerContainerHost* ServiceWorkerJobTest::CreateControllee() {
           33 /* dummy render process id */, true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
   return container_host.get();
+}
+
+scoped_refptr<ServiceWorkerRegistration>
+ServiceWorkerJobTest::CreateRegistrationWithControllee(const GURL& script_url,
+                                                       const GURL& scope_url) {
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = scope_url;
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(script_url, options);
+
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(registration->installing_version(), runner);
+
+  ServiceWorkerContainerHost* container_host = CreateControllee();
+  container_host->UpdateUrls(scope_url, net::SiteForCookies::FromUrl(scope_url),
+                             url::Origin::Create(scope_url));
+  container_host->SetControllerRegistration(registration,
+                                            /*notify_controllerchange=*/false);
+  return registration;
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
@@ -429,6 +456,29 @@ TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
   GURL scope("https://www.example.com/");
 
   RunUnregisterJob(scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
+}
+
+TEST_F(ServiceWorkerJobTest, UnregisterImmediate) {
+  const GURL scope("https://www.example.com/one/");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateRegistrationWithControllee(
+          GURL("https://www.example.com/service_worker.js"), scope);
+
+  EXPECT_NE(nullptr, registration->active_version());
+
+  base::RunLoop run_loop;
+  job_coordinator()->Unregister(
+      scope, /*is_immediate=*/true,
+      SaveUnregistration(blink::ServiceWorkerStatusCode::kOk,
+                         run_loop.QuitClosure()));
+
+  run_loop.Run();
+
+  EXPECT_TRUE(registration->is_uninstalled());
+  EXPECT_EQ(nullptr, registration->active_version());
+  EXPECT_EQ(nullptr, registration->waiting_version());
+  EXPECT_EQ(nullptr, registration->installing_version());
 }
 
 // Make sure registering a new script creates a new version and shares an
@@ -660,12 +710,14 @@ TEST_F(ServiceWorkerJobTest, AbortAll_Unregister) {
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(2, run_loop.QuitClosure());
   job_coordinator()->Unregister(
-      scope1, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
-                                 barrier_closure));
+      scope1, /*is_immediate=*/false,
+      SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                         barrier_closure));
 
   job_coordinator()->Unregister(
-      scope2, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
-                                 barrier_closure));
+      scope2, /*is_immediate=*/false,
+      SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                         barrier_closure));
 
   job_coordinator()->AbortAll();
 
@@ -687,7 +739,7 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
                        &registration, barrier_closure));
 
   job_coordinator()->Unregister(
-      options.scope,
+      options.scope, /*is_immediate=*/false,
       SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
                          barrier_closure));
 
@@ -1797,22 +1849,19 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_EvictedIncumbent) {
 }
 
 TEST_F(ServiceWorkerUpdateJobTest, Update_UninstallingRegistration) {
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  options.scope = GURL("https://www.example.com/one/");
-  scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
-      GURL("https://www.example.com/service_worker.js"), options);
-  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  registration->SetTaskRunnerForTest(runner);
-  TestServiceWorkerObserver observer(helper_->context_wrapper());
-  observer.RunUntilActivated(registration->installing_version(), runner);
+  const GURL scope("https://www.example.com/one/");
 
-  // Add a controllee and queue an unregister to force the uninstalling state.
-  ServiceWorkerContainerHost* container_host = CreateControllee();
+  // Create a registration with a controllee and queue an unregister to force
+  // the uninstalling state.
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateRegistrationWithControllee(
+          GURL("https://www.example.com/service_worker.js"), scope);
+
   ServiceWorkerVersion* active_version = registration->active_version();
-  active_version->AddControllee(container_host);
+
   base::RunLoop run_loop;
   job_coordinator()->Unregister(
-      GURL("https://www.example.com/one/"),
+      scope, /*is_immediate=*/false,
       SaveUnregistration(blink::ServiceWorkerStatusCode::kOk,
                          run_loop.QuitClosure()));
 

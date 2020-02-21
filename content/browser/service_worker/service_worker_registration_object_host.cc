@@ -261,7 +261,7 @@ void ServiceWorkerRegistrationObjectHost::Unregister(
   }
 
   context_->UnregisterServiceWorker(
-      registration_->scope(),
+      registration_->scope(), /*is_immediate=*/false,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerRegistrationObjectHost::UnregistrationComplete,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback))));

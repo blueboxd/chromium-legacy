@@ -86,21 +86,21 @@ using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
-using WriteBarrierWorklist = Worklist<HeapObjectHeader*, 256>;
+using WriteBarrierWorklist = Worklist<HeapObjectHeader*, 64>;
 using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
 using WeakCallbackWorklist =
-    Worklist<CustomCallbackItem, 256 /* local entries */>;
+    Worklist<CustomCallbackItem, 64 /* local entries */>;
 // Using large local segments here (sized 512 entries) to avoid throughput
 // regressions.
 using MovableReferenceWorklist =
-    Worklist<MovableReference*, 512 /* local entries */>;
+    Worklist<MovableReference*, 256 /* local entries */>;
 using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
 using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
 using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
 using NotSafeToConcurrentlyTraceWorklist =
-    Worklist<MarkingItem, 256 /* local entries */>;
+    Worklist<MarkingItem, 64 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);

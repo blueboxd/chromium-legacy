@@ -1366,16 +1366,16 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo &&
              base::FeatureList::IsEnabled(network::features::kReporting)) {
     ParseReportTo(name, value);
+  } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes) {
+    AddTrustedTypes(name, value);
+  } else if (type ==
+             ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor) {
+    RequireTrustedTypesFor(name, value);
   } else if (policy_->ExperimentalFeaturesEnabled()) {
     if (type == ContentSecurityPolicy::DirectiveType::kRequireSRIFor) {
       ParseRequireSRIFor(name, value);
     } else if (type == ContentSecurityPolicy::DirectiveType::kPrefetchSrc) {
       SetCSPDirective<SourceListDirective>(name, value, prefetch_src_);
-    } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes) {
-      AddTrustedTypes(name, value);
-    } else if (type ==
-               ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor) {
-      RequireTrustedTypesFor(name, value);
     } else {
       policy_->ReportUnsupportedDirective(name);
     }

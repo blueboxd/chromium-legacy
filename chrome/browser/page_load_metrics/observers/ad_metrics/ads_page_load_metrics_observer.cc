@@ -727,8 +727,9 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
   // If the page has an ad with the relevant visibility and non-zero bytes.
   if (aggregate_ad_info_by_visibility_
           [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
-              .num_frames == 0)
+              .num_frames == 0) {
     return;
+  }
 
   base::TimeDelta total_duration =
       GetDelegate().GetVisibilityTracker().GetForegroundDuration();
@@ -752,10 +753,16 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
   ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
                 visibility, aggregate_frame_data_->peak_windowed_cpu_percent());
   if (aggregate_frame_data_->peak_window_start_time()) {
-    ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
-                  visibility,
-                  aggregate_frame_data_->peak_window_start_time().value() -
-                      GetDelegate().GetNavigationStart());
+    // Use the window's start time as the event. It is assumed that
+    // backgrounding would unlikely happen in the peaked window.
+    base::TimeDelta start_time =
+        aggregate_frame_data_->peak_window_start_time().value() -
+        GetDelegate().GetNavigationStart();
+    if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+            start_time, GetDelegate())) {
+      ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
+                    visibility, start_time);
+    }
   }
 }
 
@@ -895,10 +902,16 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
                     UMA_HISTOGRAM_PERCENTAGE, visibility,
                     ad_frame_data.peak_windowed_cpu_percent());
       if (ad_frame_data.peak_window_start_time()) {
-        ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime",
-                      PAGE_LOAD_HISTOGRAM, visibility,
-                      ad_frame_data.peak_window_start_time().value() -
-                          GetDelegate().GetNavigationStart());
+        // Use the window's start time as the event. It is assumed that
+        // backgrounding would unlikely happen in the peaked window.
+        base::TimeDelta start_time =
+            ad_frame_data.peak_window_start_time().value() -
+            GetDelegate().GetNavigationStart();
+        if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+                start_time, GetDelegate())) {
+          ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime",
+                        PAGE_LOAD_HISTOGRAM, visibility, start_time);
+        }
       }
     }
 

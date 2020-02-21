@@ -87,7 +87,7 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
     return this;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(property_);
     GarbageCollectedScriptWrappable::Trace(visitor);
   }

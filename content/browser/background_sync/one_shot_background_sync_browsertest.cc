@@ -359,7 +359,10 @@ IN_PROC_BROWSER_TEST_F(OneShotBackgroundSyncBrowserTest,
   // by clearing data from the storage partition.
   ClearStoragePartitionData();
 
-  EXPECT_FALSE(HasTagFromServiceWorker("foo"));
+  // Use HasTag() instead of HasTagServiceWorker() because clearing site data
+  // immediately terminates the service worker when removing it from the
+  // registration.
+  EXPECT_FALSE(HasTag("foo"));
 }
 
 // Verify that multiple background sync registrations are deleted when site

@@ -28,7 +28,7 @@ class V8IntersectionObserverDelegate final
 
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
     return IntersectionObserver::kPostTaskToDeliver;

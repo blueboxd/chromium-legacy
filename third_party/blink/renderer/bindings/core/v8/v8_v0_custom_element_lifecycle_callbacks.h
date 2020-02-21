@@ -60,7 +60,7 @@ class V8V0CustomElementLifecycleCallbacks final
 
   bool SetBinding(std::unique_ptr<V0CustomElementBinding>);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Created(Element*) override;

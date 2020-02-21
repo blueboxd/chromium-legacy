@@ -25,6 +25,7 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -212,6 +213,22 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     VerifyPublicImageCompressionUkm(
         ukm::builders::PublicImageCompressionDataUse::
             kIneligibleImageHintsUnavailableBytesNameHash,
+        num_images);
+  }
+
+  void VerifyIneligibleImageHintsUnavailableUkmButCompressible(
+      size_t num_images) {
+    VerifyPublicImageCompressionUkm(
+        ukm::builders::PublicImageCompressionDataUse::
+            kIneligibleImageHintsUnavailableButCompressibleBytesNameHash,
+        num_images);
+  }
+
+  void VerifyIneligibleImageHintsUnavailableAndMissingInHintsUkm(
+      size_t num_images) {
+    VerifyPublicImageCompressionUkm(
+        ukm::builders::PublicImageCompressionDataUse::
+            kIneligibleImageHintsUnavailableAndMissingInHintsBytesNameHash,
         num_images);
   }
 
@@ -790,6 +807,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleOtherImageUkm(0);
 }
 
+// This test initiates same-origin navigation and verifies the hints from the
+// previous navigation are not used.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(TestSameOriginNavigation)) {
   g_browser_process->network_quality_tracker()
@@ -821,6 +840,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
 
+  // Initiate a same-origin navigation without hints, and let the timeout ukm be
+  // recorded.
   CreateUkmRecorder();
   ui_test_utils::NavigateToURL(browser(),
                                HttpsURLWithPath("/load_image/two_images.html"));
@@ -830,6 +851,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   EXPECT_TRUE(RunScriptExtractBool("checkBothImagesLoaded()"));
   EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
             https_url().port());
+  WaitForImageCompressionUkmMetrics(2);
   VerifyCompressibleImageUkm(0);
   VerifyIneligibleImageHintsUnavailableUkm(2);
   VerifyIneligibleMissingInImageHintsUkm(0);
@@ -863,6 +885,147 @@ IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
             https_url().port());
 
   VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+}
+
+// This class sets up a hints server where image hints are fetched from to test
+// the page level hint fetches.
+class SubresourceRedirectWithHintsServerBrowserTest
+    : public SubresourceRedirectBrowserTest {
+ public:
+  // How the hints server should respond to the get hints request.
+  enum HintFetchMode {
+    // Delay the hints fetch until images are loaded. Delay 3 seconds before
+    // sending response. This delay is chosen such that the server sends the
+    // hints after the image has completed loading but before the hints receive
+    // timeout(5 seconds).
+    HINT_FETCH_AFTER_IMAGES_LOADED,
+
+    // Do not send response.
+    HINT_FETCH_HUNG,
+  };
+
+  SubresourceRedirectWithHintsServerBrowserTest()
+      : SubresourceRedirectBrowserTest(true),
+        hints_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  void SetUp() override {
+    hints_server_.ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    hints_server_.RegisterRequestHandler(base::BindRepeating(
+        &SubresourceRedirectWithHintsServerBrowserTest::HandleGetHintsRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(hints_server_.Start());
+    SubresourceRedirectBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch("ignore-certificate-errors");
+    command_line->AppendSwitch("purge_hint_cache_store");
+    command_line->AppendSwitch(optimization_guide::switches::
+                                   kDisableCheckingUserPermissionsForTesting);
+    command_line->AppendSwitchASCII(
+        optimization_guide::switches::kOptimizationGuideServiceGetHintsURL,
+        hints_server_.base_url().spec());
+    command_line->AppendSwitchASCII(
+        optimization_guide::switches::kFetchHintsOverride, "secure.com");
+    command_line->AppendSwitch(
+        optimization_guide::switches::kFetchHintsOverrideTimer);
+    SubresourceRedirectBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_2G);
+    SubresourceRedirectBrowserTest::SetUpOnMainThread();
+  }
+
+  // Sets up public image URL hint data that is returned by the hints server.
+  void SetUpPublicImageURLPaths(
+      const std::string& url,
+      const std::vector<std::string>& public_image_paths,
+      HintFetchMode hint_fetch_mode) {
+    hint_fetch_mode_ = hint_fetch_mode;
+    optimization_guide::proto::GetHintsResponse get_hints_response;
+    optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
+    hint->set_key_representation(optimization_guide::proto::FULL_URL);
+    hint->set_key(HttpsURLWithPath(url).spec());
+    optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+    page_hint->set_page_pattern(HttpsURLWithPath(url).spec());
+    auto* optimization = page_hint->add_whitelisted_optimizations();
+    optimization->set_optimization_type(
+        optimization_guide::proto::OptimizationType::COMPRESS_PUBLIC_IMAGES);
+    auto* public_image_metadata = optimization->mutable_public_image_metadata();
+
+    for (const auto& url : public_image_paths)
+      public_image_metadata->add_url(HttpsURLWithPath(url).spec());
+
+    base::AutoLock lock(lock_);
+    get_hints_response.SerializeToString(&get_hints_response_);
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleGetHintsRequest(
+      const net::test_server::HttpRequest& request) {
+    switch (hint_fetch_mode_) {
+      case HintFetchMode::HINT_FETCH_AFTER_IMAGES_LOADED: {
+        auto response = std::make_unique<net::test_server::DelayedHttpResponse>(
+            base::TimeDelta::FromSeconds(3));
+        response->set_content(get_hints_response_);
+        response->set_code(net::HTTP_OK);
+        return std::move(response);
+      }
+      case HintFetchMode::HINT_FETCH_HUNG:
+        return std::make_unique<net::test_server::HungResponse>();
+    }
+    return nullptr;
+  }
+
+  net::EmbeddedTestServer hints_server_;
+  std::string get_hints_response_;
+  base::Lock lock_;
+  HintFetchMode hint_fetch_mode_ =
+      HintFetchMode::HINT_FETCH_AFTER_IMAGES_LOADED;
+};
+
+// This test verifies that two images in a page are not redirected, when hints
+// are received delayed.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectWithHintsServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestNoRedirectWithDelayedHintsTwoImages)) {
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+
+  SetUpPublicImageURLPaths("/load_image/two_images.html",
+                           {"/load_image/image.png"},
+                           HintFetchMode::HINT_FETCH_AFTER_IMAGES_LOADED);
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsURLWithPath("/load_image/two_images.html"));
+
+  // Let the images load.
+  EXPECT_TRUE(RunScriptExtractBool("checkBothImagesLoaded()"));
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.DidCompress.CompressionPercent", 0);
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  // One image will be recorded as compressible, but image hints not received in
+  // time. Another image is recorded as not compressible, and image hints not
+  // received in time.
+  WaitForImageCompressionUkmMetrics(2);
+  VerifyIneligibleImageHintsUnavailableUkmButCompressible(1);
+  VerifyIneligibleImageHintsUnavailableAndMissingInHintsUkm(1);
+  VerifyCompressibleImageUkm(0);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);

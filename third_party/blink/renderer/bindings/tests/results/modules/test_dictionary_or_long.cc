@@ -57,7 +57,7 @@ TestDictionaryOrLong::TestDictionaryOrLong(const TestDictionaryOrLong&) = defaul
 TestDictionaryOrLong::~TestDictionaryOrLong() = default;
 TestDictionaryOrLong& TestDictionaryOrLong::operator=(const TestDictionaryOrLong&) = default;
 
-void TestDictionaryOrLong::Trace(blink::Visitor* visitor) {
+void TestDictionaryOrLong::Trace(Visitor* visitor) {
   visitor->Trace(test_dictionary_);
 }
 

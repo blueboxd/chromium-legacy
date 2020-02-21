@@ -102,7 +102,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   }
   void GetSettings(WebMediaStreamTrack::Settings&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()

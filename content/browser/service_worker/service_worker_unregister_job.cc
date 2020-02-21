@@ -22,8 +22,12 @@ typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerUnregisterJob::ServiceWorkerUnregisterJob(
     ServiceWorkerContextCore* context,
-    const GURL& scope)
-    : context_(context), scope_(scope), is_promise_resolved_(false) {
+    const GURL& scope,
+    bool is_immediate)
+    : context_(context),
+      scope_(scope),
+      is_immediate_(is_immediate),
+      is_promise_resolved_(false) {
   DCHECK(context_);
 }
 
@@ -67,18 +71,19 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
     return;
   }
 
-  if (status != blink::ServiceWorkerStatusCode::kOk ||
-      registration->is_uninstalling()) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
     Complete(blink::mojom::kInvalidServiceWorkerRegistrationId, status);
     return;
   }
 
-  // TODO: "7. If registration.updatePromise is not null..."
+  DCHECK(!registration->is_uninstalling());
 
-  // "8. Resolve promise."
   ResolvePromise(registration->id(), blink::ServiceWorkerStatusCode::kOk);
 
-  registration->ClearWhenReady();
+  if (is_immediate_)
+    registration->DeleteAndClearImmediately();
+  else
+    registration->DeleteAndClearWhenReady();
 
   Complete(registration->id(), blink::ServiceWorkerStatusCode::kOk);
 }

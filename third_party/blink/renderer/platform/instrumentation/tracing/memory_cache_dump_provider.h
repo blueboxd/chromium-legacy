@@ -22,7 +22,7 @@ class PLATFORM_EXPORT MemoryCacheDumpClient : public GarbageCollectedMixin {
   virtual bool OnMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 // This class is wrapper around MemoryCache to take memory snapshots. It dumps

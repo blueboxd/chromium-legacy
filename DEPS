@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c7aa5ac705d57489cec91c862dbc1f1594d14636',
+  'v8_revision': '6684a9fe21ec90c793129ee1424e1729a6361e9e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'ce4918f18f739961146a160ebcd910a58164fa84',
+  'angle_revision': 'c58458e633e180c4c53024665efdbef1f1334216',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'c5d36f2533740cdb7e146be938b65131435e72f5',
+  'catapult_revision': 'b88007fbbbc3346438703d560bd89fee624e08fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5e4f0910c1bfa78b2686c3358a91623a5ece9817',
+  'devtools_frontend_revision': '4b6120a066eb23e6ffd08d3116b86a0b9b36e954',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8adb09deb15baf46fde3eecdc82cf92920f7840e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7f33fcf39e5ff0d1e17c4d92d1b533453db5a71b',
     'condition': 'checkout_src_internal',
   },
 

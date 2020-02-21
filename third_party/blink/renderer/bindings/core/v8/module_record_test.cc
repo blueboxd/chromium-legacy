@@ -34,7 +34,7 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
         MakeGarbageCollected<BoxedV8Module>(isolate_, module));
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(module_records_);
     ModuleRecordResolver::Trace(visitor);
   }
@@ -68,7 +68,7 @@ class ModuleRecordTestModulator final : public DummyModulator {
   ModuleRecordTestModulator(v8::Isolate* isolate);
   ~ModuleRecordTestModulator() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   TestModuleRecordResolver* GetTestModuleRecordResolver() {
     return resolver_.Get();
@@ -87,7 +87,7 @@ class ModuleRecordTestModulator final : public DummyModulator {
 ModuleRecordTestModulator::ModuleRecordTestModulator(v8::Isolate* isolate)
     : resolver_(MakeGarbageCollected<TestModuleRecordResolver>(isolate)) {}
 
-void ModuleRecordTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleRecordTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   DummyModulator::Trace(visitor);
 }

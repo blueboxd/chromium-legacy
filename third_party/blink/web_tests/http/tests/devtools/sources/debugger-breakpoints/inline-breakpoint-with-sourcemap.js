@@ -26,21 +26,21 @@ function foo() {
 
   let sourceFrame = await new Promise(resolve => SourcesTestRunner.showScriptSource('arrow.ts', resolve));
   TestRunner.addResult('Setting breakpoint at second line..');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 2, false);
-  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
-  await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
+  // We expect 7 breakpoint decorations on line 2.
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(sourceFrame, [[2, 7]], () =>
+    SourcesTestRunner.toggleBreakpoint(sourceFrame, 2, false));
 
   TestRunner.addResult('Disabling first breakpoint and enable forth breakpoint at line..');
-  SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 0);
-  SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 3);
-  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
-  await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
+  await SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations(sourceFrame, [[2, 7]], () => {
+    SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 0);
+    SourcesTestRunner.clickDebuggerPluginBreakpoint(sourceFrame, 2, 3);
+  });
 
   TestRunner.addResult('Calling function foo..');
   TestRunner.evaluateInPageAnonymously('foo()');
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
-  let pausedLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(callFrames[0].location());
+  let pausedLocation = await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(callFrames[0].location());
   TestRunner.addResult(`Paused at: (${pausedLocation.lineNumber}, ${pausedLocation.columnNumber})`);
-  SourcesTestRunner.captureStackTrace(callFrames);
+  await SourcesTestRunner.captureStackTrace(callFrames);
   SourcesTestRunner.completeDebuggerTest();
 })();

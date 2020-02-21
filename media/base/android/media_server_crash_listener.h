@@ -22,12 +22,12 @@ namespace media {
 // be more than a single instance of this class per process.
 class MediaServerCrashListener {
  public:
-  using OnMediaServerCrashCB = base::Callback<void(bool)>;
+  using OnMediaServerCrashCB = base::RepeatingCallback<void(bool)>;
 
   // Basic constructor. |on_server_crash_cb| will be posted to
-  // |callback_task_runner| everytime the watchdog MediaPlayer detects a crash.
+  // |callback_task_runner| every time the watchdog MediaPlayer detects a crash.
   MediaServerCrashListener(
-      const OnMediaServerCrashCB& on_server_crash_cb,
+      OnMediaServerCrashCB on_server_crash_cb,
       scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner);
   ~MediaServerCrashListener();
 

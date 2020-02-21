@@ -46,7 +46,7 @@
       var line = script.lineOffset;
       var column = script.columnOffset + 2;
       var rawLocation = TestRunner.debuggerModel.createRawLocation(script, line, column);
-      var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
+      var uiLocation = await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
       SourcesTestRunner.checkUILocation(uiSourceCode, line, column, uiLocation);
       var reverseLocation = (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, line, column))[0];
       SourcesTestRunner.checkRawLocation(script, line, column, reverseLocation);

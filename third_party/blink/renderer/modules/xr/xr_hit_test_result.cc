@@ -54,7 +54,7 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
                                 *mojo_from_this_, plane_id_, exception_state);
 }
 
-void XRHitTestResult::Trace(blink::Visitor* visitor) {
+void XRHitTestResult::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }

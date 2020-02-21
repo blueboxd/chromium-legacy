@@ -168,10 +168,14 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // controlled by other registrations.
   void ClaimClients();
 
-  // Triggers the [[ClearRegistration]] algorithm when the currently
-  // active version has no controllees. Deletes this registration
-  // from storage immediately.
-  void ClearWhenReady();
+  // Deletes this registration from storage immediately. Triggers the
+  // [[ClearRegistration]] algorithm when the currently active version has no
+  // controllees.
+  void DeleteAndClearWhenReady();
+
+  // Deletes this registration from storage immediately and then triggers the
+  // [[ClearRegistration]] algorithm.
+  void DeleteAndClearImmediately();
 
   // Restores this registration in storage and cancels the pending
   // [[ClearRegistration]] algorithm.

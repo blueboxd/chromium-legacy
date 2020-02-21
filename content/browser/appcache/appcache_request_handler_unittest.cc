@@ -26,9 +26,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
-#include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_request.h"
-#include "content/browser/appcache/appcache_url_loader_job.h"
+#include "content/browser/appcache/appcache_url_loader.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -98,9 +97,9 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
   }
 
   void TearDownTest() {
-    if (appcache_url_loader_job_)
-      appcache_url_loader_job_->DeleteIfNeeded();
-    appcache_url_loader_job_.reset();
+    if (appcache_url_loader_)
+      appcache_url_loader_->DeleteIfNeeded();
+    appcache_url_loader_.reset();
     handler_.reset();
     request_ = nullptr;
     mock_service_.reset();
@@ -137,16 +136,17 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     task_stack_.pop();
   }
 
-  void SetAppCacheJob(AppCacheJob* job) {
-    if (appcache_url_loader_job_)
-      appcache_url_loader_job_->DeleteIfNeeded();
-    appcache_url_loader_job_ = nullptr;
-    if (!job)
+  void SetAppCacheURLLoader(AppCacheURLLoader* loader) {
+    if (appcache_url_loader_) {
+      appcache_url_loader_->DeleteIfNeeded();
+      appcache_url_loader_ = nullptr;
+    }
+    if (!loader)
       return;
-    appcache_url_loader_job_ = job->AsURLLoaderJob()->GetDerivedWeakPtr();
+    appcache_url_loader_ = loader->GetWeakPtr();
   }
 
-  AppCacheJob* job() { return appcache_url_loader_job_.get(); }
+  AppCacheURLLoader* loader() { return appcache_url_loader_.get(); }
 
   // MainResource_Miss --------------------------------------------------
 
@@ -159,17 +159,17 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
                             blink::mojom::ResourceType::kMainFrame);
     EXPECT_TRUE(handler_.get());
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     // We have to wait for completion of storage->FindResponseForMainRequest.
     ScheduleNextTask();
   }
 
   void Verify_MainResource_Miss() {
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_TRUE(job()->IsDeliveringNetworkResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_TRUE(loader()->IsDeliveringNetworkResponse());
 
     int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
@@ -178,11 +178,11 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     EXPECT_EQ(GURL(), manifest_url);
     EXPECT_EQ(0, handler_->found_group_id_);
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
 
@@ -204,17 +204,17 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), GURL(), AppCacheEntry(), 1,
         2, GURL("http://blah/manifest/"));
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     // We have to wait for completion of storage->FindResponseForMainRequest.
     ScheduleNextTask();
   }
 
   void Verify_MainResource_Hit() {
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_TRUE(loader()->IsDeliveringAppCacheResponse());
 
     int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
@@ -223,8 +223,8 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     EXPECT_EQ(GURL("http://blah/manifest/"), manifest_url);
     EXPECT_EQ(2, handler_->found_group_id_);
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     EXPECT_EQ(GURL("http://blah/manifest/"), host_->preferred_manifest_url());
 
@@ -247,9 +247,9 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), 1, 2,
         GURL("http://blah/manifest/"));
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     // We have to wait for completion of storage->FindResponseForMainRequest.
     ScheduleNextTask();
@@ -275,15 +275,15 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
   }
 
   void Verify_MainResource_Fallback() {
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_TRUE(job()->IsDeliveringNetworkResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_TRUE(loader()->IsDeliveringNetworkResponse());
 
     // Simulate an http error of the real network job.
     SimulateResponseCode(500);
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsDeliveringAppCacheResponse());
 
     int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
@@ -314,17 +314,17 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), 1, 2,
         GURL("http://blah/manifest/"));
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     // We have to wait for completion of storage->FindResponseForMainRequest.
     ScheduleNextTask();
   }
 
   void Verify_MainResource_FallbackOverride() {
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_TRUE(job()->IsDeliveringNetworkResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_TRUE(loader()->IsDeliveringNetworkResponse());
 
     // Simulate an http error of the real network job, but with custom
     // headers that override the fallback behavior.
@@ -337,8 +337,8 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
         std::string(kOverrideHeaders, base::size(kOverrideHeaders)));
     SimulateResponseInfo(info);
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     // GetExtraResponseInfo should return no information.
     int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
@@ -373,15 +373,15 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsDeliveringErrorResponse());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsDeliveringErrorResponse());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -397,19 +397,19 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     host_->FinishCacheSelection(cache.get(), nullptr, base::DoNothing());
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_TRUE(job()->IsDeliveringErrorResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_TRUE(loader()->IsDeliveringErrorResponse());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -425,15 +425,15 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsDeliveringAppCacheResponse());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -451,16 +451,16 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_FALSE(loader());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://not_blah/redirect")));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsDeliveringAppCacheResponse());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -478,16 +478,16 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_FALSE(loader());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
 
     SimulateResponseCode(200);
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -506,14 +506,14 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_FALSE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_FALSE(loader());
 
-    SetAppCacheJob(handler_->MaybeLoadFallbackForRedirect(
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForRedirect(
         nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(job());
-    SetAppCacheJob(handler_->MaybeLoadFallbackForResponse(nullptr));
-    EXPECT_FALSE(job());
+    EXPECT_FALSE(loader());
+    SetAppCacheURLLoader(handler_->MaybeLoadFallbackForResponse(nullptr));
+    EXPECT_FALSE(loader());
 
     TestFinished();
   }
@@ -551,9 +551,9 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     mock_service_->EraseHost(host_->host_id());
     host_ = nullptr;
@@ -577,8 +577,8 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     CreateRequestAndHandler(GURL("http://blah/"), host_,
                             blink::mojom::ResourceType::kSubResource);
     EXPECT_TRUE(handler_.get());
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
 
     mock_service_.reset();
     mock_policy_.reset();
@@ -617,12 +617,12 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
                             blink::mojom::ResourceType::kMainFrame);
     EXPECT_TRUE(handler_.get());
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
-    EXPECT_FALSE(job()->IsStarted());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
+    EXPECT_FALSE(loader()->IsStarted());
 
-    base::WeakPtr<AppCacheJob> weak_job = job()->GetWeakPtr();
+    base::WeakPtr<AppCacheURLLoader> weak_job = loader()->GetWeakPtr();
 
     EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(nullptr));
 
@@ -645,17 +645,17 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), GURL(), AppCacheEntry(), 1,
         2, GURL("http://blah/manifest/"));
 
-    SetAppCacheJob(handler_->MaybeLoadResource(nullptr));
-    EXPECT_TRUE(job());
-    EXPECT_TRUE(job()->IsWaiting());
+    SetAppCacheURLLoader(handler_->MaybeLoadResource(nullptr));
+    EXPECT_TRUE(loader());
+    EXPECT_TRUE(loader()->IsWaiting());
 
     // We have to wait for completion of storage->FindResponseForMainRequest.
     ScheduleNextTask();
   }
 
   void Verify_MainResource_Blocked() {
-    EXPECT_FALSE(job()->IsWaiting());
-    EXPECT_FALSE(job()->IsDeliveringAppCacheResponse());
+    EXPECT_FALSE(loader()->IsWaiting());
+    EXPECT_FALSE(loader()->IsDeliveringAppCacheResponse());
 
     EXPECT_EQ(0, handler_->found_cache_id_);
     EXPECT_EQ(0, handler_->found_group_id_);
@@ -714,7 +714,7 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
   mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
   AppCacheRequest* request_;
   std::unique_ptr<AppCacheRequestHandler> handler_;
-  base::WeakPtr<AppCacheURLLoaderJob> appcache_url_loader_job_;
+  base::WeakPtr<AppCacheURLLoader> appcache_url_loader_;
 };
 
 TEST_F(AppCacheRequestHandlerTest, MainResource_Miss) {

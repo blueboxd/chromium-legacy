@@ -493,7 +493,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
   }
 
   context()->UnregisterServiceWorker(
-      net::SimplifyUrlForRequest(scope),
+      net::SimplifyUrlForRequest(scope), /*is_immediate=*/false,
       base::BindOnce(&FinishUnregistrationOnCoreThread, std::move(callback)));
 }
 

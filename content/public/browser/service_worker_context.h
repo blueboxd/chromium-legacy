@@ -161,7 +161,10 @@ class CONTENT_EXPORT ServiceWorkerContext {
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
 
   // This function can be called from any thread, and the callback is called
-  // on that thread.
+  // on that thread.  Deletes all registrations in the origin and clears all
+  // service workers belonging to the registrations. All clients controlled by
+  // those service workers will lose their controllers immediately after this
+  // operation.
   virtual void DeleteForOrigin(const GURL& origin_url,
                                ResultCallback callback) = 0;
 

@@ -174,9 +174,12 @@ public class EditorDialog
 
     /** Launches the Autofill help page on top of the current Context. */
     public static void launchAutofillHelpPage(Context context) {
+        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It is wrong and need to be
+        // fixed not to cause data leakage from incognito to regular profile.
         HelpAndFeedback.getInstance().show((Activity) context,
-                context.getString(R.string.help_context_autofill), Profile.getLastUsedProfile(),
-                null);
+                context.getString(R.string.help_context_autofill),
+                Profile.getLastUsedRegularProfile(), null);
     }
 
     /**

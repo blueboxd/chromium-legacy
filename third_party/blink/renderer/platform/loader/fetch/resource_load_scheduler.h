@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
   // Called when the request is granted to run.
   virtual void Run() = 0;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 };
 
 // ResourceLoadScheduler provides a unified per-frame infrastructure to schedule
@@ -157,7 +157,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
                         DetachableConsoleLogger& console_logger);
   ~ResourceLoadScheduler() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // Changes the policy from |kTight| to |kNormal|. This function can be called
   // multiple times, and does nothing when the scheduler is already working with
@@ -245,7 +245,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
           priority(priority),
           intra_priority(intra_priority) {}
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(client); }
+    void Trace(Visitor* visitor) { visitor->Trace(client); }
 
     Member<ResourceLoadSchedulerClient> client;
     ThrottleOption option;

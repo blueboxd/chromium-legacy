@@ -22,7 +22,6 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class AppCacheHost;
-class AppCacheJob;
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
 

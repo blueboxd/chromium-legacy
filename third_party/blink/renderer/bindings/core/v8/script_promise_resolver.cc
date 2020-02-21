@@ -116,7 +116,7 @@ void ScriptPromiseResolver::ResolveOrRejectDeferred() {
   ResolveOrRejectImmediately();
 }
 
-void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
+void ScriptPromiseResolver::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(resolver_);
   visitor->Trace(value_);

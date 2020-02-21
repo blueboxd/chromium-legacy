@@ -66,7 +66,7 @@
         await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
-      function breakpointResolved(callback, breakpointId, locations) {
+      async function breakpointResolved(callback, breakpointId, locations) {
         var location = locations[0];
         script = TestRunner.debuggerModel.scriptForId(location.scriptId);
 
@@ -74,7 +74,7 @@
         TestRunner.addResult('Editing source:');
         SourcesTestRunner.replaceInSource(javaScriptSourceFrame, '}', '}//');
 
-        originalUISourceCode = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
+        originalUISourceCode = (await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location)).uiSourceCode;
         SourcesTestRunner.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
       }
 
@@ -121,7 +121,7 @@
         await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
-      function breakpointResolved(callback, breakpointId, locations) {
+      async function breakpointResolved(callback, breakpointId, locations) {
         var location = locations[0];
         script = TestRunner.debuggerModel.scriptForId(location.scriptId);
 
@@ -129,7 +129,7 @@
         TestRunner.addResult('Editing source:');
         SourcesTestRunner.replaceInSource(javaScriptSourceFrame, '}', '}//');
 
-        originalUISourceCode = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
+        originalUISourceCode = (await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location)).uiSourceCode;
         SourcesTestRunner.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
       }
 
@@ -176,7 +176,7 @@
         await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
-      function breakpointResolved(callback, breakpointId, locations) {
+      async function breakpointResolved(callback, breakpointId, locations) {
         var location = locations[0];
         script = TestRunner.debuggerModel.scriptForId(location.scriptId);
 
@@ -184,7 +184,7 @@
         TestRunner.addResult('Editing source:');
         SourcesTestRunner.replaceInSource(javaScriptSourceFrame, '}', '//}');
 
-        originalUISourceCode = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
+        originalUISourceCode = (await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location)).uiSourceCode;
         SourcesTestRunner.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
       }
 
@@ -243,7 +243,7 @@
         await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
-      function breakpointResolved(callback, breakpointId, locations) {
+      async function breakpointResolved(callback, breakpointId, locations) {
         var location = locations[0];
         script = TestRunner.debuggerModel.scriptForId(location.scriptId);
 
@@ -251,7 +251,7 @@
         TestRunner.addResult('Editing source:');
         SourcesTestRunner.replaceInSource(javaScriptSourceFrame, '}', '//}');
 
-        originalUISourceCode = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
+        originalUISourceCode = (await Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location)).uiSourceCode;
         SourcesTestRunner.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
       }
 

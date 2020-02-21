@@ -23,7 +23,7 @@ void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const H
   has_string_or_double_sequence_member_ = true;
 }
 
-void TestDictionaryDerivedImplementedAs::Trace(blink::Visitor* visitor) {
+void TestDictionaryDerivedImplementedAs::Trace(Visitor* visitor) {
   visitor->Trace(string_or_double_sequence_member_);
   TestDictionary::Trace(visitor);
 }

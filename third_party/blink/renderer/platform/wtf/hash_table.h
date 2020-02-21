@@ -1680,7 +1680,17 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::DeleteAllBucketsAndDeallocate(ValueType* table,
                                                          unsigned size) {
-  if (!std::is_trivially_destructible<ValueType>::value) {
+  // We delete a bucket in the following cases:
+  // - It is not trivially destructible.
+  // - The table is weak (thus garbage collected) and we are currently marking.
+  // This is to handle the case where a backing store is removed from the
+  // HashTable after HashTable has been enqueued for processing. If we remove
+  // the backing in that case it stays unprocessed which upsets the marking
+  // verifier that checks that all backings are in consistent state.
+  const bool needs_bucket_deletion =
+      !std::is_trivially_destructible<ValueType>::value ||
+      (WTF::IsWeak<ValueType>::value && Allocator::IsIncrementalMarking());
+  if (needs_bucket_deletion) {
     for (unsigned i = 0; i < size; ++i) {
       // This code is called when the hash table is cleared or resized. We
       // have allocated a new backing store and we need to run the

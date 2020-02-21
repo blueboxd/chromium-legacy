@@ -59,7 +59,8 @@ enum class ExpectedRemoteBookmarkUpdateError {
   kMissingParentNodeInConflict = 7,
   kCreationFailure = 8,
   kUnexpectedGuid = 9,
-  kMaxValue = kUnexpectedGuid,
+  kParentNotFolder = 10,
+  kMaxValue = kParentNotFolder,
 };
 
 syncer::UpdateResponseData CreateUpdateResponseData(
@@ -912,6 +913,56 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(bookmark_bar_node->children()[1]->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->children()[1]->children()[0]->GetTitle(),
               Eq(ASCIIToUTF16(ids[4])));
+}
+
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldIgnoreNodeIfParentIsNotFolder) {
+  // Prepare creation updates to construct this structure:
+  // bookmark_bar
+  //  |- node0 (is_folder=false)
+  //    |- node1
+
+  const std::string kParentId = "parent_id";
+  const std::string kChildId = "child_id";
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.url.com");
+
+  syncer::UpdateResponseDataList updates;
+  syncer::EntityData data;
+  data.id = kParentId;
+  data.parent_id = kBookmarkBarId;
+  data.unique_position = syncer::UniquePosition::InitialPosition(
+                             syncer::UniquePosition::RandomSuffix())
+                             .ToProto();
+  sync_pb::BookmarkSpecifics* bookmark_specifics =
+      data.specifics.mutable_bookmark();
+  bookmark_specifics->set_guid(base::GenerateGUID());
+  // Use the server id as the title for simplicity.
+  bookmark_specifics->set_title(kTitle);
+  bookmark_specifics->set_url(kUrl.spec());
+  data.is_folder = false;
+  syncer::UpdateResponseData response_data;
+  response_data.entity = std::move(data);
+  // Similar to what's done in the loopback_server.
+  response_data.response_version = 0;
+
+  updates.push_back(std::move(response_data));
+
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kChildId, /*parent_id=*/kParentId, /*is_deletion=*/false));
+
+  base::HistogramTester histogram_tester;
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  ASSERT_EQ(bookmark_bar_node->children().size(), 1U);
+  EXPECT_TRUE(bookmark_bar_node->children()[0]->children().empty());
+  histogram_tester.ExpectBucketCount(
+      "Sync.ProblematicServerSideBookmarks",
+      /*sample=*/ExpectedRemoteBookmarkUpdateError::kParentNotFolder,
+      /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,

@@ -79,7 +79,7 @@ class PLATFORM_EXPORT BufferingBytesConsumer final
   Error GetError() const override;
   String DebugName() const override { return "BufferingBytesConsumer"; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void OnTimerFired(TimerBase*);

@@ -22,6 +22,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cycle_solver.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 
@@ -81,6 +82,60 @@ void LayoutSVGResourceContainer::StyleDidChange(
     return;
   if (LocalSVGResource* resource = ResourceForContainer(*this))
     resource->NotifyResourceAttached(*this);
+}
+
+bool LayoutSVGResourceContainer::FindCycle(
+    SVGResourcesCycleSolver& solver) const {
+  if (solver.IsKnownAcyclic(this))
+    return false;
+  SVGResourcesCycleSolver::Scope scope(solver);
+  if (!scope.Enter(this) || FindCycleFromSelf(solver))
+    return true;
+  solver.AddAcyclicSubgraph(this);
+  return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleInResources(
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& layout_object) const {
+  SVGResources* resources =
+      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
+  if (!resources)
+    return false;
+  // Fetch all the referenced resources.
+  HashSet<LayoutSVGResourceContainer*> local_resources;
+  resources->BuildSetOfResources(local_resources);
+  // This performs a depth-first search for a back-edge in all the
+  // (potentially disjoint) graphs formed by the referenced resources.
+  for (auto* local_resource : local_resources) {
+    if (local_resource->FindCycle(solver))
+      return true;
+  }
+  return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleFromSelf(
+    SVGResourcesCycleSolver& solver) const {
+  if (FindCycleInResources(solver, *this))
+    return true;
+  return FindCycleInDescendants(solver);
+}
+
+bool LayoutSVGResourceContainer::FindCycleInDescendants(
+    SVGResourcesCycleSolver& solver) const {
+  LayoutObject* node = FirstChild();
+  while (node) {
+    // Skip subtrees which are themselves resources. (They will be
+    // processed - if needed - when they are actually referenced.)
+    if (node->IsSVGResourceContainer()) {
+      node = node->NextInPreOrderAfterChildren(this);
+      continue;
+    }
+    if (FindCycleInResources(solver, *node))
+      return true;
+    node = node->NextInPreOrder(this);
+  }
+  return false;
 }
 
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(

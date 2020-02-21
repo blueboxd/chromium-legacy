@@ -134,6 +134,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
 
   navigated_away_from_main_document_timestamp_ = base::nullopt;
   started_navigation_timestamp_ = base::nullopt;
+  renderer_killed_timestamp_ = base::nullopt;
 }
 
 void BackForwardCacheMetrics::RecordHistoryNavigationUkm(
@@ -261,6 +262,12 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
   }
   for (const std::string& reason : can_store.disabled_reasons())
     disabled_reasons_.insert(reason);
+
+  if (can_store.not_stored_reasons().test(
+          static_cast<size_t>(BackForwardCacheMetrics::NotRestoredReason::
+                                  kRendererProcessKilled))) {
+    renderer_killed_timestamp_ = Now();
+  }
 }
 
 void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
@@ -332,6 +339,16 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     UMA_HISTOGRAM_ENUMERATION(
         "BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason",
         reason);
+    if (reason ==
+        BackForwardCacheMetrics::NotRestoredReason::kRendererProcessKilled) {
+      DCHECK(renderer_killed_timestamp_);
+      DCHECK(navigated_away_from_main_document_timestamp_);
+      base::TimeDelta time =
+          renderer_killed_timestamp_.value() -
+          navigated_away_from_main_document_timestamp_.value();
+      UMA_HISTOGRAM_LONG_TIMES(
+          "BackForwardCache.Eviction.TimeUntilProcessKilled", time);
+    }
   }
 
   for (int i = 0;
@@ -425,4 +442,5 @@ void BackForwardCacheMetrics::RecordHistogramForReloadsAndHistoryNavigations(
           ? ReloadsAfterHistoryNavigation::kServedFromBackForwardCache
           : ReloadsAfterHistoryNavigation::kNotServedFromBackForwardCache);
 }
+
 }  // namespace content

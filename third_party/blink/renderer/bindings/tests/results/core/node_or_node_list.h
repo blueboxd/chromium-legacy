@@ -43,7 +43,7 @@ class CORE_EXPORT NodeOrNodeList final {
   NodeOrNodeList(const NodeOrNodeList&);
   ~NodeOrNodeList();
   NodeOrNodeList& operator=(const NodeOrNodeList&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum class SpecificType {

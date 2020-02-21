@@ -372,6 +372,29 @@ void LocalFrameView::ForAllThrottledLocalFrameViews(const Function& function) {
   }
 }
 
+template <typename Function>
+void LocalFrameView::ForAllRemoteFrameViews(const Function& function) {
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (child->IsLocalFrame()) {
+      To<LocalFrame>(child)->View()->ForAllRemoteFrameViews(function);
+    } else {
+      DCHECK(child->IsRemoteFrame());
+      if (RemoteFrameView* view = To<RemoteFrame>(child)->View())
+        function(*view);
+    }
+  }
+  if (Document* document = frame_->GetDocument()) {
+    for (PortalContents* portal :
+         DocumentPortals::From(*document).GetPortals()) {
+      if (RemoteFrame* frame = portal->GetFrame()) {
+        if (RemoteFrameView* view = frame->View())
+          function(*view);
+      }
+    }
+  }
+}
+
 void LocalFrameView::Dispose() {
   CHECK(!IsInPerformLayout());
 
@@ -2330,6 +2353,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   DCHECK(ShouldThrottleRendering() ||
          frame_->GetDocument()->IsCapturingLayout() ||
          Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
+
+  ForAllRemoteFrameViews(
+      [](RemoteFrameView& frame_view) { frame_view.UpdateCompositingRect(); });
 }
 
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(

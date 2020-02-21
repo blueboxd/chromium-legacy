@@ -104,7 +104,7 @@ ScriptSourceCode::ScriptSourceCode(const String& source,
 
 ScriptSourceCode::~ScriptSourceCode() = default;
 
-void ScriptSourceCode::Trace(blink::Visitor* visitor) {
+void ScriptSourceCode::Trace(Visitor* visitor) {
   visitor->Trace(cache_handler_);
   visitor->Trace(streamer_);
 }

@@ -261,7 +261,7 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
 }
 
 bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonVisible() const {
-  return dialog_model()->request_may_start_over();
+  return dialog_model()->offer_try_again_in_ui();
 }
 
 bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonEnabled() const {
@@ -306,7 +306,7 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
 }
 
 bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonVisible() const {
-  return dialog_model()->request_may_start_over();
+  return dialog_model()->offer_try_again_in_ui();
 }
 
 bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonEnabled() const {
@@ -343,12 +343,12 @@ void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {
 // -----------------------------------
 bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsBackButtonVisible()
     const {
-  return dialog_model()->request_may_start_over();
+  return dialog_model()->offer_try_again_in_ui();
 }
 
 bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonVisible()
     const {
-  return dialog_model()->request_may_start_over();
+  return dialog_model()->offer_try_again_in_ui();
 }
 
 bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonEnabled()

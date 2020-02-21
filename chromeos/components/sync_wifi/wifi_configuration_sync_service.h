@@ -25,6 +25,7 @@ namespace chromeos {
 
 namespace sync_wifi {
 
+class LocalNetworkCollectorImpl;
 class SyncedNetworkUpdaterImpl;
 class WifiConfigurationBridge;
 
@@ -43,6 +44,7 @@ class WifiConfigurationSyncService : public KeyedService {
  private:
   std::unique_ptr<WifiConfigurationBridge> bridge_;
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;
+  std::unique_ptr<LocalNetworkCollectorImpl> collector_;
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
 

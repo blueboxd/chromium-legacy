@@ -34,14 +34,14 @@ using PostRequestCompleteCallback =
 using DownloadToFileCompleteCallback =
     update_client::NetworkFetcher::DownloadToFileCompleteCallback;
 
-@interface CHUpdaterNetworkController : NSObject <NSURLSessionDelegate>
+@interface CRUUpdaterNetworkController : NSObject <NSURLSessionDelegate>
 - (instancetype)initWithResponseStartedCallback:
                     (ResponseStartedCallback)responseStartedCallback
                                progressCallback:
                                    (ProgressCallback)progressCallback;
 @end
 
-@implementation CHUpdaterNetworkController {
+@implementation CRUUpdaterNetworkController {
  @protected
   ResponseStartedCallback _responseStartedCallback;
   ProgressCallback _progressCallback;
@@ -73,8 +73,8 @@ using DownloadToFileCompleteCallback =
 }
 @end
 
-@interface CHUpdaterNetworkDataDelegate
-    : CHUpdaterNetworkController <NSURLSessionDataDelegate>
+@interface CRUUpdaterNetworkDataDelegate
+    : CRUUpdaterNetworkController <NSURLSessionDataDelegate>
 - (instancetype)
     initWithResponseStartedCallback:
         (ResponseStartedCallback)responseStartedCallback
@@ -83,7 +83,7 @@ using DownloadToFileCompleteCallback =
             (PostRequestCompleteCallback)postRequestCompleteCallback;
 @end
 
-@implementation CHUpdaterNetworkDataDelegate {
+@implementation CRUUpdaterNetworkDataDelegate {
   PostRequestCompleteCallback _postRequestCompleteCallback;
   base::scoped_nsobject<NSMutableData> _downloadedData;
 }
@@ -172,8 +172,8 @@ using DownloadToFileCompleteCallback =
 
 @end
 
-@interface CHUpdaterNetworkDownloadDelegate
-    : CHUpdaterNetworkController <NSURLSessionDownloadDelegate>
+@interface CRUUpdaterNetworkDownloadDelegate
+    : CRUUpdaterNetworkController <NSURLSessionDownloadDelegate>
 - (instancetype)
     initWithResponseStartedCallback:
         (ResponseStartedCallback)responseStartedCallback
@@ -183,7 +183,7 @@ using DownloadToFileCompleteCallback =
          (DownloadToFileCompleteCallback)downloadToFileCompleteCallback;
 @end
 
-@implementation CHUpdaterNetworkDownloadDelegate {
+@implementation CRUUpdaterNetworkDownloadDelegate {
   base::FilePath _filePath;
   DownloadToFileCompleteCallback _downloadToFileCompleteCallback;
 }
@@ -272,8 +272,8 @@ void NetworkFetcher::PostRequest(
     PostRequestCompleteCallback post_request_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  base::scoped_nsobject<CHUpdaterNetworkDataDelegate> delegate(
-      [[CHUpdaterNetworkDataDelegate alloc]
+  base::scoped_nsobject<CRUUpdaterNetworkDataDelegate> delegate(
+      [[CRUUpdaterNetworkDataDelegate alloc]
           initWithResponseStartedCallback:std::move(response_started_callback)
                          progressCallback:progress_callback
               postRequestCompleteCallback:std::move(
@@ -304,8 +304,8 @@ void NetworkFetcher::DownloadToFile(
     DownloadToFileCompleteCallback download_to_file_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  base::scoped_nsobject<CHUpdaterNetworkDownloadDelegate> delegate(
-      [[CHUpdaterNetworkDownloadDelegate alloc]
+  base::scoped_nsobject<CRUUpdaterNetworkDownloadDelegate> delegate(
+      [[CRUUpdaterNetworkDownloadDelegate alloc]
           initWithResponseStartedCallback:std::move(response_started_callback)
                          progressCallback:progress_callback
                                  filePath:file_path

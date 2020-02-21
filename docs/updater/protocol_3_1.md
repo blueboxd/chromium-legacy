@@ -231,8 +231,10 @@ members:
 
 #### `request` Object (Update Check Request)
 A request object has the following members:
- *   `@os`: A string identifying the operating system. Default: "". Known values
-     include:
+ *   `@os`: A string identifying the operating system.
+     Added for backwards compatibility with Chrome Web store.
+     Recommend: new servers should use `os` member instead.
+     Default: "". Known values include:
      *   "android": Android.
      *   "cros": ChromeOS.
      *   "fuchsia": Fuchsia.
@@ -449,15 +451,15 @@ following members:
  *   `updatedisabled`: An indication of whether the client will honor an update
      response, if it receives one. Legal values are "true" (indicating that the
      client will ignore any update instruction) and "false" (indicating that the
-     client will not attempt an update if one is instructed). Default: "false".
+     client will attempt an update if one is instructed). Default: "false".
 
 #### `updater` Objects (Update Check Request)
-An otherupdater object represents the state of another sibling update program on
+An updater object represents the state of another sibling update program on
 the system. Clients report about other updaters present on the system to enable
 redundancy and recoverability of sibling updaters. For example, Chrome is
 normally updated by GoogleUpdate, but in cases where GoogleUpdate has been
 disabled or is broken (according to the data transmitted here), the server can
-issue an action to Chrome to attempt recovery of GoogleUpdate. An otherupdater
+issue an action to Chrome to attempt recovery of GoogleUpdate. An updater
 object has the following members:
  *   `autoupdatecheckenabled`: 1 if the other updater is subject
      to an enterprise policy that disables its update-checking functionality. 0
@@ -466,19 +468,25 @@ object has the following members:
      privileges, or if it is installed in a cross-user context. 0 if not. -1 if
      unknown. Default: -1.
  *   `lastchecked`: An estimated number of hours since the other updater
-     successfully checked for an update. Default: -1. Clients should fuzz this
-     value to one of:
-     *   -1: unknown
-     *   0: 0 to 408 hours ago (0 to ~2 weeks).
-     *   408: 408 to 1344 hours ago (~2 weeks to ~2×28 days)
-     *   1344: more than 1344 hours ago (~2×28 days or more)
+     successfully checked for an update. A value of -1 indicates the last check
+     time is unknown. Default: -1. Clients should limit the accuracy of this
+     value in order to prevent an observer from correlating this request to the
+     one last sent by the subject updater.
+     >Chrome only sends the following values:
+     >*   -1: unknown
+     >*   0: [0, 336) hours ago (0 to < ~2 weeks)
+     >*   336: [336, 1344) hours ago (~2 weeks to ~2×28 days)
+     >*   1344: at least 1344 hours ago (~2×28 days or more)
  *   `laststarted`: An estimated number of hours since the other updater
-     successfully ran (started and exited without crashing). Default: -1.
-     Clients should fuzz this value to one of:
-     *   -1: unknown
-     *   0: 0 to 408 hours ago (0 to ~2 weeks).
-     *   408: 408 to 1344 hours ago (~2 weeks to ~2×28 days)
-     *   1344: more than 1344 hours ago (~2×28 days or more)
+     successfully ran (started and exited without crashing). A value of -1
+     indicates the last check time is unknown. Default: -1. Clients should
+     limit the accuracy of this value in order to prevent an observer from
+     correlating this request to the one last sent by the subject updater.
+     >Chrome only sends the following values:
+     >*   -1: unknown
+     >*   0: [0, 336) hours ago (0 to < ~2 weeks)
+     >*   336: [336, 1344) hours ago (~2 weeks to ~2×28 days)
+     >*   1344: at least 1344 hours ago (~2×28 days or more)
  *   `name`: The name of the other updater.
  *   `updatepolicy`: A numeric indicator of what kind of updater policy the
      other updater has about updating this client. Default: -2. Known values:
@@ -606,6 +614,7 @@ the following members:
          version of the protocol. (For example, it may require multi-package
          support from the Omaha 3 protocol, or may require some feature added in
          a later version of this protocol.)
+
 Additionally, the following members are set if and only if `status == "ok"`:
  *   `manifest`: A `manifest` object.
  *   `urls`: A `urls` object.
@@ -811,17 +820,17 @@ For `type == 2` events:
 
 For `type == 3` events:
  *   All the members of `type == 2` events.
- *   `diffresult`: As `result` but specifically for a differential update. A
+ *   `diffresult`: As `eventresult` but specifically for a differential update. A
      client that successfully applies a differential update should send the
-     result both here and in `result`. A client that attempts and fails a
-     differential update should send the result here, and use `result` to
+     result both here and in `eventresult`. A client that attempts and fails a
+     differential update should send the result here, and use `eventresult` to
      indicate the outcome of the full update attempt.
  *   `differrorcat`: As `errorcat` but for differential updates. Similar to
-     `differsult`.
+     `diffresult`.
  *   `differrorcode`: As `errorcode` but for differential updates. Similar to
-     `differsult`.
+     `diffresult`.
  *   `diffextracode1`: As `extracode1` but for differential updates. Similar to
-     `differsult`.
+     `diffresult`.
  *   `previousfp`: The [differential fingerprint](#differential-fingerprints)
      the client had prior to the update, regardless of whether that update
      was successful.

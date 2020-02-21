@@ -277,10 +277,6 @@ void OverviewSession::Shutdown() {
   }
 }
 
-bool OverviewSession::IsAnyOverviewItemDragged() const {
-  return window_drag_controller_ && window_drag_controller_->item();
-}
-
 void OverviewSession::OnGridEmpty() {
   if (!IsEmpty())
     return;
@@ -840,6 +836,38 @@ void OverviewSession::OnRootWindowClosing(aura::Window* root) {
   grid_list_.erase(iter);
 }
 
+OverviewItem* OverviewSession::GetCurrentDraggedOverviewItem() const {
+  if (!window_drag_controller_)
+    return nullptr;
+  return window_drag_controller_->item();
+}
+
+bool OverviewSession::CanProcessEvent() const {
+  return CanProcessEvent(/*sender=*/nullptr, /*from_touch_gesture=*/false);
+}
+
+bool OverviewSession::CanProcessEvent(OverviewItem* sender,
+                                      bool from_touch_gesture) const {
+  // Allow processing the event if no current window is being dragged.
+  const bool drag_in_progress = window_util::IsAnyWindowDragged();
+  if (!drag_in_progress)
+    return true;
+
+  // At this point, if there is no sender, we can't process the event since
+  // |drag_in_progress| will be true.
+  if (!sender || !window_drag_controller_)
+    return false;
+
+  // Allow processing the event if the sender is the one currently being
+  // dragged and the event is the same type as the current one.
+  if (sender == window_drag_controller_->item() &&
+      from_touch_gesture == window_drag_controller_->is_touch_dragging()) {
+    return true;
+  }
+
+  return false;
+}
+
 void OverviewSession::OnDisplayAdded(const display::Display& display) {
   EndOverview();
 }
@@ -1043,7 +1071,7 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
 
 void OverviewSession::Move(bool reverse) {
   // Do not allow moving the highlight while in the middle of a drag.
-  if (IsAnyOverviewItemDragged())
+  if (window_util::IsAnyWindowDragged())
     return;
 
   highlight_controller_->MoveHighlight(reverse);

@@ -98,12 +98,6 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables sending a screen context request ("What's on my screen?" and
-// metalayer selection) as a text query. This is as opposed to sending
-// the request as a contextual cards request.
-const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableMediaSessionIntegration{
     "AssistantEnableMediaSessionIntegration",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -192,10 +186,6 @@ bool IsResponseProcessingV2Enabled() {
 
 bool IsRoutinesEnabled() {
   return base::FeatureList::IsEnabled(kAssistantRoutines);
-}
-
-bool IsScreenContextQueryEnabled() {
-  return base::FeatureList::IsEnabled(kScreenContextQuery);
 }
 
 bool IsStereoAudioInputEnabled() {

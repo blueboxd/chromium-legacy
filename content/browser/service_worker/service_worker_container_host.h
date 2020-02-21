@@ -147,6 +147,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       mojo::PendingReceiver<blink::mojom::ServiceWorkerContainerHost> receiver)
       override;
   void HintToUpdateServiceWorker() override;
+  void EnsureFileAccess(const std::vector<base::FilePath>& file_paths,
+                        EnsureFileAccessCallback callback) override;
   void OnExecutionReady() override;
 
   // ServiceWorkerRegistration::Listener overrides.

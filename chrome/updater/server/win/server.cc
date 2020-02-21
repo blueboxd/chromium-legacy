@@ -17,11 +17,19 @@
 
 namespace updater {
 
-HRESULT UpdaterImpl::CheckForUpdate(const base::char16* guid) {
+HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
   return E_NOTIMPL;
 }
 
-HRESULT UpdaterImpl::Update(const base::char16* guid) {
+HRESULT UpdaterImpl::Register(const base::char16* app_id,
+                              const base::char16* brand_code,
+                              const base::char16* tag,
+                              const base::char16* version,
+                              const base::char16* existence_checker_path) {
+  return E_NOTIMPL;
+}
+
+HRESULT UpdaterImpl::Update(const base::char16* app_id) {
   return E_NOTIMPL;
 }
 

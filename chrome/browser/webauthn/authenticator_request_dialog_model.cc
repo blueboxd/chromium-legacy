@@ -165,10 +165,6 @@ void AuthenticatorRequestDialogModel::StartFlow(
 }
 
 void AuthenticatorRequestDialogModel::StartOver() {
-  if (!request_may_start_over_) {
-    NOTREACHED();
-    return;
-  }
   ephemeral_state_.Reset();
 
   for (auto& observer : observers_)
@@ -181,12 +177,21 @@ void AuthenticatorRequestDialogModel::
   DCHECK(current_step() == Step::kNotStarted);
 
   // If no authenticator other than the one for the native Windows API is
-  // available, don't show Chrome UI but proceed straight to the native
-  // Windows UI.
+  // available, or if the sole authenticator is caBLE, but there's no caBLE
+  // extension nor paired phone, then don't show Chrome UI but proceed straight
+  // to the native Windows UI.
   if (transport_availability_.has_win_native_api_authenticator &&
-      transport_availability_.available_transports.empty()) {
-    StartWinNativeApi();
-    return;
+      !win_native_api_already_tried_) {
+    const auto& transports = transport_availability_.available_transports;
+    if (transports.empty() ||
+        (transports.size() == 1 &&
+         base::Contains(
+             transports,
+             AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy) &&
+         !cable_extension_provided_ && !have_paired_phones_)) {
+      StartWinNativeApi();
+      return;
+    }
   }
 
   auto most_likely_transport =
@@ -246,10 +251,9 @@ void AuthenticatorRequestDialogModel::
     return;
   }
 
-  // The StartOver() logic does not work in combination with the Windows API.
-  // Therefore do not show a retry button on any error sheet shown after the
-  // Windows API call returns.
-  request_may_start_over_ = false;
+  // The Windows-native UI already handles retrying so we do not offer a second
+  // level of retry in that case.
+  offer_try_again_in_ui_ = false;
 
   // There is no AuthenticatorReference for the Windows authenticator, hence
   // directly call DispatchRequestAsyncInternal here.
@@ -519,6 +523,21 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorStorageFull() {
 
 void AuthenticatorRequestDialogModel::OnUserConsentDenied() {
   SetCurrentStep(Step::kErrorInternalUnrecognized);
+}
+
+bool AuthenticatorRequestDialogModel::OnWinUserCancelled() {
+  // If caBLE v2 isn't enabled then this event isn't handled and will cause the
+  // request to fail with a NotAllowedError.
+  if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    return false;
+  }
+
+  // Otherwise, if the user cancels out of the Windows-native UI, we show the
+  // transport selection dialog which allows them to pair a phone.
+  win_native_api_already_tried_ = true;
+
+  StartOver();
+  return true;
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(

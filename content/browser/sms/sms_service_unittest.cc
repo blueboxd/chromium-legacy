@@ -111,6 +111,10 @@ class Service {
     confirm_callback_.Reset();
   }
 
+  bool IsPromptOpen() const {
+    return !confirm_callback_.is_null() || !dismiss_callback_.is_null();
+  }
+
   void MakeRequest(SmsReceiver::ReceiveCallback callback) {
     service_remote_->Receive(std::move(callback));
   }
@@ -539,15 +543,71 @@ TEST_F(SmsServiceTest, AbortWhilePrompt) {
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "ABC");
+    EXPECT_TRUE(service.IsPromptOpen());
+    service.AbortRequest();
   }));
-
-  service.AbortRequest();
 
   loop.Run();
 
   ASSERT_FALSE(service.fetcher()->HasSubscribers());
 
   service.ConfirmPrompt();
+}
+
+TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  {
+    base::RunLoop loop;
+
+    service.CreateSmsPrompt(main_rfh());
+
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp,
+                const Optional<string>& sms) {
+          EXPECT_EQ(SmsStatus::kAborted, status);
+          EXPECT_EQ(base::nullopt, otp);
+          loop.Quit();
+        }));
+
+    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "hi");
+      EXPECT_TRUE(service.IsPromptOpen());
+      service.AbortRequest();
+    }));
+
+    loop.Run();
+  }
+
+  ASSERT_FALSE(service.fetcher()->HasSubscribers());
+
+  // Confirm to dismiss prompt for a request that has already aborted.
+  service.ConfirmPrompt();
+
+  {
+    base::RunLoop loop;
+
+    service.CreateSmsPrompt(main_rfh());
+
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp,
+                const Optional<string>& sms) {
+          // Verify that the 2nd request completes successfully after prompt
+          // confirmation.
+          EXPECT_EQ(SmsStatus::kSuccess, status);
+          EXPECT_EQ("hi2", otp.value());
+          loop.Quit();
+        }));
+
+    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "hi2");
+      service.ConfirmPrompt();
+    }));
+
+    loop.Run();
+  }
 }
 
 TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {

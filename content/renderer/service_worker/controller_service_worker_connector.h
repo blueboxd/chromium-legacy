@@ -83,6 +83,9 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   void OnContainerHostConnectionClosed();
   void OnControllerConnectionClosed();
 
+  void EnsureFileAccess(const std::vector<base::FilePath>& file_paths,
+                        base::OnceClosure callback);
+
   void AddBinding(
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
           receiver);

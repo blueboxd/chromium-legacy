@@ -20,10 +20,6 @@ class GLImage;
 class GLSurface;
 }  // namespace gl
 
-namespace gfx {
-class GpuFence;
-}  // namespace gfx
-
 namespace gpu {
 class MailboxManager;
 class SharedContextState;
@@ -75,20 +71,12 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  private:
-  // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish
-  // operation
-  void DoFinishSwapBuffers(const gfx::Size& size,
-                           std::vector<ui::LatencyInfo> latency_info,
-                           gfx::SwapResult result,
-                           std::unique_ptr<gfx::GpuFence>);
-
   scoped_refptr<gl::GLImage> GetGLImageForMailbox(const gpu::Mailbox& mailbox);
 
   gpu::MailboxManager* const mailbox_manager_;
 
   gpu::SharedContextState* const context_state_;
   scoped_refptr<gl::GLSurface> gl_surface_;
-  const bool supports_async_swap_;
 
   sk_sp<SkSurface> sk_surface_;
 

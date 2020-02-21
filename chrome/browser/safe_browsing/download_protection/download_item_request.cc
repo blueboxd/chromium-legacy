@@ -9,9 +9,12 @@
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/file_util_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/download/public/common/download_item.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -39,6 +42,11 @@ std::string GetFileContentsBlocking(base::FilePath path) {
   }
 
   return contents;
+}
+
+int GetUnsupportedFiletypesPrefValue() {
+  return g_browser_process->local_state()->GetInteger(
+      prefs::kBlockUnsupportedFiletypes);
 }
 
 }  // namespace
@@ -70,6 +78,30 @@ void DownloadItemRequest::GetRequestData(DataCallback callback) {
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        BinaryUploadService::Result::FILE_TOO_LARGE, Data()));
+    return;
+  }
+
+  bool malware = deep_scanning_request().has_malware_scan_request();
+  bool dlp = deep_scanning_request().has_dlp_scan_request();
+  if (item_ && (malware || dlp) &&
+      !FileTypeSupported(malware, dlp, item_->GetTargetFilePath())) {
+    bool block_file = false;
+    switch (GetUnsupportedFiletypesPrefValue()) {
+      case BLOCK_UNSUPPORTED_FILETYPES_NONE:
+      case BLOCK_UNSUPPORTED_FILETYPES_UPLOADS:
+        block_file = false;
+        break;
+      case BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS:
+      case BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS:
+        block_file = true;
+    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       block_file
+                           ? BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE
+                           : BinaryUploadService::Result::SUCCESS,
+                       Data()));
     return;
   }
 

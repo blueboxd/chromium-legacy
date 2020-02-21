@@ -6,15 +6,8 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 
-import androidx.annotation.VisibleForTesting;
-
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -24,13 +17,7 @@ import org.chromium.webapk.lib.common.WebApkConstants;
  * UI-less Chrome.
  */
 public class WebApkActivity extends WebappActivity {
-    /** The start time that the activity becomes focused in milliseconds since boot. */
-    private long mStartTime;
-
     private static final String TAG = "WebApkActivity";
-
-    @VisibleForTesting
-    public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
     @Override
     public @WebappScopePolicy.Type int scopePolicy() {
@@ -62,43 +49,12 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        mStartTime = SystemClock.elapsedRealtime();
-    }
-
-    @Override
-    protected void recordIntentToCreationTime(long timeMs) {
-        super.recordIntentToCreationTime(timeMs);
-
-        RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApk", timeMs);
-    }
-
-    @Override
-    public void onPauseWithNative() {
-        WebApkInfo info = getWebApkInfo();
-        long sessionDuration = SystemClock.elapsedRealtime() - mStartTime;
-        WebApkUma.recordWebApkSessionDuration(info.distributor(), sessionDuration);
-        WebApkUkmRecorder.recordWebApkSessionDuration(
-                info.manifestUrl(), info.distributor(), info.webApkVersionCode(), sessionDuration);
-        super.onPauseWithNative();
-    }
-
-    @Override
     protected void onDestroyInternal() {
         // The common case is to be connected to just one WebAPK's services. For the sake of
         // simplicity disconnect from the services of all WebAPKs.
         ChromeWebApkHost.disconnectFromAllServices(true /* waitForPendingWork */);
 
         super.onDestroyInternal();
-    }
-
-    /**
-     * Returns structure containing data about the WebApk currently displayed.
-     * The return value should not be cached.
-     */
-    public WebApkInfo getWebApkInfo() {
-        return (WebApkInfo) getWebappInfo();
     }
 
     @Override
@@ -111,26 +67,6 @@ public class WebApkActivity extends WebappActivity {
         return new WebApkPostShareTargetNavigator().navigateIfPostShareTarget(
                 webApkInfo.url(), webApkInfo.shareTarget(), shareData,
                 getActivityTab().getWebContents());
-    }
-
-    @Override
-    protected void initSplash() {
-        super.initSplash();
-
-        // Decide whether to record startup UMA histograms. This is a similar check to the one done
-        // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
-        if (!LibraryLoader.getInstance().isInitialized()) {
-            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
-            // If there is a saved instance state, then the intent (and its stored timestamp) might
-            // be stale (Android replays intents if there is a recents entry for the activity).
-            if (getSavedInstanceState() == null) {
-                Intent intent = getIntent();
-                // Splash observers are removed once the splash screen is hidden.
-                addSplashscreenObserver(new WebApkSplashscreenMetrics(
-                        WebappIntentUtils.getWebApkShellLaunchTime(intent),
-                        WebappIntentUtils.getNewStyleWebApkSplashShownTime(intent)));
-            }
-        }
     }
 
     @Override

@@ -62,22 +62,6 @@ int RegisterCustomEventType() {
   return ++g_custom_event_types;
 }
 
-bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
-  int64_t delta = (now - timestamp).InMilliseconds();
-  return delta >= 0 && delta <= 60 * 1000;
-}
-
-void ValidateEventTimeClock(base::TimeTicks* timestamp) {
-  // Some fraction of devices, across all platforms provide bogus event
-  // timestamps. See https://crbug.com/650338#c1. Correct timestamps which are
-  // clearly bogus.
-  // TODO(861855): Replace this with an approach that doesn't require an extra
-  // read of the current time per event.
-  base::TimeTicks now = EventTimeForNow();
-  if (!IsValidTimebase(now, *timestamp))
-    *timestamp = now;
-}
-
 bool ShouldDefaultToNaturalScroll() {
   return GetInternalDisplayTouchSupport() ==
          display::Display::TouchSupport::AVAILABLE;

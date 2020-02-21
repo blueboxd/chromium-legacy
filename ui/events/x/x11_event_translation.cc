@@ -72,12 +72,6 @@ Event::Properties GetEventPropertiesFromXEvent(EventType type,
   return properties;
 }
 
-base::TimeTicks GetXEventTimestamp(const XEvent& xev) {
-  base::TimeTicks timestamp = EventTimeFromXEvent(xev);
-  ValidateEventTimeClock(&timestamp);
-  return timestamp;
-}
-
 std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
                                          const XEvent& xev) {
   KeyboardCode key_code = KeyboardCodeFromXKeyEvent(&xev);
@@ -88,11 +82,11 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   // example, to support host system keyboard layouts.
 #if defined(USE_OZONE)
   auto event = std::make_unique<KeyEvent>(event_type, key_code, event_flags,
-                                          GetXEventTimestamp(xev));
+                                          EventTimeFromXEvent(xev));
 #else
   auto event = std::make_unique<KeyEvent>(
       event_type, key_code, CodeFromXEvent(&xev), event_flags,
-      GetDomKeyFromXEvent(&xev), GetXEventTimestamp(xev));
+      GetDomKeyFromXEvent(&xev), EventTimeFromXEvent(xev));
 #endif
 
   DCHECK(event);
@@ -121,7 +115,7 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
   PointerDetails details{EventPointerType::POINTER_TYPE_MOUSE};
   auto event = std::make_unique<MouseEvent>(
       type, EventLocationFromXEvent(xev), EventSystemLocationFromXEvent(xev),
-      GetXEventTimestamp(xev), EventFlagsFromXEvent(xev),
+      EventTimeFromXEvent(xev), EventFlagsFromXEvent(xev),
       GetChangedMouseButtonFlagsFromXEvent(xev), details);
 
   DCHECK(event);
@@ -137,7 +131,7 @@ std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
                          : 0;
   auto event = std::make_unique<MouseWheelEvent>(
       GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
-      EventSystemLocationFromXEvent(xev), GetXEventTimestamp(xev),
+      EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       EventFlagsFromXEvent(xev), button_flags);
 
   DCHECK(event);
@@ -148,7 +142,7 @@ std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType type,
                                              const XEvent& xev) {
   auto event = std::make_unique<TouchEventX11>(
-      type, EventLocationFromXEvent(xev), GetXEventTimestamp(xev),
+      type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       GetTouchPointerDetailsFromXEvent(xev));
 #if defined(USE_OZONE)
   // Touch events don't usually have |root_location| set differently than
@@ -172,7 +166,7 @@ std::unique_ptr<ScrollEvent> CreateScrollEvent(EventType type,
                            &y_offset_ordinal, nullptr);
   }
   auto event = std::make_unique<ScrollEvent>(
-      type, EventLocationFromXEvent(xev), GetXEventTimestamp(xev),
+      type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
       y_offset_ordinal, finger_count);
 
@@ -186,8 +180,8 @@ std::unique_ptr<ScrollEvent> CreateScrollEvent(EventType type,
 }
 
 // Translates XI2 XEvent into a ui::Event.
-std::unique_ptr<ui::Event> TranslateFromXI2Event(const XEvent& xev) {
-  EventType event_type = EventTypeFromXEvent(xev);
+std::unique_ptr<ui::Event> TranslateFromXI2Event(const XEvent& xev,
+                                                 EventType event_type) {
   switch (event_type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED:
@@ -246,7 +240,7 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
       break;
     }
     case GenericEvent:
-      return TranslateFromXI2Event(xev);
+      return TranslateFromXI2Event(xev, event_type);
   }
   return nullptr;
 }

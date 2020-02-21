@@ -112,6 +112,10 @@ ASH_EXPORT bool IsArcPipWindow(const aura::Window* window);
 // Expands the Android PIP window.
 ASH_EXPORT void ExpandArcPipWindow();
 
+// Returns true if any window is being dragged, or we are in overview mode and
+// an item is being dragged around.
+bool IsAnyWindowDragged();
+
 }  // namespace window_util
 }  // namespace ash
 

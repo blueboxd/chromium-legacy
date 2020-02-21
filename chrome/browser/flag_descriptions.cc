@@ -1541,6 +1541,11 @@ const char kPreviewsAllowedDescription[] =
     "enabled and the client experiencing specific triggering conditions. "
     "May be used as a kill-switch to turn off all potential preview types.";
 
+const char kPrintJobManagementAppName[] = "Print Management App";
+const char kPrintJobManagementAppDescription[] =
+    "Enables the print management app that allows Chrome OS users to view "
+    "and manage their native print jobs.";
+
 const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
 const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "

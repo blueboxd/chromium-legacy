@@ -82,7 +82,7 @@
             android:layout_marginEnd="@dimen/editor_dialog_section_large_spacing"
             android:orientation="vertical">
 
-            <android.support.v7.widget.AppCompatSpinner
+            <androidx.appcompat.widget.AppCompatSpinner
                 android:id="@+id/autofill_credit_card_editor_month_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -97,7 +97,7 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <android.support.v7.widget.AppCompatSpinner
+            <androidx.appcompat.widget.AppCompatSpinner
                 android:id="@+id/autofill_credit_card_editor_year_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

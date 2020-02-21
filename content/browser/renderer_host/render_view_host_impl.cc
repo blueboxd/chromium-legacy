@@ -110,7 +110,6 @@
 
 using base::TimeDelta;
 
-using blink::PluginAction;
 using blink::WebConsoleMessage;
 using blink::WebInputEvent;
 
@@ -968,14 +967,17 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
 
 void RenderViewHostImpl::ExecutePluginActionAtLocation(
     const gfx::Point& location,
-    const blink::PluginAction& action) {
+    blink::mojom::PluginActionType plugin_action) {
   // TODO(wjmaclean): See if this needs to be done for OOPIFs as well.
   // https://crbug.com/776807
   gfx::PointF local_location_f =
       GetWidget()->GetView()->TransformRootPointToViewCoordSpace(
           gfx::PointF(location.x(), location.y()));
   gfx::Point local_location(local_location_f.x(), local_location_f.y());
-  Send(new ViewMsg_PluginActionAt(GetRoutingID(), local_location, action));
+
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())
+      ->GetAssociatedLocalMainFrame()
+      ->PluginActionAt(local_location, plugin_action);
 }
 
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {

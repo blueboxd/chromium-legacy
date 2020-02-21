@@ -42,6 +42,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
       const std::vector<std::unique_ptr<std::string>>& path_prefixes) const;
 
   // The URL that the beacon is reporting on, if included.
+  // The scheme can be non-secure.
   GURL url;
   // The resource name that the beacon is reporting on, if included.
   std::string resource;

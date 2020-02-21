@@ -95,9 +95,9 @@ public class WebApkInitializationTest {
             RuleChain.outerRule(mModuleOverridesRule).around(mActivityRule);
 
     /**
-     * Test that {@link WebappActionsNotificationManager} and
-     * {@link WebappDisclosureSnackbarController} are constructed when a {@link WebApkActivity} is
-     * launched.
+     * Test that {@link WebappActionsNotificationManager},
+     * {@link WebappDisclosureSnackbarController} and {@link WebApkActivityLifecycleUmaTracker} are
+     * constructed when a {@link WebApkActivity} is launched.
      */
     @Test
     @LargeTest
@@ -116,5 +116,7 @@ public class WebApkInitializationTest {
                 WebappActionsNotificationManager.class.getName()));
         assertTrue(registeredObserverClassNames.contains(
                 WebappDisclosureSnackbarController.class.getName()));
+        assertTrue(registeredObserverClassNames.contains(
+                WebApkActivityLifecycleUmaTracker.class.getName()));
     }
 }

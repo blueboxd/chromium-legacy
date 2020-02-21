@@ -715,6 +715,7 @@ class OncMojo {
           vpn: {
             providerName: '',
             type: mojom.VpnType.kOpenVPN,
+            openVpn: {},
           }
         };
         break;

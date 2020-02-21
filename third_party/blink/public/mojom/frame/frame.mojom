@@ -73,6 +73,12 @@ struct DownloadURLParams {
   handle<message_pipe>? data_url_blob;
 };
 
+// Actions browser can ask renderer to perform on a Plugin.
+enum PluginActionType {
+  kRotate90Clockwise,
+  kRotate90Counterclockwise,
+};
+
 // The maximum number of characters of the document's title that we're willing
 // to accept in the browser process.
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
@@ -595,6 +601,11 @@ interface LocalMainFrame {
   // Instructs the renderer to close the current page, including running the
   // onunload event handler.
   ClosePage() => ();
+
+  // Instructs the renderer to perform the given action on the plugin located at
+  // the given point.
+  PluginActionAt(gfx.mojom.Point location,
+                 blink.mojom.PluginActionType action);
 };
 
 // Implemented in Browser, this interface defines main-frame-specific methods

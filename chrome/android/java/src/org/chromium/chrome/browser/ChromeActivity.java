@@ -455,7 +455,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 new ActivityTabStartupMetricsTracker(mTabModelSelectorSupplier);
     }
 
-    protected ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
+    public ActivityTabStartupMetricsTracker getActivityTabStartupMetricsTracker() {
         return mActivityTabStartupMetricsTracker;
     }
 

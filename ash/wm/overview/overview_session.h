@@ -119,8 +119,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Perform cleanup that cannot be done in the destructor.
   void Shutdown();
 
-  bool IsAnyOverviewItemDragged() const;
-
   // Called when the last overview item from a grid is deleted.
   void OnGridEmpty();
 
@@ -303,6 +301,24 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // function is only needed for when overview mode cannot be ended (see
   // |OverviewController::CanEndOverview| and https://crbug.com/1024325).
   void OnRootWindowClosing(aura::Window* root);
+
+  // Returns the current dragged overview item if any. Note that windows that
+  // are dragged into overview from the shelf don't have an OverviewItem while
+  // dragging.
+  OverviewItem* GetCurrentDraggedOverviewItem() const;
+
+  // Overview objects which handle events (OverviewItemView,
+  // OverviewGridEventHandler) should call this function to check if they can
+  // process an event. Returns false if an overview item other than |sender|
+  // (which may be nullptr in the case of events on the wallpaper) is already
+  // being dragged, or if a window is currently being dragged from the bottom.
+  // This is so we can allow switching finger while dragging, but not allow
+  // dragging two or more items. The first |CanProcessEvent()| calls the second
+  // with |sender| as nullptr (i.e. event processed by
+  // OverviewGridEventHandler). When |sender| is nullptr, |from_touch_gesture|
+  // does not matter.
+  bool CanProcessEvent() const;
+  bool CanProcessEvent(OverviewItem* sender, bool from_touch_gesture) const;
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;

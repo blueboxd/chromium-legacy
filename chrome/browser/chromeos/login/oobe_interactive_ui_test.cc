@@ -737,9 +737,16 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
+// TODO(crbug.com/423675): AX tree is different for Win7 and Win10.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
+  SimpleEndToEnd();
+}
+#else
 IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
   SimpleEndToEnd();
 }
+#endif
 
 INSTANTIATE_TEST_SUITE_P(
     OobeInteractiveUITestImpl,

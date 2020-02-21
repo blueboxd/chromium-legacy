@@ -70,6 +70,9 @@ The tests in this block fail on platforms without the lang-attribute-aware-form-
 PASS input.value is "01:56"
 PASS input.value is "01:02"
 PASS input.value is "03:02"
+== Reversed range ==
+PASS input.value is "23:30"
+PASS input.value is "00:30"
 PASS successfullyParsed is true
 
 TEST COMPLETE

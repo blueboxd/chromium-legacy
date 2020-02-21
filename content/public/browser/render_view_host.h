@@ -12,11 +12,8 @@
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/core.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-
-namespace blink {
-struct PluginAction;
-}
 
 namespace gfx {
 class Point;
@@ -86,7 +83,7 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // the given point.
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
-      const blink::PluginAction& action) = 0;
+      blink::mojom::PluginActionType action) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() = 0;
 

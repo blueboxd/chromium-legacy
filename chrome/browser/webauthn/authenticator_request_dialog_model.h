@@ -341,6 +341,10 @@ class AuthenticatorRequestDialogModel {
   // system Touch ID prompt.
   void OnUserConsentDenied();
 
+  // To be called when the user clicks "Cancel" in the native Windows UI.
+  // Returns true if the event was handled.
+  bool OnWinUserCancelled();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -452,7 +456,7 @@ class AuthenticatorRequestDialogModel {
 
   const std::string& relying_party_id() const { return relying_party_id_; }
 
-  bool request_may_start_over() const { return request_may_start_over_; }
+  bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
 
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()
@@ -528,10 +532,10 @@ class AuthenticatorRequestDialogModel {
 
   bool incognito_mode_ = false;
 
-  // request_may_start_over_ indicates whether a button to retry the request
+  // offer_try_again_in_ui_ indicates whether a button to retry the request
   // should be included on the dialog sheet shown when encountering certain
   // errors.
-  bool request_may_start_over_ = true;
+  bool offer_try_again_in_ui_ = true;
 
   // cable_extension_provided_ indicates whether the request included a caBLE
   // extension.
@@ -543,6 +547,10 @@ class AuthenticatorRequestDialogModel {
   // did_cable_broadcast_ is true if a caBLE v1 extension was provided and
   // BLE adverts were broadcast.
   bool did_cable_broadcast_ = false;
+  // win_native_api_already_tried_ is true if the Windows-native UI has been
+  // displayed already and the user cancelled it. In this case, we shouldn't
+  // jump straight to showing it again.
+  bool win_native_api_already_tried_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

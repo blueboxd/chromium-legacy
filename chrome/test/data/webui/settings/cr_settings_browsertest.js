@@ -1004,7 +1004,7 @@ CrSettingsSiteSettingsPageTest.prototype = {
   ])
 };
 
-TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTests', function() {
+TEST_F('CrSettingsSiteSettingsPageTest', 'All', function() {
   mocha.run();
 });
 

@@ -22,6 +22,7 @@ namespace ash {
 // that the layer transform animation was valid.
 class WidgetAnimationWaiter : ui::LayerAnimationObserver {
  public:
+  WidgetAnimationWaiter(views::Widget* widget);
   WidgetAnimationWaiter(views::Widget* widget, gfx::Rect target_bounds);
   ~WidgetAnimationWaiter() override;
 

@@ -88,7 +88,7 @@ class ServiceWorkerPaymentAppFinder {
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
   friend class HybridRequestSkipUITest;
-  friend class JourneyLoggerTest;
+  friend class PaymentRequestPlatformBrowserTestBase;
   friend class PaymentHandlerJustInTimeInstallationTest;
 
   ServiceWorkerPaymentAppFinder();

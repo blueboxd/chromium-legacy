@@ -11,6 +11,11 @@
 
 namespace ash {
 
+WidgetAnimationWaiter::WidgetAnimationWaiter(views::Widget* widget)
+    : target_bounds_(gfx::Rect()), widget_(widget) {
+  widget->GetLayer()->GetAnimator()->AddObserver(this);
+}
+
 WidgetAnimationWaiter::WidgetAnimationWaiter(views::Widget* widget,
                                              gfx::Rect target_bounds)
     : target_bounds_(target_bounds), widget_(widget) {
@@ -25,8 +30,10 @@ void WidgetAnimationWaiter::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
   if (!widget_->GetLayer()->GetAnimator()->is_animating() &&
       animation_scheduled_) {
-    EXPECT_EQ(widget_->GetWindowBoundsInScreen(), target_bounds_);
-    EXPECT_EQ(widget_->GetLayer()->transform(), gfx::Transform());
+    if (!target_bounds_.IsEmpty()) {
+      EXPECT_EQ(widget_->GetWindowBoundsInScreen(), target_bounds_);
+      EXPECT_EQ(widget_->GetLayer()->transform(), gfx::Transform());
+    }
 
     is_valid_animation_ = true;
     widget_->GetLayer()->GetAnimator()->RemoveObserver(this);
@@ -39,7 +46,8 @@ void WidgetAnimationWaiter::OnLayerAnimationAborted(
 void WidgetAnimationWaiter::OnLayerAnimationScheduled(
     ui::LayerAnimationSequence* sequence) {
   animation_scheduled_ = true;
-  EXPECT_NE(widget_->GetLayer()->transform(), gfx::Transform());
+  if (!target_bounds_.IsEmpty())
+    EXPECT_NE(widget_->GetLayer()->transform(), gfx::Transform());
 }
 
 void WidgetAnimationWaiter::WaitForAnimation() {

@@ -51,35 +51,39 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                        return (c >= '0' && c <= '9') ||
                               (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
                      }));
-  if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+  std::string unscanned_reason;
+  switch (result) {
+    case BinaryUploadService::Result::SUCCESS:
+    case BinaryUploadService::Result::UNAUTHORIZED:
+      // Don't report an unscanned file event on these results.
+      break;
+
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+      unscanned_reason = "fileTooLarge";
+      break;
+    case BinaryUploadService::Result::TIMEOUT:
+      unscanned_reason = "scanTimedOut";
+      break;
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      unscanned_reason = "filePasswordProtected";
+      break;
+    case BinaryUploadService::Result::UNKNOWN:
+      unscanned_reason = "unknownError";
+      break;
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+      unscanned_reason = "uploadFailure";
+      break;
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+      unscanned_reason = "failedToGetToken";
+      break;
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      unscanned_reason = "unsupportedFileType";
+  }
+
+  if (!unscanned_reason.empty()) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "fileTooLarge",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::TIMEOUT) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "scanTimedOut",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "filePasswordProtected",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::UNKNOWN) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "unknownError",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::UPLOAD_FAILURE) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "uploadFailure",
-                               content_size);
-  } else if (result == BinaryUploadService::Result::FAILED_TO_GET_TOKEN) {
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "failedToGetToken",
+                               mime_type, trigger, unscanned_reason,
                                content_size);
   }
 
@@ -183,6 +187,9 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
       return;
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       result_value = "FileEncrypted";
+      break;
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      result_value = "UnsupportedFileType";
       break;
   }
 

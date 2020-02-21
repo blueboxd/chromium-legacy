@@ -177,7 +177,7 @@ class PLATFORM_EXPORT MarkingVisitor
   template <typename T>
   static bool WriteBarrier(T** slot);
 
-  static bool GenerationalBarrier(Address slot, ThreadState* state);
+  static void GenerationalBarrier(Address slot, ThreadState* state);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
@@ -227,6 +227,7 @@ ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(T** slot) {
   // Dijkstra barrier if concurrent marking is in progress.
   BasePage* value_page = PageFromObject(value);
   ThreadState* thread_state = value_page->thread_state();
+
   if (UNLIKELY(thread_state->IsIncrementalMarking()))
     return MarkValue(value, value_page, thread_state);
 
@@ -243,14 +244,14 @@ ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(T** slot) {
 }
 
 // static
-ALWAYS_INLINE bool MarkingVisitor::GenerationalBarrier(Address slot,
+ALWAYS_INLINE void MarkingVisitor::GenerationalBarrier(Address slot,
                                                        ThreadState* state) {
+  // First, check if the source object is in the last allocated region of heap.
   if (LIKELY(state->Heap().IsInLastAllocatedRegion(slot)))
-    return false;
+    return;
   if (UNLIKELY(state->IsOnStack(slot)))
-    return false;
+    return;
   GenerationalBarrierSlow(slot, state);
-  return false;
 }
 
 // static

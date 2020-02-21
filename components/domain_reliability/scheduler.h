@@ -51,7 +51,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
     static Params GetFromFieldTrialsOrDefaults();
   };
 
-  DomainReliabilityScheduler(MockableTime* time,
+  DomainReliabilityScheduler(const MockableTime* time,
                              size_t num_collectors,
                              const Params& params,
                              const ScheduleUploadCallback& callback);
@@ -86,7 +86,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
                                      base::TimeTicks* upload_time_out,
                                      size_t* collector_index_out);
 
-  MockableTime* time_;
+  const MockableTime* time_;
   Params params_;
   ScheduleUploadCallback callback_;
   net::BackoffEntry::Policy backoff_policy_;

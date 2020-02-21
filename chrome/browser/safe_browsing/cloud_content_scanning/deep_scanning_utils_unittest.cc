@@ -24,6 +24,7 @@ constexpr BinaryUploadService::Result kAllBinaryUploadServiceResults[]{
     BinaryUploadService::Result::FAILED_TO_GET_TOKEN,
     BinaryUploadService::Result::UNAUTHORIZED,
     BinaryUploadService::Result::FILE_ENCRYPTED,
+    BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
 };
 
 constexpr int64_t kTotalBytes = 1000;
@@ -34,36 +35,29 @@ constexpr base::TimeDelta kInvalidDuration = base::TimeDelta::FromSeconds(0);
 
 std::string ResultToString(const BinaryUploadService::Result& result,
                            bool success) {
-  std::string result_value;
   switch (result) {
     case BinaryUploadService::Result::SUCCESS:
       if (success)
-        result_value = "Success";
+        return "Success";
       else
-        result_value = "FailedToGetVerdict";
-      break;
+        return "FailedToGetVerdict";
     case BinaryUploadService::Result::UPLOAD_FAILURE:
-      result_value = "UploadFailure";
-      break;
+      return "UploadFailure";
     case BinaryUploadService::Result::TIMEOUT:
-      result_value = "Timeout";
-      break;
+      return "Timeout";
     case BinaryUploadService::Result::FILE_TOO_LARGE:
-      result_value = "FileTooLarge";
-      break;
+      return "FileTooLarge";
     case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      result_value = "FailedToGetToken";
-      break;
+      return "FailedToGetToken";
     case BinaryUploadService::Result::UNKNOWN:
-      result_value = "Unknown";
-      break;
+      return "Unknown";
     case BinaryUploadService::Result::UNAUTHORIZED:
       return "";
     case BinaryUploadService::Result::FILE_ENCRYPTED:
-      result_value = "FileEncrypted";
-      break;
+      return "FileEncrypted";
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      return "UnsupportedFileType";
   }
-  return result_value;
 }
 
 }  // namespace

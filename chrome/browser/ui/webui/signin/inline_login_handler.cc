@@ -149,7 +149,7 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   params.SetBoolean("readOnlyEmail", !read_only_email.empty());
 
   SetExtraInitParams(params);
-  CallJavascriptFunction("inline.login.loadAuthExtension", params);
+  FireWebUIListener("load-auth-extension", params);
 }
 
 void InlineLoginHandler::HandleCompleteLoginMessage(
@@ -235,7 +235,7 @@ void InlineLoginHandler::HandleNavigationButtonClicked(
   NOTREACHED() << "The inline login handler is no longer used in a browser "
                   "or tab modal dialog.";
 #else
-  FireWebUIListener("navigateBackInWebview");
+  FireWebUIListener("navigate-back-in-webview");
 #endif
 }
 
@@ -248,5 +248,5 @@ void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
 
 void InlineLoginHandler::CloseDialogFromJavascript() {
   if (IsJavascriptAllowed())
-    CallJavascriptFunction("inline.login.closeDialog");
+    FireWebUIListener("close-dialog");
 }

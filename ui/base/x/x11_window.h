@@ -32,6 +32,7 @@ class Transform;
 
 namespace ui {
 
+class Event;
 class XScopedEventSelector;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,6 +169,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   XID update_counter() const { return update_counter_; }
   XID extended_update_counter() const { return extended_update_counter_; }
 
+ protected:
+  // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
+  void UpdateWMUserTime(ui::Event* event);
+
  private:
   // Called on an XFocusInEvent, XFocusOutEvent, XIFocusInEvent, or an
   // XIFocusOutEvent.
@@ -199,9 +204,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void AfterActivationStateChanged();
 
   void DelayedResize(const gfx::Rect& bounds_in_pixels);
-
-  // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
-  void UpdateWMUserTime(XEvent* event);
 
   // If mapped, sends a message to the window manager to enable or disable the
   // states |state1| and |state2|.  Otherwise, the states will be enabled or

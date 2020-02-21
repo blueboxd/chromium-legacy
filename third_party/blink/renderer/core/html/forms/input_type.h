@@ -145,6 +145,8 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
   virtual String BadInputText() const;
   virtual String RangeOverflowText(const Decimal& maximum) const;
   virtual String RangeUnderflowText(const Decimal& minimum) const;
+  virtual String ReversedRangeOutOfRangeText(const Decimal& minimum,
+                                             const Decimal& maximum) const;
   virtual String RangeInvalidText(const Decimal& minimum,
                                   const Decimal& maximum) const;
   virtual String TypeMismatchText() const;
@@ -247,6 +249,11 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
                             const Decimal& minimum_default,
                             const Decimal& maximum_default,
                             const StepRange::StepDescription&) const;
+  StepRange CreateReversibleStepRange(AnyStepHandling,
+                                      const Decimal& step_base_default,
+                                      const Decimal& minimum_default,
+                                      const Decimal& maximum_default,
+                                      const StepRange::StepDescription&) const;
   void AddWarningToConsole(const char* message_format,
                            const String& value) const;
 
@@ -258,6 +265,13 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
                  AnyStepHandling,
                  TextFieldEventBehavior,
                  ExceptionState&);
+
+  StepRange CreateStepRange(AnyStepHandling,
+                            const Decimal& step_base_default,
+                            const Decimal& minimum_default,
+                            const Decimal& maximum_default,
+                            const StepRange::StepDescription&,
+                            bool supports_reversed_range) const;
 
   Member<HTMLInputElement> element_;
 

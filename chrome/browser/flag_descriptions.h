@@ -904,6 +904,9 @@ extern const char kPolicyAtomicGroupsEnabledDescription[];
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
 
+extern const char kPrintJobManagementAppName[];
+extern const char kPrintJobManagementAppDescription[];
+
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
 

@@ -44,7 +44,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
-#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -2717,36 +2716,6 @@ void WebViewImpl::ResetScrollAndScaleState() {
   }
 
   GetPageScaleConstraintsSet().SetNeedsReset(true);
-}
-
-void WebViewImpl::PerformPluginAction(const PluginAction& action,
-                                      const gfx::Point& location) {
-  // FIXME: Location is probably in viewport coordinates
-  HitTestResult result =
-      HitTestResultForRootFramePos(PhysicalOffset(IntPoint(location)));
-  Node* node = result.InnerNode();
-  if (!IsA<HTMLObjectElement>(*node) && !IsA<HTMLEmbedElement>(*node))
-    return;
-
-  LayoutObject* object = node->GetLayoutObject();
-  if (object && object->IsLayoutEmbeddedContent()) {
-    WebPluginContainerImpl* plugin_view =
-        ToLayoutEmbeddedContent(object)->Plugin();
-    if (plugin_view) {
-      switch (action.type) {
-        case PluginAction::kRotate90Clockwise:
-          plugin_view->Plugin()->RotateView(
-              WebPlugin::kRotationType90Clockwise);
-          break;
-        case PluginAction::kRotate90Counterclockwise:
-          plugin_view->Plugin()->RotateView(
-              WebPlugin::kRotationType90Counterclockwise);
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
-  }
 }
 
 void WebViewImpl::AudioStateChanged(bool is_audio_playing) {

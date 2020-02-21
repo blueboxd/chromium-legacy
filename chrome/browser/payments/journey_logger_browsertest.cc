@@ -3,126 +3,40 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
-#include "chrome/browser/payments/personal_data_manager_test_util.h"
-#include "chrome/test/base/chrome_test_utils.h"
-#include "chrome/test/payments/payment_request_test_controller.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/test_event_waiter.h"
-#include "components/network_session_configurator/common/network_switches.h"
-#include "components/payments/content/service_worker_payment_app_finder.h"
+#include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/core/journey_logger.h"
-#include "components/payments/core/test_payment_manifest_downloader.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test_utils.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_source.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/test/base/in_process_browser_test.h"
-#endif
 
 namespace payments {
-namespace {
 
-autofill::CreditCard GetCardWithBillingAddress(
-    const autofill::AutofillProfile& profile) {
-  autofill::CreditCard card = autofill::test::GetCreditCard();
-  card.set_billing_address_id(profile.guid());
-  return card;
-}
-
-}  // namespace
-
-class JourneyLoggerTest : public PlatformBrowserTest,
-                          public PaymentRequestTestObserver {
+class JourneyLoggerTest : public PaymentRequestPlatformBrowserTestBase {
  public:
-  // PaymentRequestTestObserver events that can be waited on by the EventWaiter.
-  enum TestEvent : int {
-    SHOW_APPS_READY,
-  };
+  JourneyLoggerTest() : gpay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-  JourneyLoggerTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        gpay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    test_controller_.SetObserver(this);
-  }
-
-  ~JourneyLoggerTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // HTTPS server only serves a valid cert for localhost, so this is needed to
-    // load pages from the fake "google.com" without an interstitial.
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
+  ~JourneyLoggerTest() override = default;
 
   void PreRunTestOnMainThread() override {
-    PlatformBrowserTest::PreRunTestOnMainThread();
-
+    PaymentRequestPlatformBrowserTestBase::PreRunTestOnMainThread();
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void SetUpOnMainThread() override {
-    // Map all out-going DNS lookups to the local server. This must be used in
-    // conjunction with switches::kIgnoreCertificateErrors to work.
-    host_resolver()->AddRule("*", "127.0.0.1");
-
+    PaymentRequestPlatformBrowserTestBase::SetUpOnMainThread();
     gpay_server_.ServeFilesFromSourceDirectory(
         "components/test/data/payments/google.com/");
     ASSERT_TRUE(gpay_server_.Start());
 
     // Set up test manifest downloader that knows how to fake origin.
-    content::BrowserContext* context =
-        GetActiveWebContents()->GetBrowserContext();
-    auto downloader = std::make_unique<TestDownloader>(
-        content::BrowserContext::GetDefaultStoragePartition(context)
-            ->GetURLLoaderFactoryForBrowserProcess());
-    downloader->AddTestServerURL("https://google.com/",
-                                 gpay_server_.GetURL("google.com", "/"));
-    ServiceWorkerPaymentAppFinder::GetInstance()
-        ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
-            std::move(downloader));
+    const std::string method_name = "google.com";
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting(
+        {{method_name, &gpay_server_}});
 
-    https_server_.ServeFilesFromSourceDirectory(
-        "components/test/data/payments");
-    ASSERT_TRUE(https_server_.Start());
-
-    main_frame_url_ = https_server_.GetURL("/journey_logger_test.html");
+    main_frame_url_ = https_server()->GetURL("/journey_logger_test.html");
     ASSERT_TRUE(
         content::NavigateToURL(GetActiveWebContents(), main_frame_url_));
-
-    test_controller_.SetUpOnMainThread();
-    PlatformBrowserTest::SetUpOnMainThread();
   }
-
-  content::WebContents* GetActiveWebContents() {
-    return chrome_test_utils::GetActiveWebContents(this);
-  }
-
-  // PaymentRequestTestObserver implementation.
-  void OnShowAppsReady() override {
-    if (event_waiter_)
-      event_waiter_->OnEvent(TestEvent::SHOW_APPS_READY);
-  }
-
-  void ResetEventWaiterForSequence(std::list<TestEvent> event_sequence) {
-    event_waiter_ = std::make_unique<autofill::EventWaiter<TestEvent>>(
-        std::move(event_sequence));
-  }
-
-  void WaitForObservedEvent() { event_waiter_->Wait(); }
 
   const GURL& main_frame_url() const { return main_frame_url_; }
 
@@ -130,13 +44,8 @@ class JourneyLoggerTest : public PlatformBrowserTest,
     return test_ukm_recorder_.get();
   }
 
- protected:
-  net::EmbeddedTestServer https_server_;
-
  private:
-  PaymentRequestTestController test_controller_;
   net::EmbeddedTestServer gpay_server_;
-  std::unique_ptr<autofill::EventWaiter<TestEvent>> event_waiter_;
   GURL main_frame_url_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
@@ -146,7 +55,7 @@ class JourneyLoggerTest : public PlatformBrowserTest,
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, NoPaymentMethodSupported) {
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSequence({TestEvent::SHOW_APPS_READY});
+  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 
@@ -162,15 +71,10 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, NoPaymentMethodSupported) {
 }
 
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, BasicCardOnly) {
-  autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
-
+  CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSequence({TestEvent::SHOW_APPS_READY});
+  ResetEventWaiterForSingleEvent(TestEvent::kShowAppsReady);
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 

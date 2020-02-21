@@ -59,6 +59,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
@@ -181,6 +182,19 @@ mojo::ScopedMessagePipeHandle DataURLToMessagePipeHandle(
   mojo::PendingRemote<mojom::blink::Blob> data_url_blob =
       blob_data_handle->CloneBlobRemote();
   return data_url_blob.PassPipe();
+}
+
+HitTestResult HitTestResultForRootFramePos(
+    LocalFrame* main_frame,
+    const PhysicalOffset& pos_in_root_frame) {
+  DCHECK(main_frame->IsMainFrame());
+
+  HitTestLocation location(
+      main_frame->View()->ConvertFromRootFrame(pos_in_root_frame));
+  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  result.SetToShadowHostIfInRestrictedShadowRoot();
+  return result;
 }
 
 }  // namespace
@@ -1969,6 +1983,38 @@ void LocalFrame::ClosePage(
   Loader().DispatchUnloadEvent(nullptr, nullptr);
 
   std::move(completion_callback).Run();
+}
+
+void LocalFrame::PluginActionAt(const gfx::Point& location,
+                                mojom::blink::PluginActionType action) {
+  SECURITY_CHECK(IsMainFrame());
+
+  // TODO(bokan): Location is probably in viewport coordinates
+  HitTestResult result =
+      HitTestResultForRootFramePos(this, PhysicalOffset(IntPoint(location)));
+  Node* node = result.InnerNode();
+  if (!IsA<HTMLObjectElement>(*node) && !IsA<HTMLEmbedElement>(*node))
+    return;
+
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object || !object->IsLayoutEmbeddedContent())
+    return;
+
+  WebPluginContainerImpl* plugin_view =
+      ToLayoutEmbeddedContent(object)->Plugin();
+  if (!plugin_view)
+    return;
+
+  switch (action) {
+    case mojom::blink::PluginActionType::kRotate90Clockwise:
+      plugin_view->Plugin()->RotateView(WebPlugin::kRotationType90Clockwise);
+      return;
+    case mojom::blink::PluginActionType::kRotate90Counterclockwise:
+      plugin_view->Plugin()->RotateView(
+          WebPlugin::kRotationType90Counterclockwise);
+      return;
+  }
+  NOTREACHED();
 }
 
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
 #include "ui/base/wm_role_names_linux.h"
@@ -1083,8 +1084,6 @@ void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
 // by PlatformWindow, which is supposed to use XWindow in Ozone builds. So
 // handling these events is disabled for Ozone.
 void XWindow::ProcessEvent(XEvent* xev) {
-  UpdateWMUserTime(xev);
-
   // We can lose track of the window's position when the window is reparented.
   // When the parent window is moved, we won't get an event, so the window's
   // position relative to the root window will get out-of-sync.  We can re-sync
@@ -1220,15 +1219,15 @@ void XWindow::ProcessEvent(XEvent* xev) {
   }
 }
 
-void XWindow::UpdateWMUserTime(XEvent* xev) {
+void XWindow::UpdateWMUserTime(ui::Event* event) {
   if (!IsActive())
     return;
-
-  ui::EventType type = ui::EventTypeFromXEvent(*xev);
+  DCHECK(event);
+  ui::EventType type = event->type();
   if (type == ui::ET_MOUSE_PRESSED || type == ui::ET_KEY_PRESSED ||
       type == ui::ET_TOUCH_PRESSED) {
-    unsigned long wm_user_time_ms = static_cast<unsigned long>(
-        (ui::EventTimeFromXEvent(*xev) - base::TimeTicks()).InMilliseconds());
+    unsigned long wm_user_time_ms =
+        (event->time_stamp() - base::TimeTicks()).InMilliseconds();
     XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
                     XA_CARDINAL, 32, PropModeReplace,
                     reinterpret_cast<const unsigned char*>(&wm_user_time_ms),

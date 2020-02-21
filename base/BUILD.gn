@@ -2699,6 +2699,7 @@ test("base_unittests") {
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
     "test/gmock_callback_support_unittest.cc",
+    "test/gmock_move_support_unittest.cc",
     "test/launcher/test_launcher_unittest.cc",
     "test/metrics/histogram_enum_reader_unittest.cc",
     "test/metrics/histogram_tester_unittest.cc",

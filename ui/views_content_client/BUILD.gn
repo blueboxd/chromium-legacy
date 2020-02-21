@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//ui/ozone/ozone.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
@@ -75,5 +76,9 @@ jumbo_component("views_content_client") {
       "//ui/aura:test_support",
       "//ui/wm:test_support",
     ]
+  }
+
+  if (use_x11 || ozone_platform_x11) {
+    configs += [ "//build/config/linux:x11" ]
   }
 }

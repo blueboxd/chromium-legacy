@@ -206,6 +206,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kPrinterStatus{"PrinterStatus",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable the Print Job Management App.
+const base::Feature kPrintJobManagementApp{"PrintJobManagementApp",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable quick answers.
 const base::Feature kQuickAnswers{"QuickAnswers",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

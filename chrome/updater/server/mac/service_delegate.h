@@ -13,7 +13,7 @@ namespace updater {
 class UpdateService;
 }
 
-@interface UpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate> {
+@interface CRUUpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate> {
   std::unique_ptr<updater::UpdateService> _service;
 }
 

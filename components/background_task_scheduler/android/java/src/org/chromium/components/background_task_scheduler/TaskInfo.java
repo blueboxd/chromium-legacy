@@ -18,6 +18,7 @@ import java.lang.annotation.RetentionPolicy;
  * parameters, such as whether a special type of network is available.
  */
 public class TaskInfo {
+    public static final String SERIALIZED_TASK_EXTRAS = "serialized_task_extras";
     private static final String TAG = "BkgrdTaskInfo";
 
     /**

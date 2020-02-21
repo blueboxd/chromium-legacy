@@ -118,13 +118,20 @@ public class AwVariationsSeedFetcher extends JobService {
         }
 
         VariationsUtils.debugLog("Scheduling seed download job");
-        ComponentName thisComponent = new ComponentName(
-                ContextUtils.getApplicationContext(), AwVariationsSeedFetcher.class);
+        Context context = ContextUtils.getApplicationContext();
+        ComponentName thisComponent = new ComponentName(context, AwVariationsSeedFetcher.class);
         JobInfo job = new JobInfo.Builder(JOB_ID, thisComponent)
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setRequiresCharging(true)
                 .build();
-        if (scheduler.schedule(job) != JobScheduler.RESULT_SUCCESS) {
+        if (scheduler.schedule(job) == JobScheduler.RESULT_SUCCESS) {
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(context);
+            metrics.setLastEnqueueTime(currentTimeMillis());
+            if (!metrics.writeMetricsToVariationsSharedPreferences(context)) {
+                Log.e(TAG, "Failed to write variations SharedPreferences to disk");
+            }
+        } else {
             Log.e(TAG, "Failed to schedule job");
         }
     }
@@ -180,8 +187,16 @@ public class AwVariationsSeedFetcher extends JobService {
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(context);
             metrics.setSeedFetchTime(endTime - startTime);
+            if (metrics.hasLastEnqueueTime()) {
+                metrics.setJobQueueTime(startTime - metrics.getLastEnqueueTime());
+            }
+            if (metrics.hasLastJobStartTime()) {
+                metrics.setJobInterval(startTime - metrics.getLastJobStartTime());
+            }
+            metrics.clearLastEnqueueTime();
+            metrics.setLastJobStartTime(startTime);
             if (!metrics.writeMetricsToVariationsSharedPreferences(context)) {
-                Log.e(TAG, "Failed to write VariationsSharedPreferences to disk");
+                Log.e(TAG, "Failed to write variations SharedPreferences to disk");
             }
         }
     }

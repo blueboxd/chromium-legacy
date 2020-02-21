@@ -127,6 +127,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawArrays(
 error::Error GLES2DecoderPassthroughImpl::HandleDrawArraysIndirect(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext()) {
+    return error::kUnknownCommand;
+  }
   const volatile gles2::cmds::DrawArraysIndirect& c =
       *static_cast<const volatile gles2::cmds::DrawArraysIndirect*>(cmd_data);
   GLenum mode = static_cast<GLenum>(c.mode);
@@ -153,6 +156,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElements(
 error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsIndirect(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext()) {
+    return error::kUnknownCommand;
+  }
   const volatile gles2::cmds::DrawElementsIndirect& c =
       *static_cast<const volatile gles2::cmds::DrawElementsIndirect*>(cmd_data);
   GLenum mode = static_cast<GLenum>(c.mode);

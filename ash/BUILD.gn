@@ -1887,6 +1887,8 @@ test("ash_unittests") {
     "shelf/test/overview_animation_waiter.h",
     "shelf/test/shelf_layout_manager_test_base.cc",
     "shelf/test/shelf_layout_manager_test_base.h",
+    "shelf/test/widget_animation_smoothness_inspector.cc",
+    "shelf/test/widget_animation_smoothness_inspector.h",
     "shelf/test/widget_animation_waiter.cc",
     "shelf/test/widget_animation_waiter.h",
     "shell_state_unittest.cc",

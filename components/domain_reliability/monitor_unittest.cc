@@ -40,7 +40,7 @@ scoped_refptr<net::HttpResponseHeaders> MakeHttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers));
 }
 
-size_t CountQueuedBeacons(DomainReliabilityContext* context) {
+size_t CountQueuedBeacons(const DomainReliabilityContext* context) {
   BeaconVector beacons;
   context->GetQueuedBeaconsForTesting(&beacons);
   return beacons.size();
@@ -83,16 +83,24 @@ class DomainReliabilityMonitorTest : public testing::Test {
     return request;
   }
 
-  void OnRequestLegComplete(const RequestInfo& info) {
-    monitor_.OnRequestLegComplete(info);
+  RequestInfo MakeFailedRequest(const GURL& url) {
+    RequestInfo request = MakeRequestInfo();
+    request.url = url;
+    request.net_error = net::ERR_CONNECTION_RESET;
+    return request;
   }
 
-  DomainReliabilityContext* CreateAndAddContext() {
+  void OnRequestLegComplete(const RequestInfo& info) {
+    monitor_.OnRequestLegCompleteForTesting(info);
+  }
+
+  const DomainReliabilityContext* CreateAndAddContext() {
     return monitor_.AddContextForTesting(MakeTestConfig());
   }
 
-  DomainReliabilityContext* CreateAndAddContextForOrigin(const GURL& origin,
-                                                         bool wildcard) {
+  const DomainReliabilityContext* CreateAndAddContextForOrigin(
+      const GURL& origin,
+      bool wildcard) {
     std::unique_ptr<DomainReliabilityConfig> config(
         MakeTestConfigWithOrigin(origin));
     config->include_subdomains = wildcard;
@@ -112,7 +120,7 @@ TEST_F(DomainReliabilityMonitorTest, Create) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, NoContext) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://no-context/");
@@ -122,7 +130,7 @@ TEST_F(DomainReliabilityMonitorTest, NoContext) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -134,7 +142,7 @@ TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, GoAwayWithPortMigrationDetected) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -146,7 +154,7 @@ TEST_F(DomainReliabilityMonitorTest, GoAwayWithPortMigrationDetected) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, ServerFailure) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -159,7 +167,7 @@ TEST_F(DomainReliabilityMonitorTest, ServerFailure) {
 
 // Make sure the monitor does not log requests that did not access the network.
 TEST_F(DomainReliabilityMonitorTest, DidNotAccessNetwork) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -171,7 +179,7 @@ TEST_F(DomainReliabilityMonitorTest, DidNotAccessNetwork) {
 
 // Make sure the monitor does not log requests that don't send cookies.
 TEST_F(DomainReliabilityMonitorTest, DoNotSendCookies) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -183,7 +191,7 @@ TEST_F(DomainReliabilityMonitorTest, DoNotSendCookies) {
 
 // Make sure the monitor does not log a network-local error.
 TEST_F(DomainReliabilityMonitorTest, LocalError) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -195,7 +203,7 @@ TEST_F(DomainReliabilityMonitorTest, LocalError) {
 
 // Make sure the monitor does not log the proxy's IP if one was used.
 TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -217,7 +225,7 @@ TEST_F(DomainReliabilityMonitorTest,
        NoCachedIPFromSuccessfulRevalidationRequest) {
   std::unique_ptr<DomainReliabilityConfig> config = MakeTestConfig();
   config->success_sample_rate = 1.0;
-  DomainReliabilityContext* context =
+  const DomainReliabilityContext* context =
       monitor_.AddContextForTesting(std::move(config));
 
   RequestInfo request = MakeRequestInfo();
@@ -234,7 +242,7 @@ TEST_F(DomainReliabilityMonitorTest,
 // Make sure the monitor does not log the cached IP returned with a failed
 // cache revalidation request.
 TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -248,14 +256,10 @@ TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
   EXPECT_TRUE(beacons[0]->server_ip.empty());
 }
 
-TEST_F(DomainReliabilityMonitorTest, AtLeastOneBakedInConfig) {
-  DCHECK(kBakedInJsonConfigs[0] != nullptr);
-}
-
 // Make sure the monitor does log uploads, even though they have
 // LOAD_DO_NOT_SEND_COOKIES.
 TEST_F(DomainReliabilityMonitorTest, Upload) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");
@@ -269,30 +273,76 @@ TEST_F(DomainReliabilityMonitorTest, Upload) {
 }
 
 // Will fail when baked-in configs expire, as a reminder to update them.
-// (Contact juliatuttle@chromium.org if this starts failing.)
-TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
-  // AddBakedInConfigs DCHECKs that the baked-in configs parse correctly, so
-  // this unittest will fail if someone tries to add an invalid config to the
-  // source tree.
+// (File a bug in Internals>Network>ReportingAndNEL if this starts failing.)
+TEST_F(DomainReliabilityMonitorTest, BakedInAndGoogleConfigs) {
+  // AddBakedInConfigs DCHECKs that the baked-in configs parse correctly and are
+  // valid, so this unittest will fail if someone tries to add an invalid config
+  // to the source tree.
   monitor_.AddBakedInConfigs();
 
   // Count the number of baked-in configs.
-  size_t num_baked_in_configs = 0;
-  for (const char* const* p = kBakedInJsonConfigs; *p; ++p)
+  size_t num_baked_in_configs = 0u;
+  for (const char* const* p = kBakedInJsonConfigs; *p; ++p) {
     ++num_baked_in_configs;
+  }
+  EXPECT_GT(num_baked_in_configs, 0u);
+
+  EXPECT_EQ(num_baked_in_configs, monitor_.contexts_size_for_testing());
 
   // Also count the Google configs stored in abbreviated form.
-  std::vector<std::unique_ptr<DomainReliabilityConfig>> google_configs;
-  GetAllGoogleConfigs(&google_configs);
+  std::vector<std::unique_ptr<const DomainReliabilityConfig>> google_configs =
+      GetAllGoogleConfigsForTesting();
   size_t num_google_configs = google_configs.size();
 
-  // The monitor should have contexts for all of the baked-in configs.
+  for (std::unique_ptr<const DomainReliabilityConfig>& config :
+       google_configs) {
+    monitor_.AddContextForTesting(std::move(config));
+  }
+
+  // The monitor should have contexts for all of the baked-in configs and Google
+  // configs. This also ensures that the configs have unique hostnames, i.e.
+  // none of them have overwritten each other.
   EXPECT_EQ(num_baked_in_configs + num_google_configs,
             monitor_.contexts_size_for_testing());
 }
 
+// Test that Google configs are created only when needed.
+TEST_F(DomainReliabilityMonitorTest, GoogleConfigOnDemand) {
+  ASSERT_EQ(0u, monitor_.contexts_size_for_testing());
+
+  // Failed request is required here to ensure the beacon is queued (since all
+  // the Google configs have a 1.0 sample rate for failures, but a much lower
+  // sample rate for successes).
+  OnRequestLegComplete(MakeFailedRequest(GURL("https://google.ac")));
+  EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
+  const DomainReliabilityContext* google_domain_context =
+      monitor_.LookupContextForTesting("google.ac");
+  EXPECT_TRUE(google_domain_context);
+  EXPECT_EQ(1u, CountQueuedBeacons(google_domain_context));
+
+  // This domain generates a config specific to the www subdomain.
+  OnRequestLegComplete(MakeFailedRequest(GURL("https://www.google.ac")));
+  EXPECT_EQ(2u, monitor_.contexts_size_for_testing());
+  const DomainReliabilityContext* www_google_domain_context =
+      monitor_.LookupContextForTesting("www.google.ac");
+  EXPECT_TRUE(www_google_domain_context);
+  EXPECT_EQ(1u, CountQueuedBeacons(www_google_domain_context));
+
+  // Some other subdomain does not generate a new context because the google.ac
+  // config includes subdomains. It queues a beacon for the already-existing
+  // context.
+  ASSERT_TRUE(google_domain_context->config().include_subdomains);
+  OnRequestLegComplete(MakeFailedRequest(GURL("https://subdomain.google.ac")));
+  EXPECT_EQ(2u, monitor_.contexts_size_for_testing());
+  EXPECT_EQ(2u, CountQueuedBeacons(google_domain_context));
+
+  // A domain with no Google config does not generate a new context.
+  OnRequestLegComplete(MakeFailedRequest(GURL("https://not-google.com")));
+  EXPECT_EQ(2u, monitor_.contexts_size_for_testing());
+}
+
 TEST_F(DomainReliabilityMonitorTest, ClearBeacons) {
-  DomainReliabilityContext* context = CreateAndAddContext();
+  const DomainReliabilityContext* context = CreateAndAddContext();
 
   // Initially the monitor should have just the test context, with no beacons.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
@@ -319,14 +369,14 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeaconsWithFilter) {
   GURL origin1("http://example.com/");
   GURL origin2("http://example.org/");
 
-  DomainReliabilityContext* context1 =
+  const DomainReliabilityContext* context1 =
       CreateAndAddContextForOrigin(origin1, false);
   RequestInfo request = MakeRequestInfo();
   request.url = origin1;
   request.net_error = net::ERR_CONNECTION_RESET;
   OnRequestLegComplete(request);
 
-  DomainReliabilityContext* context2 =
+  const DomainReliabilityContext* context2 =
       CreateAndAddContextForOrigin(origin2, false);
   request = MakeRequestInfo();
   request.url = origin2;
@@ -380,7 +430,7 @@ TEST_F(DomainReliabilityMonitorTest, ClearContextsWithFilter) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSelf) {
-  DomainReliabilityContext* context =
+  const DomainReliabilityContext* context =
       CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
 
   RequestInfo request = MakeRequestInfo();
@@ -392,7 +442,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSelf) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSubdomain) {
-  DomainReliabilityContext* context =
+  const DomainReliabilityContext* context =
       CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
 
   RequestInfo request = MakeRequestInfo();
@@ -404,7 +454,7 @@ TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSubdomain) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, WildcardDoesntMatchSubsubdomain) {
-  DomainReliabilityContext* context =
+  const DomainReliabilityContext* context =
       CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
 
   RequestInfo request = MakeRequestInfo();
@@ -416,9 +466,9 @@ TEST_F(DomainReliabilityMonitorTest, WildcardDoesntMatchSubsubdomain) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToParentWildcard) {
-  DomainReliabilityContext* context1 =
+  const DomainReliabilityContext* context1 =
       CreateAndAddContextForOrigin(GURL("https://test.wildcard/"), false);
-  DomainReliabilityContext* context2 =
+  const DomainReliabilityContext* context2 =
       CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
 
   RequestInfo request = MakeRequestInfo();
@@ -432,9 +482,9 @@ TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToParentWildcard) {
 
 TEST_F(DomainReliabilityMonitorTest,
     WildcardPrefersSelfWildcardToParentWildcard) {
-  DomainReliabilityContext* context1 =
+  const DomainReliabilityContext* context1 =
       CreateAndAddContextForOrigin(GURL("https://test.wildcard/"), true);
-  DomainReliabilityContext* context2 =
+  const DomainReliabilityContext* context2 =
       CreateAndAddContextForOrigin(GURL("https://wildcard/"), true);
 
   RequestInfo request = MakeRequestInfo();

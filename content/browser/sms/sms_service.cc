@@ -153,8 +153,12 @@ void SmsService::OnConfirm() {
 
   prompt_open_ = false;
 
-  if (callback_)
-    Process(SmsStatus::kSuccess, one_time_code_, sms_);
+  if (!callback_) {
+    // Cleanup since request has been aborted while prompt is up.
+    CleanUp();
+    return;
+  }
+  Process(SmsStatus::kSuccess, one_time_code_, sms_);
 }
 
 void SmsService::OnCancel() {
@@ -166,8 +170,12 @@ void SmsService::OnCancel() {
 
   prompt_open_ = false;
 
-  if (callback_)
-    Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
+  if (!callback_) {
+    // Cleanup since request has been aborted while prompt is up.
+    CleanUp();
+    return;
+  }
+  Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
 }
 
 void SmsService::CleanUp() {

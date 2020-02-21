@@ -30,7 +30,8 @@ namespace domain_reliability {
 
 class DomainReliabilityBrowserTest : public InProcessBrowserTest {
  public:
-  DomainReliabilityBrowserTest() {
+  DomainReliabilityBrowserTest()
+      : test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     net::URLRequestFailedJob::AddUrlHandler();
   }
 
@@ -51,13 +52,22 @@ class DomainReliabilityBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    test_server()->AddDefaultHandlers(GetChromeTestDataDir());
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
   network::mojom::NetworkContext* GetNetworkContext() {
     return content::BrowserContext::GetDefaultStoragePartition(
                browser()->profile())
         ->GetNetworkContext();
   }
 
+  net::EmbeddedTestServer* test_server() { return &test_server_; }
+
  private:
+  net::EmbeddedTestServer test_server_;
+
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityBrowserTest);
 };
 
@@ -112,34 +122,24 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
   base::RunLoop run_loop;
 
-  net::test_server::EmbeddedTestServer test_server(
-      (net::test_server::EmbeddedTestServer::TYPE_HTTPS));
-
-  // This is cribbed from //chrome/test/ppapi/ppapi_test.cc; it shouldn't
-  // matter, as we don't actually use any of the handlers that access the
-  // filesystem.
-  base::FilePath document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-  test_server.AddDefaultHandlers(document_root);
-
   // Register a same-origin collector to receive report uploads so we can check
   // the full path. (Domain Reliability elides the path for privacy reasons when
   // uploading to non-same-origin collectors.)
   int request_count = 0;
   std::string last_request_content;
-  test_server.RegisterRequestHandler(
+  test_server()->RegisterRequestHandler(
       base::Bind(&TestRequestHandler, &request_count, &last_request_content,
                  run_loop.QuitClosure()));
 
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server()->Start());
 
-  GURL error_url = test_server.GetURL("/close-socket");
-  GURL upload_url = test_server.GetURL(kUploadPath);
+  GURL error_url = test_server()->GetURL("/close-socket");
+  GURL upload_url = test_server()->GetURL(kUploadPath);
 
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     GetNetworkContext()->AddDomainReliabilityContextForTesting(
-        test_server.base_url().GetOrigin(), upload_url);
+        test_server()->base_url().GetOrigin(), upload_url);
   }
 
   // Trigger an error.
@@ -175,9 +175,9 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(test_server()->Start());
 
-  GURL upload_url = embedded_test_server()->GetURL("/hung");
+  GURL upload_url = test_server()->GetURL("/hung");
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     GetNetworkContext()->AddDomainReliabilityContextForTesting(
@@ -200,9 +200,9 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
 // Ensures that there's no crash at NetworkContext shutdown if there are
 // outstanding URLLoaders.
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, RequestAtShutdown) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(test_server()->Start());
 
-  GURL hung_url = embedded_test_server()->GetURL("/hung");
+  GURL hung_url = test_server()->GetURL("/hung");
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     GetNetworkContext()->AddDomainReliabilityContextForTesting(hung_url,

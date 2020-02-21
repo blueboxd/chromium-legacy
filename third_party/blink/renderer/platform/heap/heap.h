@@ -641,8 +641,8 @@ Address ThreadHeap::Allocate(size_t size) {
 
 inline bool ThreadHeap::IsInLastAllocatedRegion(Address address) const {
   return last_allocated_region_.start <= address &&
-         address <=
-             last_allocated_region_.start + last_allocated_region_.length;
+         address <
+             (last_allocated_region_.start + last_allocated_region_.length);
 }
 
 inline void ThreadHeap::SetLastAllocatedRegion(Address start, size_t length) {

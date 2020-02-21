@@ -303,7 +303,8 @@
     "bases": ["fast/scrolling/scrollbars"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text"]
+             "--enable-prefer-compositing-to-lcd-text",
+             "--disable-features=CompositorThreadedScrollbarScrolling"]
   },
   {
     "prefix": "smooth_compositor_threaded_scrollbar_scrolling",

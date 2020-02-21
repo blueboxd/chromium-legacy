@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
@@ -100,6 +101,13 @@ interface ServiceWorkerContainerHost {
   // The browser process can possibly coalesce hints for the same service
   // worker into a single update.
   HintToUpdateServiceWorker();
+
+  // Ensures that controller Service Worker has access to specified |files|.
+  // This is necessary in cases where controller Service Worker is being run in
+  // a different process than controllee initiating the network request.
+  // The implementation must validate that the caller already has access to
+  // |files|.
+  EnsureFileAccess(array<mojo_base.mojom.FilePath> files) => ();
 
   // Informs the host that the context is execution ready.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag

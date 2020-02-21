@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeoutException;
 public class AwVariationsSeedFetcherTest {
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
     private static final long DOWNLOAD_DURATION = 10;
+    private static final long JOB_DELAY = 2000;
     private static final long START_TIME = 100;
 
     // A test JobScheduler which only holds one job, and never does anything with it.
@@ -306,6 +308,82 @@ public class AwVariationsSeedFetcherTest {
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
             Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
+            Assert.assertEquals(START_TIME, metrics.getLastJobStartTime());
+            Assert.assertFalse(metrics.hasLastEnqueueTime());
+            Assert.assertFalse(metrics.hasJobInterval());
+            Assert.assertFalse(metrics.hasJobQueueTime());
+        } finally {
+            VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
+        }
+    }
+
+    // Tests that metrics are written to SharedPreferences when there is information about the
+    // previous job scheduling, but not the previous download.
+    @Test
+    @MediumTest
+    public void testMetricsWrittenToPrefsWithPreviousJobData()
+            throws IOException, TimeoutException {
+        try {
+            AwVariationsSeedFetcher.setTestClock(mClock);
+            mClock.timestamp = START_TIME;
+            AwVariationsSeedFetcher.scheduleIfNeeded();
+            mScheduler.assertScheduled();
+
+            VariationsServiceMetricsHelper initialMetrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(START_TIME, initialMetrics.getLastEnqueueTime());
+
+            mClock.timestamp += JOB_DELAY;
+            TestAwVariationsSeedFetcher fetcher = new TestAwVariationsSeedFetcher();
+            fetcher.onStartJob(null);
+            fetcher.helper.waitForCallback(
+                    "Timeout out waiting for AwVariationsSeedFetcher to call downloadContent", 0);
+
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
+            Assert.assertEquals(START_TIME + JOB_DELAY, metrics.getLastJobStartTime());
+            Assert.assertEquals(JOB_DELAY, metrics.getJobQueueTime());
+            Assert.assertFalse(metrics.hasLastEnqueueTime());
+            Assert.assertFalse(metrics.hasJobInterval());
+        } finally {
+            VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
+            mScheduler.clear();
+        }
+    }
+
+    // Tests that metrics are written to SharedPreferences when there is information about the
+    // previous job scheduling and download.
+    @Test
+    @MediumTest
+    public void testMetricsWrittenToPrefsWithPreviousJobAndFetchData()
+            throws IOException, TimeoutException {
+        long appRunDelay = TimeUnit.DAYS.toMillis(2);
+        try {
+            AwVariationsSeedFetcher.setTestClock(mClock);
+            VariationsServiceMetricsHelper initialMetrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            mClock.timestamp = START_TIME;
+            initialMetrics.setLastJobStartTime(mClock.timestamp);
+            mClock.timestamp += appRunDelay;
+            initialMetrics.setLastEnqueueTime(mClock.timestamp);
+            boolean committed = initialMetrics.writeMetricsToVariationsSharedPreferences(mContext);
+            Assert.assertTrue("Failed to commit initial variations SharedPreferences", committed);
+
+            mClock.timestamp += JOB_DELAY;
+            TestAwVariationsSeedFetcher fetcher = new TestAwVariationsSeedFetcher();
+            fetcher.onStartJob(null);
+            fetcher.helper.waitForCallback(
+                    "Timeout out waiting for AwVariationsSeedFetcher to call downloadContent", 0);
+
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
+            Assert.assertEquals(
+                    START_TIME + appRunDelay + JOB_DELAY, metrics.getLastJobStartTime());
+            Assert.assertEquals(appRunDelay + JOB_DELAY, metrics.getJobInterval());
+            Assert.assertEquals(JOB_DELAY, metrics.getJobQueueTime());
+            Assert.assertFalse(metrics.hasLastEnqueueTime());
         } finally {
             VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
         }

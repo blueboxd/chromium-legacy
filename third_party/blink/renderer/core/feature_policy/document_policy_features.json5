@@ -7,12 +7,14 @@
 
   parameters: {
     // document_policy_name: "FEATURE_NAME" is used to specify the policy name
-    // which gets parsed from the header or the allow attribute.
+    // which gets parsed from the header or the policy attribute.
     document_policy_name: {},
     value_name: {},
-    // valid c++ type strings, e.g. bool, double, float.
+    // value type allowed in mojom::PolicyValueType which is defined in 
+    // third_party/blink/public/mojom/feature_policy/policy_value.mojom.
     value_type: {},
     // valid c++ expression strings, e.g. true/false, 1.0, -1.
+    // or use reserved keyword 'min'/'max'.
     default_value: {},
     // "depends_on" specifies relationship to runtime features defined
     // in "runtime_enabled_features.json5":
@@ -32,7 +34,7 @@
       name: "FontDisplay",
       document_policy_name: "font-display-late-swap",
       value_name: "",
-      value_type: "bool",
+      value_type: "Bool",
       default_value: "true",
       depends_on: ["ExperimentalProductivityFeatures"],
     },
@@ -40,8 +42,8 @@
       name: "UnoptimizedLosslessImages",
       document_policy_name: "unoptimized-lossless-images",
       value_name: "bpp",
-      value_type: "double",
-      default_value: "PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble)",
+      value_type: "DecDouble",
+      default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],
     },
   ],

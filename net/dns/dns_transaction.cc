@@ -983,11 +983,11 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
           !addresses.empty()) {
         // The DoH probe queries don't go through the standard DnsAttempt path,
         // so the ServerStats have not been updated yet.
-        session_->RecordServerSuccess(doh_server_index,
-                                      true /* is_doh_server */);
-        session_->RecordRtt(doh_server_index, true /* is_doh_server */,
-                            false /* is_validated_doh_server */,
-                            base::TimeTicks::Now() - query_start_time, rv);
+        context_->RecordServerSuccess(doh_server_index,
+                                      true /* is_doh_server */, session_.get());
+        context_->RecordRtt(doh_server_index, true /* is_doh_server */,
+                            base::TimeTicks::Now() - query_start_time, rv,
+                            session_.get());
         context_->SetProbeSuccess(doh_server_index, true /* success */,
                                   session_.get());
         probe_stats_list_[doh_server_index] = nullptr;
@@ -1019,10 +1019,10 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
 
 // Implements DnsTransaction. Configuration is supplied by DnsSession.
 // The suffix list is built according to the DnsConfig from the session.
-// The timeout for each DnsUDPAttempt is given by DnsSession::NextTimeout.
-// The first server to attempt on each query is given by
-// DnsSession::NextFirstServerIndex, and the order is round-robin afterwards.
-// Each server is attempted DnsConfig::attempts times.
+// The timeout for each DnsUDPAttempt is given by
+// ResolveContext::NextClassicTimeout. The first server to attempt on each query
+// is given by ResolveContext::NextFirstServerIndex, and the order is
+// round-robin afterwards. Each server is attempted DnsConfig::attempts times.
 class DnsTransactionImpl : public DnsTransaction,
                            public base::SupportsWeakPtr<DnsTransactionImpl> {
  public:
@@ -1208,7 +1208,8 @@ class DnsTransactionImpl : public DnsTransaction,
     size_t non_doh_server_index =
         (first_server_index_ + attempt_number) % config.nameservers.size();
     // Skip over known failed servers.
-    non_doh_server_index = session_->ServerIndexToUse(non_doh_server_index);
+    non_doh_server_index = resolve_context_->ClassicServerIndexToUse(
+        non_doh_server_index, session_.get());
 
     std::unique_ptr<DnsSession::SocketLease> lease =
         session_->AllocateSocket(non_doh_server_index, net_log_.source());
@@ -1231,8 +1232,8 @@ class DnsTransactionImpl : public DnsTransaction,
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {
-      base::TimeDelta timeout =
-          session_->NextTimeout(non_doh_server_index, attempt_number);
+      base::TimeDelta timeout = resolve_context_->NextClassicTimeout(
+          non_doh_server_index, attempt_number, session_.get());
       timer_.Start(FROM_HERE, timeout, this, &DnsTransactionImpl::OnTimeout);
     }
     return AttemptResult(rv, attempt);
@@ -1266,8 +1267,8 @@ class DnsTransactionImpl : public DnsTransaction,
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {
-      base::TimeDelta timeout =
-          session_->NextDohTimeout(doh_server_index.value());
+      base::TimeDelta timeout = resolve_context_->NextDohTimeout(
+          doh_server_index.value(), session_.get());
       timer_.Start(FROM_HERE, timeout, this, &DnsTransactionImpl::OnTimeout);
     }
     return AttemptResult(rv, attempts_.back().get());
@@ -1322,7 +1323,8 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.BeginEventWithStringParams(NetLogEventType::DNS_TRANSACTION_QUERY,
                                         "qname", dotted_qname);
 
-    first_server_index_ = session_->FirstServerIndex(secure_);
+    first_server_index_ =
+        resolve_context_->FirstServerIndex(secure_, session_.get());
     attempts_.clear();
     had_tcp_attempt_ = false;
     return MakeAttempt();
@@ -1335,12 +1337,9 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK_LT(attempt_number, attempts_.size());
     const DnsAttempt* attempt = attempts_[attempt_number].get();
     if (record_rtt && attempt->GetResponse()) {
-      bool is_validated_doh_server =
-          secure_ && resolve_context_->GetDohServerAvailability(
-                         attempt->server_index(), session_.get());
-      session_->RecordRtt(attempt->server_index(), secure_ /* is_doh_server */,
-                          is_validated_doh_server,
-                          base::TimeTicks::Now() - start, rv);
+      resolve_context_->RecordRtt(
+          attempt->server_index(), secure_ /* is_doh_server */,
+          base::TimeTicks::Now() - start, rv, session_.get());
     }
     if (callback_.is_null())
       return;
@@ -1381,16 +1380,18 @@ class DnsTransactionImpl : public DnsTransaction,
 
       switch (result.rv) {
         case OK:
-          session_->RecordServerSuccess(result.attempt->server_index(),
-                                        secure_ /* is_doh_server */);
+          resolve_context_->RecordServerSuccess(result.attempt->server_index(),
+                                                secure_ /* is_doh_server */,
+                                                session_.get());
           net_log_.EndEventWithNetErrorCode(
               NetLogEventType::DNS_TRANSACTION_QUERY, result.rv);
           DCHECK(result.attempt);
           DCHECK(result.attempt->GetResponse());
           return result;
         case ERR_NAME_NOT_RESOLVED:
-          session_->RecordServerSuccess(result.attempt->server_index(),
-                                        secure_ /* is_doh_server */);
+          resolve_context_->RecordServerSuccess(result.attempt->server_index(),
+                                                secure_ /* is_doh_server */,
+                                                session_.get());
           net_log_.EndEventWithNetErrorCode(
               NetLogEventType::DNS_TRANSACTION_QUERY, result.rv);
           // Try next suffix. Check that qnames_ isn't already empty first,
@@ -1408,9 +1409,9 @@ class DnsTransactionImpl : public DnsTransaction,
         case ERR_CONNECTION_REFUSED:
         case ERR_DNS_TIMED_OUT:
           if (result.attempt) {
-            session_->RecordServerFailure(result.attempt->server_index(),
-                                          secure_ /* is_doh_server */,
-                                          resolve_context_);
+            resolve_context_->RecordServerFailure(
+                result.attempt->server_index(), secure_ /* is_doh_server */,
+                session_.get());
           }
           if (MoreAttemptsAllowed()) {
             result = MakeAttempt();
@@ -1431,9 +1432,9 @@ class DnsTransactionImpl : public DnsTransaction,
           if (result.attempt != attempts_.back().get()) {
             // This attempt already timed out. Ignore it.
             DCHECK_GE(result.attempt->server_index(), 0);
-            session_->RecordServerFailure(result.attempt->server_index(),
-                                          secure_ /* is_doh_server */,
-                                          resolve_context_);
+            resolve_context_->RecordServerFailure(
+                result.attempt->server_index(), secure_ /* is_doh_server */,
+                session_.get());
             return AttemptResult(ERR_IO_PENDING, nullptr);
           }
           if (!MoreAttemptsAllowed()) {

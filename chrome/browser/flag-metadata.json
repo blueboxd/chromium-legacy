@@ -3121,6 +3121,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "print-job-management-app",
+    "owners": [ "jimmyxgong", "cros-peripherals@google.com"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "printer-status",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 85

@@ -1347,4 +1347,52 @@ TEST_F(NotificationViewMDTest, AppNameWebNotification) {
             notification_view()->header_row_->app_name_for_testing());
 }
 
+TEST_F(NotificationViewMDTest, ShowProgress) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NOTIFICATION_TYPE_PROGRESS);
+  notification->set_progress(50);
+  UpdateNotificationViews(*notification);
+
+  EXPECT_TRUE(notification_view()
+                  ->header_row_->summary_text_for_testing()
+                  ->GetVisible());
+}
+
+TEST_F(NotificationViewMDTest, ShowTimestamp) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_timestamp(base::Time::Now());
+  UpdateNotificationViews(*notification);
+
+  EXPECT_TRUE(notification_view()
+                  ->header_row_->timestamp_view_for_testing()
+                  ->GetVisible());
+
+  // Expect timestamp view to hide for progress notifications.
+  notification->set_type(NOTIFICATION_TYPE_PROGRESS);
+  notification->set_progress(50);
+  UpdateNotificationViews(*notification);
+  EXPECT_FALSE(notification_view()
+                   ->header_row_->timestamp_view_for_testing()
+                   ->GetVisible());
+}
+
+TEST_F(NotificationViewMDTest, UpdateType) {
+  // Start with a progress notification.
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NOTIFICATION_TYPE_PROGRESS);
+  notification->set_progress(50);
+  UpdateNotificationViews(*notification);
+
+  EXPECT_TRUE(notification_view()
+                  ->header_row_->summary_text_for_testing()
+                  ->GetVisible());
+
+  // Update notification to be a simple notification.
+  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
+  UpdateNotificationViews(*notification);
+  EXPECT_FALSE(notification_view()
+                   ->header_row_->summary_text_for_testing()
+                   ->GetVisible());
+}
+
 }  // namespace message_center

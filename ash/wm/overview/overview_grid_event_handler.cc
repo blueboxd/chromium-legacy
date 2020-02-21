@@ -40,7 +40,8 @@ WallpaperView* GetWallpaperViewForRoot(const aura::Window* root_window) {
 }  // namespace
 
 OverviewGridEventHandler::OverviewGridEventHandler(OverviewGrid* grid)
-    : grid_(grid) {
+    : grid_(grid), overview_session_(grid_->overview_session()) {
+  DCHECK(overview_session_);
   auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
   if (wallpaper_view)
     wallpaper_view->AddPreTargetHandler(this);
@@ -56,11 +57,30 @@ OverviewGridEventHandler::~OverviewGridEventHandler() {
 }
 
 void OverviewGridEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+  // The following can only happen if a user is dragging a window with touch and
+  // then they move the mouse to click on the wallpaper. This is an extreme edge
+  // case, so just exit overview. Note that this is done here instead of on
+  // release like usual, because pressing the mouse while dragging sends out a
+  // ui::GESTURE_END_EVENT which may cause a bad state.
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !overview_session_->CanProcessEvent()) {
+    Shell::Get()->overview_controller()->EndOverview();
+    event->StopPropagation();
+    event->SetHandled();
+    return;
+  }
+
   if (event->type() == ui::ET_MOUSE_RELEASED)
     HandleClickOrTap(event);
 }
 
 void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (!overview_session_->CanProcessEvent()) {
+    event->StopPropagation();
+    event->SetHandled();
+    return;
+  }
+
   switch (event->type()) {
     case ui::ET_GESTURE_TAP: {
       HandleClickOrTap(event);

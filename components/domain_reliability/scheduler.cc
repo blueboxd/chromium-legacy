@@ -73,7 +73,7 @@ DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults() {
 }
 
 DomainReliabilityScheduler::DomainReliabilityScheduler(
-    MockableTime* time,
+    const MockableTime* time,
     size_t num_collectors,
     const Params& params,
     const ScheduleUploadCallback& callback)

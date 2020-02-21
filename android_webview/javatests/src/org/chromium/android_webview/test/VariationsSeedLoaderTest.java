@@ -455,18 +455,28 @@ public class VariationsSeedLoaderTest {
     @MediumTest
     public void testRecordMetricsFromService() throws Exception {
         try {
-            long nineMinutes = TimeUnit.MINUTES.toMillis(9);
+            long nineMinutesMs = TimeUnit.MINUTES.toMillis(9);
+            long twoWeeksMs = TimeUnit.DAYS.toMillis(14);
+            long threeWeeksMs = TimeUnit.DAYS.toMillis(21);
             RecordHistogram.setDisabledForTests(false);
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromBundle(new Bundle());
-            metrics.setSeedFetchTime(nineMinutes);
+            metrics.setJobInterval(threeWeeksMs);
+            metrics.setJobQueueTime(twoWeeksMs);
+            metrics.setSeedFetchTime(nineMinutesMs);
             MockVariationsSeedServer.setMetricsBundle(metrics.toBundle());
 
             runTestLoaderBlocking();
 
+            assertSingleRecordInHistogram(VariationsSeedLoader.DOWNLOAD_JOB_INTERVAL_HISTOGRAM_NAME,
+                    (int) TimeUnit.MILLISECONDS.toMinutes(threeWeeksMs));
             assertSingleRecordInHistogram(
-                    VariationsSeedLoader.DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME, (int) nineMinutes);
+                    VariationsSeedLoader.DOWNLOAD_JOB_QUEUE_TIME_HISTOGRAM_NAME,
+                    (int) TimeUnit.MILLISECONDS.toMinutes(twoWeeksMs));
+            assertSingleRecordInHistogram(
+                    VariationsSeedLoader.DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME,
+                    (int) nineMinutesMs);
         } finally {
             MockVariationsSeedServer.setMetricsBundle(null);
         }

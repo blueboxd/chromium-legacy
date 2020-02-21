@@ -79,21 +79,16 @@ void UpdateConfigForDohUpgrade(DnsConfig* config) {
   }
 }
 
-class DnsClientImpl : public DnsClient,
-                      public NetworkChangeNotifier::ConnectionTypeObserver {
+class DnsClientImpl : public DnsClient {
  public:
   DnsClientImpl(NetLog* net_log,
                 ClientSocketFactory* socket_factory,
                 const RandIntCallback& rand_int_callback)
       : net_log_(net_log),
         socket_factory_(socket_factory),
-        rand_int_callback_(rand_int_callback) {
-    NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  }
+        rand_int_callback_(rand_int_callback) {}
 
-  ~DnsClientImpl() override {
-    NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  }
+  ~DnsClientImpl() override = default;
 
   bool CanUseSecureDnsTransactions() const override {
     const DnsConfig* config = GetEffectiveConfig();
@@ -241,13 +236,6 @@ class DnsClientImpl : public DnsClient,
           new DnsSession(std::move(new_effective_config).value(),
                          std::move(socket_pool), rand_int_callback_, net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_.get());
-    }
-  }
-
-  void OnConnectionTypeChanged(
-      NetworkChangeNotifier::ConnectionType type) override {
-    if (session_) {
-      session_->UpdateTimeouts(type);
     }
   }
 

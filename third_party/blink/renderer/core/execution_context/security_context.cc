@@ -39,38 +39,6 @@
 
 namespace blink {
 
-namespace {
-
-// Bucketize image metrics into percentage in the following fashion:
-// if an image's metrics is 0.1, it will be represented as 1 percent
-// if an image's metrics is 5, it will be represented as 50 percents.
-int BucketizeImageMetrics(double ratio) {
-  int ratio_percent = 10 * ratio;
-  if (ratio_percent < 0)
-    return 0;
-  return ratio_percent > 100 ? 100 : ratio_percent;
-}
-
-inline const char* GetImagePolicyHistogramName(
-    mojom::blink::FeaturePolicyFeature feature) {
-  switch (feature) {
-    case mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages:
-      return "Blink.UseCounter.FeaturePolicy.LossyImageCompression";
-    case mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages:
-      return "Blink.UseCounter.FeaturePolicy.LosslessImageCompression";
-    case mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict:
-      return "Blink.UseCounter.FeaturePolicy.StrictLosslessImageCompression";
-    case mojom::blink::FeaturePolicyFeature::kOversizedImages:
-      return "Blink.UseCounter.FeaturePolicy.ImageDownscalingRatio";
-    default:
-      NOTREACHED();
-      break;
-  }
-  return "";
-}
-
-}  // namespace
-
 // static
 WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
     const InsecureNavigationsSet& set) {
@@ -186,7 +154,6 @@ bool SecurityContext::IsFeatureEnabled(
     PolicyValue threshold_value,
     bool* should_report) const {
   DCHECK(feature_policy_);
-  LogImagePolicies(feature, threshold_value);
   bool feature_policy_result =
       feature_policy_->IsFeatureEnabled(feature, threshold_value);
   bool report_only_feature_policy_result =
@@ -214,34 +181,6 @@ bool SecurityContext::IsFeatureEnabled(
     PolicyValue threshold_value) const {
   DCHECK(document_policy_);
   return document_policy_->IsFeatureEnabled(feature, threshold_value);
-}
-
-void SecurityContext::LogImagePolicies(
-    mojom::blink::FeaturePolicyFeature feature,
-    PolicyValue threshold_value) const {
-  // Log metrics for unoptimized-*-images and oversized-images policies.
-  if ((feature >= mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages &&
-       feature <= mojom::blink::FeaturePolicyFeature::
-                      kUnoptimizedLosslessImagesStrict) ||
-      feature == mojom::blink::FeaturePolicyFeature::kOversizedImages) {
-    // Only log metrics if an image policy is specified.
-    // If an image policy is specified, the policy value would be less than the
-    // max value, otherwise by default the policy value is set to be the max
-    // value.
-    const auto max_value =
-        PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
-    if (!feature_policy_->IsFeatureEnabled(feature, max_value) &&
-        threshold_value < max_value) {
-      STATIC_HISTOGRAM_POINTER_GROUP(
-          GetImagePolicyHistogramName(feature), static_cast<int>(feature),
-          static_cast<int>(mojom::blink::FeaturePolicyFeature::
-                               kUnoptimizedLosslessImagesStrict) +
-              1,
-          Add(BucketizeImageMetrics(threshold_value.DoubleValue())),
-          base::LinearHistogram::FactoryGet(
-              GetImagePolicyHistogramName(feature), 0, 100, 101, 0x1));
-    }
-  }
 }
 
 }  // namespace blink

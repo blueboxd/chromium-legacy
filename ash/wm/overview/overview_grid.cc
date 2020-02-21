@@ -626,8 +626,10 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
     // update the grid bounds if the window being dragged from the top or shelf,
     // the former being handled in TabletModeWindowDragDelegate's destructor.
     base::flat_set<OverviewItem*> ignored_items;
-    if (overview_session_->IsAnyOverviewItemDragged())
-      ignored_items.insert(overview_session_->window_drag_controller()->item());
+    OverviewItem* dragged_item =
+        overview_session_->GetCurrentDraggedOverviewItem();
+    if (dragged_item)
+      ignored_items.insert(dragged_item);
     const gfx::Rect grid_bounds = GetGridBoundsInScreen(
         root_window_,
         split_view_drag_indicators_

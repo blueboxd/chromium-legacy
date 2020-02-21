@@ -28,8 +28,13 @@ class UpdaterImpl
  public:
   UpdaterImpl() = default;
 
-  IFACEMETHODIMP CheckForUpdate(const base::char16* guid) override;
-  IFACEMETHODIMP Update(const base::char16* guid) override;
+  IFACEMETHODIMP CheckForUpdate(const base::char16* app_id) override;
+  IFACEMETHODIMP Register(const base::char16* app_id,
+                          const base::char16* brand_code,
+                          const base::char16* tag,
+                          const base::char16* version,
+                          const base::char16* existence_checker_path) override;
+  IFACEMETHODIMP Update(const base::char16* app_id) override;
 
  private:
   ~UpdaterImpl() override = default;

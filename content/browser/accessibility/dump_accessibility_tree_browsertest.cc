@@ -1600,7 +1600,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
 }
 
 // TODO(crbug.com/423675): AX tree is different for Win7 and Win10.
-#if defined(OS_WIN)
+// (crbug.com/1054901): Test fails on Builder Mac10.12 Tests.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AccessibilityInputDateWithPopupOpen \
   DISABLED_AccessibilityInputDateWithPopupOpen
 #else

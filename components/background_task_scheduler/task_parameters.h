@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BACKGROUND_TASK_SCHEDULER_TASK_PARAMETERS_H_
 #define COMPONENTS_BACKGROUND_TASK_SCHEDULER_TASK_PARAMETERS_H_
 
+#include <string>
+
 #include "base/macros.h"
 
 namespace background_task {
@@ -17,10 +19,7 @@ struct TaskParameters {
   ~TaskParameters();
 
   int task_id;
-  // TODO(shaktisahu): Add support for extras.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskParameters);
+  std::string extras;
 };
 
 }  // namespace background_task

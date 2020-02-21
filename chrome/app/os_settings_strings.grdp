@@ -957,5 +957,256 @@
   <message name="IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE" desc="In Device Settings, the title of the mouse and touchpad settings subpage (when the user has both types of devices).">
     Mouse and touchpad
   </message>
+
+  <!-- Printing Page (OS Settings)-->
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER" desc="Label for button that allows the user to access the add print server dialog.">
+    Print server
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS" desc="In Printing Settings, the title of the CUPS printers setting section.">
+    Printers
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL" desc="Label for the link that teaches users how to use CUPS printing.">
+    Set up or manage CUPS printers. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
+    Add Printer
+  </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
+    Save detected printers to your profile, or add a new printer. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
+    Add printers to your profile
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers showing on the screen that are available to save.">
+    There are <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> printers available to save.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_ONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there is only 1 printer available to save.">
+    There is 1 printer available to save.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_NONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there are no printers available to save.">
+    There are no printers available to save.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
+    Edit
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE" desc="Text for the drop down menu which allows the user to remove the selected printer.">
+    Remove
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON" desc="Text for the button which allows the user to manually setup a CUPS printer.">
+    Set up
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to manually setup a CUPS printer.">
+    Set up <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON" desc="Text for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
+    Save
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
+    Save <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
+    Search printers
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
+    Your saved printers
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers previously saved by the user.">
+    You have <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> saved printers.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there is only 1 printer previously saved.">
+    You have 1 saved printer.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them they have no printers previously saved.">
+    You have no saved printers.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE" desc="Text for the button to show more printers when there are more printers than currently displayed to the user.">
+    Show more
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE" desc="Text for the title of the dialog that is used to add nearby printers.">
+    Add a nearby printer
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE" desc="Text for the title of the dialog that is used to manually add a printer instead of automatically finding ones nearby.">
+    Add a printer manually
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINT_SERVER_TITLE" desc="Text for the title of the dialog that is used to manually add a print server.">
+    Add a print server
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE" desc="Text for the title of the dialog that is used to select a manufacturer and model from the drop down list.">
+    Advanced printer configuration
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE" desc="Text for the title of the Printer Details subpage.">
+    Printer details
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED" desc="Label for the toggle control to show/hide the advanced details of the printer.">
+    Advanced
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced printer options for a particular printer. Only visible by screen reader software.">
+    Show advanced printer options
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS" desc="Label for the CUPS printer address in the Advanced section in the printer details page.">
+    Address
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_ADDRESS" desc="Label for the CUPS print server address in the in the print server details page.">
+    Address
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL" desc="Label for the CUPS printer protocol in the Advanced section in the printer details page.">
+    Protocol
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_URI" desc="Label for the CUPS printer URI (uniform resource identifier) in the Advanced section in the printer details page.">
+    URI
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME" desc="Label for the CUPS printer name in the printer details page.">
+    Name
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL" desc="Label for the CUPS printer model in the printer details page.">
+    Model
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE" desc="Label for the CUPS printer queue in the manually add printer dialog.">
+    Queue
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD" desc="Text for the button which allows the user to add a CUPS printer.">
+    Add
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_MANUAL_ADD" desc="Text for the button which allows the user to manually add a CUPS printer.">
+    Add Manually
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_DISCOVER_PRINTERS" desc="Text for the button which allows the user to go back to the printers discovery dialog.">
+    Add Nearby Printers
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPP" desc="The dropdown menu of the printer IPP protocol on the manually add printer dialog.">
+    Internet Printing Protocol (IPP)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPS" desc="The dropdown menu of the printer IPPS protocol on the manually add printer dialog.">
+    Internet Printing Protocol (IPPS)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTP" desc="The dropdown menu of the printer HTTP protocol on the manually add printer dialog.">
+    Internet Printing Protocol (HTTP)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTPS" desc="The dropdown menu of the printer HTTPS protocol on the manually add printer dialog.">
+    Internet Printing Protocol (HTTPS)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_APP_SOCKET" desc="The dropdown menu of the printer TCP/IP protocol on the manually add printer dialog.">
+    AppSocket (TCP/IP)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_LPD" desc="The dropdown menu of the printer LPD protocol on the manually add printer dialog.">
+    Line Printer Daemon (LPD)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB" desc="The dropdown menu of the printer USB protocol on the manually add printer dialog.">
+    USB
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPUSB" desc="The dropdown menu of the printer IPPUSB protocol on the edit printer dialog.">
+    IPP over USB (IPPUSB)
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE" desc="The configuring-in-progress message shown in the configuring printer dialog.">
+    Configuring <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph> ...
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER" desc="Label for the dropdown menu to select a manufacturer for the printer.">
+    Manufacturer
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER" desc="Label for the file selector to manually select a PPD file from the user's file system.">
+    Or specify your printer PPD <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER_ARIA_LABEL" desc="ARIA label for the file selector button to manually select a PPD file from the user's file system. This text will not be visual on any page. It will only be spoken by screen readers.">
+    Browse to specify your printer PPD
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER" desc="Text for the button which allows user to select a PPD file from the file system.">
+    Browse
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER" desc="Error message displayed to the user if they select an invalid PPD file.">
+    Invalid file selected. Try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE" desc="The message shown when a new printer is set up successfully.">
+    Added <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE" desc="The message shown when a printer is updated successfully.">
+    Updated <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE" desc="The message shown when a printer can no longer be contacted while being added.">
+    <ph name="PRINTER_NAME">$1<ex>Acme Printer</ex></ph> is no longer available
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY" desc="The message shown when no nearby printers are found.">
+    There are no available printers.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER" desc="The searching-in-progress message shown in the auto discovery dialog.">
+    Searching...
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_ERROR_MESSAGE" desc="The message shown when a new printer is not set up successfully.">
+    Unable to add printer. Please check your printer's configuration and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_FATAL_ERROR_MESSAGE" desc="The message shown when a fatal error occurs while trying to add a new printer.">
+    Unable to add printer. Please check your printer's configuration and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PRINTER_UNREACHABLE_MESSAGE" desc="The message shown when the printer that is to be added is unreachable for configuration.">
+    Can&#x2019;t connect to printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_TOO_LARGE_MESSAGE" desc="The message shown when the PPD provided while trying to add new printer is too large.">
+    Can&#x2019;t load large PPD. Maximum size is 250 kB.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_INVALID_PPD_MESSAGE" desc="The message shown when the PPD provided while trying to add a new printer is invalid.">
+    File is the wrong format. Check the PPD file and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_NOT_FOUND" desc="The message shown when the PPD provided while trying to add a new printer cannot be found.">
+    Can&#x2019;t find PPD. Make sure your Chromebook is online and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_UNRETRIEVABLE" desc="The message shown when the PPD provided while trying to add a new printer is unretrievable.">
+    Can&#x2019;t find PPD. Make sure your Chromebook is online and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_NATIVE_PRINTERS_NOT_ALLOWED_MESSAGE" desc="The message shown when the user is prevented from configuring printers due to an enterprise policy.">
+    Printer configuration is handled by the administrator.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE" desc="The message shown when the user attempts to edit a configured printer in a way that would make it unusable">
+    Requested printer changes would make the printer unusable.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE" desc="The message shown when there is no internet access to set up a printer.">
+    Connect to the internet to add a printer
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE" desc="The message shown when there is no internet connection for detecting available printers">
+    Please check your connection to see available printers in your network
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION" desc="The message shown when there is no internet connection.">
+    No internet connection
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT" desc="The message shown when the user needs to connect to a network with connectivity and try again.">
+    Connect to a network and try again
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE" desc="Text for the title of the dialog that is used to edit a CUPS printer's information.">
+    Edit printer
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON" desc="Text for the button which allows the user to save the modification of a CUPS printer.">
+    Save
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE" desc="Informational text displayed to the user if they have an existing custom PPD.">
+    Current PPD file in use: <ph name="PPD_NAME">$1<ex>example.ppd.gz</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION" desc="Informational text displayed to the user when the the user is doing advanced manual printer setup.">
+    <ph name="PRINTER_NAME">$1<ex>Printer</ex></ph> could not be configured automatically. Please specify advanced printer details. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE" desc="The message shown to users if a printer has a EULA agreement attached to it.">
+    End User License Agreement
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE" desc="The message shown on the uri field of the add/edit printer dialogs when attempting to connect to an IPP printer that is not found on the network.">
+    Couldn't detect a printer. Please enter printer address again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR" desc="General message shown on the top of the add/edit printer dialogs when adding/editting a printer fails.">
+    Unable to set up printer. Please check configuration and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS" desc="Message shown on a toast to indicate no printers were found from a print server.">
+    Did not find any printers from the print server
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER" desc="Message shown on a toast to indicate that only one printer was found from a print server.">
+    Found 1 printer from the print server
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS" desc="Message shown on a toast to indicate the number of printers found on a print server.">
+    Found <ph name="NUM_PRINTERS">$1<ex>5</ex></ph> printers from the print server
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS" desc="Message shown on the address field of the print server dialog when attempting to connect to a print server with an invalid URL.">
+    Invalid address. Please check the address and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_CONNECTION_ERROR" desc="Message shown on the print server dialog when the user has provided a valid URL but the server is unreachable.">
+    Couldn't detect the print server. Please check the address and try again.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD" desc="Message shown on the print server dialog when we are able to reach the print server but still ran into some error with adding the print server.">
+    Couldn't add the print server. Please check the server's configuration and try again.
+  </message>
 </if>
 </grit-part>

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -39,10 +40,12 @@ std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
 
 WifiConfigurationBridge::WifiConfigurationBridge(
     SyncedNetworkUpdater* synced_network_updater,
+    LocalNetworkCollector* local_network_collector,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     syncer::OnceModelTypeStoreFactory create_store_callback)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      synced_network_updater_(synced_network_updater) {
+      synced_network_updater_(synced_network_updater),
+      local_network_collector_(local_network_collector) {
   std::move(create_store_callback)
       .Run(syncer::WIFI_CONFIGURATIONS,
            base::BindOnce(&WifiConfigurationBridge::OnStoreCreated,
@@ -58,10 +61,35 @@ WifiConfigurationBridge::CreateMetadataChangeList() {
 
 base::Optional<syncer::ModelError> WifiConfigurationBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityChangeList entity_data) {
+    syncer::EntityChangeList change_list) {
   DCHECK(entries_.empty());
-  return ApplySyncChanges(std::move(metadata_change_list),
-                          std::move(entity_data));
+  DCHECK(local_network_collector_);
+
+  local_network_collector_->GetAllSyncableNetworks(
+      base::BindOnce(&WifiConfigurationBridge::OnGetAllSyncableNetworksResult,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(metadata_change_list), std::move(change_list)));
+
+  return base::nullopt;
+}
+
+void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
+    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+    syncer::EntityChangeList change_list,
+    std::vector<sync_pb::WifiConfigurationSpecifics> list) {
+  NET_LOG(DEBUG) << list.size() << " local networks eligible for sync.";
+
+  for (sync_pb::WifiConfigurationSpecifics& proto : list) {
+    // TODO(jonmann) Don't override local configurations that are newer.
+    std::unique_ptr<syncer::EntityData> entity_data =
+        GenerateWifiEntityData(proto);
+    std::string storage_key = GetStorageKey(*entity_data);
+    change_processor()->Put(storage_key, std::move(entity_data),
+                            metadata_change_list.get());
+    entries_[storage_key] = proto;
+  }
+
+  ApplySyncChanges(std::move(metadata_change_list), std::move(change_list));
 }
 
 base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
@@ -70,6 +98,11 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
 
+  NET_LOG(DEBUG) << "Applying  " << entity_changes.size()
+                 << " pending changes.";
+
+  // TODO(jonmann) Don't override synced network configurations that are newer
+  // than the local configurations.
   for (std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
     if (change->type() == syncer::EntityChange::ACTION_DELETE) {
       auto it = entries_.find(change->storage_key());

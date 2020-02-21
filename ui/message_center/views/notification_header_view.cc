@@ -277,25 +277,15 @@ void NotificationHeaderView::SetProgress(int progress) {
 }
 
 void NotificationHeaderView::SetSummaryText(const base::string16& text) {
-  DCHECK(!has_progress_);
   summary_text_view_->SetText(text);
-  UpdateSummaryTextVisibility();
-}
-
-void NotificationHeaderView::ClearProgress() {
-  summary_text_view_->SetText(base::string16());
   has_progress_ = false;
   UpdateSummaryTextVisibility();
 }
 
 void NotificationHeaderView::SetOverflowIndicator(int count) {
-  if (count > 0) {
-    summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
-        IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
-  } else {
-    summary_text_view_->SetText(base::string16());
-  }
-
+  summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
+      IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
+  has_progress_ = false;
   UpdateSummaryTextVisibility();
 }
 
@@ -396,10 +386,6 @@ const base::string16& NotificationHeaderView::app_name_for_testing() const {
 
 const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
   return app_icon_view_->GetImage();
-}
-
-const base::string16& NotificationHeaderView::timestamp_for_testing() const {
-  return timestamp_view_->GetText();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {

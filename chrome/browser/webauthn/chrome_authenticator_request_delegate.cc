@@ -229,6 +229,8 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kUserConsentDenied:
       weak_dialog_model_->OnUserConsentDenied();
       break;
+    case InterestingFailureReason::kWinUserCancelled:
+      return weak_dialog_model_->OnWinUserCancelled();
   }
   return true;
 }

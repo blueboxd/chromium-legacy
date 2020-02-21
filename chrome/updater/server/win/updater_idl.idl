@@ -13,8 +13,13 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IUpdater : IUnknown {
-  HRESULT CheckForUpdate([in, string] const WCHAR* guid);
-  HRESULT Update([in, string] const WCHAR* guid);
+  HRESULT CheckForUpdate([in, string] const WCHAR* app_id);
+  HRESULT Register([in, string] const WCHAR* app_id,
+                   [in, string] const WCHAR* brand_code,
+                   [in, string] const WCHAR* tag,
+                   [in, string] const WCHAR* version,
+                   [in, string] const WCHAR* existence_checker_path);
+  HRESULT Update([in, string] const WCHAR* app_id);
 };
 
 [

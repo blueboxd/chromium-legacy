@@ -209,27 +209,27 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_EQ(96, supported_formats[0].frame_size.width());
     EXPECT_EQ(96, supported_formats[0].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[0].pixel_format);
-    EXPECT_GE(supported_formats[0].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[0].frame_rate, 30.0);
     EXPECT_EQ(320, supported_formats[1].frame_size.width());
     EXPECT_EQ(240, supported_formats[1].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[1].pixel_format);
-    EXPECT_GE(supported_formats[1].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[1].frame_rate, 30.0);
     EXPECT_EQ(640, supported_formats[2].frame_size.width());
     EXPECT_EQ(480, supported_formats[2].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[2].pixel_format);
-    EXPECT_GE(supported_formats[2].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[2].frame_rate, 30.0);
     EXPECT_EQ(1280, supported_formats[3].frame_size.width());
     EXPECT_EQ(720, supported_formats[3].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[3].pixel_format);
-    EXPECT_GE(supported_formats[3].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[3].frame_rate, 30.0);
     EXPECT_EQ(1920, supported_formats[4].frame_size.width());
     EXPECT_EQ(1080, supported_formats[4].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[4].pixel_format);
-    EXPECT_GE(supported_formats[4].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[4].frame_rate, 30.0);
     EXPECT_EQ(3840, supported_formats[5].frame_size.width());
     EXPECT_EQ(2160, supported_formats[5].frame_size.height());
     EXPECT_EQ(expected_format, supported_formats[5].pixel_format);
-    EXPECT_GE(supported_formats[5].frame_rate, 20.0);
+    EXPECT_GE(supported_formats[5].frame_rate, 30.0);
     device_index++;
   }
 }
@@ -508,24 +508,24 @@ INSTANTIATE_TEST_SUITE_P(
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=4",
-                               20,
+                               30,
                                4u,
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=4,ownership=client",
-                               20,
+                               30,
                                4u,
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=0",
-                               20,
+                               30,
                                0u,
                                FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420}},
            CommandLineTestData{"display-media-type=window",
-                               20,
+                               30,
                                1u,
                                FakeVideoCaptureDevice::DisplayMediaType::WINDOW,
                                {PIXEL_FORMAT_I420}},

@@ -144,7 +144,6 @@
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
-#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -205,7 +204,6 @@
 using base::UserMetricsAction;
 using blink::ContextMenuDataEditFlags;
 using blink::ContextMenuDataMediaType;
-using blink::PluginAction;
 using blink::WebContextMenuData;
 using blink::WebString;
 using blink::WebURL;
@@ -2945,14 +2943,14 @@ void RenderViewContextMenu::ExecControls() {
 void RenderViewContextMenu::ExecRotateCW() {
   base::RecordAction(UserMetricsAction("PluginContextMenu_RotateClockwise"));
   PluginActionAt(gfx::Point(params_.x, params_.y),
-                 PluginAction(PluginAction::kRotate90Clockwise, true));
+                 blink::mojom::PluginActionType::kRotate90Clockwise);
 }
 
 void RenderViewContextMenu::ExecRotateCCW() {
   base::RecordAction(
       UserMetricsAction("PluginContextMenu_RotateCounterclockwise"));
   PluginActionAt(gfx::Point(params_.x, params_.y),
-                 PluginAction(PluginAction::kRotate90Counterclockwise, true));
+                 blink::mojom::PluginActionType::kRotate90Counterclockwise);
 }
 
 void RenderViewContextMenu::ExecReloadPackagedApp() {
@@ -3084,10 +3082,11 @@ void RenderViewContextMenu::MediaPlayerActionAt(
     frame_host->ExecuteMediaPlayerActionAtLocation(location, action);
 }
 
-void RenderViewContextMenu::PluginActionAt(const gfx::Point& location,
-                                           const PluginAction& action) {
-  source_web_contents_->GetRenderViewHost()->
-      ExecutePluginActionAtLocation(location, action);
+void RenderViewContextMenu::PluginActionAt(
+    const gfx::Point& location,
+    blink::mojom::PluginActionType plugin_action) {
+  source_web_contents_->GetRenderViewHost()->ExecutePluginActionAtLocation(
+      location, plugin_action);
 }
 
 Browser* RenderViewContextMenu::GetBrowser() const {

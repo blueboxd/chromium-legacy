@@ -9,6 +9,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind_helpers.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/sync_wifi/local_network_collector_impl.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
 #include "chromeos/components/sync_wifi/synced_network_updater_impl.h"
 #include "chromeos/components/sync_wifi/timer_factory.h"
@@ -31,8 +32,10 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
   updater_ = std::make_unique<SyncedNetworkUpdaterImpl>(
       std::make_unique<PendingNetworkConfigurationTrackerImpl>(pref_service),
       remote_cros_network_config_.get(), std::make_unique<TimerFactory>());
+  collector_ = std::make_unique<LocalNetworkCollectorImpl>(
+      remote_cros_network_config_.get());
   bridge_ = std::make_unique<sync_wifi::WifiConfigurationBridge>(
-      updater_.get(),
+      updater_.get(), collector_.get(),
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::WIFI_CONFIGURATIONS,
           base::BindRepeating(&syncer::ReportUnrecoverableError, channel)),

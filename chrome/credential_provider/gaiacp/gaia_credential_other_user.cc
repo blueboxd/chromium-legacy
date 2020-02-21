@@ -4,7 +4,11 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 
+#include "base/command_line.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 namespace credential_provider {
 
@@ -21,4 +25,21 @@ void COtherUserGaiaCredential::FinalRelease() {
   LOGFN(VERBOSE);
 }
 
+HRESULT COtherUserGaiaCredential::GetUserGlsCommandline(
+    base::CommandLine* command_line) {
+  // Don't show tos when GEM isn't enabled.
+  if (IsGemEnabled()) {
+    // In default other user flow, the user has to accept tos
+    // every time. So we need to set the show_tos switch to 1.
+    command_line->AppendSwitchASCII(kShowTosSwitch, "1");
+  }
+
+  HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
+      L"ep_setup_url", kGaiaSetupPath, IsGemEnabled(), command_line);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Setting gaia url for gaia credential failed";
+    return E_FAIL;
+  }
+  return S_OK;
+}
 }  // namespace credential_provider

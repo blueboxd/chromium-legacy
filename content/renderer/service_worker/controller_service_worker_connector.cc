@@ -76,6 +76,12 @@ void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
     observer.OnConnectionClosed();
 }
 
+void ControllerServiceWorkerConnector::EnsureFileAccess(
+    const std::vector<base::FilePath>& file_paths,
+    base::OnceClosure callback) {
+  container_host_->EnsureFileAccess(file_paths, std::move(callback));
+}
+
 void ControllerServiceWorkerConnector::AddBinding(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
         receiver) {

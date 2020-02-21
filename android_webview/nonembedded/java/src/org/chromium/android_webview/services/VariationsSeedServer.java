@@ -60,6 +60,8 @@ public class VariationsSeedServer extends Service {
 
         // Remove metrics from SharedPreferences once they've been reported so they won't get
         // reported a second time.
+        metrics.clearJobInterval();
+        metrics.clearJobQueueTime();
         metrics.clearSeedFetchTime();
         if (!metrics.writeMetricsToVariationsSharedPreferences(context)) {
             Log.e(TAG, "Failed to write variations SharedPreferences to disk");

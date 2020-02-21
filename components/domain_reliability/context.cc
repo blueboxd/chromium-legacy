@@ -29,14 +29,11 @@ namespace domain_reliability {
 // static
 const int DomainReliabilityContext::kMaxUploadDepthToSchedule = 1;
 
-DomainReliabilityContext::Factory::~Factory() {
-}
-
 // static
 const size_t DomainReliabilityContext::kMaxQueuedBeacons = 150;
 
 DomainReliabilityContext::DomainReliabilityContext(
-    MockableTime* time,
+    const MockableTime* time,
     const DomainReliabilityScheduler::Params& scheduler_params,
     const std::string& upload_reporter_string,
     const base::TimeTicks* last_network_change_time,
@@ -58,9 +55,7 @@ DomainReliabilityContext::DomainReliabilityContext(
       last_network_change_time_(last_network_change_time),
       upload_allowed_callback_(upload_allowed_callback) {}
 
-DomainReliabilityContext::~DomainReliabilityContext() {
-  ClearBeacons();
-}
+DomainReliabilityContext::~DomainReliabilityContext() = default;
 
 void DomainReliabilityContext::OnBeacon(
     std::unique_ptr<DomainReliabilityBeacon> beacon) {
@@ -101,7 +96,6 @@ std::unique_ptr<Value> DomainReliabilityContext::GetWebUIData() const {
 
 void DomainReliabilityContext::GetQueuedBeaconsForTesting(
     std::vector<const DomainReliabilityBeacon*>* beacons_out) const {
-  DCHECK(this);
   DCHECK(beacons_out);
   beacons_out->clear();
   for (const auto& beacon : beacons_)

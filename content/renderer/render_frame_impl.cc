@@ -3628,7 +3628,14 @@ void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories) {
-  DCHECK(loader_factories_);
+  // TODO(lukasza): https://crbug.com/1013254: Avoid checking
+  // |loader_factories_| for null below - they should be guaranteed to be
+  // non-null after a frame commits (and UpdateSubresourceLoaderFactories should
+  // only be called after a commit).  The check below is just a temporary
+  // workaround to paper-over the crash in https://crbug.com/1013254.
+  if (!loader_factories_)
+    loader_factories_ = GetLoaderFactoryBundleFromCreator();
+
   if (loader_factories_->IsHostChildURLLoaderFactoryBundle()) {
     static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
         ->UpdateThisAndAllClones(std::move(subresource_loader_factories));

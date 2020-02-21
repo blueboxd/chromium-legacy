@@ -44,15 +44,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   using UploadAllowedCallback =
       base::Callback<void(const GURL&, base::OnceCallback<void(bool)>)>;
 
-  class DOMAIN_RELIABILITY_EXPORT Factory {
-   public:
-    virtual ~Factory();
-    virtual std::unique_ptr<DomainReliabilityContext> CreateContextForConfig(
-        std::unique_ptr<const DomainReliabilityConfig> config) = 0;
-  };
-
   DomainReliabilityContext(
-      MockableTime* time,
+      const MockableTime* time,
       const DomainReliabilityScheduler::Params& scheduler_params,
       const std::string& upload_reporter_string,
       const base::TimeTicks* last_network_change_time,
@@ -116,7 +109,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   void RemoveExpiredBeacons();
 
   std::unique_ptr<const DomainReliabilityConfig> config_;
-  MockableTime* time_;
+  const MockableTime* time_;
   const std::string& upload_reporter_string_;
   DomainReliabilityScheduler scheduler_;
   DomainReliabilityDispatcher* dispatcher_;

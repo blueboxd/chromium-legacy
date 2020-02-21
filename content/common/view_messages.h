@@ -40,7 +40,6 @@
 #include "media/base/ipc/media_param_traits.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
@@ -65,8 +64,6 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::PluginAction::Type,
-                          blink::PluginAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::MenuItem::Type, content::MenuItem::TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
                           content::NavigationGestureLast)
@@ -85,11 +82,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::PreferredColorScheme,
                           ui::NativeTheme::PreferredColorScheme::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::SystemThemeColor,
                           ui::NativeTheme::SystemThemeColor::kMaxValue)
-
-IPC_STRUCT_TRAITS_BEGIN(blink::PluginAction)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(enable)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
   IPC_STRUCT_TRAITS_MEMBER(label)
@@ -116,12 +108,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
 // node.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
                     bool /* reverse */)
-
-// Tells the renderer to perform the given action on the plugin located at
-// the given point.
-IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
-                    gfx::Point, /* location */
-                    blink::PluginAction)
 
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.

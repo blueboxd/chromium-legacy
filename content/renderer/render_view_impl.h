@@ -61,7 +61,6 @@
 
 namespace blink {
 class WebURLRequest;
-struct PluginAction;
 struct WebWindowFeatures;
 }  // namespace blink
 
@@ -410,8 +409,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnEnablePreferredSizeChangedMode();
-  void OnPluginActionAt(const gfx::Point& location,
-                        const blink::PluginAction& action);
   void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                          const blink::WebRect& rect_to_zoom);
   void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);

@@ -92,6 +92,9 @@ public class ChromeBackgroundTaskFactory implements BackgroundTaskFactory {
                 return new PeriodicBackgroundSyncChromeWakeUpTask();
             // When adding a new job id with a BackgroundTask, remember to add a specific case for
             // it here.
+            // If the job id corresponds to a native task, use {@link ProxyNativeTask} as the task
+            // here and also update ChromeBackgroundTaskFactory::GetNativeBackgroundTaskFromTaskId
+            // to link to the real task.
             default:
                 Log.w(TAG, "Unable to find BackgroundTask class for task id " + taskId);
                 return null;

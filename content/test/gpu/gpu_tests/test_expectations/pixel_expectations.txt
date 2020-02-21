@@ -229,6 +229,8 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuff
 crbug.com/1047573 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]
 crbug.com/1047573 [ mac nvidia ] Pixel_WebGLLowToHighPowerAlphaFalse [ Skip ]
 crbug.com/1047573 [ mac nvidia ] Pixel_WebGLHighToLowPower [ Skip ]
+crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Skip ]
+crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Skip ]
 
 # Flakes on Linux, Mac and Windows
 crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]

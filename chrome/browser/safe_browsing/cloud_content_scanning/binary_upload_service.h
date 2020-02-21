@@ -72,7 +72,10 @@ class BinaryUploadService {
     // Some or all parts of the file are encrypted.
     FILE_ENCRYPTED = 7,
 
-    kMaxValue = FILE_ENCRYPTED,
+    // The file's type is not supported and the file was not uploaded.
+    UNSUPPORTED_FILE_TYPE = 8,
+
+    kMaxValue = UNSUPPORTED_FILE_TYPE,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos

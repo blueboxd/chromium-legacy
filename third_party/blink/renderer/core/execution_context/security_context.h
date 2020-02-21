@@ -177,8 +177,6 @@ class CORE_EXPORT SecurityContext {
   std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
-  void LogImagePolicies(mojom::blink::FeaturePolicyFeature,
-                        PolicyValue threshold_value) const;
   Member<ContentSecurityPolicy> content_security_policy_;
 
   network::mojom::IPAddressSpace address_space_;

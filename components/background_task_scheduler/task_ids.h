@@ -14,9 +14,11 @@ namespace background_task {
 // update to the BackgroundTaskSchedulerUma#toUmaEnumValueFromTaskId(int)
 // method. Also, if the new task id is related to a BackgroundTask class in
 // //chrome, remember to update
-// ChromeBackgroundTaskFactory#getBackgroundTaskFromTaskId(int).
-// Id from 111000000 to 111999999 are reserved for internal usage.
-// A Java counterpart will be generated for this enum.
+// ChromeBackgroundTaskFactory#createBackgroundTaskFromTaskId in java.
+// If the task is a native task, also update
+// ChromeBackgroundTaskFactory::GetNativeBackgroundTaskFromTaskId. Id from
+// 111000000 to 111999999 are reserved for internal usage. A Java counterpart
+// will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: (
 // org.chromium.components.background_task_scheduler)
 enum class TaskIds {

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 
 #include "base/guid.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -384,6 +385,35 @@ void ServiceWorkerContainerHost::HintToUpdateServiceWorker() {
 
   // The destructors notify the ServiceWorkerVersions to update.
   versions_to_update_.clear();
+}
+
+void ServiceWorkerContainerHost::EnsureFileAccess(
+    const std::vector<base::FilePath>& file_paths,
+    EnsureFileAccessCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  ServiceWorkerVersion* version =
+      controller_registration_ ? controller_registration_->active_version()
+                               : nullptr;
+
+  // The controller might have legitimately been lost due to
+  // NotifyControllerLost(), so don't ReportBadMessage() here.
+  if (version) {
+    int controller_process_id = version->embedded_worker()->process_id();
+
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    for (const auto& file : file_paths) {
+      if (!policy->CanReadFile(process_id_, file))
+        mojo::ReportBadMessage(
+            "The renderer doesn't have access to the file "
+            "but it tried to grant access to the controller.");
+
+      if (!policy->CanReadFile(controller_process_id, file))
+        policy->GrantReadFile(controller_process_id, file);
+    }
+  }
+
+  std::move(callback).Run();
 }
 
 void ServiceWorkerContainerHost::OnExecutionReady() {

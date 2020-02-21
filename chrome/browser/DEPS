@@ -33,6 +33,7 @@ include_rules = [
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
+  "+components/background_task_scheduler",
   "+components/base32",
   "+components/blacklist/opt_out_blacklist",
   "+components/bookmarks/browser",

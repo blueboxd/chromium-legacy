@@ -34,7 +34,8 @@ StepRange::StepRange()
       step_(1),
       step_base_(0),
       has_step_(false),
-      has_range_limitations_(false) {}
+      has_range_limitations_(false),
+      supports_reversed_range_(false) {}
 
 StepRange::StepRange(const StepRange& step_range) = default;
 
@@ -42,6 +43,7 @@ StepRange::StepRange(const Decimal& step_base,
                      const Decimal& minimum,
                      const Decimal& maximum,
                      bool has_range_limitations,
+                     bool supports_reversed_range,
                      const Decimal& step,
                      const StepDescription& step_description)
     : maximum_(maximum),
@@ -50,7 +52,8 @@ StepRange::StepRange(const Decimal& step_base,
       step_base_(step_base.IsFinite() ? step_base : 1),
       step_description_(step_description),
       has_step_(step.IsFinite()),
-      has_range_limitations_(has_range_limitations) {
+      has_range_limitations_(has_range_limitations),
+      supports_reversed_range_(supports_reversed_range) {
   DCHECK(maximum_.IsFinite());
   DCHECK(minimum_.IsFinite());
   DCHECK(step_.IsFinite());
@@ -181,6 +184,11 @@ Decimal StepRange::StepSnappedMaximum() const {
   if (aligned_maximum < Minimum())
     return Decimal::Nan();
   return aligned_maximum;
+}
+
+// https://html.spec.whatwg.org/C/#has-a-reversed-range
+bool StepRange::HasReversedRange() const {
+  return supports_reversed_range_ && Maximum() < Minimum();
 }
 
 }  // namespace blink

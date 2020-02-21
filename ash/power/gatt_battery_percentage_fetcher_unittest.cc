@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/gmock_move_support.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -29,12 +30,6 @@ constexpr char kDeviceAddress[] = "AA:BB:CC:DD:EE:FF";
 constexpr char kBatteryServiceUUID[] = "180F";
 constexpr char kBatteryLevelUUID[] = "2A19";
 const uint8_t kBatteryPercentage = 100;
-
-ACTION_TEMPLATE(MoveArg,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(pointer)) {
-  *pointer = std::move(::std::get<k>(args));
-}
 
 const device::BluetoothUUID& GetBatteryServiceUUID() {
   static const device::BluetoothUUID battery_service_uuid(kBatteryServiceUUID);

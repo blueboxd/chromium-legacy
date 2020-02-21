@@ -14,6 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -597,6 +598,7 @@ void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
   // Linux are checked with cmt-device path, and can include DT_CMT_SCROLL_
   // data. See more discussion in https://crrev.com/c/853953
   if (event) {
+    XWindow::UpdateWMUserTime(event);
 #if defined(USE_OZONE)
     DispatchEventFromNativeUiEvent(
         event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,

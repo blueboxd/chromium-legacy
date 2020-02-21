@@ -12,7 +12,6 @@
 #include "base/json/json_value_converter.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "url/gurl.h"
@@ -31,7 +30,6 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
       const base::StringPiece& json);
 
   bool IsValid() const;
-  bool Equals(const DomainReliabilityConfig& other) const;
 
   double GetSampleRate(bool request_successful) const;
 
@@ -40,8 +38,11 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
   static void RegisterJSONConverter(
       base::JSONValueConverter<DomainReliabilityConfig>* converter);
 
+  // TODO(chlily): Convert this to a url::Origin or just a domain name, since we
+  // don't use the other components.
   GURL origin;
   bool include_subdomains;
+  // Each entry in |collectors| must have scheme https.
   std::vector<std::unique_ptr<GURL>> collectors;
 
   double success_sample_rate;

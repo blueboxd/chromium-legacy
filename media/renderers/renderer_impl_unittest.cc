@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -34,17 +35,6 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::WithArgs;
-
-namespace {
-
-// Helper used to create an action for gmock that moves the argument to the
-// destination specified by |dst|.
-template <typename T>
-testing::Action<void(T arg)> MoveArg(T* dst) {
-  return testing::Action<void(T arg)>([dst](T arg) { *dst = std::move(arg); });
-}
-
-}  // namespace
 
 namespace media {
 

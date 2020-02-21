@@ -20,7 +20,7 @@ const DocumentPolicyFeatureInfoMap& GetDocumentPolicyFeatureInfoMap() {
         {
           "{{feature.document_policy_name}}",
           "{{feature.value_name}}",
-          PolicyValue({{feature.default_value}})
+          {{parse_default_value(feature.default_value, feature.value_type)}}
         }
       },
     {%- endfor %}

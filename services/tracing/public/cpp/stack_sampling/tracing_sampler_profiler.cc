@@ -438,7 +438,7 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
       } else {
         frame_entry->set_rel_pc(rel_pc);
       }
-      if (interned_module.id) {
+      if (frame.module) {
         frame_entry->set_mapping_id(interned_module.id);
       }
     }

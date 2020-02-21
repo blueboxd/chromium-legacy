@@ -4260,9 +4260,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCornerShortcutsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCornerShortcuts)},
 
-     {"printer-status", flag_descriptions::kPrinterStatusName,
+    {"printer-status", flag_descriptions::kPrinterStatusName,
      flag_descriptions::kPrinterStatusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrinterStatus)},
+
+    {"print-job-management-app", flag_descriptions::kPrintJobManagementAppName,
+     flag_descriptions::kPrintJobManagementAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPrintJobManagementApp)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

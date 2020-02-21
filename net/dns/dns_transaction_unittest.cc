@@ -1123,11 +1123,11 @@ TEST_F(DnsTransactionTestWithMockTime, Timeout) {
 
   // Finish when the third attempt times out.
   EXPECT_FALSE(helper0.Run(transaction_factory_.get()));
-  FastForwardBy(session_->NextTimeout(0, 0));
+  FastForwardBy(resolve_context_->NextClassicTimeout(0, 0, session_.get()));
   EXPECT_FALSE(helper0.has_completed());
-  FastForwardBy(session_->NextTimeout(0, 1));
+  FastForwardBy(resolve_context_->NextClassicTimeout(0, 1, session_.get()));
   EXPECT_FALSE(helper0.has_completed());
-  FastForwardBy(session_->NextTimeout(0, 2));
+  FastForwardBy(resolve_context_->NextClassicTimeout(0, 2, session_.get()));
   EXPECT_TRUE(helper0.has_completed());
 }
 
@@ -1730,7 +1730,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   // UDP server 0 is our only UDP server, so it will be good. HTTPS
   // servers 0 and 1 failed and will be marked bad. HTTPS server 2 succeeded
   // so will be good.
-  EXPECT_EQ(session_->ServerIndexToUse(0), 0u);
+  EXPECT_EQ(resolve_context_->ClassicServerIndexToUse(0, session_.get()), 0u);
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(2u));
@@ -1749,7 +1749,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   // server 0 then had the oldest failure so would be the next good server and
   // failed so is marked bad. Next attempt was HTTPS server 1, which succeeded
   // so is good.
-  EXPECT_EQ(session_->ServerIndexToUse(0), 0u);
+  EXPECT_EQ(resolve_context_->ClassicServerIndexToUse(0, session_.get()), 0u);
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(1u));
@@ -1910,7 +1910,7 @@ TEST_F(DnsTransactionTest, UnavailableAfterMaxHttpsFailures) {
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
 
-  for (size_t i = 0; i < kAutomaticModeFailureLimit - 1; i++) {
+  for (size_t i = 0; i < ResolveContext::kAutomaticModeFailureLimit - 1; i++) {
     AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
                              SYNCHRONOUS, Transport::HTTPS,
                              nullptr /* opt_rdata */,

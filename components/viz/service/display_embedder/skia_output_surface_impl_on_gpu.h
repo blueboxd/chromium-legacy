@@ -203,10 +203,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
-#if defined(OS_ANDROID)
-  void RenderToOverlay(const OverlayCandidate& overlay);
-#endif
-
   // gpu::DisplayContext implementation:
   void MarkContextLost() override;
 

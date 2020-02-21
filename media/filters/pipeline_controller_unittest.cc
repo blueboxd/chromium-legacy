@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "media/base/mock_filters.h"
@@ -29,17 +30,6 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
-
-namespace {
-
-// Like SaveArg, but for an argument that needs to be moved.
-ACTION_TEMPLATE(MoveArg,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(pointer)) {
-  *pointer = std::move(::std::get<k>(args));
-}
-
-}  // namespace
 
 namespace media {
 

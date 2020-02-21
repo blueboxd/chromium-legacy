@@ -747,6 +747,7 @@ try_.chromium_linux_builder(
 
 try_.chromium_mac_builder(
     name = 'mac-coverage-rel',
+    use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
 )
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller.h"
@@ -24,6 +25,8 @@
 #include "ash/shelf/test/hotseat_state_watcher.h"
 #include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
+#include "ash/shelf/test/widget_animation_smoothness_inspector.h"
+#include "ash/shelf/test/widget_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
@@ -1884,6 +1887,63 @@ TEST_P(HotseatWidgetTest, NoBlurDuringAnimations) {
   EXPECT_EQ(
       ShelfConfig::Get()->shelf_blur_radius(),
       GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
+// TODO(manucornet): Enable this test once the new API for layer animation
+// sequence observers is available.
+TEST_P(HotseatWidgetTest, DISABLED_OverviewToHomeAnimationAndBackIsSmooth) {
+  // Go into tablet mode and make sure animations are over.
+  HotseatWidget* hotseat = GetPrimaryShelf()->hotseat_widget();
+  WidgetAnimationWaiter waiter(hotseat);
+  TabletModeControllerTestApi().EnterTabletMode();
+  waiter.WaitForAnimation();
+
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Go into overview and back to know what to expect in terms of bounds.
+  const gfx::Rect shown_hotseat_bounds = hotseat->GetWindowBoundsInScreen();
+  {
+    WidgetAnimationWaiter waiter(hotseat);
+    StartOverview();
+    waiter.WaitForAnimation();
+  }
+
+  const gfx::Rect extended_hotseat_bounds = hotseat->GetWindowBoundsInScreen();
+  {
+    WidgetAnimationWaiter waiter(hotseat);
+    EndOverview();
+    waiter.WaitForAnimation();
+  }
+
+  // The extended hotseat should be higher (lower value of Y) than the
+  // shown hotseat.
+  EXPECT_GT(shown_hotseat_bounds.y(), extended_hotseat_bounds.y());
+
+  // We should start with the hotseat in its shown position again.
+  EXPECT_EQ(shown_hotseat_bounds, hotseat->GetWindowBoundsInScreen());
+
+  {
+    WidgetAnimationSmoothnessInspector inspector(hotseat);
+    WidgetAnimationWaiter waiter(hotseat);
+    StartOverview();
+    waiter.WaitForAnimation();
+    EXPECT_TRUE(inspector.CheckAnimation(4));
+  }
+
+  // The hotseat should now be extended.
+  EXPECT_EQ(extended_hotseat_bounds, hotseat->GetWindowBoundsInScreen());
+
+  {
+    WidgetAnimationSmoothnessInspector inspector(hotseat);
+    WidgetAnimationWaiter waiter(hotseat);
+    EndOverview();
+    waiter.WaitForAnimation();
+    EXPECT_TRUE(inspector.CheckAnimation(4));
+  }
+
+  // And we should now be back where we started.
+  EXPECT_EQ(shown_hotseat_bounds, hotseat->GetWindowBoundsInScreen());
 }
 
 }  // namespace ash

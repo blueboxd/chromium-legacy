@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_store.h"
@@ -33,6 +34,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
  public:
   WifiConfigurationBridge(
       SyncedNetworkUpdater* synced_network_updater,
+      LocalNetworkCollector* local_network_collector,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       syncer::OnceModelTypeStoreFactory create_store_callback);
   ~WifiConfigurationBridge() override;
@@ -67,6 +69,11 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
                          std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void OnCommit(const base::Optional<syncer::ModelError>& error);
 
+  void OnGetAllSyncableNetworksResult(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList change_list,
+      std::vector<sync_pb::WifiConfigurationSpecifics> list);
+
   // An in-memory list of the proto's that mirrors what is on the sync server.
   // This gets updated when changes are received from the server and after local
   // changes have been committed.  On initialization of this class, it is
@@ -79,6 +86,8 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge {
   std::unique_ptr<syncer::ModelTypeStore> store_;
 
   SyncedNetworkUpdater* synced_network_updater_;
+
+  LocalNetworkCollector* local_network_collector_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};
 

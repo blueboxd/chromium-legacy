@@ -299,7 +299,15 @@ bool InputType::RangeUnderflow(const String& value) const {
   if (!numeric_value.IsFinite())
     return false;
 
-  return numeric_value < CreateStepRange(kRejectAny).Minimum();
+  StepRange step_range = CreateStepRange(kRejectAny);
+  if (step_range.HasReversedRange()) {
+    // With a reversed range, any value outside of the midnight-crossing valid
+    // range is considered underflow and overflow.
+    return numeric_value > step_range.Maximum() &&
+           numeric_value < step_range.Minimum();
+  } else {
+    return numeric_value < step_range.Minimum();
+  }
 }
 
 bool InputType::RangeOverflow(const String& value) const {
@@ -310,7 +318,15 @@ bool InputType::RangeOverflow(const String& value) const {
   if (!numeric_value.IsFinite())
     return false;
 
-  return numeric_value > CreateStepRange(kRejectAny).Maximum();
+  StepRange step_range = CreateStepRange(kRejectAny);
+  if (step_range.HasReversedRange()) {
+    // With a reversed range, any value outside of the midnight-crossing valid
+    // range is considered underflow and overflow.
+    return numeric_value > step_range.Maximum() &&
+           numeric_value < step_range.Minimum();
+  } else {
+    return numeric_value > step_range.Maximum();
+  }
 }
 
 Decimal InputType::DefaultValueForStepUp() const {
@@ -392,6 +408,12 @@ String InputType::RangeUnderflowText(const Decimal&) const {
   return String();
 }
 
+String InputType::ReversedRangeOutOfRangeText(const Decimal&,
+                                              const Decimal&) const {
+  NOTREACHED();
+  return String();
+}
+
 String InputType::RangeInvalidText(const Decimal&, const Decimal&) const {
   NOTREACHED();
   return String();
@@ -452,9 +474,17 @@ std::pair<String, String> InputType::ValidationMessage(
 
   StepRange step_range(CreateStepRange(kRejectAny));
 
-  if (step_range.Minimum() > step_range.Maximum()) {
+  if (step_range.Minimum() > step_range.Maximum() &&
+      !step_range.HasReversedRange()) {
     return std::make_pair(
         RangeInvalidText(step_range.Minimum(), step_range.Maximum()),
+        g_empty_string);
+  }
+
+  if (step_range.HasReversedRange() && numeric_value < step_range.Minimum() &&
+      numeric_value > step_range.Maximum()) {
+    return std::make_pair(
+        ReversedRangeOutOfRangeText(step_range.Minimum(), step_range.Maximum()),
         g_empty_string);
   }
 
@@ -964,12 +994,35 @@ Decimal InputType::FindStepBase(const Decimal& default_value) const {
   return step_base;
 }
 
+StepRange InputType::CreateReversibleStepRange(
+    AnyStepHandling any_step_handling,
+    const Decimal& step_base_default,
+    const Decimal& minimum_default,
+    const Decimal& maximum_default,
+    const StepRange::StepDescription& step_description) const {
+  return CreateStepRange(any_step_handling, step_base_default, minimum_default,
+                         maximum_default, step_description,
+                         /*supports_reversed_range=*/true);
+}
+
 StepRange InputType::CreateStepRange(
     AnyStepHandling any_step_handling,
     const Decimal& step_base_default,
     const Decimal& minimum_default,
     const Decimal& maximum_default,
     const StepRange::StepDescription& step_description) const {
+  return CreateStepRange(any_step_handling, step_base_default, minimum_default,
+                         maximum_default, step_description,
+                         /*supports_reversed_range=*/false);
+}
+
+StepRange InputType::CreateStepRange(
+    AnyStepHandling any_step_handling,
+    const Decimal& step_base_default,
+    const Decimal& minimum_default,
+    const Decimal& maximum_default,
+    const StepRange::StepDescription& step_description,
+    bool supports_reversed_range) const {
   bool has_range_limitations = false;
   const Decimal step_base = FindStepBase(step_base_default);
   Decimal minimum =
@@ -987,8 +1040,10 @@ StepRange InputType::CreateStepRange(
   const Decimal step = StepRange::ParseStep(
       any_step_handling, step_description,
       GetElement().FastGetAttribute(html_names::kStepAttr));
-  return StepRange(step_base, minimum, maximum, has_range_limitations, step,
-                   step_description);
+  bool has_reversed_range =
+      has_range_limitations && supports_reversed_range && maximum < minimum;
+  return StepRange(step_base, minimum, maximum, has_range_limitations,
+                   has_reversed_range, step, step_description);
 }
 
 void InputType::AddWarningToConsole(const char* message_format,

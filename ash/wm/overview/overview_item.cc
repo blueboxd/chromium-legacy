@@ -649,8 +649,7 @@ void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
 }
 
 bool OverviewItem::IsDragItem() {
-  return overview_session_->window_drag_controller() &&
-         overview_session_->window_drag_controller()->item() == this;
+  return overview_session_->GetCurrentDraggedOverviewItem() == this;
 }
 
 void OverviewItem::Restack() {
@@ -886,6 +885,9 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
 }
 
 void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
+  if (!overview_session_->CanProcessEvent(this, /*from_touch_gesture=*/false))
+    return;
+
   const gfx::PointF screen_location = event.target()->GetScreenLocationF(event);
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -904,6 +906,12 @@ void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
 }
 
 void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
+  if (!overview_session_->CanProcessEvent(this, /*from_touch_gesture=*/true)) {
+    event->StopPropagation();
+    event->SetHandled();
+    return;
+  }
+
   if (ShouldUseTabletModeGridLayout()) {
     HandleGestureEventForTabletModeLayout(event);
     return;
@@ -1320,9 +1328,9 @@ void OverviewItem::StartDrag() {
 
 void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
                                     bool from_touch_gesture) {
-  // We allow switching finger while dragging, but do not allow dragging two
-  // or more items.
-  if (overview_session_->IsAnyOverviewItemDragged())
+  // No need to start the drag again if already in a drag. This can happen if we
+  // switch fingers midway through a drag.
+  if (IsDragItem())
     return;
 
   StartDrag();

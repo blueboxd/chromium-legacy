@@ -33,6 +33,7 @@
       "position": [400, 400],
       "bounds": [200, 200],
       "contentsOpaque": true,
+      "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='imgElement'",

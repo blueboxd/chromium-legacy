@@ -76,11 +76,6 @@ EVENTS_EXPORT int EventFlagsFromNative(const PlatformEvent& native_event);
 EVENTS_EXPORT base::TimeTicks EventTimeFromNative(
     const PlatformEvent& native_event);
 
-// Ensures that the event timestamp values are coming from the same underlying
-// monotonic clock as base::TimeTicks::Now() and if it is not then falls
-// back to using the current ticks for event timestamp.
-EVENTS_EXPORT void ValidateEventTimeClock(base::TimeTicks* timestamp);
-
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of
 // this "root window" and how it maps to platform-specific drawing surfaces is

@@ -9,14 +9,13 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 
 namespace credential_provider {
-constexpr char kGaiaSetupPath[] = "embedded/setup/windows";
-
 CGaiaCredential::CGaiaCredential() = default;
 
 CGaiaCredential::~CGaiaCredential() = default;

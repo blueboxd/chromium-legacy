@@ -19,8 +19,8 @@ int RunServer(std::unique_ptr<UpdateService> update_service) {
   @autoreleasepool {
     std::string service_name = MAC_BUNDLE_IDENTIFIER_STRING;
     service_name.append(".UpdaterXPCService");
-    base::scoped_nsobject<UpdateCheckXPCServiceDelegate> delegate(
-        [[UpdateCheckXPCServiceDelegate alloc]
+    base::scoped_nsobject<CRUUpdateCheckXPCServiceDelegate> delegate(
+        [[CRUUpdateCheckXPCServiceDelegate alloc]
             initWithUpdateService:std::move(update_service)]);
 
     NSXPCListener* listener = [[NSXPCListener alloc]

@@ -43,6 +43,11 @@ EVENTS_BASE_EXPORT double EventTimeStampToSeconds(base::TimeTicks time_stamp);
 EVENTS_BASE_EXPORT base::TimeTicks EventTimeStampFromSeconds(
     double time_stamp_seconds);
 
+// Ensures that the event timestamp values are coming from the same underlying
+// monotonic clock as base::TimeTicks::Now() and if it is not then falls
+// back to using the current ticks for event timestamp.
+EVENTS_BASE_EXPORT void ValidateEventTimeClock(base::TimeTicks* timestamp);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_BASE_EVENT_UTILS_H_

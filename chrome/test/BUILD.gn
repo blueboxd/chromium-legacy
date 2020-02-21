@@ -154,7 +154,10 @@ static_library("test_support") {
     "logging/win/mof_data_parser.h",
     "logging/win/test_log_collector.cc",
     "logging/win/test_log_collector.h",
+    "payments/payment_request_platform_browsertest_base.h",
     "payments/payment_request_test_controller.h",
+    "payments/test_event_waiter.cc",
+    "payments/test_event_waiter.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -552,6 +555,7 @@ if (is_android) {
       "../browser/ssl/crlset_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
+      "payments/payment_request_platform_browsertest_base.cc",
     ]
 
     data = [
@@ -2062,6 +2066,7 @@ if (!is_android) {
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/translate/translate_language_browsertest.cc",
         "../browser/ui/views/web_apps/bookmark_app_uninstall_dialog_browsertest.cc",
+        "payments/payment_request_platform_browsertest_base.cc",
       ]
       if (!is_chromeos) {
         sources += [

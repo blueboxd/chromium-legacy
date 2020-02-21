@@ -222,6 +222,13 @@ bool AllowEncryptedFiles() {
   return state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
 }
 
+bool AllowUnsupportedFileTypes() {
+  int state = g_browser_process->local_state()->GetInteger(
+      prefs::kBlockUnsupportedFiletypes);
+  return state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS &&
+         state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS;
+}
+
 }  // namespace
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -326,6 +333,9 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
 
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return AllowEncryptedFiles();
+
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      return AllowUnsupportedFileTypes();
   }
 }
 
@@ -580,9 +590,9 @@ bool DeepScanningDialogDelegate::UploadData() {
           base::BindOnce(&DeepScanningDialogDelegate::AnalyzerCallback,
                          weak_ptr_factory_.GetWeakPtr(), i));
     } else {
-      ++file_result_count_;
-      result_.paths_results[i] = true;
-      // TODO(crbug/1013584): Handle unsupported types appropriately.
+      FileRequestCallback(data_.paths[i],
+                          BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
+                          DeepScanningClientResponse());
     }
   }
 

@@ -374,6 +374,25 @@ FloatRect ComputeSubsetForBackground(const FloatRect& phase_and_size,
                    subset.Height() / scale.Height());
 }
 
+FloatRect SnapSourceRectIfNearIntegral(const FloatRect src_rect) {
+  // Round to avoid filtering pulling in neighboring pixels, for the
+  // common case of sprite maps, but only if we're close to an integral size.
+  // "Close" in this context means we will allow floating point inaccuracy,
+  // when converted to layout units, to be at most one LayoutUnit::Epsilon and
+  // still snap.
+  if (std::abs(std::round(src_rect.X()) - src_rect.X()) <=
+          LayoutUnit::Epsilon() &&
+      std::abs(std::round(src_rect.Y()) - src_rect.Y()) <=
+          LayoutUnit::Epsilon() &&
+      std::abs(std::round(src_rect.MaxX()) - src_rect.MaxX()) <=
+          LayoutUnit::Epsilon() &&
+      std::abs(std::round(src_rect.MaxY()) - src_rect.MaxY()) <=
+          LayoutUnit::Epsilon()) {
+    return FloatRect(RoundedIntRect(src_rect));
+  }
+  return src_rect;
+}
+
 // The unsnapped_subset_size should be the target painting area implied by the
 //   content, without any snapping applied. It is necessary to correctly
 //   compute the subset of the source image to paint into the destination.
@@ -424,13 +443,7 @@ void DrawTiledBackground(GraphicsContext& context,
   if (one_tile_rect.Contains(dest_rect_for_subset)) {
     FloatRect visible_src_rect = ComputeSubsetForBackground(
         one_tile_rect, dest_rect_for_subset, intrinsic_tile_size);
-    // Round to avoid filtering pulling in neighboring pixels, for the
-    // common case of sprite maps.
-    // TODO(schenney): Snapping at this level is a problem for cases where we
-    // might be animating background-position to pan over an image. Ideally we
-    // would either snap only if close to integral, or move snapping
-    // calculations up the stack.
-    visible_src_rect = FloatRect(RoundedIntRect(visible_src_rect));
+    visible_src_rect = SnapSourceRectIfNearIntegral(visible_src_rect);
 
     // When respecting image orientation, the drawing code expects the source
     // rect to be in the unrotated image space, but we have computed it here in
@@ -570,9 +583,9 @@ inline bool PaintFastBottomLayer(Node* node,
   // from integer size, so it is safe to round without introducing major issues.
   const FloatRect unrounded_subset = ComputeSubsetForBackground(
       image_tile, dest_rect_for_subset, intrinsic_tile_size);
-  FloatRect src_rect = FloatRect(RoundedIntRect(unrounded_subset));
+  FloatRect src_rect = SnapSourceRectIfNearIntegral(unrounded_subset);
 
-  // If we have rounded the image size to 0, revert the rounding.
+  // If we have snapped the image size to 0, revert the rounding.
   if (src_rect.IsEmpty())
     src_rect = unrounded_subset;
 

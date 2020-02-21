@@ -45,6 +45,8 @@ static_library("sync_wifi") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_local_network_collector.cc",
+    "fake_local_network_collector.h",
     "fake_one_shot_timer.cc",
     "fake_one_shot_timer.h",
     "fake_pending_network_configuration_tracker.cc",

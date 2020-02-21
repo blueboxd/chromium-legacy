@@ -184,9 +184,9 @@ void MarkingVisitor::GenerationalBarrierSlow(Address slot,
 
   if (UNLIKELY(slot_page->IsLargeObjectPage())) {
     auto* large_page = static_cast<LargeObjectPage*>(slot_page);
-    if (LIKELY(!large_page->ObjectHeader()->IsMarked()))
-      return;
-    large_page->SetRemembered(true);
+    if (UNLIKELY(large_page->ObjectHeader()->IsMarked())) {
+      large_page->SetRemembered(true);
+    }
     return;
   }
 
@@ -194,6 +194,7 @@ void MarkingVisitor::GenerationalBarrierSlow(Address slot,
   const HeapObjectHeader* source_header = reinterpret_cast<HeapObjectHeader*>(
       normal_page->object_start_bit_map()->FindHeader(slot));
   DCHECK_LT(0u, source_header->GcInfoIndex());
+  DCHECK_GT(source_header->PayloadEnd(), slot);
   if (UNLIKELY(source_header->IsMarked())) {
     normal_page->MarkCard(slot);
   }

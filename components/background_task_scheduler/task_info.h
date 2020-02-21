@@ -67,7 +67,7 @@ struct TaskInfo {
   bool requires_charging;
   bool is_persisted;
   bool update_current;
-  // TODO(shaktisahu): Add support for extras.
+  std::string extras;
 
   base::Optional<PeriodicInfo> periodic_info;
   base::Optional<OneOffInfo> one_off_info;

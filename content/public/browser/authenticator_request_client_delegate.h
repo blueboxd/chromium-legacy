@@ -54,6 +54,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // because the authenticator has insufficient storage.
     kStorageFull,
     kUserConsentDenied,
+    // kWinUserCancelled means that the user clicked "Cancel" in the native
+    // Windows UI.
+    kWinUserCancelled,
   };
 
   AuthenticatorRequestClientDelegate();

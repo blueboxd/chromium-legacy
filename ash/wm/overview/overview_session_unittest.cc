@@ -619,9 +619,9 @@ TEST_P(OverviewSessionTest, NoCrashWithDesktopTap) {
   GetEventGenerator()->PressTouchId(kTouchId);
 
   // Tap on the desktop, which should not cause a crash. Overview mode should
-  // be disengaged.
+  // remain engaged.
   GetEventGenerator()->GestureTapAt(GetGridBounds().CenterPoint());
-  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(InOverviewSession());
 
   GetEventGenerator()->ReleaseTouchId(kTouchId);
 }
@@ -3765,6 +3765,41 @@ TEST_P(TabletModeOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   EXPECT_NE(item_bounds[2], items[2]->target_bounds());
   EXPECT_EQ(item_bounds[3], items[3]->target_bounds());
   EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
+}
+
+TEST_P(TabletModeOverviewSessionTest, MultiTouch) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  // Dispatches a long press event to start drag mode.
+  OverviewItem* item = GetOverviewItemForWindow(window1.get());
+  DispatchLongPress(item);
+  overview_session()->Drag(item, gfx::PointF(10.f, 500.f));
+  const gfx::Rect item_bounds = item->GetWindow()->GetBoundsInScreen();
+
+  // Tap on a point on the wallpaper. Normally this would exit overview, but not
+  // while a drag is underway.
+  GetEventGenerator()->set_current_screen_location(gfx::Point(10, 10));
+  GetEventGenerator()->PressTouch();
+  GetEventGenerator()->ReleaseTouch();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(item_bounds, item->GetWindow()->GetBoundsInScreen());
+
+  // Long press on another item, the bounds of both items should be unchanged.
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  const gfx::Rect item2_bounds = item2->GetWindow()->GetBoundsInScreen();
+  DispatchLongPress(item2);
+  EXPECT_EQ(item_bounds, item->GetWindow()->GetBoundsInScreen());
+  EXPECT_EQ(item2_bounds, item2->GetWindow()->GetBoundsInScreen());
+
+  // Clicking on a point on the wallpaper should still exit overview.
+  GetEventGenerator()->set_current_screen_location(gfx::Point(10, 10));
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
 }
 
 // Test the split view and overview functionalities in tablet mode.

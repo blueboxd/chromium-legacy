@@ -77,7 +77,7 @@ StepRange TimeInputType::CreateStepRange(
       (kTimeDefaultStep, kTimeDefaultStepBase, kTimeStepScaleFactor,
        StepRange::kScaledStepValueShouldBeInteger));
 
-  return InputType::CreateStepRange(
+  return InputType::CreateReversibleStepRange(
       any_step_handling, kTimeDefaultStepBase,
       Decimal::FromDouble(DateComponents::MinimumTime()),
       Decimal::FromDouble(DateComponents::MaximumTime()), step_description);
@@ -176,6 +176,14 @@ bool TimeInputType::IsValidFormat(bool has_year,
 
 String TimeInputType::AriaRoleForPickerIndicator() const {
   return GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_TIME_PICKER);
+}
+
+String TimeInputType::ReversedRangeOutOfRangeText(
+    const Decimal& minimum,
+    const Decimal& maximum) const {
+  return GetLocale().QueryString(
+      IDS_FORM_VALIDATION_REVERSED_RANGE_OUT_OF_RANGE_TIME,
+      LocalizeValue(Serialize(minimum)), LocalizeValue(Serialize(maximum)));
 }
 
 }  // namespace blink

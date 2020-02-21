@@ -2141,7 +2141,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   EXPECT_EQ(local_context_menu_position.y(), params.y);
 
   // TODO(wjmaclean): If it ever becomes possible to filter outgoing IPCs
-  // from the RenderProcessHost, we should verify the ViewMsg_PluginActionAt
+  // from the RenderProcessHost, we should verify the blink.mojom.PluginActionAt
   // message is sent with the same coordinates as in the ContextMenuParams.
 }
 

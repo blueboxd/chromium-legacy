@@ -44,6 +44,8 @@ if (is_win || is_mac) {
       "patcher.h",
       "prefs.cc",
       "prefs.h",
+      "registration_data.cc",
+      "registration_data.h",
       "unzipper.cc",
       "unzipper.h",
       "update_apps.cc",
@@ -78,6 +80,13 @@ if (is_win || is_mac) {
 
     if (is_win) {
       deps += [ "//chrome/updater/server/win" ]
+    }
+
+    if (is_mac) {
+      deps += [
+        "//chrome/updater/mac:network_fetcher_sources",
+        "//chrome/updater/server/mac",
+      ]
     }
   }
 

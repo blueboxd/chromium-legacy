@@ -162,20 +162,6 @@ enum class RotationAcceleratorAction {
   kMaxValue = kAlreadyAcceptedDialog,
 };
 
-bool IsAnyWindowDragged() {
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession() &&
-      overview_controller->overview_session()->IsAnyOverviewItemDragged()) {
-    return true;
-  }
-  for (aura::Window* window :
-       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
-    if (WindowState::Get(window)->is_dragged())
-      return true;
-  }
-  return false;
-}
-
 void RecordRotationAcceleratorAction(const RotationAcceleratorAction& action) {
   UMA_HISTOGRAM_ENUMERATION("Ash.Accelerators.Rotation.Usage", action);
 }
@@ -394,7 +380,7 @@ void HandleNewDesk() {
 }
 
 void HandleRemoveCurrentDesk() {
-  if (IsAnyWindowDragged())
+  if (window_util::IsAnyWindowDragged())
     return;
 
   auto* desks_controller = DesksController::Get();

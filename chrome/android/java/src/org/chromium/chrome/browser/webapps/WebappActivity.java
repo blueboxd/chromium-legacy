@@ -391,13 +391,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    protected void recordIntentToCreationTime(long timeMs) {
-        super.recordIntentToCreationTime(timeMs);
-
-        RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApp", timeMs);
-    }
-
-    @Override
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
@@ -576,7 +569,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     /** Inits the splash screen */
-    protected void initSplash() {
+    private void initSplash() {
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
         boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
         mSplashController.setConfig(
@@ -593,7 +586,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             // throws an exception on O (but not O MR1). Delay setting it.
             ScreenOrientationProvider.getInstance().delayOrientationRequests(getWindowAndroid());
 
-            addSplashscreenObserver(new SplashscreenObserver() {
+            mSplashController.addObserver(new SplashscreenObserver() {
                 @Override
                 public void onTranslucencyRemoved() {
                     ScreenOrientationProvider.getInstance().runDelayedOrientationRequests(
@@ -613,20 +606,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     protected boolean isSplashShowing() {
         return mSplashController.isSplashShowing();
-    }
-
-    /**
-     * Register an observer to the splashscreen hidden/visible events for this activity.
-     */
-    protected void addSplashscreenObserver(SplashscreenObserver observer) {
-        mSplashController.addObserver(observer);
-    }
-
-    /**
-     * Deregister an observer to the splashscreen hidden/visible events for this activity.
-     */
-    protected void removeSplashscreenObserver(SplashscreenObserver observer) {
-        mSplashController.removeObserver(observer);
     }
 
     @Override

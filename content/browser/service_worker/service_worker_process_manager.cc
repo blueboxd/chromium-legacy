@@ -27,7 +27,8 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     : browser_context_(browser_context),
       storage_partition_(nullptr),
       process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
-      new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID) {
+      new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
+      force_new_process_for_test_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -86,6 +87,9 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
     bool can_use_existing_process,
     AllocatedProcessInfo* out_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (force_new_process_for_test_)
+    can_use_existing_process = false;
 
   out_info->process_id = ChildProcessHost::kInvalidUniqueID;
   out_info->start_situation = ServiceWorkerMetrics::StartSituation::UNKNOWN;

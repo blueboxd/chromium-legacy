@@ -94,6 +94,12 @@ public class VariationsSeedLoader {
     @VisibleForTesting
     public static final String DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME =
             "Variations.DownloadJobFetchTime2";
+    @VisibleForTesting
+    public static final String DOWNLOAD_JOB_INTERVAL_HISTOGRAM_NAME =
+            "Variations.DownloadJobInterval";
+    @VisibleForTesting
+    public static final String DOWNLOAD_JOB_QUEUE_TIME_HISTOGRAM_NAME =
+            "Variations.DownloadJobQueueTime";
     private static final String SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME =
             "Variations.SeedLoadBlockingTime";
     // This metric is also written by VariationsSeedStore::LoadSeed and is used by other platforms.
@@ -139,6 +145,11 @@ public class VariationsSeedLoader {
         RecordHistogram.recordCustomCountHistogram(APP_SEED_FRESHNESS_HISTOGRAM_NAME,
                 (int) freshnessMinutes, /*min=*/1, /*max=*/(int) TimeUnit.DAYS.toMinutes(30),
                 /*numBuckets=*/50);
+    }
+
+    private static void recordMinuteHistogram(String name, long value, long maxValue) {
+        // 50 buckets from 1min to maxValue minutes.
+        RecordHistogram.recordCustomCountHistogram(name, (int) value, 1, (int) maxValue, 50);
     }
 
     private static boolean shouldThrottleRequests(long now) {
@@ -306,6 +317,18 @@ public class VariationsSeedLoader {
         public void reportVariationsServiceMetrics(Bundle metricsBundle) {
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromBundle(metricsBundle);
+            if (metrics.hasJobInterval()) {
+                // Variations.DownloadJobInterval records time in minutes.
+                recordMinuteHistogram(DOWNLOAD_JOB_INTERVAL_HISTOGRAM_NAME,
+                        TimeUnit.MILLISECONDS.toMinutes(metrics.getJobInterval()),
+                        TimeUnit.DAYS.toMinutes(30));
+            }
+            if (metrics.hasJobQueueTime()) {
+                // Variations.DownloadJobQueueTime records time in minutes.
+                recordMinuteHistogram(DOWNLOAD_JOB_QUEUE_TIME_HISTOGRAM_NAME,
+                        TimeUnit.MILLISECONDS.toMinutes(metrics.getJobQueueTime()),
+                        TimeUnit.DAYS.toMinutes(30));
+            }
             if (metrics.hasSeedFetchTime()) {
                 // Newer versions of Android limit job execution time to 10 minutes. Set the max
                 // histogram bucket to double that to have some wiggle room.

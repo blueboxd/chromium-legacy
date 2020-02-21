@@ -31,7 +31,7 @@ namespace {
 // chrome_error, and server_ip fields based on the endpoint and result of
 // |attempt|.
 //
-// If there is no matching status for the result, returns false (which
+// If there is no matching status for the result, returns nullptr (which
 // means the attempt should not result in a beacon being reported).
 std::unique_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
     const DomainReliabilityBeacon& beacon_template,
@@ -39,11 +39,10 @@ std::unique_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
   std::string status;
   if (!GetDomainReliabilityBeaconStatus(
           attempt.result, beacon_template.http_response_code, &status)) {
-    return std::unique_ptr<DomainReliabilityBeacon>();
+    return nullptr;
   }
 
-  std::unique_ptr<DomainReliabilityBeacon> beacon(
-      new DomainReliabilityBeacon(beacon_template));
+  auto beacon = std::make_unique<DomainReliabilityBeacon>(beacon_template);
   beacon->status = status;
   beacon->chrome_error = attempt.result;
   if (!attempt.endpoint.address().empty())
@@ -59,16 +58,9 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
     const DomainReliabilityContext::UploadAllowedCallback&
         upload_allowed_callback)
-    : time_(new ActualTime()),
-      upload_reporter_string_(upload_reporter_string),
-      upload_allowed_callback_(upload_allowed_callback),
-      scheduler_params_(
-          DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
-      dispatcher_(time_.get()),
-      context_manager_(this),
-      discard_uploads_set_(false) {
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-}
+    : DomainReliabilityMonitor(upload_reporter_string,
+                               upload_allowed_callback,
+                               std::make_unique<ActualTime>()) {}
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
@@ -76,12 +68,11 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
         upload_allowed_callback,
     std::unique_ptr<MockableTime> time)
     : time_(std::move(time)),
-      upload_reporter_string_(upload_reporter_string),
-      upload_allowed_callback_(upload_allowed_callback),
-      scheduler_params_(
-          DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
-      context_manager_(this),
+      context_manager_(time_.get(),
+                       upload_reporter_string,
+                       upload_allowed_callback,
+                       &dispatcher_),
       discard_uploads_set_(false) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
@@ -105,6 +96,7 @@ void DomainReliabilityMonitor::InitURLRequestContext(
         url_request_context_getter) {
   uploader_ = DomainReliabilityUploader::Create(time_.get(),
                                                 url_request_context_getter);
+  context_manager_.SetUploader(uploader_.get());
 }
 
 void DomainReliabilityMonitor::Shutdown() {
@@ -116,18 +108,10 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
     base::StringPiece json(kBakedInJsonConfigs[i]);
     std::unique_ptr<const DomainReliabilityConfig> config =
         DomainReliabilityConfig::FromJSON(json);
-    if (!config) {
-      DLOG(WARNING) << "Baked-in Domain Reliability config failed to parse: "
-                    << json;
-      continue;
-    }
+    // Guard against accidentally checking in malformed JSON configs.
+    DCHECK(config->IsValid());
     context_manager_.AddContextForConfig(std::move(config));
   }
-
-  std::vector<std::unique_ptr<DomainReliabilityConfig>> google_configs;
-  GetAllGoogleConfigs(&google_configs);
-  for (auto& google_config : google_configs)
-    context_manager_.AddContextForConfig(std::move(google_config));
 }
 
 void DomainReliabilityMonitor::SetDiscardUploads(bool discard_uploads) {
@@ -164,7 +148,7 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
 
 void DomainReliabilityMonitor::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  last_network_change_time_ = time_->NowTicks();
+  context_manager_.OnNetworkChanged(time_->NowTicks());
 }
 
 void DomainReliabilityMonitor::ClearBrowsingData(
@@ -189,8 +173,9 @@ std::unique_ptr<base::Value> DomainReliabilityMonitor::GetWebUIData() const {
   return std::move(data_value);
 }
 
-DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
+const DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
     std::unique_ptr<const DomainReliabilityConfig> config) {
+  DCHECK(config);
   return context_manager_.AddContextForConfig(std::move(config));
 }
 
@@ -198,19 +183,18 @@ void DomainReliabilityMonitor::ForceUploadsForTesting() {
   dispatcher_.RunAllTasksForTesting();
 }
 
-std::unique_ptr<DomainReliabilityContext>
-DomainReliabilityMonitor::CreateContextForConfig(
-    std::unique_ptr<const DomainReliabilityConfig> config) {
-  DCHECK(config);
-  DCHECK(config->IsValid());
-
-  return std::make_unique<DomainReliabilityContext>(
-      time_.get(), scheduler_params_, upload_reporter_string_,
-      &last_network_change_time_, upload_allowed_callback_, &dispatcher_,
-      uploader_.get(), std::move(config));
+void DomainReliabilityMonitor::OnRequestLegCompleteForTesting(
+    const RequestInfo& request) {
+  OnRequestLegComplete(request);
 }
 
-DomainReliabilityMonitor::RequestInfo::RequestInfo() {}
+const DomainReliabilityContext*
+DomainReliabilityMonitor::LookupContextForTesting(
+    const std::string& hostname) const {
+  return context_manager_.GetContext(hostname);
+}
+
+DomainReliabilityMonitor::RequestInfo::RequestInfo() = default;
 
 DomainReliabilityMonitor::RequestInfo::RequestInfo(
     const net::URLRequest& request,
@@ -319,11 +303,6 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
       CreateBeaconFromAttempt(beacon_template, url_request_attempt);
   if (beacon)
     context_manager_.RouteBeacon(std::move(beacon));
-}
-
-base::WeakPtr<DomainReliabilityMonitor>
-DomainReliabilityMonitor::MakeWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace domain_reliability

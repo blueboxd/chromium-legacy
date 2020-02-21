@@ -795,6 +795,7 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   header_row_->SetBackgroundColor(kNotificationBackgroundColor);
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
+  header_row_->SetSummaryText(base::string16());
 
   base::string16 app_name;
   if (notification.UseOriginAsContextMessage()) {
@@ -913,7 +914,6 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
     DCHECK(!progress_bar_view_ || left_content_->Contains(progress_bar_view_));
     delete progress_bar_view_;
     progress_bar_view_ = nullptr;
-    header_row_->ClearProgress();
     return;
   }
 
@@ -924,6 +924,7 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
                                                 /* allow_round_corner */ false);
     progress_bar_view_->SetBorder(
         views::CreateEmptyBorder(kProgressBarTopPadding, 0, 0, 0));
+    progress_bar_view_->SetForegroundColor(kActionButtonTextColor);
     left_content_->AddChildViewAt(progress_bar_view_, left_content_count_);
   }
 
@@ -932,8 +933,6 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
 
   if (0 <= notification.progress() && notification.progress() <= 100)
     header_row_->SetProgress(notification.progress());
-  else
-    header_row_->ClearProgress();
 
   left_content_count_++;
 }
@@ -1208,7 +1207,9 @@ bool NotificationViewMD::IsExpandable() {
   if (item_views_.size() > 1)
     return true;
 
-  // TODO(fukino): Expandable if both progress bar and message exist.
+  // Expandable if both progress bar and status message exist.
+  if (status_view_)
+    return true;
 
   return false;
 }
@@ -1238,9 +1239,12 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   }
   if (status_view_)
     status_view_->SetVisible(expanded);
-  header_row_->SetOverflowIndicator(
-      list_items_count_ -
-      (expanded ? item_views_.size() : kMaxLinesForMessageView));
+
+  int max_items = expanded ? item_views_.size() : kMaxLinesForMessageView;
+  if (list_items_count_ > max_items)
+    header_row_->SetOverflowIndicator(list_items_count_ - max_items);
+  else if (!item_views_.empty())
+    header_row_->SetSummaryText(base::string16());
 
   bool has_icon = icon_view_ && (!hide_icon_on_expanded_ || !expanded);
   right_content_->SetVisible(has_icon);

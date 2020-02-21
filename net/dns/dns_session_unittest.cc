@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -89,7 +90,7 @@ class DnsSessionTest : public TestWithTaskEnvironment {
   void OnSocketFreed(size_t server_index);
 
  protected:
-  void Initialize(size_t num_servers, size_t num_doh_servers);
+  void Initialize(size_t num_servers);
   std::unique_ptr<DnsSession::SocketLease> Allocate(size_t server_index);
   bool DidAllocate(size_t server_index);
   bool DidFree(size_t server_index);
@@ -132,7 +133,7 @@ class MockDnsSocketPool : public DnsSocketPool {
   DnsSessionTest* test_;
 };
 
-void DnsSessionTest::Initialize(size_t num_servers, size_t num_doh_servers) {
+void DnsSessionTest::Initialize(size_t num_servers) {
   CHECK_LT(num_servers, 256u);
   config_.nameservers.clear();
   config_.dns_over_https_servers.clear();
@@ -140,13 +141,6 @@ void DnsSessionTest::Initialize(size_t num_servers, size_t num_doh_servers) {
     IPEndPoint dns_endpoint(IPAddress(192, 168, 1, i),
                             dns_protocol::kDefaultPort);
     config_.nameservers.push_back(dns_endpoint);
-  }
-  for (unsigned char i = 0; i < num_doh_servers; ++i) {
-    std::string server_template(
-        base::StringPrintf("https://mock.http/doh_test_%d{?dns}", i));
-    config_.dns_over_https_servers.push_back(
-        DnsConfig::DnsOverHttpsServerConfig(server_template,
-                                            true /* is_post */));
   }
 
   test_client_socket_factory_.reset(new TestClientSocketFactory());
@@ -224,7 +218,7 @@ TestClientSocketFactory::~TestClientSocketFactory() = default;
 TEST_F(DnsSessionTest, AllocateFree) {
   std::unique_ptr<DnsSession::SocketLease> lease1, lease2;
 
-  Initialize(2 /* num_servers */, 0 /* num_doh_servers */);
+  Initialize(2 /* num_servers */);
   EXPECT_TRUE(NoMoreEvents());
 
   lease1 = Allocate(0);
@@ -242,98 +236,6 @@ TEST_F(DnsSessionTest, AllocateFree) {
   lease2.reset();
   EXPECT_TRUE(DidFree(1));
   EXPECT_TRUE(NoMoreEvents());
-}
-
-// Expect default calculated timeout to be within 10ms of one in DnsConfig.
-TEST_F(DnsSessionTest, HistogramTimeoutNormal) {
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
-  EXPECT_LE(delta.InMilliseconds(), 10);
-  delta = session_->NextDohTimeout(0) - config_.timeout;
-  EXPECT_LE(delta.InMilliseconds(), 10);
-}
-
-// Expect short calculated timeout to be within 10ms of one in DnsConfig.
-TEST_F(DnsSessionTest, HistogramTimeoutShort) {
-  config_.timeout = base::TimeDelta::FromMilliseconds(15);
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
-  EXPECT_LE(delta.InMilliseconds(), 10);
-  delta = session_->NextDohTimeout(0) - config_.timeout;
-  EXPECT_LE(delta.InMilliseconds(), 10);
-}
-
-// Expect long calculated timeout to be equal to one in DnsConfig.
-// (Default max timeout is 5 seconds, so NextTimeout should return exactly
-// the config timeout.)
-TEST_F(DnsSessionTest, HistogramTimeoutLong) {
-  config_.timeout = base::TimeDelta::FromSeconds(15);
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  base::TimeDelta timeout = session_->NextTimeout(0, 0);
-  EXPECT_EQ(timeout.InMilliseconds(), config_.timeout.InMilliseconds());
-  timeout = session_->NextDohTimeout(0);
-  EXPECT_EQ(timeout.InMilliseconds(), config_.timeout.InMilliseconds());
-}
-
-// Ensures that reported negative RTT values don't cause a crash. Regression
-// test for https://crbug.com/753568.
-TEST_F(DnsSessionTest, NegativeRtt) {
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  session_->RecordRtt(0, false /* is_doh_server */,
-                      false /* is_validated_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-  session_->RecordRtt(0, true /* is_doh_server */,
-                      false /* is_validated_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-  session_->RecordRtt(0, true /* is_doh_server */,
-                      true /* is_validated_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-}
-
-class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
- public:
-  void OnDNSChanged() override { ++dns_changed_calls_; }
-
-  int dns_changed_calls() const { return dns_changed_calls_; }
-
- private:
-  int dns_changed_calls_ = 0;
-};
-
-TEST_F(DnsSessionTest, DohProbeConsecutiveFailures) {
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-
-  ResolveContext context(nullptr /* url_request_context */,
-                         false /* enable_caching*/);
-  context.InvalidateCaches(session_.get());
-  context.SetProbeSuccess(1, true /* success */, session_.get());
-
-  for (size_t i = 0; i < kAutomaticModeFailureLimit; i++) {
-    EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-    session_->RecordServerFailure(1, true /* is_doh_server */, &context);
-  }
-  EXPECT_EQ(0u, context.NumAvailableDohServers(session_.get()));
-}
-
-TEST_F(DnsSessionTest, DohProbeNonConsecutiveFailures) {
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-
-  ResolveContext context(nullptr /* url_request_context */,
-                         false /* enable_caching*/);
-  context.InvalidateCaches(session_.get());
-  context.SetProbeSuccess(1, true /* success */, session_.get());
-
-  for (size_t i = 0; i < kAutomaticModeFailureLimit - 1; i++) {
-    EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-    session_->RecordServerFailure(1, true /* is_doh_server */, &context);
-  }
-  EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-
-  session_->RecordServerSuccess(1, true /* is_doh_server */);
-  EXPECT_EQ(1u, context.NumAvailableDohServers(session_.get()));
-
-  session_->RecordServerFailure(1, true /* is_doh_server */, &context);
-  EXPECT_EQ(0u, context.NumAvailableDohServers(session_.get()));
 }
 
 }  // namespace

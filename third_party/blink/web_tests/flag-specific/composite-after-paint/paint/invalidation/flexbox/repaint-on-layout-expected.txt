@@ -17,7 +17,8 @@
       "name": "LayoutFlexibleBox (positioned) NAV class='nav-bar'",
       "position": [8, 0],
       "bounds": [200, 600],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

@@ -63,7 +63,7 @@ url::Origin ToOrigin(const std::string& url) {
   return url::Origin::Create(GURL(url));
 }
 
-ACTION_TEMPLATE(MoveArg,
+ACTION_TEMPLATE(MoveArgPointee,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = std::move(*::testing::get<k>(args));
@@ -262,7 +262,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseConnectionBeforeUpgrade) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(""), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -306,7 +306,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CloseAfterUpgrade) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(""), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -376,7 +376,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_OpenNewConnectionWhileUpgrading) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(""), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database1),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database1),
                                      testing::SaveArg<4>(&metadata1),
                                      QuitLoop(&loop)));
 
@@ -413,7 +413,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_OpenNewConnectionWhileUpgrading) {
         EXPECT_CALL(
             *connection2->open_callbacks,
             MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(true), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database2),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database2),
                                      testing::SaveArg<1>(&metadata2),
                                      RunClosure(std::move(quit_closure2))));
 
@@ -476,7 +476,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_PutWithInvalidBlob) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(""), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -580,7 +580,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWithConnection) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -652,7 +652,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -728,7 +728,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -803,7 +803,7 @@ TEST_F(IndexedDBDispatcherHostTest,
                           IsAssociatedInterfacePtrInfoValid(true),
                           IndexedDBDatabaseMetadata::NO_VERSION,
                           blink::mojom::IDBDataLoss::None, std::string(), _))
-              .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+              .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                        testing::SaveArg<4>(&metadata),
                                        QuitLoop(&loop)));
 
@@ -879,7 +879,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -956,7 +956,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database),
                                      testing::SaveArg<4>(&metadata),
                                      QuitLoop(&loop)));
 
@@ -1047,7 +1047,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                           IsAssociatedInterfacePtrInfoValid(true),
                           IndexedDBDatabaseMetadata::NO_VERSION,
                           blink::mojom::IDBDataLoss::None, std::string(), _))
-              .WillOnce(testing::DoAll(MoveArg<0>(&pending_database1),
+              .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database1),
                                        testing::SaveArg<4>(&metadata1),
                                        QuitLoop(&loop)));
 
@@ -1120,7 +1120,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                       MockedUpgradeNeeded(
                           IsAssociatedInterfacePtrInfoValid(true), kDBVersion1,
                           blink::mojom::IDBDataLoss::None, std::string(), _))
-              .WillOnce(testing::DoAll(MoveArg<0>(&pending_database2),
+              .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database2),
                                        testing::SaveArg<4>(&metadata2),
                                        QuitLoop(&loop)));
 
@@ -1183,7 +1183,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
                       MockedUpgradeNeeded(
                           IsAssociatedInterfacePtrInfoValid(true), kDBVersion2,
                           blink::mojom::IDBDataLoss::None, std::string(), _))
-              .WillOnce(testing::DoAll(MoveArg<0>(&pending_database3),
+              .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database3),
                                        testing::SaveArg<4>(&metadata3),
                                        QuitLoop(&loop)));
 
@@ -1277,7 +1277,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
                                         IndexedDBDatabaseMetadata::NO_VERSION,
                                         blink::mojom::IDBDataLoss::None,
                                         std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database1),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database1),
                                      testing::SaveArg<4>(&metadata1),
                                      QuitLoop(&loop)));
 
@@ -1367,7 +1367,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
                     MockedUpgradeNeeded(
                         IsAssociatedInterfacePtrInfoValid(true), kDBVersion1,
                         blink::mojom::IDBDataLoss::None, std::string(), _))
-            .WillOnce(testing::DoAll(MoveArg<0>(&pending_database2),
+            .WillOnce(testing::DoAll(MoveArgPointee<0>(&pending_database2),
                                      testing::SaveArg<4>(&metadata2),
                                      QuitLoop(&loop4)));
 

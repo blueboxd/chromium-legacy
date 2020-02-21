@@ -12,6 +12,8 @@ enum class Error;
 }  // namespace update_client
 
 namespace updater {
+struct RegistrationRequest;
+struct RegistrationResponse;
 
 // The UpdateService is the cross-platform core of the updater.
 // All functions and callbacks must be called on the same sequence.
@@ -21,6 +23,11 @@ class UpdateService {
   UpdateService& operator=(const UpdateService&) = delete;
 
   virtual ~UpdateService() = default;
+
+  // Registers given request to the updater.
+  virtual void RegisterApp(
+      const RegistrationRequest& request,
+      base::OnceCallback<void(const RegistrationResponse&)> callback) = 0;
 
   // Update-checks all registered applications. Calls |callback| once the
   // operation is complete.

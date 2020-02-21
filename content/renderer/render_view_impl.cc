@@ -97,7 +97,6 @@
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -176,7 +175,6 @@
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 #endif
 
-using blink::PluginAction;
 using blink::WebAXObject;
 using blink::WebConsoleMessage;
 using blink::WebData;
@@ -1190,7 +1188,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
                         OnAnimateDoubleTapZoomInMainFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
@@ -1788,12 +1785,6 @@ void RenderViewImpl::OnSetRendererPrefs(
       old_accept_languages != renderer_preferences_.accept_languages) {
     webview()->AcceptLanguagesChanged();
   }
-}
-
-void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
-                                      const PluginAction& action) {
-  if (webview())
-    webview()->PerformPluginAction(action, location);
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {

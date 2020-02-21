@@ -98,10 +98,6 @@ constexpr char kPrevTrackClientOp[] = "media.PREVIOUS";
 constexpr char kResumeTrackClientOp[] = "media.RESUME";
 constexpr char kStopTrackClientOp[] = "media.STOP";
 
-// The screen context query is locale independent. That is the same query
-// applies to all locales.
-constexpr char kScreenContextQuery[] = "screen context";
-
 constexpr float kDefaultSliderStep = 0.1f;
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
@@ -1558,19 +1554,6 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
     ax::mojom::AssistantExtra* assistant_extra,
     ui::AssistantTree* assistant_tree,
     const std::vector<uint8_t>& assistant_screenshot) {
-  if (assistant::features::IsScreenContextQueryEnabled()) {
-    assistant_client::VoicelessOptions options;
-    options.is_user_initiated = true;
-
-    assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
-        kScreenContextQuery,
-        CreateContextProto(
-            AssistantBundle{assistant_extra_.get(), assistant_tree_.get()},
-            assistant_screenshot),
-        options);
-    return;
-  }
-
   std::vector<std::string> context_protos;
 
   // Screen context can have the assistant_extra and assistant_tree set to

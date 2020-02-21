@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -233,6 +235,24 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(
                 event, this, mToolbarCoordinator.toolbarIsInitialized());
         return result != null ? result : super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void recordIntentToCreationTime(long timeMs) {
+        super.recordIntentToCreationTime(timeMs);
+
+        RecordHistogram.recordTimesHistogram(
+                "MobileStartup.IntentToCreationTime.CustomTabs", timeMs);
+        @ActivityType
+        int activityType = getActivityType();
+        if (activityType == ActivityType.WEBAPP || activityType == ActivityType.WEB_APK) {
+            RecordHistogram.recordTimesHistogram(
+                    "MobileStartup.IntentToCreationTime.Webapp", timeMs);
+        }
+        if (activityType == ActivityType.WEB_APK) {
+            RecordHistogram.recordTimesHistogram(
+                    "MobileStartup.IntentToCreationTime.WebApk", timeMs);
+        }
     }
 
     @Override

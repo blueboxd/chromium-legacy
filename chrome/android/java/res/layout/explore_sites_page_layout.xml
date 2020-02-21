@@ -9,7 +9,7 @@
     android:id="@+id/history_navigation"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/explore_sites_category_recycler"
         android:background="@color/modern_primary_color"
         android:scrollbars="vertical"

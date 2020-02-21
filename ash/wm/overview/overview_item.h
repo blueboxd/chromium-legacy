@@ -152,7 +152,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
 
-  // Checks if this item is current being dragged.
+  // Checks if this item is currently being dragged.
   bool IsDragItem();
 
   // Inserts the window back to its original stacking order so that the order of

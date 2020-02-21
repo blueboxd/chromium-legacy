@@ -328,7 +328,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
 
-    if (!model.request_may_start_over()) {
+    if (!model.offer_try_again_in_ui()) {
       continue;
     }
 

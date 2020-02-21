@@ -21,6 +21,7 @@ class MouseEvent;
 
 namespace ash {
 class OverviewGrid;
+class OverviewSession;
 
 // This event handler receives events in the pre-target phase and takes care of
 // the following:
@@ -55,8 +56,11 @@ class OverviewGridEventHandler : public ui::EventHandler,
   // events. Guaranteed to be alive during the lifetime of |this|.
   OverviewGrid* grid_;
 
+  // Guaranteed to be alive during the lifetime of |this|.
+  OverviewSession* const overview_session_;
+
   // The cumulative scroll offset. This is used so that tiny scrolls will not
-  // make miniscule shifts on the grid, but are not completely ignored.
+  // make minuscule shifts on the grid, but are not completely ignored.
   float scroll_offset_x_cumulative_ = 0.f;
 
   // Gesture curve of the current active fling. nullptr while a fling is not

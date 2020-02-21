@@ -111,14 +111,14 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
       base::OptionalOrNullptr(params));
 
-  cc_picture_layer_->SetSafeOpaqueBackgroundColor(
-      paint_chunks[0].safe_opaque_background_color);
+  auto safe_opaque_background_color =
+      paint_artifact->SafeOpaqueBackgroundColor(paint_chunks);
+  cc_picture_layer_->SetSafeOpaqueBackgroundColor(safe_opaque_background_color);
   // TODO(masonfreed): We don't need to set the background color here; only the
   // safe opaque background color matters. But making that change would require
   // rebaselining 787 tests to remove the "background_color" property from the
   // layer dumps.
-  cc_picture_layer_->SetBackgroundColor(
-      paint_chunks[0].safe_opaque_background_color);
+  cc_picture_layer_->SetBackgroundColor(safe_opaque_background_color);
   return cc_picture_layer_;
 }
 

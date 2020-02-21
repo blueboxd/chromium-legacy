@@ -355,10 +355,9 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
 void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
   if (!DrawsContent())
     return;
-  // Copy the first chunk's safe opaque background color over to the cc::Layer.
-  const auto& chunks = GetPaintController().GetPaintArtifact().PaintChunks();
   CcLayer()->SetSafeOpaqueBackgroundColor(
-      chunks.size() ? chunks[0].safe_opaque_background_color : SK_ColorWHITE);
+      GetPaintController().GetPaintArtifact().SafeOpaqueBackgroundColor(
+          GetPaintController().GetPaintArtifact().PaintChunks()));
 }
 
 bool GraphicsLayer::PaintWithoutCommitForTesting(

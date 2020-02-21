@@ -152,7 +152,7 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
 void InlineLoginHandlerChromeOS::HandleAuthExtensionReadyMessage(
     const base::ListValue* args) {
   AllowJavascript();
-  FireWebUIListener("showBackButton");
+  FireWebUIListener("show-back-button");
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,

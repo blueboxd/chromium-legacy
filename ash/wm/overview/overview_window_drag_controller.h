@@ -86,6 +86,8 @@ class ASH_EXPORT OverviewWindowDragController {
 
   DragBehavior current_drag_behavior() { return current_drag_behavior_; }
 
+  bool is_touch_dragging() const { return is_touch_dragging_; }
+
  private:
   void StartDragToCloseMode();
 

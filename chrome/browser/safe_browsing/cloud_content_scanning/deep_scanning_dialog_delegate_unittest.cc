@@ -1248,9 +1248,10 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.zip"));
 
   // Mark all files with failed scans.
-  for (const auto& path : data.paths)
+  for (const auto& path : data.paths) {
     PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
                                 MalwareDeepScanningVerdict::UWS));
+  }
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1270,7 +1271,7 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypes) {
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypesDefaultPolicy) {
   GURL url(kTestUrl);
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
@@ -1283,9 +1284,10 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
 
   // Mark all files with failed scans.
-  for (const auto& path : data.paths)
+  for (const auto& path : data.paths) {
     PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
                                 MalwareDeepScanningVerdict::UWS));
+  }
 
   bool called = false;
   ScanUpload(contents(), std::move(data),
@@ -1295,9 +1297,49 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypes) {
                    EXPECT_EQ(6u, data.paths.size());
                    ASSERT_EQ(6u, result.paths_results.size());
 
-                   // The unsupported types should be marked as true.
+                   // The unsupported types should be marked as true since the
+                   // default policy behavior is to allow them through.
                    for (const bool path_result : result.paths_results)
                      EXPECT_TRUE(path_result);
+                   *called = true;
+                 },
+                 &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypesBlockPolicy) {
+  TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
+      prefs::kBlockUnsupportedFiletypes, BLOCK_UNSUPPORTED_FILETYPES_UPLOADS);
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.these"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.file"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.types"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.are"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.not"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.supported"));
+
+  // Mark all files with failed scans.
+  for (const auto& path : data.paths) {
+    PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
+                                MalwareDeepScanningVerdict::UWS));
+  }
+
+  bool called = false;
+  ScanUpload(contents(), std::move(data),
+             base::BindOnce(
+                 [](bool* called, const DeepScanningDialogDelegate::Data& data,
+                    const DeepScanningDialogDelegate::Result& result) {
+                   EXPECT_EQ(6u, data.paths.size());
+                   ASSERT_EQ(6u, result.paths_results.size());
+
+                   // The unsupported types should be marked as false since the
+                   // block policy behavior is to not allow them through.
+                   for (const bool path_result : result.paths_results)
+                     EXPECT_FALSE(path_result);
                    *called = true;
                  },
                  &called));
@@ -1328,9 +1370,10 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedAndUnsupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
 
   // Mark all files with failed scans.
-  for (const auto& path : data.paths)
+  for (const auto& path : data.paths) {
     PathFailsDeepScan(path, FakeDeepScanningDialogDelegate::MalwareResponse(
                                 MalwareDeepScanningVerdict::UWS));
+  }
 
   bool called = false;
   ScanUpload(

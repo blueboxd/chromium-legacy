@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinis
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -40,6 +41,7 @@ import java.lang.reflect.Method;
 import javax.inject.Inject;
 
 /** Shows and hides splash screen for Webapps, WebAPKs and TWAs. */
+@ActivityScope
 public class SplashController
         extends CustomTabTabObserver implements InflationObserver, Destroyable {
     private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {

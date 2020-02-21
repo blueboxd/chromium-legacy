@@ -59,6 +59,10 @@ public class WebappDeferredStartupWithStorageHandler {
         mDeferredWithStorageTasks.add(task);
     }
 
+    public void addTaskToFront(Task task) {
+        mDeferredWithStorageTasks.add(0, task);
+    }
+
     private void runDeferredTask() {
         if (mActivity.isActivityFinishingOrDestroyed()) return;
 

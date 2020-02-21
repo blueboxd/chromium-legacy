@@ -108,10 +108,17 @@ EXTERN_C const IID IID_IUpdater;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE CheckForUpdate( 
-            /* [string][in] */ const WCHAR *guid) = 0;
+            /* [string][in] */ const WCHAR *app_id) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE Register( 
+            /* [string][in] */ const WCHAR *app_id,
+            /* [string][in] */ const WCHAR *brand_code,
+            /* [string][in] */ const WCHAR *tag,
+            /* [string][in] */ const WCHAR *version,
+            /* [string][in] */ const WCHAR *existence_checker_path) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE Update( 
-            /* [string][in] */ const WCHAR *guid) = 0;
+            /* [string][in] */ const WCHAR *app_id) = 0;
         
     };
     
@@ -136,11 +143,19 @@ EXTERN_C const IID IID_IUpdater;
         
         HRESULT ( STDMETHODCALLTYPE *CheckForUpdate )( 
             IUpdater * This,
-            /* [string][in] */ const WCHAR *guid);
+            /* [string][in] */ const WCHAR *app_id);
+        
+        HRESULT ( STDMETHODCALLTYPE *Register )( 
+            IUpdater * This,
+            /* [string][in] */ const WCHAR *app_id,
+            /* [string][in] */ const WCHAR *brand_code,
+            /* [string][in] */ const WCHAR *tag,
+            /* [string][in] */ const WCHAR *version,
+            /* [string][in] */ const WCHAR *existence_checker_path);
         
         HRESULT ( STDMETHODCALLTYPE *Update )( 
             IUpdater * This,
-            /* [string][in] */ const WCHAR *guid);
+            /* [string][in] */ const WCHAR *app_id);
         
         END_INTERFACE
     } IUpdaterVtbl;
@@ -165,11 +180,14 @@ EXTERN_C const IID IID_IUpdater;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IUpdater_CheckForUpdate(This,guid)	\
-    ( (This)->lpVtbl -> CheckForUpdate(This,guid) ) 
+#define IUpdater_CheckForUpdate(This,app_id)	\
+    ( (This)->lpVtbl -> CheckForUpdate(This,app_id) ) 
 
-#define IUpdater_Update(This,guid)	\
-    ( (This)->lpVtbl -> Update(This,guid) ) 
+#define IUpdater_Register(This,app_id,brand_code,tag,version,existence_checker_path)	\
+    ( (This)->lpVtbl -> Register(This,app_id,brand_code,tag,version,existence_checker_path) ) 
+
+#define IUpdater_Update(This,app_id)	\
+    ( (This)->lpVtbl -> Update(This,app_id) ) 
 
 #endif /* COBJMACROS */
 

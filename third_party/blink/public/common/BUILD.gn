@@ -137,7 +137,6 @@ source_set("headers") {
     "page/page_zoom.h",
     "peerconnection/webrtc_ip_handling_policy.h",
     "permissions/permission_utils.h",
-    "plugin/plugin_action.h",
     "prerender/prerender_rel_type.h",
     "presentation/presentation_receiver_flags.h",
     "scheduler/web_scheduler_tracked_feature.h",

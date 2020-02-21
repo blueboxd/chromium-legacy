@@ -113,11 +113,15 @@ public class VariationsSeedServerTest {
         VariationsUtils.updateStampTime();
         // Write some fake metrics that should be reported during the getSeed IPC.
         Context context = ContextUtils.getApplicationContext();
-        VariationsServiceMetricsHelper metrics =
+        VariationsServiceMetricsHelper initialMetrics =
                 VariationsServiceMetricsHelper.fromBundle(new Bundle());
-        metrics.setSeedFetchTime(50);
+        initialMetrics.setSeedFetchTime(50);
+        initialMetrics.setJobInterval(6000);
+        initialMetrics.setJobQueueTime(1000);
+        initialMetrics.setLastEnqueueTime(4);
+        initialMetrics.setLastJobStartTime(7);
         Assert.assertTrue("Failed to write initial variations SharedPreferences",
-                metrics.writeMetricsToVariationsSharedPreferences(context));
+                initialMetrics.writeMetricsToVariationsSharedPreferences(context));
 
         VariationsSeedServer server = new VariationsSeedServer();
         IBinder binder = server.onBind(null);
@@ -128,9 +132,10 @@ public class VariationsSeedServerTest {
 
         callback.helper.waitForCallback(
                 "Timed out waiting for reportSeedMetrics() to be called", 0);
-        VariationsServiceMetricsHelper metrics2 =
+        VariationsServiceMetricsHelper metrics =
                 VariationsServiceMetricsHelper.fromBundle(callback.metrics);
-        Assert.assertTrue("Expected SeedFetchTime metric to be set", metrics2.hasSeedFetchTime());
-        Assert.assertEquals(50, metrics2.getSeedFetchTime());
+        Assert.assertEquals(50, metrics.getSeedFetchTime());
+        Assert.assertEquals(6000, metrics.getJobInterval());
+        Assert.assertEquals(1000, metrics.getJobQueueTime());
     }
 }

@@ -1493,6 +1493,10 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kLight);
+
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
       body { color: red }
@@ -1508,7 +1512,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  ColorSchemeHelper color_scheme_helper;
   color_scheme_helper.SetPreferredColorScheme(GetDocument(),
                                               PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
@@ -1663,6 +1666,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kLight);
   EXPECT_EQ(PreferredColorScheme::kLight,
             Platform::Current()->ThemeEngine()->PreferredColorScheme());
 
@@ -2142,6 +2148,10 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
   ScopedCSSColorSchemeForTest enable_color_scheme(true);
   ScopedCSSColorSchemeUARenderingForTest enable_color_scheme_ua(true);
 
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kLight);
+
   GetDocument().documentElement()->SetInlineStyleProperty(
       CSSPropertyID::kColorScheme, "light dark");
   UpdateAllLifecyclePhases();
@@ -2513,6 +2523,11 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
 }
 
 TEST_F(StyleEngineTest, InitialColorChange) {
+  // Set color scheme to light.
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kLight);
+
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
       :root { color-scheme: light dark }
@@ -2537,7 +2552,6 @@ TEST_F(StyleEngineTest, InitialColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  ColorSchemeHelper color_scheme_helper;
   color_scheme_helper.SetPreferredColorScheme(GetDocument(),
                                               PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();

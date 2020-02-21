@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 
 import javax.inject.Inject;
 
@@ -27,9 +26,11 @@ public class WebApkActivityCoordinator {
     public WebApkActivityCoordinator(ChromeActivity<?> activity,
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappDisclosureSnackbarController disclosureSnackbarController,
+            WebApkActivityLifecycleUmaTracker webApkActivityLifecycleUmaTracker,
             Lazy<WebApkUpdateManager> webApkUpdateManager) {
-        // We don't need to do anything with |disclosureSnackbarController|. We just need to resolve
-        // it so that it starts working.
+        // We don't need to do anything with |disclosureSnackbarController| and
+        // |webApkActivityLifecycleUmaTracker|. We just need to resolve
+        // them so that they start working.
 
         mActivity = (WebApkActivity) activity;
         mWebApkUpdateManager = webApkUpdateManager;
@@ -44,11 +45,9 @@ public class WebApkActivityCoordinator {
     public void onDeferredStartupWithStorage(
             @Nullable WebappDataStorage storage, boolean didCreateStorage) {
         assert storage != null;
-
-        WebApkInfo info = mActivity.getWebApkInfo();
-        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.distributor());
         storage.incrementLaunchCount();
 
+        WebApkInfo info = (WebApkInfo) mActivity.getWebappInfo();
         mWebApkUpdateManager.get().updateIfNeeded(storage, info);
     }
 }

@@ -51,7 +51,6 @@ struct PLATFORM_EXPORT PaintChunk {
         bounds(other.bounds),
         drawable_bounds(other.drawable_bounds),
         outset_for_raster_effects(other.outset_for_raster_effects),
-        safe_opaque_background_color(other.safe_opaque_background_color),
         known_to_be_opaque(other.known_to_be_opaque),
         is_cacheable(other.is_cacheable),
         client_is_just_created(false),
@@ -125,8 +124,6 @@ struct PLATFORM_EXPORT PaintChunk {
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of
   // all clients of items in this chunk.
   float outset_for_raster_effects = 0;
-
-  SkColor safe_opaque_background_color = 0;
 
   // True if the bounds are filled entirely with opaque contents.
   bool known_to_be_opaque = false;

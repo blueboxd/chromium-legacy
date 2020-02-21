@@ -22,6 +22,7 @@ source_set("network_fetcher_sources") {
 
   deps = [
     "//base",
+    "//components/crash/core/common:crash_key_lib",
     "//components/update_client",
     "//net",
   ]
@@ -65,8 +66,12 @@ source_set("updater_setup_sources") {
     "//base",
     "//chrome/common/mac:launchd",
     "//chrome/updater:common",
+    "//chrome/updater:version_header",
+    "//components/crash/core/common:crash_key_lib",
     "//mojo/public/cpp/platform",
   ]
+
+  allow_circular_includes_from = [ "//chrome/updater:common" ]
 
   libs = [
     "AppKit.framework",

@@ -527,6 +527,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetScaleFactor(float scale) override;
   void ClosePage(
       mojom::blink::LocalMainFrame::ClosePageCallback callback) override;
+  // Performs the specified plugin action on the node at the given location.
+  void PluginActionAt(const gfx::Point& location,
+                      mojom::blink::PluginActionType action) override;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

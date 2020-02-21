@@ -57,7 +57,6 @@ class Point;
 }
 
 namespace blink {
-struct PluginAction;
 namespace mojom {
 class MediaPlayerAction;
 }
@@ -241,7 +240,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void MediaPlayerActionAt(const gfx::Point& location,
                            const blink::mojom::MediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
-                      const blink::PluginAction& action);
+                      blink::mojom::PluginActionType plugin_action);
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.

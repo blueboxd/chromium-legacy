@@ -66,8 +66,11 @@ cr.define('inline.login', function() {
    */
   function initialize() {
     $('navigation-button').addEventListener('click', navigationButtonClicked);
-    cr.addWebUIListener('showBackButton', showBackButton);
-    cr.addWebUIListener('navigateBackInWebview', navigateBackInWebview);
+    cr.addWebUIListener('show-back-button', showBackButton);
+    cr.addWebUIListener('navigate-back-in-webview', navigateBackInWebview);
+    cr.addWebUIListener('load-auth-extension', loadAuthExtension);
+    cr.addWebUIListener('close-dialog', closeDialog);
+
     authExtHost = new cr.login.Authenticator('signin-frame');
     authExtHost.addEventListener('dropLink', onDropLink);
     authExtHost.addEventListener('ready', onAuthReady);

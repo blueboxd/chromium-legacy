@@ -47,7 +47,6 @@ class FakeEmbeddedWorkerInstanceClient
   // blink::mojom::EmbeddedWorkerInstanceClient implementation.
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void StopWorker() override;
-  void ResumeAfterDownload() override;
 
   virtual void EvaluateScript();
 

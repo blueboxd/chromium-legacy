@@ -5,7 +5,6 @@
 #include "components/viz/common/features.h"
 
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "components/viz/common/switches.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -42,6 +41,13 @@ const base::Feature kRecordSkPicture{"RecordSkPicture",
 // be enabled.
 const base::Feature kDisableDeJelly{"DisableDeJelly",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// When wide color gamut content from the web is encountered, promote our
+// display to wide color gamut if supported.
+const base::Feature kDynamicColorGamut{"DynamicColorGamut",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Viz for WebView architecture.
 const base::Feature kVizForWebView{"VizForWebView",
@@ -86,6 +92,12 @@ bool IsRecordingSkPicture() {
   return IsUsingSkiaRenderer() &&
          base::FeatureList::IsEnabled(kRecordSkPicture);
 }
+
+#if defined(OS_ANDROID)
+bool IsDynamicColorGamutEnabled() {
+  return base::FeatureList::IsEnabled(kDynamicColorGamut);
+}
+#endif
 
 bool IsUsingVizForWebView() {
   return base::FeatureList::IsEnabled(kVizForWebView);

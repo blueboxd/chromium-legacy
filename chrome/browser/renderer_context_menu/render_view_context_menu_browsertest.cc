@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -35,9 +35,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
@@ -65,8 +66,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "media/base/media_switches.h"
@@ -92,6 +91,8 @@
 using content::WebContents;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
+using web_app::AppId;
+using web_app::WebAppProviderBase;
 
 namespace {
 
@@ -174,24 +175,21 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     return profile_manager->GetProfile(profile_path);
   }
 
-  const extensions::Extension* InstallTestBookmarkApp(
-      const GURL& app_url,
-      bool open_as_window = true) {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = app_url;
-    web_app_info.scope = app_url;
-    web_app_info.title = base::UTF8ToUTF16("Test app \xF0\x9F\x90\x90");
-    web_app_info.description =
+  AppId InstallTestWebApp(const GURL& app_url, bool open_as_window = true) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url;
+    web_app_info->title = base::UTF8ToUTF16("Test app \xF0\x9F\x90\x90");
+    web_app_info->description =
         base::UTF8ToUTF16("Test description \xF0\x9F\x90\x90");
-    web_app_info.open_as_window = open_as_window;
+    web_app_info->open_as_window = open_as_window;
 
-    return extensions::browsertest_util::InstallBookmarkApp(
-        browser()->profile(), web_app_info);
+    return web_app::InstallWebApp(browser()->profile(),
+                                  std::move(web_app_info));
   }
 
-  Browser* OpenTestBookmarkApp(const extensions::Extension* bookmark_app) {
-    return extensions::browsertest_util::LaunchAppBrowser(browser()->profile(),
-                                                          bookmark_app);
+  Browser* OpenTestWebApp(const AppId& app_id) {
+    return web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
   }
 };
 
@@ -330,8 +328,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryPresentForNormalURLs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenInAppPresentForURLsInScopeOfBookmarkApp) {
-  InstallTestBookmarkApp(GURL(kAppUrl1));
+                       OpenInAppPresentForURLsInScopeOfWebApp) {
+  InstallTestWebApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
@@ -346,8 +344,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenInAppPresentForURLsInScopeOfNonWindowedBookmarkApp) {
-  InstallTestBookmarkApp(GURL(kAppUrl1), false);
+                       OpenInAppPresentForURLsInScopeOfNonWindowedWebApp) {
+  InstallTestWebApp(GURL(kAppUrl1), false);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
@@ -362,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenEntryInAppAbsentForURLsOutOfScopeOfBookmarkApp) {
-  InstallTestBookmarkApp(GURL(kAppUrl1));
+                       OpenEntryInAppAbsentForURLsOutOfScopeOfWebApp) {
+  InstallTestWebApp(GURL(kAppUrl1));
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL("http://www.example.com/"),
@@ -380,14 +378,29 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppAbsentForURLsInNonLocallyInstalledApp) {
-  const extensions::Extension* app = InstallTestBookmarkApp(GURL(kAppUrl1));
+  const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
 
   // Part of the installation process (setting that this is a locally installed
   // app) runs asynchronously. Wait for that to complete before setting locally
   // installed to false.
   base::RunLoop().RunUntilIdle();
-  SetBookmarkAppIsLocallyInstalled(browser()->profile(), app,
-                                   false /* is_locally_installed */);
+
+  {
+    WebAppProviderBase* const provider =
+        WebAppProviderBase::GetProviderBase(browser()->profile());
+    base::RunLoop run_loop;
+
+    ASSERT_TRUE(
+        provider->install_finalizer().CanUserUninstallExternalApp(app_id));
+    provider->install_finalizer().UninstallExternalAppByUser(
+        app_id, base::BindLambdaForTesting([&](bool uninstalled) {
+          EXPECT_TRUE(uninstalled);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    base::RunLoop().RunUntilIdle();
+  }
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
@@ -403,9 +416,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForRegularURLs) {
-  const extensions::Extension* bookmark_app =
-      InstallTestBookmarkApp(GURL(kAppUrl1));
-  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+  const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
+  Browser* app_window = OpenTestWebApp(app_id);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNoneInWebContents(
@@ -423,9 +435,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForSameAppURLs) {
-  const extensions::Extension* bookmark_app =
-      InstallTestBookmarkApp(GURL(kAppUrl1));
-  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+  const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
+  Browser* app_window = OpenTestWebApp(app_id);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNoneInWebContents(
@@ -443,11 +454,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        InAppOpenEntryPresentForOtherAppURLs) {
-  const extensions::Extension* bookmark_app =
-      InstallTestBookmarkApp(GURL(kAppUrl1));
-  InstallTestBookmarkApp(GURL(kAppUrl2));
+  const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
+  InstallTestWebApp(GURL(kAppUrl2));
 
-  Browser* app_window = OpenTestBookmarkApp(bookmark_app);
+  Browser* app_window = OpenTestWebApp(app_id);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNoneInWebContents(
@@ -715,8 +725,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 }
 
 // Verify that "Open link in [App Name]" opens a new App window.
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInBookmarkApp) {
-  InstallTestBookmarkApp(GURL(kAppUrl1));
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInWebApp) {
+  InstallTestWebApp(GURL(kAppUrl1));
 
   ASSERT_TRUE(embedded_test_server()->Start());
 

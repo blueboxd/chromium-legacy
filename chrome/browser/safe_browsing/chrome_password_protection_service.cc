@@ -1393,6 +1393,10 @@ bool ChromePasswordProtectionService::IsExtendedReporting() {
   return IsExtendedReportingEnabled(*GetPrefs());
 }
 
+bool ChromePasswordProtectionService::IsEnhancedProtection() {
+  return IsEnhancedProtectionEnabled(*GetPrefs());
+}
+
 bool ChromePasswordProtectionService::IsIncognito() {
   return profile_->IsOffTheRecord();
 }
@@ -1406,10 +1410,12 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     return false;
   }
   bool extended_reporting_enabled = IsExtendedReporting();
+  bool enhanced_protection_enabled = IsEnhancedProtection();
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD) {
       bool enabled = extended_reporting_enabled ||
+                     enhanced_protection_enabled ||
                      base::FeatureList::IsEnabled(
                          safe_browsing::kPasswordProtectionForSavedPasswords);
       if (!enabled)
@@ -1427,13 +1433,13 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     // If the account type is UNKNOWN (i.e. AccountInfo fields could not be
     // retrieved from server), pings should be gated by SBER.
     if (password_type.account_type() == ReusedPasswordAccountType::UNKNOWN) {
-      return extended_reporting_enabled;
+      return extended_reporting_enabled || enhanced_protection_enabled;
     }
 
 // Only saved password reuse warnings are shown on Android, so other types of
 // password reuse events should be gated by extended reporting.
 #if defined(OS_ANDROID)
-    return extended_reporting_enabled;
+    return extended_reporting_enabled || enhanced_protection_enabled;
 #else
     return true;
 #endif
@@ -1445,7 +1451,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     *reason = RequestOutcome::DISABLED_DUE_TO_INCOGNITO;
     return false;
   }
-  if (!extended_reporting_enabled) {
+  if (!extended_reporting_enabled && !enhanced_protection_enabled) {
     *reason = RequestOutcome::DISABLED_DUE_TO_USER_POPULATION;
     return false;
   }
@@ -1679,7 +1685,7 @@ void ChromePasswordProtectionService::SanitizeReferrerChain(
 
 bool ChromePasswordProtectionService::CanSendSamplePing() {
   // Send a sample ping only 1% of the time.
-  return IsExtendedReporting() && !IsIncognito() &&
+  return (IsExtendedReporting() || IsEnhancedProtection()) && !IsIncognito() &&
          (bypass_probability_for_tests_ ||
           base::RandDouble() <= kProbabilityForSendingReportsFromSafeURLs);
 }

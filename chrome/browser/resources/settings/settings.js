@@ -17,6 +17,7 @@ import './downloads_page/downloads_page.m.js';
 import './on_startup_page/on_startup_page.m.js';
 import './on_startup_page/startup_urls_page.m.js';
 import './prefs/prefs.m.js';
+import './printing_page/printing_page.m.js';
 import './site_favicon.m.js';
 import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';

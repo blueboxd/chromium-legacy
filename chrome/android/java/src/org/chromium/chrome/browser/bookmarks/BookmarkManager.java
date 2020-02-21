@@ -36,6 +36,7 @@ import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.url.GURL;
 
 import java.util.Stack;
 
@@ -282,7 +283,7 @@ public class BookmarkManager
 
     @Override
     public void onUpdateFavicon(String url) {
-        mLargeIconBridge.clearFavicon(url);
+        mLargeIconBridge.clearFavicon(new GURL(url));
         mFaviconsNeedRefresh = true;
     }
 

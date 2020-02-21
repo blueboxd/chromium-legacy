@@ -23,6 +23,8 @@
 
 namespace blink {
 
+namespace {
+
 class MockFunction : public ScriptFunction {
  public:
   static testing::StrictMock<MockFunction>* Create(ScriptState* script_state) {
@@ -55,6 +57,7 @@ class MockPresentationController final : public PresentationController {
   MOCK_METHOD1(RemoveAvailabilityObserver,
                void(PresentationAvailabilityObserver*));
 };
+}  // namespace
 
 class RemotePlaybackTest : public testing::Test,
                            private ScopedRemotePlaybackBackendForTest {

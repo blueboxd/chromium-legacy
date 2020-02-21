@@ -122,10 +122,12 @@ Polymer({
   /** @private */
   onSaveTap_() {
     this.$.networkConfig.save();
+    settings.recordSettingChange();
   },
 
   /** @private */
   onConnectTap_() {
     this.$.networkConfig.connect();
+    settings.recordSettingChange();
   },
 });

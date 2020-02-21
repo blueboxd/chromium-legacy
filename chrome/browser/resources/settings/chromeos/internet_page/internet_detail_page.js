@@ -594,6 +594,7 @@ Polymer({
         this.getNetworkDetails_();
       }
     });
+    settings.recordSettingChange();
   },
 
   /**
@@ -1095,6 +1096,7 @@ Polymer({
     this.fire(
         'network-connect',
         {networkState: networkState, bypassConnectionDialog: bypassDialog});
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -1104,6 +1106,7 @@ Polymer({
         console.error('Disconnect failed for: ' + this.guid);
       }
     });
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -1172,6 +1175,7 @@ Polymer({
       // A forgotten network no longer has a valid GUID, close the subpage.
       this.close();
     });
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -1185,6 +1189,7 @@ Polymer({
         (this.isThirdPartyVpn_(this.managedProperties_) ||
          this.isArcVpn_(this.managedProperties_))) {
       this.browserProxy_.configureThirdPartyVpn(this.guid);
+      settings.recordSettingChange();
       return;
     }
 
@@ -1403,6 +1408,7 @@ Polymer({
     }
 
     this.preferNetwork_ = !this.preferNetwork_;
+    settings.recordSettingChange();
   },
 
   /**

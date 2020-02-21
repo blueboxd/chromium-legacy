@@ -20,12 +20,10 @@
 
 namespace libgav1 {
 class Decoder;
-struct DecoderBuffer;
 }  // namespace libgav1
 
 namespace media {
 class MediaLog;
-class VideoFrame;
 class FrameBufferPool;
 
 class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
@@ -74,8 +72,6 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
   void SetError();
   bool EnqueueRequest(DecodeRequest request);
   bool MaybeDequeueFrames();
-  scoped_refptr<VideoFrame> FormatVideoFrame(
-      const libgav1::DecoderBuffer& buffer);
 
   // Used to report error messages to the client.
   MediaLog* const media_log_;

@@ -1122,6 +1122,124 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
   TearDownDisplay();
 }
 
+// Check if the draw occlusion removes a DrawQuad that is hidden behind
+// a smaller disjointed DrawQuad.
+// NOTE: this test will fail if RendererSettings.kMaximumOccluderComplexity is
+// reduced to 1, since |rects[1]| will become the only occluder, and the quad
+// defined by |rects[2]| will not be occluded (removed).
+TEST_F(DisplayTest, DrawOcclusionWithSingleOverlapBehindDisjointedDrawQuads) {
+  RendererSettings settings;
+  settings.kMinimumDrawOcclusionSize.set_width(0);
+  SetUpGpuDisplay(settings);
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+  std::vector<gfx::Rect> rects;
+  rects.emplace_back(0, 0, 100, 100);
+  rects.emplace_back(150, 0, 150, 150);
+  rects.emplace_back(25, 25, 50, 50);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+
+  for (const gfx::Rect& rect : rects) {
+    SharedQuadState* shared_quad_state =
+        frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+    auto* quad = frame.render_pass_list.front()
+                     ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    shared_quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+                              is_clipped, are_contents_opaque, opacity,
+                              SkBlendMode::kSrcOver, 0);
+    quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
+  }
+
+  //              +-------+
+  //  +-----+     |       |
+  //  | +-+ |     |       |
+  //  | +-+ |     |       |
+  //  +-----+     +-------+
+  {
+    EXPECT_EQ(3u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // The third quad (defined by rects[2](25, 25, 50x50)) is completely
+    // occluded by the first quad (defined by rects[0](0, 0, 100x100)), so the
+    // third quad is removed from the |quad_list|, leaving the first and second
+    // (defined by rects[1](150, 0, 150x150); the largest) quads intact.
+    ASSERT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(rects[0].ToString(), frame.render_pass_list.front()
+                                       ->quad_list.ElementAt(0)
+                                       ->visible_rect.ToString());
+    EXPECT_EQ(rects[1].ToString(), frame.render_pass_list.front()
+                                       ->quad_list.ElementAt(1)
+                                       ->visible_rect.ToString());
+  }
+
+  TearDownDisplay();
+}
+
+// Check if the draw occlusion removes DrawQuads that are hidden behind
+// two different sized disjointed DrawQuads.
+// NOTE: this test will fail if RendererSettings.kMaximumOccluderComplexity is
+// reduced to 1, since |rects[1]| will become the only occluder, and the quad
+// defined by |rects[2]| will not be occluded (removed).
+TEST_F(DisplayTest, DrawOcclusionWithMultipleOverlapBehindDisjointedDrawQuads) {
+  RendererSettings settings;
+  settings.kMinimumDrawOcclusionSize.set_width(0);
+  SetUpGpuDisplay(settings);
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+  std::vector<gfx::Rect> rects;
+  rects.emplace_back(0, 0, 100, 100);
+  rects.emplace_back(150, 0, 150, 150);
+  rects.emplace_back(25, 25, 50, 50);
+  rects.emplace_back(150, 0, 100, 100);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+
+  for (const gfx::Rect& rect : rects) {
+    SharedQuadState* shared_quad_state =
+        frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+    auto* quad = frame.render_pass_list.front()
+                     ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    shared_quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+                              is_clipped, are_contents_opaque, opacity,
+                              SkBlendMode::kSrcOver, 0);
+    quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLACK, false);
+  }
+
+  //              +-------+
+  //  +-----+     +-----+ |
+  //  | +-+ |     |     | |
+  //  | +-+ |     |     | |
+  //  +-----+     +-----+-+
+  {
+    EXPECT_EQ(4u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // The third (defined by rects[2](25, 25, 50x50)) and fourth (defined by
+    // rects[3](150, 0, 100x100)) quads are completely occluded by the first
+    // (defined by rects[0](0, 0, 100x100)) and second (defined by rects[1](150,
+    // 0, 150x150)) quads, respectively, so both are removed from the
+    // |quad_list|, leaving the first and and second quads intact.
+    ASSERT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(rects[0].ToString(), frame.render_pass_list.front()
+                                       ->quad_list.ElementAt(0)
+                                       ->visible_rect.ToString());
+    EXPECT_EQ(rects[1].ToString(), frame.render_pass_list.front()
+                                       ->quad_list.ElementAt(1)
+                                       ->visible_rect.ToString());
+  }
+
+  TearDownDisplay();
+}
+
 // Check if draw occlusion removes DrawQuads that are not shown on screen.
 TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   RendererSettings settings;

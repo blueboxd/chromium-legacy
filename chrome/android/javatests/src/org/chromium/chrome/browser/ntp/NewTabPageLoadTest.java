@@ -93,7 +93,7 @@ public class NewTabPageLoadTest {
 
     private static class AsyncMockLargeIconBridge extends LargeIconBridge {
         @Override
-        public boolean getLargeIconForUrl(String pageUrl, int desiredSizePx,
+        public boolean getLargeIconForStringUrl(String pageUrl, int desiredSizePx,
                 final LargeIconBridge.LargeIconCallback callback) {
             new Handler().postDelayed(new Runnable() {
                 @Override

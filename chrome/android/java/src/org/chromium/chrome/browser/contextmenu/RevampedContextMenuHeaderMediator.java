@@ -49,7 +49,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
 
         if (!params.isImage() && !params.isVideo()) {
             LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
-            iconBridge.getLargeIconForUrl(mPlainUrl,
+            iconBridge.getLargeIconForStringUrl(mPlainUrl,
                     context.getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size),
                     this::onFaviconAvailable);
         } else if (params.isVideo()) {

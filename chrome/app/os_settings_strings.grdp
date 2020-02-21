@@ -719,6 +719,243 @@
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TABLE_TITLE" desc="Title for the list display of current preferences.">
     Ports
+  </message>  
+  
+  <!-- Android apps page (OS settings) -->
+  <message name="IDS_SETTINGS_ANDROID_APPS_LABEL" desc="The text associated with the primary section setting.">
+    Google Play Store
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS" desc="Label for launching Android apps settings.">
+    Manage Android preferences
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_REMOVE" desc="Label for the control to open a dialog confirming removal of the Google Play Store.">
+    Remove Google Play Store
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_REMOVE_BUTTON" desc="Label for the button for the removal of the Google Play Store">
+    Remove
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE" desc="Title of the confirmation dialog for disabling android apps.">
+    Remove Android apps?
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE" desc="Label for confirmation button in the disable android apps dialog.">
+    Remove Android apps
+  </message>
+  <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS" desc="Label for accessing app preferrences on ARC side.">
+    Manage Play app links
+  </message>
+  
+  <!-- Device Stylus (OS settings) -->
+  <message name="IDS_SETTINGS_STYLUS_TITLE" desc="Title of the stylus settings page.">
+    Stylus
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS" desc="Toggle that lets the user enable or disable the stylus tools.">
+    Show stylus tools in the shelf
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS" desc="Label that tells the user that the stylus tools will be automatically opened and closed when they insert or eject the stylus.">
+    Open stylus tools when the stylus is removed
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS_PRIMARY" desc="Primary URL label that opens up the Play Store to a curated list of stylus applications.">
+    Find more stylus apps
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS_SECONDARY" desc="Secondary (below the primary) URL label that opens up the Play Store to a curated list of stylus applications.">
+    Open Google Play
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL" desc="Label describing a dropdown that lets the user pick their default note-taking applications. The dropdown contains a list of all available choices. The user can install additional apps, so the contents of the dropdown is dynamic.">
+    Note-taking app
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LOCK_SCREEN_CHECKBOX" desc="Label for a check box that enables note-taking by selected note-taking application when user session is locked (i.e. when lock screen is shown).">
+    Enable note-taking from lock screen
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_KEEP_LATEST_NOTE" desc="Label for a check box that, when checked, indicates that the note-taking app should keep the latest note the user took while on the lock screen available to the user whenever the app is launched on the lock screen (i.e. if the active app window is closed, the note should be visible the next time the app is launched).">
+    Keep latest note on lock screen
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_LOCK_SCREEN_NOTES_TITLE" desc="In stylus settings, title of a section that contains settings for controlling note taking on the lock screen.">
+    Lock screen notes
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE" desc="Secondary label used when there are no note-taking applications available.">
+    None available
+  </message>
+  <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID" desc="Secondary label used when the list of note-taking apps is not yet available, because the internal android container has not yet finished starting.">
+    Loading apps...
+  </message>
+  
+  <!-- Bluetooth page (OS settings) -->
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
+    Connected
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED_WITH_BATTERY" desc="In Bluetooth device list, this label is shown below a device which is already connected and has a known battery percentage.">
+    Connected, <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECTING">
+    Connecting...
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED" desc="Title of the settings subsection listing paired Bluetooth devices.">
+    Paired devices
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED" desc="Settings > Bluetooth > Text to show when Bluetooth configuration is controlled by the primary user.">
+    Bluetooth configuration is controlled by <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_UNPAIRED" desc="Title of the settings subsection listing unpaired Bluetooth devices.">
+    Unpaired devices
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT" desc="Bluetooth pairing dialog: Text for dropdown meny item to connect to a device.">
+    Connect
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DISCONNECT" desc="Bluetooth pairing dialog: dropdown meny item to disconnect from a device.">
+    Disconnect
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle.">
+    Bluetooth enable
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
+    Show available Bluetooth devices
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when there are no paired Bluetooth devices scan.">
+    No paired devices
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND" desc="Message displayed when no Bluetooth devices are found after a scan.">
+    No Bluetooth devices found
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is not connected.">
+    Not connected
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH" desc="Name of the settings page which displays Bluetooth device settings.">
+    Bluetooth
+  </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE" desc="Title of the settings dialog for adding or pairing Bluetooth a device.">
+    Connect to Bluetooth device
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired Bluetooth device">
+    Remove from list
+  </message>   <message name="IDS_SETTINGS_BLUETOOTH_PAIR" desc="Label for the settings button to pair a previously paired Bluetooth device.">
+    Pair
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_ENTER_KEY" desc="Bluetooth pairing dialog: Text for enter key when pairing keyboard devices." >
+    enter
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY" desc="Bluetooth pairing dialog: Text for button to accept pairing code.">
+    Accept
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_REJECT_PASSKEY" desc="Bluetooth pairing dialog: Text for button to reject pairing a device.">
+    Reject
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_REQUEST_PINCODE" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
+    Please enter the PIN for "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.0 and older wireless keyboard.">
+    Please enter this PIN code on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_REQUEST_PASSKEY" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.1 and later device has no display or means of input, and does not support SSP.">
+    Please enter the passkey for "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_DISPLAY_PASSKEY" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.1 and later wireless keyboard.">
+    Please enter this passkey on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
+    Please confirm this passkey is shown on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_START_CONNECTING">
+    Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>"
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
+    Connection to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>" still in progress
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
+    Failed to connect to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_FAILED">
+    Authentication failed while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_CANCELED">
+    Authentication canceled while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_REJECTED">
+    Authentication code rejected while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_TIMEOUT">
+    Authentication timeout while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE">
+    Unsupported Bluetooth device: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_ATTRIBUTE_LENGTH_INVALID">
+    Write operation exceeds the maximum length of the attribute to: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_CONNECTION_CONGESTED">
+    Connection is congested to remote device: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_INSUFFICIENT_ENCRYPTION">
+    Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_OFFSET_INVALID">
+    Read or write operation was requested with an invalid offset on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_READ_NOT_PERMITTED">
+    Read operation is not permitted on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_REQUEST_NOT_SUPPORTED">
+    The given request is not supported to: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_WRITE_NOT_PERMITTED">
+    Write operation is not permitted on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+  </message>
+
+  <!-- Parental Controls -->
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_TITLE" desc="Name of the settings page which manages ChromeOS's parental controls.">
+    Parental controls
+  </message>
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_SET_UP_LABEL" desc="Label/description of the settings page which manages ChromeOS's parental controls.">
+    Set website restrictions &amp; screen time limits with Family Link
+  </message>
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_CONNECT_TO_INTERNET_LABEL" desc="Label/description shown when the Parental control setup can't be launched because there is no Internet Connection.">
+    Connect to the internet to set up parental controls
+  </message>
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_VIEW_SETTINGS_LABEL" desc="Label/description of the settings page which manages ChromeOS's parental controls.">
+    Open the Family Link app to see your supervision settings
+  </message>
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL" desc="Label/description of the button which launches page which enables ChromeOS's parental controls.">
+    Set up
+  </message>
+  <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_ROLE" desc="Role description of the button which launches page which enables ChromeOS's parental controls. Spoken aloud by screen readers when the Set Up button is focused">
+    Set up button
+  </message>
+
+  <!-- Device pointer page (OS settings) -->
+  <message name="IDS_SETTINGS_MOUSE_TITLE" desc="In Device Settings, the title of the mouse settings subpage.">
+    Mouse
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the touchpad settings subpage.">
+    Touchpad
+  </message>
+    <message name="IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
+    Enable tap-to-click
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the touchpad.">
+    Touchpad speed
+  </message>
+  <message name="IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL" desc="In Device Settings, the text under the left (less sensitive) side of the slider for the pointer (mouse/touch) speed (sensitivity).">
+    Slow
+  </message>
+  <message name="IDS_SETTINGS_POINTER_SPEED_FAST_LABEL" desc="In Device Settings, the text under the right (more sensitive) side of the slider for the pointer (mouse/touchpad) speed (sensitivity).">
+    Fast
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the mouse.">
+    Mouse speed
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL" desc="In Device Settings, the text next to the checkbox to set the primary mouse button to the right button instead of the left button.">
+    Swap primary mouse button
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL" desc="In Device Settings, the text next to the checkbox to set reverse scrolling.">
+    Reverse scrolling
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable mouse acceleration.">
+    Enable mouse acceleration
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable touchpad acceleration.">
+    Enable touchpad acceleration
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE" desc="In Device Settings, the title of the mouse and touchpad settings subpage (when the user has both types of devices).">
+    Mouse and touchpad
   </message>
 </if>
 </grit-part>

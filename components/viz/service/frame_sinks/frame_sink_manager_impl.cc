@@ -339,6 +339,10 @@ base::StringPiece FrameSinkManagerImpl::GetFrameSinkDebugLabel(
   return base::StringPiece();
 }
 
+void FrameSinkManagerImpl::AggregatedFrameSinksChanged() {
+  hit_test_manager_.SetNeedsSubmit();
+}
+
 void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id,
     CompositorFrameSinkSupport* support) {

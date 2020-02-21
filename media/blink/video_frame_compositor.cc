@@ -153,10 +153,15 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrameOnAnyThread() {
   return current_frame_;
 }
 
-void VideoFrameCompositor::SetCurrentFrame(scoped_refptr<VideoFrame> frame) {
+void VideoFrameCompositor::SetCurrentFrame(
+    scoped_refptr<VideoFrame> frame,
+    base::TimeTicks expected_presentation_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(current_frame_lock_);
   current_frame_ = std::move(frame);
+  last_presentation_time_ = tick_clock_->NowTicks();
+  last_expected_presentation_time_ = expected_presentation_time;
+  ++presentation_counter_;
 }
 
 void VideoFrameCompositor::PutCurrentFrame() {
@@ -265,6 +270,33 @@ void VideoFrameCompositor::SetOnFramePresentedCallback(
   new_presented_frame_cb_ = std::move(present_cb);
 }
 
+std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
+VideoFrameCompositor::GetLastPresentedFrameMetadata() {
+  auto frame_metadata =
+      std::make_unique<blink::WebMediaPlayer::VideoFramePresentationMetadata>();
+
+  scoped_refptr<VideoFrame> last_frame;
+  {
+    // Manually acquire the lock instead of calling GetCurrentFrameOnAnyThread()
+    // to also fetch the other frame dependent properties.
+    base::AutoLock lock(current_frame_lock_);
+    last_frame = current_frame_;
+    frame_metadata->presentation_time = last_presentation_time_;
+    frame_metadata->expected_presentation_time =
+        last_expected_presentation_time_;
+    frame_metadata->presented_frames = presentation_counter_;
+  }
+
+  frame_metadata->width = last_frame->visible_rect().width();
+  frame_metadata->height = last_frame->visible_rect().height();
+
+  frame_metadata->presentation_timestamp = last_frame->timestamp();
+
+  frame_metadata->metadata.MergeMetadataFrom(last_frame->metadata());
+
+  return frame_metadata;
+}
+
 bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
                                            base::TimeTicks presentation_time,
                                            bool repaint_duplicate_frame) {
@@ -279,7 +311,7 @@ bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
 
-  SetCurrentFrame(std::move(frame));
+  SetCurrentFrame(std::move(frame), presentation_time);
 
   if (new_processed_frame_cb_)
     std::move(new_processed_frame_cb_).Run(tick_clock_->NowTicks());
@@ -293,12 +325,8 @@ bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
   }
 
   if (frame_presented_cb) {
-    std::move(frame_presented_cb)
-        .Run(GetCurrentFrame(), tick_clock_->NowTicks(), presentation_time,
-             presentation_counter_);
+    std::move(frame_presented_cb).Run();
   }
-
-  ++presentation_counter_;
 
   return true;
 }

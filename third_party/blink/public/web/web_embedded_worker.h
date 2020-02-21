@@ -84,10 +84,6 @@ class BLINK_EXPORT WebEmbeddedWorker {
       scoped_refptr<base::SingleThreadTaskRunner>
           initiator_thread_task_runner) = 0;
   virtual void TerminateWorkerContext() = 0;
-
-  // Resumes starting a worker startup that was paused via
-  // WebEmbeddedWorkerStartData.pauseAfterDownloadMode.
-  virtual void ResumeAfterDownload() = 0;
 };
 
 }  // namespace blink

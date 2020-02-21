@@ -23,6 +23,15 @@ template("chrome_bundle") {
   _extra_modules = []
   foreach(_module_desc, invoker.module_descs) {
     assert(_package_id > 2, "Too many modules, ran out of package IDs!")
+
+    # Assert that |load_native_on_get_impl| is defined iff native libraries or
+    # resources are defined.
+    if (defined(_module_desc.native_deps) || defined(_module_desc.paks)) {
+      assert(defined(_module_desc.load_native_on_get_impl))
+    } else {
+      assert(!defined(_module_desc.load_native_on_get_impl))
+    }
+
     chrome_feature_module(
         "${_bundle_target_name}__${_module_desc.name}_bundle_module") {
       forward_variables_from(invoker,

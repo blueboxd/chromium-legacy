@@ -10519,6 +10519,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
       The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
     </message>
 
+    <!-- App block prompt -->
+    <message name="IDS_APP_BLOCK_PROMPT_TITLE" desc="Titlebar of the app block prompt window">
+      App blocked
+    </message>
+
+    <message name="IDS_APP_BLOCK_HEADING_FOR_CHILD" desc="Tells the child the app is blocked.">
+      "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" is blocked by your parent. Ask your parent for permission to use this app.
+    </message>
+
+    <message name="IDS_APP_BLOCK_HEADING" desc="Tells the user the app is blocked.">
+      "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" is blocked by admin. Ask admin for permission to use this app.
+    </message>
+
     <!-- Extension request -->
     <if expr="not is_android">
       <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_APPROVED_TITLE" desc="The notification title when there are some extension requests approved.">

@@ -27,6 +27,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/menu/menu_host.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -298,6 +301,15 @@ void RenderViewContextMenuViews::Show() {
   // the context menu is being displayed.
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   RunMenuAt(top_level_widget, screen_point, params().source_type);
+
+  for (auto& observer : observers_) {
+    observer.OnContextMenuShown(
+        params_, static_cast<ToolkitDelegateViews*>(toolkit_delegate())
+                     ->menu_view()
+                     ->GetSubmenu()
+                     ->host()
+                     ->GetWindowBoundsInScreen());
+  }
 }
 
 views::Widget* RenderViewContextMenuViews::GetTopLevelWidget() {

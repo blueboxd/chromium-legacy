@@ -16,6 +16,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/base/accelerators/media_keys_util.h"
@@ -23,6 +24,9 @@
 namespace ash {
 
 namespace {
+
+constexpr base::TimeDelta kDefaultSeekTime =
+    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 bool IsMediaSessionActionEligibleForKeyControl(
     media_session::mojom::MediaSessionAction action) {
@@ -250,6 +254,56 @@ void MediaControllerImpl::HandleMediaPrevTrack() {
 
   if (client_)
     client_->HandleMediaPrevTrack();
+}
+
+void MediaControllerImpl::HandleMediaSeekBackward() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kSeekBackward);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaSeekBackward();
+    return;
+  }
+
+  // If media session media key handling is enabled. Seek backward with
+  // kDefaultSeekTime using the media session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Seek(kDefaultSeekTime * -1);
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaSeekBackward();
+}
+
+void MediaControllerImpl::HandleMediaSeekForward() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kSeekForward);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaSeekForward();
+    return;
+  }
+
+  // If media session media key handling is enabled. Seek forward with
+  // kDefaultSeekTime using the media session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Seek(kDefaultSeekTime);
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaSeekForward();
 }
 
 void MediaControllerImpl::RequestCaptureState() {

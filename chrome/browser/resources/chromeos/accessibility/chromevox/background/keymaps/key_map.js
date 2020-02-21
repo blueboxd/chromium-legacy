@@ -265,16 +265,7 @@ KeyMap = class {
    */
   static fromDefaults() {
     return /** @type {!KeyMap} */ (KeyMap.fromPath(
-        KeyMap.KEYMAP_PATH + KeyMap.AVAILABLE_MAP_INFO['keymap_next'].file));
-  }
-
-  /**
-   * Convenience method for getting a ChromeVox Next key map.
-   * @return {KeyMap} The Next key map.
-   */
-  static fromNext() {
-    return KeyMap.fromPath(
-        KeyMap.KEYMAP_PATH + KeyMap.AVAILABLE_MAP_INFO['keymap_next'].file);
+        KeyMap.KEYMAP_PATH + KeyMap.AVAILABLE_MAP_INFO['keymap_default'].file));
   }
 
   /**
@@ -416,7 +407,7 @@ KeyMap.KEYMAP_PATH = 'background/keymaps/';
  * @const
  */
 KeyMap.AVAILABLE_MAP_INFO = {
-  'keymap_next': {'file': 'default_keymap.json'}
+  'keymap_default': {'file': 'default_keymap.json'}
 };
 
 

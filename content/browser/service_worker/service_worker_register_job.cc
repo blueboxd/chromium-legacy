@@ -341,8 +341,6 @@ bool ServiceWorkerRegisterJob::IsUpdateCheckNeeded() const {
 void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK_EQ(GetUpdateCheckType(),
-            UpdateCheckType::kAllScriptsBeforeStartWorker);
 
   if (!loader_factory) {
     // We can't continue with update checking appropriately without
@@ -501,28 +499,9 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
   DCHECK_NE(version->version_id(),
             blink::mojom::kInvalidServiceWorkerVersionId);
 
-  // PauseAfterDownload is used for an update check during start worker.
-  bool need_to_pause_after_download =
-      GetUpdateCheckType() == UpdateCheckType::kMainScriptDuringStartWorker &&
-      IsUpdateCheckNeeded();
-
-  // Module service workers don't support pause after download so we can't
-  // perform script comparison.
-  // TODO(asamidoi): Support pause after download in module workers.
-  if (worker_script_type_ == blink::mojom::ScriptType::kModule) {
-    need_to_pause_after_download = false;
-  }
-
   // "Let worker be a new ServiceWorker object..." and start the worker.
   set_new_version(std::move(version));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
-
-  if (need_to_pause_after_download) {
-    DCHECK(!blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
-    new_version()->SetToPauseAfterDownload(
-        base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
-                       weak_factory_.GetWeakPtr()));
-  }
 
   if (update_checker_) {
     DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
@@ -732,9 +711,6 @@ void ServiceWorkerRegisterJob::CompleteInternal(
     const std::string& status_message) {
   SetPhase(COMPLETE);
 
-  if (new_version())
-    new_version()->SetToNotPauseAfterDownload();
-
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     if (registration()) {
       if (should_uninstall_on_failure_)
@@ -832,35 +808,6 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     }
     container_host->AddMatchingRegistration(registration);
   }
-}
-
-void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
-  DCHECK_EQ(GetUpdateCheckType(),
-            UpdateCheckType::kMainScriptDuringStartWorker);
-  int main_script_net_error =
-      new_version()->script_cache_map()->main_script_net_error();
-  if (main_script_net_error != net::OK) {
-    // OnPausedAfterDownload() signifies a successful network load, which
-    // translates into a script cache error only in the byte-for-byte identical
-    // case.
-    DCHECK_EQ(main_script_net_error, net::ERR_FILE_EXISTS);
-
-    BumpLastUpdateCheckTimeIfNeeded();
-    ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
-                   registration());
-    // Note: Complete() destroys this job and hence risks destroying
-    // |new_version()| inside this callback, which is impolite and dangerous.
-    // But most of this class operates this way, and introducing asynchronicity
-    // here can potentially create bad interactions with other callbacks into
-    // this class, so continue the pattern here. This code path should be
-    // removed anyway when the byte-to-byte update check is moved outside of
-    // worker startup.
-    Complete(blink::ServiceWorkerStatusCode::kErrorExists,
-             "The updated worker is identical to the incumbent.");
-    return;
-  }
-
-  new_version()->embedded_worker()->ResumeAfterDownload();
 }
 
 void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {

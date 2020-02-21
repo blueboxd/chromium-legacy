@@ -290,6 +290,12 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 
 #pragma mark - Internal Methods
 
+- (void)shutDown {
+  _syncService->RemoveObserver(_observer.get());
+  _identityManager->RemoveObserver(_observer.get());
+  _signinErrorController->RemoveObserver(_observer.get());
+}
+
 // Create and return a callback that is used to notify when a clean up task
 // completes.
 - (base::OnceClosure)pendingCleanupTaskCallback {

@@ -588,7 +588,21 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
 
   current_frame_ = std::move(frame);
 
+  // TODO(https://crbug.com/1050755): Improve the accuracy of these fields when
+  // we only use RenderWithoutAlgorithm.
   base::TimeTicks now = base::TimeTicks::Now();
+  last_presentation_time_ = now;
+  last_expected_presentation_time_ = expected_presentation_time.value_or(now);
+
+  OnNewFramePresentedCB presented_frame_cb;
+  {
+    base::AutoLock lock(new_frame_presented_cb_lock_);
+    presented_frame_cb = std::move(new_frame_presented_cb_);
+  }
+
+  if (presented_frame_cb) {
+    std::move(presented_frame_cb).Run();
+  }
 
   // Complete the checks after |current_frame_| is accessible to avoid
   // deadlocks, see https://crbug.com/901744.
@@ -596,18 +610,13 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
       *video_frame_compositor_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebMediaPlayerMSCompositor::CheckForFrameChanges,
                           WrapRefCounted(this), is_first_frame,
-                          has_frame_size_changed, now,
-                          expected_presentation_time.value_or(now),
-                          static_cast<int>(total_frame_count_),
-                          std::move(new_rotation), std::move(new_opacity)));
+                          has_frame_size_changed, std::move(new_rotation),
+                          std::move(new_opacity)));
 }
 
 void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     bool is_first_frame,
     bool has_frame_size_changed,
-    base::TimeTicks presentation_time,
-    base::TimeTicks expected_presentation_time,
-    int frame_count,
     base::Optional<media::VideoRotation> new_frame_rotation,
     base::Optional<bool> new_frame_opacity) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
@@ -617,13 +626,6 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMS::OnFirstFrameReceived, player_,
                             *new_frame_rotation, *new_frame_opacity));
-
-    // Complete rAF requests before returning.
-    if (new_frame_presented_cb_) {
-      std::move(new_frame_presented_cb_)
-          .Run(current_frame_, presentation_time, expected_presentation_time,
-               frame_count);
-    }
     return;
   }
 
@@ -648,12 +650,6 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
   PostCrossThreadTask(
       *main_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
-
-  if (new_frame_presented_cb_) {
-    std::move(new_frame_presented_cb_)
-        .Run(current_frame_, presentation_time, expected_presentation_time,
-             frame_count);
-  }
 }
 
 void WebMediaPlayerMSCompositor::StartRenderingInternal() {
@@ -731,8 +727,34 @@ void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
 
 void WebMediaPlayerMSCompositor::SetOnFramePresentedCallback(
     OnNewFramePresentedCB presented_cb) {
-  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(new_frame_presented_cb_lock_);
   new_frame_presented_cb_ = std::move(presented_cb);
+}
+
+std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
+WebMediaPlayerMSCompositor::GetLastPresentedFrameMetadata() {
+  auto frame_metadata =
+      std::make_unique<WebMediaPlayer::VideoFramePresentationMetadata>();
+
+  scoped_refptr<media::VideoFrame> last_frame;
+  {
+    base::AutoLock lock(current_frame_lock_);
+    last_frame = current_frame_;
+    frame_metadata->presentation_time = last_presentation_time_;
+    frame_metadata->expected_presentation_time =
+        last_expected_presentation_time_;
+    frame_metadata->presented_frames =
+        static_cast<uint32_t>(total_frame_count_);
+  }
+
+  frame_metadata->width = last_frame->visible_rect().width();
+  frame_metadata->height = last_frame->visible_rect().height();
+
+  frame_metadata->presentation_timestamp = last_frame->timestamp();
+
+  frame_metadata->metadata.MergeMetadataFrom(last_frame->metadata());
+
+  return frame_metadata;
 }
 
 }  // namespace blink

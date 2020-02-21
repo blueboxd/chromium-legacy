@@ -158,7 +158,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     params->service_worker_version_id = version->version_id();
     params->scope = version->scope();
     params->script_url = version->script_url();
-    params->pause_after_download = false;
     params->is_installed = false;
 
     params->service_worker_receiver = CreateServiceWorker();
@@ -450,56 +449,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   worker->Stop();
 }
 
-class DontReceiveResumeAfterDownloadInstanceClient
-    : public FakeEmbeddedWorkerInstanceClient {
- public:
-  DontReceiveResumeAfterDownloadInstanceClient(
-      EmbeddedWorkerTestHelper* helper,
-      bool* was_resume_after_download_called)
-      : FakeEmbeddedWorkerInstanceClient(helper),
-        was_resume_after_download_called_(was_resume_after_download_called) {}
-
- private:
-  void ResumeAfterDownload() override {
-    *was_resume_after_download_called_ = true;
-  }
-
-  bool* const was_resume_after_download_called_;
-};
-
-TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  bool was_resume_after_download_called = false;
-  helper_->AddPendingInstanceClient(
-      std::make_unique<DontReceiveResumeAfterDownloadInstanceClient>(
-          helper_.get(), &was_resume_after_download_called));
-
-  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
-  worker->AddObserver(this);
-
-  // Run the start worker sequence until pause after download.
-  blink::mojom::EmbeddedWorkerStartParamsPtr params =
-      CreateStartParams(pair.second);
-  params->pause_after_download = true;
-  base::Optional<blink::ServiceWorkerStatusCode> status;
-  worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
-
-  // Make the worker stopping and attempt to send a resume after download
-  // message.
-  worker->Stop();
-  worker->ResumeAfterDownload();
-  base::RunLoop().RunUntilIdle();
-
-  // The resume after download message should not have been sent.
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-  EXPECT_FALSE(was_resume_after_download_called);
-}
-
 TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
@@ -640,8 +589,7 @@ class RecordCacheStorageInstanceClient
   bool had_cache_storage_ = false;
 };
 
-// Test that the worker is given a CacheStoragePtr during startup, when
-// |pause_after_download| is false.
+// Test that the worker is given a CacheStoragePtr during startup.
 TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
@@ -649,48 +597,18 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
-  // First, test a worker without pause after download.
-  {
-    // Start the worker.
-    auto* client =
-        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
-            helper_.get());
-    StartWorker(worker.get(), CreateStartParams(pair.second));
+  // Start the worker.
+  auto* client =
+      helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+          helper_.get());
+  StartWorker(worker.get(), CreateStartParams(pair.second));
 
-    // Cache storage should have been sent.
-    EXPECT_TRUE(client->had_cache_storage());
+  // Cache storage should have been sent.
+  EXPECT_TRUE(client->had_cache_storage());
 
-    // Stop the worker.
-    worker->Stop();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  // Second, test a worker with pause after download.
-  {
-    auto* client =
-        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
-            helper_.get());
-
-    // Start the worker until paused.
-    blink::mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(pair.second);
-    params->pause_after_download = true;
-    worker->Start(std::move(params), base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
-
-    // Finish starting.
-    worker->ResumeAfterDownload();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
-
-    // Cache storage should not have been sent.
-    EXPECT_FALSE(client->had_cache_storage());
-
-    // Stop the worker.
-    worker->Stop();
-    base::RunLoop().RunUntilIdle();
-  }
+  // Stop the worker.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that the worker is not given a CacheStoragePtr during startup when
@@ -705,52 +623,21 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
+  auto* client =
+      helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+          helper_.get());
 
-  // First, test a worker without pause after download.
-  {
-    auto* client =
-        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
-            helper_.get());
+  // Start the worker.
+  blink::mojom::EmbeddedWorkerStartParamsPtr params =
+      CreateStartParams(pair.second);
+  StartWorker(worker.get(), std::move(params));
 
-    // Start the worker.
-    blink::mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(pair.second);
-    StartWorker(worker.get(), std::move(params));
+  // Cache storage should not have been sent.
+  EXPECT_FALSE(client->had_cache_storage());
 
-    // Cache storage should not have been sent.
-    EXPECT_FALSE(client->had_cache_storage());
-
-    // Stop the worker.
-    worker->Stop();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  // Second, test a worker with pause after download.
-  {
-    auto* client =
-        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
-            helper_.get());
-
-    // Start the worker until paused.
-    blink::mojom::EmbeddedWorkerStartParamsPtr params =
-        CreateStartParams(pair.second);
-    params->pause_after_download = true;
-    worker->Start(std::move(params), base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
-
-    // Finish starting.
-    worker->ResumeAfterDownload();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
-
-    // Cache storage should not have been sent.
-    EXPECT_FALSE(client->had_cache_storage());
-
-    // Stop the worker.
-    worker->Stop();
-    base::RunLoop().RunUntilIdle();
-  }
+  // Stop the worker.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Starts the worker with kAbruptCompletion status.

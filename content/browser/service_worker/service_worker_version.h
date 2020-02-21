@@ -440,13 +440,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
-  // Used for pausing service worker startup in the renderer in order to do the
-  // byte-for-byte check.
-  bool pause_after_download() const {
-    return !pause_after_download_callback_.is_null();
-  }
-  void SetToPauseAfterDownload(base::OnceClosure callback);
-  void SetToNotPauseAfterDownload();
+  bool pause_after_download() const { return pause_after_download_; }
 
   void set_outside_fetch_client_settings_object(
       blink::mojom::FetchClientSettingsObjectPtr
@@ -457,8 +451,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // For use by EmbeddedWorkerInstance. Called when the main script loaded.
-  // This is only called for new (non-installed) workers. It's used for resuming
-  // a paused worker via ResumeAfterDownload().
+  // This is only used for new (non-installed) workers, so that script
+  // evaluation doesn't happen in the renderer until the browser calls
+  // InitializeGlobalScope() to tell it's ready to proceed.
   void OnMainScriptLoaded();
 
   // Returns nullptr if the main script is not loaded yet and:
@@ -1002,10 +997,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
 
-  // For service worker update checks. Non-null if pause after download during
-  // startup was requested. Once paused, the callback is run and reset to
-  // null.
-  base::OnceClosure pause_after_download_callback_;
+  // When true, script evaluation doesn't start until InitializeGlobalScope() is
+  // called. This allows the browser process to prevent the renderer from
+  // evaluating the script immediately after the script has been loaded, until
+  // certain checks are satisfied.
+  // TODO(https://crbug.com/1039613): Use this to get proper COEP value and
+  // re-create URLLoaderFactories for the service workers before evaluating the
+  // script.
+  bool pause_after_download_ = false;
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
 

@@ -6,6 +6,8 @@ source_set("quick_answers") {
   sources = [
     "quick_answers_client.cc",
     "quick_answers_client.h",
+    "quick_answers_consents.cc",
+    "quick_answers_consents.h",
     "quick_answers_model.cc",
     "quick_answers_model.h",
     "search_result_loader.cc",
@@ -29,7 +31,9 @@ source_set("quick_answers") {
     "//ash/public/cpp",
     "//ash/public/mojom",
     "//base",
+    "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/constants:constants",
+    "//components/prefs:prefs",
     "//net:net",
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
@@ -43,6 +47,7 @@ source_set("unit_tests") {
 
   sources = [
     "quick_answers_client_unittest.cc",
+    "quick_answers_consents_unittest.cc",
     "search_result_loader_unittest.cc",
     "search_result_parsers/definition_result_parser_unittest.cc",
     "search_result_parsers/kp_entity_result_parser_unittest.cc",
@@ -60,7 +65,10 @@ source_set("unit_tests") {
     "//ash/public/mojom",
     "//base",
     "//base/test:test_support",
+    "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/constants:constants",
+    "//components/prefs:prefs",
+    "//components/prefs:test_support",
     "//services/data_decoder/public/cpp:test_support",
     "//services/network:test_support",
     "//testing/gmock",

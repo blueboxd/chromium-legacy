@@ -16,12 +16,15 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -429,10 +432,10 @@ class InstallAppController : public ui::ProgressWndEvents,
   // Returns the thread id of the thread which owns the progress window.
   DWORD GetUIThreadID() const;
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Provides an execution environment for the updater main thread.
-  base::SingleThreadTaskExecutor main_task_executor_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // Provides an execution environment for the UI code. Typically, it runs
   // a single task which is the UI run loop.
@@ -468,7 +471,7 @@ class InstallAppController : public ui::ProgressWndEvents,
 // TODO(sorin): fix the hardcoding of the application name.
 // https:crbug.com/1014298
 InstallAppController::InstallAppController()
-    : main_task_executor_(base::MessagePumpType::UI),
+    : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       ui_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -477,11 +480,11 @@ InstallAppController::InstallAppController()
       config_(base::MakeRefCounted<Configurator>()) {}
 
 InstallAppController::~InstallAppController() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 int InstallAppController::InstallApp(const std::string& app_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   base::i18n::InitializeICU();
@@ -522,7 +525,7 @@ int InstallAppController::InstallApp(const std::string& app_id) {
 }
 
 void InstallAppController::DoInstallApp(update_client::CrxComponent component) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // At this point, the UI has been initialized, which means the UI can be
   // used from now on as an observer of the application install. The task
@@ -565,7 +568,7 @@ void InstallAppController::DoInstallApp(update_client::CrxComponent component) {
 // Observer::OnEvent to get completion status instead of querying the status
 // by calling UpdateClient::GetCrxUpdateState.
 void InstallAppController::InstallComplete() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   install_progress_observer_ipc_ = nullptr;
   update_client_->RemoveObserver(this);
@@ -573,7 +576,7 @@ void InstallAppController::InstallComplete() {
 }
 
 void InstallAppController::OnEvent(Events event, const std::string& id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(install_progress_observer_ipc_);
 
   CHECK_EQ(app_id_, id);
@@ -688,9 +691,9 @@ void InstallAppController::RunUI() {
   // This object is owned by the UI thread must be destroyed on this thread.
   progress_wnd_ = nullptr;
 
-  main_task_executor_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&InstallAppController::QuitRunLoop,
-                                base::Unretained(this)));
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(&InstallAppController::QuitRunLoop,
+                                             base::Unretained(this)));
 }
 
 void InstallAppController::DoExit() {
@@ -708,7 +711,7 @@ BOOL InstallAppController::PreTranslateMessage(MSG* msg) {
 }
 
 void InstallAppController::FlushPrefs() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::RunLoop runloop;
   config_->GetPrefService()->CommitPendingWrite(base::BindOnce(
       [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
@@ -717,7 +720,7 @@ void InstallAppController::FlushPrefs() {
 }
 
 void InstallAppController::QuitRunLoop() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   runloop_.QuitWhenIdleClosure().Run();
 }
 
@@ -729,15 +732,14 @@ DWORD InstallAppController::GetUIThreadID() const {
 }  // namespace
 
 int SetupUpdater() {
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
-  base::RunLoop runloop;
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
-
   base::ScopedDisallowBlocking no_blocking_allowed;
+
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   ui::SplashScreen splash_screen(kAppNameChrome);
   splash_screen.Show();
 
+  base::RunLoop runloop;
   int setup_result = 0;
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -762,6 +764,9 @@ int SetupUpdater() {
 }
 
 int InstallApp(const std::string& app_id) {
+  // Use MessagePumpType::UI to handle native window messages on the main
+  // thread of the updater.
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   int result = SetupUpdater();
   if (result)
     return result;

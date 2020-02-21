@@ -94,9 +94,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 // |device| must be a fully initialized CTAP2 device, i.e. its device_info()
 // method must return an AuthenticatorGetInfoResponse.
 //
-// If |in| contains only credential descriptors with IDs longer than the
-// device's |max_credential_id_length|, the result will be empty (rather than
-// containing a single empty vector).
+// The result will never be empty. It will, at least, contain a single empty
+// vector.
 std::vector<std::vector<PublicKeyCredentialDescriptor>>
 FilterAndBatchCredentialDescriptors(
     const std::vector<PublicKeyCredentialDescriptor>& in,

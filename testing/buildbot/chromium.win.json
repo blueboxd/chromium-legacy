@@ -1608,6 +1608,38 @@
         "test_target": "//chrome/test:browser_tests"
       },
       {
+        "args": [
+          "--build-revision=${got_revision}",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
+          "--browser-ui-tests-verify-pixels",
+          "--test-launcher-retry-limit=0",
+          "--enable-pixel-output-in-tests"
+        ],
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "pixel_browser_tests",
+        "precommit_args": [
+          "--issue=${patch_issue}",
+          "--patchset=${patch_set}",
+          "--jobid=${buildbucket_build_id}"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
+      },
+      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

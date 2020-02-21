@@ -191,8 +191,8 @@ component("printing") {
         "backend/cups_deleters.h",
         "backend/cups_ipp_constants.cc",
         "backend/cups_ipp_constants.h",
-        "backend/cups_ipp_util.cc",
-        "backend/cups_ipp_util.h",
+        "backend/cups_ipp_helper.cc",
+        "backend/cups_ipp_helper.h",
         "backend/cups_jobs.cc",
         "backend/cups_jobs.h",
         "backend/cups_printer.cc",
@@ -219,8 +219,8 @@ component("printing") {
         sources += [
           "backend/cups_ipp_constants.cc",
           "backend/cups_ipp_constants.h",
-          "backend/cups_ipp_util.cc",
-          "backend/cups_ipp_util.h",
+          "backend/cups_ipp_helper.cc",
+          "backend/cups_ipp_helper.h",
         ]
       }
     }
@@ -325,7 +325,7 @@ test("printing_unittests") {
     configs += [ ":cups" ]
 
     if (is_chromeos) {
-      sources += [ "backend/cups_ipp_util_unittest.cc" ]
+      sources += [ "backend/cups_ipp_helper_unittest.cc" ]
     } else {
       sources += [ "backend/cups_helper_unittest.cc" ]
       if (is_linux) {

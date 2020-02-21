@@ -23,6 +23,10 @@ public final class ProductionSupportedFlagList {
      * A list of commandline flags supported on user devices.
      */
     public static final Flag[] sFlagList = {
+            Flag.commandLine(AwSwitches.HIGHLIGHT_ALL_WEBVIEWS,
+                    "Highlight the contents (including web contents) of all WebViews with a yellow "
+                            + "tint. This is useful for identifying WebViews in an Android "
+                            + "application."),
             Flag.commandLine("show-composited-layer-borders",
                     "Renders a border around compositor layers to help debug and study layer "
                             + "compositing."),

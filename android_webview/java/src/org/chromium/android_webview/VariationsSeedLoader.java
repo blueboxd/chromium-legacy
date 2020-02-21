@@ -29,6 +29,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.CustomCountHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.variations.LoadSeedResult;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
@@ -95,7 +96,7 @@ public class VariationsSeedLoader {
             "Variations.AppSeedRequestState";
     @VisibleForTesting
     public static final String DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME =
-            "Variations.DownloadJobFetchTime";
+            "Variations.DownloadJobFetchTime2";
     private static final String SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME =
             "Variations.SeedLoadBlockingTime";
     // This metric is also written by VariationsSeedStore::LoadSeed and is used by other platforms.
@@ -313,9 +314,11 @@ public class VariationsSeedLoader {
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromBundle(metricsBundle);
             if (metrics.hasSeedFetchTime()) {
-                TimesHistogramSample histogram =
-                        new TimesHistogramSample(DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME);
-                histogram.record(metrics.getSeedFetchTime());
+                // Newer versions of Android limit job execution time to 10 minutes. Set the max
+                // histogram bucket to double that to have some wiggle room.
+                RecordHistogram.recordCustomTimesHistogram(DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME,
+                        metrics.getSeedFetchTime(), 100, TimeUnit.MINUTES.toMillis(20),
+                        50); // 50 buckets from 100ms to 20min
             }
         }
     }

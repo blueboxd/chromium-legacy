@@ -45,7 +45,7 @@ NavigationGlow::~NavigationGlow() = default;
 
 void NavigationGlow::OnAttachedToWindow() {
   window_ = view_->GetWindowAndroid();
-  if (window_) {
+  if (window_ != nullptr) {
     window_->AddObserver(this);
     if (!glow_effect_)
       glow_effect_ = std::make_unique<ui::OverscrollGlow>(this);
@@ -53,11 +53,20 @@ void NavigationGlow::OnAttachedToWindow() {
 }
 
 void NavigationGlow::OnDetachedFromWindow() {
-  if (window_) {
+  if (window_ != nullptr) {
     window_->RemoveObserver(this);
     glow_effect_.reset();
   }
   window_ = nullptr;
+}
+
+void NavigationGlow::OnViewAndroidDestroyed() {
+  // Ideally, ViewAndroid should be detaching itself as part of destruction, but
+  // this also clears the window reference as the View is being destroyed prior
+  // to the Window.
+  OnDetachedFromWindow();
+  view_ = nullptr;
+  layer_ = nullptr;
 }
 
 void NavigationGlow::Prepare(JNIEnv* env,
@@ -95,12 +104,13 @@ void NavigationGlow::OnReset(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void NavigationGlow::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   OnDetachedFromWindow();
-  view_->RemoveObserver(this);
+  if (view_ != nullptr)
+    view_->RemoveObserver(this);
   delete this;
 }
 
 void NavigationGlow::OnAnimate(base::TimeTicks frame_time) {
-  if (glow_effect_->Animate(frame_time, layer_))
+  if (layer_ != nullptr && glow_effect_->Animate(frame_time, layer_))
     window_->SetNeedsAnimate();
 }
 

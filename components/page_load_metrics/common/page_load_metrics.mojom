@@ -120,6 +120,18 @@ struct InteractiveTiming {
 
   // The timestamp of the event whose delay is reported as longest_input_delay.
   mojo_base.mojom.TimeDelta? longest_input_timestamp;
+
+  // The sum of all input delay.
+  mojo_base.mojom.TimeDelta? total_input_delay;
+
+  // The sum of all adjusted input delay. We adjust each input delay by
+  // subtracting a small number, e.g. 50ms. And if the subtraction result is
+  // negative, we will use 0ms instead.
+  mojo_base.mojom.TimeDelta? total_adjusted_input_delay;
+
+  // The number of user interactions, including click, tap, key press,
+  // cancellable touchstart, or pointer down followed by a pointer up.
+  uint64 num_input_events = 0;
 };
 
 

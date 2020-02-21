@@ -580,7 +580,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             }
         };
 
-        return mLargeIconBridge.getLargeIconForUrl(pageUrl, size, callback);
+        return mLargeIconBridge.getLargeIconForStringUrl(pageUrl, size, callback);
     }
 
     private boolean isNotificationHiddingOrHidden() {

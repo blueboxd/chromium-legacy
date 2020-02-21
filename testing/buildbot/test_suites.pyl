@@ -3007,7 +3007,7 @@
     },
 
     'pixel_browser_tests_gtests': {
-      'browser_tests': {
+      'pixel_browser_tests': {
         'name': 'pixel_browser_tests',
         'args': [
           '--build-revision=${got_revision}',
@@ -3020,10 +3020,16 @@
           '--test-launcher-retry-limit=0',
           '--enable-pixel-output-in-tests',
         ],
+        'precommit_args': [
+          '--issue=${patch_issue}',
+          '--patchset=${patch_set}',
+          '--jobid=${buildbucket_build_id}',
+        ],
         'experiment_percentage': 100,
         'swarming': {
-          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+          'service_account': 'chrome-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
+        'test': 'browser_tests',
       },
     },
 
@@ -3757,6 +3763,21 @@
       'desktop_chromium_isolated_scripts',
       'mac_specific_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
+    ],
+
+    # Pixel tests only enabled on Win 10. So this is
+    # 'chromium_win_gtests' + 'pixel_browser_tests_gtests'.
+    'chromium_win10_gtests': [
+      'aura_gtests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_win_and_linux_only',
+      'non_android_and_cast_and_chromeos_chromium_gtests',
+      'non_android_chromium_gtests',
+      'pixel_browser_tests_gtests',
+      'vr_platform_specific_chromium_gtests',
+      'weblayer_gtests',
+      'win_specific_chromium_gtests',
     ],
 
     'chromium_win_dbg_isolated_scripts': [

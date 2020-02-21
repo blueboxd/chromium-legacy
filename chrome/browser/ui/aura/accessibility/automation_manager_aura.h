@@ -26,7 +26,7 @@ class NoDestructor;
 
 namespace ui {
 class AXEventBundleSink;
-}
+}  // namespace ui
 
 namespace views {
 class AccessibilityAlertWindow;

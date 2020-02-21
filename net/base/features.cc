@@ -114,5 +114,8 @@ const base::Feature kTurnOffStreamingMediaCaching{
 const base::Feature kLegacyTLSEnforced{"LegacyTLSEnforced",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSchemefulSameSite{"SchemefulSameSite",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net

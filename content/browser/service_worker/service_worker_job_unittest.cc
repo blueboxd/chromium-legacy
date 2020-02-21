@@ -1175,31 +1175,52 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       observed_registration_->RemoveListener(this);
   }
 
-  class UpdateJobEmbeddedWorkerInstanceClient
+  class ScriptFailureEmbeddedWorkerInstanceClient
       : public FakeEmbeddedWorkerInstanceClient {
    public:
-    UpdateJobEmbeddedWorkerInstanceClient(UpdateJobTestHelper* helper)
+    explicit ScriptFailureEmbeddedWorkerInstanceClient(
+        UpdateJobTestHelper* helper)
         : FakeEmbeddedWorkerInstanceClient(helper) {}
-    ~UpdateJobEmbeddedWorkerInstanceClient() override = default;
+    ~ScriptFailureEmbeddedWorkerInstanceClient() override = default;
 
-    void set_force_start_worker_failure(bool force_start_worker_failure) {
-      force_start_worker_failure_ = force_start_worker_failure;
+    void StartWorker(
+        blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
+      host().Bind(std::move(params->instance_host));
+      start_params_ = std::move(params);
+
+      helper()->OnServiceWorkerReceiver(
+          std::move(start_params_->service_worker_receiver));
     }
 
-    void ResumeAfterDownload() override {
-      if (force_start_worker_failure_) {
-        host()->OnScriptEvaluationStart();
-        host()->OnStarted(
-            blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
-            helper()->GetNextThreadId(),
-            blink::mojom::EmbeddedWorkerStartTiming::New());
-        return;
-      }
-      FakeEmbeddedWorkerInstanceClient::ResumeAfterDownload();
+    void SimulateFailureOfScriptEvaluation() {
+      host()->OnScriptEvaluationStart();
+      host()->OnStarted(
+          blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
+          helper()->GetNextThreadId(),
+          blink::mojom::EmbeddedWorkerStartTiming::New());
     }
 
    private:
-    bool force_start_worker_failure_ = false;
+    blink::mojom::EmbeddedWorkerStartParamsPtr start_params_;
+  };
+
+  class ScriptFailureServiceWorker : public FakeServiceWorker {
+   public:
+    ScriptFailureServiceWorker(
+        EmbeddedWorkerTestHelper* helper,
+        ScriptFailureEmbeddedWorkerInstanceClient* client)
+        : FakeServiceWorker(helper), client_(client) {}
+
+    void InitializeGlobalScope(
+        mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>,
+        blink::mojom::ServiceWorkerRegistrationObjectInfoPtr,
+        blink::mojom::ServiceWorkerObjectInfoPtr,
+        blink::mojom::FetchHandlerExistence) override {
+      client_->SimulateFailureOfScriptEvaluation();
+    }
+
+   private:
+    ScriptFailureEmbeddedWorkerInstanceClient* client_;
   };
 
   ServiceWorkerStorage* storage() { return context()->storage(); }
@@ -1213,7 +1234,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     options.scope = test_origin.Resolve(kScope);
     scoped_refptr<ServiceWorkerRegistration> registration;
 
-    auto client = std::make_unique<UpdateJobEmbeddedWorkerInstanceClient>(this);
+    auto client = std::make_unique<FakeEmbeddedWorkerInstanceClient>(this);
     initial_embedded_worker_instance_client_ = client.get();
     AddPendingInstanceClient(std::move(client));
     base::RunLoop run_loop;
@@ -1296,8 +1317,8 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     update_found_ = true;
   }
 
-  UpdateJobEmbeddedWorkerInstanceClient*
-      initial_embedded_worker_instance_client_ = nullptr;
+  FakeEmbeddedWorkerInstanceClient* initial_embedded_worker_instance_client_ =
+      nullptr;
   scoped_refptr<ServiceWorkerRegistration> observed_registration_;
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
@@ -1514,9 +1535,11 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // (script evaluation failure). The check time should be updated.
   auto* embedded_worker_instance_client =
       update_helper_->AddNewPendingInstanceClient<
-          UpdateJobTestHelper::UpdateJobEmbeddedWorkerInstanceClient>(
+          UpdateJobTestHelper::ScriptFailureEmbeddedWorkerInstanceClient>(
           update_helper_);
-  embedded_worker_instance_client->set_force_start_worker_failure(true);
+  update_helper_->AddNewPendingServiceWorker<
+      UpdateJobTestHelper::ScriptFailureServiceWorker>(
+      update_helper_, embedded_worker_instance_client);
   registration->set_last_update_check(kYesterday);
   // Change script body.
   update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
@@ -1571,9 +1594,8 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_NewVersion) {
   scoped_refptr<ServiceWorkerVersion> new_version =
       registration->waiting_version();
   EXPECT_EQ(2u, update_helper_->attribute_change_log_.size());
-  UpdateJobTestHelper::UpdateJobEmbeddedWorkerInstanceClient* client =
-      update_helper_->initial_embedded_worker_instance_client_;
-  RequestTermination(&client->host());
+  RequestTermination(
+      &(update_helper_->initial_embedded_worker_instance_client_->host()));
 
   TestServiceWorkerObserver observer(helper_->context_wrapper());
   observer.RunUntilActivated(new_version.get(), runner);
@@ -1868,32 +1890,6 @@ TEST_F(ServiceWorkerUpdateJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
 
-class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
-    : public FakeEmbeddedWorkerInstanceClient {
- public:
-  explicit CheckPauseAfterDownloadEmbeddedWorkerInstanceClient(
-      EmbeddedWorkerTestHelper* helper)
-      : FakeEmbeddedWorkerInstanceClient(helper) {}
-
-  int num_of_startworker() const { return num_of_startworker_; }
-  void set_next_pause_after_download(bool expectation) {
-    next_pause_after_download_ = expectation;
-  }
-
- protected:
-  void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
-    ASSERT_TRUE(next_pause_after_download_.has_value());
-    EXPECT_EQ(next_pause_after_download_.value(), params->pause_after_download);
-    num_of_startworker_++;
-    FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(params));
-  }
-
- private:
-  base::Optional<bool> next_pause_after_download_;
-  int num_of_startworker_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(CheckPauseAfterDownloadEmbeddedWorkerInstanceClient);
-};
-
 // Test that activation doesn't complete if it's triggered by removing a
 // controllee and starting the worker failed due to shutdown.
 TEST_F(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
@@ -1957,9 +1953,11 @@ TEST_F(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
   update_helper_->context()->wrapper()->Shutdown();
   auto* embedded_worker_instance_client =
       update_helper_->AddNewPendingInstanceClient<
-          UpdateJobTestHelper::UpdateJobEmbeddedWorkerInstanceClient>(
+          UpdateJobTestHelper::ScriptFailureEmbeddedWorkerInstanceClient>(
           update_helper_);
-  embedded_worker_instance_client->set_force_start_worker_failure(true);
+  update_helper_->AddNewPendingServiceWorker<
+      UpdateJobTestHelper::ScriptFailureServiceWorker>(
+      update_helper_, embedded_worker_instance_client);
 
   // Allow the activation to continue. It will fail, and the worker
   // should not be promoted to ACTIVATED because failure occur

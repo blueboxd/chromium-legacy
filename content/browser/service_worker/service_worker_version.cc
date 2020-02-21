@@ -948,21 +948,11 @@ void ServiceWorkerVersion::Doom() {
   }
 }
 
-void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {
-  // TODO(asamidoi): Support pause after download in module workers.
-  DCHECK_EQ(blink::mojom::ScriptType::kClassic, script_type_);
-  pause_after_download_callback_ = std::move(callback);
-}
-
-void ServiceWorkerVersion::SetToNotPauseAfterDownload() {
-  pause_after_download_callback_.Reset();
-}
-
 void ServiceWorkerVersion::OnMainScriptLoaded() {
   // If this startup isn't paused the service worker after the script load,
   // there is nothing to do. We already called InitializeGlobalScope() in
   // StartWorkerInternal().
-  if (!pause_after_download_callback_)
+  if (!pause_after_download_)
     return;
   // If the script load was successful, unpause the worker by calling
   // InitializeGlobalScope(). Otherwise, keep it paused and the original
@@ -970,9 +960,6 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
   int net_error = script_cache_map()->main_script_net_error();
   if (net_error == net::OK)
     InitializeGlobalScope();
-  // The callback can destroy |this|, so protect it first.
-  auto protect = base::WrapRefCounted(this);
-  std::move(pause_after_download_callback_).Run();
 }
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
@@ -1774,11 +1761,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       outside_fetch_client_settings_object_.Clone();
   params->user_agent = GetContentClient()->browser()->GetUserAgent();
   params->is_installed = IsInstalled(status_);
-  params->pause_after_download = pause_after_download();
   params->script_url_to_skip_throttling = updated_script_url_;
 
   if (IsInstalled(status())) {
-    DCHECK(!params->pause_after_download);
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
         std::make_unique<ServiceWorkerInstalledScriptsSender>(this);

@@ -60,14 +60,13 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     const KeyboardShortcutItem& item,
     ShortcutCategory category)
     : shortcut_item_(&item), category_(category) {
-  description_label_view_ = new views::StyledLabel(
-      l10n_util::GetStringUTF16(item.description_message_id), nullptr);
+  description_label_view_ = AddChildView(std::make_unique<views::StyledLabel>(
+      l10n_util::GetStringUTF16(item.description_message_id), nullptr));
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |description_label_view_| always
   // align to left.
   description_label_view_->SetHorizontalAlignment(
       base::i18n::IsRTL() ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
-  AddChildView(description_label_view_);
 
   std::vector<size_t> offsets;
   std::vector<base::string16> replacement_strings;
@@ -114,7 +113,8 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
     accessible_string = l10n_util::GetStringFUTF16(
         item.shortcut_message_id, accessible_names, /*offsets=*/nullptr);
   }
-  shortcut_label_view_ = new views::StyledLabel(shortcut_string, nullptr);
+  shortcut_label_view_ = AddChildView(
+      std::make_unique<views::StyledLabel>(shortcut_string, nullptr));
   // StyledLabel will flip the alignment if UI layout is right-to-left.
   // Flip the alignment here in order to make |shortcut_label_view_| always
   // align to right.
@@ -138,7 +138,6 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
         gfx::Range(offsets[i], offsets[i] + replacement_strings[i].length()),
         style_info);
   }
-  AddChildView(shortcut_label_view_);
 
   constexpr int kVerticalPadding = 10;
   SetBorder(views::CreateEmptyBorder(

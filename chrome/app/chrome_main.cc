@@ -68,8 +68,8 @@ int ChromeMain(int argc, const char** argv) {
   // The process should crash when going through abnormal termination, but we
   // must be sure to reset this setting when ChromeMain returns normally.
   auto crash_on_detach_resetter = base::ScopedClosureRunner(
-      base::Bind(&base::win::SetShouldCrashOnProcessDetach,
-                 base::win::ShouldCrashOnProcessDetach()));
+      base::BindOnce(&base::win::SetShouldCrashOnProcessDetach,
+                     base::win::ShouldCrashOnProcessDetach()));
   base::win::SetShouldCrashOnProcessDetach(true);
   base::win::SetAbortBehaviorForCrashReporting();
   params.instance = instance;

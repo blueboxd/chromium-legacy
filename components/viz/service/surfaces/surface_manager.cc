@@ -641,4 +641,9 @@ bool SurfaceManager::HasBlockedEmbedder(
   return false;
 }
 
+void SurfaceManager::AggregatedFrameSinksChanged() {
+  if (delegate_)
+    delegate_->AggregatedFrameSinksChanged();
+}
+
 }  // namespace viz

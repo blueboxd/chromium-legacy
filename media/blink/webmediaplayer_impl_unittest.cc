@@ -155,11 +155,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(RequestEnterPictureInPicture, void());
   MOCK_METHOD0(RequestExitPictureInPicture, void());
   MOCK_METHOD0(GetFeatures, Features(void));
-  MOCK_METHOD4(OnRequestAnimationFrame,
-               void(base::TimeTicks,
-                    base::TimeTicks,
-                    uint32_t,
-                    const media::VideoFrame&));
+  MOCK_METHOD0(OnRequestAnimationFrame, void());
 
   void set_was_always_muted(bool value) { was_always_muted_ = value; }
 
@@ -302,6 +298,9 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   // MOCK_METHOD doesn't like OnceCallback.
   MOCK_METHOD1(SetOnFramePresentedCallback, void(OnNewFramePresentedCB));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
+  MOCK_METHOD0(
+      GetLastPresentedFrameMetadata,
+      std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>());
   MOCK_METHOD0(GetCurrentFrameOnAnyThread, scoped_refptr<VideoFrame>());
   MOCK_METHOD4(
       EnableSubmission,
@@ -649,11 +648,11 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void RequestAnimationFrame() { wmpi_->RequestAnimationFrame(); }
-
-  void OnNewFramePresentedCallback() {
-    wmpi_->OnNewFramePresentedCallback(CreateFrame(), base::TimeTicks::Now(),
-                                       base::TimeTicks::Now(), 1);
+  void GetVideoFramePresentationMetadata() {
+    wmpi_->GetVideoFramePresentationMetadata();
   }
+
+  void OnNewFramePresentedCallback() { wmpi_->OnNewFramePresentedCallback(); }
 
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor() {
     return wmpi_->GetCurrentFrameFromCompositor();
@@ -1157,9 +1156,16 @@ TEST_F(WebMediaPlayerImplTest, RequestAnimationFrame) {
   RequestAnimationFrame();
 }
 
+TEST_F(WebMediaPlayerImplTest, GetVideoFramePresentationMetadata) {
+  InitializeWebMediaPlayerImpl();
+
+  EXPECT_CALL(*compositor_, GetLastPresentedFrameMetadata());
+  GetVideoFramePresentationMetadata();
+}
+
 TEST_F(WebMediaPlayerImplTest, OnNewFramePresentedCallback) {
   InitializeWebMediaPlayerImpl();
-  EXPECT_CALL(client_, OnRequestAnimationFrame(_, _, _, _));
+  EXPECT_CALL(client_, OnRequestAnimationFrame());
 
   OnNewFramePresentedCallback();
 }

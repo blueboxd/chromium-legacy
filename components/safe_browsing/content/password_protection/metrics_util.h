@@ -93,7 +93,8 @@ enum class RequestOutcome {
   SERVICE_DESTROYED = 11,
   // No request sent because pinging feature is disable.
   DISABLED_DUE_TO_FEATURE_DISABLED = 12,
-  // No request sent because the user is not extended reporting user.
+  // No request sent because the user is not extended reporting or enhanced
+  // protection user.
   DISABLED_DUE_TO_USER_POPULATION = 13,
   // No request sent because the reputation of the URL is not computable.
   URL_NOT_VALID_FOR_REPUTATION_COMPUTING = 14,

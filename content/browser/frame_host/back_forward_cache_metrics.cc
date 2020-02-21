@@ -107,7 +107,6 @@ void BackForwardCacheMetrics::MainFrameDidStartNavigationToDocument() {
 void BackForwardCacheMetrics::DidCommitNavigation(
     NavigationRequest* navigation,
     bool back_forward_cache_allowed) {
-  // TODO(hajimehoshi): Record UKMs for the same-document navigation.
   if (navigation->IsInMainFrame() && !navigation->IsSameDocument()) {
     {
       bool is_reload = navigation->GetReloadType() != ReloadType::NONE;
@@ -128,10 +127,9 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     previous_navigation_is_served_from_bfcache_ =
         navigation->IsServedFromBackForwardCache();
     previous_navigation_is_history_ = IsHistoryNavigation(navigation);
+    last_committed_cross_document_main_frame_navigation_id_ =
+        navigation->GetNavigationId();
   }
-
-  if (navigation->IsInMainFrame())
-    last_committed_main_frame_navigation_id_ = navigation->GetNavigationId();
   last_committed_navigation_entry_id_ = navigation->nav_entry_id();
 
   navigated_away_from_main_document_timestamp_ = base::nullopt;
@@ -141,26 +139,28 @@ void BackForwardCacheMetrics::DidCommitNavigation(
 void BackForwardCacheMetrics::RecordHistoryNavigationUkm(
     NavigationRequest* navigation) {
   // If |IsHistoryNavigation| is true and
-  // |last_committed_main_frame_navigation_id_| is not -1, it's a history
-  // navigation which we're interested in.
+  // |last_committed_cross_document_main_frame_navigation_id_| is not -1, it's a
+  // history navigation which we're interested in.
   //
   // |IsHistoryNavigation| is true when the navigation is history navigation,
   // but just after cloning, the metrics object is missing. Then, checking this
-  // is not enough. |last_committed_main_frame_navigation_id_| is not -1 when
-  // the metrics object is available.
+  // is not enough. |last_committed_cross_document_main_frame_navigation_id_| is
+  // not -1 when the metrics object is available.
   if (!IsHistoryNavigation(navigation))
     return;
-  if (last_committed_main_frame_navigation_id_ == -1)
+  if (last_committed_cross_document_main_frame_navigation_id_ == -1)
     return;
 
   // We've visited an entry associated with this main frame document before,
   // so record metrics to determine whether it might be a back-forward cache
   // hit.
-  ukm::builders::HistoryNavigation builder(ukm::ConvertToSourceId(
-      navigation->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID));
-  builder.SetLastCommittedSourceIdForTheSameDocument(
-      ukm::ConvertToSourceId(last_committed_main_frame_navigation_id_,
-                             ukm::SourceIdType::NAVIGATION_ID));
+  ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  ukm::builders::HistoryNavigation builder(source_id);
+  builder.SetLastCommittedCrossDocumentNavigationSourceIdForTheSameDocument(
+      ukm::ConvertToSourceId(
+          last_committed_cross_document_main_frame_navigation_id_,
+          ukm::SourceIdType::NAVIGATION_ID));
   builder.SetNavigatedToTheMostRecentEntryForDocument(
       navigation->nav_entry_id() == last_committed_navigation_entry_id_);
   builder.SetMainFrameFeatures(main_frame_features_);
@@ -176,6 +176,12 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUkm(
                   navigated_away_from_main_document_timestamp_.value())
             .InMilliseconds());
   }
+
+  builder.SetBackForwardCache_IsServedFromBackForwardCache(
+      navigation->IsServedFromBackForwardCache());
+  builder.SetBackForwardCache_NotRestoredReasons(
+      not_restored_reasons_.to_ullong());
+
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -259,10 +265,10 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
 
 void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
     NavigationRequest* navigation) {
-  // |last_committed_main_frame_navigation_id_| is -1 when navigation history
-  // has never been initialized. This can happen only when the session history
-  // has been restored.
-  if (last_committed_main_frame_navigation_id_ == -1) {
+  // |last_committed_cross_document_main_frame_navigation_id_| is -1 when
+  // navigation history has never been initialized. This can happen only when
+  // the session history has been restored.
+  if (last_committed_cross_document_main_frame_navigation_id_ == -1) {
     not_restored_reasons_.set(
         static_cast<size_t>(NotRestoredReason::kSessionRestored));
   }

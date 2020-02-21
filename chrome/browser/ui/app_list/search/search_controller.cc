@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
@@ -83,6 +84,10 @@ void SearchController::InitializeRankers() {
                         profile_, ServiceAccessType::EXPLICIT_ACCESS));
   ranker->InitializeRankers(this);
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
+
+  if (app_list_features::IsSuggestedFilesEnabled()) {
+    mixer_->SetChipRanker(std::make_unique<ChipRanker>(profile_));
+  }
 }
 
 void SearchController::Start(const base::string16& query) {

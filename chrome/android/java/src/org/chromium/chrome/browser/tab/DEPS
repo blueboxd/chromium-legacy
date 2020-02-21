@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/TabHidingType.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewTabHelper.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/previews/Previews.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab",

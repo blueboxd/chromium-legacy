@@ -5,10 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_PAUSE_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_PAUSE_DIALOG_VIEW_H_
 
-#include "base/macros.h"
-
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "chrome/browser/ui/views/apps/app_dialog_view.h"
 
 namespace gfx {
 class ImageSkia;
@@ -16,21 +14,18 @@ class ImageSkia;
 
 // The app pause dialog. Once the user clicks the 'OK' button, this class calls
 // the callback to notify AppService, which pauses the app.
-class AppPauseDialogView : public views::BubbleDialogDelegateView {
+class AppPauseDialogView : public AppDialogView {
  public:
   AppPauseDialogView(
       const std::string& app_name,
-      gfx::ImageSkia image,
+      const gfx::ImageSkia& image,
       const apps::PauseData& pause_data,
       apps::AppServiceProxy::OnPauseDialogClosedCallback callback);
   ~AppPauseDialogView() override;
 
   // views::BubbleDialogDelegateView:
   bool Accept() override;
-  gfx::Size CalculatePreferredSize() const override;
-  ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
 
  private:
   // Callback when the dialog closes after the user has clicked the OK.

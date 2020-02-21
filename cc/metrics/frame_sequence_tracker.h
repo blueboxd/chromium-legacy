@@ -75,6 +75,7 @@ class CC_EXPORT FrameSequenceMetrics {
     // Returns the throughput in percent, a return value of base::nullopt
     // indicates that no throughput metric is reported.
     static base::Optional<int> ReportHistogram(
+        ThroughputUkmReporter* ukm_reporter,
         FrameSequenceTrackerType sequence_type,
         ThreadType thread_type,
         int metric_index,

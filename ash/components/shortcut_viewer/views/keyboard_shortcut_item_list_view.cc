@@ -68,7 +68,7 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
   constexpr int kLabelBottomPadding = 20;
   constexpr SkColor kLabelColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 
-  views::Label* category_label = new views::Label(text);
+  auto category_label = std::make_unique<views::Label>(text);
   category_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   category_label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kLabelTopPadding, 0, kLabelBottomPadding, 0)));
@@ -77,11 +77,11 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
   category_label->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
-  AddChildView(category_label);
+  AddChildView(std::move(category_label));
 }
 
 void KeyboardShortcutItemListView::AddHorizontalSeparator() {
-  AddChildView(new HorizontalSeparator(bounds().width()));
+  AddChildView(std::make_unique<HorizontalSeparator>(bounds().width()));
 }
 
 }  // namespace keyboard_shortcut_viewer

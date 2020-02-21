@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
@@ -20,6 +22,7 @@
 namespace app_list {
 namespace {
 
+using base::test::ScopedFeatureList;
 using ::file_manager::file_tasks::FileTasksObserver;
 using ::testing::UnorderedElementsAre;
 
@@ -57,6 +60,7 @@ class ZeroStateFileProviderTest : public testing::Test {
   void Wait() { task_environment_.RunUntilIdle(); }
 
   content::BrowserTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<Profile> profile_;
   std::unique_ptr<ZeroStateFileProvider> provider_;
@@ -68,7 +72,11 @@ TEST_F(ZeroStateFileProviderTest, NoResultsWithQuery) {
   EXPECT_TRUE(provider_->results().empty());
 }
 
-TEST_F(ZeroStateFileProviderTest, Simple) {
+TEST_F(ZeroStateFileProviderTest, ResultsProvided) {
+  // Disable flag.
+  scoped_feature_list_.InitWithFeatures(
+      {}, {app_list_features::kEnableSuggestedFiles});
+
   WriteFile("exists_1.txt");
   WriteFile("exists_2.png");
   WriteFile("exists_3.pdf");
@@ -83,6 +91,29 @@ TEST_F(ZeroStateFileProviderTest, Simple) {
   EXPECT_THAT(
       provider_->results(),
       UnorderedElementsAre(Title("exists_1.txt"), Title("exists_2.png")));
+}
+
+TEST_F(ZeroStateFileProviderTest, ResultsProvidedWithChips) {
+  // Enable flag - with flag enabled, we expect to receive the chip
+  // results for each file as well, so each file should be listed twice.
+  scoped_feature_list_.InitWithFeatures(
+      {app_list_features::kEnableSuggestedFiles}, {});
+
+  WriteFile("exists_1.txt");
+  WriteFile("exists_2.png");
+  WriteFile("exists_3.pdf");
+
+  provider_->OnFilesOpened(
+      {OpenEvent("exists_1.txt"), OpenEvent("exists_2.png")});
+  provider_->OnFilesOpened({OpenEvent("nonexistant.txt")});
+
+  provider_->Start(base::string16());
+  Wait();
+
+  EXPECT_THAT(
+      provider_->results(),
+      UnorderedElementsAre(Title("exists_1.txt"), Title("exists_2.png"),
+                           Title("exists_1.txt"), Title("exists_2.png")));
 }
 
 }  // namespace app_list

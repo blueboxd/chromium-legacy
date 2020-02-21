@@ -193,6 +193,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // |frame_sink_id|.
   bool HasBlockedEmbedder(const FrameSinkId& frame_sink_id) const;
 
+  // Indicates that the set of frame sinks being aggregated for display has
+  // changed since the previous aggregation.
+  void AggregatedFrameSinksChanged();
+
  private:
   friend class CompositorFrameSinkSupportTest;
   friend class FrameSinkManagerTest;

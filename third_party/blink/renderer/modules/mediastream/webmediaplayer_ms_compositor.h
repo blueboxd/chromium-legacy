@@ -59,11 +59,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
       public WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
                                        WebMediaPlayerMSCompositorTraits> {
  public:
-  using OnNewFramePresentedCB = CrossThreadOnceFunction<void(
-      scoped_refptr<media::VideoFrame> presented_frame,
-      base::TimeTicks presentation_time,
-      base::TimeTicks expected_presentation_time,
-      uint32_t presentation_counter)>;
+  using OnNewFramePresentedCB = base::OnceClosure;
 
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -120,7 +116,15 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   // Sets a hook to be notified when a new frame is presented, to fulfill a
   // prending video.requestAnimationFrame() request.
+  // Can be called from any thread.
   void SetOnFramePresentedCallback(OnNewFramePresentedCB presented_cb);
+
+  // Gets the metadata for the last frame that was presented to the compositor.
+  // Used to populate the VideoFrameMetadata of video.requestAnimationFrame()
+  // callbacks. See https://wicg.github.io/video-raf/.
+  // Can be called on any thread.
+  std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
+  GetLastPresentedFrameMetadata();
 
  private:
   friend class WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
@@ -167,9 +171,6 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   void CheckForFrameChanges(
       bool is_first_frame,
       bool has_frame_size_changed,
-      base::TimeTicks presentation_time,
-      base::TimeTicks expected_presentation_time,
-      int frame_count,
       base::Optional<media::VideoRotation> new_frame_rotation,
       base::Optional<bool> new_frame_opacity);
 
@@ -230,12 +231,21 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   size_t total_frame_count_;
   size_t dropped_frame_count_;
 
+  // Used to complete video.requestAnimationFrame() calls. Reported up via
+  // GetLastPresentedFrameMetadata().
+  // TODO(https://crbug.com/1050755): Improve the accuracy of these fields for
+  // cases where we only use RenderWithoutAlgorithm().
+  base::TimeTicks last_presentation_time_ GUARDED_BY(current_frame_lock_);
+  base::TimeTicks last_expected_presentation_time_
+      GUARDED_BY(current_frame_lock_);
+
   bool stopped_;
   bool render_started_;
 
   // Called when a new frame is enqueued, either in RenderWithoutAlgorithm() or
   // in RenderUsingAlgorithm(). Used to fulfill video.requestAnimationFrame()
   // requests.
+  base::Lock new_frame_presented_cb_lock_;
   OnNewFramePresentedCB new_frame_presented_cb_;
 
   std::unique_ptr<WebVideoFrameSubmitter> submitter_;

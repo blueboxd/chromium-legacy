@@ -176,6 +176,7 @@ class SmartChargingManager : public ui::UserActivityObserver,
   base::Optional<double> screen_brightness_percent_;
   base::Optional<power_manager::PowerSupplyProperties::ExternalPower>
       external_power_;
+  base::Optional<bool> is_charging_;
 
   base::Optional<base::FilePath> profile_path_;
   const std::unique_ptr<SmartChargingUkmLogger> ukm_logger_;

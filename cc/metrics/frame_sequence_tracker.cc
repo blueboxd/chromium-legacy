@@ -179,11 +179,11 @@ void FrameSequenceMetrics::ReportMetrics() {
 
   // Report the throughput metrics.
   base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(
-      type_, ThreadType::kCompositor,
+      throughput_ukm_reporter_, type_, ThreadType::kCompositor,
       GetIndexForMetric(FrameSequenceMetrics::ThreadType::kCompositor, type_),
       impl_throughput_);
   base::Optional<int> main_throughput_percent = ThroughputData::ReportHistogram(
-      type_, ThreadType::kMain,
+      throughput_ukm_reporter_, type_, ThreadType::kMain,
       GetIndexForMetric(FrameSequenceMetrics::ThreadType::kMain, type_),
       main_throughput_);
 
@@ -204,7 +204,7 @@ void FrameSequenceMetrics::ReportMetrics() {
     }
     if (slower_throughput.has_value()) {
       slower_throughput_percent = ThroughputData::ReportHistogram(
-          type_, ThreadType::kSlower,
+          throughput_ukm_reporter_, type_, ThreadType::kSlower,
           GetIndexForMetric(FrameSequenceMetrics::ThreadType::kSlower, type_),
           slower_throughput.value());
       DCHECK(slower_throughput_percent.has_value())
@@ -954,6 +954,7 @@ std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
 }
 
 base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
+    ThroughputUkmReporter* ukm_reporter,
     FrameSequenceTrackerType sequence_type,
     ThreadType thread_type,
     int metric_index,
@@ -987,16 +988,28 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   if (is_animation) {
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllAnimations", percent);
+    if (ukm_reporter) {
+      ukm_reporter->ReportAggregateThroughput(AggregationType::kAllAnimations,
+                                              percent);
+    }
   }
 
   if (is_interaction) {
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllInteractions", percent);
+    if (ukm_reporter) {
+      ukm_reporter->ReportAggregateThroughput(AggregationType::kAllInteractions,
+                                              percent);
+    }
   }
 
   if (is_animation || is_interaction) {
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllSequences", percent);
+    if (ukm_reporter) {
+      ukm_reporter->ReportAggregateThroughput(AggregationType::kAllSequences,
+                                              percent);
+    }
   }
 
   if (!is_animation && !IsInteractionType(sequence_type) &&

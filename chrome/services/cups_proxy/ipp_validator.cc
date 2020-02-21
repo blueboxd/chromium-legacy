@@ -21,7 +21,7 @@
 #include "chrome/services/cups_proxy/ipp_attribute_validator.h"
 #include "chrome/services/cups_proxy/public/cpp/cups_util.h"
 #include "net/http/http_util.h"
-#include "printing/backend/cups_ipp_util.h"
+#include "printing/backend/cups_ipp_helper.h"
 
 namespace cups_proxy {
 namespace {

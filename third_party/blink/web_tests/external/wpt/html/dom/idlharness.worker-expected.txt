@@ -262,7 +262,7 @@ PASS CanvasPattern interface object name
 PASS CanvasPattern interface: existence and properties of interface prototype object
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasPattern interface: existence and properties of interface prototype object's @@unscopables property
-PASS CanvasPattern interface: operation setTransform(DOMMatrix2DInit)
+PASS CanvasPattern interface: operation setTransform(optional DOMMatrix2DInit)
 PASS TextMetrics interface: existence and properties of interface object
 PASS TextMetrics interface object length
 PASS TextMetrics interface object name
@@ -296,7 +296,7 @@ PASS Path2D interface object name
 PASS Path2D interface: existence and properties of interface prototype object
 PASS Path2D interface: existence and properties of interface prototype object's "constructor" property
 PASS Path2D interface: existence and properties of interface prototype object's @@unscopables property
-PASS Path2D interface: operation addPath(Path2D, DOMMatrix2DInit)
+PASS Path2D interface: operation addPath(Path2D, optional DOMMatrix2DInit)
 PASS Path2D interface: operation closePath()
 PASS Path2D interface: operation moveTo(unrestricted double, unrestricted double)
 PASS Path2D interface: operation lineTo(unrestricted double, unrestricted double)
@@ -304,8 +304,8 @@ PASS Path2D interface: operation quadraticCurveTo(unrestricted double, unrestric
 PASS Path2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS Path2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS Path2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
+PASS Path2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, optional boolean)
+PASS Path2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, optional boolean)
 PASS ImageBitmapRenderingContext interface: existence and properties of interface object
 PASS ImageBitmapRenderingContext interface object length
 PASS ImageBitmapRenderingContext interface object name
@@ -313,7 +313,7 @@ PASS ImageBitmapRenderingContext interface: existence and properties of interfac
 PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object's "constructor" property
 PASS ImageBitmapRenderingContext interface: existence and properties of interface prototype object's @@unscopables property
 PASS ImageBitmapRenderingContext interface: attribute canvas
-PASS ImageBitmapRenderingContext interface: operation transferFromImageBitmap(ImageBitmap)
+PASS ImageBitmapRenderingContext interface: operation transferFromImageBitmap(ImageBitmap?)
 PASS OffscreenCanvas interface: existence and properties of interface object
 PASS OffscreenCanvas interface object length
 PASS OffscreenCanvas interface object name
@@ -322,9 +322,9 @@ PASS OffscreenCanvas interface: existence and properties of interface prototype 
 PASS OffscreenCanvas interface: existence and properties of interface prototype object's @@unscopables property
 PASS OffscreenCanvas interface: attribute width
 PASS OffscreenCanvas interface: attribute height
-PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextId, any)
+PASS OffscreenCanvas interface: operation getContext(OffscreenRenderingContextId, optional any)
 PASS OffscreenCanvas interface: operation transferToImageBitmap()
-PASS OffscreenCanvas interface: operation convertToBlob(ImageEncodeOptions)
+PASS OffscreenCanvas interface: operation convertToBlob(optional ImageEncodeOptions)
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface object
 PASS OffscreenCanvasRenderingContext2D interface object length
 PASS OffscreenCanvasRenderingContext2D interface object name
@@ -341,7 +341,7 @@ PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestrict
 PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation getTransform()
 PASS OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit)
+PASS OffscreenCanvasRenderingContext2D interface: operation setTransform(optional DOMMatrix2DInit)
 PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform()
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation
@@ -361,18 +361,18 @@ PASS OffscreenCanvasRenderingContext2D interface: operation clearRect(unrestrict
 PASS OffscreenCanvasRenderingContext2D interface: operation fillRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation strokeRect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation beginPath()
-PASS OffscreenCanvasRenderingContext2D interface: operation fill(CanvasFillRule)
-PASS OffscreenCanvasRenderingContext2D interface: operation fill(Path2D, CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(optional CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation fill(Path2D, optional CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke()
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D)
-PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule)
-PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
-PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(optional CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, optional CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, optional CanvasFillRule)
+PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, optional CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(Path2D, unrestricted double, unrestricted double)
-PASS OffscreenCanvasRenderingContext2D interface: operation fillText(DOMString, unrestricted double, unrestricted double, unrestricted double)
-PASS OffscreenCanvasRenderingContext2D interface: operation strokeText(DOMString, unrestricted double, unrestricted double, unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation fillText(DOMString, unrestricted double, unrestricted double, optional unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation strokeText(DOMString, unrestricted double, unrestricted double, optional unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation measureText(DOMString)
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation drawImage(CanvasImageSource, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
@@ -386,7 +386,7 @@ PASS OffscreenCanvasRenderingContext2D interface: attribute lineWidth
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineCap
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineJoin
 PASS OffscreenCanvasRenderingContext2D interface: attribute miterLimit
-PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash([object Object])
+PASS OffscreenCanvasRenderingContext2D interface: operation setLineDash(sequence<unrestricted double>)
 PASS OffscreenCanvasRenderingContext2D interface: operation getLineDash()
 PASS OffscreenCanvasRenderingContext2D interface: attribute lineDashOffset
 PASS OffscreenCanvasRenderingContext2D interface: attribute font
@@ -400,8 +400,8 @@ PASS OffscreenCanvasRenderingContext2D interface: operation quadraticCurveTo(unr
 PASS OffscreenCanvasRenderingContext2D interface: operation bezierCurveTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation arcTo(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation rect(unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
-PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
+PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, optional boolean)
+PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, optional boolean)
 PASS CustomElementRegistry interface: existence and properties of interface object
 PASS ElementInternals interface: existence and properties of interface object
 PASS DataTransfer interface: existence and properties of interface object
@@ -462,7 +462,7 @@ PASS MessageEvent interface: attribute origin
 PASS MessageEvent interface: attribute lastEventId
 PASS MessageEvent interface: attribute source
 PASS MessageEvent interface: attribute ports
-PASS MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])
+PASS MessageEvent interface: operation initMessageEvent(DOMString, optional boolean, optional boolean, optional any, optional USVString, optional DOMString, optional MessageEventSource?, optional sequence<MessagePort>)
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 })
 PASS Stringification of new MessageEvent("message", { data: 5 })
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type
@@ -470,8 +470,8 @@ PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inher
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type
-PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type
-PASS MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError
+PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, optional boolean, optional boolean, optional any, optional USVString, optional DOMString, optional MessageEventSource?, optional sequence<MessagePort>)" with the proper type
+PASS MessageEvent interface: calling initMessageEvent(DOMString, optional boolean, optional boolean, optional any, optional USVString, optional DOMString, optional MessageEventSource?, optional sequence<MessagePort>) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError
 PASS EventSource interface: existence and properties of interface object
 PASS EventSource interface object length
 PASS EventSource interface object name
@@ -513,7 +513,7 @@ PASS WebSocket interface: attribute onerror
 PASS WebSocket interface: attribute onclose
 PASS WebSocket interface: attribute extensions
 PASS WebSocket interface: attribute protocol
-PASS WebSocket interface: operation close(unsigned short, USVString)
+PASS WebSocket interface: operation close(optional unsigned short, optional USVString)
 PASS WebSocket interface: attribute onmessage
 PASS WebSocket interface: attribute binaryType
 PASS WebSocket interface: operation send(USVString)
@@ -534,8 +534,8 @@ PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onerr
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onclose" with the proper type
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "extensions" with the proper type
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "protocol" with the proper type
-PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "close(unsigned short, USVString)" with the proper type
-PASS WebSocket interface: calling close(unsigned short, USVString) on new WebSocket("ws://foo") with too few arguments must throw TypeError
+PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "close(optional unsigned short, optional USVString)" with the proper type
+PASS WebSocket interface: calling close(optional unsigned short, optional USVString) on new WebSocket("ws://foo") with too few arguments must throw TypeError
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "onmessage" with the proper type
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "binaryType" with the proper type
 PASS WebSocket interface: new WebSocket("ws://foo") must inherit property "send(USVString)" with the proper type
@@ -574,8 +574,8 @@ PASS MessagePort interface object name
 PASS MessagePort interface: existence and properties of interface prototype object
 PASS MessagePort interface: existence and properties of interface prototype object's "constructor" property
 PASS MessagePort interface: existence and properties of interface prototype object's @@unscopables property
-PASS MessagePort interface: operation postMessage(any, [object Object])
-PASS MessagePort interface: operation postMessage(any, PostMessageOptions)
+PASS MessagePort interface: operation postMessage(any, sequence<object>)
+PASS MessagePort interface: operation postMessage(any, optional PostMessageOptions)
 PASS MessagePort interface: operation start()
 PASS MessagePort interface: operation close()
 PASS MessagePort interface: attribute onmessage
@@ -600,7 +600,7 @@ PASS WorkerGlobalScope interface: existence and properties of interface prototyp
 PASS WorkerGlobalScope interface: attribute self
 PASS WorkerGlobalScope interface: attribute location
 PASS WorkerGlobalScope interface: attribute navigator
-PASS WorkerGlobalScope interface: operation importScripts(USVString)
+PASS WorkerGlobalScope interface: operation importScripts(USVString...)
 PASS WorkerGlobalScope interface: attribute onerror
 PASS WorkerGlobalScope interface: attribute onlanguagechange
 FAIL WorkerGlobalScope interface: attribute onoffline assert_true: The prototype object must have a property "onoffline" expected true got false
@@ -610,13 +610,13 @@ PASS WorkerGlobalScope interface: attribute onunhandledrejection
 PASS WorkerGlobalScope interface: attribute origin
 PASS WorkerGlobalScope interface: operation btoa(DOMString)
 PASS WorkerGlobalScope interface: operation atob(DOMString)
-PASS WorkerGlobalScope interface: operation setTimeout(TimerHandler, long, any)
-PASS WorkerGlobalScope interface: operation clearTimeout(long)
-PASS WorkerGlobalScope interface: operation setInterval(TimerHandler, long, any)
-PASS WorkerGlobalScope interface: operation clearInterval(long)
+PASS WorkerGlobalScope interface: operation setTimeout(TimerHandler, optional long, any...)
+PASS WorkerGlobalScope interface: operation clearTimeout(optional long)
+PASS WorkerGlobalScope interface: operation setInterval(TimerHandler, optional long, any...)
+PASS WorkerGlobalScope interface: operation clearInterval(optional long)
 PASS WorkerGlobalScope interface: operation queueMicrotask(VoidFunction)
-PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions)
-PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)
+PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions)
+PASS WorkerGlobalScope interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions)
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface object
 PASS DedicatedWorkerGlobalScope interface object length
 PASS DedicatedWorkerGlobalScope interface object name
@@ -630,8 +630,8 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's "constructor" property
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's @@unscopables property
 PASS DedicatedWorkerGlobalScope interface: attribute name
-PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, [object Object])
-PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, PostMessageOptions)
+PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, sequence<object>)
+PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, optional PostMessageOptions)
 PASS DedicatedWorkerGlobalScope interface: operation close()
 PASS DedicatedWorkerGlobalScope interface: attribute onmessage
 PASS DedicatedWorkerGlobalScope interface: attribute onmessageerror
@@ -646,10 +646,10 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope must be primary interface of self
 PASS Stringification of self
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "name" with the proper type
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, [object Object])" with the proper type
-PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, [object Object]) on self with too few arguments must throw TypeError
-PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, PostMessageOptions)" with the proper type
-PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, PostMessageOptions) on self with too few arguments must throw TypeError
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, sequence<object>)" with the proper type
+PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, sequence<object>) on self with too few arguments must throw TypeError
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, optional PostMessageOptions)" with the proper type
+PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, optional PostMessageOptions) on self with too few arguments must throw TypeError
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "close()" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessage" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "onmessageerror" with the proper type
@@ -660,8 +660,8 @@ PASS DedicatedWorkerGlobalScope interface: calling cancelAnimationFrame(unsigned
 PASS WorkerGlobalScope interface: self must inherit property "self" with the proper type
 PASS WorkerGlobalScope interface: self must inherit property "location" with the proper type
 PASS WorkerGlobalScope interface: self must inherit property "navigator" with the proper type
-PASS WorkerGlobalScope interface: self must inherit property "importScripts(USVString)" with the proper type
-PASS WorkerGlobalScope interface: calling importScripts(USVString) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "importScripts(USVString...)" with the proper type
+PASS WorkerGlobalScope interface: calling importScripts(USVString...) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "onerror" with the proper type
 PASS WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type
 FAIL WorkerGlobalScope interface: self must inherit property "onoffline" with the proper type assert_inherits: property "onoffline" not found in prototype chain
@@ -673,20 +673,20 @@ PASS WorkerGlobalScope interface: self must inherit property "btoa(DOMString)" w
 PASS WorkerGlobalScope interface: calling btoa(DOMString) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "atob(DOMString)" with the proper type
 PASS WorkerGlobalScope interface: calling atob(DOMString) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "setTimeout(TimerHandler, long, any)" with the proper type
-PASS WorkerGlobalScope interface: calling setTimeout(TimerHandler, long, any) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "clearTimeout(long)" with the proper type
-PASS WorkerGlobalScope interface: calling clearTimeout(long) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "setInterval(TimerHandler, long, any)" with the proper type
-PASS WorkerGlobalScope interface: calling setInterval(TimerHandler, long, any) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "clearInterval(long)" with the proper type
-PASS WorkerGlobalScope interface: calling clearInterval(long) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "setTimeout(TimerHandler, optional long, any...)" with the proper type
+PASS WorkerGlobalScope interface: calling setTimeout(TimerHandler, optional long, any...) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "clearTimeout(optional long)" with the proper type
+PASS WorkerGlobalScope interface: calling clearTimeout(optional long) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "setInterval(TimerHandler, optional long, any...)" with the proper type
+PASS WorkerGlobalScope interface: calling setInterval(TimerHandler, optional long, any...) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "clearInterval(optional long)" with the proper type
+PASS WorkerGlobalScope interface: calling clearInterval(optional long) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "queueMicrotask(VoidFunction)" with the proper type
 PASS WorkerGlobalScope interface: calling queueMicrotask(VoidFunction) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type
-PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on self with too few arguments must throw TypeError
-PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type
-PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions)" with the proper type
+PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions) on self with too few arguments must throw TypeError
+PASS WorkerGlobalScope interface: self must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions)" with the proper type
+PASS WorkerGlobalScope interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions) on self with too few arguments must throw TypeError
 PASS SharedWorkerGlobalScope interface: existence and properties of interface object
 PASS Worker interface: existence and properties of interface object
 PASS Worker interface object length
@@ -695,8 +695,8 @@ PASS Worker interface: existence and properties of interface prototype object
 PASS Worker interface: existence and properties of interface prototype object's "constructor" property
 PASS Worker interface: existence and properties of interface prototype object's @@unscopables property
 PASS Worker interface: operation terminate()
-PASS Worker interface: operation postMessage(any, [object Object])
-PASS Worker interface: operation postMessage(any, PostMessageOptions)
+PASS Worker interface: operation postMessage(any, sequence<object>)
+PASS Worker interface: operation postMessage(any, optional PostMessageOptions)
 PASS Worker interface: attribute onmessage
 FAIL Worker interface: attribute onmessageerror assert_true: The prototype object must have a property "onmessageerror" expected true got false
 PASS Worker interface: attribute onerror

@@ -10,12 +10,12 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
-import android.support.v4.content.ContextCompat;
 import android.system.Os;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.BuildConfig;

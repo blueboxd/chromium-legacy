@@ -64,6 +64,7 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   uint64_t submit_hit_test_region_list_index() const {
     return submit_hit_test_region_list_index_;
   }
+  void SetNeedsSubmit() { submit_hit_test_region_list_index_++; }
 
  private:
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,

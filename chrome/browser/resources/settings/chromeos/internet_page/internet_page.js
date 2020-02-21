@@ -237,6 +237,7 @@ Polymer({
   onDeviceEnabledToggled_(event) {
     this.networkConfig_.setNetworkTypeEnabledState(
         event.detail.type, event.detail.enabled);
+    settings.recordSettingChange();
   },
 
   /**
@@ -419,6 +420,7 @@ Polymer({
   onAddThirdPartyVpnTap_(event) {
     const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(provider.appId);
+    settings.recordSettingChange();
   },
 
   /**

@@ -21,6 +21,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/queryable_data_host_cast.h"
+#include "chromecast/common/mojom/activity_url_filter.mojom.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
@@ -144,6 +145,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       media_blocker_(init_params.use_media_blocker
                          ? std::make_unique<CastMediaBlocker>(web_contents_)
                          : nullptr),
+      activity_url_filter_(std::move(init_params.url_filters)),
       main_process_host_(nullptr),
       tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
       is_websql_enabled_(init_params.enable_websql),
@@ -490,6 +492,17 @@ void CastWebContentsImpl::RenderFrameCreated(
   for (const auto& value : QueryableData::GetValues()) {
     // base::Value is not copyable.
     queryable_data_store_remote->Set(value.first, value.second.Clone());
+  }
+
+  // Set up URL filter
+  if (activity_url_filter_) {
+    mojo::AssociatedRemote<chromecast::mojom::ActivityUrlFilterConfiguration>
+        activity_filter_setter;
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &activity_filter_setter);
+    activity_filter_setter->SetFilter(
+        chromecast::mojom::ActivityUrlFilterCriteria::New(
+            activity_url_filter_.value()));
   }
 }
 

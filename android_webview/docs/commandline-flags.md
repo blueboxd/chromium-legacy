@@ -44,7 +44,7 @@ works regardless of which package is the WebView provider:
 
 ```sh
 # Overwrite flags (supports multiple)
-build/android/adb_system_webview_command_line --show-composited-layer-borders --force-enable-metrics-reporting
+build/android/adb_system_webview_command_line --highlight-all-webviews --force-enable-metrics-reporting
 # Clear flags
 build/android/adb_system_webview_command_line ""
 # Print flags
@@ -59,7 +59,7 @@ Generated Wrapper Script like so:
 ```sh
 autoninja -C out/Default system_webview_apk
 # Overwrite flags (supports multiple)
-out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --force-enable-metrics-reporting'
+out/Default/bin/system_webview_apk argv --args='--highlight-all-webviews --force-enable-metrics-reporting'
 # Clear flags
 out/Default/bin/system_webview_apk argv --args=''
 # Print flags
@@ -82,7 +82,7 @@ Or, you can use the `adb` in your `$PATH` like so:
 FLAG_FILE=/data/local/tmp/webview-command-line
 # Overwrite flags (supports multiple). The first token is ignored. We use '_'
 # as a convenient placeholder, but any token is acceptable.
-adb shell "echo '_ --show-composited-layer-borders --force-enable-metrics-reporting' > ${FLAG_FILE}"
+adb shell "echo '_ --highlight-all-webviews --force-enable-metrics-reporting' > ${FLAG_FILE}"
 # Clear flags
 adb shell "rm ${FLAG_FILE}"
 # Print flags
@@ -123,8 +123,10 @@ functions correctly when the flag is toggled.
 
 Some interesting flags and Features:
 
- * `--show-composited-layer-borders`: highlight rendering layers, which is
-   useful for identifying which content in the app is rendered by a WebView.
+ * `--highlight-all-webviews`: highlight the entire contents of all WebViews, to
+   quickly identify which app content is rendered by a WebView vs. native Views.
+ * `--show-composited-layer-borders`: highlight rendering layers, to identify
+   possible graphics issues.
  * `--force-enable-metrics-reporting`: enable UMA metrics reporting (does not
    override app opt-out)
  * `--finch-seed-expiration-age=0 --finch-seed-min-update-period=0 --finch-seed-min-download-period=0 --finch-seed-ignore-pending-download`: always request a new finch seed when an app starts

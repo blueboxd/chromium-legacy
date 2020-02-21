@@ -99,7 +99,7 @@ public class ImageFetcher {
             String url, int size, LargeIconBridge.LargeIconCallback callback) {
         assert !mIsDestroyed;
 
-        getLargeIconBridge().getLargeIconForUrl(url, size, callback);
+        getLargeIconBridge().getLargeIconForStringUrl(url, size, callback);
     }
 
     public void onDestroy() {

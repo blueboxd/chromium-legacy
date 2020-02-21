@@ -154,7 +154,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
                              std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
                              uint64_t sync_fence_release);
+  // Deletes resources for RenderPasses in |ids|. Also takes ownership of
+  // |images_contexts| and destroys them on GPU thread.
   void RemoveRenderPassResource(
+      std::vector<RenderPassId> ids,
       std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
   void CopyOutput(RenderPassId id,
                   copy_output::RenderPassGeometry geometry,

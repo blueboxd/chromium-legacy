@@ -57,7 +57,7 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
         }
 
         @Override
-        public boolean getLargeIconForUrl(
+        public boolean getLargeIconForStringUrl(
                 final String pageUrl, int desiredSizePx, final LargeIconCallback callback) {
             mGetIconCalledAtLeastOnce = true;
             mCallback = callback;

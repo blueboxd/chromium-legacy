@@ -126,11 +126,6 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker() {
   // We continue in WorkerContextDestroyed() after the worker thread is stopped.
 }
 
-void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
-  DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  service_worker_context_client_->worker().ResumeAfterDownload();
-}
-
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)

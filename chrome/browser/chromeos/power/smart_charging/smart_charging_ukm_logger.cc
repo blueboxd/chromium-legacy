@@ -118,6 +118,10 @@ void SmartChargingUkmLogger::LogEvent(
     ukm_smart_charging.SetHaltFromLastCharge(features.halt_from_last_charge());
   }
 
+  if (features.has_is_charging()) {
+    ukm_smart_charging.SetIsCharging(features.is_charging());
+  }
+
   ukm::UkmRecorder* const ukm_recorder = ukm::UkmRecorder::Get();
   ukm_smart_charging.Record(ukm_recorder);
 }

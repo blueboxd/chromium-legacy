@@ -154,7 +154,9 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldNotShowAccountPicker) {
   EXPECT_FALSE(account_picker());
 }
 
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldShowAccountPicker) {
+// TODO(crbug.com/1054629): Flakily times out on all platforms.
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
+       DISABLED_ShouldShowAccountPicker) {
   ON_CALL(*feature_manager(), ShouldShowPasswordStorePicker)
       .WillByDefault(Return(true));
   CreateViewAndShow();
@@ -181,8 +183,9 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
       account_picker()->GetTextForRow(account_picker()->GetSelectedIndex()));
 }
 
+// TODO(crbug.com/1054629): Flakily times out on all platforms.
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       ShouldSelectProfileStoreByDefault) {
+       DISABLED_ShouldSelectProfileStoreByDefault) {
   ON_CALL(*feature_manager(), ShouldShowPasswordStorePicker)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager(), GetDefaultPasswordStore)

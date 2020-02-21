@@ -697,14 +697,17 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
       Fullscreen::FullyExitFullscreen(*doc, kUaOriginated);
     }
     // Restore the FrameView background color that was changed in
-    // OnRequestSessionReturned.
-    auto* frame_view = doc->GetLayoutView()->GetFrameView();
-    // SetBaseBackgroundColor updates composited layer mappings.
-    // That DCHECKs IsAllowedToQueryCompositingState which requires
-    // DocumentLifecycle >= kInCompositingUpdate.
-    frame_view->UpdateLifecycleToCompositingInputsClean(
-        DocumentUpdateReason::kBaseColor);
-    frame_view->SetBaseBackgroundColor(original_base_background_color_);
+    // OnRequestSessionReturned. The layout view can be null on navigation.
+    auto* layout_view = doc->GetLayoutView();
+    if (layout_view) {
+      auto* frame_view = layout_view->GetFrameView();
+      // SetBaseBackgroundColor updates composited layer mappings.
+      // That DCHECKs IsAllowedToQueryCompositingState which requires
+      // DocumentLifecycle >= kInCompositingUpdate.
+      frame_view->UpdateLifecycleToCompositingInputsClean(
+          DocumentUpdateReason::kBaseColor);
+      frame_view->SetBaseBackgroundColor(original_base_background_color_);
+    }
   }
 }
 

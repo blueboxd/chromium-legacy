@@ -7,8 +7,9 @@ package org.chromium.base.test;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+
+import androidx.core.content.ContextCompat;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

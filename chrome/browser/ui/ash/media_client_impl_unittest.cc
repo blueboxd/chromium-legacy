@@ -128,233 +128,72 @@ class MediaClientTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(MediaClientTest);
 };
 
-TEST_F(MediaClientTest, HandleMediaPlayPause) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_PLAY_PAUSE,
-                                         ui::EF_NONE);
+TEST_F(MediaClientTest, HandleMediaAccelerators) {
+  const struct {
+    ui::Accelerator accelerator;
+    base::RepeatingClosure client_handler;
+  } kTestCases[] = {
+      {ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaPlayPause,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_MEDIA_PLAY, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaPlay,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_MEDIA_PAUSE, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaPause,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_MEDIA_STOP, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaStop,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaNextTrack,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaPrevTrack,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_OEM_103, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaSeekBackward,
+                           base::Unretained(client()))},
+      {ui::Accelerator(ui::VKEY_OEM_104, ui::EF_NONE),
+       base::BindRepeating(&MediaClientImpl::HandleMediaSeekForward,
+                           base::Unretained(client()))}};
 
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
+  for (auto& test : kTestCases) {
+    SCOPED_TRACE(::testing::Message()
+                 << "accelerator key:" << test.accelerator.key_code());
 
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaPlayPause();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
+    // Enable custom media key handling for the current browser. Ensure that the
+    // client set the override on the controller.
+    client()->EnableCustomMediaKeyHandler(profile(), delegate());
+    EXPECT_TRUE(controller()->force_media_client_key_handling());
 
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
+    // Simulate the media key and check that the delegate received it.
+    test.client_handler.Run();
+    EXPECT_EQ(test.accelerator, delegate()->ConsumeLastMediaKey());
 
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaPlayPause();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
+    // Change the active browser and ensure the override was disabled.
+    BrowserList::SetLastActive(alt_browser());
+    EXPECT_FALSE(controller()->force_media_client_key_handling());
 
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
+    // Simulate the media key and check that the delegate did not receive it.
+    test.client_handler.Run();
+    EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
 
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaPlayPause();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
+    // Change the active browser back and ensure the override was enabled.
+    BrowserList::SetLastActive(browser());
+    EXPECT_TRUE(controller()->force_media_client_key_handling());
 
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
+    // Simulate the media key and check the delegate received it.
+    test.client_handler.Run();
+    EXPECT_EQ(test.accelerator, delegate()->ConsumeLastMediaKey());
 
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaPlayPause();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-}
+    // Disable custom media key handling for the current browser and ensure the
+    // override was disabled.
+    client()->DisableCustomMediaKeyHandler(profile(), delegate());
+    EXPECT_FALSE(controller()->force_media_client_key_handling());
 
-TEST_F(MediaClientTest, HandleMediaPlay) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_PLAY, ui::EF_NONE);
-
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaPlay();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaPlay();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaPlay();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaPlay();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-}
-
-TEST_F(MediaClientTest, HandleMediaPause) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_PAUSE, ui::EF_NONE);
-
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaPause();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaPause();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaPause();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaPause();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-}
-
-TEST_F(MediaClientTest, HandleMediaStop) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_STOP, ui::EF_NONE);
-
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaStop();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaStop();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaStop();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaStop();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-}
-
-TEST_F(MediaClientTest, HandleMediaNextTrack) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_NEXT_TRACK,
-                                         ui::EF_NONE);
-
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaNextTrack();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaNextTrack();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaNextTrack();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaNextTrack();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-}
-
-TEST_F(MediaClientTest, HandleMediaPrevTrack) {
-  const ui::Accelerator test_accelerator(ui::VKEY_MEDIA_PREV_TRACK,
-                                         ui::EF_NONE);
-
-  // Enable custom media key handling for the current browser. Ensure that the
-  // client set the override on the controller.
-  client()->EnableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate received it.
-  client()->HandleMediaPrevTrack();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser and ensure the override was disabled.
-  BrowserList::SetLastActive(alt_browser());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check that the delegate did not receive it.
-  client()->HandleMediaPrevTrack();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
-
-  // Change the active browser back and ensure the override was enabled.
-  BrowserList::SetLastActive(browser());
-  EXPECT_TRUE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate received it.
-  client()->HandleMediaPrevTrack();
-  EXPECT_EQ(test_accelerator, delegate()->ConsumeLastMediaKey());
-
-  // Disable custom media key handling for the current browser and ensure the
-  // override was disabled.
-  client()->DisableCustomMediaKeyHandler(profile(), delegate());
-  EXPECT_FALSE(controller()->force_media_client_key_handling());
-
-  // Simulate the media key and check the delegate did not receive it.
-  client()->HandleMediaPrevTrack();
-  EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
+    // Simulate the media key and check the delegate did not receive it.
+    test.client_handler.Run();
+    EXPECT_EQ(base::nullopt, delegate()->ConsumeLastMediaKey());
+  }
 }

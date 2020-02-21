@@ -390,7 +390,7 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * @return Whether the Paint Preview tapture test is enabled
+     * @return Whether the Paint Preview capture test is enabled.
      */
     public static boolean isPaintPreviewTestEnabled() {
         return isEnabled(ChromeFeatureList.PAINT_PREVIEW_TEST);

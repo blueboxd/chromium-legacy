@@ -4,6 +4,7 @@
 
 #include "cc/trees/ukm_manager.h"
 
+#include "cc/metrics/throughput_ukm_reporter.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -164,6 +165,23 @@ void UkmManager::RecordThroughputUKM(
     }
     default:
       NOTREACHED();
+      break;
+  }
+  builder.Record(recorder_.get());
+}
+
+void UkmManager::RecordAggregateThroughput(AggregationType aggregation_type,
+                                           int64_t throughput_percent) const {
+  ukm::builders::Graphics_Smoothness_PercentDroppedFrames builder(source_id_);
+  switch (aggregation_type) {
+    case AggregationType::kAllAnimations:
+      builder.SetAllAnimations(throughput_percent);
+      break;
+    case AggregationType::kAllInteractions:
+      builder.SetAllInteractions(throughput_percent);
+      break;
+    case AggregationType::kAllSequences:
+      builder.SetAllSequences(throughput_percent);
       break;
   }
   builder.Record(recorder_.get());

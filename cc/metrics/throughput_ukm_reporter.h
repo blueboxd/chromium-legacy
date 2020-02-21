@@ -12,6 +12,12 @@
 namespace cc {
 class UkmManager;
 
+enum class AggregationType {
+  kAllAnimations,
+  kAllInteractions,
+  kAllSequences,
+};
+
 // A helper class that takes throughput data from a FrameSequenceTracker and
 // talk to UkmManager to report it.
 class CC_EXPORT ThroughputUkmReporter {
@@ -27,11 +33,15 @@ class CC_EXPORT ThroughputUkmReporter {
                            const base::Optional<int>& main_throughput_percent,
                            FrameSequenceTrackerType type);
 
+  void ReportAggregateThroughput(AggregationType aggregation_type,
+                                 int throughput);
+
  private:
   // Sampling control. We sample the event here to not throttle the UKM system.
   // Currently, the same sampling rate is applied to all existing trackers. We
   // might want to iterate on this based on the collected data.
   uint32_t samples_to_next_event_ = 0;
+  uint32_t samples_for_aggregated_report_ = 0;
 
   // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is
   // initialized right after the LayerTreeHostImpl is created. So when this

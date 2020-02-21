@@ -159,6 +159,10 @@ public class VariationsSeedLoaderTest {
         Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(histogramName, expectedValue));
+        // Check that the value didn't get recorded in the highest bucket. If expectedValue and
+        // expectedValue*2 are in the same bucket, we probably messed up the bucket configuration.
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(histogramName, expectedValue * 2));
     }
 
     private void assertNoAppSeedRequestStateValues() {
@@ -451,17 +455,18 @@ public class VariationsSeedLoaderTest {
     @MediumTest
     public void testRecordMetricsFromService() throws Exception {
         try {
+            long nineMinutes = TimeUnit.MINUTES.toMillis(9);
             RecordHistogram.setDisabledForTests(false);
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromBundle(new Bundle());
-            metrics.setSeedFetchTime(3);
+            metrics.setSeedFetchTime(nineMinutes);
             MockVariationsSeedServer.setMetricsBundle(metrics.toBundle());
 
             runTestLoaderBlocking();
 
             assertSingleRecordInHistogram(
-                    VariationsSeedLoader.DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME, 3);
+                    VariationsSeedLoader.DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME, (int) nineMinutes);
         } finally {
             MockVariationsSeedServer.setMetricsBundle(null);
         }

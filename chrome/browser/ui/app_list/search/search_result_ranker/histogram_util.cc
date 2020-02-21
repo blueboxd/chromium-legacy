@@ -23,6 +23,7 @@ ZeroStateResultType ZeroStateTypeFromRankingType(
     case RankingItemType::kFile:
     case RankingItemType::kApp:
     case RankingItemType::kArcAppShortcut:
+    case RankingItemType::kChip:
       return ZeroStateResultType::kUnanticipated;
     case RankingItemType::kOmniboxGeneric:
       return ZeroStateResultType::kOmniboxSearch;

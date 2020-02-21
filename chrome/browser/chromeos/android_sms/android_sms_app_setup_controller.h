@@ -7,11 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "url/gurl.h"
-
-namespace extensions {
-class Extension;
-}  // namespace extensions
 
 namespace chromeos {
 
@@ -38,9 +35,9 @@ class AndroidSmsAppSetupController {
                         const GURL& install_url,
                         SuccessCallback callback) = 0;
 
-  // Returns the extension for the PWA at |install_url|; if no PWA exists, null
-  // is returned.
-  virtual const extensions::Extension* GetPwa(const GURL& install_url) = 0;
+  // Returns the id for the PWA at |install_url|; if no PWA exists,
+  // base::nullopt is returned.
+  virtual base::Optional<web_app::AppId> GetPwa(const GURL& install_url) = 0;
 
   // Deletes the cookie which causes the PWA to remember this computer by
   // default. Note that this does not actually stop the PWA from remembering

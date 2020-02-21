@@ -30,6 +30,12 @@ class ASH_PUBLIC_EXPORT MediaClient {
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
 
+  // Handles the Seek Backward Media shortcut key.
+  virtual void HandleMediaSeekBackward() = 0;
+
+  // Handles the Seek Forward Media shortcut key.
+  virtual void HandleMediaSeekForward() = 0;
+
   // Requests that the client resends the NotifyMediaCaptureChanged() message.
   virtual void RequestCaptureState() = 0;
 

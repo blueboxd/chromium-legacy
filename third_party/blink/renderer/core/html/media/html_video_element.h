@@ -179,10 +179,7 @@ class CORE_EXPORT HTMLVideoElement final
 
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;
-  void OnRequestAnimationFrame(base::TimeTicks presentation_time,
-                               base::TimeTicks expected_presentation_time,
-                               uint32_t presented_frames_counter,
-                               const media::VideoFrame& presented_frame) final;
+  void OnRequestAnimationFrame() final;
 
   bool IsPersistent() const;
 

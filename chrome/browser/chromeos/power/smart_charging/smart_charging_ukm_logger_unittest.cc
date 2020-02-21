@@ -67,6 +67,7 @@ TEST_F(SmartChargingUkmLoggerTest, TestRecordCorrectly) {
   features->set_screen_brightness_percent(23);
   features->set_voltage(3500);
   features->set_halt_from_last_charge(true);
+  features->set_is_charging(true);
 
   // Constructs the expected output.
   const UkmMetricMap user_charging_values = {
@@ -91,7 +92,8 @@ TEST_F(SmartChargingUkmLoggerTest, TestRecordCorrectly) {
       {UkmEntry::kDurationRecentVideoPlayingName, 4},
       {UkmEntry::kDurationRecentAudioPlayingName, 8},
       {UkmEntry::kScreenBrightnessPercentName, 23},
-      {UkmEntry::kHaltFromLastChargeName, 1}};
+      {UkmEntry::kHaltFromLastChargeName, 1},
+      {UkmEntry::kIsChargingName, 1}};
 
   // Log a charging event.
   LogEvent(user_charging_event);

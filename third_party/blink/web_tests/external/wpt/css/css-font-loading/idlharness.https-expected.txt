@@ -66,8 +66,8 @@ FAIL FontFaceSet interface: operation clear() assert_own_property: self does not
 FAIL FontFaceSet interface: attribute onloading assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
 FAIL FontFaceSet interface: attribute onloadingdone assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
 FAIL FontFaceSet interface: attribute onloadingerror assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
-FAIL FontFaceSet interface: operation load(CSSOMString, CSSOMString) assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
-FAIL FontFaceSet interface: operation check(CSSOMString, CSSOMString) assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
+FAIL FontFaceSet interface: operation load(CSSOMString, optional CSSOMString) assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
+FAIL FontFaceSet interface: operation check(CSSOMString, optional CSSOMString) assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
 FAIL FontFaceSet interface: attribute ready assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
 FAIL FontFaceSet interface: attribute status assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
 FAIL FontFaceSet must be primary interface of document.fonts assert_own_property: self does not have own property "FontFaceSet" expected property "FontFaceSet" missing
@@ -80,10 +80,10 @@ PASS FontFaceSet interface: document.fonts must inherit property "clear()" with 
 PASS FontFaceSet interface: document.fonts must inherit property "onloading" with the proper type
 PASS FontFaceSet interface: document.fonts must inherit property "onloadingdone" with the proper type
 PASS FontFaceSet interface: document.fonts must inherit property "onloadingerror" with the proper type
-PASS FontFaceSet interface: document.fonts must inherit property "load(CSSOMString, CSSOMString)" with the proper type
-PASS FontFaceSet interface: calling load(CSSOMString, CSSOMString) on document.fonts with too few arguments must throw TypeError
-PASS FontFaceSet interface: document.fonts must inherit property "check(CSSOMString, CSSOMString)" with the proper type
-PASS FontFaceSet interface: calling check(CSSOMString, CSSOMString) on document.fonts with too few arguments must throw TypeError
+PASS FontFaceSet interface: document.fonts must inherit property "load(CSSOMString, optional CSSOMString)" with the proper type
+PASS FontFaceSet interface: calling load(CSSOMString, optional CSSOMString) on document.fonts with too few arguments must throw TypeError
+PASS FontFaceSet interface: document.fonts must inherit property "check(CSSOMString, optional CSSOMString)" with the proper type
+PASS FontFaceSet interface: calling check(CSSOMString, optional CSSOMString) on document.fonts with too few arguments must throw TypeError
 PASS FontFaceSet interface: document.fonts must inherit property "ready" with the proper type
 PASS FontFaceSet interface: document.fonts must inherit property "status" with the proper type
 PASS Document interface: attribute fonts

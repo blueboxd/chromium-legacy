@@ -239,6 +239,8 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
   void RequestAnimationFrame() override;
+  std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
+  GetVideoFramePresentationMetadata() override;
 
  private:
   friend class WebMediaPlayerMSTest;
@@ -273,11 +275,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
   // Callback used to fulfill video.requestAnimationFrame() requests.
-  void OnNewFramePresentedCallback(
-      scoped_refptr<media::VideoFrame> presented_frame,
-      base::TimeTicks presentation_time,
-      base::TimeTicks expected_presentation_time,
-      uint32_t presentation_counter);
+  void OnNewFramePresentedCallback();
 
   std::unique_ptr<MediaStreamInternalFrameWrapper> internal_frame_;
 

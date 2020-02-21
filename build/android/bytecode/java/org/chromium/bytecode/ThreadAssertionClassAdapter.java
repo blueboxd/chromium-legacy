@@ -14,8 +14,8 @@ import org.objectweb.asm.MethodVisitor;
 /**
  * A ClassVisitor which adds calls to
  * {@link org.chromium.base.ThreadUtils}'s assertOnUiThread/assertOnBackgroundThread when the
- * corresponding {@link android.support.annotation.UiThread} or
- * {@link android.support.annotation.WorkerThread} annotations are present. The function calls
+ * corresponding {@link androidx.annotation.UiThread} or
+ * {@link androidx.annotation.WorkerThread} annotations are present. The function calls
  * are placed at the start of the method.
  */
 class ThreadAssertionClassAdapter extends ClassVisitor {

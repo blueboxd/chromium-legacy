@@ -48,6 +48,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
@@ -1348,6 +1349,7 @@ public class SafeBrowsingTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     @Feature({"AndroidWebView"})
     public void testDestroyWebViewWithInterstitialShowing() throws Throwable {
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);

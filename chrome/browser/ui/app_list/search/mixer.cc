@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 
@@ -127,6 +128,11 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
   if (query.empty() && non_app_ranker_)
     non_app_ranker_->OverrideZeroStateResults(&results);
 
+  // Chip results: rescore the chip results in line with app results.
+  if (query.empty() && chip_ranker_) {
+    chip_ranker_->Rank(&results);
+  }
+
   std::sort(results.begin(), results.end());
 
   const size_t original_size = results.size();
@@ -186,9 +192,15 @@ SearchResultRanker* Mixer::GetNonAppSearchResultRanker() {
   return non_app_ranker_.get();
 }
 
+void Mixer::SetChipRanker(std::unique_ptr<ChipRanker> ranker) {
+  chip_ranker_ = std::move(ranker);
+}
+
 void Mixer::Train(const AppLaunchData& app_launch_data) {
   if (non_app_ranker_)
     non_app_ranker_->Train(app_launch_data);
+  if (chip_ranker_)
+    chip_ranker_->Train(app_launch_data);
 }
 
 }  // namespace app_list

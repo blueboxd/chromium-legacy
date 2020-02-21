@@ -942,12 +942,10 @@ NavigationRequest::NavigationRequest(
     SetNavigationClient(std::move(navigation_client));
   } else if (entry) {
     DCHECK(!navigation_client.is_valid());
-    FrameNavigationEntry* frame_navigation_entry =
-        entry->GetFrameEntry(frame_tree_node);
-    if (frame_navigation_entry) {
-      source_site_instance_ = frame_navigation_entry->source_site_instance();
-      dest_site_instance_ = frame_navigation_entry->site_instance();
-      bindings_ = frame_navigation_entry->bindings();
+    if (frame_entry) {
+      source_site_instance_ = frame_entry->source_site_instance();
+      dest_site_instance_ = frame_entry->site_instance();
+      bindings_ = frame_entry->bindings();
 
       // Handle history subframe navigations that require a source_site_instance
       // but do not have one set yet. This can happen when navigation entries

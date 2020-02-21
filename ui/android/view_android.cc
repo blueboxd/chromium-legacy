@@ -90,6 +90,8 @@ ViewAndroid::ViewAndroid() : ViewAndroid(LayoutType::NORMAL) {}
 
 ViewAndroid::~ViewAndroid() {
   RemoveAllChildren(GetWindowAndroid() != nullptr);
+  for (auto& observer : observer_list_)
+    observer.OnViewAndroidDestroyed();
   observer_list_.Clear();
   RemoveFromParent();
 }

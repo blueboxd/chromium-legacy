@@ -72,7 +72,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
       override;
   void TerminateWorkerContext() override;
-  void ResumeAfterDownload() override;
 
   void WaitForShutdownForTesting();
 

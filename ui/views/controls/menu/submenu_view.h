@@ -168,6 +168,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   void set_resize_open_menu(bool resize_open_menu) {
     resize_open_menu_ = resize_open_menu;
   }
+  MenuHost* host() { return host_; }
 
  protected:
   // View method. Overridden to schedule a paint. We do this so that when

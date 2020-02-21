@@ -12,7 +12,7 @@
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
 #include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
-#include "printing/backend/cups_ipp_util.h"
+#include "printing/backend/cups_ipp_helper.h"
 
 // This namespace is filled with helpful (conversion) functions for working with
 // arbitrary byte buffers representing IPP requests.

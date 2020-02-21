@@ -263,6 +263,15 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     bool is_parallel_download_enabled,
     DownloadSource download_source);
 
+// Records various metrics at the start of a download resumption.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumption(
+    DownloadInterruptReason reason,
+    bool user_resume);
+
+// Records whenever a download hits max auto-resumption limit.
+COMPONENTS_DOWNLOAD_EXPORT void RecordAutoResumeCountLimitReached(
+    DownloadInterruptReason reason);
+
 // Returns the type of download.
 COMPONENTS_DOWNLOAD_EXPORT DownloadContent
 DownloadContentFromMimeType(const std::string& mime_type_string,

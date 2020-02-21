@@ -57,6 +57,7 @@ class NavigationGlow : public ui::OverscrollGlowClient,
   // ui::ViewAndroidObserver implementation.
   void OnAttachedToWindow() override;
   void OnDetachedFromWindow() override;
+  void OnViewAndroidDestroyed() override;
 
  private:
   // OverscrollGlowClient implementation.

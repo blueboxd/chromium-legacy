@@ -246,7 +246,6 @@ public final class ChromePreferenceKeys {
             "data_reduction_site_breakdown_allowed_date";
 
     public static final String DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
-    public static final String DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS = "ForegroundServiceObservers";
     public static final String DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
     public static final String DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID =
@@ -711,6 +710,7 @@ public final class ChromePreferenceKeys {
     static List<String> createDeprecatedKeysForTesting() {
         // clang-format off
         return Arrays.asList(
+                "ForegroundServiceObservers",
                 "PersistedNotificationId",
                 "PhysicalWeb.ActivityReferral",
                 "PhysicalWeb.HasDeferredMetrics",
@@ -818,7 +818,6 @@ public final class ChromePreferenceKeys {
                 DATA_REDUCTION_FRE_PROMO_OPT_OUT,
                 DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
                 DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT,
-                DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS,
                 DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED,
                 DOWNLOAD_NEXT_DOWNLOAD_NOTIFICATION_ID,
                 DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS,

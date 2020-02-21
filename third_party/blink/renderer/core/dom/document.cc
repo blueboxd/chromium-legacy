@@ -2997,31 +2997,36 @@ void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
   if (!documentElement())
     return;
 
-  if (val != is_xr_overlay_) {
-    DCHECK(RuntimeEnabledFeatures::WebXRIncubationsEnabled(this));
-    is_xr_overlay_ = val;
+  if (val == is_xr_overlay_)
+    return;
 
-    if (val) {
-      // The UA style sheet for the :xr-overlay pseudoclass uses lazy loading.
-      // If we get here, we need to ensure that it's present.
-      GetStyleEngine().EnsureUAStyleForXrOverlay();
-    }
+  DCHECK(RuntimeEnabledFeatures::WebXRIncubationsEnabled(this));
+  is_xr_overlay_ = val;
 
-    if (overlay_element) {
-      // Now that the custom style sheet is loaded, update the pseudostyle for
-      // the overlay element.
-      overlay_element->PseudoStateChanged(CSSSelector::kPseudoXrOverlay);
-    }
+  // On navigation, the layout view may be invalid, skip style changes.
+  if (!GetLayoutView())
+    return;
 
-    // Ensure that the graphics layer tree gets fully rebuilt on changes,
-    // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be
-    // strictly necessary if the compositing changes are based on visibility
-    // settings, but helps ensure consistency in case it's changed to
-    // detaching layers or re-rooting the graphics layer tree.
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      auto* compositor = GetLayoutView()->Compositor();
-      compositor->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-    }
+  if (val) {
+    // The UA style sheet for the :xr-overlay pseudoclass uses lazy loading.
+    // If we get here, we need to ensure that it's present.
+    GetStyleEngine().EnsureUAStyleForXrOverlay();
+  }
+
+  if (overlay_element) {
+    // Now that the custom style sheet is loaded, update the pseudostyle for
+    // the overlay element.
+    overlay_element->PseudoStateChanged(CSSSelector::kPseudoXrOverlay);
+  }
+
+  // Ensure that the graphics layer tree gets fully rebuilt on changes,
+  // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be
+  // strictly necessary if the compositing changes are based on visibility
+  // settings, but helps ensure consistency in case it's changed to
+  // detaching layers or re-rooting the graphics layer tree.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    auto* compositor = GetLayoutView()->Compositor();
+    compositor->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 }
 

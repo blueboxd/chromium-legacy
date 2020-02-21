@@ -57,30 +57,6 @@ namespace content {
 
 namespace {
 
-// Calculate the final response URL from the redirect chain, URLs fetched by the
-// service worker and the initial request URL. The logic is mostly based on what
-// blink::ResourceResponse::ResponseUrl() does.
-GURL DetermineFinalResponseUrl(
-    const GURL& initial_request_url,
-    blink::mojom::WorkerMainScriptLoadParams* main_script_load_params) {
-  DCHECK(main_script_load_params);
-
-  network::mojom::URLResponseHead* url_response_head =
-      main_script_load_params->response_head.get();
-
-  // First check the URL list from the service worker.
-  if (!url_response_head->url_list_via_service_worker.empty()) {
-    DCHECK(url_response_head->was_fetched_via_service_worker);
-    return url_response_head->url_list_via_service_worker.back();
-  }
-
-  // Then check the list of redirects.
-  if (!main_script_load_params->redirect_infos.empty())
-    return main_script_load_params->redirect_infos.back().new_url;
-
-  // No redirection happened. The initial request URL was used for the response.
-  return initial_request_url;
-}
 
 }  // namespace
 
@@ -443,6 +419,28 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoader(
       success, std::move(subresource_loader_factories),
       std::move(main_script_load_params), std::move(controller),
       std::move(controller_service_worker_object_host), final_response_url);
+}
+
+GURL WorkerScriptFetchInitiator::DetermineFinalResponseUrl(
+    const GURL& initial_request_url,
+    blink::mojom::WorkerMainScriptLoadParams* main_script_load_params) {
+  DCHECK(main_script_load_params);
+
+  network::mojom::URLResponseHead* url_response_head =
+      main_script_load_params->response_head.get();
+
+  // First check the URL list from the service worker.
+  if (!url_response_head->url_list_via_service_worker.empty()) {
+    DCHECK(url_response_head->was_fetched_via_service_worker);
+    return url_response_head->url_list_via_service_worker.back();
+  }
+
+  // Then check the list of redirects.
+  if (!main_script_load_params->redirect_infos.empty())
+    return main_script_load_params->redirect_infos.back().new_url;
+
+  // No redirection happened. The initial request URL was used for the response.
+  return initial_request_url;
 }
 
 }  // namespace content

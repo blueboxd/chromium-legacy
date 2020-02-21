@@ -189,7 +189,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
         if (iconBridge == null) return;
 
-        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
+        iconBridge.getLargeIconForStringUrl(url, mDesiredFaviconWidthPx,
                 (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                         int iconType) -> model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon));
     }

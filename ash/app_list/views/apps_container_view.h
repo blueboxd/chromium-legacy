@@ -136,6 +136,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
   PageSwitcher* page_switcher() { return page_switcher_; }
 
+  // Called by app list view when the app list config changes.
+  void OnAppListConfigUpdated();
+
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
 

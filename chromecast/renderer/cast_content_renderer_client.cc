@@ -17,6 +17,7 @@
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_media_playback_options.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
+#include "chromecast/renderer/cast_websocket_handshake_throttle_provider.h"
 #include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
@@ -88,7 +89,9 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(
-          std::make_unique<media::SupportedCodecProfileLevelsMemo>()) {
+          std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
+      activity_url_filter_manager_(
+          std::make_unique<CastActivityUrlFilterManager>()) {
 #if defined(OS_ANDROID)
   DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
       << "MediaCodec is not available!";
@@ -181,6 +184,7 @@ void CastContentRendererClient::RenderViewCreated(
 void CastContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   DCHECK(render_frame);
+
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
   if (!::chromecast::IsFeatureEnabled(kUseQueryableDataBackend)) {
@@ -212,6 +216,8 @@ void CastContentRendererClient::RenderFrameCreated(
   // JsChannelBindings destroys itself when the RenderFrame is destroyed.
   JsChannelBindings::Create(render_frame);
 #endif
+
+  activity_url_filter_manager_->OnRenderFrameCreated(render_frame);
 }
 
 content::BrowserPluginDelegate*
@@ -369,10 +375,17 @@ void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
   supported_bitstream_audio_codecs_info_ = info;
 }
 
+std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+CastContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
+  return std::make_unique<CastWebSocketHandshakeThrottleProvider>(
+      activity_url_filter_manager_.get());
+}
+
 std::unique_ptr<content::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType type) {
-  return std::make_unique<CastURLLoaderThrottleProvider>(type);
+  return std::make_unique<CastURLLoaderThrottleProvider>(
+      type, activity_url_filter_manager_.get());
 }
 
 base::Optional<::media::AudioRendererAlgorithmParameters>

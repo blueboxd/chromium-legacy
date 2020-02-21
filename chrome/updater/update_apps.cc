@@ -4,10 +4,12 @@
 
 #include "chrome/updater/update_apps.h"
 
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "chrome/updater/configurator.h"
@@ -19,7 +21,7 @@ int UpdateApps() {
   // TODO(crbug.com/1048653): Try to connect to an existing OOP service. For
   // now, run an in-process service.
 
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop runloop;
   auto service = std::make_unique<UpdateServiceInProcess>(
       base::MakeRefCounted<Configurator>());

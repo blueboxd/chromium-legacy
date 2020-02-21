@@ -59,12 +59,6 @@ struct EmbeddedWorkerStartParams {
   // Unique token identifying this worker for DevTools.
   mojo_base.mojom.UnguessableToken devtools_worker_token;
 
-  // When true, worker script evaluation is blocked until
-  // EmbeddedWorkerInstanceClient::ResumeAfterDownload() is called.
-  // This isn't used when off-the-main-thread script fetch is enabled. The
-  // browser process is responsible for delaying execution.
-  bool pause_after_download;
-
   // The URL of the service worker script that should skip throttles when
   // loaded, because the browser process has already started loading it and
   // already throttled the request. For more detail, during the service worker
@@ -144,7 +138,6 @@ interface EmbeddedWorkerInstanceClient {
   StartWorker(EmbeddedWorkerStartParams params);
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
-  ResumeAfterDownload();
 };
 
 // EmbeddedWorkerInstanceHost is the browser-side ("Host") of

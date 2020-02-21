@@ -47,4 +47,15 @@ void ThroughputUkmReporter::ReportThroughputUkm(
   samples_to_next_event_--;
 }
 
+void ThroughputUkmReporter::ReportAggregateThroughput(
+    AggregationType aggregation_type,
+    int throughput) {
+  if (samples_for_aggregated_report_ == 0) {
+    samples_for_aggregated_report_ = kNumberOfSamplesToReport;
+    ukm_manager_->RecordAggregateThroughput(aggregation_type, throughput);
+  }
+  DCHECK_GT(samples_for_aggregated_report_, 0u);
+  --samples_for_aggregated_report_;
+}
+
 }  // namespace cc

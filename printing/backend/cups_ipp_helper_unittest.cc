@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "printing/backend/cups_ipp_helper.h"
+
 #include <cups/cups.h>
 
 #include <map>
@@ -10,7 +12,6 @@
 #include "base/logging.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/printing_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -68,7 +69,7 @@ class MockCupsOptionProvider : public CupsOptionProvider {
   std::map<base::StringPiece, ipp_attribute_t*> default_attributes_;
 };
 
-class PrintBackendCupsIppUtilTest : public ::testing::Test {
+class PrintBackendCupsIppHelperTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ipp_ = ippNew();
@@ -110,7 +111,7 @@ ipp_attribute_t* MakeStringCollection(ipp_t* ipp,
                        strings.size(), nullptr, strings.data());
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, CopiesCapable) {
+TEST_F(PrintBackendCupsIppHelperTest, CopiesCapable) {
   printer_->SetSupportedOptions("copies", MakeRange(ipp_, 1, 2));
 
   PrinterSemanticCapsAndDefaults caps;
@@ -119,7 +120,7 @@ TEST_F(PrintBackendCupsIppUtilTest, CopiesCapable) {
   EXPECT_TRUE(caps.copies_capable);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, CopiesNotCapable) {
+TEST_F(PrintBackendCupsIppHelperTest, CopiesNotCapable) {
   // copies missing, no setup
   PrinterSemanticCapsAndDefaults caps;
   CapsAndDefaultsFromPrinter(*printer_, &caps);
@@ -127,7 +128,7 @@ TEST_F(PrintBackendCupsIppUtilTest, CopiesNotCapable) {
   EXPECT_FALSE(caps.copies_capable);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, ColorPrinter) {
+TEST_F(PrintBackendCupsIppHelperTest, ColorPrinter) {
   printer_->SetSupportedOptions(
       "print-color-mode", MakeStringCollection(ipp_, {"color", "monochrome"}));
   printer_->SetOptionDefault("print-color-mode", MakeString(ipp_, "color"));
@@ -139,7 +140,7 @@ TEST_F(PrintBackendCupsIppUtilTest, ColorPrinter) {
   EXPECT_TRUE(caps.color_default);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, BWPrinter) {
+TEST_F(PrintBackendCupsIppHelperTest, BWPrinter) {
   printer_->SetSupportedOptions("print-color-mode",
                                 MakeStringCollection(ipp_, {"monochrome"}));
   printer_->SetOptionDefault("print-color-mode",
@@ -152,7 +153,7 @@ TEST_F(PrintBackendCupsIppUtilTest, BWPrinter) {
   EXPECT_FALSE(caps.color_default);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, DuplexSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, DuplexSupported) {
   printer_->SetSupportedOptions(
       "sides",
       MakeStringCollection(ipp_, {"two-sided-long-edge", "one-sided"}));
@@ -166,7 +167,7 @@ TEST_F(PrintBackendCupsIppUtilTest, DuplexSupported) {
   EXPECT_EQ(SIMPLEX, caps.duplex_default);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, DuplexNotSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, DuplexNotSupported) {
   printer_->SetSupportedOptions("sides",
                                 MakeStringCollection(ipp_, {"one-sided"}));
   printer_->SetOptionDefault("sides", MakeString(ipp_, "one-sided"));
@@ -178,7 +179,7 @@ TEST_F(PrintBackendCupsIppUtilTest, DuplexNotSupported) {
   EXPECT_EQ(SIMPLEX, caps.duplex_default);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, A4PaperSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, A4PaperSupported) {
   printer_->SetSupportedOptions(
       "media", MakeStringCollection(ipp_, {"iso_a4_210x297mm"}));
 
@@ -194,7 +195,7 @@ TEST_F(PrintBackendCupsIppUtilTest, A4PaperSupported) {
   EXPECT_EQ(297000, paper.size_um.height());
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, LegalPaperDefault) {
+TEST_F(PrintBackendCupsIppHelperTest, LegalPaperDefault) {
   printer_->SetOptionDefault("media", MakeString(ipp_, "na_legal_8.5x14in"));
 
   PrinterSemanticCapsAndDefaults caps;
@@ -211,7 +212,7 @@ TEST_F(PrintBackendCupsIppUtilTest, LegalPaperDefault) {
 // with badly formatted vendor IDs - such papers will not transform into
 // meaningful ParsedPaper instances and are sometimes inimical to
 // ARC++.
-TEST_F(PrintBackendCupsIppUtilTest, OmitPapersWithoutVendorIds) {
+TEST_F(PrintBackendCupsIppHelperTest, OmitPapersWithoutVendorIds) {
   printer_->SetSupportedOptions(
       "media", MakeStringCollection(ipp_, {"jis_b5_182x257mm", "invalidsize",
                                            "", "iso_b5_176x250mm"}));
@@ -239,7 +240,7 @@ TEST_F(PrintBackendCupsIppUtilTest, OmitPapersWithoutVendorIds) {
 // Tests that CapsAndDefaultsFromPrinter() does not propagate the
 // special IPP values that CUPS happens to expose to the Chromium print
 // backend.
-TEST_F(PrintBackendCupsIppUtilTest, OmitPapersWithSpecialVendorIds) {
+TEST_F(PrintBackendCupsIppHelperTest, OmitPapersWithSpecialVendorIds) {
   // Maintainer's note: there's no reason why a printer would deliver
   // two discrete sizes for custom_min* and custom_max*; in practice,
   // we always see the fully qualified custom_m(in|ax)_<DIMENSIONS>
@@ -274,7 +275,7 @@ TEST_F(PrintBackendCupsIppUtilTest, OmitPapersWithSpecialVendorIds) {
                          "iso b0")));
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, PinSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, PinSupported) {
   printer_->SetSupportedOptions("job-password", MakeInteger(ipp_, 4));
   printer_->SetSupportedOptions("job-password-encryption",
                                 MakeStringCollection(ipp_, {"none"}));
@@ -285,7 +286,7 @@ TEST_F(PrintBackendCupsIppUtilTest, PinSupported) {
   EXPECT_TRUE(caps.pin_supported);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, PinNotSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, PinNotSupported) {
   // Pin support missing, no setup.
   PrinterSemanticCapsAndDefaults caps;
   CapsAndDefaultsFromPrinter(*printer_, &caps);
@@ -293,7 +294,7 @@ TEST_F(PrintBackendCupsIppUtilTest, PinNotSupported) {
   EXPECT_FALSE(caps.pin_supported);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, PinEncryptionNotSupported) {
+TEST_F(PrintBackendCupsIppHelperTest, PinEncryptionNotSupported) {
   printer_->SetSupportedOptions("job-password", MakeInteger(ipp_, 4));
 
   PrinterSemanticCapsAndDefaults caps;
@@ -302,7 +303,7 @@ TEST_F(PrintBackendCupsIppUtilTest, PinEncryptionNotSupported) {
   EXPECT_FALSE(caps.pin_supported);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, PinTooShort) {
+TEST_F(PrintBackendCupsIppHelperTest, PinTooShort) {
   printer_->SetSupportedOptions("job-password", MakeInteger(ipp_, 3));
   printer_->SetSupportedOptions("job-password-encryption",
                                 MakeStringCollection(ipp_, {"none"}));
@@ -313,7 +314,7 @@ TEST_F(PrintBackendCupsIppUtilTest, PinTooShort) {
   EXPECT_FALSE(caps.pin_supported);
 }
 
-TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
+TEST_F(PrintBackendCupsIppHelperTest, AdvancedCaps) {
   base::HistogramTester histograms;
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(printing::features::kAdvancedPpdAttributes);

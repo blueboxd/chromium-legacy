@@ -92,6 +92,8 @@ message UserChargingEvent {
     // Whether there's any shutdown/suspend action between the last charge
     // and current event.
     optional bool halt_from_last_charge = 21;
+    // Whether the device is being charged or not.
+    optional bool is_charging = 22;
   }
 
   message Event {

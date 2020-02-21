@@ -24,6 +24,8 @@ class TestMediaClient : public MediaClient {
   void HandleMediaPause() override;
   void HandleMediaStop() override;
   void HandleMediaPrevTrack() override;
+  void HandleMediaSeekBackward() override;
+  void HandleMediaSeekForward() override;
   void RequestCaptureState() override;
   void SuspendMediaSessions() override;
 
@@ -39,6 +41,12 @@ class TestMediaClient : public MediaClient {
   int handle_media_prev_track_count() const {
     return handle_media_prev_track_count_;
   }
+  int handle_media_seek_backward_count() const {
+    return handle_media_seek_backward_count_;
+  }
+  int handle_media_seek_forward_count() const {
+    return handle_media_seek_forward_count_;
+  }
   bool media_sessions_suspended() const { return media_sessions_suspended_; }
 
  private:
@@ -48,6 +56,8 @@ class TestMediaClient : public MediaClient {
   int handle_media_pause_count_ = 0;
   int handle_media_stop_count_ = 0;
   int handle_media_prev_track_count_ = 0;
+  int handle_media_seek_backward_count_ = 0;
+  int handle_media_seek_forward_count_ = 0;
   bool media_sessions_suspended_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaClient);

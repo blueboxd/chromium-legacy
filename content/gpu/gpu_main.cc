@@ -48,6 +48,7 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "media/gpu/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/switches.h"
@@ -396,6 +397,15 @@ int GpuMain(const MainFunctionParams& parameters) {
   child_thread->Init(start_time);
 
   gpu_process.set_main_thread(child_thread);
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  // Startup tracing is usually enabled earlier, but if we forked from a zygote,
+  // we can only enable it after mojo IPC support is brought up initialized by
+  // GpuChildThread, because the mojo broker has to create the tracing SMB on
+  // our behalf due to the zygote sandbox.
+  if (parameters.zygote_child)
+    tracing::EnableStartupTracingIfNeeded();
+#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
 
   // Setup tracing sampler profiler as early as possible.
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =

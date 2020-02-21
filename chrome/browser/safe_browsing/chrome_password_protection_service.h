@@ -289,6 +289,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   bool IsExtendedReporting() override;
 
+  bool IsEnhancedProtection() override;
+
   bool IsIncognito() override;
 
   // Checks if pinging should be enabled based on the |trigger_type|,

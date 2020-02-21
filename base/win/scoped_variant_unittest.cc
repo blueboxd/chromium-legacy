@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include <utility>
 
@@ -23,45 +25,48 @@ void GiveMeAVariant(VARIANT* ret) {
   V_BSTR(ret) = ::SysAllocString(kTestString1);
 }
 
-// A dummy IDispatch implementation (if you can call it that).
-// The class does nothing intelligent really.  Only increments a counter
-// when AddRef is called and decrements it when Release is called.
-class FakeComObject : public IDispatch {
+// An unimplemented IDispatch subclass.
+class DispatchStub
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IDispatch> {
  public:
-  FakeComObject() = default;
+  DispatchStub() = default;
+  DispatchStub(const DispatchStub&) = delete;
+  DispatchStub& operator=(const DispatchStub&) = delete;
 
-  STDMETHOD_(DWORD, AddRef)() override {
-    ref_++;
-    return ref_;
+  // IDispatch:
+  IFACEMETHODIMP GetTypeInfoCount(UINT*) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetTypeInfo(UINT, LCID, ITypeInfo**) override {
+    return E_NOTIMPL;
   }
-
-  STDMETHOD_(DWORD, Release)() override {
-    ref_--;
-    return ref_;
-  }
-
-  STDMETHOD(QueryInterface)(REFIID, void**) override { return E_NOTIMPL; }
-
-  STDMETHOD(GetTypeInfoCount)(UINT*) override { return E_NOTIMPL; }
-
-  STDMETHOD(GetTypeInfo)(UINT, LCID, ITypeInfo**) override { return E_NOTIMPL; }
-
-  STDMETHOD(GetIDsOfNames)(REFIID, LPOLESTR*, UINT, LCID, DISPID*) override {
+  IFACEMETHODIMP GetIDsOfNames(REFIID,
+                               LPOLESTR*,
+                               UINT,
+                               LCID,
+                               DISPID*) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(Invoke)
-  (DISPID, REFIID, LCID, WORD, DISPPARAMS*, VARIANT*, EXCEPINFO*, UINT*)
-      override {
+  IFACEMETHODIMP Invoke(DISPID,
+                        REFIID,
+                        LCID,
+                        WORD,
+                        DISPPARAMS*,
+                        VARIANT*,
+                        EXCEPINFO*,
+                        UINT*) override {
     return E_NOTIMPL;
   }
-
-  // A way to check the internal reference count of the class.
-  int ref_count() const { return ref_; }
-
- protected:
-  int ref_ = 0;
 };
+
+void ExpectRefCount(ULONG expected_refcount, IUnknown* object) {
+  // In general, code should not check the values of AddRef() and Release().
+  // However, tests need to validate that ScopedVariant safely owns a COM object
+  // so they are checked for this unit test.
+  EXPECT_EQ(expected_refcount + 1, object->AddRef());
+  EXPECT_EQ(expected_refcount, object->Release());
+}
 
 }  // namespace
 
@@ -182,68 +187,73 @@ TEST(ScopedVariantTest, ScopedVariant) {
   EXPECT_EQ(nullptr, V_UNKNOWN(var.ptr()));
   var.Reset();
 
-  FakeComObject faker;
-  EXPECT_EQ(0, faker.ref_count());
-  var.Set(static_cast<IDispatch*>(&faker));
+  Microsoft::WRL::ComPtr<IDispatch> dispatch_stub =
+      Microsoft::WRL::Make<DispatchStub>();
+  ExpectRefCount(1U, dispatch_stub.Get());
+  var.Set(dispatch_stub.Get());
   EXPECT_EQ(VT_DISPATCH, var.type());
-  EXPECT_EQ(&faker, V_DISPATCH(var.ptr()));
-  EXPECT_EQ(1, faker.ref_count());
+  EXPECT_EQ(dispatch_stub.Get(), V_DISPATCH(var.ptr()));
+  ExpectRefCount(2U, dispatch_stub.Get());
   var.Reset();
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, dispatch_stub.Get());
 
-  var.Set(static_cast<IUnknown*>(&faker));
+  // A separate instance to handle IUnknown makes refcount checking easier.
+  Microsoft::WRL::ComPtr<IUnknown> unknown_stub =
+      Microsoft::WRL::Make<DispatchStub>();
+  ExpectRefCount(1U, unknown_stub.Get());
+  var.Set(unknown_stub.Get());
   EXPECT_EQ(VT_UNKNOWN, var.type());
-  EXPECT_EQ(&faker, V_UNKNOWN(var.ptr()));
-  EXPECT_EQ(1, faker.ref_count());
+  EXPECT_EQ(unknown_stub.Get(), V_UNKNOWN(var.ptr()));
+  ExpectRefCount(2U, unknown_stub.Get());
   var.Reset();
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, unknown_stub.Get());
 
   {
-    ScopedVariant disp_var(&faker);
+    ScopedVariant disp_var(dispatch_stub.Get());
     EXPECT_EQ(VT_DISPATCH, disp_var.type());
-    EXPECT_EQ(&faker, V_DISPATCH(disp_var.ptr()));
-    EXPECT_EQ(1, faker.ref_count());
+    EXPECT_EQ(dispatch_stub.Get(), V_DISPATCH(disp_var.ptr()));
+    ExpectRefCount(2U, dispatch_stub.Get());
   }
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, dispatch_stub.Get());
 
   {
-    ScopedVariant ref1(&faker);
-    EXPECT_EQ(1, faker.ref_count());
+    ScopedVariant ref1(dispatch_stub.Get());
+    ExpectRefCount(2U, dispatch_stub.Get());
     ScopedVariant ref2(std::move(ref1));
-    EXPECT_EQ(1, faker.ref_count());
+    ExpectRefCount(2U, dispatch_stub.Get());
     ScopedVariant ref3;
     ref3 = std::move(ref2);
-    EXPECT_EQ(1, faker.ref_count());
+    ExpectRefCount(2U, dispatch_stub.Get());
   }
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, dispatch_stub.Get());
 
   {
-    ScopedVariant ref1(&faker);
-    EXPECT_EQ(1, faker.ref_count());
+    ScopedVariant ref1(dispatch_stub.Get());
+    ExpectRefCount(2U, dispatch_stub.Get());
     ScopedVariant ref2(static_cast<const VARIANT&>(ref1));
-    EXPECT_EQ(2, faker.ref_count());
+    ExpectRefCount(3U, dispatch_stub.Get());
     ScopedVariant ref3;
     ref3 = static_cast<const VARIANT&>(ref2);
-    EXPECT_EQ(3, faker.ref_count());
+    ExpectRefCount(4U, dispatch_stub.Get());
   }
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, dispatch_stub.Get());
 
   {
-    ScopedVariant unk_var(static_cast<IUnknown*>(&faker));
+    ScopedVariant unk_var(unknown_stub.Get());
     EXPECT_EQ(VT_UNKNOWN, unk_var.type());
-    EXPECT_EQ(&faker, V_UNKNOWN(unk_var.ptr()));
-    EXPECT_EQ(1, faker.ref_count());
+    EXPECT_EQ(unknown_stub.Get(), V_UNKNOWN(unk_var.ptr()));
+    ExpectRefCount(2U, unknown_stub.Get());
   }
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, unknown_stub.Get());
 
   VARIANT raw;
   raw.vt = VT_UNKNOWN;
-  raw.punkVal = &faker;
-  EXPECT_EQ(0, faker.ref_count());
+  raw.punkVal = unknown_stub.Get();
+  ExpectRefCount(1U, unknown_stub.Get());
   var.Set(raw);
-  EXPECT_EQ(1, faker.ref_count());
+  ExpectRefCount(2U, unknown_stub.Get());
   var.Reset();
-  EXPECT_EQ(0, faker.ref_count());
+  ExpectRefCount(1U, unknown_stub.Get());
 
   {
     ScopedVariant number(123);

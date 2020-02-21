@@ -122,7 +122,7 @@ public class SuggestionsImageFetcherTest {
         imageFetcher.makeLargeIconRequest(URL_STRING, IMAGE_SIZE_PX, mock(LargeIconCallback.class));
 
         verify(mLargeIconBridge)
-                .getLargeIconForUrl(
+                .getLargeIconForStringUrl(
                         eq(URL_STRING), eq(IMAGE_SIZE_PX), any(LargeIconCallback.class));
     }
 }

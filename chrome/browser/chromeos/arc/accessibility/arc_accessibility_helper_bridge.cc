@@ -54,16 +54,13 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
       accessibility_manager->profile() != profile)
     return;
 
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
-    return;
-
-  aura::Window* active_window = wm_helper->GetActiveWindow();
+  DCHECK(exo::WMHelper::HasInstance());
+  aura::Window* active_window = exo::WMHelper::GetInstance()->GetActiveWindow();
   if (!active_window)
     return;
 
   gfx::Rect bounds_in_screen = gfx::ToEnclosingRect(arc::ToChromeBounds(
-      node_data->bounds_in_screen, wm_helper,
+      node_data->bounds_in_screen,
       views::Widget::GetWidgetForNativeView(active_window)));
 
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
@@ -621,15 +618,12 @@ ArcAccessibilityHelperBridge::OnGetTextLocationDataResultInternal(
   if (!result_rect)
     return base::nullopt;
 
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
-    return base::nullopt;
-
-  aura::Window* active_window = wm_helper->GetActiveWindow();
+  DCHECK(exo::WMHelper::HasInstance());
+  aura::Window* active_window = exo::WMHelper::GetInstance()->GetActiveWindow();
   if (!active_window)
     return base::nullopt;
 
-  gfx::RectF rect_f = arc::ToChromeScale(*result_rect, wm_helper);
+  gfx::RectF rect_f = arc::ToChromeScale(*result_rect);
   arc::ScaleDeviceFactor(rect_f, active_window->GetToplevelWindow());
   return gfx::ToEnclosingRect(rect_f);
 }

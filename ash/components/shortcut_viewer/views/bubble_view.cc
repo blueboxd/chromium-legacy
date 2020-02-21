@@ -57,9 +57,8 @@ BubbleView::~BubbleView() = default;
 
 void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
   if (!icon_) {
-    icon_ = new views::ImageView();
     // |icon_| is always the first child view.
-    AddChildViewAt(icon_, 0);
+    icon_ = AddChildViewAt(std::make_unique<views::ImageView>(), 0);
   }
 
   constexpr int kIconSize = 16;
@@ -70,14 +69,13 @@ void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
 
 void BubbleView::SetText(const base::string16& text) {
   if (!text_) {
-    text_ = new views::Label();
+    text_ = AddChildView(std::make_unique<views::Label>());
     text_->SetEnabledColor(gfx::kGoogleGrey700);
     text_->SetElideBehavior(gfx::NO_ELIDE);
     constexpr int kLabelFontSizeDelta = 1;
     text_->SetFontList(
         ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
             kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-    AddChildView(text_);
   }
   text_->SetText(text);
 }

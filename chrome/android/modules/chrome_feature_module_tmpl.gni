@@ -78,6 +78,9 @@ template("chrome_feature_module") {
     if (defined(_module_desc.pak_deps)) {
       paks = _module_desc.paks
     }
+    if (defined(_module_desc.load_native_on_get_impl)) {
+      load_native_on_get_impl = _module_desc.load_native_on_get_impl
+    }
   }
 
   android_app_bundle_module(target_name) {

@@ -167,6 +167,12 @@ bool UnifiedMessageCenterView::IsNotificationBarVisible() {
 }
 
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
+  if (collapsed_) {
+    if (!message_list_view_->GetTotalNotificationCount())
+      StartHideStackingBarAnimation();
+    return;
+  }
+
   if (notification_bar_->GetVisible() &&
       message_list_view_->GetTotalNotificationCount() <= 1) {
     StartHideStackingBarAnimation();

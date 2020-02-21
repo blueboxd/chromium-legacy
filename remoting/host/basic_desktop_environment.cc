@@ -97,15 +97,12 @@ uint32_t BasicDesktopEnvironment::GetDesktopSessionId() const {
 std::unique_ptr<DesktopAndCursorConditionalComposer>
 BasicDesktopEnvironment::CreateComposingVideoCapturer() {
 #if defined(OS_MACOSX)
-  // MacOS always includes the mouse cursor in the captured image.
-  return nullptr;
-#else
-  // TODO(crbug.com/1050789): Return a valid instance after fixing the
-  // DesktopAndCursorConditionalComposer class.
-  // return std::make_unique<DesktopAndCursorConditionalComposer>(
-  //     CreateVideoCapturer());
-  return nullptr;
+  // Mac includes the mouse cursor in the captured image in curtain mode.
+  if (options_.enable_curtaining())
+    return nullptr;
 #endif
+  return std::make_unique<DesktopAndCursorConditionalComposer>(
+      CreateVideoCapturer());
 }
 
 std::unique_ptr<webrtc::DesktopCapturer>

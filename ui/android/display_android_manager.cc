@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/features.h"
 #include "ui/android/screen_android.h"
 #include "ui/android/ui_android_jni_headers/DisplayAndroidManager_jni.h"
 #include "ui/android/window_android.h"
@@ -83,14 +84,22 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
   if (!Display::HasForceDeviceScaleFactor())
     display->set_device_scale_factor(dipScale);
 
-  // TODO: Devices that should dynamically switch between sRGB and P3 should
-  // specify P3 for WideColorGamut and HDR. Low-end devices should specify
-  // RGB_565 as the buffer format for opaque content.
+  // TODO: Low-end devices should specify RGB_565 as the buffer format for
+  // opaque content.
   gfx::ColorSpace color_space = isWideColorGamut
                                     ? gfx::ColorSpace::CreateDisplayP3D65()
                                     : gfx::ColorSpace::CreateSRGB();
   gfx::DisplayColorSpaces display_color_spaces(color_space,
                                                gfx::BufferFormat::RGBA_8888);
+  if (isWideColorGamut && features::IsDynamicColorGamutEnabled()) {
+    auto srgb = gfx::ColorSpace::CreateSRGB();
+    display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kSRGB, true /* needs_alpha */, srgb,
+        gfx::BufferFormat::RGBA_8888);
+    display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kSRGB, false /* needs_alpha */, srgb,
+        gfx::BufferFormat::RGBA_8888);
+  }
 
   display->set_size_in_pixels(size_in_pixels);
   display->SetRotationAsDegree(rotationDegrees);

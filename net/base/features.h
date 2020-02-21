@@ -162,6 +162,10 @@ NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCaching;
 // warning for these pages.
 NET_EXPORT extern const base::Feature kLegacyTLSEnforced;
 
+// When enabled this feature will cause same-site calculations to take into
+// account the scheme of the site-for-cookies and the request/response url.
+NET_EXPORT extern const base::Feature kSchemefulSameSite;
+
 }  // namespace features
 }  // namespace net
 

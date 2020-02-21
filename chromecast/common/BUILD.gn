@@ -26,6 +26,37 @@ cast_source_set("resource_delegate") {
   ]
 }
 
+cast_source_set("activity_url_filter") {
+  sources = [
+    "activity_filtering_url_loader_throttle.cc",
+    "activity_filtering_url_loader_throttle.h",
+    "activity_url_filter.cc",
+    "activity_url_filter.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/url_matcher",
+    "//content/public/common",
+    "//url",
+  ]
+}
+
+test("cast_common_unittests") {
+  testonly = true
+
+  sources = [ "activity_url_filter_unittest.cc" ]
+
+  deps = [
+    ":activity_url_filter",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
+}
+
 cast_source_set("common") {
   sources = [
     "cast_content_client.cc",

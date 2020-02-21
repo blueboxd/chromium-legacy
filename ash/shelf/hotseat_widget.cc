@@ -112,8 +112,8 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   void SetBackgroundBlur(bool enable_blur);
 
   // HotseatTransitionAnimator::Observer:
-  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
-                                           HotseatState to_state) override;
+  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
+                                             HotseatState to_state) override;
   void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                          HotseatState to_state) override;
   // views::WidgetDelegateView:
@@ -229,7 +229,7 @@ void HotseatWidget::DelegateView::SetBackgroundBlur(bool enable_blur) {
     translucent_background_.SetBackgroundBlur(blur_radius);
 }
 
-void HotseatWidget::DelegateView::OnHotseatTransitionAnimationStarted(
+void HotseatWidget::DelegateView::OnHotseatTransitionAnimationWillStart(
     HotseatState from_state,
     HotseatState to_state) {
   SetBackgroundBlur(false);

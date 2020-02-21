@@ -163,17 +163,7 @@ class TabListElement extends CustomElement {
     });
 
     const dragManager = new DragManager(this);
-    this.addEventListener(
-        'dragstart', e => dragManager.startDrag(/** @type {!DragEvent} */ (e)));
-    this.addEventListener(
-        'dragend', e => dragManager.stopDrag(/** @type {!DragEvent} */ (e)));
-    this.addEventListener('dragleave', () => dragManager.cancelDrag());
-    this.addEventListener(
-        'dragover',
-        e => dragManager.continueDrag(
-            /** @type {!DragEvent} */ (e)));
-    this.addEventListener(
-        'drop', e => dragManager.drop(/** @type {!DragEvent} */ (e)));
+    dragManager.startObserving();
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.$('#demoOptions').style.display = 'block';

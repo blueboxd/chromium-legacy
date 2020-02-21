@@ -49,7 +49,7 @@ public class MediaNotificationTestTabHolder {
     // Mock LargeIconBridge that always returns false.
     private class TestLargeIconBridge extends LargeIconBridge {
         @Override
-        public boolean getLargeIconForUrl(
+        public boolean getLargeIconForStringUrl(
                 final String pageUrl, int desiredSizePx, final LargeIconCallback callback) {
             return false;
         }

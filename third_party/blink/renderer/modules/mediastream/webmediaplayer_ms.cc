@@ -1229,24 +1229,17 @@ void WebMediaPlayerMS::OnDisplayTypeChanged(
           display_type == WebMediaPlayer::DisplayType::kPictureInPicture));
 }
 
-void WebMediaPlayerMS::OnNewFramePresentedCallback(
-    scoped_refptr<media::VideoFrame> presented_frame,
-    base::TimeTicks presentation_time,
-    base::TimeTicks expected_presentation_time,
-    uint32_t presentation_counter) {
-  if (!main_render_task_runner_->BelongsToCurrentThread()) {
-    PostCrossThreadTask(
-        *main_render_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(&WebMediaPlayerMS::OnNewFramePresentedCallback,
-                            weak_this_, presented_frame, presentation_time,
-                            expected_presentation_time, presentation_counter));
-    return;
-  }
-
+void WebMediaPlayerMS::OnNewFramePresentedCallback() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnRequestAnimationFrame(presentation_time,
-                                   expected_presentation_time,
-                                   presentation_counter, *presented_frame);
+  client_->OnRequestAnimationFrame();
+}
+
+std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
+WebMediaPlayerMS::GetVideoFramePresentationMetadata() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(compositor_);
+
+  return compositor_->GetLastPresentedFrameMetadata();
 }
 
 void WebMediaPlayerMS::RequestAnimationFrame() {
@@ -1259,12 +1252,9 @@ void WebMediaPlayerMS::RequestAnimationFrame() {
     return;
   }
 
-  PostCrossThreadTask(
-      *compositor_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(
-          &WebMediaPlayerMSCompositor::SetOnFramePresentedCallback, compositor_,
-          CrossThreadBindOnce(&WebMediaPlayerMS::OnNewFramePresentedCallback,
-                              weak_this_)));
+  compositor_->SetOnFramePresentedCallback(
+      media::BindToCurrentLoop(base::BindOnce(
+          &WebMediaPlayerMS::OnNewFramePresentedCallback, weak_this_)));
 }
 
 }  // namespace blink

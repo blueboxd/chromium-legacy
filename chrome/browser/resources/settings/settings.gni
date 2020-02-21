@@ -20,6 +20,7 @@ settings_namespace_rewrites = [
   "settings.pageVisibility|pageVisibility",
   "Settings.PrefUtil.prefToString|prefToString",
   "Settings.PrefUtil.stringToPrefValue|stringToPrefValue",
+  "settings.PrintingBrowserProxy|PrintingBrowserProxy",
   "settings.Route|Route",
   "settings.routes|routes",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
@@ -40,4 +41,5 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/global_scroll_target_behavior.html|GlobalScrollTargetBehavior",
   "chrome/browser/resources/settings/i18n_setup.html|loadTimeData",
   "chrome/browser/resources/settings/prefs/prefs_behavior.html|PrefsBehavior",
+  "chrome/browser/resources/settings/printing_page/printing_browser_proxy.html|PrintingBrowserProxyImpl",
 ]

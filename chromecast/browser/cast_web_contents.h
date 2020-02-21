@@ -225,6 +225,10 @@ class CastWebContents {
     // Clients can use it to send queryable values to the render frames.
     // queryable_data_host() will return a nullptr if this is false.
     bool enable_queryable_data_host = false;
+    // Whether to provide a URL filter applied to network requests for the
+    // activity hosted by this CastWebContents.
+    // No filters implies no restrictions.
+    base::Optional<std::vector<std::string>> url_filters = base::nullopt;
 
     InitParams();
     InitParams(const InitParams& other);

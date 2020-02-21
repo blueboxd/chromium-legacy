@@ -3224,6 +3224,7 @@ if (is_android) {
   }
 
   android_library("base_java") {
+    skip_jetify = true
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
       ":base_build_config_gen",
@@ -3234,11 +3235,13 @@ if (is_android) {
     deps = [
       ":jni_java",
       "//third_party/android_deps:android_support_v4_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
-      "//third_party/android_deps:com_android_support_collections_java",
-      "//third_party/android_deps:com_android_support_multidex_java",
+      "//third_party/android_deps:androidx_collection_collection_java",
+      "//third_party/android_deps:androidx_core_core_java",
+      "//third_party/android_deps:androidx_multidex_multidex_java",
+
+      # TODO(bjoyce): Convert to androidx_annotation_annotation_java after
+      # net/android is converted.
       "//third_party/android_deps:com_android_support_support_annotations_java",
-      "//third_party/android_deps:com_android_support_support_compat_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
 
@@ -3452,16 +3455,17 @@ if (is_android) {
   }
 
   android_library("base_java_test_support") {
+    skip_jetify = true
     testonly = true
     deps = [
       ":base_java",
       ":jni_java",
       "//testing/android/reporter:reporter_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
+      "//third_party/android_deps:androidx_core_core_java",
       "//third_party/android_deps:androidx_test_monitor_java",
       "//third_party/android_deps:androidx_test_runner_java",
       "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
-      "//third_party/android_deps:com_android_support_support_compat_java",
       "//third_party/android_sdk:android_support_chromium_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
@@ -3580,6 +3584,7 @@ if (is_android) {
   }
 
   junit_binary("base_junit_tests") {
+    skip_jetify = true
     sources = [
       "android/junit/src/org/chromium/base/AnimationFrameTimeHistogramTest.java",
       "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
@@ -3643,6 +3648,7 @@ if (is_android) {
   }
 
   android_library("base_java_unittest_support") {
+    skip_jetify = true
     testonly = true
     deps = [ ":base_java" ]
     sources = [

@@ -130,8 +130,6 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private void recordOpenedTile(Tile tile) {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_MOST_VISITED_TILE);
         RecordUserAction.record("MobileNTPMostVisited");
-        NewTabPageUma.recordExplicitUserNavigation(
-                tile.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
         mMostVisitedSites.recordOpenedMostVisitedItem(tile);
     }
 }

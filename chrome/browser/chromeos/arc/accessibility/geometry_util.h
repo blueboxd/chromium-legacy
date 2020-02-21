@@ -11,10 +11,6 @@ namespace aura {
 class Window;
 }
 
-namespace exo {
-class WMHelper;
-}
-
 namespace gfx {
 class RectF;
 }
@@ -26,13 +22,11 @@ class Widget;
 namespace arc {
 // Given ARC pixels, returns DIPs in Chrome OS main display.
 // This function only scales the bounds.
-gfx::RectF ToChromeScale(const gfx::Rect& rect, exo::WMHelper* wm_helper);
+gfx::RectF ToChromeScale(const gfx::Rect& rect);
 
 // Given ARC pixels in screen coordinate, returns DIPs in Chrome OS main
 // display. This function adjusts differences between ARC and Chrome.
-gfx::RectF ToChromeBounds(const gfx::Rect& rect,
-                          exo::WMHelper* wm_helper,
-                          views::Widget* widget);
+gfx::RectF ToChromeBounds(const gfx::Rect& rect, views::Widget* widget);
 
 // Given DIPs in Chrome OS main display, scales it into pixels.
 void ScaleDeviceFactor(gfx::RectF& rect, aura::Window* toplevel_window);

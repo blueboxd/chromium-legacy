@@ -26,12 +26,18 @@ grit("extensions_resources") {
 
 cast_source_set("renderer") {
   sources = [
+    "activity_filtering_websocket_handshake_throttle.cc",
+    "activity_filtering_websocket_handshake_throttle.h",
+    "cast_activity_url_filter_manager.cc",
+    "cast_activity_url_filter_manager.h",
     "cast_content_renderer_client.cc",
     "cast_content_renderer_client.h",
     "cast_media_playback_options.cc",
     "cast_media_playback_options.h",
     "cast_url_loader_throttle_provider.cc",
     "cast_url_loader_throttle_provider.h",
+    "cast_websocket_handshake_throttle_provider.cc",
+    "cast_websocket_handshake_throttle_provider.h",
     "js_channel_bindings.cc",
     "js_channel_bindings.h",
     "native_bindings_helper.cc",
@@ -55,6 +61,7 @@ cast_source_set("renderer") {
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/common",
+    "//chromecast/common:activity_url_filter",
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/common/mojom",

@@ -98,10 +98,8 @@ DevUiLoaderThrottle::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
   if (!ShouldInstallDevUiDfm(handle->GetURL()))
     return nullptr;
 
-  // If module is already installed, ensure that it is loaded.
   if (dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
-    // Synchronously load module (if not already loaded).
-    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
+    dev_ui::DevUiModuleProvider::GetInstance()->EnsureLoaded();
     return nullptr;
   }
 
@@ -132,7 +130,7 @@ DevUiLoaderThrottle::WillStartRequest() {
 
 void DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus(bool success) {
   if (success) {
-    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
+    dev_ui::DevUiModuleProvider::GetInstance()->EnsureLoaded();
     Resume();
   } else {
     std::string html = BuildErrorPageHtml();

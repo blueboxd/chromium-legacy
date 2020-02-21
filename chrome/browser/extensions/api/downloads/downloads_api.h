@@ -14,18 +14,19 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_danger_prompt.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_set.h"
 
 class DownloadFileIconExtractor;
 class DownloadOpenPrompt;
+class Profile;
 
 // Functions in the chrome.downloads namespace facilitate
 // controlling downloads from extensions. See the full API doc at
@@ -85,11 +86,11 @@ class DownloadedByExtension : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(DownloadedByExtension);
 };
 
-class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
+class DownloadsDownloadFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.download", DOWNLOADS_DOWNLOAD)
   DownloadsDownloadFunction();
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsDownloadFunction() override;
@@ -169,11 +170,11 @@ class DownloadsEraseFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
-class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction {
+class DownloadsRemoveFileFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.removeFile", DOWNLOADS_REMOVEFILE)
   DownloadsRemoveFileFunction();
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsRemoveFileFunction() override;
@@ -184,7 +185,7 @@ class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsRemoveFileFunction);
 };
 
-class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
+class DownloadsAcceptDangerFunction : public ExtensionFunction {
  public:
   typedef base::Callback<void(DownloadDangerPrompt*)> OnPromptCreatedCallback;
   static void OnPromptCreatedForTesting(
@@ -194,7 +195,7 @@ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
   DownloadsAcceptDangerFunction();
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsAcceptDangerFunction() override;
@@ -272,11 +273,11 @@ class DownloadsSetShelfEnabledFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsGetFileIconFunction : public ChromeAsyncExtensionFunction {
+class DownloadsGetFileIconFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.getFileIcon", DOWNLOADS_GETFILEICON)
   DownloadsGetFileIconFunction();
-  bool RunAsync() override;
+  ResponseAction Run() override;
   void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
 
  protected:

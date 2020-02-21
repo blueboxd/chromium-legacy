@@ -39,7 +39,7 @@ void AccessibilityInfoDataWrapper::Serialize(ui::AXNodeData* out_data) const {
                                              bounds.width(), bounds.height());
   }
 
-  // TODO(katie): Try using offset_container_id to make bounds calculations
+  // TODO(hirokisato): Try using offset_container_id to make bounds calculations
   // more efficient. If this is the child of the root, set the
   // offset_container_id to be the root. Otherwise, set it to the first node
   // child of the root.

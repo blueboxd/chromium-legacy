@@ -12,7 +12,7 @@
 
 namespace gfx {
 class Point;
-}
+}  // namespace gfx
 
 namespace ui {
 

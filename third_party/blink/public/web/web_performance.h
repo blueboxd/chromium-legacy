@@ -101,6 +101,9 @@ class WebPerformance {
   BLINK_EXPORT double FirstInputTimestamp() const;
   BLINK_EXPORT double LongestInputDelay() const;
   BLINK_EXPORT double LongestInputTimestamp() const;
+  BLINK_EXPORT double TotalInputDelay() const;
+  BLINK_EXPORT double TotalAdjustedInputDelay() const;
+  BLINK_EXPORT uint64_t NumInputEvents() const;
   BLINK_EXPORT double ParseStart() const;
   BLINK_EXPORT double ParseStop() const;
   BLINK_EXPORT double ParseBlockedOnScriptLoadDuration() const;

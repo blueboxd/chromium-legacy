@@ -12,8 +12,19 @@
 // InfobarBanner Presentation Controller.
 @interface InfobarBannerPresentationController : UIPresentationController
 
-// Delegate used to position the InfobarBanner.
-@property(nonatomic, assign) id<InfobarBannerPositioner> bannerPositioner;
+// Designated initializer. |bannerPositioner| is used to position the
+// InfobarBanner, it can't be nil.
+- (instancetype)
+    initWithPresentedViewController:(UIViewController*)presentedViewController
+           presentingViewController:(UIViewController*)presentingViewController
+                   bannerPositioner:
+                       (id<InfobarBannerPositioner>)bannerPositioner
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)
+    initWithPresentedViewController:(UIViewController*)presentedViewController
+           presentingViewController:(UIViewController*)presentingViewController
+    NS_UNAVAILABLE;
 
 @end
 

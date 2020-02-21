@@ -25,6 +25,7 @@ namespace test {
 FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
+class ChipRanker;
 class SearchProvider;
 class SearchResultRanker;
 enum class RankingItemType;
@@ -59,6 +60,9 @@ class Mixer {
   // Get a pointer to the SearchResultRanker owned by this object used for all
   // non-app ranking.
   SearchResultRanker* GetNonAppSearchResultRanker();
+
+  // Sets a ChipRanker to re-rank chip results before they are published.
+  void SetChipRanker(std::unique_ptr<ChipRanker> ranker);
 
   // Handle a training signal.
   void Train(const AppLaunchData& app_launch_data);
@@ -95,6 +99,7 @@ class Mixer {
 
   // Adaptive models used for re-ranking search results.
   std::unique_ptr<SearchResultRanker> non_app_ranker_;
+  std::unique_ptr<ChipRanker> chip_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

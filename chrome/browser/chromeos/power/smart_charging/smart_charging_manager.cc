@@ -273,7 +273,10 @@ void SmartChargingManager::PowerChanged(
     periodic_timer_->Start(FROM_HERE, kLoggingInterval, this,
                            &SmartChargingManager::OnTimerFired);
     if (external_power_.value() == power_manager::PowerSupplyProperties::AC) {
+      is_charging_ = true;
       LogEvent(UserChargingEvent::Event::CHARGER_PLUGGED_IN);
+    } else {
+      is_charging_ = false;
     }
     return;
   }
@@ -282,6 +285,8 @@ void SmartChargingManager::PowerChanged(
       external_power_.value() == power_manager::PowerSupplyProperties::AC;
   const bool now_on_ac =
       proto.external_power() == power_manager::PowerSupplyProperties::AC;
+
+  is_charging_ = now_on_ac;
 
   // User plugged the charger in.
   if (!was_on_ac && now_on_ac) {
@@ -374,6 +379,9 @@ void SmartChargingManager::PopulateUserChargingEventProto(
       touch_counter_->GetTotal(time_since_boot));
   features.set_num_recent_stylus_events(
       stylus_counter_->GetTotal(time_since_boot));
+
+  if (is_charging_.has_value())
+    features.set_is_charging(is_charging_.value());
 
   if (screen_brightness_percent_)
     features.set_screen_brightness_percent(

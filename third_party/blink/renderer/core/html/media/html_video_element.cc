@@ -828,15 +828,9 @@ void HTMLVideoElement::AttributeChanged(
     UpdatePictureInPictureAvailability();
 }
 
-void HTMLVideoElement::OnRequestAnimationFrame(
-    base::TimeTicks presentation_time,
-    base::TimeTicks expected_presentation_time,
-    uint32_t presented_frames_counter,
-    const media::VideoFrame& presented_frame) {
+void HTMLVideoElement::OnRequestAnimationFrame() {
   DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
-  VideoRequestAnimationFrame::From(*this)->OnRequestAnimationFrame(
-      presentation_time, expected_presentation_time, presented_frames_counter,
-      presented_frame);
+  VideoRequestAnimationFrame::From(*this)->OnRequestAnimationFrame();
 }
 
 }  // namespace blink

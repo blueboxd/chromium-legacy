@@ -18,6 +18,8 @@ import("//build/config/python.gni")
 #     requires at runtime. Will consider all transitively depended on
 #     shared_libraries.
 #   paks: (Optional) PAK files going into the module.
+#   load_native_on_get_impl: (Optional) Whether the module's native libraries /
+#     resources are automatically loaded when Module.getImpl() is called.
 template("module_desc_java") {
   _target_name = target_name
 
@@ -48,6 +50,12 @@ template("module_desc_java") {
       "--output",
       rebase_path(_srcjar, root_out_dir),
     ]
+
+    if (defined(invoker.load_native_on_get_impl) &&
+        invoker.load_native_on_get_impl) {
+      args += [ "--load-native-on-get-impl" ]
+    }
+
     if (defined(invoker.paks)) {
       _rebased_paks = []
       foreach(_pak, invoker.paks) {

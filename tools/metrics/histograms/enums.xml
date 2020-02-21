@@ -1284,6 +1284,12 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="FailureUnavailable"/>
 </enum>
 
+<enum name="Android.DownloadManager.Cancel.CancelFrom">
+  <int value="0" label="CANCEL_SHUTDOWN"/>
+  <int value="1" label="CANCEL_NOTIFICATION"/>
+  <int value="2" label="CANCEL_HOME"/>
+</enum>
+
 <enum name="Android.DownloadManager.List.Section.Menu.Actions">
   <obsolete>
     Deprecated 10/2019. Section menu button was removed during Download Home V2

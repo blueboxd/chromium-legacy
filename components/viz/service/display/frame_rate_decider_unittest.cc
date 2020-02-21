@@ -51,6 +51,7 @@ class FrameRateDeciderTest : public testing::Test,
       const FrameSinkId& frame_sink_id) const override {
     return base::StringPiece();
   }
+  void AggregatedFrameSinksChanged() override {}
 
  protected:
   base::WeakPtr<SurfaceClient> surface_client() {

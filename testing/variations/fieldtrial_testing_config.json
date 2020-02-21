@@ -6691,6 +6691,23 @@
             ]
         }
     ],
+    "VizForWebView": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "VizForWebView",
+                    "enable_features": [
+                        "UseSkiaForGLReadback",
+                        "UseSkiaRenderer",
+                        "VizForWebView"
+                    ]
+                }
+            ]
+        }
+    ],
     "WKHTTPSystemCookieStore": [
         {
             "platforms": [

@@ -10,13 +10,10 @@ import org.chromium.base.BundleUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.module_installer.engine.InstallEngine;
 import org.chromium.components.module_installer.engine.InstallListener;
 import org.chromium.components.module_installer.util.Timer;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Represents a feature module. Can be used to install the module, access its interface, etc. See
@@ -27,27 +24,12 @@ import java.util.TreeSet;
  */
 @JNINamespace("module_installer")
 public class Module<T> {
-    private static final Set<String> sInitializedModules = new HashSet<>();
-    private static Set<String> sPendingNativeRegistrations = new TreeSet<>();
-
     private final String mName;
     private final Class<T> mInterfaceClass;
     private final String mImplClassName;
     private T mImpl;
     private InstallEngine mInstaller;
-
-    /**
-     * To be called after the main native library has been loaded. Any module instances created
-     * before the native library is loaded have their native component queued for loading and
-     * registration. Calling this methed completes that process.
-     */
-    public static void doDeferredNativeRegistrations() {
-        if (sPendingNativeRegistrations == null) return;
-        for (String name : sPendingNativeRegistrations) {
-            loadNative(name);
-        }
-        sPendingNativeRegistrations = null;
-    }
+    private boolean mIsNativeLoaded;
 
     /**
      * Instantiates a module.
@@ -113,33 +95,35 @@ public class Module<T> {
     public T getImpl() {
         try (Timer timer = new Timer()) {
             if (mImpl != null) return mImpl;
-
             assert isInstalled();
-            // Load the module's native code and/or resources if they are present, and the Chrome
-            // native library itself has been loaded.
-            if (sPendingNativeRegistrations == null) {
-                loadNative(mName);
-            } else {
-                // We have to defer native initialization because VR is calling getImpl in early
-                // startup. As soon as VR stops doing that we want to deprecate deferred native
-                // initialization.
-                sPendingNativeRegistrations.add(mName);
+
+            ModuleDescriptor moduleDescriptor = loadModuleDescriptor(mName);
+            if (moduleDescriptor.getLoadNativeOnGetImpl()) {
+                // Load the module's native code and/or resources if they are present, and the
+                // Chrome native library itself has been loaded.
+                ensureNativeLoaded();
             }
+
             mImpl = mInterfaceClass.cast(instantiateReflectively(mImplClassName));
             return mImpl;
         }
     }
 
-    private static void loadNative(String name) {
+    /**
+     * Loads native libraries and/or resources if and only if this is not already done, assuming
+     * that the module is installed, and enableNativeLoad() has been called.
+     */
+    public void ensureNativeLoaded() {
         // Can only initialize native once per lifetime of Chrome.
-        if (sInitializedModules.contains(name)) return;
-        ModuleDescriptor moduleDescriptor = loadModuleDescriptor(name);
+        if (mIsNativeLoaded) return;
+        assert LibraryLoader.getInstance().isInitialized();
+        ModuleDescriptor moduleDescriptor = loadModuleDescriptor(mName);
         String[] libraries = moduleDescriptor.getLibraries();
         String[] paks = moduleDescriptor.getPaks();
         if (libraries.length > 0 || paks.length > 0) {
-            ModuleJni.get().loadNative(name, libraries, paks);
+            ModuleJni.get().loadNative(mName, libraries, paks);
         }
-        sInitializedModules.add(name);
+        mIsNativeLoaded = true;
     }
 
     /**
@@ -163,6 +147,11 @@ public class Module<T> {
                 @Override
                 public String[] getPaks() {
                     return new String[0];
+                }
+
+                @Override
+                public boolean getLoadNativeOnGetImpl() {
+                    return false;
                 }
             };
         }

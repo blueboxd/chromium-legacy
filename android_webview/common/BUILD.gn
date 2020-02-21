@@ -27,6 +27,8 @@ source_set("common") {
     "aw_hit_test_data.h",
     "aw_media_drm_bridge_client.cc",
     "aw_media_drm_bridge_client.h",
+    "aw_origin_matcher.cc",
+    "aw_origin_matcher.h",
     "aw_paths.cc",
     "aw_paths.h",
     "aw_resource.cc",

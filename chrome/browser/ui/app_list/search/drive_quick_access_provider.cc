@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -202,6 +203,17 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
 
 void DriveQuickAccessProvider::SetResultsCache(
     const std::vector<drive::QuickAccessItem>& drive_results) {
+  // Rescale items between 0 and 1
+  double hi = drive_results[0].confidence;
+  double lo = drive_results[0].confidence;
+  for (auto item : drive_results) {
+    hi = std::max(item.confidence, hi);
+    lo = std::min(item.confidence, lo);
+  }
+  for (auto item : drive_results) {
+    item.confidence = (item.confidence - lo) / (hi - lo);
+  }
+
   results_cache_ = std::move(drive_results);
 }
 

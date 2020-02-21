@@ -129,8 +129,7 @@ IntRect RemoteFrameView::GetCompositingRect() {
           local_root_view->GetLayoutView(),
           PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
           kTraverseDocumentBoundaries);
-  IntSize converted_viewport_size = EnclosingIntRect(viewport_rect).Size();
-
+  IntRect compositing_rect = EnclosingIntRect(viewport_rect);
   IntSize frame_size = Size();
 
   // Iframes that fit within the window viewport get fully rastered. For
@@ -141,22 +140,17 @@ IntRect RemoteFrameView::GetCompositingRect() {
   // it seems to make guttering rare with slow to medium speed wheel scrolling.
   // Can we collect UMA data to estimate how much extra rastering this causes,
   // and possibly how common guttering is?
-  converted_viewport_size.Scale(1.3f);
-  converted_viewport_size.SetWidth(
-      std::min(frame_size.Width(), converted_viewport_size.Width()));
-  converted_viewport_size.SetHeight(
-      std::min(frame_size.Height(), converted_viewport_size.Height()));
-  IntPoint expanded_origin;
-  const IntRect& last_rect = last_intersection_state_.viewport_intersection;
-  if (!last_rect.IsEmpty()) {
-    IntSize expanded_size =
-        last_rect.Size().ExpandedTo(converted_viewport_size);
-    expanded_size -= last_rect.Size();
-    expanded_size.Scale(0.5f, 0.5f);
-    expanded_origin = last_rect.Location() - expanded_size;
-    expanded_origin.ClampNegativeToZero();
-  }
-  return IntRect(expanded_origin, converted_viewport_size);
+  compositing_rect.InflateX(ceilf(viewport_rect.Width() * 0.15f));
+  compositing_rect.InflateY(ceilf(viewport_rect.Height() * 0.15f));
+  compositing_rect.SetWidth(
+      std::min(frame_size.Width(), compositing_rect.Width()));
+  compositing_rect.SetHeight(
+      std::min(frame_size.Height(), compositing_rect.Height()));
+  IntPoint compositing_rect_location = compositing_rect.Location();
+  compositing_rect_location.ClampNegativeToZero();
+  compositing_rect.SetLocation(compositing_rect_location);
+
+  return compositing_rect;
 }
 
 void RemoteFrameView::Dispose() {

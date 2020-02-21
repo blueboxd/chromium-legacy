@@ -2374,8 +2374,8 @@ TEST_P(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
             client.last_a11y_alert());
 }
 
-// Verifies the auto-hide shelf is hidden if there is only a single PIP window.
-TEST_P(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
+// Verifies the auto-hide shelf is shown if there is only a single PIP window.
+TEST_P(ShelfLayoutManagerTest, AutoHideShelfShownForSinglePipWindow) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -2394,7 +2394,7 @@ TEST_P(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
 
   // Expect the shelf to be hidden.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
 // Verifies that shelf components are placed properly in right-to-left UI.

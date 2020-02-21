@@ -9,10 +9,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
-namespace media {
-class VideoFrame;
-}
-
 namespace blink {
 
 class HTMLVideoElement;
@@ -34,11 +30,7 @@ class CORE_EXPORT VideoRequestAnimationFrame
   void Trace(Visitor*) override;
 
   virtual void OnWebMediaPlayerCreated() = 0;
-  virtual void OnRequestAnimationFrame(
-      base::TimeTicks presentation_time,
-      base::TimeTicks expected_presentation_time,
-      uint32_t presented_frames_counter,
-      const media::VideoFrame&) = 0;
+  virtual void OnRequestAnimationFrame() = 0;
 
  protected:
   explicit VideoRequestAnimationFrame(HTMLVideoElement&);

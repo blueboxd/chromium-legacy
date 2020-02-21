@@ -4,8 +4,8 @@
 
 // Methods for parsing IPP Printer attributes.
 
-#ifndef PRINTING_BACKEND_CUPS_IPP_UTIL_H_
-#define PRINTING_BACKEND_CUPS_IPP_UTIL_H_
+#ifndef PRINTING_BACKEND_CUPS_IPP_HELPER_H_
+#define PRINTING_BACKEND_CUPS_IPP_HELPER_H_
 
 #include <memory>
 
@@ -33,4 +33,4 @@ PRINTING_EXPORT ScopedIppPtr WrapIpp(ipp_t* ipp);
 
 }  // namespace printing
 
-#endif  // PRINTING_BACKEND_CUPS_IPP_UTIL_H_
+#endif  // PRINTING_BACKEND_CUPS_IPP_HELPER_H_

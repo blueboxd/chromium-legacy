@@ -883,11 +883,10 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
   // Initial config should be set before the app list main view is initialized.
   DCHECK(!is_initial_config || !app_list_main_view_);
 
-  // If the config changed, notify apps grids the config has changed.
-  if (!is_initial_config) {
-    GetFolderAppsGridView()->OnAppListConfigUpdated();
-    GetRootAppsGridView()->OnAppListConfigUpdated();
-  }
+  // If the config changed, notify apps container the config has changed, so
+  // root and folder apps grids are updated for the new config.
+  if (!is_initial_config)
+    GetAppsContainerView()->OnAppListConfigUpdated();
 }
 
 void AppListView::UpdateWidget() {
@@ -1216,6 +1215,12 @@ void AppListView::EnsureWidgetBoundsMatchCurrentState() {
   aura::Window* window = GetWidget()->GetNativeView();
   if (new_target_bounds == window->GetTargetBounds())
     return;
+
+  // Update the app list config to match the new window bounds - do this before
+  // updating the bounds, so app list config is updated before apps container is
+  // laid out (to avoid separate layouts for window bounds change and app list
+  // config change).
+  UpdateAppListConfig(GetWidget()->GetNativeView());
 
   // Set the widget size to fit the new display metrics.
   GetWidget()->GetNativeView()->SetBounds(new_target_bounds);

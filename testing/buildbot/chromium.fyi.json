@@ -24902,6 +24902,11 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "pixel_browser_tests",
+        "precommit_args": [
+          "--issue=${patch_issue}",
+          "--patchset=${patch_set}",
+          "--jobid=${buildbucket_build_id}"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -24909,7 +24914,7 @@
               "os": "Windows-10-15063"
             }
           ],
-          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"

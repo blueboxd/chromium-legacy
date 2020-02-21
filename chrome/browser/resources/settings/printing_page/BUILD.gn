@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -16,7 +19,6 @@ js_type_check("closure_compile") {
 }
 
 js_library("cloud_printers") {
-  deps = [ "//ui/webui/resources/js:load_time_data" ]
 }
 
 js_library("printing_browser_proxy") {
@@ -29,56 +31,56 @@ js_library("printing_page") {
     "..:route",
     "..:router",
     "../settings_page:settings_animated_pages",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:load_time_data",
   ]
-  if (!is_chromeos) {
-    deps += [ ":printing_browser_proxy" ]
-  }
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":cloud_printers.m",
-#    ":printing_browser_proxy.m",
-#    ":printing_page.m",
-#  ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":cloud_printers.m",
+    ":printing_page.m",
+  ]
+
+  if (!is_chromeos) {
+    deps += [ ":printing_browser_proxy.m" ]
+  }
+}
 
 js_library("cloud_printers.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/printing_page/cloud_printers.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":cloud_printers_module" ]
 }
 
 js_library("printing_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/printing_page/printing_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("printing_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/printing_page/printing_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":printing_browser_proxy.m",
+    "..:route.m",
+    "..:router.m",
+    "../settings_page:settings_animated_pages.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":printing_page_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":cloud_printers_module",
-    ":modulize",
     ":printing_page_module",
   ]
+
+  if (!is_chromeos) {
+    public_deps += [ ":modulize" ]
+  }
 }
 
 polymer_modulizer("cloud_printers") {
@@ -91,10 +93,15 @@ polymer_modulizer("printing_page") {
   js_file = "printing_page.js"
   html_file = "printing_page.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports =
+      settings_auto_imports + [
+        "chrome/browser/resources/settings/route.html|routes",
+        "chrome/browser/resources/settings/router.html|Route, Router",
+      ]
 }
-
-import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [ "printing_browser_proxy.js" ]
+  namespace_rewrites = settings_namespace_rewrites
 }

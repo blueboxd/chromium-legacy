@@ -163,11 +163,11 @@ public class TouchToFillControllerTest {
         assertThat(itemList.get(3).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
 
         verify(mMockIconBridge)
-                .getLargeIconForUrl(eq(CARL.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+                .getLargeIconForStringUrl(eq(CARL.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
         verify(mMockIconBridge)
-                .getLargeIconForUrl(eq(ANA.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+                .getLargeIconForStringUrl(eq(ANA.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
         verify(mMockIconBridge)
-                .getLargeIconForUrl(eq(BOB.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+                .getLargeIconForStringUrl(eq(BOB.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
     }
 
     @Test
@@ -181,7 +181,7 @@ public class TouchToFillControllerTest {
 
         // ANA and CARL both have TEST_URL as their origin URL
         verify(mMockIconBridge)
-                .getLargeIconForUrl(
+                .getLargeIconForStringUrl(
                         eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), mCallbackArgumentCaptor.capture());
         LargeIconBridge.LargeIconCallback callback = mCallbackArgumentCaptor.getValue();
         Bitmap bitmap = Bitmap.createBitmap(

@@ -20,7 +20,25 @@ const CGFloat kContainerMaxWidth = 398;
 const CGFloat kContainerMaxHeight = 230;
 }
 
+@interface InfobarBannerPresentationController ()
+// Delegate used to position the InfobarBanner.
+@property(nonatomic, weak) id<InfobarBannerPositioner> bannerPositioner;
+@end
+
 @implementation InfobarBannerPresentationController
+
+- (instancetype)
+    initWithPresentedViewController:(UIViewController*)presentedViewController
+           presentingViewController:(UIViewController*)presentingViewController
+                   bannerPositioner:
+                       (id<InfobarBannerPositioner>)bannerPositioner {
+  self = [super initWithPresentedViewController:presentedViewController
+                       presentingViewController:presentingViewController];
+  if (self) {
+    _bannerPositioner = bannerPositioner;
+  }
+  return self;
+}
 
 - (void)presentationTransitionWillBegin {
   self.containerView.frame = [self viewForPresentedView].frame;
@@ -29,11 +47,11 @@ const CGFloat kContainerMaxHeight = 230;
 - (void)containerViewWillLayoutSubviews {
   self.containerView.frame = [self viewForPresentedView].frame;
   self.presentedView.frame = [self viewForPresentedView].bounds;
+  [super containerViewWillLayoutSubviews];
 }
 
 - (UIView*)viewForPresentedView {
-  DCHECK(self.bannerPositioner);
-  UIWindow* window = UIApplication.sharedApplication.keyWindow;
+  UIWindow* window = self.containerView.window;
 
   // Calculate the Banner container width.
   CGFloat safeAreaWidth = CGRectGetWidth(window.bounds);

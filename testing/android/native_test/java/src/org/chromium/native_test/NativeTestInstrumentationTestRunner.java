@@ -228,21 +228,25 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
         return false;
     }
 
+    protected Intent createShardMainIntent() {
+        Intent i = new Intent(Intent.ACTION_MAIN);
+        i.setComponent(new ComponentName(getContext().getPackageName(), mNativeTestActivity));
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.putExtras(mTransparentArguments);
+        if (mShards != null && !mShards.isEmpty()) {
+            ArrayList<String> shard = mShards.remove();
+            i.putStringArrayListExtra(NativeTest.EXTRA_SHARD, shard);
+        }
+        i.putExtra(NativeTest.EXTRA_STDOUT_FILE, mStdoutFile.getAbsolutePath());
+        return i;
+    }
+
     /** Starts the NativeTest Activity.
      */
     private class ShardStarter implements Runnable {
         @Override
         public void run() {
-            Intent i = new Intent(Intent.ACTION_MAIN);
-            i.setComponent(new ComponentName(getContext().getPackageName(), mNativeTestActivity));
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.putExtras(mTransparentArguments);
-            if (mShards != null && !mShards.isEmpty()) {
-                ArrayList<String> shard = mShards.remove();
-                i.putStringArrayListExtra(NativeTest.EXTRA_SHARD, shard);
-            }
-            i.putExtra(NativeTest.EXTRA_STDOUT_FILE, mStdoutFile.getAbsolutePath());
-            getContext().startActivity(i);
+            getContext().startActivity(createShardMainIntent());
         }
     }
 

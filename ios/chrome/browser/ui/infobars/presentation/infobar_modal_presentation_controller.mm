@@ -22,7 +22,25 @@ const CGFloat kPresentedViewMaxWidth = 394.0;
 const CGFloat kContainerCornerRadius = 13.0;
 }  // namespace
 
+@interface InfobarModalPresentationController ()
+// Delegate used to position the ModalInfobar.
+@property(nonatomic, weak) id<InfobarModalPositioner> modalPositioner;
+@end
+
 @implementation InfobarModalPresentationController
+
+- (instancetype)
+    initWithPresentedViewController:(UIViewController*)presentedViewController
+           presentingViewController:(UIViewController*)presentingViewController
+                    modalPositioner:
+                        (id<InfobarModalPositioner>)modalPositioner {
+  self = [super initWithPresentedViewController:presentedViewController
+                       presentingViewController:presentingViewController];
+  if (self) {
+    _modalPositioner = modalPositioner;
+  }
+  return self;
+}
 
 - (void)presentationTransitionWillBegin {
   // Add a gesture recognizer to endEditing (thus hiding the keyboard) if a user
@@ -45,10 +63,11 @@ const CGFloat kContainerCornerRadius = 13.0;
   self.presentedView.clipsToBounds = YES;
   self.containerView.backgroundColor =
       [UIColor colorNamed:kScrimBackgroundColor];
+
+  [super containerViewWillLayoutSubviews];
 }
 
 - (CGRect)frameForPresentedView {
-  DCHECK(self.modalPositioner);
   CGRect safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
   CGFloat safeAreaWidth = CGRectGetWidth(safeAreaBounds);
   CGFloat safeAreaHeight = CGRectGetHeight(safeAreaBounds);

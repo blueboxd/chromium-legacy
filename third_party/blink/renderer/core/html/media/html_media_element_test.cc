@@ -33,6 +33,8 @@ using ::testing::Return;
 
 namespace blink {
 
+namespace {
+
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   MOCK_CONST_METHOD0(HasAudio, bool());
@@ -73,6 +75,8 @@ class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
 };
 
 enum class MediaTestParam { kAudio, kVideo };
+
+}  // namespace
 
 class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  protected:

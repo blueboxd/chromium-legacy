@@ -338,6 +338,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsExtendedReporting() = 0;
 
+  virtual bool IsEnhancedProtection() = 0;
+
   virtual bool IsIncognito() = 0;
 
   virtual bool IsPingingEnabled(

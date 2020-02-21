@@ -708,6 +708,8 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
   status = WaitForDevToolsAndCheckVersion(DevToolsEndpoint(0), factory,
                                           socket_factory, &capabilities, 1,
                                           &devtools_http_client, &retry);
+  if (status.IsError())
+    return status;
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       DevToolsEndpoint(0), capabilities.perf_logging_prefs, socket_factory,

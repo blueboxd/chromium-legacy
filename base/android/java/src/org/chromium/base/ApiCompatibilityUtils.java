@@ -31,7 +31,6 @@ import android.os.Process;
 import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
-import android.support.v4.widget.ImageViewCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -48,6 +47,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.annotations.VerifiesOnLollipop;
 import org.chromium.base.annotations.VerifiesOnLollipopMR1;

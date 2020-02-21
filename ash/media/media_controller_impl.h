@@ -65,6 +65,8 @@ class ASH_EXPORT MediaControllerImpl
   void HandleMediaStop();
   void HandleMediaNextTrack();
   void HandleMediaPrevTrack();
+  void HandleMediaSeekBackward();
+  void HandleMediaSeekForward();
 
   // Methods that forward to |client_|.
   void RequestCaptureState();

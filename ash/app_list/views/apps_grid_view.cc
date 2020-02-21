@@ -2119,7 +2119,7 @@ void AppsGridView::OnAppListConfigUpdated() {
   for (int i = 0; i < view_model_.view_size(); ++i)
     view_model_.view_at(i)->RefreshIcon();
 
-  Layout();
+  InvalidateLayout();
 }
 
 const AppListConfig& AppsGridView::GetAppListConfig() const {

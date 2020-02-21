@@ -1259,6 +1259,46 @@ TEST_F(AuthenticatorImplTest, AppIdExcludeExtension) {
       }
     }
   }
+
+  {
+    // Using appidExclude with an empty exclude list previously caused a crash.
+    // See https://bugs.chromium.org/p/chromium/issues/detail?id=1054499.
+    virtual_device_factory_->SetSupportedProtocol(
+        device::ProtocolVersion::kCtap2);
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->appid_exclude = kTestOrigin1;
+    options->exclude_credentials.clear();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  }
+
+  {
+    // Also test the case where all credential IDs are eliminated because of
+    // their size.
+    device::VirtualCtap2Device::Config config;
+    config.max_credential_count_in_list = 1;
+    config.max_credential_id_length = 1;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->appid_exclude = kTestOrigin1;
+    options->exclude_credentials = GetTestCredentials();
+
+    for (const auto& cred : options->exclude_credentials) {
+      ASSERT_GT(cred.id().size(), config.max_credential_id_length);
+    }
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  }
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {

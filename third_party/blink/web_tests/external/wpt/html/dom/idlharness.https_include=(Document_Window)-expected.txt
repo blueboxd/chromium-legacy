@@ -201,16 +201,16 @@ FAIL Window interface: attribute length assert_equals: "length" must have a gett
 FAIL Window interface: attribute opener assert_equals: "opener" must have a getter expected "function" but got "undefined"
 FAIL Window interface: attribute parent assert_equals: "parent" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute frameElement
-PASS Window interface: operation open(USVString, DOMString, DOMString)
+PASS Window interface: operation open(optional USVString, optional DOMString, optional DOMString)
 PASS Window interface: attribute navigator
 PASS Window interface: attribute applicationCache
 PASS Window interface: operation alert()
 PASS Window interface: operation alert(DOMString)
-PASS Window interface: operation confirm(DOMString)
-PASS Window interface: operation prompt(DOMString, DOMString)
+PASS Window interface: operation confirm(optional DOMString)
+PASS Window interface: operation prompt(optional DOMString, optional DOMString)
 PASS Window interface: operation print()
-PASS Window interface: operation postMessage(any, USVString, [object Object])
-PASS Window interface: operation postMessage(any, WindowPostMessageOptions)
+PASS Window interface: operation postMessage(any, USVString, optional sequence<object>)
+PASS Window interface: operation postMessage(any, optional WindowPostMessageOptions)
 PASS Window interface: operation captureEvents()
 PASS Window interface: operation releaseEvents()
 PASS Window interface: attribute external
@@ -300,13 +300,13 @@ PASS Window interface: attribute onunload
 PASS Window interface: attribute origin
 PASS Window interface: operation btoa(DOMString)
 PASS Window interface: operation atob(DOMString)
-PASS Window interface: operation setTimeout(TimerHandler, long, any)
-PASS Window interface: operation clearTimeout(long)
-PASS Window interface: operation setInterval(TimerHandler, long, any)
-PASS Window interface: operation clearInterval(long)
+PASS Window interface: operation setTimeout(TimerHandler, optional long, any...)
+PASS Window interface: operation clearTimeout(optional long)
+PASS Window interface: operation setInterval(TimerHandler, optional long, any...)
+PASS Window interface: operation clearInterval(optional long)
 PASS Window interface: operation queueMicrotask(VoidFunction)
-PASS Window interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions)
-PASS Window interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)
+PASS Window interface: operation createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions)
+PASS Window interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions)
 PASS Window interface: operation requestAnimationFrame(FrameRequestCallback)
 PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Window interface: attribute sessionStorage
@@ -344,22 +344,22 @@ FAIL Window interface: window must have own property "top" assert_false: propert
 PASS Window interface: window must inherit property "opener" with the proper type
 PASS Window interface: window must inherit property "parent" with the proper type
 PASS Window interface: window must inherit property "frameElement" with the proper type
-PASS Window interface: window must inherit property "open(USVString, DOMString, DOMString)" with the proper type
-PASS Window interface: calling open(USVString, DOMString, DOMString) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "open(optional USVString, optional DOMString, optional DOMString)" with the proper type
+PASS Window interface: calling open(optional USVString, optional DOMString, optional DOMString) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "navigator" with the proper type
 PASS Window interface: window must inherit property "applicationCache" with the proper type
 PASS Window interface: window must inherit property "alert()" with the proper type
 PASS Window interface: window must inherit property "alert(DOMString)" with the proper type
 PASS Window interface: calling alert(DOMString) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "confirm(DOMString)" with the proper type
-PASS Window interface: calling confirm(DOMString) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "prompt(DOMString, DOMString)" with the proper type
-PASS Window interface: calling prompt(DOMString, DOMString) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "confirm(optional DOMString)" with the proper type
+PASS Window interface: calling confirm(optional DOMString) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "prompt(optional DOMString, optional DOMString)" with the proper type
+PASS Window interface: calling prompt(optional DOMString, optional DOMString) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "print()" with the proper type
-PASS Window interface: window must inherit property "postMessage(any, USVString, [object Object])" with the proper type
-PASS Window interface: calling postMessage(any, USVString, [object Object]) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "postMessage(any, WindowPostMessageOptions)" with the proper type
-PASS Window interface: calling postMessage(any, WindowPostMessageOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "postMessage(any, USVString, optional sequence<object>)" with the proper type
+PASS Window interface: calling postMessage(any, USVString, optional sequence<object>) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "postMessage(any, optional WindowPostMessageOptions)" with the proper type
+PASS Window interface: calling postMessage(any, optional WindowPostMessageOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "captureEvents()" with the proper type
 PASS Window interface: window must inherit property "releaseEvents()" with the proper type
 PASS Window interface: window must inherit property "external" with the proper type
@@ -451,20 +451,20 @@ PASS Window interface: window must inherit property "btoa(DOMString)" with the p
 PASS Window interface: calling btoa(DOMString) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "atob(DOMString)" with the proper type
 PASS Window interface: calling atob(DOMString) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "setTimeout(TimerHandler, long, any)" with the proper type
-PASS Window interface: calling setTimeout(TimerHandler, long, any) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "clearTimeout(long)" with the proper type
-PASS Window interface: calling clearTimeout(long) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "setInterval(TimerHandler, long, any)" with the proper type
-PASS Window interface: calling setInterval(TimerHandler, long, any) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "clearInterval(long)" with the proper type
-PASS Window interface: calling clearInterval(long) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "setTimeout(TimerHandler, optional long, any...)" with the proper type
+PASS Window interface: calling setTimeout(TimerHandler, optional long, any...) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "clearTimeout(optional long)" with the proper type
+PASS Window interface: calling clearTimeout(optional long) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "setInterval(TimerHandler, optional long, any...)" with the proper type
+PASS Window interface: calling setInterval(TimerHandler, optional long, any...) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "clearInterval(optional long)" with the proper type
+PASS Window interface: calling clearInterval(optional long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "queueMicrotask(VoidFunction)" with the proper type
 PASS Window interface: calling queueMicrotask(VoidFunction) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type
-PASS Window interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type
-PASS Window interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions)" with the proper type
+PASS Window interface: calling createImageBitmap(ImageBitmapSource, optional ImageBitmapOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions)" with the proper type
+PASS Window interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, optional ImageBitmapOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type
 PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
@@ -488,15 +488,15 @@ PASS Document interface: attribute forms
 PASS Document interface: attribute scripts
 PASS Document interface: operation getElementsByName(DOMString)
 PASS Document interface: attribute currentScript
-PASS Document interface: operation open(DOMString, DOMString)
+PASS Document interface: operation open(optional DOMString, optional DOMString)
 PASS Document interface: operation open(USVString, DOMString, DOMString)
 PASS Document interface: operation close()
-PASS Document interface: operation write(DOMString)
-PASS Document interface: operation writeln(DOMString)
+PASS Document interface: operation write(DOMString...)
+PASS Document interface: operation writeln(DOMString...)
 PASS Document interface: attribute defaultView
 PASS Document interface: operation hasFocus()
 PASS Document interface: attribute designMode
-PASS Document interface: operation execCommand(DOMString, boolean, DOMString)
+PASS Document interface: operation execCommand(DOMString, optional boolean, optional DOMString)
 PASS Document interface: operation queryCommandEnabled(DOMString)
 PASS Document interface: operation queryCommandIndeterm(DOMString)
 PASS Document interface: operation queryCommandState(DOMString)
@@ -604,20 +604,20 @@ PASS Document interface: iframe.contentDocument must inherit property "scripts" 
 PASS Document interface: iframe.contentDocument must inherit property "getElementsByName(DOMString)" with the proper type
 PASS Document interface: calling getElementsByName(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "currentScript" with the proper type
-PASS Document interface: iframe.contentDocument must inherit property "open(DOMString, DOMString)" with the proper type
-PASS Document interface: calling open(DOMString, DOMString) on iframe.contentDocument with too few arguments must throw TypeError
+PASS Document interface: iframe.contentDocument must inherit property "open(optional DOMString, optional DOMString)" with the proper type
+PASS Document interface: calling open(optional DOMString, optional DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "open(USVString, DOMString, DOMString)" with the proper type
 PASS Document interface: calling open(USVString, DOMString, DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "close()" with the proper type
-PASS Document interface: iframe.contentDocument must inherit property "write(DOMString)" with the proper type
-PASS Document interface: calling write(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
-PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString)" with the proper type
-PASS Document interface: calling writeln(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
+PASS Document interface: iframe.contentDocument must inherit property "write(DOMString...)" with the proper type
+PASS Document interface: calling write(DOMString...) on iframe.contentDocument with too few arguments must throw TypeError
+PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString...)" with the proper type
+PASS Document interface: calling writeln(DOMString...) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "hasFocus()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "designMode" with the proper type
-PASS Document interface: iframe.contentDocument must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
-PASS Document interface: calling execCommand(DOMString, boolean, DOMString) on iframe.contentDocument with too few arguments must throw TypeError
+PASS Document interface: iframe.contentDocument must inherit property "execCommand(DOMString, optional boolean, optional DOMString)" with the proper type
+PASS Document interface: calling execCommand(DOMString, optional boolean, optional DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "queryCommandEnabled(DOMString)" with the proper type
 PASS Document interface: calling queryCommandEnabled(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "queryCommandIndeterm(DOMString)" with the proper type
@@ -730,20 +730,20 @@ PASS Document interface: new Document() must inherit property "scripts" with the
 PASS Document interface: new Document() must inherit property "getElementsByName(DOMString)" with the proper type
 PASS Document interface: calling getElementsByName(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "currentScript" with the proper type
-PASS Document interface: new Document() must inherit property "open(DOMString, DOMString)" with the proper type
-PASS Document interface: calling open(DOMString, DOMString) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "open(optional DOMString, optional DOMString)" with the proper type
+PASS Document interface: calling open(optional DOMString, optional DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "open(USVString, DOMString, DOMString)" with the proper type
 PASS Document interface: calling open(USVString, DOMString, DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "close()" with the proper type
-PASS Document interface: new Document() must inherit property "write(DOMString)" with the proper type
-PASS Document interface: calling write(DOMString) on new Document() with too few arguments must throw TypeError
-PASS Document interface: new Document() must inherit property "writeln(DOMString)" with the proper type
-PASS Document interface: calling writeln(DOMString) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "write(DOMString...)" with the proper type
+PASS Document interface: calling write(DOMString...) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "writeln(DOMString...)" with the proper type
+PASS Document interface: calling writeln(DOMString...) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "defaultView" with the proper type
 PASS Document interface: new Document() must inherit property "hasFocus()" with the proper type
 PASS Document interface: new Document() must inherit property "designMode" with the proper type
-PASS Document interface: new Document() must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
-PASS Document interface: calling execCommand(DOMString, boolean, DOMString) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "execCommand(DOMString, optional boolean, optional DOMString)" with the proper type
+PASS Document interface: calling execCommand(DOMString, optional boolean, optional DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "queryCommandEnabled(DOMString)" with the proper type
 PASS Document interface: calling queryCommandEnabled(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "queryCommandIndeterm(DOMString)" with the proper type
@@ -856,20 +856,20 @@ PASS Document interface: documentWithHandlers must inherit property "scripts" wi
 PASS Document interface: documentWithHandlers must inherit property "getElementsByName(DOMString)" with the proper type
 PASS Document interface: calling getElementsByName(DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "currentScript" with the proper type
-PASS Document interface: documentWithHandlers must inherit property "open(DOMString, DOMString)" with the proper type
-PASS Document interface: calling open(DOMString, DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "open(optional DOMString, optional DOMString)" with the proper type
+PASS Document interface: calling open(optional DOMString, optional DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "open(USVString, DOMString, DOMString)" with the proper type
 PASS Document interface: calling open(USVString, DOMString, DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "close()" with the proper type
-PASS Document interface: documentWithHandlers must inherit property "write(DOMString)" with the proper type
-PASS Document interface: calling write(DOMString) on documentWithHandlers with too few arguments must throw TypeError
-PASS Document interface: documentWithHandlers must inherit property "writeln(DOMString)" with the proper type
-PASS Document interface: calling writeln(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "write(DOMString...)" with the proper type
+PASS Document interface: calling write(DOMString...) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "writeln(DOMString...)" with the proper type
+PASS Document interface: calling writeln(DOMString...) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "defaultView" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "hasFocus()" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "designMode" with the proper type
-PASS Document interface: documentWithHandlers must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
-PASS Document interface: calling execCommand(DOMString, boolean, DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "execCommand(DOMString, optional boolean, optional DOMString)" with the proper type
+PASS Document interface: calling execCommand(DOMString, optional boolean, optional DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "queryCommandEnabled(DOMString)" with the proper type
 PASS Document interface: calling queryCommandEnabled(DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "queryCommandIndeterm(DOMString)" with the proper type

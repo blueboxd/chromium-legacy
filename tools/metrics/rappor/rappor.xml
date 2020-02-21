@@ -119,25 +119,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="NTP.ExplicitUserAction.PageNavigation.NTPTileClick"
-    type="UMA_RAPPOR_TYPE">
-  <owner>knn@chromium.org</owner>
-  <summary>
-    The eTLD+1 of the website visited by a user by clicking on the tile in the
-    NewTabPage.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="NTP.ExplicitUserAction.PageNavigation.OmniboxNonSearch"
-    type="UMA_RAPPOR_TYPE">
-  <owner>knn@chromium.org</owner>
-  <summary>
-    The eTLD+1 of the website visited by a user by typing the URL in the omnibox
-    including those completed from suggestions but not including those that end
-    up being searches in the search engine.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>

@@ -30,7 +30,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "printing/backend/cups_ipp_util.h"
+#include "printing/backend/cups_ipp_helper.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace cups_proxy {

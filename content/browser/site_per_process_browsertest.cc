@@ -12396,16 +12396,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       new UpdateViewportIntersectionMessageFilter();
   root->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
-  EXPECT_TRUE(ExecuteScript(
-      root, "document.getElementsByTagName('div')[0].scrollTo(0, 5000);"));
-
-  gfx::Rect compositing_rect;
-  while (compositing_rect.y() == 0) {
-    // Ignore any messages that arrive before the compositing_rect scrolls
-    // away from the origin.
-    filter->Wait();
-    compositing_rect = filter->GetIntersectionState().compositor_visible_rect;
-  }
+  // Force a lifecycle update and wait for it to finish; by the time this call
+  // returns, the viewport intersection IPC should already have been received
+  // by the browser process and handled by the filter.
+  EvalJsResult eval_result = EvalJsAfterLifecycleUpdate(
+      root->current_frame_host(),
+      "document.getElementsByTagName('div')[0].scrollTo(0, 5000);",
+      "document.getElementsByTagName('div')[0].getBoundingClientRect().top;");
+  ASSERT_TRUE(eval_result.error.empty());
+  int div_offset_top = eval_result.ExtractInt();
+  gfx::Rect compositing_rect =
+      filter->GetIntersectionState().compositor_visible_rect;
 
   float scale_factor = 1.0f;
   if (IsUseZoomForDSFEnabled())
@@ -12426,10 +12427,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                     5 * scale_factor;
   int expected_height = view_height * 13 / 10;
 
-  // 185 is the height of the div in the main page after subtracting scroll
-  // bar height.
-  int expected_offset =
-      (5000 * scale_factor) - (expected_height - 185 * scale_factor) / 2;
+  int expected_offset = ((5000 - div_offset_top * 5) * scale_factor) -
+                        (expected_height - view_height) / 2;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
@@ -12481,17 +12480,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // This scrolls the div containing in the 'Site B' iframe that contains the
   // 'Site C' iframe, and then we verify that the 'Site C' frame receives the
-  // correct compositor frame.
-  EXPECT_TRUE(ExecuteScript(
-      child, "document.getElementsByTagName('div')[0].scrollTo(0, 5000);"));
-
-  gfx::Rect compositing_rect;
-  while (compositing_rect.y() == 0) {
-    // Ignore any messages that arrive before the compositing_rect scrolls
-    // away from the origin.
-    filter->Wait();
-    compositing_rect = filter->GetIntersectionState().compositor_visible_rect;
-  }
+  // correct compositor frame. Force a lifecycle update after the scroll and
+  // wait for it to finish; by the time this call returns, the viewport
+  // intersection IPC should already have been received by the browser process
+  // and handled by the filter.
+  EvalJsResult eval_result = EvalJsAfterLifecycleUpdate(
+      child->current_frame_host(),
+      "document.getElementsByTagName('div')[0].scrollTo(0, 5000);",
+      "document.getElementsByTagName('div')[0].getBoundingClientRect().top;");
+  ASSERT_TRUE(eval_result.error.empty());
+  int div_offset_top = eval_result.ExtractInt();
+  gfx::Rect compositing_rect =
+      filter->GetIntersectionState().compositor_visible_rect;
 
   float scale_factor = 1.0f;
   if (IsUseZoomForDSFEnabled())
@@ -12507,8 +12507,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                         .height() *
                     scale_factor;
   int expected_height = view_height * 13 / 10;
-  int expected_offset =
-      (5000 * scale_factor) - (expected_height - 185 * scale_factor) / 2;
+  int expected_offset = ((5000 - div_offset_top) * scale_factor) -
+                        (expected_height - view_height) / 2;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
@@ -15506,8 +15506,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessCompositorViewportBrowserTest,
   // Verify child's compositor viewport is no more than about 30% larger than
   // the parent's. See RemoteFrameView::GetCompositingRect() for explanation of
   // the choice of 30%. Add +1 to child viewport height to account for rounding.
-  EXPECT_GE(1.3f * parent_viewport_size.height(),
-            1.f * (child_viewport_size.height() - 1));
+  EXPECT_GE(ceilf(1.3f * parent_viewport_size.height()),
+            child_viewport_size.height() - 1);
 
   // Verify the child's ViewBounds are much larger.
   RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(

@@ -94,14 +94,16 @@ public class TelemetryActivity extends FragmentActivity {
 
     private void createWebLayerAsync() {
         try {
-            WebLayer.loadAsync(getApplicationContext(), webLayer -> onWebLayerReady());
+            WebLayer.loadAsync(getApplicationContext(), webLayer -> onWebLayerReady(webLayer));
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
     }
 
-    private void onWebLayerReady() {
+    private void onWebLayerReady(WebLayer webLayer) {
         if (mBrowser != null || isFinishing() || isDestroyed()) return;
+
+        webLayer.setRemoteDebuggingEnabled(true);
 
         mFragment = getOrCreateBrowserFragment();
         mBrowser = Browser.fromFragment(mFragment);

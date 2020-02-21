@@ -10,6 +10,7 @@ per-file histograms.xml=csharrison@chromium.org
 per-file histograms.xml=cthomp@chromium.org  # For security-related metrics only.
 per-file histograms.xml=schenney@chromium.org
 per-file histograms.xml=tbansal@chromium.org
+per-file histograms.xml=tby@chromium.org # For chrome knowledge team metrics only.
 
 per-file histograms.xml=set noparent
 

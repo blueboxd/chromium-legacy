@@ -33,12 +33,13 @@ RankingItemType RankingItemTypeFromSearchResult(
       return RankingItemType::kIgnored;
     case ash::AppListSearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
-    case ash::AppListSearchResultType::kFileChip:
     case ash::AppListSearchResultType::kZeroStateFile:
       return RankingItemType::kZeroStateFile;
-    case ash::AppListSearchResultType::kDriveQuickAccessChip:
     case ash::AppListSearchResultType::kDriveQuickAccess:
       return RankingItemType::kDriveQuickAccess;
+    case ash::AppListSearchResultType::kFileChip:
+    case ash::AppListSearchResultType::kDriveQuickAccessChip:
+      return RankingItemType::kChip;
   }
 }
 

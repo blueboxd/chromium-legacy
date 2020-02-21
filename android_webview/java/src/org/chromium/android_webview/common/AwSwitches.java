@@ -12,6 +12,10 @@ public final class AwSwitches {
     public static final String CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH =
             "enable-crash-reporter-for-testing";
 
+    // Highlight the contents (including web contents) of all WebViews with a yellow tint. This is
+    // useful for identifying WebViews in an Android application.
+    public static final String HIGHLIGHT_ALL_WEBVIEWS = "highlight-all-webviews";
+
     // Allow mirroring JS console messages to system logs. This is the default behavior on
     // debuggable devices (userdebug or eng), so there is no reason for a user to specify this
     // explicitly. Native switch kWebViewLogJsConsoleMessages.

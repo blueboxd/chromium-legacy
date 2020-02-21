@@ -12,19 +12,17 @@
 #include "ui/views/widget/widget.h"
 
 namespace arc {
-gfx::RectF ToChromeScale(const gfx::Rect& bounds, exo::WMHelper* wm_helper) {
-  DCHECK(wm_helper);
+gfx::RectF ToChromeScale(const gfx::Rect& bounds) {
+  DCHECK(exo::WMHelper::HasInstance());
   gfx::RectF bounds_f(bounds);
-  bounds_f.Scale(1.0f / wm_helper->GetDefaultDeviceScaleFactor());
+  bounds_f.Scale(1.0f /
+                 exo::WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
   return bounds_f;
 }
 
-gfx::RectF ToChromeBounds(const gfx::Rect& bounds,
-                          exo::WMHelper* wm_helper,
-                          views::Widget* widget) {
-  DCHECK(wm_helper);
+gfx::RectF ToChromeBounds(const gfx::Rect& bounds, views::Widget* widget) {
   DCHECK(widget);
-  gfx::RectF chrome_bounds = ToChromeScale(bounds, wm_helper);
+  gfx::RectF chrome_bounds = ToChromeScale(bounds);
 
   // On Android side, content is rendered without considering height of
   // caption bar, e.g. Content is rendered at y:0 instead of y:32 where 32 is

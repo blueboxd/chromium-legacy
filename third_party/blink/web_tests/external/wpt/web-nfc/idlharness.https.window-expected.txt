@@ -40,11 +40,11 @@ PASS NDEFWriter interface object name
 PASS NDEFWriter interface: existence and properties of interface prototype object
 PASS NDEFWriter interface: existence and properties of interface prototype object's "constructor" property
 PASS NDEFWriter interface: existence and properties of interface prototype object's @@unscopables property
-PASS NDEFWriter interface: operation write(NDEFMessageSource, NDEFWriteOptions)
+PASS NDEFWriter interface: operation write(NDEFMessageSource, optional NDEFWriteOptions)
 PASS NDEFWriter must be primary interface of new NDEFWriter();
 PASS Stringification of new NDEFWriter();
-PASS NDEFWriter interface: new NDEFWriter(); must inherit property "write(NDEFMessageSource, NDEFWriteOptions)" with the proper type
-PASS NDEFWriter interface: calling write(NDEFMessageSource, NDEFWriteOptions) on new NDEFWriter(); with too few arguments must throw TypeError
+PASS NDEFWriter interface: new NDEFWriter(); must inherit property "write(NDEFMessageSource, optional NDEFWriteOptions)" with the proper type
+PASS NDEFWriter interface: calling write(NDEFMessageSource, optional NDEFWriteOptions) on new NDEFWriter(); with too few arguments must throw TypeError
 PASS NDEFReader interface: existence and properties of interface object
 PASS NDEFReader interface object length
 PASS NDEFReader interface object name
@@ -53,13 +53,13 @@ PASS NDEFReader interface: existence and properties of interface prototype objec
 PASS NDEFReader interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFReader interface: attribute onerror
 PASS NDEFReader interface: attribute onreading
-PASS NDEFReader interface: operation scan(NDEFScanOptions)
+PASS NDEFReader interface: operation scan(optional NDEFScanOptions)
 PASS NDEFReader must be primary interface of new NDEFReader();
 PASS Stringification of new NDEFReader();
 PASS NDEFReader interface: new NDEFReader(); must inherit property "onerror" with the proper type
 PASS NDEFReader interface: new NDEFReader(); must inherit property "onreading" with the proper type
-PASS NDEFReader interface: new NDEFReader(); must inherit property "scan(NDEFScanOptions)" with the proper type
-PASS NDEFReader interface: calling scan(NDEFScanOptions) on new NDEFReader(); with too few arguments must throw TypeError
+PASS NDEFReader interface: new NDEFReader(); must inherit property "scan(optional NDEFScanOptions)" with the proper type
+PASS NDEFReader interface: calling scan(optional NDEFScanOptions) on new NDEFReader(); with too few arguments must throw TypeError
 PASS NDEFReadingEvent interface: existence and properties of interface object
 PASS NDEFReadingEvent interface object length
 PASS NDEFReadingEvent interface object name

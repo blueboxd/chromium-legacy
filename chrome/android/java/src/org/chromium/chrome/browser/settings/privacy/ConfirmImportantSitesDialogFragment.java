@@ -122,7 +122,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                     viewHolder.imageView.setImageDrawable(image);
                 }
             };
-            mLargeIconBridge.getLargeIconForUrl(url, mFaviconSize, viewHolder.imageCallback);
+            mLargeIconBridge.getLargeIconForStringUrl(url, mFaviconSize, viewHolder.imageCallback);
         }
     }
 

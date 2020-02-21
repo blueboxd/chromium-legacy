@@ -158,11 +158,6 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   worker_thread_->Terminate();
 }
 
-void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
-  // TODO(bashi): Remove this method. This does nothing anymore.
-  DCHECK(!asked_to_terminate_);
-}
-
 void WebEmbeddedWorkerImpl::StartWorkerThread(
     std::unique_ptr<WebEmbeddedWorkerStartData> worker_start_data,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>

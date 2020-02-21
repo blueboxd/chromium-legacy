@@ -229,7 +229,7 @@ class AppServiceProxy : public KeyedService,
   };
 
   static void CreatePauseDialog(const std::string& app_name,
-                                gfx::ImageSkia image,
+                                const gfx::ImageSkia& image,
                                 const PauseData& pause_data,
                                 OnPauseDialogClosedCallback pause_callback);
 

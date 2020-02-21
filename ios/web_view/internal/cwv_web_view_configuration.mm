@@ -205,6 +205,9 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   for (CWVWebView* webView in _webViews) {
     [webView shutDown];
   }
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+  [_syncController shutDown];
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   _browserState.reset();
 }
 

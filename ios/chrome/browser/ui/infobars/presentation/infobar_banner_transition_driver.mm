@@ -31,8 +31,8 @@
   InfobarBannerPresentationController* presentationController =
       [[InfobarBannerPresentationController alloc]
           initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  presentationController.bannerPositioner = self.bannerPositioner;
+                 presentingViewController:presenting
+                         bannerPositioner:self.bannerPositioner];
   return presentationController;
 }
 

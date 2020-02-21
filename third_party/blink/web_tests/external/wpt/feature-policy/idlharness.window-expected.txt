@@ -28,14 +28,14 @@ PASS FeaturePolicy interface object name
 PASS FeaturePolicy interface: existence and properties of interface prototype object
 PASS FeaturePolicy interface: existence and properties of interface prototype object's "constructor" property
 PASS FeaturePolicy interface: existence and properties of interface prototype object's @@unscopables property
-PASS FeaturePolicy interface: operation allowsFeature(DOMString, DOMString)
+PASS FeaturePolicy interface: operation allowsFeature(DOMString, optional DOMString)
 PASS FeaturePolicy interface: operation features()
 PASS FeaturePolicy interface: operation allowedFeatures()
 PASS FeaturePolicy interface: operation getAllowlistForFeature(DOMString)
 PASS FeaturePolicy must be primary interface of document.featurePolicy
 PASS Stringification of document.featurePolicy
-PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowsFeature(DOMString, DOMString)" with the proper type
-PASS FeaturePolicy interface: calling allowsFeature(DOMString, DOMString) on document.featurePolicy with too few arguments must throw TypeError
+PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowsFeature(DOMString, optional DOMString)" with the proper type
+PASS FeaturePolicy interface: calling allowsFeature(DOMString, optional DOMString) on document.featurePolicy with too few arguments must throw TypeError
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "features()" with the proper type
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "allowedFeatures()" with the proper type
 PASS FeaturePolicy interface: document.featurePolicy must inherit property "getAllowlistForFeature(DOMString)" with the proper type

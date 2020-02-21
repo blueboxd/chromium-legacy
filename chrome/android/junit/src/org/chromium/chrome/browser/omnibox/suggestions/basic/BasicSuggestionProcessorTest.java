@@ -299,7 +299,7 @@ public class BasicSuggestionProcessorTest {
         SuggestionDrawableState icon1 = mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(icon1);
 
-        verify(mIconBridge).getLargeIconForUrl(eq(url), anyInt(), callback.capture());
+        verify(mIconBridge).getLargeIconForStringUrl(eq(url), anyInt(), callback.capture());
         callback.getValue().onLargeIconAvailable(mFakeBitmap, 0, false, 0);
         SuggestionDrawableState icon2 = mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(icon2);
@@ -318,7 +318,7 @@ public class BasicSuggestionProcessorTest {
         SuggestionDrawableState icon1 = mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(icon1);
 
-        verify(mIconBridge).getLargeIconForUrl(eq(url), anyInt(), callback.capture());
+        verify(mIconBridge).getLargeIconForStringUrl(eq(url), anyInt(), callback.capture());
         callback.getValue().onLargeIconAvailable(null, 0, false, 0);
         SuggestionDrawableState icon2 = mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(icon2);

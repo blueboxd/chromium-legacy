@@ -14,12 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
-#include "extensions/common/extension_id.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "url/gurl.h"
-
-namespace extensions {
-class Extension;
-}  // namespace extensions
 
 namespace chromeos {
 
@@ -36,7 +32,7 @@ class FakeAndroidSmsAppSetupController : public AndroidSmsAppSetupController {
     AppMetadata(const AppMetadata& other);
     ~AppMetadata();
 
-    scoped_refptr<const extensions::Extension> pwa;
+    web_app::AppId pwa;
     bool is_cookie_present = true;
   };
 
@@ -47,15 +43,15 @@ class FakeAndroidSmsAppSetupController : public AndroidSmsAppSetupController {
   // ID at |install_url|. Otherwise, this function removes any existing app at
   // that URL.
   void SetAppAtUrl(const GURL& install_url,
-                   const base::Optional<extensions::ExtensionId>& id_for_app);
+                   const base::Optional<web_app::AppId>& id_for_app);
 
   // Completes a pending setup request (i.e., a previous call to SetUpApp()).
   // If |id_for_app| is set, the request is successful and the installed app
-  // will have the provided ID; if |id_for_app| is null, the request fails.
+  // will have the provided ID; if |id_for_app| is nullopt, the request fails.
   void CompletePendingSetUpAppRequest(
       const GURL& expected_app_url,
       const GURL& expected_install_url,
-      const base::Optional<extensions::ExtensionId>& id_for_app);
+      const base::Optional<web_app::AppId>& id_for_app);
 
   // Completes a pending cookie deletion request (i.e., a previous call to
   // DeleteRememberDeviceByDefaultCookie()).
@@ -75,7 +71,7 @@ class FakeAndroidSmsAppSetupController : public AndroidSmsAppSetupController {
   void SetUpApp(const GURL& app_url,
                 const GURL& install_url,
                 SuccessCallback callback) override;
-  const extensions::Extension* GetPwa(const GURL& install_url) override;
+  base::Optional<web_app::AppId> GetPwa(const GURL& install_url) override;
   void DeleteRememberDeviceByDefaultCookie(const GURL& app_url,
                                            SuccessCallback callback) override;
   void RemoveApp(const GURL& app_url,

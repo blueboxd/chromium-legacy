@@ -5,12 +5,12 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_IMAGE_WRITER_PRIVATE_API_H_
 
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-class ImageWriterPrivateBaseFunction : public ChromeAsyncExtensionFunction {
+class ImageWriterPrivateBaseFunction : public ExtensionFunction {
  public:
   ImageWriterPrivateBaseFunction();
 
@@ -32,7 +32,7 @@ class ImageWriterPrivateWriteFromUrlFunction
 
  private:
   ~ImageWriterPrivateWriteFromUrlFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ImageWriterPrivateWriteFromFileFunction
@@ -44,7 +44,7 @@ class ImageWriterPrivateWriteFromFileFunction
 
  private:
   ~ImageWriterPrivateWriteFromFileFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ImageWriterPrivateCancelWriteFunction
@@ -56,7 +56,7 @@ class ImageWriterPrivateCancelWriteFunction
 
  private:
   ~ImageWriterPrivateCancelWriteFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ImageWriterPrivateDestroyPartitionsFunction
@@ -68,20 +68,20 @@ class ImageWriterPrivateDestroyPartitionsFunction
 
  private:
   ~ImageWriterPrivateDestroyPartitionsFunction() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ImageWriterPrivateListRemovableStorageDevicesFunction
-    : public ChromeAsyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.listRemovableStorageDevices",
-                              IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES)
-   ImageWriterPrivateListRemovableStorageDevicesFunction();
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.listRemovableStorageDevices",
+                             IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES)
+  ImageWriterPrivateListRemovableStorageDevicesFunction();
 
-  private:
-   ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
-   bool RunAsync() override;
-   void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list);
+ private:
+  ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
+  ResponseAction Run() override;
+  void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list);
 };
 
 }  // namespace extensions

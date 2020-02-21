@@ -24,7 +24,7 @@ AXViewObjWrapper::AXViewObjWrapper(AXAuraObjCache* aura_obj_cache, View* view)
 AXViewObjWrapper::~AXViewObjWrapper() = default;
 
 bool AXViewObjWrapper::IsIgnored() {
-  return view_ ? view_->GetViewAccessibility().IsIgnored() : true;
+  return !view_ || view_->GetViewAccessibility().IsIgnored();
 }
 
 AXAuraObjWrapper* AXViewObjWrapper::GetParent() {

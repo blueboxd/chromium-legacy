@@ -124,12 +124,17 @@ python_library("bundle_wrapper_script_py") {
 
 # Tools necessary for symbolizing tombstones or stack traces that are output to
 # logcat.
-group("stack_tools") {
-  data = [
-    "tombstones.py",
-    "pylib/symbols/",
-    "stacktrace/",
-  ]
+# Hidden behind build_with_chromium because some third party repos that use
+# //build don't pull in //third_party/android_platform.
+if (build_with_chromium) {
+  group("stack_tools") {
+    data = [
+      "tombstones.py",
+      "pylib/symbols/",
+      "stacktrace/",
+    ]
 
-  data_deps = [ "//third_party/android_platform/development/scripts:stack_py" ]
+    data_deps =
+        [ "//third_party/android_platform/development/scripts:stack_py" ]
+  }
 }

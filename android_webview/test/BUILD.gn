@@ -372,6 +372,7 @@ test("android_webview_unittests") {
     "//android_webview/browser/gfx",
     "//android_webview/browser/lifecycle",
     "//android_webview/browser/metrics",
+    "//android_webview/common",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/metrics",
@@ -415,6 +416,7 @@ test("android_webview_unittests") {
     "../browser/safe_browsing/aw_safe_browsing_whitelist_manager_unittest.cc",
     "../browser/scoped_add_feature_flags_unittests.cc",
     "../browser/state_serializer_unittest.cc",
+    "../common/aw_origin_matcher_unittest.cc",
     "../lib/webview_tests.cc",
   ]
 

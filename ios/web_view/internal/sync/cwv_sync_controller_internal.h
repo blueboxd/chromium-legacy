@@ -41,6 +41,10 @@ class SigninErrorController;
              passwordStore:(password_manager::PasswordStore*)passwordStore
     NS_DESIGNATED_INITIALIZER;
 
+// Called by the associated CWVWebViewConfiguration in order to shut
+// down cleanly. See CWVWebViewConfiguration's |shutDown| method for more info.
+- (void)shutDown;
+
 @end
 
 NS_ASSUME_NONNULL_END

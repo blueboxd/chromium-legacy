@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -51,7 +52,7 @@ struct SubresourceLoaderParams;
 // for WorkerScriptFetcher.
 // TODO(falken): These are all static functions, it should just be a namespace
 // or merged elsewhere.
-class WorkerScriptFetchInitiator {
+class CONTENT_EXPORT WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
       bool success,
@@ -97,6 +98,9 @@ class WorkerScriptFetchInitiator {
                       bool filesystem_url_support);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WorkerScriptFetchInitiatorTest,
+                           DetermineFinalResponseUrl);
+
   // Adds additional request headers to |resource_request|. Must be called on
   // the UI thread.
   static void AddAdditionalRequestHeaders(
@@ -129,6 +133,15 @@ class WorkerScriptFetchInitiator {
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       bool success);
+
+  // Calculate the final response URL from the redirect chain, URLs fetched by
+  // the service worker and the initial request URL. The logic is mostly based
+  // on what blink::ResourceResponse::ResponseUrl() does.
+  //
+  // Exposed for testing.
+  static GURL DetermineFinalResponseUrl(
+      const GURL& initial_request_url,
+      blink::mojom::WorkerMainScriptLoadParams* main_script_load_params);
 };
 
 }  // namespace content

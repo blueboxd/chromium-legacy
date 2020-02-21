@@ -93,6 +93,7 @@ struct SurfaceAggregator::PrewalkResult {
   // not included in a SurfaceDrawQuad.
   base::flat_set<SurfaceId> undrawn_surfaces;
   bool may_contain_video = false;
+  bool frame_sinks_changed = false;
   gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 };
 
@@ -1318,6 +1319,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   contained_surfaces_[surface->surface_id()] = surface->GetActiveFrameIndex();
   LocalSurfaceId& local_surface_id =
       contained_frame_sinks_[surface->surface_id().frame_sink_id()];
+  result->frame_sinks_changed |= (!previous_contained_frame_sinks_.contains(
+      surface->surface_id().frame_sink_id()));
   local_surface_id =
       std::max(surface->surface_id().local_surface_id(), local_surface_id);
 
@@ -1676,6 +1679,9 @@ CompositorFrame SurfaceAggregator::Aggregate(
   root_damage_rect_ =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
   root_content_color_usage_ = prewalk_result.content_color_usage;
+
+  if (prewalk_result.frame_sinks_changed)
+    manager_->AggregatedFrameSinksChanged();
 
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();

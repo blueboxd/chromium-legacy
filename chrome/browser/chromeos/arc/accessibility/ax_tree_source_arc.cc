@@ -259,30 +259,33 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
   gfx::Rect info_data_bounds = info_data->GetBounds();
 
   if (!active_window) {
-    gfx::Rect root_bounds = GetRoot()->GetBounds();
+    const gfx::Rect root_bounds = GetRoot()->GetBounds();
     info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
     return info_data_bounds;
   }
 
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
-    return info_data_bounds;
+  // By default, the node bounds is relative to the tree root.
+  if (info_data->GetId() != root_id_) {
+    const gfx::Rect root_bounds = GetRoot()->GetBounds();
+    info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
 
+    gfx::RectF info_data_bounds_f = ToChromeScale(info_data_bounds);
+    arc::ScaleDeviceFactor(info_data_bounds_f,
+                           active_window->GetToplevelWindow());
+    return gfx::ToEnclosingRect(info_data_bounds_f);
+  }
+
+  // For the root node, the node bounds is relative to its container View.
   views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
   DCHECK(widget);
 
-  gfx::RectF info_data_bounds_f =
-      arc::ToChromeBounds(info_data_bounds, wm_helper, widget);
+  gfx::RectF info_data_bounds_f = arc::ToChromeBounds(info_data_bounds, widget);
 
-  // TODO(katie): offset_container_id should work and we shouldn't have to
-  // go into this code path for each node.
   DCHECK(widget->widget_delegate());
   DCHECK(widget->widget_delegate()->GetContentsView());
   const gfx::Rect root_bounds =
       widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
 
-  // Bounds of root node is relative to its container, i.e. contents view
-  // (ShellSurfaceBase).
   info_data_bounds_f.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
 
   arc::ScaleDeviceFactor(info_data_bounds_f,

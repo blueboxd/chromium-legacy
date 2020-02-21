@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.url.GURL;
 
 /**
  * A Java API for using the C++ LargeIconService.
@@ -24,7 +25,7 @@ public class LargeIconBridge {
     private static final int CACHE_ENTRY_MIN_SIZE_BYTES = ConversionUtils.BYTES_PER_KILOBYTE;
     private final Profile mProfile;
     private long mNativeLargeIconBridge;
-    private LruCache<String, CachedFavicon> mFaviconCache;
+    private LruCache<GURL, CachedFavicon> mFaviconCache;
 
     private static class CachedFavicon {
         public Bitmap icon;
@@ -70,8 +71,8 @@ public class LargeIconBridge {
 
     /**
      * Constructor that leaves the bridge independent from the native side.
-     * Note: {@link #getLargeIconForUrl(String, int, LargeIconCallback)} will crash with the default
-     * implementation, it should then be overridden.
+     * Note: {@link #getLargeIconForStringUrl(String, int, LargeIconCallback)} will crash with the
+     * default implementation, it should then be overridden.
      */
     @VisibleForTesting
     public LargeIconBridge() {
@@ -88,9 +89,9 @@ public class LargeIconBridge {
     public void createCache(int cacheSizeBytes) {
         assert cacheSizeBytes > 0;
 
-        mFaviconCache = new LruCache<String, CachedFavicon>(cacheSizeBytes) {
+        mFaviconCache = new LruCache<GURL, CachedFavicon>(cacheSizeBytes) {
             @Override
-            protected int sizeOf(String key, CachedFavicon favicon) {
+            protected int sizeOf(GURL key, CachedFavicon favicon) {
                 int iconBitmapSize = favicon.icon == null ? 0 : favicon.icon.getByteCount();
                 return Math.max(CACHE_ENTRY_MIN_SIZE_BYTES, iconBitmapSize);
             }
@@ -108,6 +109,17 @@ public class LargeIconBridge {
     }
 
     /**
+     * See {@link #getLargeIconForUrl(GURL, int, LargeIconCallback)}
+     *
+     * @deprecated please use getLargeIconForUrl instead.
+     */
+    @Deprecated
+    public boolean getLargeIconForStringUrl(
+            final String pageUrl, int desiredSizePx, final LargeIconCallback callback) {
+        return getLargeIconForUrl(new GURL(pageUrl), desiredSizePx, callback);
+    }
+
+    /**
      * Given a URL, returns a large icon for that URL if one is available (e.g. a favicon or
      * touch icon). If none is available, a fallback color is returned, based on the dominant color
      * of any small icons for the URL, or a default gray if no small icons are available. The icon
@@ -120,8 +132,8 @@ public class LargeIconBridge {
      *                 will not be called if this method returns false.
      * @return True if a callback should be expected.
      */
-    public boolean getLargeIconForUrl(final String pageUrl, int desiredSizePx,
-            final LargeIconCallback callback) {
+    public boolean getLargeIconForUrl(
+            final GURL pageUrl, int desiredSizePx, final LargeIconCallback callback) {
         assert mNativeLargeIconBridge != 0;
         assert callback != null;
 
@@ -155,7 +167,7 @@ public class LargeIconBridge {
     /**
      * Removes the favicon from the local cache for the given URL.
      */
-    public void clearFavicon(String url) {
+    public void clearFavicon(GURL url) {
         mFaviconCache.remove(url);
     }
 
@@ -163,7 +175,7 @@ public class LargeIconBridge {
     interface Natives {
         long init();
         void destroy(long nativeLargeIconBridge);
-        boolean getLargeIconForURL(long nativeLargeIconBridge, Profile profile, String pageUrl,
+        boolean getLargeIconForURL(long nativeLargeIconBridge, Profile profile, GURL pageUrl,
                 int desiredSizePx, LargeIconCallback callback);
     }
 }

@@ -186,6 +186,7 @@ Polymer({
                 JSON.stringify(config));
           }
         });
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -213,6 +214,7 @@ Polymer({
         console.error('Froget network failed for: ' + this.selectedGuid_);
       }
     });
+    settings.recordSettingChange();
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

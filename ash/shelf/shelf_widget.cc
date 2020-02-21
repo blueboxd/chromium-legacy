@@ -152,8 +152,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void UpdateShelfBackground(SkColor color) override;
 
   // HotseatBackgroundAnimator::Observer:
-  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
-                                           HotseatState to_state) override;
+  void OnHotseatTransitionAnimationWillStart(HotseatState from_state,
+                                             HotseatState to_state) override;
   void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                          HotseatState to_state) override;
 
@@ -421,7 +421,7 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   UpdateOpaqueBackground();
 }
 
-void ShelfWidget::DelegateView::OnHotseatTransitionAnimationStarted(
+void ShelfWidget::DelegateView::OnHotseatTransitionAnimationWillStart(
     HotseatState from_state,
     HotseatState to_state) {
   ShowAnimatingBackground(true);

@@ -392,7 +392,22 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetInteractiveTiming_LongestInputTimestamp4(
         longest_input_timestamp.InMilliseconds());
   }
-
+  if (timing.interactive_timing->total_input_delay) {
+    base::TimeDelta total_input_delay =
+        timing.interactive_timing->total_input_delay.value();
+    builder.SetInteractiveTiming_TotalInputDelay(
+        total_input_delay.InMilliseconds());
+  }
+  if (timing.interactive_timing->total_adjusted_input_delay) {
+    base::TimeDelta total_adjusted_input_delay =
+        timing.interactive_timing->total_adjusted_input_delay.value();
+    builder.SetInteractiveTiming_TotalAdjustedInputDelay(
+        total_adjusted_input_delay.InMilliseconds());
+  }
+  if (timing.interactive_timing->num_input_events) {
+    int num_input_events = timing.interactive_timing->num_input_events;
+    builder.SetInteractiveTiming_NumInputEvents(num_input_events);
+  }
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
   // Use a bucket spacing factor of 1.3 for bytes.

@@ -292,6 +292,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::Optional<viz::SurfaceId> GetSurfaceId() override;
   GURL GetSrcAfterRedirects() override;
   void RequestAnimationFrame() override;
+  std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
+  GetVideoFramePresentationMetadata() override;
 
   base::WeakPtr<blink::WebMediaPlayer> AsWeakPtr() override;
 
@@ -624,10 +626,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called by |compositor_| upon presenting a frame, after
   // RequestAnimationFrame() is called.
-  void OnNewFramePresentedCallback(scoped_refptr<VideoFrame> presented_frame,
-                                   base::TimeTicks presentation_time,
-                                   base::TimeTicks expected_presentation_time,
-                                   uint32_t presentation_counter);
+  void OnNewFramePresentedCallback();
 
   // Notifies |mb_data_source_| of playback and rate changes which may increase
   // the amount of data the DataSource buffers. Does nothing prior to reaching

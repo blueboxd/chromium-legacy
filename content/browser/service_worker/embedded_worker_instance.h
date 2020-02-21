@@ -153,9 +153,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // idle workers.
   void StopIfNotAttachedToDevTools();
 
-  // Resumes the worker if it paused after download.
-  void ResumeAfterDownload();
-
   int embedded_worker_id() const { return embedded_worker_id_; }
   EmbeddedWorkerStatus status() const { return status_; }
   StartingPhase starting_phase() const {

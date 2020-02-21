@@ -208,6 +208,7 @@ const char* kBlacklistExtensions[] = {
     "GL_NV_bindless_texture",
     "GL_NV_texture_barrier",
     "GL_OES_sample_shading",
+    "GL_QCOM_tiled_rendering",
 };
 
 }  // anonymous namespace

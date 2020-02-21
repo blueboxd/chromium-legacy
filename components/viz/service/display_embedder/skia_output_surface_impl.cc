@@ -113,26 +113,26 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   current_paint_.reset();
   root_recorder_.reset();
 
-  std::vector<std::unique_ptr<ImageContextImpl>> render_pass_image_contexts;
-  render_pass_image_contexts.reserve(render_pass_image_cache_.size());
-  for (auto& id_and_image_context : render_pass_image_cache_) {
-    id_and_image_context.second->clear_image();
-    render_pass_image_contexts.push_back(
-        std::move(id_and_image_context.second));
+  if (!render_pass_image_cache_.empty()) {
+    std::vector<RenderPassId> render_pass_ids;
+    render_pass_ids.reserve(render_pass_ids.size());
+    for (auto& entry : render_pass_image_cache_)
+      render_pass_ids.push_back(entry.first);
+    RemoveRenderPassResource(std::move(render_pass_ids));
   }
+  DCHECK(render_pass_image_cache_.empty());
 
+  // Post a task to destroy |impl_on_gpu_| on the GPU thread and block until
+  // that is finished.
   base::WaitableEvent event;
-  auto callback = base::BindOnce(
-      [](std::vector<std::unique_ptr<ImageContextImpl>> render_passes,
-         std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
+  auto task = base::BindOnce(
+      [](std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
          base::WaitableEvent* event) {
-        if (!render_passes.empty())
-          impl_on_gpu->RemoveRenderPassResource(std::move(render_passes));
-        impl_on_gpu = nullptr;
+        impl_on_gpu.reset();
         event->Signal();
       },
-      std::move(render_pass_image_contexts), std::move(impl_on_gpu_), &event);
-  ScheduleGpuTask(std::move(callback), {});
+      std::move(impl_on_gpu_), &event);
+  ScheduleGpuTask(std::move(task), {});
   event.Wait();
 
   gpu_task_scheduler_.reset();
@@ -636,12 +636,11 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  if (!image_contexts.empty()) {
-    auto callback = base::BindOnce(
-        &SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
-        base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
-    ScheduleGpuTask(std::move(callback), {});
-  }
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
+                     base::Unretained(impl_on_gpu_.get()), std::move(ids),
+                     std::move(image_contexts));
+  ScheduleGpuTask(std::move(callback), {});
 }
 
 void SkiaOutputSurfaceImpl::CopyOutput(

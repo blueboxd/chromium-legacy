@@ -18,7 +18,9 @@ enum class MediaHardwareKeyAction {
   kNextTrack,
   kPreviousTrack,
   kPlayPause,
-  kMaxValue = kPlayPause
+  kSeekForward,
+  kSeekBackward,
+  kMaxValue = kSeekBackward
 };
 
 // The name of the histogram that records |MediaHardwareKeyAction|.

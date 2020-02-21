@@ -108,16 +108,8 @@ void FakeEmbeddedWorkerInstanceClient::StopWorker() {
   CallOnConnectionError();
 }
 
-void FakeEmbeddedWorkerInstanceClient::ResumeAfterDownload() {
-  EvaluateScript();
-}
-
 void FakeEmbeddedWorkerInstanceClient::DidPopulateScriptCacheMap() {
   host_->OnScriptLoaded();
-  if (start_params_->pause_after_download) {
-    // We continue when ResumeAfterDownload() is called.
-    return;
-  }
   EvaluateScript();
 }
 

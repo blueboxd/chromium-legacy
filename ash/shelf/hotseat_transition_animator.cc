@@ -141,7 +141,7 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   animation_metrics_reporter_->set_new_state(new_state);
 
   for (auto& observer : observers_)
-    observer.OnHotseatTransitionAnimationStarted(old_state, new_state);
+    observer.OnHotseatTransitionAnimationWillStart(old_state, new_state);
 
   {
     ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(

@@ -364,6 +364,22 @@ class PageLoadTimingMerger {
           new_interactive_timing.interactive_detection;
     }
 
+    target_interactive_timing->num_input_events +=
+        new_interactive_timing.num_input_events;
+
+    if (new_interactive_timing.total_input_delay.has_value()) {
+      target_interactive_timing->total_input_delay =
+          target_interactive_timing->total_input_delay.value_or(
+              base::TimeDelta()) +
+          new_interactive_timing.total_input_delay.value();
+    }
+
+    if (new_interactive_timing.total_adjusted_input_delay.has_value()) {
+      target_interactive_timing->total_adjusted_input_delay =
+          target_interactive_timing->total_adjusted_input_delay.value_or(
+              base::TimeDelta()) +
+          new_interactive_timing.total_adjusted_input_delay.value();
+    }
     if (MaybeUpdateTimeDelta(&target_interactive_timing->first_input_timestamp,
                              navigation_start_offset,
                              new_interactive_timing.first_input_timestamp)) {

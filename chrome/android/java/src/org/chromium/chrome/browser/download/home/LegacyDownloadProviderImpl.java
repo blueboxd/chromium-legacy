@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
+import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -135,6 +136,7 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
 
     @Override
     public void cancelDownload(OfflineItem item) {
+        DownloadMetrics.recordDownloadCancel(DownloadMetrics.CancelFrom.CANCEL_DOWNLOAD_HOME);
         DownloadManagerService.getDownloadManagerService().cancelDownload(
                 item.id, item.isOffTheRecord);
     }

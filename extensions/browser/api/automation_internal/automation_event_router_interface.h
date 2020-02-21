@@ -40,7 +40,7 @@ class AutomationEventRouterInterface {
       const ExtensionMsg_AccessibilityLocationChangeParams& params) = 0;
 
   // Notify all automation extensions that an accessibility tree was
-  // destroyed. If |browser_context| is null,
+  // destroyed. If |browser_context| is null, use the currently active context.
   virtual void DispatchTreeDestroyedEvent(
       ui::AXTreeID tree_id,
       content::BrowserContext* browser_context) = 0;

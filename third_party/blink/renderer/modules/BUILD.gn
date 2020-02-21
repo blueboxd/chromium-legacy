@@ -414,6 +414,7 @@ jumbo_source_set("unit_tests") {
     "service_worker/thread_safe_script_container_test.cc",
     "service_worker/web_embedded_worker_impl_test.cc",
     "video_raf/video_frame_request_callback_collection_test.cc",
+    "video_raf/video_request_animation_frame_impl_test.cc",
     "wake_lock/wake_lock_manager_test.cc",
     "wake_lock/wake_lock_sentinel_test.cc",
     "wake_lock/wake_lock_test.cc",

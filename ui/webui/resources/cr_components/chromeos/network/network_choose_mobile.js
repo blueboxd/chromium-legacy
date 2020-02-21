@@ -189,6 +189,7 @@ Polymer({
 
     this.getNetworkConfig_().selectCellularMobileNetwork(
         this.managedProperties.guid, target.value);
+    this.fire('user-action-setting-change');
   },
 });
 })();

@@ -5,6 +5,7 @@
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 
 #include "base/feature_list.h"
+#include "chromecast/common/activity_filtering_url_loader_throttle.h"
 #include "chromecast/common/cast_url_loader_throttle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -14,8 +15,10 @@
 namespace chromecast {
 
 CastURLLoaderThrottleProvider::CastURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType type)
-    : type_(type) {
+    content::URLLoaderThrottleProviderType type,
+    CastActivityUrlFilterManager* url_filter_manager)
+    : type_(type), cast_activity_url_filter_manager_(url_filter_manager) {
+  DCHECK(cast_activity_url_filter_manager_);
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -25,7 +28,9 @@ CastURLLoaderThrottleProvider::~CastURLLoaderThrottleProvider() {
 
 CastURLLoaderThrottleProvider::CastURLLoaderThrottleProvider(
     const chromecast::CastURLLoaderThrottleProvider& other)
-    : type_(other.type_) {
+    : type_(other.type_),
+      cast_activity_url_filter_manager_(
+          other.cast_activity_url_filter_manager_) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -41,6 +46,15 @@ CastURLLoaderThrottleProvider::CreateThrottles(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+
+  auto* activity_url_filter =
+      cast_activity_url_filter_manager_->GetActivityUrlFilterForRenderFrameID(
+          render_frame_id);
+  if (activity_url_filter) {
+    throttles.push_back(std::make_unique<ActivityFilteringURLLoaderThrottle>(
+        activity_url_filter));
+  }
+
   return throttles;
 }
 

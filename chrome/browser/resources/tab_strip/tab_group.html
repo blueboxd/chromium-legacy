@@ -4,6 +4,11 @@
   --tabstrip-tab-group-title-margin: var(--tabstrip-tab-spacing);
 }
 
+:host(:empty) {
+  /* A tab group can temporarily become empty as a tab is being dragged out. */
+  display: none;
+}
+
 #tabGroup {
   border-radius: 8px;
   box-shadow: 0 0 0 1px rgba(var(--tabstrip-tab-group-color-rgb), .24);

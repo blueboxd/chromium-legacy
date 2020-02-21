@@ -217,7 +217,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
         if (iconBridge == null) return;
 
-        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
+        iconBridge.getLargeIconForStringUrl(url, mDesiredFaviconWidthPx,
                 (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) -> {
                     if (icon == null) return;
 

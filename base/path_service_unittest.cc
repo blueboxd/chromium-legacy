@@ -45,14 +45,30 @@ bool ReturnsValidPath(int dir_type) {
 #if defined(OS_MACOSX)
   if (dir_type != DIR_EXE && dir_type != DIR_MODULE && dir_type != FILE_EXE &&
       dir_type != FILE_MODULE) {
-    if (path.ReferencesParent())
+    if (path.ReferencesParent()) {
+      LOG(INFO) << "Path (" << path << ") references parent.";
       return false;
+    }
   }
 #else
-  if (path.ReferencesParent())
+  if (path.ReferencesParent()) {
+    LOG(INFO) << "Path (" << path << ") references parent.";
     return false;
+  }
 #endif
-  return result && !path.empty() && (!check_path_exists || PathExists(path));
+  if (!result) {
+    LOG(INFO) << "PathService::Get() returned false.";
+    return false;
+  }
+  if (path.empty()) {
+    LOG(INFO) << "PathService::Get() returned an empty path.";
+    return false;
+  }
+  if (check_path_exists && !PathExists(path)) {
+    LOG(INFO) << "Path (" << path << ") does not exist.";
+    return false;
+  }
+  return true;
 }
 
 #if defined(OS_WIN)

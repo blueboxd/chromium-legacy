@@ -1351,7 +1351,7 @@
   {
     "name": "enable-experimental-fling-animation",
     "owners": [ "sarsha@microsoft.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 89
   },
   {
     "name": "enable-experimental-kernel-vm-support",
@@ -1543,7 +1543,7 @@
   {
     "name": "enable-lookalike-url-navigation-suggestions",
     "owners": [ "jdeblasio", "meacer", "livvielin" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 84
   },
   {
     "name": "enable-mark-http-as",
@@ -1800,7 +1800,7 @@
   {
     "name": "enable-send-tab-to-self-when-signed-in",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 84
   },
   {
     "name": "enable-service-worker-imported-script-update-check",
@@ -2478,7 +2478,7 @@
   },
   {
     "name": "impulse-scroll-animations",
-    "owners": [ "maamert@microsoft.com", "dlibby@microsoft.com", "sarsha@microsoft.com" ],
+    "owners": [ "dlibby@microsoft.com", "sarsha@microsoft.com" ],
     "expiry_milestone": 89
   },
   {
@@ -3092,8 +3092,8 @@
   },
   {
     "name": "percent-based-scrolling",
-    "owners": [ "maamert@microsoft.com" ],
-    "expiry_milestone": 82
+    "owners": [ "dlibby@microsoft.com", "sarsha@microsoft.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "photo-picker-video-support",
@@ -3287,7 +3287,7 @@
   {
     "name": "sharing-qr-code-generator",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "sharing-rename-devices",

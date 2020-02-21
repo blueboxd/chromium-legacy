@@ -509,6 +509,7 @@ Polymer({
   onAddThirdPartyVpnTap_(event) {
     const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(provider.appId);
+    settings.recordSettingChange();
   },
 
   /**
@@ -575,6 +576,7 @@ Polymer({
     e.target.blur();
     if (this.canAttemptConnection_(networkState)) {
       this.fire('network-connect', {networkState: networkState});
+      settings.recordSettingChange();
       return;
     }
     this.fire('show-detail', networkState);

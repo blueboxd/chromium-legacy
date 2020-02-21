@@ -3326,14 +3326,13 @@ void WebMediaPlayerImpl::RequestAnimationFrame() {
       &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));
 }
 
-void WebMediaPlayerImpl::OnNewFramePresentedCallback(
-    scoped_refptr<VideoFrame> presented_frame,
-    base::TimeTicks presentation_time,
-    base::TimeTicks expected_presentation_time,
-    uint32_t presentation_counter) {
-  client_->OnRequestAnimationFrame(presentation_time,
-                                   expected_presentation_time,
-                                   presentation_counter, *presented_frame);
+void WebMediaPlayerImpl::OnNewFramePresentedCallback() {
+  client_->OnRequestAnimationFrame();
+}
+
+std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
+WebMediaPlayerImpl::GetVideoFramePresentationMetadata() {
+  return compositor_->GetLastPresentedFrameMetadata();
 }
 
 base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerImpl::AsWeakPtr() {

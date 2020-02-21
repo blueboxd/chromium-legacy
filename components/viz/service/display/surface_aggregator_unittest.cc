@@ -6221,5 +6221,63 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
             aggregated_frame.render_pass_list[4]->damage_rect.ToString());
 }
 
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       ContainedFrameSinkChangeInvalidatesHitTestData) {
+  auto embedded_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, kRootIsRoot);
+  ParentLocalSurfaceIdAllocator embedded_allocator;
+  embedded_allocator.GenerateId();
+  LocalSurfaceId embedded_local_surface_id =
+      embedded_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
+                                embedded_local_surface_id);
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  // First submit a root frame which doesn't reference the embedded frame and
+  // aggregate.
+  {
+    std::vector<Quad> embedded_quads = {
+        Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5)),
+        Quad::SolidColorQuad(SK_ColorGRAY, gfx::Rect(5, 5))};
+    std::vector<Pass> embedded_passes = {Pass(embedded_quads, SurfaceSize())};
+    SubmitCompositorFrame(embedded_support.get(), embedded_passes,
+                          embedded_local_surface_id, 1.0f);
+
+    std::vector<Quad> root_quads = {
+        Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(5, 5)),
+        Quad::SolidColorQuad(SK_ColorBLUE, gfx::Rect(5, 5))};
+    std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+    SubmitCompositorFrame(root_sink_.get(), root_passes, root_local_surface_id_,
+                          1.0f);
+    AggregateFrame(root_surface_id);
+  }
+
+  const HitTestManager* hit_test_manager = manager_.hit_test_manager();
+  uint64_t hit_test_region_index =
+      hit_test_manager->submit_hit_test_region_list_index();
+
+  // Now submit a root frame that *does* reference the embedded frame, and
+  // aggregate.
+  {
+    std::vector<Quad> root_quads = {
+        Quad::SurfaceQuad(SurfaceRange(base::nullopt, embedded_surface_id),
+                          SK_ColorWHITE, gfx::Rect(5, 5), false),
+        Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(5, 5)),
+        Quad::SolidColorQuad(SK_ColorBLUE, gfx::Rect(5, 5))};
+    std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+    SubmitCompositorFrame(root_sink_.get(), root_passes, root_local_surface_id_,
+                          1.0);
+    AggregateFrame(root_surface_id);
+  }
+
+  // Check that the HitTestManager was marked as needing to re-aggregate hit
+  // test data.
+  EXPECT_GT(hit_test_manager->submit_hit_test_region_list_index(),
+            hit_test_region_index);
+}
+
 }  // namespace
 }  // namespace viz

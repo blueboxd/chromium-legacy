@@ -17,7 +17,6 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "extensions/common/extension.h"
 
 namespace chromeos {
 
@@ -177,7 +176,7 @@ void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(
     bool success) {
   is_new_app_setup_in_progress_ = false;
 
-  const extensions::Extension* new_pwa = setup_controller_->GetPwa(
+  base::Optional<web_app::AppId> new_pwa = setup_controller_->GetPwa(
       GetAndroidMessagesURL(true /* use_install_url */));
 
   // If the app failed to install or the PWA does not exist, do not launch.
@@ -196,13 +195,13 @@ void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(
     return;
   }
 
-  const extensions::Extension* old_pwa = setup_controller_->GetPwa(
+  base::Optional<web_app::AppId> old_pwa = setup_controller_->GetPwa(
       GetAndroidMessagesURL(true /* use_install_url */, *migrating_from));
 
   // Transfer attributes from the old PWA to the new one. This ensures that the
   // PWA's placement in the app launcher and shelf remains constant..
   bool transfer_attributes_success = pwa_delegate_->TransferItemAttributes(
-      old_pwa->id() /* from_app_id */, new_pwa->id() /* to_app_id */,
+      *old_pwa /* from_app_id */, *new_pwa /* to_app_id */,
       app_list_syncable_service_);
   if (!transfer_attributes_success) {
     PA_LOG(ERROR) << "AndroidSmsAppManagerImpl::OnSetUpNewAppResult(): Failed "
@@ -253,10 +252,8 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
                   << "Launching Messages PWA.";
   pwa_delegate_->OpenApp(
       profile_, apps::AppLaunchParams(
-                    setup_controller_
-                        ->GetPwa(GetAndroidMessagesURL(
-                            true /* use_install_url */, *domain))
-                        ->id(),
+                    *setup_controller_->GetPwa(GetAndroidMessagesURL(
+                        true /* use_install_url */, *domain)),
                     apps::mojom::LaunchContainer::kLaunchContainerWindow,
                     WindowOpenDisposition::NEW_WINDOW,
                     apps::mojom::AppLaunchSource::kSourceChromeInternal));

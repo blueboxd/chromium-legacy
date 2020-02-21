@@ -114,6 +114,15 @@ class CORE_EXPORT InteractiveDetector
   // GetLongestInputDelay().
   base::TimeTicks GetLongestInputTimestamp() const;
 
+  // The number of user interactions.
+  uint64_t GetNumInputEvents() const;
+
+  // The sum of all input delay.
+  base::TimeDelta GetTotalInputDelay() const;
+
+  // The sum of all adjusted input delay.
+  base::TimeDelta GetTotalAdjustedInputDelay() const;
+
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
   void HandleForInputDelay(const Event&,
@@ -153,6 +162,9 @@ class CORE_EXPORT InteractiveDetector
     base::TimeDelta longest_input_delay;
     base::TimeTicks first_input_timestamp;
     base::TimeTicks longest_input_timestamp;
+    base::TimeDelta total_input_delay;
+    base::TimeDelta total_adjusted_input_delay;
+    uint64_t num_input_events;
     bool first_meaningful_paint_invalidated = false;
   } page_event_times_;
 

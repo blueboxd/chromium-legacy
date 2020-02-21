@@ -254,7 +254,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
                     taskFinished();
                 }
             };
-            mLargeIconBridge.getLargeIconForUrl(bookmark.url, mMinIconSizeDp, callback);
+            mLargeIconBridge.getLargeIconForStringUrl(bookmark.url, mMinIconSizeDp, callback);
         }
 
         @UiThread

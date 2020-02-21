@@ -150,6 +150,18 @@ base::TimeTicks InteractiveDetector::GetLongestInputTimestamp() const {
   return page_event_times_.longest_input_timestamp;
 }
 
+uint64_t InteractiveDetector::GetNumInputEvents() const {
+  return page_event_times_.num_input_events;
+}
+
+base::TimeDelta InteractiveDetector::GetTotalInputDelay() const {
+  return page_event_times_.total_input_delay;
+}
+
+base::TimeDelta InteractiveDetector::GetTotalAdjustedInputDelay() const {
+  return page_event_times_.total_adjusted_input_delay;
+}
+
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(
     base::TimeTicks event_time) {
   DCHECK(GetSupplementable());
@@ -220,14 +232,17 @@ void InteractiveDetector::HandleForInputDelay(
     event_timestamp = event_platform_timestamp;
   }
 
+  page_event_times_.num_input_events++;
+  page_event_times_.total_input_delay += delay;
+  page_event_times_.total_adjusted_input_delay +=
+      base::TimeDelta::FromMilliseconds(
+          std::max(delay.InMilliseconds() - 50, int64_t(0)));
   pending_pointerdown_delay_ = base::TimeDelta();
   pending_pointerdown_timestamp_ = base::TimeTicks();
-  bool input_delay_metrics_changed = false;
 
   if (page_event_times_.first_input_delay.is_zero()) {
     page_event_times_.first_input_delay = delay;
     page_event_times_.first_input_timestamp = event_timestamp;
-    input_delay_metrics_changed = true;
   }
 
   // Record input delay UKM.
@@ -251,10 +266,9 @@ void InteractiveDetector::HandleForInputDelay(
       !PageWasBackgroundedSinceEvent(event_timestamp)) {
     page_event_times_.longest_input_delay = delay;
     page_event_times_.longest_input_timestamp = event_timestamp;
-    input_delay_metrics_changed = true;
   }
 
-  if (GetSupplementable()->Loader() && input_delay_metrics_changed)
+  if (GetSupplementable()->Loader())
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 

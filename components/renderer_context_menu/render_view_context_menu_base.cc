@@ -413,6 +413,9 @@ void RenderViewContextMenuBase::MenuClosed(ui::SimpleMenuModel* source) {
 
   source_web_contents_->SetShowingContextMenu(false);
   source_web_contents_->NotifyContextMenuClosed(params_.custom_context);
+  for (auto& observer : observers_) {
+    observer.OnMenuClosed();
+  }
 }
 
 RenderFrameHost* RenderViewContextMenuBase::GetRenderFrameHost() {

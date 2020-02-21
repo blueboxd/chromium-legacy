@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -80,12 +79,6 @@ public final class NewTabPageUma {
 
     /** The number of possible actions. */
     private static final int NUM_ACTIONS = 13;
-
-    /** User navigated to a page using the omnibox. */
-    private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;
-
-    /** User navigated to a page using one of the suggested tiles. */
-    public static final int RAPPOR_ACTION_VISITED_SUGGESTED_TILE = 1;
 
     /** Regular NTP impression (usually when a new tab is opened). */
     public static final int NTP_IMPRESSION_REGULAR = 0;
@@ -184,25 +177,6 @@ public final class NewTabPageUma {
             } else {
                 recordAction(ACTION_NAVIGATED_USING_OMNIBOX);
             }
-            recordExplicitUserNavigation(destinationUrl, RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX);
-        }
-    }
-
-    /**
-     * Record the eTLD+1 for a website explicitly visited by the user, using Rappor.
-     */
-    public static void recordExplicitUserNavigation(String destinationUrl, int rapporMetric) {
-        switch (rapporMetric) {
-            case RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX:
-                RapporServiceBridge.sampleDomainAndRegistryFromURL(
-                        "NTP.ExplicitUserAction.PageNavigation.OmniboxNonSearch", destinationUrl);
-                return;
-            case RAPPOR_ACTION_VISITED_SUGGESTED_TILE:
-                RapporServiceBridge.sampleDomainAndRegistryFromURL(
-                        "NTP.ExplicitUserAction.PageNavigation.NTPTileClick", destinationUrl);
-                return;
-            default:
-                return;
         }
     }
 

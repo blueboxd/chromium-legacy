@@ -664,6 +664,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
+    "//chrome/browser/flags:flags_junit_tests",
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/preferences:preferences_junit_tests",
     "//chrome/browser/thumbnail:java",
@@ -2072,6 +2073,7 @@ if (enable_vr) {
   # This is necessary since vr tests simulate a bundle build.
   module_desc_java("vr_test_module_desc_java") {
     module_name = "vr"
+    load_native_on_get_impl = false
   }
 
   android_apk("vr_nfc_simulator_apk") {

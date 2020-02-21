@@ -155,8 +155,10 @@ class MockChromePasswordProtectionService
         is_extended_reporting_(false),
         is_syncing_(false),
         is_no_hosted_domain_found_(false),
-        is_account_signed_in_(false) {}
+        is_account_signed_in_(false),
+        is_enhanced_protection_(false) {}
   bool IsExtendedReporting() override { return is_extended_reporting_; }
+  bool IsEnhancedProtection() override { return is_enhanced_protection_; }
   bool IsIncognito() override { return is_incognito_; }
   bool IsPrimaryAccountSyncing() const override { return is_syncing_; }
   bool IsPrimaryAccountSignedIn() const override {
@@ -184,6 +186,9 @@ class MockChromePasswordProtectionService
   void SetIsAccountSignedIn(bool is_account_signed_in) {
     is_account_signed_in_ = is_account_signed_in;
   }
+  void SetIsEnhancedProtection(bool is_enhanced_protection) {
+    is_enhanced_protection_ = is_enhanced_protection;
+  }
   void SetAccountInfo(const std::string& username) {
     AccountInfo account_info;
     account_info.account_id = CoreAccountId("account_id");
@@ -203,6 +208,7 @@ class MockChromePasswordProtectionService
   bool is_syncing_;
   bool is_no_hosted_domain_found_;
   bool is_account_signed_in_;
+  bool is_enhanced_protection_;
   AccountInfo account_info_;
   std::string mocked_sync_password_hash_;
 };
@@ -398,13 +404,20 @@ TEST_F(ChromePasswordProtectionServiceTest,
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
 
-  // Password field on focus pinging is enabled on !incognito && SBER.
+  // Password field on focus pinging is enabled on !incognito && (SBER ||
+  // enhanced protection).
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
       &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
+
+  service_->SetIsEnhancedProtection(
+      /*is_enhanced_protection=*/true);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, reused_password_type,
+      &reason));
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
@@ -608,6 +621,17 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->PersistPhishedSavedPasswordCredential("username", domains);
 }
 
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPersistPhishedSavedPasswordCredentialForEnhancedProtection) {
+  service_->SetIsEnhancedProtection(
+      /*is_enhanced_protection=*/true);
+
+  std::vector<std::string> domains{"http://example.com",
+                                   "https://2.example.com"};
+  EXPECT_CALL(*password_store_, AddCompromisedCredentialsImpl(_)).Times(2);
+  service_->PersistPhishedSavedPasswordCredential("username", domains);
+}
+
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
   // Experiment is on by default.
   service_->ConfigService(/*is_incognito=*/false,
@@ -615,19 +639,25 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
   service_->set_bypass_probability_for_tests(true);
   EXPECT_TRUE(service_->CanSendSamplePing());
 
-    // If not SBER, do not send sample ping.
-    service_->ConfigService(/*is_incognito=*/false,
-                            /*is_extended_reporting=*/false);
-    EXPECT_FALSE(service_->CanSendSamplePing());
+  // If not SBER, do not send sample ping.
+  service_->ConfigService(/*is_incognito=*/false,
+                          /*is_extended_reporting=*/false);
+  EXPECT_FALSE(service_->CanSendSamplePing());
 
-    // If incognito, do not send sample ping.
-    service_->ConfigService(/*is_incognito=*/true,
-                            /*is_extended_reporting=*/true);
-    EXPECT_FALSE(service_->CanSendSamplePing());
+  // If incognito, do not send sample ping.
+  service_->ConfigService(/*is_incognito=*/true,
+                          /*is_extended_reporting=*/true);
+  EXPECT_FALSE(service_->CanSendSamplePing());
 
-    service_->ConfigService(/*is_incognito=*/true,
-                            /*is_extended_reporting=*/false);
-    EXPECT_FALSE(service_->CanSendSamplePing());
+  service_->ConfigService(/*is_incognito=*/true,
+                          /*is_extended_reporting=*/false);
+  EXPECT_FALSE(service_->CanSendSamplePing());
+
+  service_->ConfigService(/*is_incognito=*/false,
+                          /*is_extended_reporting=*/false);
+  service_->SetIsEnhancedProtection(
+      /*is_enhanced_protection=*/true);
+  EXPECT_TRUE(service_->CanSendSamplePing());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetOrganizationTypeGmail) {

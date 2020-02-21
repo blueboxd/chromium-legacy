@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
 #define COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_
 
+#include "ui/gfx/geometry/rect.h"
+
 namespace content {
 struct ContextMenuParams;
 }
@@ -100,6 +102,11 @@ class RenderViewContextMenuObserver {
 
   // Called when a user selects the specified context-menu item.
   virtual void ExecuteCommand(int command_id) {}
+
+  virtual void OnMenuClosed() {}
+
+  virtual void OnContextMenuShown(const content::ContextMenuParams& params,
+                                  gfx::Rect bounds) {}
 };
 
 #endif  // COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_OBSERVER_H_

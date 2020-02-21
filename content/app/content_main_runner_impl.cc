@@ -451,6 +451,7 @@ struct MainFunction {
 // Returns the exit code of the subprocess.
 int RunZygote(ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
+    {switches::kGpuProcess, GpuMain},
     {switches::kRendererProcess, RendererMain},
     {switches::kUtilityProcess, UtilityMain},
 #if BUILDFLAG(ENABLE_PLUGINS)

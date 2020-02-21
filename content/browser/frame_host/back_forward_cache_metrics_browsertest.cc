@@ -170,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
   // ukm::SourceId id8 = ToSourceId(navigation_ids_[7]);
   ukm::SourceId id9 = ToSourceId(navigation_ids_[8]);
 
-  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
 
   // First back-forward navigation (#6) navigates back to navigation #3, but it
   // is the subframe navigation, so the corresponding main frame navigation is
@@ -277,7 +278,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
   ukm::SourceId id5 = ToSourceId(navigation_ids_[4]);
   ukm::SourceId id6 = ToSourceId(navigation_ids_[5]);
 
-  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
 
   // First two new navigations happen in the original tab.
   // The third navigation reloads the tab for the cloned WebContents.
@@ -319,10 +321,106 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Reload) {
 
   // The last navigation is for reloading, and the UKM is not recorded for this
   // navigation. This also checks relaoding makes a different navigation ID.
-  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
   EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
               testing::ElementsAre(UkmEntry{id3, {{last_navigation_id, id1}}},
                                    UkmEntry{id6, {{last_navigation_id, id4}}}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       SameDocumentNavigationAndGoBackImmediately) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url1_foo(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url1_foo));
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(3));
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
+  // Ensure that UKMs are not recorded for the same-document history
+  // navigations.
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
+              testing::ElementsAre());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       GoBackToSameDocumentNavigationEntry) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url1_foo(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+  const GURL url2(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url1_foo));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(4));
+  ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
+
+  // The second navigation is a same-document navigation for the page loaded by
+  // the first navigation. The third navigation is a regular navigation. The
+  // fourth navigation goes back.
+  //
+  // The back-forward navigation (#4) goes back to the navigation entry created
+  // by the same-document navigation (#2), so we expect the id corresponding to
+  // the previous non-same-document navigation (#1).
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
+              testing::ElementsAre(UkmEntry{id4, {{last_navigation_id, id1}}}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
+                       GoBackToSameDocumentNavigationEntry2) {
+  ukm::TestAutoSetUkmRecorder recorder;
+
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url1_foo(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+  const GURL url2(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url1_foo));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  web_contents()->GetController().GoToOffset(-2);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(4));
+  ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
+  // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
+  // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);
+  ukm::SourceId id4 = ToSourceId(navigation_ids_[3]);
+
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
+
+  // The second navigation is a same-document navigation for the page loaded by
+  // the first navigation. The third navigation is a regular navigation. The
+  // fourth navigation goes back.
+  //
+  // The back-forward navigation (#4) goes back to navigation #1, skipping a
+  // navigation entry generated by same-document navigation (#2). Ensure that
+  // the recorded id belongs to the navigation #1, not #2.
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
+              testing::ElementsAre(UkmEntry{id4, {{last_navigation_id, id1}}}));
 }
 
 namespace {

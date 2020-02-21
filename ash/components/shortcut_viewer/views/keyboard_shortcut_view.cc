@@ -79,22 +79,23 @@ void SetupSearchIllustrationView(views::View* illustration_view,
           views::BoxLayout::Orientation::kVertical,
           gfx::Insets(kTopPadding, 0, 0, 0)));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
-  views::ImageView* image_view = new views::ImageView();
+  auto image_view = std::make_unique<views::ImageView>();
   image_view->SetImage(
       gfx::CreateVectorIcon(icon, kSearchIllustrationIconColor));
   image_view->SetImageSize(
       gfx::Size(kSearchIllustrationIconSize, kSearchIllustrationIconSize));
-  illustration_view->AddChildView(image_view);
+  illustration_view->AddChildView(std::move(image_view));
 
   constexpr SkColor kSearchIllustrationTextColor =
       SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
-  views::Label* text = new views::Label(l10n_util::GetStringUTF16(message_id));
+  auto text =
+      std::make_unique<views::Label>(l10n_util::GetStringUTF16(message_id));
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
-  illustration_view->AddChildView(text);
+  illustration_view->AddChildView(std::move(text));
 }
 
 class ShortcutsListScrollView : public views::ScrollView {
@@ -367,11 +368,10 @@ void KeyboardShortcutView::InitViews() {
                               kKsvSearchNoResultIcon, IDS_KSV_SEARCH_NO_RESULT);
 
   // Init search results container view.
-  search_results_container_ = new views::View();
+  search_results_container_ = AddChildView(std::make_unique<views::View>());
   search_results_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   search_results_container_->SetVisible(false);
-  AddChildView(search_results_container_);
 
   // Init views of KeyboardShortcutItemView.
   // TODO(https://crbug.com/843394): Observe changes in keyboard layout and
@@ -396,10 +396,9 @@ void KeyboardShortcutView::InitViews() {
             });
 
   // Init views of |categories_tabbed_pane_| and KeyboardShortcutItemListViews.
-  categories_tabbed_pane_ =
-      new views::TabbedPane(views::TabbedPane::Orientation::kVertical,
-                            views::TabbedPane::TabStripStyle::kHighlight);
-  AddChildView(categories_tabbed_pane_);
+  categories_tabbed_pane_ = AddChildView(std::make_unique<views::TabbedPane>(
+      views::TabbedPane::Orientation::kVertical,
+      views::TabbedPane::TabStripStyle::kHighlight));
 
   // Initial Layout of KeyboardShortcutItemView is time consuming. To speed up
   // the startup time, we only initialize the first category pane, which is

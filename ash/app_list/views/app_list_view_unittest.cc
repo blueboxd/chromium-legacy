@@ -2999,6 +2999,35 @@ TEST_F(AppListViewScalableLayoutTest,
       80 /*expected_item_size*/);
 }
 
+// Tests fullscreen apps grid sizing and layout gets updated to correct bounds
+// when app list config changes.
+TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutAfterConfigChage) {
+  const gfx::Size window_size = gfx::Size(500, 800);
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(window_size));
+
+  Initialize(false /*is_tablet_mode*/);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
+  int expected_vertical_margin = (window_size.height() - ShelfSize()) / 16;
+  VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
+                            56 /*expected_horizontal_margin*/,
+                            expected_vertical_margin,
+                            80 /*expected_item_size*/);
+
+  const gfx::Size updated_window_size = gfx::Size(800, 1200);
+  parent->SetBounds(gfx::Rect(updated_window_size));
+  view_->OnParentWindowBoundsChanged();
+
+  expected_vertical_margin = (updated_window_size.height() - ShelfSize()) / 16;
+  VerifyAppsContainerLayout(
+      updated_window_size, 4 /*column_count*/, 5 /*row_count*/,
+      updated_window_size.width() / 12 /*expected_horizontal_margin*/,
+      expected_vertical_margin, 120 /*expected_item_size*/);
+}
+
 // Tests that page switching in folder doesn't record AppListPageSwitcherSource
 // metric.
 TEST_F(AppListViewFocusTest, PageSwitchingNotRecordingMetric) {

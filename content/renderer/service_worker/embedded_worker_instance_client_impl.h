@@ -76,7 +76,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
 
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
-  void ResumeAfterDownload() override;
 
   // Handler of connection error bound to |receiver_|.
   void OnError();

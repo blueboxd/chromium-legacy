@@ -62,7 +62,7 @@ class AutomationEventRouter : public ui::AXEventBundleSink,
       const ExtensionMsg_AccessibilityLocationChangeParams& params) override;
 
   // Notify all automation extensions that an accessibility tree was
-  // destroyed. If |browser_context| is null,
+  // destroyed. If |browser_context| is null, use the currently active context.
   void DispatchTreeDestroyedEvent(
       ui::AXTreeID tree_id,
       content::BrowserContext* browser_context) override;

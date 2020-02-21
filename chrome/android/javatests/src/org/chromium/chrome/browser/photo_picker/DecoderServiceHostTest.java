@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -247,6 +248,7 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
 
     @Test
     @LargeTest
+    @DisabledTest
     public void testCancelation() throws Throwable {
         DecoderServiceHost host = new DecoderServiceHost(this, mContext);
         host.bind(mContext);

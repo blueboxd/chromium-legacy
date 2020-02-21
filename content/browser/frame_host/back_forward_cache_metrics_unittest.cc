@@ -84,7 +84,8 @@ TEST_F(BackForwardCacheMetricsTest, HistoryNavigationUKM) {
   // Navigations 4 and 5 are back navigations.
   // Navigation 6 is a forward navigation.
 
-  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
   std::string time_away = "TimeSinceNavigatedAwayFromDocument";
 
   EXPECT_THAT(

@@ -260,6 +260,7 @@ void AppServiceProxy::Uninstall(const std::string& app_id,
 
 void AppServiceProxy::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
+#if defined(OS_CHROMEOS)
   if (!app_service_.is_connected()) {
     return;
   }
@@ -278,9 +279,11 @@ void AppServiceProxy::PauseApps(
       this->LoadIconForPauseDialog(update, data.second);
     });
   }
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
+#if defined(OS_CHROMEOS)
   if (!app_service_.is_connected()) {
     return;
   }
@@ -292,6 +295,7 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
 
     app_service_->UnpauseApps(app_type, app_id);
   }
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::GetMenuModel(
@@ -476,6 +480,7 @@ void AppServiceProxy::OnUninstallDialogClosed(
 
 void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
                                              const PauseData& pause_data) {
+#if defined(OS_CHROMEOS)
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
   constexpr bool kAllowPlaceholderIcon = false;
   constexpr int32_t kPauseIconSize = 48;
@@ -486,6 +491,7 @@ void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
       base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
                      weak_ptr_factory_.GetWeakPtr(), update.AppType(),
                      update.AppId(), update.Name(), pause_data));
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::OnLoadIconForPauseDialog(
@@ -494,6 +500,7 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
     const std::string& app_name,
     const PauseData& pause_data,
     apps::mojom::IconValuePtr icon_value) {
+#if defined(OS_CHROMEOS)
   if (icon_value->icon_compression !=
       apps::mojom::IconCompression::kUncompressed) {
     OnPauseDialogClosed(app_type, app_id);
@@ -504,11 +511,13 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
       app_name, icon_value->uncompressed, pause_data,
       base::BindOnce(&AppServiceProxy::OnPauseDialogClosed,
                      weak_ptr_factory_.GetWeakPtr(), app_type, app_id));
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
                                          const std::string& app_id,
                                          bool paused) {
+#if defined(OS_CHROMEOS)
   std::vector<apps::mojom::AppPtr> apps;
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = app_type;
@@ -517,11 +526,14 @@ void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
                          : apps::mojom::OptionalBool::kFalse;
   apps.push_back(std::move(app));
   cache_.OnApps(std::move(apps));
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
+#if defined(OS_CHROMEOS)
   app_service_->PauseApp(app_type, app_id);
+#endif  // OS_CHROMEOS
 }
 
 void AppServiceProxy::OnAppUpdate(const apps::AppUpdate& update) {

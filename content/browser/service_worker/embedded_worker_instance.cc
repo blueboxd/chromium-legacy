@@ -187,14 +187,10 @@ void SetupOnUIThread(
   CHECK(rph);
 
   // Create cache storage now as an optimization, so the service worker can use
-  // the Cache Storage API immediately on startup. Don't do this when
-  // byte-to-byte check will be performed on the worker (|pause_after_download|)
-  // as most of those workers will have byte-to-byte equality and abort instead
-  // of running.
+  // the Cache Storage API immediately on startup.
   mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage;
   if (base::FeatureList::IsEnabled(
-          blink::features::kEagerCacheStorageSetupForServiceWorkers) &&
-      !params->pause_after_download) {
+          blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
     // TODO(https://crbug.com/1031542): Add support enforcing CORP in
     // cache.match() for ServiceWorker.
     rph->BindCacheStorage(network::mojom::CrossOriginEmbedderPolicy::kNone,
@@ -707,7 +703,6 @@ void EmbeddedWorkerInstance::Start(
   restart_count_++;
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, status_);
 
-  DCHECK(!params->pause_after_download || !params->is_installed);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
             params->service_worker_version_id);
 
@@ -777,15 +772,6 @@ void EmbeddedWorkerInstance::StopIfNotAttachedToDevTools() {
     return;
   }
   Stop();
-}
-
-void EmbeddedWorkerInstance::ResumeAfterDownload() {
-  if (process_id() == ChildProcessHost::kInvalidUniqueID ||
-      status_ != EmbeddedWorkerStatus::STARTING) {
-    return;
-  }
-  DCHECK(client_.is_bound());
-  client_->ResumeAfterDownload();
 }
 
 EmbeddedWorkerInstance::EmbeddedWorkerInstance(

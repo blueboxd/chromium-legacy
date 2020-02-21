@@ -91,10 +91,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   CheckVersionStatusBeforeLoad();
 #endif  // DCHECK_IS_ON()
 
-  // |incumbent_cache_resource_id| is valid if the incumbent service worker
-  // exists and it's required to do the byte-for-byte check.
-  int64_t incumbent_cache_resource_id =
-      ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   scoped_refptr<ServiceWorkerRegistration> registration =
       version_->context()->GetLiveRegistration(version_->registration_id());
   // ServiceWorkerVersion keeps the registration alive while the service
@@ -103,16 +99,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   const bool is_main_script =
       resource_type_ == blink::mojom::ResourceType::kServiceWorker;
   if (is_main_script) {
-    ServiceWorkerVersion* stored_version = registration->waiting_version()
-                                               ? registration->waiting_version()
-                                               : registration->active_version();
-    // |pause_after_download()| indicates the version is required to do the
-    // byte-for-byte check.
-    if (stored_version && stored_version->script_url() == request_url_ &&
-        version_->pause_after_download()) {
-      incumbent_cache_resource_id =
-          stored_version->script_cache_map()->LookupResourceId(request_url_);
-    }
     // Request SSLInfo. It will be persisted in service worker storage and
     // may be used by ServiceWorkerNavigationLoader for navigations handled
     // by this service worker.
@@ -132,19 +118,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   }
 
   ServiceWorkerStorage* storage = version_->context()->storage();
-  if (incumbent_cache_resource_id !=
-      ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
-    // Create response readers only when we have to do the byte-for-byte check.
-    cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
-        storage->CreateResponseReader(incumbent_cache_resource_id),
-        storage->CreateResponseReader(incumbent_cache_resource_id),
-        storage->CreateResponseWriter(cache_resource_id),
-        false /* pause_when_not_identical */);
-  } else {
-    // The script is new, create a cache writer for write back.
-    cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
-        storage->CreateResponseWriter(cache_resource_id));
-  }
+  cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
+      storage->CreateResponseWriter(cache_resource_id));
 
   version_->script_cache_map()->NotifyStartedCaching(request_url_,
                                                      cache_resource_id);

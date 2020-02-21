@@ -306,6 +306,7 @@ Polymer({
         this.delayUpdateLockEnabled_();
       }
     });
+    this.fire('user-action-setting-change');
   },
 
   /**

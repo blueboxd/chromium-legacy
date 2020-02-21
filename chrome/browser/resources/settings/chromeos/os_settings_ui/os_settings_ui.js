@@ -295,10 +295,9 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent<string>} e
    * @private
    */
-  onSettingChange_(e) {
+  onSettingChange_() {
     settings.recordSettingChange();
   },
 

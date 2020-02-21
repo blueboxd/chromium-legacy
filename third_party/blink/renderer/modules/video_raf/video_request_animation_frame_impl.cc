@@ -60,68 +60,13 @@ void VideoRequestAnimationFrameImpl::OnWebMediaPlayerCreated() {
     GetSupplementable()->GetWebMediaPlayer()->RequestAnimationFrame();
 }
 
-void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame(
-    base::TimeTicks presentation_time,
-    base::TimeTicks expected_presentation_time,
-    uint32_t presented_frames_counter,
-    const media::VideoFrame& presented_frame) {
+void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame() {
   DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
 
   // Skip this work if there are no registered callbacks.
   if (callback_collection_->IsEmpty())
     return;
 
-  auto& time_converter =
-      GetSupplementable()->GetDocument().Loader()->GetTiming();
-  metadata_ = VideoFrameMetadata::Create();
-
-  metadata_->setPresentationTime(
-      time_converter.MonotonicTimeToZeroBasedDocumentTime(presentation_time)
-          .InMillisecondsF());
-
-  metadata_->setExpectedPresentationTime(
-      time_converter
-          .MonotonicTimeToZeroBasedDocumentTime(expected_presentation_time)
-          .InMillisecondsF());
-
-  metadata_->setWidth(presented_frame.visible_rect().width());
-  metadata_->setHeight(presented_frame.visible_rect().height());
-
-  metadata_->setPresentationTimestamp(presented_frame.timestamp().InSecondsF());
-
-  base::TimeDelta elapsed;
-  if (presented_frame.metadata()->GetTimeDelta(
-          media::VideoFrameMetadata::PROCESSING_TIME, &elapsed)) {
-    metadata_->setElapsedProcessingTime(elapsed.InSecondsF());
-  }
-
-  metadata_->setPresentedFrames(presented_frames_counter);
-
-  base::TimeTicks time;
-  if (presented_frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &time)) {
-    metadata_->setCaptureTime(
-        time_converter.MonotonicTimeToZeroBasedDocumentTime(time)
-            .InMillisecondsF());
-  }
-
-  double rtp_timestamp;
-  if (presented_frame.metadata()->GetDouble(
-          media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {
-    base::CheckedNumeric<uint32_t> uint_rtp_timestamp = rtp_timestamp;
-    if (uint_rtp_timestamp.IsValid())
-      metadata_->setRtpTimestamp(rtp_timestamp);
-  }
-
-  // If new video.rAF callbacks are queued before the pending ones complete,
-  // we could end up here while there is still an outstanding call to
-  // ExecuteFrameCallbacks(). Overriding |metadata_| is fine, as we will provide
-  // the newest frame info to all callbacks (although it will look like we
-  // missed a frame). However, we should not schedule a second call to
-  // ExecuteFrameCallbacks(), as it could lead to some problematic results.
-  //
-  // TODO(https://crbug.com/1049761): Pull the video frame metadata in
-  // ExecuteFrameCallbacks() instead.
   if (!pending_execution_) {
     pending_execution_ = true;
     GetSupplementable()
@@ -135,11 +80,70 @@ void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame(
 
 void VideoRequestAnimationFrameImpl::ExecuteFrameCallbacks(
     double high_res_now_ms) {
-  DCHECK(metadata_);
   DCHECK(pending_execution_);
-  callback_collection_->ExecuteFrameCallbacks(high_res_now_ms, metadata_);
+
+  // Callbacks could have been canceled from the time we scheduled their
+  // execution.
+  if (callback_collection_->IsEmpty()) {
+    pending_execution_ = false;
+    return;
+  }
+
+  auto* player = GetSupplementable()->GetWebMediaPlayer();
+  if (!player) {
+    pending_execution_ = false;
+    return;
+  }
+
+  auto frame_metadata = player->GetVideoFramePresentationMetadata();
+
+  auto* metadata = VideoFrameMetadata::Create();
+  auto& time_converter =
+      GetSupplementable()->GetDocument().Loader()->GetTiming();
+
+  metadata->setPresentationTime(time_converter
+                                    .MonotonicTimeToZeroBasedDocumentTime(
+                                        frame_metadata->presentation_time)
+                                    .InMillisecondsF());
+
+  metadata->setExpectedPresentationTime(
+      time_converter
+          .MonotonicTimeToZeroBasedDocumentTime(
+              frame_metadata->expected_presentation_time)
+          .InMillisecondsF());
+
+  metadata->setPresentedFrames(frame_metadata->presented_frames);
+
+  metadata->setWidth(frame_metadata->width);
+  metadata->setHeight(frame_metadata->height);
+
+  metadata->setPresentationTimestamp(
+      frame_metadata->presentation_timestamp.InSecondsF());
+
+  base::TimeDelta elapsed;
+  if (frame_metadata->metadata.GetTimeDelta(
+          media::VideoFrameMetadata::PROCESSING_TIME, &elapsed)) {
+    metadata->setElapsedProcessingTime(elapsed.InSecondsF());
+  }
+
+  base::TimeTicks time;
+  if (frame_metadata->metadata.GetTimeTicks(
+          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &time)) {
+    metadata->setCaptureTime(
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(time)
+            .InMillisecondsF());
+  }
+
+  double rtp_timestamp;
+  if (frame_metadata->metadata.GetDouble(
+          media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {
+    base::CheckedNumeric<uint32_t> uint_rtp_timestamp = rtp_timestamp;
+    if (uint_rtp_timestamp.IsValid())
+      metadata->setRtpTimestamp(rtp_timestamp);
+  }
+
+  callback_collection_->ExecuteFrameCallbacks(high_res_now_ms, metadata);
   pending_execution_ = false;
-  metadata_.Clear();
 }
 
 int VideoRequestAnimationFrameImpl::requestAnimationFrame(
@@ -153,12 +157,18 @@ int VideoRequestAnimationFrameImpl::requestAnimationFrame(
   return callback_collection_->RegisterFrameCallback(frame_callback);
 }
 
+void VideoRequestAnimationFrameImpl::RegisterCallbackForTest(
+    VideoFrameRequestCallbackCollection::VideoFrameCallback* callback) {
+  pending_execution_ = true;
+
+  callback_collection_->RegisterFrameCallback(callback);
+}
+
 void VideoRequestAnimationFrameImpl::cancelAnimationFrame(int id) {
   callback_collection_->CancelFrameCallback(id);
 }
 
 void VideoRequestAnimationFrameImpl::Trace(Visitor* visitor) {
-  visitor->Trace(metadata_);
   visitor->Trace(callback_collection_);
   Supplement<HTMLVideoElement>::Trace(visitor);
 }

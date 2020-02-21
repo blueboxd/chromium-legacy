@@ -238,7 +238,8 @@ class MockPasswordProtectionNavigationThrottle
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionNavigationThrottle);
 };
 
-class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
+class PasswordProtectionServiceTest
+    : public ::testing::TestWithParam<testing::tuple<bool, bool>> {
  public:
   PasswordProtectionServiceTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
@@ -268,7 +269,9 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
                 &test_url_loader_factory_),
             content_setting_map_);
     EXPECT_CALL(*password_protection_service_, IsExtendedReporting())
-        .WillRepeatedly(Return(GetParam()));
+        .WillRepeatedly(Return(testing::get<0>(GetParam())));
+    EXPECT_CALL(*password_protection_service_, IsEnhancedProtection())
+        .WillRepeatedly(Return(testing::get<1>(GetParam())));
     EXPECT_CALL(*password_protection_service_, IsIncognito())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*password_protection_service_,
@@ -378,7 +381,8 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   void VerifyContentAreaSizeCollection(
       const LoginReputationClientRequest& request) {
     bool should_report_content_size =
-        password_protection_service_->IsExtendedReporting() &&
+        (password_protection_service_->IsExtendedReporting() ||
+         password_protection_service_->IsEnhancedProtection()) &&
         !password_protection_service_->IsIncognito();
     EXPECT_EQ(should_report_content_size, request.has_content_area_height());
     EXPECT_EQ(should_report_content_size, request.has_content_area_width());
@@ -1119,7 +1123,8 @@ TEST_P(PasswordProtectionServiceTest,
   const auto& reuse_event = actual_request->password_reuse_event();
   EXPECT_FALSE(reuse_event.is_chrome_signin_password());
 
-  if (password_protection_service_->IsExtendedReporting() &&
+  if ((password_protection_service_->IsExtendedReporting() ||
+       password_protection_service_->IsEnhancedProtection()) &&
       !password_protection_service_->IsIncognito()) {
     ASSERT_EQ(2, reuse_event.domains_matching_password_size());
     EXPECT_EQ(kSavedDomain, reuse_event.domains_matching_password(0));
@@ -1400,8 +1405,9 @@ TEST_P(PasswordProtectionServiceTest,
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
-  bool is_sber = GetParam();
-  if (is_sber) {
+  bool is_sber = testing::get<0>(GetParam());
+  bool is_enhanced_protection = testing::get<1>(GetParam());
+  if (is_sber || is_enhanced_protection) {
     password_protection_service_->WaitForResponse();
     ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
     EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
@@ -1490,9 +1496,18 @@ TEST_P(PasswordProtectionServiceTest, TestWebContentsDestroyed) {
 
 INSTANTIATE_TEST_SUITE_P(Regular,
                          PasswordProtectionServiceTest,
-                         ::testing::Values(false));
+                         testing::Combine(testing::Values(false),
+                                          testing::Values(false)));
 INSTANTIATE_TEST_SUITE_P(SBER,
                          PasswordProtectionServiceTest,
-                         ::testing::Values(true));
-
+                         testing::Combine(testing::Values(true),
+                                          testing::Values(false)));
+INSTANTIATE_TEST_SUITE_P(ENHANCED_PROTECTION,
+                         PasswordProtectionServiceTest,
+                         testing::Combine(testing::Values(false),
+                                          testing::Values(true)));
+INSTANTIATE_TEST_SUITE_P(SBER_ENHANCED_PROTECTION,
+                         PasswordProtectionServiceTest,
+                         testing::Combine(testing::Values(true),
+                                          testing::Values(true)));
 }  // namespace safe_browsing

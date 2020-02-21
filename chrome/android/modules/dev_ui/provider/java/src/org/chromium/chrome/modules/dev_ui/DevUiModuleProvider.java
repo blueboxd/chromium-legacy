@@ -20,8 +20,7 @@ public class DevUiModuleProvider {
     }
 
     @CalledByNative
-    private static void loadModule() {
-        // Native resource are loaded as side effect of first getImpl() call.
-        DevUiModule.getImpl();
+    private static void ensureNativeLoaded() {
+        DevUiModule.ensureNativeLoaded();
     }
 }

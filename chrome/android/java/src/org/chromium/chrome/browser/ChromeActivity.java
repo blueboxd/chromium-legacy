@@ -164,7 +164,6 @@ import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.components.module_installer.builder.Module;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -733,11 +732,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         IntentHandler.setTestIntentsEnabled(
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS));
         mIntentHandler = new IntentHandler(createIntentHandlerDelegate(), getPackageName());
-
-        // This also ensures that subsequent native library and resource loading takes place
-        // immediately, needed by restored tabs that use DFM.
-        // TODO(https://crbug.com/1008162): Have the Module system register its own observer.
-        Module.doDeferredNativeRegistrations();
     }
 
     @Override

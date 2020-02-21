@@ -34,6 +34,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "media/base/video_frame_metadata.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
@@ -124,6 +125,18 @@ class WebMediaPlayer {
     base::TimeDelta timestamp = {};
     base::TimeDelta expected_timestamp = {};
     bool skipped = false;
+  };
+
+  // TODO(crbug.com/639174): Attempt to merge this with VideoFrameUploadMetadata
+  // For video.requestAnimationFrame(). https://wicg.github.io/video-raf/
+  struct VideoFramePresentationMetadata {
+    uint32_t presented_frames;
+    base::TimeTicks presentation_time;
+    base::TimeTicks expected_presentation_time;
+    int width;
+    int height;
+    base::TimeDelta presentation_timestamp;
+    media::VideoFrameMetadata metadata;
   };
 
   // Describes when we use SurfaceLayer for video instead of VideoLayer.
@@ -437,10 +450,15 @@ class WebMediaPlayer {
   virtual GURL GetSrcAfterRedirects() { return GURL(); }
 
   // Register a request to be notified the next time a video frame is presented
-  // to the compositor. The video frame and its metadata will be surfaced via
-  // WebMediaPlayerClient::OnRequestAnimationFrame().
+  // to the compositor. The request will be completed via
+  // WebMediaPlayerClient::OnRequestAnimationFrame(). The frame info can be
+  // retrieved via GetVideoFramePresentationMetadata().
   // See https://wicg.github.io/video-raf/.
   virtual void RequestAnimationFrame() {}
+  virtual std::unique_ptr<VideoFramePresentationMetadata>
+  GetVideoFramePresentationMetadata() {
+    return nullptr;
+  }
 
   virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;
 };

@@ -596,6 +596,8 @@ void DownloadItemImpl::Pause() {
 void DownloadItemImpl::Resume(bool user_resume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
+  RecordDownloadResumption(GetLastReason(), user_resume);
+
   switch (state_) {
     case CANCELLED_INTERNAL:  // Nothing to resume.
     case COMPLETE_INTERNAL:
@@ -620,8 +622,10 @@ void DownloadItemImpl::Resume(bool user_resume) {
     case INTERRUPTED_INTERNAL:
       UpdateResumptionInfo(paused_ || user_resume);
       paused_ = false;
-      if (auto_resume_count_ >= kMaxAutoResumeAttempts)
+      if (auto_resume_count_ >= kMaxAutoResumeAttempts) {
+        RecordAutoResumeCountLimitReached(GetLastReason());
         return;
+      }
 
       ResumeInterruptedDownload(user_resume
                                     ? ResumptionRequestSource::USER

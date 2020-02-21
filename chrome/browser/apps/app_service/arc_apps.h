@@ -55,6 +55,10 @@ class ArcApps : public KeyedService,
   using AppIdToTaskIds = std::map<std::string, std::set<int>>;
   using TaskIdToAppId = std::map<int, std::string>;
 
+  static void CreateBlockDialog(const std::string& app_name,
+                                const gfx::ImageSkia& image,
+                                Profile* profile);
+
   ArcApps(Profile* profile, apps::AppServiceProxy* proxy);
 
   // KeyedService overrides.

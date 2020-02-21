@@ -192,7 +192,7 @@ public class NtpUiCaptureTestData {
         }
         return new LargeIconBridge() {
             @Override
-            public boolean getLargeIconForUrl(
+            public boolean getLargeIconForStringUrl(
                     String url, int desiredSizePx, LargeIconCallback callback) {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                     int fallbackColor =

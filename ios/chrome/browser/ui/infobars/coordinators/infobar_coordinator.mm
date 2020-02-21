@@ -89,6 +89,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 
 - (void)stop {
   _animatedFullscreenDisabler = nullptr;
+  _badgeDelegate = nil;
   _infobarDelegate = nil;
 }
 

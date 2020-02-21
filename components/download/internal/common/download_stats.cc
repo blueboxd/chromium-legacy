@@ -213,6 +213,24 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   }
 }
 
+void RecordDownloadResumption(DownloadInterruptReason reason,
+                              bool user_resume) {
+  std::vector<base::HistogramBase::Sample> samples =
+      base::CustomHistogram::ArrayToCustomEnumRanges(kAllInterruptReasonCodes);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.Resume.LastReason", reason,
+                                   samples);
+  base::UmaHistogramBoolean("Download.Resume.UserResume", user_resume);
+}
+
+void RecordAutoResumeCountLimitReached(DownloadInterruptReason reason) {
+  base::UmaHistogramBoolean("Download.Resume.AutoResumeLimitReached", true);
+
+  std::vector<base::HistogramBase::Sample> samples =
+      base::CustomHistogram::ArrayToCustomEnumRanges(kAllInterruptReasonCodes);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.Resume.LastReason", reason,
+                                   samples);
+}
+
 namespace {
 
 int GetMimeTypeMatch(const std::string& mime_type_string,

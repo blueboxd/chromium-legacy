@@ -22,7 +22,7 @@ config("public_libgav1_config") {
 if (enable_libgav1_decoder) {
   # Separate from libgav1 because utils/constants.cc and dsp/constants.cc
   # generate the same object file, constants.o.
-  source_set("libgav1_util") {
+  source_set("libgav1_utils") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
@@ -30,15 +30,28 @@ if (enable_libgav1_decoder) {
 
     sources = gav1_utils_sources
   }
+
+  # Separate from libgav1 because film_grain.cc and dsp/film_grain.cc
+  # generate the same object file, film_grain.o.
+  source_set("libgav1_dsp") {
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    public_configs = [ ":public_libgav1_config" ]
+
+    sources = gav1_dsp_sources
+  }
   static_library("libgav1") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     public_configs = [ ":public_libgav1_config" ]
-    public_deps = [ ":libgav1_util" ]
+    public_deps = [
+      ":libgav1_dsp",
+      ":libgav1_utils",
+    ]
 
     sources = gav1_common_sources
-    sources += gav1_dsp_sources
     sources += gav1_gav1_sources
     sources += gav1_tile_sources
   }

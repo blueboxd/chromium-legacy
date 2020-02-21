@@ -379,6 +379,17 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->interactive_timing->longest_input_timestamp =
         ClampDelta(perf.LongestInputTimestamp(), start);
   }
+  if (perf.TotalInputDelay() > 0.0) {
+    timing->interactive_timing->total_input_delay =
+        base::TimeDelta::FromSecondsD(perf.TotalInputDelay());
+  }
+  if (perf.TotalAdjustedInputDelay() > 0.0) {
+    timing->interactive_timing->total_adjusted_input_delay =
+        base::TimeDelta::FromSecondsD(perf.TotalAdjustedInputDelay());
+  }
+  if (perf.NumInputEvents() > 0) {
+    timing->interactive_timing->num_input_events = perf.NumInputEvents();
+  }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {

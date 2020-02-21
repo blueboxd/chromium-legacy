@@ -41,4 +41,5 @@ void AccessibilityAlertWindow::OnWillDestroyEnv() {
   observer_.RemoveAll();
   alert_window_.reset();
 }
+
 }  // namespace views

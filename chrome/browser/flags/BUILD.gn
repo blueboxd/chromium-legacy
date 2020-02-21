@@ -24,3 +24,21 @@ generate_jni("jni_headers") {
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   ]
 }
+
+java_library("flags_junit_tests") {
+  # Skip platform checks since Robolectric depends on requires_android targets.
+  bypass_platform_checks = true
+  testonly = true
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListWithProcessorUnitTest.java",
+    "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureListWithoutProcessorUnitTest.java",
+  ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//base/test:test_support_java",
+    "//chrome/test/android:chrome_java_test_support",
+  ]
+}

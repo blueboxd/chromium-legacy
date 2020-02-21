@@ -312,14 +312,14 @@ class GpuSandboxedProcessLauncherDelegate
  public:
   explicit GpuSandboxedProcessLauncherDelegate(
       const base::CommandLine& cmd_line)
+      :
 #if defined(OS_WIN)
-      : cmd_line_(cmd_line),
-        enable_appcontainer_(true)
+        enable_appcontainer_(true),
 #endif
-  {
+        cmd_line_(cmd_line) {
   }
 
-  ~GpuSandboxedProcessLauncherDelegate() override {}
+  ~GpuSandboxedProcessLauncherDelegate() override = default;
 
 #if defined(OS_WIN)
   bool DisableDefaultPolicy() override { return true; }
@@ -412,13 +412,22 @@ class GpuSandboxedProcessLauncherDelegate
   void DisableAppContainer() { enable_appcontainer_ = false; }
 #endif  // OS_WIN
 
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+  service_manager::ZygoteHandle GetZygote() override {
+    if (service_manager::IsUnsandboxedSandboxType(GetSandboxType()))
+      return nullptr;
+
+    // The GPU process needs a specialized sandbox, so fork from the unsandboxed
+    // zygote and then apply the actual sandboxes in the forked process.
+    return service_manager::GetUnsandboxedZygote();
+  }
+#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+
   service_manager::SandboxType GetSandboxType() override {
-#if defined(OS_WIN)
     if (cmd_line_.HasSwitch(service_manager::switches::kDisableGpuSandbox)) {
       DVLOG(1) << "GPU sandbox is disabled";
       return service_manager::SandboxType::kNoSandbox;
     }
-#endif
     return service_manager::SandboxType::kGpu;
   }
 
@@ -436,9 +445,10 @@ class GpuSandboxedProcessLauncherDelegate
     return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
   }
 
-  base::CommandLine cmd_line_;
   bool enable_appcontainer_;
-#endif  // OS_WIN
+#endif
+
+  base::CommandLine cmd_line_;
 };
 
 #if defined(OS_WIN)

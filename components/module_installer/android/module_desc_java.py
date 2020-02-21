@@ -38,6 +38,11 @@ public class ModuleDescriptor_{MODULE} implements ModuleDescriptor {{
     public String[] getPaks() {{
         return PAKS;
     }}
+
+    @Override
+    public boolean getLoadNativeOnGetImpl() {{
+        return {LOAD_NATIVE_ON_GET_IMPL};
+    }}
 }}
 """
 
@@ -50,6 +55,9 @@ def main():
   parser.add_argument('--paks', help='GN list of PAK file paths')
   parser.add_argument(
       '--output', required=True, help='Path to the generated srcjar file.')
+  parser.add_argument('--load-native-on-get-impl', action='store_true',
+      default=False,
+      help='Load module automatically on calling Module.getImpl().')
   options = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
   options.libraries = build_utils.ParseGnList(options.libraries)
   options.paks = build_utils.ParseGnList(options.paks)
@@ -68,6 +76,8 @@ def main():
       'MODULE': options.module,
       'LIBRARIES': ','.join(['"%s"' % l for l in libraries]),
       'PAKS': ','.join(['"%s"' % os.path.basename(p) for p in paks]),
+      'LOAD_NATIVE_ON_GET_IMPL': (
+          'true' if options.load_native_on_get_impl else 'false'),
   }
   with build_utils.AtomicOutput(options.output) as f:
     with zipfile.ZipFile(f.name, 'w') as srcjar_file:

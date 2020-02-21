@@ -130,6 +130,44 @@ int ReleaseFrameBufferImpl(void* private_data,
   return 0;
 }
 
+scoped_refptr<VideoFrame> FormatVideoFrame(
+    const libgav1::DecoderBuffer& buffer,
+    const gfx::Size& natural_size,
+    const VideoColorSpace& container_color_space,
+    FrameBufferPool* memory_pool) {
+  gfx::Size coded_size(buffer.stride[0], buffer.displayed_height[0]);
+  gfx::Rect visible_rect(buffer.displayed_width[0], buffer.displayed_height[0]);
+
+  auto frame = VideoFrame::WrapExternalYuvData(
+      Libgav1ImageFormatToVideoPixelFormat(buffer.image_format,
+                                           buffer.bitdepth),
+      coded_size, visible_rect, natural_size, buffer.stride[0],
+      buffer.stride[1], buffer.stride[2], buffer.plane[0], buffer.plane[1],
+      buffer.plane[2],
+      base::TimeDelta::FromMicroseconds(buffer.user_private_data));
+
+  // AV1 color space defines match ISO 23001-8:2016 via ISO/IEC 23091-4/ITU-T
+  // H.273. https://aomediacodec.github.io/av1-spec/#color-config-semantics
+  media::VideoColorSpace color_space(
+      buffer.color_primary, buffer.transfer_characteristics,
+      buffer.matrix_coefficients,
+      buffer.color_range == libgav1::kColorRangeStudio
+          ? gfx::ColorSpace::RangeID::LIMITED
+          : gfx::ColorSpace::RangeID::FULL);
+
+  // If the frame doesn't specify a color space, use the container's.
+  if (!color_space.IsSpecified())
+    color_space = container_color_space;
+
+  frame->set_color_space(color_space.ToGfxColorSpace());
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, false);
+
+  // Ensure the frame memory is returned to the MemoryPool upon discard.
+  frame->AddDestructionObserver(
+      memory_pool->CreateFrameCallback(buffer.buffer_private_data));
+  return frame;
+}
+
 }  // namespace
 
 Gav1VideoDecoder::DecodeRequest::DecodeRequest(
@@ -342,7 +380,8 @@ bool Gav1VideoDecoder::MaybeDequeueFrames() {
       return false;
     }
 
-    scoped_refptr<VideoFrame> frame = FormatVideoFrame(*buffer);
+    scoped_refptr<VideoFrame> frame = FormatVideoFrame(
+        *buffer, natural_size_, color_space_, memory_pool_.get());
     if (!frame) {
       MEDIA_LOG(ERROR, media_log_) << "Failed formatting VideoFrame from "
                                    << "libgav1::DecoderBuffer";
@@ -360,42 +399,6 @@ bool Gav1VideoDecoder::MaybeDequeueFrames() {
   }
 
   return true;
-}
-
-scoped_refptr<VideoFrame> Gav1VideoDecoder::FormatVideoFrame(
-    const libgav1::DecoderBuffer& buffer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  gfx::Size coded_size(buffer.stride[0], buffer.displayed_height[0]);
-  gfx::Rect visible_rect(buffer.displayed_width[0], buffer.displayed_height[0]);
-
-  auto frame = VideoFrame::WrapExternalYuvData(
-      Libgav1ImageFormatToVideoPixelFormat(buffer.image_format,
-                                           buffer.bitdepth),
-      coded_size, visible_rect, natural_size_, buffer.stride[0],
-      buffer.stride[1], buffer.stride[2], buffer.plane[0], buffer.plane[1],
-      buffer.plane[2],
-      base::TimeDelta::FromMicroseconds(buffer.user_private_data));
-
-  // AV1 color space defines match ISO 23001-8:2016 via ISO/IEC 23091-4/ITU-T
-  // H.273. https://aomediacodec.github.io/av1-spec/#color-config-semantics
-  media::VideoColorSpace color_space(
-      buffer.color_primary, buffer.transfer_characteristics,
-      buffer.matrix_coefficients,
-      buffer.color_range == libgav1::kColorRangeStudio
-          ? gfx::ColorSpace::RangeID::LIMITED
-          : gfx::ColorSpace::RangeID::FULL);
-
-  // If the frame doesn't specify a color space, use the container's.
-  if (!color_space.IsSpecified())
-    color_space = color_space_;
-
-  frame->set_color_space(color_space.ToGfxColorSpace());
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, false);
-
-  // Ensure the frame memory is returned to the MemoryPool upon discard.
-  frame->AddDestructionObserver(
-      memory_pool_->CreateFrameCallback(buffer.buffer_private_data));
-  return frame;
 }
 
 }  // namespace media

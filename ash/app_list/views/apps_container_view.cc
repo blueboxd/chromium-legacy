@@ -517,6 +517,16 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   return cached_container_margins_.margins;
 }
 
+void AppsContainerView::OnAppListConfigUpdated() {
+  // Invalidate the cached container margins - app list config change generally
+  // changes preferred apps grid margins, which can influence the container
+  // margins.
+  cached_container_margins_ = CachedContainerMargins();
+
+  apps_grid_view()->OnAppListConfigUpdated();
+  app_list_folder_view()->items_grid_view()->OnAppListConfigUpdated();
+}
+
 void AppsContainerView::UpdateSuggestionChips() {
   suggestion_chip_container_view_->SetResults(
       contents_view_->GetAppListMainView()

@@ -110,12 +110,12 @@ class TouchToFillMediator {
         };
         final LargeIconCallback setIconOrRetry = (icon, fallbackColor, hasDefaultColor, type) -> {
             if (icon == null && iconOrigin.equals(credential.getOriginUrl())) {
-                mLargeIconBridge.getLargeIconForUrl(url, mDesiredIconSize, setIcon);
+                mLargeIconBridge.getLargeIconForStringUrl(url, mDesiredIconSize, setIcon);
                 return; // Unlikely but retry for exact path if there is no icon for the origin.
             }
             setIcon.onLargeIconAvailable(icon, fallbackColor, hasDefaultColor, type);
         };
-        mLargeIconBridge.getLargeIconForUrl(iconOrigin, mDesiredIconSize, setIconOrRetry);
+        mLargeIconBridge.getLargeIconForStringUrl(iconOrigin, mDesiredIconSize, setIconOrRetry);
     }
 
     private String getIconOrigin(String credentialOrigin, String siteUrl) {

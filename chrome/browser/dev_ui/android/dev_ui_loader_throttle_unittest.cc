@@ -50,7 +50,7 @@ class MockDevUiModuleProvider : public DevUiModuleProvider {
   }
 
   // DevUiModuleProvider:
-  void LoadModule() override { is_loaded_ = true; }
+  void EnsureLoaded() override { is_loaded_ = true; }
 
   void Reset() {
     is_installed_ = false;

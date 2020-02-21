@@ -24,12 +24,16 @@ using testing::_;
 
 namespace blink {
 
+namespace {
+
 class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
  public:
   MOCK_METHOD1(SetIsEffectivelyFullscreen, void(WebFullscreenVideoStatus));
   MOCK_METHOD1(OnDisplayTypeChanged, void(WebMediaPlayer::DisplayType));
   MOCK_CONST_METHOD0(HasAvailableVideoFrame, bool());
 };
+
+}  // namespace
 
 class HTMLVideoElementTest : public PageTestBase {
  public:

@@ -651,15 +651,15 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 
   if (listener_needs_new_frame_capture) {
     SourceImageStatus status;
-    scoped_refptr<Image> source_image =
-        GetSourceImageForCanvas(&status, kPreferNoAcceleration, FloatSize());
+    scoped_refptr<StaticBitmapImage> source_image =
+        GetSourceImageForCanvasInternal(&status, kPreferNoAcceleration);
     if (status != kNormalSourceImageStatus)
       return;
-    sk_sp<SkImage> image =
-        source_image->PaintImageForCurrentFrame().GetSkImage();
     for (CanvasDrawListener* listener : listeners_) {
-      if (listener->NeedsNewFrame())
-        listener->SendNewFrame(image, source_image->ContextProviderWrapper());
+      if (listener->NeedsNewFrame()) {
+        listener->SendNewFrame(source_image,
+                               source_image->ContextProviderWrapper());
+      }
     }
   }
 }
@@ -1237,6 +1237,12 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     const FloatSize&) {
+  return GetSourceImageForCanvasInternal(status, hint);
+}
+
+scoped_refptr<StaticBitmapImage>
+HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status,
+                                                   AccelerationHint hint) {
   if (!width() || !height()) {
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
@@ -1253,21 +1259,21 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   }
 
   if (!context_) {
-    scoped_refptr<Image> result = GetTransparentImage();
+    scoped_refptr<StaticBitmapImage> result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
 
   if (HasImageBitmapContext()) {
     *status = kNormalSourceImageStatus;
-    scoped_refptr<Image> result = context_->GetImage(hint);
+    scoped_refptr<StaticBitmapImage> result = context_->GetImage(hint);
     if (!result)
       result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
 
-  scoped_refptr<Image> image;
+  scoped_refptr<StaticBitmapImage> image;
   // TODO(ccameron): Canvas should produce sRGB images.
   // https://crbug.com/672299
   if (Is3d()) {
@@ -1538,7 +1544,7 @@ bool HTMLCanvasElement::HasImageBitmapContext() const {
   return (type == CanvasRenderingContext::kContextImageBitmap);
 }
 
-scoped_refptr<Image> HTMLCanvasElement::GetTransparentImage() {
+scoped_refptr<StaticBitmapImage> HTMLCanvasElement::GetTransparentImage() {
   if (!transparent_image_ || transparent_image_.get()->Size() != Size())
     transparent_image_ = CreateTransparentImage(Size());
   return transparent_image_;

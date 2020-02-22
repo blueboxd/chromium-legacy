@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 
 namespace chromeos {
 namespace assistant {
+
+namespace {
+constexpr int kStartBrightnessPercent = 50;
+}  // namespace
 
 class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
  public:
@@ -20,6 +27,59 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
   }
 
   AssistantTestMixin* tester() { return &tester_; }
+
+  void InitializeBrightness() {
+    auto* power_manager = chromeos::PowerManagerClient::Get();
+    power_manager::SetBacklightBrightnessRequest request;
+    request.set_percent(kStartBrightnessPercent);
+    request.set_transition(
+        power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
+    request.set_cause(
+        power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
+    chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);
+
+    // Wait for the initial value to settle.
+    tester()->ExpectResult(
+        true, base::BindLambdaForTesting([&]() {
+          constexpr double kEpsilon = 0.1;
+          auto current_brightness = tester()->SyncCall(base::BindOnce(
+              &chromeos::PowerManagerClient::GetScreenBrightnessPercent,
+              base::Unretained(power_manager)));
+          return current_brightness &&
+                 std::abs(kStartBrightnessPercent -
+                          current_brightness.value()) < kEpsilon;
+        }));
+  }
+
+  void ExpectBrightnessUp() {
+    auto* power_manager = chromeos::PowerManagerClient::Get();
+    // Check the brightness changes
+    tester()->ExpectResult(
+        true, base::BindLambdaForTesting([&]() {
+          constexpr double kEpsilon = 1;
+          auto current_brightness = tester()->SyncCall(base::BindOnce(
+              &chromeos::PowerManagerClient::GetScreenBrightnessPercent,
+              base::Unretained(power_manager)));
+
+          return current_brightness && (current_brightness.value() -
+                                        kStartBrightnessPercent) > kEpsilon;
+        }));
+  }
+
+  void ExpectBrightnessDown() {
+    auto* power_manager = chromeos::PowerManagerClient::Get();
+    // Check the brightness changes
+    tester()->ExpectResult(
+        true, base::BindLambdaForTesting([&]() {
+          constexpr double kEpsilon = 1;
+          auto current_brightness = tester()->SyncCall(base::BindOnce(
+              &chromeos::PowerManagerClient::GetScreenBrightnessPercent,
+              base::Unretained(power_manager)));
+
+          return current_brightness && (kStartBrightnessPercent -
+                                        current_brightness.value()) > kEpsilon;
+        }));
+  }
 
  private:
   AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(),
@@ -105,6 +165,34 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownVolume) {
                                             kStartVolumePercent;
                                    },
                                    cras));
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpBrightness) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(tester()->IsVisible());
+
+  InitializeBrightness();
+
+  tester()->SendTextQuery("turn up brightness");
+
+  ExpectBrightnessUp();
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(tester()->IsVisible());
+
+  InitializeBrightness();
+
+  tester()->SendTextQuery("turn down brightness");
+
+  ExpectBrightnessDown();
 }
 
 }  // namespace assistant

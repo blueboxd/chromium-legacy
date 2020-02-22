@@ -41,6 +41,7 @@ constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 constexpr wchar_t kRegDeviceDetailsUploadStatus[] =
     L"device_details_upload_status";
+constexpr wchar_t kRegGlsPath[] = L"gls_path";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     L"Chrome-GCPW-";

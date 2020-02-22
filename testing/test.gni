@@ -282,7 +282,7 @@ template("test") {
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
     }
-  } else if (is_chromeos && is_chromeos_device) {
+  } else if (is_chromeos && cros_board != "") {
     # Building for a cros board (ie: not linux-chromeos).
 
     _gen_runner_target = "${target_name}__runner"

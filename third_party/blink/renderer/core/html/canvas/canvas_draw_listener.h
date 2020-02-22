@@ -9,10 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-
-class SkImage;
 
 namespace blink {
 
@@ -22,7 +20,7 @@ class CORE_EXPORT CanvasDrawListener : public GarbageCollectedMixin {
  public:
   virtual ~CanvasDrawListener();
   virtual void SendNewFrame(
-      sk_sp<SkImage>,
+      scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
   virtual bool NeedsNewFrame() const = 0;
   virtual void RequestFrame() = 0;

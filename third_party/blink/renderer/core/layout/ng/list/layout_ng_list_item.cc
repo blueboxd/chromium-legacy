@@ -65,7 +65,7 @@ void LayoutNGListItem::SubtreeDidChange() {
   // Make sure an outside marker is a direct child of the list item (not nested
   // inside an anonymous box), and that a marker originated by a ::before or
   // ::after precedes the generated contents.
-  if ((marker->IsLayoutNGListMarker() && marker->Parent() != this) ||
+  if ((marker->IsLayoutNGOutsideListMarker() && marker->Parent() != this) ||
       (IsPseudoElement() && marker != FirstChild())) {
     marker->Remove();
     AddChild(marker, FirstChild());

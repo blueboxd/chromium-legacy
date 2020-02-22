@@ -11875,7 +11875,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
         AnimatedUpdateState(gfx::Point(), gfx::Vector2d(0, 50)).get());
 
     EXPECT_EQ(0, set_needs_commit_count);
-    EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_GT(set_needs_redraw_count, 0);
   }
 
   LayerImpl* scrolling_layer = OuterViewportScrollLayer();

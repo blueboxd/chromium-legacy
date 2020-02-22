@@ -7,6 +7,7 @@ package org.chromium.weblayer_private;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -20,6 +21,7 @@ import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
@@ -486,6 +488,19 @@ public final class TabImpl extends ITab.Stub {
     public void setBrowserControlsVisibilityConstraint(
             @ImplControlsVisibilityReason int reason, @BrowserControlsState int constraint) {
         mBrowserControlsDelegates.get(reason).set(constraint);
+    }
+
+    private static String nonEmptyOrNull(String s) {
+        return TextUtils.isEmpty(s) ? null : s;
+    }
+
+    @CalledByNative
+    private void showContextMenu(ContextMenuParams params) throws RemoteException {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 82) return;
+        mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl()),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())));
     }
 
     private void onBrowserControlsStateUpdated(int state) {

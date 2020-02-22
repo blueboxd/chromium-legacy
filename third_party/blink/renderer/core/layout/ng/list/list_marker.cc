@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 
 namespace blink {
 
@@ -17,8 +17,8 @@ ListMarker::ListMarker() : marker_text_type_(kNotText) {}
 const ListMarker* ListMarker::Get(const LayoutObject* object) {
   if (!object)
     return nullptr;
-  if (object->IsLayoutNGListMarker())
-    return &ToLayoutNGListMarker(object)->Marker();
+  if (object->IsLayoutNGOutsideListMarker())
+    return &ToLayoutNGOutsideListMarker(object)->Marker();
   if (object->IsLayoutNGInsideListMarker())
     return &ToLayoutNGInsideListMarker(object)->Marker();
   return nullptr;

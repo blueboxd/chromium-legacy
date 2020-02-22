@@ -117,7 +117,7 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
                                    base::ThreadTaskRunnerHandle::Get()));
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation());
+            gles2_context_->GetImplementation(), ContextSupport());
   }
 
   cache_controller_->SetLock(GetLock());

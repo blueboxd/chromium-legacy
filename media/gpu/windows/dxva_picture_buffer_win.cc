@@ -5,6 +5,7 @@
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "media/base/win/mf_helpers.h"
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -19,11 +20,6 @@
 namespace media {
 
 namespace {
-
-void LogDXVAError(int line) {
-  PLOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
-  base::UmaHistogramSparse("Media.DXVAVDA.PictureBufferErrorLine", line);
-}
 
 // These GLImage subclasses are just used to hold references to the underlying
 // image content so it can be destroyed when the textures are.
@@ -89,19 +85,6 @@ class GLImagePbuffer : public DummyGLImage {
 };
 
 }  // namespace
-
-#define RETURN_ON_FAILURE(result, log, ret) \
-  do {                                      \
-    if (!(result)) {                        \
-      DLOG(ERROR) << log;                   \
-      LogDXVAError(__LINE__);               \
-      return ret;                           \
-    }                                       \
-  } while (0)
-
-#define RETURN_ON_HR_FAILURE(result, log, ret) \
-  RETURN_ON_FAILURE(SUCCEEDED(result),         \
-                    log << ", HRESULT: 0x" << std::hex << result, ret);
 
 enum {
   // The keyed mutex should always be released before the other thread

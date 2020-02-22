@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UPDATER_UPDATER_CONSTANTS_H_
-#define CHROME_UPDATER_UPDATER_CONSTANTS_H_
+#ifndef CHROME_UPDATER_CONSTANTS_H_
+#define CHROME_UPDATER_CONSTANTS_H_
 
 #include "components/update_client/update_client_errors.h"
 
@@ -127,4 +127,4 @@ constexpr int kErrorApplicationInstallerFailed = kCustomInstallErrorBase + 3;
 
 }  // namespace updater
 
-#endif  // CHROME_UPDATER_UPDATER_CONSTANTS_H_
+#endif  // CHROME_UPDATER_CONSTANTS_H_

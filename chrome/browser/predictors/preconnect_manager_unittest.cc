@@ -644,8 +644,8 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
                                             network_isolation_key2, net::OK);
 }
 
-// Checks that the PreconnectManager handles no more than one URL per host
-// simultaneously.
+// Checks that the PreconnectManager queues up preconnect requests for URLs
+// with same host.
 TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
   GURL main_frame_url1("http://google.com/search?query=cats");
   net::NetworkIsolationKey network_isolation_key1 =
@@ -663,8 +663,8 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
   preconnect_manager_->Start(
       main_frame_url1,
       {PreconnectRequest(origin_to_preconnect1, 1, network_isolation_key1)});
-  // This suggestion should be dropped because the PreconnectManager already has
-  // a job for the "google.com" host.
+  EXPECT_CALL(*mock_network_context_,
+              ResolveHostProxy(origin_to_preconnect2.host()));
   preconnect_manager_->Start(
       main_frame_url2,
       {PreconnectRequest(origin_to_preconnect2, 1, network_isolation_key2)});
@@ -676,6 +676,13 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
   mock_network_context_->CompleteHostLookup(origin_to_preconnect1.host(),
                                             network_isolation_key1, net::OK);
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, origin_to_preconnect2.GetURL(),
+                        true /* allow credentials */, network_isolation_key2));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url2));
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect2.host(),
+                                            network_isolation_key2, net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestStartPreresolveHost) {

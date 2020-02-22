@@ -22,7 +22,7 @@ const base::Feature kSafetyTipUI{"SafetyTip",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPassiveMixedContentWarning{
-    "PassiveMixedContentWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PassiveMixedContentWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace security_state

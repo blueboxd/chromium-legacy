@@ -990,10 +990,13 @@ void SplitViewController::OnPostWindowStateTypeChange(
 
   if (window_state->IsSnapped()) {
     OnWindowSnapped(window_state->window());
-  } else if (window_state->IsFullscreen() || window_state->IsMaximized()) {
-    // End split view mode if one of the snapped windows gets maximized /
-    // full-screened. Also end overview mode if overview mode is active at the
-    // moment.
+  } else if (window_state->IsNormalStateType() || window_state->IsMaximized() ||
+             window_state->IsFullscreen()) {
+    // End split view, and also overview if overview is active, in these cases:
+    // 1. A left clamshell split view window gets unsnapped by Alt+[.
+    // 2. A right clamshell split view window gets unsnapped by Alt+].
+    // 3. A (clamshell or tablet) split view window gets maximized.
+    // 4. A (clamshell or tablet) split view window becomes full screen.
     EndSplitView();
     Shell::Get()->overview_controller()->EndOverview();
   } else if (window_state->IsMinimized()) {

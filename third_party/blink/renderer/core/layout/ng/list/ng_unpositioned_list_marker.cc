@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -15,11 +15,13 @@
 
 namespace blink {
 
-NGUnpositionedListMarker::NGUnpositionedListMarker(LayoutNGListMarker* marker)
+NGUnpositionedListMarker::NGUnpositionedListMarker(
+    LayoutNGOutsideListMarker* marker)
     : marker_layout_object_(marker) {}
 
 NGUnpositionedListMarker::NGUnpositionedListMarker(const NGBlockNode& node)
-    : NGUnpositionedListMarker(ToLayoutNGListMarker(node.GetLayoutBox())) {}
+    : NGUnpositionedListMarker(
+          ToLayoutNGOutsideListMarker(node.GetLayoutBox())) {}
 
 // Returns true if this is an image marker.
 bool NGUnpositionedListMarker::IsImage() const {

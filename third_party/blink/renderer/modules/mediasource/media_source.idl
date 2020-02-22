@@ -38,7 +38,7 @@ enum EndOfStreamError {
 [
     ImplementedAs=MediaSourceImpl,
     ActiveScriptWrappable,
-    Exposed(Window MediaSourceStable, DedicatedWorker MediaSourceInWorkers, SharedWorker MediaSourceInWorkers)
+    Exposed(Window MediaSourceStable, DedicatedWorker MediaSourceInWorkers)
 ] interface MediaSource : EventTarget {
     [CallWith=ExecutionContext] constructor();
     // All the source buffers created by this object.

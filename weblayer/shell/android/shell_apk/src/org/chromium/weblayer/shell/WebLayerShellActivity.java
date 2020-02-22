@@ -4,6 +4,9 @@
 
 package org.chromium.weblayer.shell;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,8 +15,11 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -27,6 +33,7 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.ContextMenuParams;
 import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FindInPageCallback;
@@ -50,6 +57,60 @@ import java.util.List;
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
+    private static class ContextMenuCreator
+            implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
+        private static final int MENU_ID_COPY_LINK_URI = 1;
+        private static final int MENU_ID_COPY_LINK_TEXT = 2;
+
+        private ContextMenuParams mParams;
+        private Context mContext;
+
+        public ContextMenuCreator(ContextMenuParams params) {
+            mParams = params;
+        }
+
+        @Override
+        public void onCreateContextMenu(
+                ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            mContext = v.getContext();
+            menu.add(mParams.pageUri.toString());
+            if (mParams.linkUri != null) {
+                MenuItem copyLinkUriItem =
+                        menu.add(Menu.NONE, MENU_ID_COPY_LINK_URI, Menu.NONE, "Copy link address");
+                copyLinkUriItem.setOnMenuItemClickListener(this);
+            }
+            if (!TextUtils.isEmpty(mParams.linkText)) {
+                MenuItem copyLinkTextItem =
+                        menu.add(Menu.NONE, MENU_ID_COPY_LINK_TEXT, Menu.NONE, "Copy link text");
+                copyLinkTextItem.setOnMenuItemClickListener(this);
+            }
+            if (!TextUtils.isEmpty(mParams.titleOrAltText)) {
+                TextView altTextView = new TextView(mContext);
+                altTextView.setText(mParams.titleOrAltText);
+                menu.setHeaderView(altTextView);
+            }
+            v.setOnCreateContextMenuListener(null);
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            ClipboardManager clipboard =
+                    (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+            switch (item.getItemId()) {
+                case MENU_ID_COPY_LINK_URI:
+                    clipboard.setPrimaryClip(
+                            ClipData.newPlainText("link address", mParams.linkUri.toString()));
+                    break;
+                case MENU_ID_COPY_LINK_TEXT:
+                    clipboard.setPrimaryClip(ClipData.newPlainText("link text", mParams.linkText));
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }
+    }
+
     private static final String TAG = "WebLayerShell";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
     private static final float DEFAULT_TEXT_SIZE = 15.0F;
@@ -262,6 +323,13 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void onVisibleUriChanged(Uri uri) {
                 mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);
+            }
+
+            @Override
+            public void showContextMenu(ContextMenuParams params) {
+                View weblayerView = getSupportFragmentManager().getFragments().get(0).getView();
+                weblayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params));
+                weblayerView.showContextMenu();
             }
         });
         tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {

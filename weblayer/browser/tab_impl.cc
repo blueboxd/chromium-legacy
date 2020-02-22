@@ -47,6 +47,7 @@
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/autofill/android/autofill_provider_android.h"
+#include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
 #include "ui/android/view_android.h"
@@ -305,6 +306,14 @@ void TabImpl::AttachToView(views::WebView* web_view) {
 
 bool TabImpl::IsActive() {
   return browser_->GetActiveTab() == this;
+}
+
+void TabImpl::ShowContextMenu(const content::ContextMenuParams& params) {
+#if defined(OS_ANDROID)
+  Java_TabImpl_showContextMenu(
+      base::android::AttachCurrentThread(), java_impl_,
+      context_menu::BuildJavaContextMenuParams(params));
+#endif
 }
 
 #if defined(OS_ANDROID)

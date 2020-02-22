@@ -424,6 +424,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            KeyboardObserverForOnlyTouchInput);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverForFocusedNodeChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
+                           KeyboardObserverForPenInput);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DropFallbackWhenHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,

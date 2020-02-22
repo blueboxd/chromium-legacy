@@ -13,7 +13,7 @@ source_set("mac") {
 
   deps = [
     "//base",
-    "//chrome/updater:update_service",
+    "//chrome/updater:base",
     "//chrome/updater:version_header",
   ]
 }

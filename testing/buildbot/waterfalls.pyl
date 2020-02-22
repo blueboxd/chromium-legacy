@@ -4072,18 +4072,126 @@
   {
     'name': 'chromium.swangle',
     'machines': {
-      'linux-swangle-tot-angle-x64' : {},
-      'linux-swangle-tot-angle-x86' : {},
-      'linux-swangle-tot-swiftshader-x64' : {},
-      'linux-swangle-tot-swiftshader-x86' : {},
-      'linux-swangle-x64' : {},
-      'linux-swangle-x86' : {},
-      'win-swangle-tot-angle-x64' : {},
-      'win-swangle-tot-angle-x86' : {},
-      'win-swangle-tot-swiftshader-x64' : {},
-      'win-swangle-tot-swiftshader-x86' : {},
-      'win-swangle-x64' : {},
-      'win-swangle-x86' : {},
+      'linux-swangle-tot-angle-x64' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swangle-tot-angle-x86' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swangle-tot-swiftshader-x64' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swangle-tot-swiftshader-x86' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swangle-x64' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swangle-x86' : {
+        'mixins': [
+          'code-coverage',
+          'linux-xenial',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-tot-angle-x64' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-tot-angle-x86' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-tot-swiftshader-x64' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-tot-swiftshader-x86' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-x64' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'win-swangle-x86' : {
+        'mixins': [
+          'x86-64',
+          'win10',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
     },
   },
   {

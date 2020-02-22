@@ -728,26 +728,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method decodingInfo
 [Worker]     method encodingInfo
-[Worker] interface MediaSource : EventTarget
-[Worker]     static method isTypeSupported
-[Worker]     attribute @@toStringTag
-[Worker]     getter activeSourceBuffers
-[Worker]     getter duration
-[Worker]     getter onsourceclose
-[Worker]     getter onsourceended
-[Worker]     getter onsourceopen
-[Worker]     getter readyState
-[Worker]     getter sourceBuffers
-[Worker]     method addSourceBuffer
-[Worker]     method clearLiveSeekableRange
-[Worker]     method constructor
-[Worker]     method endOfStream
-[Worker]     method removeSourceBuffer
-[Worker]     method setLiveSeekableRange
-[Worker]     setter duration
-[Worker]     setter onsourceclose
-[Worker]     setter onsourceended
-[Worker]     setter onsourceopen
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1

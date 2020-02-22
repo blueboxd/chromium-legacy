@@ -393,8 +393,7 @@ HRESULT WriteUninstallRegistryValues(const base::FilePath& setup_exe) {
 
 HRESULT WriteCredentialProviderRegistryValues() {
   base::win::RegKey key;
-  LONG status = key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
-                           KEY_SET_VALUE | KEY_WOW64_32KEY);
+  LONG status = key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_SET_VALUE);
   if (status != ERROR_SUCCESS) {
     HRESULT hr = HRESULT_FROM_WIN32(status);
     LOGFN(ERROR) << "Unable to create " << kGcpRootKeyName

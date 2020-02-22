@@ -144,4 +144,5 @@ class LoadingDesktopStorySet(story.StorySet):
                 SharedDesktopPageState,
                 cache_temperature=temp,
                 tags=page_tags,
-                name=page_name))
+                name=page_name,
+                perform_final_navigation=True))

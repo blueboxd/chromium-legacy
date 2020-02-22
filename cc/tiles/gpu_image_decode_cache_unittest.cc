@@ -252,8 +252,9 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
 
 class MockRasterImplementation : public gpu::raster::RasterImplementationGLES {
  public:
-  explicit MockRasterImplementation(gpu::gles2::GLES2Interface* gl)
-      : RasterImplementationGLES(gl) {}
+  explicit MockRasterImplementation(gpu::gles2::GLES2Interface* gl,
+                                    gpu::ContextSupport* support)
+      : RasterImplementationGLES(gl, support) {}
   ~MockRasterImplementation() override = default;
 
   gpu::SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
@@ -296,8 +297,8 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
     auto gl = std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
         discardable_manager, transfer_cache_helper,
         false /* advertise_accelerated_decoding */);
-    auto raster =
-        std::make_unique<StrictMock<MockRasterImplementation>>(gl.get());
+    auto raster = std::make_unique<StrictMock<MockRasterImplementation>>(
+        gl.get(), support.get());
     return new GPUImageDecodeTestMockContextProvider(
         std::move(support), std::move(gl), std::move(raster));
   }

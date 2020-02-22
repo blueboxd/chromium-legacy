@@ -508,8 +508,9 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     else if (parent->IsLayoutNGListItem())
       marker = ToLayoutNGListItem(parent)->Marker();
 
-    // A LayoutNGListMarker has a text child that needs its font multiplier
-    // updated. Just mark the entire subtree, to make sure we get to it.
+    // A LayoutNGOutsideListMarker has a text child that needs its font
+    // multiplier updated. Just mark the entire subtree, to make sure we get to
+    // it.
     for (LayoutObject* walker = marker; walker;
          walker = walker->NextInPreOrder(marker)) {
       ApplyMultiplier(walker, multiplier, layouter);
@@ -1445,11 +1446,12 @@ TextAutosizer::NGLayoutScope::NGLayoutScope(LayoutBox* box,
   // Bail if:
   //  - Text autosizing isn't enabled.
   //  - If the chid isn't a LayoutBlock.
-  //  - If the child is a LayoutNGListMarker. (They are super-small blocks, and
-  //    using them to determine if we should autosize the text will typically
-  //    false, overriding whatever its parent has already correctly determined).
+  //  - If the child is a LayoutNGOutsideListMarker. (They are super-small
+  //    blocks, and using them to determine if we should autosize the text will
+  //    typically false, overriding whatever its parent has already correctly
+  //    determined).
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
-      box_->IsLayoutNGListMarker() || !box_->IsLayoutBlock()) {
+      box_->IsLayoutNGOutsideListMarker() || !box_->IsLayoutBlock()) {
     text_autosizer_ = nullptr;
     return;
   }

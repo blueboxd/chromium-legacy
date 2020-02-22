@@ -139,7 +139,7 @@ class CORE_EXPORT NGPhysicalFragment
     return IsCSSBox() && layout_object_->IsAnonymousBlock();
   }
   bool IsListMarker() const {
-    return IsCSSBox() && layout_object_->IsLayoutNGListMarker();
+    return IsCSSBox() && layout_object_->IsLayoutNGOutsideListMarker();
   }
 
   // Return true if this fragment is a container established by a fieldset

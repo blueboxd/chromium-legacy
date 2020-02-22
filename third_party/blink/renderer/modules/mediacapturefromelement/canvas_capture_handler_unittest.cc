@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -79,14 +80,17 @@ class CanvasCaptureHandlerTest
   void OnRunning(bool state) { DoOnRunning(state); }
 
   // Verify returned frames.
-  static sk_sp<SkImage> GenerateTestImage(bool opaque, int width, int height) {
+  static scoped_refptr<StaticBitmapImage> GenerateTestImage(bool opaque,
+                                                            int width,
+                                                            int height) {
     SkImageInfo info = SkImageInfo::MakeN32(
         width, height, opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
         SkColorSpace::MakeSRGB());
     SkBitmap testBitmap;
     testBitmap.allocPixels(info);
     testBitmap.eraseARGB(opaque ? 255 : kTestAlphaValue, 30, 60, 200);
-    return SkImage::MakeFromBitmap(testBitmap);
+    return UnacceleratedStaticBitmapImage::Create(
+        SkImage::MakeFromBitmap(testBitmap));
   }
 
   void OnVerifyDeliveredFrame(bool opaque,

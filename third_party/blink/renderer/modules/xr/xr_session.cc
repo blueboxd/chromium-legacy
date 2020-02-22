@@ -1638,7 +1638,7 @@ void XRSession::ProcessInputSourceEvents(
         input_sources_->GetWithSourceId(input_state->source_id);
     // The input source might not be in input_sources_ if it was created hidden.
     if (input_source) {
-      input_source->UpdateSelectState(input_state);
+      input_source->UpdateButtonStates(input_state);
     }
   }
 }

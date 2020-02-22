@@ -1639,7 +1639,7 @@
     {
     "name": "enable-paint-holding",
     "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-parallel-downloading",

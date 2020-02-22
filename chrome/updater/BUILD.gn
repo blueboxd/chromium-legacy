@@ -28,11 +28,11 @@ group("updater") {
 # Conditional build is needed, otherwise the analyze script on Linux
 # requires all targets and it is going to include the targets below.
 if (is_win || is_mac) {
-  source_set("common") {
+  source_set("base") {
     sources = [
       "action_handler.h",
-      "configurator.cc",
-      "configurator.h",
+      "constants.cc",
+      "constants.h",
       "crash_client.cc",
       "crash_client.h",
       "crash_reporter.cc",
@@ -48,28 +48,17 @@ if (is_win || is_mac) {
       "registration_data.h",
       "unzipper.cc",
       "unzipper.h",
-      "update_apps.cc",
-      "update_apps.h",
-      "update_service_in_process.cc",
-      "update_service_in_process.h",
-      "updater.cc",
-      "updater.h",
-      "updater_constants.cc",
-      "updater_constants.h",
+      "update_service.h",
       "util.cc",
       "util.h",
     ]
 
     deps = [
-      ":update_service",
       ":version_header",
       "//base",
-      "//chrome/updater/server",
-      "//components/crash/core/common:crash_key",
       "//components/crx_file",
       "//components/prefs",
       "//components/update_client",
-      "//components/version_info",
       "//courgette:bsdiff",
       "//courgette:courgette_lib",
       "//third_party/crashpad/crashpad/client",
@@ -77,23 +66,42 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
+  }
+
+  source_set("lib") {
+    sources = [
+      "configurator.cc",
+      "configurator.h",
+      "update_apps.cc",
+      "update_apps.h",
+      "update_service_in_process.cc",
+      "update_service_in_process.h",
+      "updater.cc",
+      "updater.h",
+    ]
+
+    deps = [
+      ":base",
+      ":version_header",
+      "//base",
+      "//chrome/updater/server",
+      "//components/crash/core/common:crash_key",
+      "//components/prefs",
+      "//components/update_client",
+      "//components/version_info",
+      "//url",
+    ]
 
     if (is_win) {
-      deps += [ "//chrome/updater/server/win" ]
+      deps += [ "//chrome/updater/win:lib" ]
     }
 
     if (is_mac) {
       deps += [
         "//chrome/updater/mac:network_fetcher_sources",
-        "//chrome/updater/server/mac",
+        "//chrome/updater/mac:updater_setup_sources",
       ]
     }
-  }
-
-  source_set("update_service") {
-    sources = [ "update_service.h" ]
-
-    deps = [ "//base" ]
   }
 
   process_version("version_header") {
@@ -125,7 +133,7 @@ if (is_win || is_mac) {
     ]
 
     deps = [
-      ":common",
+      ":lib",
       ":updater",
       ":version_header",
       "//base",

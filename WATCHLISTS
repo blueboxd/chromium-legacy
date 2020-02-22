@@ -2081,7 +2081,7 @@
     'arc_video_accelerator': ['hiroh+watch@chromium.org'],
     'ash': ['kalyan.kondapally@intel.com',
             'sadrul@chromium.org'],
-    'assistant': ['croissant-eng+reviews@google.com'],
+    'assistant': ['croissant-eng+reviews@chromium.org'],
     'audio_service': ['marinaciocea+watch@chromium.org',
                       'olka+watch@chromium.org'],
     'aura': ['kalyan.kondapally@intel.com',

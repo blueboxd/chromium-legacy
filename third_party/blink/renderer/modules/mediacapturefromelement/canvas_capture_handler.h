@@ -28,6 +28,7 @@ class SkImage;
 namespace blink {
 
 class LocalFrame;
+class StaticBitmapImage;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 
@@ -52,7 +53,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       blink::WebMediaStreamTrack* track);
 
-  void SendNewFrame(sk_sp<SkImage> image,
+  void SendNewFrame(scoped_refptr<StaticBitmapImage> image,
                     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
                         context_provider);
   bool NeedsNewFrame() const;
@@ -79,27 +80,23 @@ class MODULES_EXPORT CanvasCaptureHandler {
       blink::WebMediaStreamTrack* track);
 
   // Helper functions to read pixel content.
-  void ReadARGBPixelsSync(sk_sp<SkImage> image);
+  void ReadARGBPixelsSync(scoped_refptr<StaticBitmapImage> image);
   void ReadARGBPixelsAsync(
-      sk_sp<SkImage> image,
+      scoped_refptr<StaticBitmapImage> image,
       blink::WebGraphicsContext3DProvider* context_provider);
   void ReadYUVPixelsAsync(
-      sk_sp<SkImage> image,
+      scoped_refptr<StaticBitmapImage> image,
       base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
           context_provider);
-  void OnARGBPixelsReadAsync(sk_sp<SkImage> image,
+  void OnARGBPixelsReadAsync(scoped_refptr<StaticBitmapImage> image,
                              scoped_refptr<media::VideoFrame> temp_argb_frame,
                              base::TimeTicks this_frame_ticks,
                              bool flip,
                              bool success);
-  void OnYUVPixelsReadAsync(
-      sk_sp<SkImage> image,
-      GLuint copy_texture,
-      base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
-          context_provider,
-      scoped_refptr<media::VideoFrame> yuv_frame,
-      base::TimeTicks this_frame_ticks,
-      bool success);
+  void OnYUVPixelsReadAsync(scoped_refptr<media::VideoFrame> yuv_frame,
+                            base::TimeTicks this_frame_ticks,
+                            bool success);
+  void OnReleaseMailbox(scoped_refptr<StaticBitmapImage> image);
 
   scoped_refptr<media::VideoFrame> ConvertToYUVFrame(
       bool is_opaque,

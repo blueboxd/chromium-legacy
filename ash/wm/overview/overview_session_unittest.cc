@@ -4431,6 +4431,57 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 }
 
+// Tests using Alt+[ on a left snapped window, and Alt+] on a right snapped
+// window.
+TEST_P(SplitViewOverviewSessionTest, AltSquareBracketOnSameSideSnappedWindow) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  const auto test_unsnapping_window1 = [this,
+                                        &window1](WMEventType event_type) {
+    wm::ActivateWindow(window1.get());
+    WindowState* window1_state = WindowState::Get(window1.get());
+    const WMEvent event(event_type);
+    window1_state->OnWMEvent(&event);
+    EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+    EXPECT_EQ(WindowStateType::kMaximized, window1_state->GetStateType());
+    EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+    EXPECT_FALSE(InOverviewSession());
+  };
+  // Test Alt+[ with active window snapped on left and overview on right.
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_LEFT);
+  // Test Alt+] with active window snapped on right and overview on left.
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_RIGHT);
+  // Test Alt+[ with active window snapped on left and other window snapped on
+  // right, if the left window is the default snapped window.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_LEFT);
+  // Test Alt+[ with active window snapped on left and other window snapped on
+  // right, if the right window is the default snapped window.
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_LEFT);
+  // Test Alt+] with active window snapped on right and other window snapped on
+  // left, if the left window is the default snapped window.
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_RIGHT);
+  // Test Alt+] with active window snapped on right and other window snapped on
+  // left, if the right window is the default snapped window.
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  test_unsnapping_window1(WM_EVENT_CYCLE_SNAP_RIGHT);
+}
+
 // Test the overview window drag functionalities when screen rotates.
 TEST_P(SplitViewOverviewSessionTest, SplitViewRotationTest) {
   UpdateDisplay("807x407");
@@ -6139,6 +6190,69 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
   overview_session()->CompleteDrag(overview_item, drag_point);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
+}
+
+// Tests that Alt+[ and Alt+] do not start overview.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       AltSquareBracketNotStartOverview) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  wm::ActivateWindow(window1.get());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
+  // Alt+[
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_LEFT);
+  WindowState* window1_state = WindowState::Get(window1.get());
+  window1_state->OnWMEvent(&alt_left_square_bracket);
+  EXPECT_EQ(WindowStateType::kLeftSnapped, window1_state->GetStateType());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
+  // Alt+]
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_RIGHT);
+  window1_state->OnWMEvent(&alt_right_square_bracket);
+  EXPECT_EQ(WindowStateType::kRightSnapped, window1_state->GetStateType());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
+}
+
+// Tests using Alt+[ on a left split view window.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       AltLeftSquareBracketOnLeftSplitViewWindow) {
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  WindowState* snapped_window_state = WindowState::Get(snapped_window.get());
+  EXPECT_EQ(WindowStateType::kLeftSnapped,
+            snapped_window_state->GetStateType());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(InOverviewSession());
+  const WMEvent alt_left_square_bracket(WM_EVENT_CYCLE_SNAP_LEFT);
+  snapped_window_state->OnWMEvent(&alt_left_square_bracket);
+  EXPECT_EQ(WindowStateType::kNormal, snapped_window_state->GetStateType());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
+}
+
+// Tests using Alt+] on a right split view window.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       AltRightSquareBracketOnRightSplitViewWindow) {
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::RIGHT);
+  WindowState* snapped_window_state = WindowState::Get(snapped_window.get());
+  EXPECT_EQ(WindowStateType::kRightSnapped,
+            snapped_window_state->GetStateType());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(InOverviewSession());
+  const WMEvent alt_right_square_bracket(WM_EVENT_CYCLE_SNAP_RIGHT);
+  snapped_window_state->OnWMEvent(&alt_right_square_bracket);
+  EXPECT_EQ(WindowStateType::kNormal, snapped_window_state->GetStateType());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
 }
 
 using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =

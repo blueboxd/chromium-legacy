@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"

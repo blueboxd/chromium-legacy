@@ -32,6 +32,11 @@ void TestCreditCardFIDOAuthenticator::MakeCredential(
   CreditCardFIDOAuthenticator::MakeCredential(std::move(creation_options));
 }
 
+void TestCreditCardFIDOAuthenticator::OptOut() {
+  opt_out_called_ = true;
+  CreditCardFIDOAuthenticator::OptOut();
+}
+
 // static
 void TestCreditCardFIDOAuthenticator::GetAssertion(
     CreditCardFIDOAuthenticator* fido_authenticator,

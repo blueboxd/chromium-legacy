@@ -142,23 +142,43 @@ bool CreditCardFIDOAuthenticator::IsUserOptedIn() {
              autofill_client_->GetPrefs());
 }
 
-void CreditCardFIDOAuthenticator::SyncUserOptIn(
+UserOptInIntention CreditCardFIDOAuthenticator::GetUserOptInIntention(
     payments::PaymentsClient::UnmaskDetails& unmask_details) {
+  // This local pref can be affected by the user toggling on the settings page.
+  // And payments might not update in time. We derive user opt in/out intention
+  // when we see the mismatch.
   user_is_opted_in_ = IsUserOptedIn();
+  bool user_local_opt_in_status = IsUserOptedIn();
 
-  // If payments is offering to opt-in, then that means user is not opted in.
-  if (unmask_details.offer_fido_opt_in) {
+  // If payments is offering to opt-in, then that means user is not opted in
+  // from Payments. Only take action if the local pref mismatches.
+  if (unmask_details.offer_fido_opt_in && user_local_opt_in_status) {
+#if defined(OS_ANDROID)
+    // For Android, if local pref says user is opted in while payments not, it
+    // denotes that user intended to opt in from settings page. We will opt user
+    // in and hide the checkbox in the next checkout flow.
+    // For intent to opt in, we also update |user_is_opted_in_| here so that
+    // |current_flow_| can be correctly set to OPT_IN_WITH_CHALLENGE_FLOW when
+    // calling Authorize() later.
     user_is_opted_in_ = false;
+    return UserOptInIntention::kIntentToOptIn;
+#else
+    // For desktop, just update the local pref, since the desktop settings page
+    // attempts opt-in at time of toggling the switch, unlike mobile.
+    user_is_opted_in_ = false;
+    UpdateUserPref();
+#endif
   }
 
-  // If payments is requesting a FIDO auth, then that means user is opted in.
+  // If payments is requesting a FIDO auth, then that means user is opted in
+  // from payments. And if local pref says user is opted out, it denotes that
+  // user intended to opt out.
   if (unmask_details.unmask_auth_method ==
-      AutofillClient::UnmaskAuthMethod::FIDO) {
-    user_is_opted_in_ = true;
+          AutofillClient::UnmaskAuthMethod::FIDO &&
+      !user_local_opt_in_status) {
+    return UserOptInIntention::kIntentToOptOut;
   }
-
-  // Update pref setting if needed.
-  UpdateUserPref();
+  return UserOptInIntention::kUnspecified;
 }
 
 void CreditCardFIDOAuthenticator::CancelVerification() {

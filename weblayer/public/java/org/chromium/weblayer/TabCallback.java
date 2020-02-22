@@ -24,4 +24,10 @@ public abstract class TabCallback {
      * reclaim memory.
      */
     public void onRenderProcessGone() {}
+
+    /**
+     * Triggered when a context menu should be displayed.
+     * Added in M82.
+     */
+    public void showContextMenu(ContextMenuParams params) {}
 }

@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/args.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -51,13 +52,12 @@ declare_args() {
   # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
   #
   # TODO(pcc): Remove this flag if/when CFI is enabled in all official builds.
-  is_cfi = target_os == "linux" && !is_chromeos && target_cpu == "x64" &&
-           is_official_build
-
-  # Enable checks for bad casts: derived cast and unrelated cast.
-  # TODO(krasin): remove this, when we're ready to add these checks by default.
-  # https://crbug.com/626794
-  use_cfi_cast = false
+  #
+  # Disable this on linux-chromeos to avoid using ThinLTO there;
+  # crbug.com/1033839. Similarly, don't use this on ARC builds.
+  is_cfi = is_official_build &&
+           ((target_os == "linux" && !is_chromeos && target_cpu == "x64") ||
+            (target_os == "chromeos" && is_chromeos_device && !is_android))
 
   # Enable checks for indirect function calls via a function pointer.
   # TODO(pcc): remove this when we're ready to add these checks by default.
@@ -111,6 +111,13 @@ declare_args() {
 
   # When true, seed corpora archives are built.
   archive_seed_corpus = true
+}
+
+declare_args() {
+  # Enable checks for bad casts: derived cast and unrelated cast.
+  # TODO(krasin): remove this, when we're ready to add these checks by default.
+  # https://crbug.com/626794
+  use_cfi_cast = is_cfi && target_os == "chromeos"
 }
 
 # Disable sanitizers for non-target toolchains.

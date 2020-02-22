@@ -57,6 +57,8 @@ component("fido") {
     "cable/fido_cable_discovery.h",
     "cable/fido_cable_handshake_handler.cc",
     "cable/fido_cable_handshake_handler.h",
+    "cable/noise.cc",
+    "cable/noise.h",
     "credential_management.cc",
     "credential_management.h",
     "credential_management_handler.cc",
@@ -250,9 +252,7 @@ component("fido") {
 
 if (is_chromeos) {
   proto_library("u2f_proto") {
-    sources = [
-      "//third_party/cros_system_api/dbus/u2f/u2f_interface.proto",
-    ]
+    sources = [ "//third_party/cros_system_api/dbus/u2f/u2f_interface.proto" ]
 
     proto_out_dir = "chromeos/dbus/u2f"
   }

@@ -522,7 +522,10 @@ if package_exists libinput10; then
   lib_list="${lib_list} libinput10"
 fi
 if package_exists libinput-dev; then
-  dev_list="${dev_list} libinput-dev"
+    dev_list="${dev_list} libinput-dev"
+fi
+if package_exists snapcraft; then
+    dev_list="${dev_list} snapcraft"
 fi
 
 # Cross-toolchain strip is needed for building the sysroots.

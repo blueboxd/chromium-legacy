@@ -211,7 +211,7 @@ const base::Feature kForcedColors{"ForcedColors",
 // to the GPU process.
 const base::Feature kForwardMemoryPressureEventsToGpuProcess {
   "ForwardMemoryPressureEventsToGpuProcess",
-#if defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

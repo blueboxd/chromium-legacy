@@ -102,15 +102,19 @@ group("telemetry_chrome_test_without_chrome") {
     "//components/crash/content/tools/generate_breakpad_symbols.py",
   ]
   data_deps = [
+    "//third_party/breakpad:dump_syms",
     "//third_party/catapult:telemetry_chrome_test_support",
     "//tools/metrics:metrics_python_tests",
   ]
-  if (is_chromeos) {
+
+  if (!is_win) {
     data_deps += [
-      "//third_party/breakpad:dump_syms",
+      # These explicitly not defined for Windows builds in Breakpad.
+      "//third_party/breakpad:minidump_dump",
       "//third_party/breakpad:minidump_stackwalk",
     ]
   }
+
   if (is_android) {
     data += [
       # TODO(httpss://crbug.com/833808): Remove this once bots always set
@@ -123,9 +127,6 @@ group("telemetry_chrome_test_without_chrome") {
       "//build/android:devil_chromium_py",
       "//build/android:stack_tools",
       "//chrome/android/webapk/shell_apk:maps_go_webapk",
-      "//third_party/breakpad:dump_syms",
-      "//third_party/breakpad:minidump_dump",
-      "//third_party/breakpad:minidump_stackwalk",
     ]
   } else {
     data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]

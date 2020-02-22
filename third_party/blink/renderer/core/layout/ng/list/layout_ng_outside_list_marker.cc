@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
 
-LayoutNGListMarker::LayoutNGListMarker(Element* element)
+LayoutNGOutsideListMarker::LayoutNGOutsideListMarker(Element* element)
     : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {}
 
-bool LayoutNGListMarker::IsOfType(LayoutObjectType type) const {
-  return type == kLayoutObjectNGListMarker ||
+bool LayoutNGOutsideListMarker::IsOfType(LayoutObjectType type) const {
+  return type == kLayoutObjectNGOutsideListMarker ||
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);
 }
 
-void LayoutNGListMarker::WillCollectInlines() {
+void LayoutNGOutsideListMarker::WillCollectInlines() {
   list_marker_.UpdateMarkerTextIfNeeded(*this);
 }
 
-bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
+bool LayoutNGOutsideListMarker::NeedsOccupyWholeLine() const {
   if (!GetDocument().InQuirksMode())
     return false;
 
@@ -33,7 +33,7 @@ bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
   return false;
 }
 
-PositionWithAffinity LayoutNGListMarker::PositionForPoint(
+PositionWithAffinity LayoutNGOutsideListMarker::PositionForPoint(
     const PhysicalOffset&) const {
   return CreatePositionWithAffinity(0);
 }

@@ -68,7 +68,8 @@ class CC_EXPORT Viewport {
   void ScrollByInnerFirst(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, bubbling the delta between the inner and outer
-  // viewport. Only animates either of the two viewports.
+  // viewport. Only animates either of the two viewports. Returns the amount of
+  // delta that was consumed.
   gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta,
                                 base::TimeDelta delayed_by);
 

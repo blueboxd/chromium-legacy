@@ -391,6 +391,33 @@ template void AssistantTestMixin::ExpectResult<bool>(
     bool expected_value,
     base::RepeatingCallback<bool()> value_callback);
 
+template <typename T>
+T AssistantTestMixin::SyncCall(
+    base::OnceCallback<void(base::OnceCallback<void(T)>)> func) {
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE,
+                                                     kDefaultWaitTimeout);
+
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  T result;
+  auto callback = base::BindOnce(
+      [](T* result_ptr, base::OnceClosure quit_closure, T result_value) {
+        *result_ptr = result_value;
+        std::move(quit_closure).Run();
+      },
+      &result, run_loop.QuitClosure());
+
+  std::move(func).Run(std::move(callback));
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run())
+      << "Failed waiting for async callback to return.\n";
+
+  return result;
+}
+
+template base::Optional<double> AssistantTestMixin::SyncCall(
+    base::OnceCallback<void(base::OnceCallback<void(base::Optional<double>)>)>
+        func);
+
 void AssistantTestMixin::ExpectCardResponse(
     const std::string& expected_response,
     base::TimeDelta wait_timeout) {

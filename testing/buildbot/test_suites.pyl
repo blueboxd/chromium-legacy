@@ -3231,6 +3231,73 @@
       },
     },
 
+    'swangle_gtests': {
+      'angle_deqp_egl_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'angle_deqp_gles2_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'angle_deqp_gles31_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'angle_deqp_gles3_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+        'swarming': {
+          'shards': 29,
+        },
+      },
+      'angle_deqp_khr_gles2_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+      },
+      'angle_deqp_khr_gles3_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-swiftshader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+      },
+      'angle_end2end_tests': {
+        'args': [
+          '--gtest_filter=\*Vulkan_SwiftShader',
+          '--test-launcher-batch-limit=512',
+          '--test-launcher-retry-limit=0',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+
     'system_webview_shell_instrumentation_tests': {
       'system_webview_shell_layout_test_apk': {},
     },

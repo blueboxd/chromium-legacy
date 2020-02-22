@@ -16,7 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/updater/updater_constants.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/user_info.h"
 

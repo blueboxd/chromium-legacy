@@ -409,10 +409,36 @@ void PageHandler::Reload(Maybe<bool> bypassCache,
                                        false);
 }
 
+static network::mojom::ReferrerPolicy ParsePolicyFromString(
+    const std::string& policy) {
+  if (policy == Page::ReferrerPolicyEnum::NoReferrer)
+    return network::mojom::ReferrerPolicy::kNever;
+  if (policy == Page::ReferrerPolicyEnum::NoReferrerWhenDowngrade)
+    return network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
+  if (policy == Page::ReferrerPolicyEnum::Origin)
+    return network::mojom::ReferrerPolicy::kOrigin;
+  if (policy == Page::ReferrerPolicyEnum::OriginWhenCrossOrigin)
+    return network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin;
+  if (policy == Page::ReferrerPolicyEnum::SameOrigin)
+    return network::mojom::ReferrerPolicy::kSameOrigin;
+  if (policy == Page::ReferrerPolicyEnum::StrictOrigin)
+    return network::mojom::ReferrerPolicy::kStrictOrigin;
+  if (policy == Page::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin) {
+    return network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+  }
+  if (policy == Page::ReferrerPolicyEnum::UnsafeUrl)
+    return network::mojom::ReferrerPolicy::kAlways;
+
+  DCHECK(policy.empty());
+  return network::mojom::ReferrerPolicy::kDefault;
+}
+
 void PageHandler::Navigate(const std::string& url,
                            Maybe<std::string> referrer,
                            Maybe<std::string> maybe_transition_type,
                            Maybe<std::string> frame_id,
+                           Maybe<std::string> referrer_policy,
                            std::unique_ptr<NavigateCallback> callback) {
   GURL gurl(url);
   if (!gurl.is_valid()) {
@@ -476,8 +502,9 @@ void PageHandler::Navigate(const std::string& url,
   }
 
   NavigationController::LoadURLParams params(gurl);
-  params.referrer = Referrer(GURL(referrer.fromMaybe("")),
-                             network::mojom::ReferrerPolicy::kDefault);
+  network::mojom::ReferrerPolicy policy =
+      ParsePolicyFromString(referrer_policy.fromMaybe(""));
+  params.referrer = Referrer(GURL(referrer.fromMaybe("")), policy);
   params.transition_type = type;
   params.frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   frame_tree_node->navigator()->GetController()->LoadURLWithParams(params);

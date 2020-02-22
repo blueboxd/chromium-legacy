@@ -86,7 +86,12 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   void OnSelectStart();
   void OnSelectEnd();
   void OnSelect();
-  void UpdateSelectState(
+
+  void OnSqueezeStart();
+  void OnSqueezeEnd();
+  void OnSqueeze();
+
+  void UpdateButtonStates(
       const device::mojom::blink::XRInputSourceStatePtr& state);
   void OnRemoved();
 
@@ -108,6 +113,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     int16_t active_frame_id = -1;
     bool primary_input_pressed = false;
     bool selection_cancelled = false;
+    bool primary_squeeze_pressed = false;
+    bool squeezing_cancelled = false;
     bool xr_select_events_suppressed = false;
     bool is_visible = true;
     const uint32_t source_id;

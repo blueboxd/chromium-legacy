@@ -572,6 +572,12 @@
       'containment_type': 'AUTO',
     },
   },
+  'timeout_15m': {
+    'swarming': {
+      'hard_timeout': 900,
+      'io_timeout': 900,
+    },
+  },
   'walleye': {
     # Pixel 2
     'swarming': {

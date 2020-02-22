@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
@@ -208,16 +207,15 @@ public class AutofillAssistantFacade {
         }
 
         // The tab is not yet available. We need to register as listener and wait for it.
-        activity.getActivityTabProvider().addObserverAndTrigger(
-                new ActivityTabProvider.HintlessActivityTabObserver() {
-                    @Override
-                    public void onActivityTabChanged(Tab tab) {
-                        if (tab == null) return;
-                        activity.getActivityTabProvider().removeObserver(this);
-                        assert tab.getWebContents() != null;
-                        callback.onResult(tab);
-                    }
-                });
+        activity.getActivityTabProvider().addObserver(new Callback<Tab>() {
+            @Override
+            public void onResult(Tab tab) {
+                if (tab == null) return;
+                activity.getActivityTabProvider().removeObserver(this);
+                assert tab.getWebContents() != null;
+                callback.onResult(tab);
+            }
+        });
     }
 
     public static boolean isAutofillAssistantEnabled(Intent intent) {

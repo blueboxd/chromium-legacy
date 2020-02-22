@@ -53,9 +53,6 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   // during construction.
   void Initialize();
 
-  // Update the alignment of the widget and tray views.
-  void UpdateAfterShelfAlignmentChange();
-
   // Called by the client when the login status changes. Caches login_status
   // and calls UpdateAfterLoginStatusChange for the system tray and the web
   // notification tray.

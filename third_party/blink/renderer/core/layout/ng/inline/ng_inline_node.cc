@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -285,7 +284,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       builder->ClearInlineFragment(node);
 
     } else if (node->IsAtomicInlineLevel()) {
-      if (node->IsListMarkerIncludingNG()) {
+      if (node->IsListMarkerIncludingNGOutside()) {
         // LayoutNGListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.

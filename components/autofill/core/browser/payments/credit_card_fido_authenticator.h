@@ -39,6 +39,18 @@ using device::FidoTransportProtocol;
 using device::PublicKeyCredentialDescriptor;
 using device::UserVerificationRequirement;
 
+// Enum denotes user's intention to opt in/out.
+enum class UserOptInIntention {
+  // Unspecified intention. No pref mismatch.
+  kUnspecified = 0,
+  // Only used for Android settings page. Local pref is opted in but Payments
+  // considers the user not opted-in.
+  kIntentToOptIn = 1,
+  // User intends to opt out, happens when user opted out from settings page on
+  // Android, or opt-out call failed on Desktop.
+  kIntentToOptOut = 2,
+};
+
 // Authenticates credit card unmasking through FIDO authentication, using the
 // WebAuthn specification, standardized by the FIDO alliance. The Webauthn
 // specification defines an API to cryptographically bind a server and client,
@@ -97,7 +109,7 @@ class CreditCardFIDOAuthenticator
                  base::Value request_options);
 
   // Opts the user out.
-  void OptOut();
+  virtual void OptOut();
 
   // Invokes callback with true if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
@@ -107,8 +119,10 @@ class CreditCardFIDOAuthenticator
   // Returns true only if the user has opted-in to use WebAuthn for autofill.
   virtual bool IsUserOptedIn();
 
-  // Ensures that local user opt-in pref is in-sync with payments server.
-  void SyncUserOptIn(payments::PaymentsClient::UnmaskDetails& unmask_details);
+  // Return user's opt in/out intention based on unmask detail response and
+  // local pref.
+  UserOptInIntention GetUserOptInIntention(
+      payments::PaymentsClient::UnmaskDetails& unmask_details);
 
   // Cancel the ongoing verification process. Used to reset states in this class
   // and in the FullCardRequest if any.

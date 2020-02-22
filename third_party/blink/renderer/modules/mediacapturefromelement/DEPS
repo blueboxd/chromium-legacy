@@ -8,7 +8,6 @@ include_rules = [
     "+cc/paint/paint_canvas.h",
     "+cc/paint/skia_paint_canvas.h",
     "+components/viz/common",
-    "+gpu/command_buffer/client/gl_helper.h",
     "+gpu/GLES2",
     "+media/base",
     "+media/capture",
@@ -24,5 +23,8 @@ specific_include_rules = {
     ],
     "html_audio_element_capturer_source_unittest.cc" : [
         "+media/audio/null_audio_sink.h",
+    ],
+    "canvas_capture_handler.cc": [
+        "+gpu/command_buffer/client/raster_interface.h",
     ],
 }

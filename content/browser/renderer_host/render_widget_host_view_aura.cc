@@ -2416,9 +2416,13 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
     bool show_virtual_keyboard = true;
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
     show_virtual_keyboard =
         last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
+#elif defined(OS_WIN)
+    show_virtual_keyboard =
+        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH ||
+        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_PEN;
 #endif
 
 #if !defined(OS_WIN)

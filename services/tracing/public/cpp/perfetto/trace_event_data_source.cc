@@ -981,13 +981,14 @@ void TraceEventDataSource::OnMetricsSampleCallback(
     base::HistogramBase::Sample sample) {
   // TODO(oysteine): Write an interned histogram name during local dev tracing
   // when we're less space constrained.
-  TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("histogram_samples"), "HistogramSample",
-              [&](perfetto::EventContext ctx) {
-                perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
-                    ctx.event()->set_chrome_histogram_sample();
-                new_sample->set_name_hash(name_hash);
-                new_sample->set_sample(sample);
-              });
+  TRACE_EVENT_INSTANT(
+      TRACE_DISABLED_BY_DEFAULT("histogram_samples"), "HistogramSample",
+      TRACE_EVENT_SCOPE_THREAD, [&](perfetto::EventContext ctx) {
+        perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
+            ctx.event()->set_chrome_histogram_sample();
+        new_sample->set_name_hash(name_hash);
+        new_sample->set_sample(sample);
+      });
 }
 
 void TraceEventDataSource::OnUserActionSampleCallback(

@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -661,8 +661,8 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
                                                   baseline_type_);
   }
 
-  container_builder_.SetUnpositionedListMarker(
-      NGUnpositionedListMarker(ToLayoutNGListMarker(item.GetLayoutObject())));
+  container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker(
+      ToLayoutNGOutsideListMarker(item.GetLayoutObject())));
 }
 
 // Justify the line. This changes the size of items by adding spacing.

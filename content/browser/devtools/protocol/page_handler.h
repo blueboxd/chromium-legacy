@@ -107,6 +107,7 @@ class PageHandler : public DevToolsDomainHandler,
                 Maybe<std::string> referrer,
                 Maybe<std::string> transition_type,
                 Maybe<std::string> frame_id,
+                Maybe<std::string> referrer_policy,
                 std::unique_ptr<NavigateCallback> callback) override;
   Response StopLoading() override;
 

@@ -182,4 +182,5 @@ class LoadingMobileStorySet(story.StorySet):
                   SharedMobilePageState,
                   cache_temperature=temp,
                   traffic_setting=traffic,
-                  tags=page_tags))
+                  tags=page_tags,
+                  perform_final_navigation=True))

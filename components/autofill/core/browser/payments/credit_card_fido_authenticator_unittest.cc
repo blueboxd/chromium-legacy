@@ -273,30 +273,67 @@ TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedIn_True) {
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 }
 
-TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptIn_OnOfferedOptIn) {
+#if defined(OS_ANDROID)
+TEST_F(CreditCardFIDOAuthenticatorTest,
+       GetUserOptInIntention_IntentToOptIn_Android) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardAuthentication);
+  // If payments is offering to opt-in, then that means user is not opted in
+  // from payments.
+  payments::PaymentsClient::UnmaskDetails unmask_details;
+  unmask_details.offer_fido_opt_in = true;
+  // Set the local preference to be enabled, which denotes user manually opted
+  // in from settings page, and Payments did not update the status in time.
   SetUserOptInPreference(true);
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 
-  // If payments is offering to opt-in, then that means user is not opted in.
-  payments::PaymentsClient::UnmaskDetails unmask_details;
-  unmask_details.offer_fido_opt_in = true;
-  fido_authenticator_->SyncUserOptIn(unmask_details);
-  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+  EXPECT_EQ(fido_authenticator_->GetUserOptInIntention(unmask_details),
+            UserOptInIntention::kIntentToOptIn);
+  // On Android, the local pref is not consistent with payments until opt-in
+  // succeeds, so it is unnecessary to check that IsUserOptedIn() is true here,
+  // since it will not have updated yet.
 }
-
-TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptIn_OnFIDOAuthRequest) {
+#else
+TEST_F(CreditCardFIDOAuthenticatorTest,
+       GetUserOptInIntention_IntentToOptIn_Desktop) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardAuthentication);
+  // If payments is offering to opt-in, then that means user is not opted in
+  // from payments.
+  payments::PaymentsClient::UnmaskDetails unmask_details;
+  unmask_details.offer_fido_opt_in = true;
+  // Set the local preference to be enabled, which denotes user manually opted
+  // in from settings page and Payments did not update the status in time, or
+  // something updated on the server side which caused Chrome to be out of sync.
+  SetUserOptInPreference(true);
+  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
+
+  // We won't return user intent to opt in for Desktop.
+  EXPECT_EQ(fido_authenticator_->GetUserOptInIntention(unmask_details),
+            UserOptInIntention::kUnspecified);
+  // We update mismatched local pref for Desktop in order to be consistent with
+  // payments.
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+}
+#endif
+
+TEST_F(CreditCardFIDOAuthenticatorTest, GetUserOptInIntention_IntentToOptOut) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  // If payments is requesting a FIDO auth, then that means user is opted in
+  // from payments.
+  payments::PaymentsClient::UnmaskDetails unmask_details;
+  unmask_details.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
+  // Set the local preference to be disabled, which denotes user manually opted
+  // out from settings page, and Payments did not update the status in time.
   SetUserOptInPreference(false);
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
 
-  // If payments is requesting a FIDO auth, then that means user is opted in.
-  payments::PaymentsClient::UnmaskDetails unmask_details;
-  unmask_details.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
-  fido_authenticator_->SyncUserOptIn(unmask_details);
-  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
+  EXPECT_EQ(fido_authenticator_->GetUserOptInIntention(unmask_details),
+            UserOptInIntention::kIntentToOptOut);
+  // The local pref is not consistent with payments until opt-out succeeds, so
+  // it is unnecessary to check that IsUserOptedIn() is false here, since it
+  // will not have updated yet.
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiable_False) {

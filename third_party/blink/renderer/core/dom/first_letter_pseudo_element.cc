@@ -143,7 +143,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (first_letter_text_layout_object
-                   ->IsListMarkerIncludingNGInside()) {
+                   ->IsListMarkerIncludingNGOutsideAndInside()) {
       // The list item marker may have out-of-flow siblings inside an anonymous
       // block. Skip them to make sure we leave the anonymous block before
       // continuing looking for the first letter text.

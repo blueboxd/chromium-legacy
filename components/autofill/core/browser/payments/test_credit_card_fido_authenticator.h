@@ -31,6 +31,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
       PublicKeyCredentialRequestOptionsPtr request_options) override;
   void MakeCredential(
       PublicKeyCredentialCreationOptionsPtr creation_options) override;
+  void OptOut() override;
 
   // Invokes fido_authenticator->OnDidGetAssertion().
   static void GetAssertion(CreditCardFIDOAuthenticator* fido_authenticator,
@@ -52,6 +53,8 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   // CreditCardFIDOAuthenticator:
   void IsUserVerifiable(base::OnceCallback<void(bool)> callback) override;
 
+  bool IsOptOutCalled() { return opt_out_called_; }
+
  private:
   friend class AutofillManagerTest;
   friend class CreditCardAccessManagerTest;
@@ -59,6 +62,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   PublicKeyCredentialRequestOptionsPtr request_options_;
   PublicKeyCredentialCreationOptionsPtr creation_options_;
   bool is_user_verifiable_ = false;
+  bool opt_out_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardFIDOAuthenticator);
 };

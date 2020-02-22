@@ -22,7 +22,7 @@
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/work_item_list.h"
-#include "chrome/updater/updater_constants.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"

@@ -3633,7 +3633,7 @@ crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.htm
 
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
-crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
+crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure Timeout ]
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
@@ -7559,6 +7559,9 @@ crbug.com/1053903 [ Mac ] external/wpt/webxr/events_referenceSpace_reset_inline.
 crbug.com/1053903 [ Linux ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure Timeout ]
 crbug.com/1053903 [ Win ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure Timeout ]
 
+# Sheriff 2020-02-21
+crbug.com/1054977 [ Mac ] media/video-controls-rendering.html [ Pass Failure ]
+
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/agents-enable-disable.js [ Skip ]
 crbug.com/1006759 http/tests/devtools/search/search-in-non-existing-resource.js [ Skip ]
@@ -7569,3 +7572,5 @@ crbug.com/1050549 http/tests/devtools/unit/string-util.js [ Skip ]
 
 # Sheriff 2020-02-21
 crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.html [ Pass Failure Timeout ]
+crbug.com/1055006 [ Linux ] external/wpt/std-toast/methods.html [ Pass Failure Timeout ]
+crbug.com/1055006 [ Linux ] external/wpt/std-toast/options.html [ Pass Failure Timeout ]

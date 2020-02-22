@@ -60,8 +60,6 @@ namespace {
 // Avoid reporting any throughput metric for sequences that do not have a
 // sufficient number of frames.
 constexpr int kMinFramesForThroughputMetric = 100;
-// Used to avoid reporting throughput when it underflows.
-constexpr unsigned kMaxFramesForThroughputMetric = 6000;
 
 constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
@@ -968,9 +966,7 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
           GetFrameSequenceLengthHistogramName(sequence_type), 1, 1000, 50,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 
-  DCHECK_LT(data.frames_expected, kMaxFramesForThroughputMetric);
-  if (data.frames_expected < kMinFramesForThroughputMetric ||
-      data.frames_expected > kMaxFramesForThroughputMetric)
+  if (data.frames_expected < kMinFramesForThroughputMetric)
     return base::nullopt;
 
   // Throughput means the percent of frames that was expected to show on the

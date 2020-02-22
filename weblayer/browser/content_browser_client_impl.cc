@@ -48,6 +48,7 @@
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/browser/web_contents_view_delegate_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
@@ -207,7 +208,7 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
 content::WebContentsViewDelegate*
 ContentBrowserClientImpl::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
-  return nullptr;
+  return new WebContentsViewDelegateImpl(web_contents);
 }
 
 content::DevToolsManagerDelegate*

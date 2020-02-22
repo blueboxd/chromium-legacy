@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/updater/updater_constants.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/ui/ui_ctls.h"

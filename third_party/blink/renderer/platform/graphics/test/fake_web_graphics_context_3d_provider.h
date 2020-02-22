@@ -36,7 +36,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
     // TODO(nazabris, crbug.com/1017508) Use RasterImplementation after
     // all references to GLES2Interface have been removed.
     raster_interface_ =
-        std::make_unique<gpu::raster::RasterImplementationGLES>(gl_);
+        std::make_unique<gpu::raster::RasterImplementationGLES>(gl_, nullptr);
 
     // enable all gpu features.
     for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;

@@ -180,6 +180,15 @@ struct XRInputSourceState {
   // primary_input_pressed = true;
   bool primary_input_clicked;
 
+  // Describes the current state of the primary squeeze.
+  bool primary_squeeze_pressed;
+
+  // Indicates if the input's primary sequeeze has been released (clicked) since
+  // the last report. May indicate that the button was pressed and released in
+  // the space of a single frame, so it may not have been preceeded by a
+  // primary_squeeze_pressed = true;
+  bool primary_squeeze_clicked;
+
   // Contains information about advanced input state such as additional buttons,
   // triggers, touch sensors, joysticks, touchpads, and vibration actuators. If
   // the controller has none of these capabilities, then this field will be

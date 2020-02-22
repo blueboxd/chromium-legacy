@@ -350,7 +350,7 @@ void NGPhysicalFragment::CheckType() const {
         DCHECK(!IsBlockFormattingContextRoot());
         break;
       }
-      if (layout_object_->IsLayoutNGListMarker()) {
+      if (layout_object_->IsLayoutNGOutsideListMarker()) {
         // List marker is an atomic inline if it appears in a line box, or a
         // block box.
         DCHECK(!IsFloating());

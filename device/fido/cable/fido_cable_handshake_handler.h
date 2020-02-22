@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/cable/noise.h"
 #include "device/fido/fido_device.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -95,21 +96,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
       base::span<const uint8_t> response) override;
 
  private:
-  void MixHash(base::span<const uint8_t> in);
-  void MixKey(base::span<const uint8_t> ikm);
-  void MixKeyAndHash(base::span<const uint8_t> ikm);
-  void InitializeKey(base::span<const uint8_t, 32> key);
-  std::vector<uint8_t> Encrypt(base::span<const uint8_t> plaintext);
-  base::Optional<std::vector<uint8_t>> Decrypt(
-      base::span<const uint8_t> ciphertext);
-
   FidoCableDevice* const cable_device_;
+  Noise noise_;
   std::array<uint8_t, 16> eid_;
   std::array<uint8_t, 32> psk_;
-  std::array<uint8_t, 32> chaining_key_;
-  std::array<uint8_t, 32> h_;
-  std::array<uint8_t, 32> symmetric_key_;
-  uint32_t symmetric_nonce_;
+
   base::Optional<std::array<uint8_t, 65>> peer_identity_;
   bssl::UniquePtr<EC_KEY> ephemeral_key_;
   base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>

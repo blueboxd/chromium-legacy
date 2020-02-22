@@ -70,37 +70,48 @@ LoadingPredictor::~LoadingPredictor() {
   DCHECK(shutdown_);
 }
 
-void LoadingPredictor::PrepareForPageLoad(const GURL& url,
-                                          HintOrigin origin,
-                                          bool preconnectable) {
+bool LoadingPredictor::PrepareForPageLoad(
+    const GURL& url,
+    HintOrigin origin,
+    bool preconnectable,
+    base::Optional<PreconnectPrediction> preconnect_prediction) {
   if (shutdown_)
-    return;
+    return true;
 
   if (origin == HintOrigin::OMNIBOX) {
     // Omnibox hints are lightweight and need a special treatment.
     HandleOmniboxHint(url, preconnectable);
-    return;
+    return true;
   }
 
-  if (active_hints_.find(url) != active_hints_.end())
-    return;
-
-  bool has_preconnect_prediction = false;
   PreconnectPrediction prediction;
-  has_preconnect_prediction =
+  bool has_local_preconnect_prediction =
       resource_prefetch_predictor_->PredictPreconnectOrigins(url, &prediction);
-  // Try to preconnect to the |url| even if the predictor has no
-  // prediction.
-  has_preconnect_prediction =
-      AddInitialUrlToPreconnectPrediction(url, &prediction);
+  if (active_hints_.find(url) != active_hints_.end() &&
+      has_local_preconnect_prediction) {
+    // We are currently preconnecting using the local preconnect prediction. Do
+    // not proceed further.
+    return true;
+  }
 
-  if (!has_preconnect_prediction)
-    return;
+  if (preconnect_prediction) {
+    // Overwrite the prediction if we were provided with a non-empty one.
+    prediction = *preconnect_prediction;
+  } else {
+    // Try to preconnect to the |url| even if the predictor has no
+    // prediction.
+    AddInitialUrlToPreconnectPrediction(url, &prediction);
+  }
+
+  // Return early if we do not have any preconnect requests.
+  if (prediction.requests.empty())
+    return false;
 
   ++total_hints_activated_;
   active_hints_.emplace(url, base::TimeTicks::Now());
   if (IsPreconnectAllowed(profile_))
     MaybeAddPreconnect(url, std::move(prediction.requests), origin);
+  return has_local_preconnect_prediction || preconnect_prediction;
 }
 
 void LoadingPredictor::CancelPageLoadHint(const GURL& url) {
@@ -143,14 +154,15 @@ void LoadingPredictor::Shutdown() {
   shutdown_ = true;
 }
 
-void LoadingPredictor::OnNavigationStarted(const NavigationID& navigation_id) {
+bool LoadingPredictor::OnNavigationStarted(const NavigationID& navigation_id) {
   if (shutdown_)
-    return;
+    return true;
 
   loading_data_collector()->RecordStartNavigation(navigation_id);
   CleanupAbandonedHintsAndNavigations(navigation_id);
   active_navigations_.emplace(navigation_id);
-  PrepareForPageLoad(navigation_id.main_frame_url, HintOrigin::NAVIGATION);
+  return PrepareForPageLoad(navigation_id.main_frame_url,
+                            HintOrigin::NAVIGATION);
 }
 
 void LoadingPredictor::OnNavigationFinished(

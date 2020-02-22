@@ -131,24 +131,17 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
   // The animation system only supports running one scroll offset animation.
   // TODO(ymalik): Fix the visible jump seen by instant scrolling one of the
   // viewports.
-  bool will_animate = false;
   if (ShouldAnimateViewport(inner_delta, outer_delta)) {
     scroll_tree().ScrollBy(outer_node, outer_delta, host_impl_->active_tree());
-    will_animate =
-        host_impl_->ScrollAnimationCreate(inner_node, inner_delta, delayed_by);
+    host_impl_->ScrollAnimationCreate(inner_node, inner_delta, delayed_by);
   } else {
     scroll_tree().ScrollBy(inner_node, inner_delta, host_impl_->active_tree());
-    will_animate =
-        host_impl_->ScrollAnimationCreate(outer_node, outer_delta, delayed_by);
-  }
-  if (will_animate) {
-    // Consume entire scroll delta as long as we are starting an animation.
-    return delta;
+    host_impl_->ScrollAnimationCreate(outer_node, outer_delta, delayed_by);
   }
 
   pending_delta = scaled_delta - inner_delta - outer_delta;
   pending_delta.Scale(scale_factor);
-  return pending_delta;
+  return delta - pending_delta;
 }
 
 void Viewport::SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor) {

@@ -48,8 +48,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -350,11 +350,15 @@ class CORE_EXPORT HTMLCanvasElement final
   bool HasImageBitmapContext() const;
 
   // Returns the transparent image resource for this canvas.
-  scoped_refptr<Image> GetTransparentImage();
+  scoped_refptr<StaticBitmapImage> GetTransparentImage();
 
   CanvasRenderingContext* GetCanvasRenderingContextInternal(
       const String&,
       const CanvasContextCreationAttributesCore&);
+
+  scoped_refptr<StaticBitmapImage> GetSourceImageForCanvasInternal(
+      SourceImageStatus*,
+      AccelerationHint);
 
   void OnContentsCcLayerChanged();
 
@@ -397,7 +401,7 @@ class CORE_EXPORT HTMLCanvasElement final
   // GPU Memory Management
   mutable intptr_t externally_allocated_memory_;
 
-  scoped_refptr<Image> transparent_image_ = nullptr;
+  scoped_refptr<StaticBitmapImage> transparent_image_ = nullptr;
 };
 
 }  // namespace blink

@@ -49,6 +49,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -980,6 +981,25 @@ HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
 }
 
 base::FilePath GetChromePath() {
+  base::FilePath gls_path = GetSystemChromePath();
+
+  wchar_t custom_gls_path_value[MAX_PATH];
+  ULONG path_len = base::size(custom_gls_path_value);
+  HRESULT hr = GetGlobalFlag(kRegGlsPath, custom_gls_path_value, &path_len);
+  if (SUCCEEDED(hr)) {
+    base::FilePath custom_gls_path(custom_gls_path_value);
+    if (base::PathExists(custom_gls_path)) {
+      gls_path = custom_gls_path;
+    } else {
+      LOGFN(ERROR) << "Specified gls path ('" << custom_gls_path.value()
+                   << "') does not exist, using default gls path.";
+    }
+  }
+
+  return gls_path;
+}
+
+base::FilePath GetSystemChromePath() {
   if (g_use_test_chrome_path)
     return g_test_chrome_path;
 

@@ -306,8 +306,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillCreditCardAuthentication);
-    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
-                                                    user_is_opted_in);
+    SetCreditCardFIDOAuthEnabled(user_is_opted_in);
   }
 
   // Returns true if full card request was sent from FIDO auth.
@@ -367,6 +366,20 @@ class CreditCardAccessManagerTest : public testing::Test {
   }
 
   void WaitForCallbacks() { task_environment_.RunUntilIdle(); }
+
+  void SetCreditCardFIDOAuthEnabled(bool enabled) {
+    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                    enabled);
+  }
+
+  bool IsCreditCardFIDOAuthEnabled() {
+    return ::autofill::prefs::IsCreditCardFIDOAuthEnabled(
+        autofill_client_.GetPrefs());
+  }
+
+  UnmaskAuthFlowType getUnmaskAuthFlowType() {
+    return credit_card_access_manager_->unmask_auth_flow_type_;
+  }
 
  protected:
   std::unique_ptr<TestAccessor> accessor_;
@@ -1572,14 +1585,165 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_OptOut) {
   std::string histogram_name =
       "Autofill.BetterAuth.OptOutCalled.FromSettingsPage";
   GetFIDOAuthenticator()->SetUserVerifiable(true);
-  SetUserOptedIn(false);
+  SetUserOptedIn(true);
 
+  EXPECT_TRUE(IsCreditCardFIDOAuthEnabled());
   credit_card_access_manager_->OnSettingsPageFIDOAuthToggled(false);
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
   OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
 
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
   histogram_tester.ExpectTotalCount(histogram_name, 1);
 }
 #endif  // defined(OS_ANDROID)
+
+// Ensure that when unmask detail response is delayed, we will automatically
+// fall back to CVC even if local pref and Payments mismatch.
+TEST_F(CreditCardAccessManagerTest,
+       IntentToOptOut_DelayedUnmaskDetailsResponse) {
+  base::HistogramTester histogram_tester;
+  // Setting up a FIDO-enabled user with a server card.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  // The user is FIDO-enabled from Payments.
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+  // Mock the user manually opt-out from Settings page, and Payments did not
+  // update user status in time. The mismatch will set user INTENT_TO_OPT_OUT.
+  SetCreditCardFIDOAuthEnabled(/*enabled=*/false);
+  // Delay the UnmaskDetailsResponse so that we can't discover the mismatch,
+  // which will use local pref and fall back to CVC.
+  payments_client_->ShouldReturnUnmaskDetailsImmediately(false);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+
+  // Ensure the auth flow type is CVC because no unmask detail response is
+  // returned and local pref denotes that user is opted out.
+  EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
+  // Also ensure that since local pref is disabled, we will directly fall back
+  // to CVC instead of falling back after time out. Ensure that
+  // CardChosenBeforePreflightCallReturned is logged to opted-out histogram.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedOut",
+      AutofillMetrics::PreflightCallEvent::
+          kCardChosenBeforePreflightCallReturned,
+      1);
+  // No bucket count for OptIn TimedOutCvcFallback.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "TimedOutCvcFallback",
+      0);
+
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  // Since no unmask detail returned, we can't discover the pref mismatch, we
+  // won't call opt out and local pref is unchanged.
+  EXPECT_FALSE(GetFIDOAuthenticator()->IsOptOutCalled());
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+}
+
+TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutAfterUnmaskSucceeds) {
+  // Setting up a FIDO-enabled user with a server card.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  // The user is FIDO-enabled from Payments.
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+  // Mock the user manually opt-out from Settings page, and Payments did not
+  // update user status in time. The mismatch will set user INTENT_TO_OPT_OUT.
+  SetCreditCardFIDOAuthEnabled(/*enabled=*/false);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+
+  // Ensure that the local pref is still unchanged after unmask detail returns.
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+  // Also ensure the auth flow type is CVC because the local pref and payments
+  // mismatch indicates that user intended to opt out.
+  EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
+
+  // Mock cvc auth success.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  WaitForCallbacks();
+
+  // Ensure calling opt out after a successful cvc auth.
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
+  // Mock opt out success response. Local pref is consistent with payments.
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+}
+
+TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutAfterUnmaskFails) {
+  // Setting up a FIDO-enabled user with a server card.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  // The user is FIDO-enabled from Payments.
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+  // Mock the user manually opt-out from Settings page, and Payments did not
+  // update user status in time. The mismatch will set user INTENT_TO_OPT_OUT.
+  SetCreditCardFIDOAuthEnabled(/*enabled=*/false);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+
+  // Ensure that the local pref is still unchanged after unmask detail returns.
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+  // Ensure the auth flow type is CVC because the local pref and payments
+  // mismatch indicates that user intended to opt out.
+  EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
+
+  // Mock cvc auth failure.
+  EXPECT_TRUE(
+      GetRealPanForCVCAuth(AutofillClient::PERMANENT_FAILURE, std::string()));
+  WaitForCallbacks();
+
+  // Ensure calling opt out after cvc auth failure.
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
+  // Mock opt out success. Local pref is consistent with payments.
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+}
+
+TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutFailure) {
+  // Setting up a FIDO-enabled user with a server card.
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  // The user is FIDO-enabled from Payments.
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+  // Mock the user manually opt-out from Settings page, and Payments did not
+  // update user status in time. The mismatch will set user INTENT_TO_OPT_OUT.
+  SetCreditCardFIDOAuthEnabled(/*enabled=*/false);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+
+  // Ensure that the local pref is still unchanged after unmask detail returns.
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+  // Also ensure the auth flow type is CVC because the local pref and payments
+  // mismatch indicates that user intended to opt out.
+  EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
+
+  // Mock cvc auth success.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  WaitForCallbacks();
+
+  // Mock payments opt out failure. Local pref should be unchanged.
+  OptChange(AutofillClient::PERMANENT_FAILURE, false);
+  EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
+}
 #endif  // !defined(OS_IOS)
 
 // Ensures that |is_authentication_in_progress_| is set correctly.

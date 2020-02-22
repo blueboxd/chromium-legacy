@@ -89,7 +89,6 @@ void StatusAreaWidget::Initialize() {
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->Initialize();
 
-  UpdateAfterShelfAlignmentChange();
   UpdateAfterLoginStatusChange(
       Shell::Get()->session_controller()->login_status());
 
@@ -105,12 +104,6 @@ void StatusAreaWidget::Initialize() {
 StatusAreaWidget::~StatusAreaWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
-}
-
-void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
-  for (TrayBackgroundView* tray_button : tray_buttons_)
-    tray_button->UpdateAfterShelfChange();
-  status_area_widget_delegate_->UpdateLayout();
 }
 
 void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
@@ -189,6 +182,10 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   const LayoutInputs new_layout_inputs = GetLayoutInputs();
   if (layout_inputs_ == new_layout_inputs)
     return;
+
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterShelfChange();
+  status_area_widget_delegate_->UpdateLayout();
 
   // Having a window which is visible but does not have an opacity is an
   // illegal state.

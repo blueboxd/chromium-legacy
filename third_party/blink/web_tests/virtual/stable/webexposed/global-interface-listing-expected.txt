@@ -9081,6 +9081,9 @@ interface XRSession : EventTarget
     getter onselect
     getter onselectend
     getter onselectstart
+    getter onsqueeze
+    getter onsqueezeend
+    getter onsqueezestart
     getter onvisibilitychange
     getter renderState
     getter visibilityState
@@ -9097,6 +9100,9 @@ interface XRSession : EventTarget
     setter onselect
     setter onselectend
     setter onselectstart
+    setter onsqueeze
+    setter onsqueezeend
+    setter onsqueezestart
     setter onvisibilitychange
 interface XRSessionEvent : Event
     attribute @@toStringTag

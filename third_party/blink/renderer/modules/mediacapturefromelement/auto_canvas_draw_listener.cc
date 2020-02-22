@@ -16,7 +16,7 @@ AutoCanvasDrawListener::AutoCanvasDrawListener(
     : handler_(std::move(handler)), frame_capture_requested_(true) {}
 
 void AutoCanvasDrawListener::SendNewFrame(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
   handler_->SendNewFrame(image, context_provider);
 }

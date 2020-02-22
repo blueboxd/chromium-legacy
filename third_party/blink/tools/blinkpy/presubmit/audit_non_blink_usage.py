@@ -717,9 +717,7 @@ _CONFIG = [
             'third_party/blink/renderer/modules/mediacapturefromelement/',
         ],
         'allowed': [
-            # TODO(crbug.com/1023262): Remove once ReadbackYUVInterface is used by
-            # RasterImplementation
-            'gpu::ReadbackYUVInterface',
+            'gpu::MailboxHolder',
             'media::.+',
             'libyuv::.+',
         ]

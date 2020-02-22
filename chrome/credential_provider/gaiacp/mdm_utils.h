@@ -49,6 +49,9 @@ extern const char kErrorKeyInRequestResult[];
 // Upload status for device details.
 extern const wchar_t kRegDeviceDetailsUploadStatus[];
 
+// Specifies custom Chrome path to use for GLS.
+extern const wchar_t kRegGlsPath[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {

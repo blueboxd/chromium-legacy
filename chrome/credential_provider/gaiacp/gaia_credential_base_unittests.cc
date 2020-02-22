@@ -7,6 +7,7 @@
 #include <sddl.h>  // For ConvertSidToStringSid()
 #include <wrl/client.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -2906,6 +2907,61 @@ INSTANTIATE_TEST_SUITE_P(
     GcpGaiaCredentialBaseUploadEventLogsTest,
     ::testing::Combine(::testing::Values(true, false),
                        ::testing::Values(0, 2, 1000, 3000)));
+
+// Test if the credential can be created successfully depending on whether a
+// Chrome path is found.
+// Parameters are:
+// 1. bool  true:  A Chrome path is set.
+//          false: No Chrome path set.
+class GcpGaiaCredentialBaseChromeAvailabilityTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(GcpGaiaCredentialBaseChromeAvailabilityTest, CustomChromeSpecified) {
+  // Simulate a custom Chrome path being set.
+  fake_chrome_checker()->SetHasSupportedChrome(
+      FakeChromeAvailabilityChecker::kChromeDontForce);
+
+  bool custom_path_set = GetParam();
+  base::ScopedTempDir temp_chrome_path;
+
+  // Set system Chrome path to empty so that we are not influenced by the
+  // runtime environment.
+  GoogleChromePathForTesting google_chrome_path_for_testing(
+      base::FilePath(L""));
+
+  if (custom_path_set) {
+    ASSERT_TRUE(temp_chrome_path.CreateUniqueTempDir());
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(
+                  kRegGlsPath, temp_chrome_path.GetPath().AsUTF16Unsafe()));
+  }
+
+  USES_CONVERSION;
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                username, L"password", L"name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Create provider.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  if (custom_path_set) {
+    // Don't fail to create the credential.
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+  } else {
+    // Credential creation should fail as no chrome will be found.
+    ASSERT_EQ(E_FAIL, InitializeProviderAndGetCredential(0, &cred));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseChromeAvailabilityTest,
+                         ::testing::Values(true, false));
 
 }  // namespace testing
 }  // namespace credential_provider

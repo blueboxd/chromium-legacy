@@ -64,7 +64,13 @@ namespace {
 // ones must never be renumbered or deleted and reused.
 enum class MseExecutionContext {
   kWindow = 0,
+
+  // TODO(wolenetz): Support MSE usage in dedicated workers. See
+  // https://crbug.com/878133.
   kDedicatedWorker = 1,
+
+  // TODO(wolenetz): Consider supporting MSE usage in SharedWorkers. See
+  // https://crbug.com/1054566.
   kSharedWorker = 2,
   kMaxValue = kSharedWorker
 };
@@ -151,6 +157,8 @@ MediaSourceImpl::MediaSourceImpl(ExecutionContext* context)
 
   // TODO(wolenetz): Actually enable experimental usage of MediaSource API from
   // dedicated worker contexts. See https://crbug.com/878133.
+  // TODO(wolenetz): Also consider supporting experimental usage of MediaSource
+  // API from shared worker contexts. See https://crbug.com/1054566.
   CHECK(type == MseExecutionContext::kWindow)
       << "MSE is not yet supported from workers";
 }

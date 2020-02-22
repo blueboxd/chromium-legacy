@@ -59,6 +59,7 @@ class OculusRenderLoop : public XRCompositorCommon {
   gfx::Size swap_chain_size_;
   double sensor_time_;
   bool primary_input_pressed[kMaxOculusRenderLoopInputId];
+  bool primary_squeeze_pressed[kMaxOculusRenderLoopInputId];
 
   DISALLOW_COPY_AND_ASSIGN(OculusRenderLoop);
 };

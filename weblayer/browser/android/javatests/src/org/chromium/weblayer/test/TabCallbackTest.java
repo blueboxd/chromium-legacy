@@ -5,8 +5,10 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +17,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.weblayer.ContextMenuParams;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -101,5 +105,35 @@ public class TabCallbackTest {
             tab.getNavigationController().navigate(Uri.parse("chrome://crash"));
         });
         callbackHelper.waitForFirst();
+    }
+
+    // Requires implementation M82.
+    @Test
+    @SmallTest
+    public void testShowContextMenu() throws TimeoutException {
+        String pageUrl = mActivityTestRule.getTestDataURL("download.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
+
+        ContextMenuParams params[] = new ContextMenuParams[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void showContextMenu(ContextMenuParams param) {
+                    params[0] = param;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        TestTouchUtils.longClickView(
+                InstrumentationRegistry.getInstrumentation(), activity.getWindow().getDecorView());
+        callbackHelper.waitForFirst();
+        Assert.assertEquals(Uri.parse(pageUrl), params[0].pageUri);
+        Assert.assertEquals(
+                Uri.parse(mActivityTestRule.getTestDataURL("lorem_ipsum.txt")), params[0].linkUri);
+        Assert.assertEquals("anchor text", params[0].linkText);
     }
 }

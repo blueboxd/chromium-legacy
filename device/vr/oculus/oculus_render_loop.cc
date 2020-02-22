@@ -259,6 +259,7 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
           input_state, ovrHand_Left));
     } else {
       primary_input_pressed[ovrControllerType_LTouch] = false;
+      primary_squeeze_pressed[ovrControllerType_LTouch] = false;
     }
 
     if (input_state.ControllerType & ovrControllerType_RTouch) {
@@ -267,6 +268,7 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
           input_state, ovrHand_Right));
     } else {
       primary_input_pressed[ovrControllerType_RTouch] = false;
+      primary_squeeze_pressed[ovrControllerType_RTouch] = false;
     }
 
     // If an oculus remote is active, report a gaze controller.
@@ -277,6 +279,8 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
       state->source_id = ovrControllerType_Remote;
       state->primary_input_pressed =
           (input_state.Buttons & ovrButton_Enter) != 0;
+      state->primary_squeeze_pressed = false;
+      state->primary_squeeze_clicked = false;
 
       if (!state->primary_input_pressed &&
           primary_input_pressed[ovrControllerType_Remote]) {
@@ -291,6 +295,7 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
       input_states.push_back(std::move(state));
     } else {
       primary_input_pressed[ovrControllerType_Remote] = false;
+      primary_squeeze_pressed[ovrControllerType_Remote] = false;
     }
   }
 
@@ -315,6 +320,17 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
     state->primary_input_clicked = true;
 
   primary_input_pressed[type] = state->primary_input_pressed;
+
+  // Handling squeeze
+  state->primary_squeeze_pressed =
+      (input_state.HandTrigger[hand] > kTriggerPressedThreshold);
+
+  // If the input has gone from pressed to not pressed since the last poll
+  // report it as clicked.
+  if (!state->primary_squeeze_pressed && primary_squeeze_pressed[type])
+    state->primary_squeeze_clicked = true;
+
+  primary_squeeze_pressed[type] = state->primary_squeeze_pressed;
 
   device::mojom::XRInputSourceDescriptionPtr desc =
       device::mojom::XRInputSourceDescription::New();

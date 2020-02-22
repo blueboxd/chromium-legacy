@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_OUTSIDE_LIST_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_OUTSIDE_LIST_MARKER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -13,14 +13,14 @@
 namespace blink {
 
 // A LayoutObject subclass for outside-positioned list markers in LayoutNG.
-class CORE_EXPORT LayoutNGListMarker final
+class CORE_EXPORT LayoutNGOutsideListMarker final
     : public LayoutNGBlockFlowMixin<LayoutBlockFlow> {
  public:
-  explicit LayoutNGListMarker(Element*);
+  explicit LayoutNGOutsideListMarker(Element*);
 
   void WillCollectInlines() override;
 
-  const char* GetName() const override { return "LayoutNGListMarker"; }
+  const char* GetName() const override { return "LayoutNGOutsideListMarker"; }
 
   bool NeedsOccupyWholeLine() const;
 
@@ -34,8 +34,9 @@ class CORE_EXPORT LayoutNGListMarker final
   ListMarker list_marker_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGOutsideListMarker,
+                                IsLayoutNGOutsideListMarker());
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_OUTSIDE_LIST_MARKER_H_

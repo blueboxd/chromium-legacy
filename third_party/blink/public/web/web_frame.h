@@ -146,8 +146,6 @@ class BLINK_EXPORT WebFrame {
   static bool ScriptCanAccess(WebFrame*);
 
   // Navigation ----------------------------------------------------------
-  // TODO(clamy): Remove the reload, reloadWithOverrideURL, and loadRequest
-  // functions once RenderFrame only calls WebLoadFrame::load.
 
   // Stops any pending loads on the frame and its children.
   virtual void StopLoading() = 0;

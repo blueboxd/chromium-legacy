@@ -95,19 +95,25 @@ class MockInputMethod : public ui::InputMethodBase {
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
   void CancelComposition(const ui::TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
-  void ShowVirtualKeyboardIfEnabled() override {}
+  void ShowVirtualKeyboardIfEnabled() override {
+    count_show_virtual_keyboard_++;
+  }
 
   bool untranslated_ime_message_called() const {
     return untranslated_ime_message_called_;
   }
   bool text_input_type_changed() const { return text_input_type_changed_; }
   bool cancel_composition_called() const { return cancel_composition_called_; }
+  int count_show_virtual_keyboard() const {
+    return count_show_virtual_keyboard_;
+  }
 
   // Clears all internal states and result.
   void Clear();
 
   void SetCompositionTextForNextKey(const ui::CompositionText& composition);
   void SetResultTextForNextKey(const base::string16& result);
+  int count_show_virtual_keyboard_ = 0;
 
  private:
   // Overridden from InputMethodBase.
@@ -3733,6 +3739,17 @@ TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
 
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_OTHER,
             textfield_->GetFocusReason());
+}
+
+TEST_F(TextfieldTest, KeyboardObserverForPenInput) {
+  InitTextfield();
+
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
+  textfield_->OnGestureEvent(&tap);
+
+  EXPECT_EQ(1, input_method_->count_show_virtual_keyboard());
 }
 
 TEST_F(TextfieldTest, ChangeTextDirectionAndLayoutAlignmentTest) {

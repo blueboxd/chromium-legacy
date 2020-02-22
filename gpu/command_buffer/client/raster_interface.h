@@ -19,6 +19,7 @@ class ImageProvider;
 
 namespace gfx {
 class ColorSpace;
+class Point;
 class Rect;
 class Size;
 class Vector2dF;
@@ -82,6 +83,44 @@ class RasterInterface : public InterfaceBase {
       uint32_t transfer_cache_entry_id,
       const gfx::ColorSpace& target_color_space,
       bool needs_mips) = 0;
+
+  // Starts an asynchronous readback of |source_mailbox| into caller-owned
+  // memory |out|. Currently supports the GL_RGBA format and GL_BGRA_EXT format
+  // with the GL_EXT_read_format_bgra GL extension. |out| must remain valid
+  // until |readback_done| is called with a bool indicating if the readback was
+  // successful. On success |out| will contain the pixel data copied back from
+  // the GPU process.
+  virtual void ReadbackARGBPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      GLenum format,
+      base::OnceCallback<void(bool)> readback_done) = 0;
+
+  // Starts an asynchronus readback and translation of RGBA |source_mailbox|
+  // into caller-owned |[yuv]_plane_data|. All provided pointers must remain
+  // valid until |readback_done| is called with a bool indicating if readback
+  // was successful. On success the provided memory will contain pixel data in
+  // I420 format copied from |source_mailbox| in the GPU process.
+  // |release_mailbox| is called when all operations requiring a valid mailbox
+  // have completed, indicating that the caller can perform any necessary
+  // cleanup.
+  virtual void ReadbackYUVPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& source_size,
+      const gfx::Rect& output_rect,
+      bool vertically_flip_texture,
+      int y_plane_row_stride_bytes,
+      unsigned char* y_plane_data,
+      int u_plane_row_stride_bytes,
+      unsigned char* u_plane_data,
+      int v_plane_row_stride_bytes,
+      unsigned char* v_plane_data,
+      const gfx::Point& paste_location,
+      base::OnceCallback<void()> release_mailbox,
+      base::OnceCallback<void(bool)> readback_done) = 0;
 
   // Raster via GrContext.
   virtual GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) = 0;

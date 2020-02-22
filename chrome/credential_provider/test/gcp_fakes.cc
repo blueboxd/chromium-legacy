@@ -763,6 +763,9 @@ FakeChromeAvailabilityChecker::~FakeChromeAvailabilityChecker() {
 }
 
 bool FakeChromeAvailabilityChecker::HasSupportedChromeVersion() {
+  if (has_supported_chrome_ == kChromeDontForce) {
+    return original_checker_->HasSupportedChromeVersion();
+  }
   return has_supported_chrome_ == kChromeForceYes;
 }
 

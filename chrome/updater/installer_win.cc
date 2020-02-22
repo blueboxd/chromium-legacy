@@ -10,7 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/updater/updater_constants.h"
+#include "chrome/updater/constants.h"
 
 namespace updater {
 

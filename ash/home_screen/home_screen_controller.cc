@@ -192,10 +192,6 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   }
 
   if (split_view_active) {
-    // End split view mode.
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kHomeLauncherPressed);
-
     // If overview session is active (e.g. on one side of the split view), end
     // it immediately, to prevent overview UI being visible while transitioning
     // to home screen.
@@ -203,6 +199,10 @@ bool HomeScreenController::GoHome(int64_t display_id) {
       overview_controller->EndOverview(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
+
+    // End split view mode.
+    split_view_controller->EndSplitView(
+        SplitViewController::EndReason::kHomeLauncherPressed);
   }
 
   // If overview is active (if overview was active in split view, it exited by

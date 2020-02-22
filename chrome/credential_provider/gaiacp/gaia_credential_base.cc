@@ -1066,21 +1066,6 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
 
   base::FilePath gls_path = GetChromePath();
 
-  constexpr wchar_t kGlsPath[] = L"gls_path";
-
-  wchar_t custom_gls_path_value[MAX_PATH];
-  ULONG path_len = base::size(custom_gls_path_value);
-  HRESULT hr = GetGlobalFlag(kGlsPath, custom_gls_path_value, &path_len);
-  if (SUCCEEDED(hr)) {
-    base::FilePath custom_gls_path(custom_gls_path_value);
-    if (base::PathExists(custom_gls_path)) {
-      gls_path = custom_gls_path;
-    } else {
-      LOGFN(ERROR) << "Specified gls path ('" << custom_gls_path.value()
-                   << "') does not exist, using default gls path.";
-    }
-  }
-
   if (gls_path.empty()) {
     LOGFN(ERROR) << "No path to chrome.exe could be found.";
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);

@@ -1179,47 +1179,8 @@
 
   <!-- Strings specific to the Settings Internet Page -->
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
-      Network
-    </message>
     <message name="IDS_SETTINGS_INTERNET_CONFIG" desc="Title for the network configuration dialog.">
       Configure network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_CONFIG_NAME" desc="Title for the network configuration dialog for an existing network.">
-      Configure <ph name="NAME">$1<ex>My WiFi network</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_JOIN_TYPE" desc="Title for the network configuration dialog for a new network.">
-      Join <ph name="TYPE">$1<ex>WiFi</ex></ph> network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
-      Network Details
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS" desc="Name of the settings page which displays the list of known networks.">
-      Known Networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION" desc="Settings > Internet > Add connection expanding section label.">
-      Add connection
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the options for a new connection. Only visible by screen reader software.">
-      Add network connection
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED" desc="Settings > Internet > Message when Add connection is not allowed.">
-      Add connection is disabled by your administrator
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_WIFI" desc="Settings > Internet > Add Wi-Fi label.">
-      Add Wi-Fi...
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_VPN" desc="Settings > Internet > Add VPN label.">
-      Add OpenVPN / L2TP...
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN" desc="Settings > Internet > Add third party (Extension or ARC) VPN label">
-      Add <ph name="PROVIDER_NAME">$1<ex>VPN Demo</ex></ph>...
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_DEVICE_ENABLING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is enabling.">
-      Enabling
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_DEVICE_INITIALIZING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is initializing.">
-      Initializing
     </message>
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SHARE" desc="Settings > Internet > Network config: Label for setting allowing other device users to use the network configuration.">
       Allow other users of this device to use this network
@@ -1275,39 +1236,6 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE" desc="Settings > Internet > Network details: Value for Web Proxy Auto Discovery when no URL is provided.">
       Not provided
     </message>
-    <message name="IDS_SETTINGS_INTERNET_MOBILE_SEARCH" desc="Settings > Internet > Message in Mobile section when searching for mobile networks.">
-      Searching for mobile networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED" desc="Settings > Internet > Network details: Advanced section label.">
-      Advanced
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced network properties. Only visible by screen reader software.">
-      Show advanced network properties
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK" desc="Settings > Internet > Network details: Network section label.">
-      Network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the network address configuration settings. Only visible by screen reader software.">
-      Show network address settings
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY" desc="Settings > Internet > Network details: Proxy section label.">
-      Proxy
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the proxy configuration settings. Only visible by screen reader software.">
-      Show proxy settings
-    </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING" desc="Settings > Internet > Network details: Toggle label to allow mobile data roaming.">
-      Allow mobile data roaming
-    </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_ENABLED_HOME" desc="Settings > Internet > Network details: Toggle sublabel when roaming is allowed and it's connected to the home network.">
-      On, not roaming
-    </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_ENABLED_ROAMING" desc="Settings > Internet > Network details: Toggle sublabel when roaming is allowed and it's connected to a roaming network">
-      On, roaming
-    </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_DISABLED" desc="Settings > Internet > Network details: Toggle sublabel when roaming is not allowed.">
-      Roaming off
-    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CHOOSE_MOBILE" desc="Settings > Internet > Network details: Label for control to choose a mobile data network.">
       Mobile data network
     </message>
@@ -1325,12 +1253,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_NO_NETWORKS" desc="Settings > Internet > Network details: Dropdown text when no cellular networks were found after a scan.">
       No networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
-      Other users of this device can use this network.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED" desc="Settings > Internet > Network details: Text to show when a network configuration is controlled by the primary user.">
-      Network configuration is controlled by <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY" desc="Settings > Internet > Network details: Text to show when a network proxy is policy enforced.">
       This proxy is enforced by your administrator
@@ -1471,157 +1393,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
       PIN values do not match.
-    </message>
-
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
-      Prefer this network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT" desc="Settings > Internet > Network details: Label for the checkbox determining whether to automatically connect to the network.">
-      Automatically connect to this network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT_CELLULAR" desc="Settings > Internet > Mobile Data details: Label for the checkbox determining whether to automatically connect to the cellular network.">
-      Automatically connect to cellular network
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_ALWAYS_ON_VPN" desc="Settings > Internet > Network details: Label for the checkbox determining that all internet traffic has to go through this VPN (virtual private network), and all other network connections are blocked.">
-      Always connect through this VPN
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO" desc="Settings > Internet > Network details: Label for the checkbox determining whether to automatically configure the network IP config.">
-      Configure IP address automatically
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS" desc="Settings > Internet > Network details: Label for the network IP Address.">
-      IP Address
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_FORGET" desc="Settings > Internet > Network details: The label for the button to forget a network (remove from the list of known networks).">
-      Forget
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT" desc="Settings > Internet > Network details: The label for the button to view the account details for a Cellular network.">
-      View Account
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE" desc="Settings > Internet > Network details: The label for the button to activate a Cellular network.">
-      Activate
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE" desc="Settings > Internet > Network details: The label for the button to configure a network (change its settings).">
-      Configure
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONNECT" desc="Settings > Internet > Network details: The label for the button to connect to a network.">
-      Connect
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Network details: The label for the button to disconnect from a network.">
-      Disconnect
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED" desc="Settings > Internet > Message when connecting to a non policy network is not allowed.">
-      Connecting to this network is disabled by your administrator
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON" desc="Text for button that opens the known networks subpage.">
-      Known networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED" desc="Title for list of preferred networks.">
-      Preferred networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
-      Preferred networks will be preferred over other known networks if more than one is available
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
-      All networks
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_ADD_PREFERRED" desc="Settings > Internet > Known networks > Dropdown menu item to add a network to the list of preferred networks.">
-      Add to preferred
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_REMOVE_PREFERRED" desc="Settings > Internet > Known networks > Dropdown menu item to remove a network from the list of preferred networks.">
-      Remove from preferred
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_FORGET" desc="Settings > Internet > Known networks > Dropdown menu item to forget a known network.">
-      Forget
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NO_NETWORKS" desc="Entry when there are no preferred networks or no networks of a particular type.">
-      None
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE" desc="Text shown when viewing the Wi-Fi network detail page when the currently-viewed Wi-Fi network has been lost (e.g., has gone out of range).">
-      Network out of range
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_SPECIFIC_CARRIER" desc="Text shown when the Chromebook cannot connect to a cellular network, which alerts the user to contact a specific carrier.">
-      Trouble connecting. Please contact <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph> for assistance.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_DEFAULT_CARRIER" desc="Text shown when the Chromebook cannot connect to a cellular network, which alerts the user to contact their carrier.">
-      Trouble connecting. Please contact your carrier for assistance.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_PHONE_OUT_OF_RANGE" desc="Text shown when viewing the Tether network detail page when the currently-viewed Tether network has been lost (e.g., has gone out of range). Because Tether networks are provided by Android phones, we use the word 'phone' here instead of 'network'.">
-      Unable to detect your phone
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_TITLE" desc="Title of the section which explains how to enable Google Play Services notifications on an Android phone in order to use Instant Tethering.">
-      To use Instant Tethering, turn on notifications for Google Play Services.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_ONE_DEVICE_SUBTITLE" desc="Subtitle of the section which explains how to enable Google Play Services notifications. This subtitle is used when only one phone needs to have its notifications enabled.">
-      On your '<ph name="PHONE_NAME">$1<ex>Google Pixel</ex></ph>':
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_TWO_DEVICES_SUBTITLE" desc="Subtitle of the section which explains how to enable Google Play Services notifications. This subtitle is used when two phones need to have their notifications enabled.">
-      On your '<ph name="PHONE_NAME_1">$1<ex>Google Pixel</ex></ph>' and '<ph name="PHONE_NAME_2">$2<ex>Google Pixel 2</ex></ph>':
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_MANY_DEVICES_SUBTITLE" desc="Subtitle of the section which explains how to enable Google Play Services notifications. This subtitle is used when three or more phones need to have their notifications enabled.">
-      On your devices:
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_FIRST_STEP" desc="First instruction for how to enable Google Play Services notifications on an Android phone. This step teaches the user how to look at notification settings.">
-      Go to Settings &gt; Apps &amp; notifications &gt; Notifications.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_SECOND_STEP" desc="Second instruction for how to enable Google Play Services notifications on an Android phone. This step teaches the user how to look at notification settings for the Google Play Services app.">
-      Tap App notifications &gt; Google Play services.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_THIRD_STEP" desc="Third instruction for how to enable Google Play Services notifications on an Android phone. This step teaches the user how to enable notifications when already viewing noticiations settings for Google Play Services.">
-      Turn on Google Play services.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_GMSCORE_NOTIFICATIONS_FOURTH_STEP" desc="Fourth instruction for how to enable Google Play Services notifications on an Android phone. This step teaches the user how to enable the Instant Tethering notification channel for Google Play Services.">
-      Scroll to the bottom of the screen and turn on Instant Tethering, if it appears. If it doesn't, you're all set.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_LOOKING_FOR_MOBILE_NETWORK" desc="Text shown when viewing the Mobile data page when there are no cellular or tether networks available.">
-      Looking for a mobile network. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_SUMMARY_BUTTON_ACCESSIBILITY_LABEL" desc="Accessibility only label for network summary item button that opens network details.">
-      <ph name="NETWORK_TYPE">$1<ex>Mobile Data</ex></ph> - <ph name="NETWORK_DISPLAY_NAME">$2<ex>Verizon Wireless</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DIALOG_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title asking the user to create a new hotspot.">
-      Connect to new hotspot?
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_AVAILABLE_DEVICE_TITLE" desc="Settings > Internet > Tether Connection Dialog > Label for explaining that the device following the colon is available for tethering.">
-      Available device:
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_BATTERY_PERCENTAGE" desc="Settings > Internet > Tether Connection Dialog > Description of how much battery a device has.">
-      <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% Battery
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_EXPLANATION" desc="Settings > Internet > Tether Connection Dialog > Explanation of what will happen if the user connects to a tether hotspot.">
-      Your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> will create a private Wi-Fi connection.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CARRIER_WARNING" desc="Settings > Internet > Tether Connection Dialog > Warning to users that cellular providers may block the use of tethering.">
-      Some carriers might block this feature.
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title of the section describing what will happen when tethering is enabled.">
-      While the hotspot is on, your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> will:
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_MOBILE_DATA" desc="Settings > Internet > Tether Connection Dialog > Bulletpoint alerting the user that tethering will use mobile data.">
-      Use mobile data
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_BATTERY" desc="Settings > Internet > Tether Connection Dialog > Bullet point alerting the user that tethering will use both devices' batteries.">
-      Use the battery more quickly (currently <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>%)
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_WIFI" desc="Settings > Internet > Tether Connection Dialog > Bullet point alerting the user that the tether host (i.e., the device to which the current device will connect to) will disconnect from Wi-Fi.">
-      Disconnect from Wi-Fi
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_NOT_NOW_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, closes the dialog and does not connect the device.">
-      Not now
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, starts a connection attempt to the device.">
-      Connect
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_LABEL" desc="Settings > Internet: Label for Tether enable/disable toggle .">
-      Get data connection
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_SUBTEXT" desc="Settings > Internet: Description for Tether enable/disable toggle .">
-      Let this device find other devices with your Google Account that have a mobile data connection
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
-      Mobile data enable
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIFI_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiFi enable/disable toggle .">
-      Wi-Fi enable
     </message>
   </if>
 
@@ -3426,40 +3197,6 @@
     </message>
     <message name="IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
       No supported browser found
-    </message>
-  </if>
-
-  <!-- Users Page -->
-  <if expr="chromeos">
-    <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
-      These settings may only be modified by the owner:
-    </message>
-    <message name="IDS_SETTINGS_USERS_MANAGED_LABEL" desc="Label saying settings is managed by enterprise and thus can't be modified.">
-      These settings are controlled by enterprise policy. Please contact your administrator for more information.
-    </message>
-    <message name="IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL" desc="Label for the guest browsing setting.">
-      Enable Guest browsing
-    </message>
-    <message name="IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL" desc="Label for the 'show users on sign-in screen' setting.">
-      Show usernames and photos on the sign-in screen
-    </message>
-    <message name="IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL" desc="Label for the setting for restricting sign in to specific users.">
-      Restrict sign-in to the following users:
-    </message>
-    <message name="IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL" desc="Label for a user who is the device owner.">
-      <ph name="USER_NAME">$1<ex>John Smith</ex></ph> (owner)
-    </message>
-    <message name="IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP" desc="Tooltip for the button that removes a user from the list of restricted sign in users.">
-      Remove <ph name="USER_NAME">$1<ex>John Smith</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
-      Add user
-    </message>
-    <message name="IDS_SETTINGS_USERS_ADD_USERS_EMAIL" desc="Label for the email input field for adding users.">
-      Email address
-    </message>
-    <message name="IDS_SETTINGS_USER_EXISTS_ERROR" desc="Error message for attempting to add a user that already exists">
-      This user already exists
     </message>
   </if>
 

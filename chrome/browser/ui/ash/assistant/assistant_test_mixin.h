@@ -79,6 +79,16 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   void ExpectResult(T expected_value,
                     base::RepeatingCallback<T()> value_callback);
 
+  // Synchronize an async method call to make testing simpler. |func| is the
+  // async method to be invoked, the inner callback is the result callback. The
+  // result with type |T| will be the return value.
+  //
+  // NOTE: This is a template method. If you need to use it with a new type,
+  // you may see a link error. You will need to manually instantiate for the
+  // new type.  Please see .cc file for examples.
+  template <typename T>
+  T SyncCall(base::OnceCallback<void(base::OnceCallback<void(T)>)> func);
+
   // Waits until a card response is rendered that contains the given text.
   // If |expected_response| is not received in |wait_timeout|, this will fail
   // the test.

@@ -46,7 +46,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
-    self._browser.SymbolizeMinidump(crash_minidump_path)
+    succeeded, stack = self._browser.SymbolizeMinidump(crash_minidump_path)
+    self.assertTrue(succeeded)
+    self.assertIn('gl::Crash', stack)
 
     all_unsymbolized_after_symbolize_paths = \
         self._browser.GetAllUnsymbolizedMinidumpPaths()
@@ -123,7 +125,10 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
     # Now symbolize one of those paths and assert that there is still one
     # unsymbolized
-    self._browser.SymbolizeMinidump(second_crash_path)
+    succeeded, stack = self._browser.SymbolizeMinidump(second_crash_path)
+    self.assertTrue(succeeded)
+    self.assertIn('gl::Crash', stack)
+
     after_symbolize_all_paths = self._browser.GetAllMinidumpPaths()
     if after_symbolize_all_paths is not None:
       logging.info('testMultipleCrashMinidumps: after symbolize all paths: '

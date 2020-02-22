@@ -655,8 +655,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsLayoutNGMixin() const { return IsOfType(kLayoutObjectNGMixin); }
   bool IsLayoutNGListItem() const { return IsOfType(kLayoutObjectNGListItem); }
-  bool IsLayoutNGListMarker() const {
-    return IsOfType(kLayoutObjectNGListMarker);
+  bool IsLayoutNGOutsideListMarker() const {
+    return IsOfType(kLayoutObjectNGOutsideListMarker);
   }
   bool IsLayoutNGInsideListMarker() const {
     return IsOfType(kLayoutObjectNGInsideListMarker);
@@ -1918,7 +1918,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // generating an anonymous block box for the whitespace between the marker
   // and the <ol>.
   bool AffectsWhitespaceSiblings() const {
-    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGListMarker();
+    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGOutsideListMarker();
   }
 
   bool HasReflection() const { return bitfields_.HasReflection(); }
@@ -1995,14 +1995,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // There are 3 types of list marker. LayoutNG creates different types for
   // inside and outside; outside is derived from LayoutBlockFlow, and inside
   // from LayoutInline. Legacy is derived from LayoutBox.
-  bool IsListMarkerIncludingNG() const {
-    return IsListMarker() || IsLayoutNGListMarker();
+  bool IsListMarkerIncludingNGOutside() const {
+    return IsListMarker() || IsLayoutNGOutsideListMarker();
   }
-  bool IsLayoutNGListMarkerIncludingInside() const {
-    return IsLayoutNGListMarker() || IsLayoutNGInsideListMarker();
-  }
-  bool IsListMarkerIncludingNGInside() const {
-    return IsListMarker() || IsLayoutNGListMarkerIncludingInside();
+  bool IsListMarkerIncludingNGOutsideAndInside() const {
+    return IsListMarkerIncludingNGOutside() || IsLayoutNGInsideListMarker();
   }
   bool IsOutsideListMarker() const;
 
@@ -2548,8 +2545,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,
-    kLayoutObjectNGListMarker,
     kLayoutObjectNGInsideListMarker,
+    kLayoutObjectNGOutsideListMarker,
     kLayoutObjectNGListMarkerImage,
     kLayoutObjectNGProgress,
     kLayoutObjectNGText,

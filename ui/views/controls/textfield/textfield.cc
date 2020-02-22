@@ -809,7 +809,9 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   bool show_virtual_keyboard = true;
 #if defined(OS_WIN)
   show_virtual_keyboard = event->details().primary_pointer_type() ==
-                          ui::EventPointerType::POINTER_TYPE_TOUCH;
+                              ui::EventPointerType::POINTER_TYPE_TOUCH ||
+                          event->details().primary_pointer_type() ==
+                              ui::EventPointerType::POINTER_TYPE_PEN;
 #endif
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:

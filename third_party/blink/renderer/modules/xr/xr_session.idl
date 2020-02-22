@@ -40,6 +40,9 @@ enum XRVisibilityState {
   attribute EventHandler onselectstart;
   attribute EventHandler onselectend;
   attribute EventHandler onvisibilitychange;
+  attribute EventHandler onsqueeze;
+  attribute EventHandler onsqueezestart;
+  attribute EventHandler onsqueezeend;
 
   [RaisesException] void updateRenderState(optional XRRenderStateInit init = {});
 

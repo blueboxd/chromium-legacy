@@ -30,6 +30,7 @@ class AutofillProvider;
 
 namespace content {
 class WebContents;
+struct ContextMenuParams;
 }
 
 namespace sessions {
@@ -76,6 +77,8 @@ class TabImpl : public Tab,
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
   bool IsActive();
+
+  void ShowContextMenu(const content::ContextMenuParams& params);
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> GetJavaTab() {

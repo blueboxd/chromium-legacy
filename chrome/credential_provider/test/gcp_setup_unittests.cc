@@ -554,15 +554,15 @@ TEST_F(GcpSetupTest, WriteUninstallStrings) {
 TEST_F(GcpSetupTest, WriteCredentialProviderRegistryValues) {
   // Verify keys don't exist.
   base::win::RegKey key;
-  ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
-                                    KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  ASSERT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_ALL_ACCESS));
 
   // Write GCPW registry keys.
   ASSERT_EQ(S_OK, WriteCredentialProviderRegistryValues());
 
   // Verify keys were created.
-  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName,
-                                    KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_ALL_ACCESS));
 }
 
 TEST_F(GcpSetupTest, DoInstallWritesUninstallStrings) {

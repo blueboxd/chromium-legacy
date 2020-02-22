@@ -1276,13 +1276,13 @@ void BluetoothAdapterWinrt::OnPoweredRadioRemoved(
 
 void BluetoothAdapterWinrt::OnPoweredRadiosEnumerated(IDeviceWatcher* watcher,
                                                       IInspectable* object) {
-  // Destroy the ScopedClosureRunner, triggering the contained Closure to be
-  // run.
-  DCHECK(on_init_);
-  on_init_.reset();
   BLUETOOTH_LOG(ERROR)
       << "OnPoweredRadiosEnumerated(), Number of Powered Radios: "
       << num_powered_radios_;
+  // Destroy the ScopedClosureRunner, triggering the contained Closure to be
+  // run. Note this may destroy |this|.
+  DCHECK(on_init_);
+  on_init_.reset();
 }
 
 void BluetoothAdapterWinrt::OnAdvertisementReceived(

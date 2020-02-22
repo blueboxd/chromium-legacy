@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+
 /**
  * Interface used by Tab to inform the client of changes. This largely duplicates the
  * TabCallback interface, but is a singleton to avoid unnecessary IPC.
@@ -16,4 +18,8 @@ interface ITabClient {
   void onRenderProcessGone() = 2;
 
   void onCloseTab() = 3;
+
+  // Added in M82.
+  void showContextMenu(in IObjectWrapper pageUrl, in IObjectWrapper linkUrl,
+      in IObjectWrapper linkText, in IObjectWrapper titleOrAltText) = 4;
 }

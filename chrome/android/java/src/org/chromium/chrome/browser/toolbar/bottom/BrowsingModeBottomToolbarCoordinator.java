@@ -12,7 +12,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -141,10 +140,9 @@ public class BrowsingModeBottomToolbarCoordinator {
      *         TabSwitcherButtonView} just passes null.
      */
     void setupIPH(@FeatureConstants String feature, View anchor, OnClickListener listener) {
-        mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
+        mTabProvider.addObserver(new Callback<Tab>() {
             @Override
-            public void onActivityTabChanged(Tab tab) {
-                if (tab == null) return;
+            public void onResult(Tab tab) {
                 TabImpl tabImpl = (TabImpl) tab;
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(tabImpl.getProfile());
                 final Runnable completeRunnable = () -> {

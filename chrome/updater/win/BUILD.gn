@@ -22,11 +22,11 @@ executable("updater") {
   configs += [ "//build/config/win:windowed" ]
 
   deps = [
-    ":core",
     ":install_app",
+    ":lib",
     ":version_resources",
     "//build/win:default_exe_manifest",
-    "//chrome/updater:common",
+    "//chrome/updater:lib",
     "//chrome/updater/win/ui:ui_resources",
   ]
 }
@@ -57,7 +57,7 @@ source_set("base") {
   deps = [
     ":constants",
     "//base",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
     "//chrome/updater:version_header",
   ]
 
@@ -79,7 +79,7 @@ source_set("constants") {
   ]
 }
 
-source_set("core") {
+source_set("lib") {
   sources = [
     "action_handler.cc",
     "net/net_util.cc",
@@ -105,12 +105,11 @@ source_set("core") {
     ":constants",
     "//base",
     "//chrome/installer/util:with_no_strings",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
     "//chrome/updater/server/win:updater_idl_idl",
     "//components/update_client",
     "//url:url",
   ]
-  allow_circular_includes_from = [ "//chrome/updater:common" ]
 }
 
 source_set("install_progress_observer") {
@@ -134,16 +133,17 @@ source_set("install_app") {
   ]
 
   deps = [
-    ":core",
     ":install_progress_observer",
+    ":lib",
     "//base",
     "//base:i18n",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
+    "//chrome/updater:lib",
     "//chrome/updater/win/ui",
     "//components/prefs",
     "//components/update_client",
   ]
-  allow_circular_includes_from = [ "//chrome/updater:common" ]
+  allow_circular_includes_from = [ "//chrome/updater:lib" ]
 
   cflags_cc = [ "-Wno-missing-braces" ]
 }
@@ -159,8 +159,8 @@ source_set("updater_tests") {
 
   deps = [
     ":base",
-    ":core",
     ":install_app",
+    ":lib",
     "//base/test:test_support",
     "//testing/gtest",
   ]
@@ -183,8 +183,8 @@ test("updater_unittests") {
 
   deps = [
     ":base",
-    ":core",
     ":install_app",
+    ":lib",
     "//base",
     "//base/test:test_support",
     "//chrome/updater:version_header",

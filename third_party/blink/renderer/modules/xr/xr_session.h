@@ -123,6 +123,9 @@ class XRSession final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange, kVisibilitychange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(squeeze, kSqueeze)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(squeezestart, kSqueezestart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(squeezeend, kSqueezeend)
 
   void updateRenderState(XRRenderStateInit* render_state_init,
                          ExceptionState& exception_state);

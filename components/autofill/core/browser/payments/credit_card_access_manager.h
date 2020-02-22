@@ -254,6 +254,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
 #if !defined(OS_IOS)
   std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator_;
+
+  // User opt in/out intention when local pref and payments mismatch.
+  UserOptInIntention opt_in_intention_ = UserOptInIntention::kUnspecified;
 #endif
 
   // Suggested authentication method and other information to facilitate card

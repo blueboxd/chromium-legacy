@@ -39,6 +39,17 @@
       'android-code-coverage-native', # crbug/1018434
     ],
   },
+  'angle_deqp_egl_tests': {
+    'remove_from': [
+      # Temporarily disabled due to anglebug.com/4396
+      'win-swangle-tot-angle-x64',
+      'win-swangle-tot-angle-x86',
+      'win-swangle-tot-swiftshader-x64',
+      'win-swangle-tot-swiftshader-x86',
+      'win-swangle-x64',
+      'win-swangle-x86',
+    ],
+  },
   'angle_end2end_tests': {
     'remove_from': [
       # TODO(ynovikov) Investigate why the test breaks on older devices.

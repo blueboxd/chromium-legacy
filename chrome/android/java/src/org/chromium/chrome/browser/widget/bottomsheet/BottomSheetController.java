@@ -12,7 +12,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -135,6 +134,9 @@ public class BottomSheetController implements Destroyable {
     /** The last known activity tab, if available. */
     private Tab mLastActivityTab;
 
+    /** A tab observer to watch the last known activity tab. */
+    private TabObserver mTabObserver;
+
     /** A runnable that initializes the bottom sheet when necessary. */
     private Runnable mSheetInitializer;
 
@@ -254,7 +256,7 @@ public class BottomSheetController implements Destroyable {
 
         VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
-        final TabObserver tabObserver = new EmptyTabObserver() {
+        mTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 clearRequestsAndHide();
@@ -276,29 +278,8 @@ public class BottomSheetController implements Destroyable {
             }
         };
 
-        mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
-            @Override
-            public void onActivityTabChanged(Tab tab) {
-                // Temporarily suppress the sheet if entering a state where there is no activity
-                // tab.
-                if (tab == null) {
-                    suppressSheet(StateChangeReason.COMPOSITED_UI);
-                    return;
-                }
-
-                // If refocusing the same tab, simply unsuppress the sheet.
-                if (mLastActivityTab == tab) {
-                    unsuppressSheet();
-                    return;
-                }
-
-                // Move the observer to the new activity tab and clear the sheet.
-                if (mLastActivityTab != null) mLastActivityTab.removeObserver(tabObserver);
-                mLastActivityTab = tab;
-                mLastActivityTab.addObserver(tabObserver);
-                clearRequestsAndHide();
-            }
-        });
+        mTabProvider.addObserver(this::setActivityTab);
+        setActivityTab(mTabProvider.get());
 
         ScrimObserver scrimObserver = new ScrimObserver() {
             @Override
@@ -363,6 +344,26 @@ public class BottomSheetController implements Destroyable {
         mPendingSheetObservers.clear();
 
         mSheetInitializer = null;
+    }
+
+    private void setActivityTab(Tab tab) {
+        // Temporarily suppress the sheet if entering a state where there is no activity tab.
+        if (tab == null) {
+            suppressSheet(StateChangeReason.COMPOSITED_UI);
+            return;
+        }
+
+        // If refocusing the same tab, simply unsuppress the sheet.
+        if (mLastActivityTab == tab) {
+            unsuppressSheet();
+            return;
+        }
+
+        // Move the observer to the new activity tab and clear the sheet.
+        if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
+        mLastActivityTab = tab;
+        mLastActivityTab.addObserver(mTabObserver);
+        clearRequestsAndHide();
     }
 
     /**

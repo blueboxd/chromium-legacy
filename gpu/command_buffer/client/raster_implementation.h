@@ -31,7 +31,6 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/raster_export.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 class TransferCacheSerializeHelper;
@@ -142,6 +141,28 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                 uint32_t transfer_cache_entry_id,
                                 const gfx::ColorSpace& target_color_space,
                                 bool needs_mips) override;
+  void ReadbackARGBPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      GLenum format,
+      base::OnceCallback<void(bool)> readback_done) override;
+  void ReadbackYUVPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& source_size,
+      const gfx::Rect& output_rect,
+      bool vertically_flip_texture,
+      int y_plane_row_stride_bytes,
+      unsigned char* y_plane_data,
+      int u_plane_row_stride_bytes,
+      unsigned char* u_plane_data,
+      int v_plane_row_stride_bytes,
+      unsigned char* v_plane_data,
+      const gfx::Point& paste_location,
+      base::OnceCallback<void()> release_mailbox,
+      base::OnceCallback<void(bool)> readback_done) override;
   GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;

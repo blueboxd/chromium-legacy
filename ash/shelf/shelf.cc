@@ -351,9 +351,6 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
 
   ShelfAlignment old_alignment = alignment_;
   alignment_ = alignment;
-  // Check added for http://crbug.com/738011.
-  CHECK(status_area_widget_);
-  status_area_widget()->UpdateAfterShelfAlignmentChange();
   tooltip_->Close();
   shelf_layout_manager_->LayoutShelf();
   Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow(),

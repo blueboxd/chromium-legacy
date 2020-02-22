@@ -345,6 +345,10 @@ HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
 
 // Returns the file path to installed chrome.exe.
 base::FilePath GetChromePath();
+
+// Returns the file path to system installed chrome.exe.
+base::FilePath GetSystemChromePath();
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_

@@ -307,7 +307,80 @@ void XRInputSource::OnSelect() {
   OnSelectEnd();
 }
 
-void XRInputSource::UpdateSelectState(
+void XRInputSource::OnSqueezeStart() {
+  DVLOG(3) << __func__;
+  // Discard duplicate events and ones after the session has ended.
+  if (state_.primary_squeeze_pressed || session_->ended())
+    return;
+
+  state_.primary_squeeze_pressed = true;
+  state_.squeezing_cancelled = false;
+
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(event_type_names::kSqueezestart);
+  session_->DispatchEvent(*event);
+
+  if (event->defaultPrevented())
+    state_.squeezing_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
+}
+
+void XRInputSource::OnSqueezeEnd() {
+  DVLOG(3) << __func__;
+  // Discard duplicate events and ones after the session has ended.
+  if (!state_.primary_squeeze_pressed || session_->ended())
+    return;
+
+  state_.primary_squeeze_pressed = false;
+
+  LocalFrame* frame = session_->xr()->GetFrame();
+  if (!frame)
+    return;
+
+  DVLOG(3) << __func__ << ": dispatch squeezeend event";
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(event_type_names::kSqueezeend);
+  session_->DispatchEvent(*event);
+
+  if (event->defaultPrevented())
+    state_.squeezing_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
+}
+
+void XRInputSource::OnSqueeze() {
+  DVLOG(3) << __func__;
+  // If a squeeze was fired but we had not previously started the squeezing it
+  // indicates a sub-frame or instantaneous squeeze event, and we should fire a
+  // squeezestart prior to the squeezeend.
+  if (!state_.primary_squeeze_pressed) {
+    OnSqueezeStart();
+  }
+
+  LocalFrame* frame = session_->xr()->GetFrame();
+  LocalFrame::NotifyUserActivation(frame);
+
+  // If SelectStart caused the session to end, we shouldn't try to fire the
+  // select event.
+  if (!state_.squeezing_cancelled && !session_->ended()) {
+    if (!frame)
+      return;
+    DVLOG(3) << __func__ << ": dispatch squeeze event";
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(event_type_names::kSqueeze);
+    session_->DispatchEvent(*event);
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
+  }
+
+  OnSqueezeEnd();
+}
+
+void XRInputSource::UpdateButtonStates(
     const device::mojom::blink::XRInputSourceStatePtr& new_state) {
   if (!new_state)
     return;
@@ -344,6 +417,21 @@ void XRInputSource::UpdateSelectState(
     // page stays in sync with the controller state but won't fire the
     // usual select event.
     OnSelectEnd();
+  }
+
+  // Handle state change of the primary input, which may fire events
+  if (new_state->primary_squeeze_clicked)
+    OnSqueeze();
+
+  if (new_state->primary_squeeze_pressed) {
+    OnSqueezeStart();
+  } else if (state_.primary_squeeze_pressed) {
+    // May get here if the input source was previously pressed but now isn't,
+    // but the input source did not set primary_squeeze_clicked to true. We will
+    // treat this as a cancelled squeezeing, firing the squeezeend event so the
+    // page stays in sync with the controller state but won't fire the
+    // usual squeeze event.
+    OnSqueezeEnd();
   }
 }
 
@@ -451,6 +539,20 @@ void XRInputSource::OnRemoved() {
 
     if (event->defaultPrevented())
       state_.selection_cancelled = true;
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
+  }
+
+  if (state_.primary_squeeze_pressed) {
+    state_.primary_squeeze_pressed = false;
+
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(event_type_names::kSqueezeend);
+    session_->DispatchEvent(*event);
+
+    if (event->defaultPrevented())
+      state_.squeezing_cancelled = true;
 
     // Ensure the frame cannot be used outside of the event handler.
     event->frame()->Deactivate();

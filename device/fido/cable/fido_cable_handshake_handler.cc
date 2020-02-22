@@ -22,6 +22,7 @@
 #include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "device/fido/cable/fido_cable_device.h"
+#include "device/fido/cable/noise.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -202,44 +203,6 @@ FidoCableV2HandshakeHandler::~FidoCableV2HandshakeHandler() {}
 
 namespace {
 
-// HKDF2 implements the functions with the same name from Noise[1], specialized
-// to the case where |num_outputs| is two.
-//
-// [1] https://www.noiseprotocol.org/noise.html#hash-functions
-std::tuple<std::array<uint8_t, 32>, std::array<uint8_t, 32>> HKDF2(
-    base::span<const uint8_t, 32> ck,
-    base::span<const uint8_t> ikm) {
-  uint8_t output[32 * 2];
-  HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(), ck.data(),
-       ck.size(), /*info=*/nullptr, 0);
-
-  std::array<uint8_t, 32> a, b;
-  memcpy(a.data(), &output[0], 32);
-  memcpy(b.data(), &output[32], 32);
-
-  return std::make_tuple(a, b);
-}
-
-// HKDF3 implements the functions with the same name from Noise[1], specialized
-// to the case where |num_outputs| is three.
-//
-// [1] https://www.noiseprotocol.org/noise.html#hash-functions
-std::tuple<std::array<uint8_t, 32>,
-           std::array<uint8_t, 32>,
-           std::array<uint8_t, 32>>
-HKDF3(base::span<const uint8_t, 32> ck, base::span<const uint8_t> ikm) {
-  uint8_t output[32 * 3];
-  HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(), ck.data(),
-       ck.size(), /*info=*/nullptr, 0);
-
-  std::array<uint8_t, 32> a, b, c;
-  memcpy(a.data(), &output[0], 32);
-  memcpy(b.data(), &output[32], 32);
-  memcpy(c.data(), &output[64], 32);
-
-  return std::make_tuple(a, b, c);
-}
-
 template <size_t N>
 bool CopyBytestring(std::array<uint8_t, N>* out,
                     const cbor::Value::MapValue& map,
@@ -256,34 +219,18 @@ bool CopyBytestring(std::array<uint8_t, N>* out,
 
 void FidoCableV2HandshakeHandler::InitiateCableHandshake(
     FidoDevice::DeviceCallback callback) {
-  // See https://www.noiseprotocol.org/noise.html#the-handshakestate-object
-  static const char kNNProtocolName[] = "Noise_NNpsk0_P256_AESGCM_SHA256";
-  static const char kNKProtocolName[] = "Noise_NKpsk0_P256_AESGCM_SHA256";
-  static_assert(sizeof(kNKProtocolName) == sizeof(kNNProtocolName),
-                "protocol names are different lengths");
-  static_assert(sizeof(kNNProtocolName) == crypto::kSHA256Length,
-                "name may need padding if not HASHLEN bytes long");
-  static_assert(
-      std::tuple_size<decltype(chaining_key_)>::value == crypto::kSHA256Length,
-      "chaining_key_ is wrong size");
-  static_assert(std::tuple_size<decltype(h_)>::value == crypto::kSHA256Length,
-                "h_ is wrong size");
-  if (peer_identity_) {
-    memcpy(chaining_key_.data(), kNKProtocolName, sizeof(kNKProtocolName));
-  } else {
-    memcpy(chaining_key_.data(), kNNProtocolName, sizeof(kNNProtocolName));
-  }
-  h_ = chaining_key_;
+  noise_.Init(peer_identity_ ? Noise::HandshakeType::kNKpsk0
+                             : Noise::HandshakeType::kNNpsk0);
 
   if (peer_identity_) {
     static const uint8_t kPrologue[] = "caBLE handshake";
-    MixHash(kPrologue);
+    noise_.MixHash(kPrologue);
   } else {
     static const uint8_t kPrologue[] = "caBLE QR code handshake";
-    MixHash(kPrologue);
+    noise_.MixHash(kPrologue);
   }
 
-  MixKeyAndHash(psk_);
+  noise_.MixKeyAndHash(psk_);
   ephemeral_key_.reset(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
   CHECK(EC_KEY_generate_key(ephemeral_key_.get()));
@@ -293,8 +240,8 @@ void FidoCableV2HandshakeHandler::InitiateCableHandshake(
                group, EC_KEY_get0_public_key(ephemeral_key_.get()),
                POINT_CONVERSION_UNCOMPRESSED, ephemeral_key_public_bytes,
                sizeof(ephemeral_key_public_bytes), /*ctx=*/nullptr));
-  MixHash(ephemeral_key_public_bytes);
-  MixKey(ephemeral_key_public_bytes);
+  noise_.MixHash(ephemeral_key_public_bytes);
+  noise_.MixKey(ephemeral_key_public_bytes);
 
   if (peer_identity_) {
     // If we know the identity of the peer from a previous interaction, NKpsk0
@@ -310,11 +257,11 @@ void FidoCableV2HandshakeHandler::InitiateCableHandshake(
       FIDO_LOG(DEBUG) << "Dropping handshake because peer identity is invalid";
       return;
     }
-    MixKey(es_key);
+    noise_.MixKey(es_key);
   }
 
-  std::vector<uint8_t> ciphertext = Encrypt(base::span<const uint8_t>());
-  MixHash(ciphertext);
+  std::vector<uint8_t> ciphertext =
+      noise_.EncryptAndHash(base::span<const uint8_t>());
 
   std::vector<uint8_t> handshake_message;
   handshake_message.reserve(eid_.size() + sizeof(ephemeral_key_public_bytes) +
@@ -349,11 +296,11 @@ bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
     return false;
   }
 
-  MixHash(peer_point_bytes);
-  MixKey(peer_point_bytes);
-  MixKey(shared_key);
+  noise_.MixHash(peer_point_bytes);
+  noise_.MixKey(peer_point_bytes);
+  noise_.MixKey(shared_key);
 
-  auto plaintext = Decrypt(ciphertext);
+  auto plaintext = noise_.DecryptAndHash(ciphertext);
   if (!plaintext || plaintext->empty() != peer_identity_.has_value()) {
     FIDO_LOG(DEBUG) << "Invalid caBLE handshake message";
     return false;
@@ -402,70 +349,11 @@ bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
     }
   }
 
-  // Here the spec says to do MixHash(ciphertext), but there are no more
-  // handshake messages so that's moot.
-  // MixHash(ciphertext);
-
   std::array<uint8_t, 32> read_key, write_key;
-  std::tie(write_key, read_key) =
-      HKDF2(chaining_key_, base::span<const uint8_t>());
+  std::tie(write_key, read_key) = noise_.traffic_keys();
   cable_device_->SetV2EncryptionData(read_key, write_key);
 
   return true;
-}
-
-void FidoCableV2HandshakeHandler::MixHash(base::span<const uint8_t> in) {
-  // See https://www.noiseprotocol.org/noise.html#the-symmetricstate-object
-  SHA256_CTX ctx;
-  SHA256_Init(&ctx);
-  SHA256_Update(&ctx, h_.data(), h_.size());
-  SHA256_Update(&ctx, in.data(), in.size());
-  SHA256_Final(h_.data(), &ctx);
-}
-
-void FidoCableV2HandshakeHandler::MixKey(base::span<const uint8_t> ikm) {
-  // See https://www.noiseprotocol.org/noise.html#the-symmetricstate-object
-  std::array<uint8_t, 32> temp_k;
-  std::tie(chaining_key_, temp_k) = HKDF2(chaining_key_, ikm);
-  InitializeKey(temp_k);
-}
-
-void FidoCableV2HandshakeHandler::MixKeyAndHash(base::span<const uint8_t> ikm) {
-  // See https://www.noiseprotocol.org/noise.html#the-symmetricstate-object
-  std::array<uint8_t, 32> temp_h, temp_k;
-  std::tie(chaining_key_, temp_h, temp_k) = HKDF3(chaining_key_, ikm);
-  MixHash(temp_h);
-  InitializeKey(temp_k);
-}
-
-void FidoCableV2HandshakeHandler::InitializeKey(
-    base::span<const uint8_t, 32> key) {
-  // See https://www.noiseprotocol.org/noise.html#the-cipherstate-object
-  DCHECK_EQ(symmetric_key_.size(), key.size());
-  memcpy(symmetric_key_.data(), key.data(), symmetric_key_.size());
-  symmetric_nonce_ = 0;
-}
-
-std::vector<uint8_t> FidoCableV2HandshakeHandler::Encrypt(
-    base::span<const uint8_t> plaintext) {
-  uint8_t nonce[12] = {0};
-  memcpy(nonce, &symmetric_nonce_, sizeof(symmetric_nonce_));
-  symmetric_nonce_++;
-
-  crypto::Aead aead(crypto::Aead::AES_256_GCM);
-  aead.Init(symmetric_key_);
-  return aead.Seal(base::span<const uint8_t>(), nonce, h_);
-}
-
-base::Optional<std::vector<uint8_t>> FidoCableV2HandshakeHandler::Decrypt(
-    base::span<const uint8_t> ciphertext) {
-  uint8_t nonce[12] = {0};
-  memcpy(nonce, &symmetric_nonce_, sizeof(symmetric_nonce_));
-  symmetric_nonce_++;
-
-  crypto::Aead aead(crypto::Aead::AES_256_GCM);
-  aead.Init(symmetric_key_);
-  return aead.Open(ciphertext, nonce, h_);
 }
 
 }  // namespace device

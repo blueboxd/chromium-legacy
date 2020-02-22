@@ -397,7 +397,11 @@ class FakeAssociatedUserValidator : public AssociatedUserValidator {
 
 class FakeChromeAvailabilityChecker : public ChromeAvailabilityChecker {
  public:
-  enum HasSupportedChromeCheckType { kChromeForceYes, kChromeForceNo };
+  enum HasSupportedChromeCheckType {
+    kChromeForceYes,
+    kChromeForceNo,
+    kChromeDontForce  // Uses the original checker to get result.
+  };
 
   FakeChromeAvailabilityChecker(
       HasSupportedChromeCheckType has_supported_chrome = kChromeForceYes);

@@ -534,6 +534,10 @@ group("gn_all") {
       ]
     }
 
+    if (is_android && (target_cpu == "arm" || target_cpu == "arm64")) {
+      deps += [ "//chrome/test/chromedriver:chromedriver($host_toolchain)" ]
+    }
+
     if (enable_extensions) {
       deps += [ "//extensions/shell:app_shell" ]
       if (is_desktop_linux && is_official_build) {

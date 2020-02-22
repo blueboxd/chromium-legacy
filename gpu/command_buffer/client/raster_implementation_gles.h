@@ -15,16 +15,20 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/raster_export.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace gpu {
+
+class ContextSupport;
+class GLHelper;
+
 namespace raster {
 
 // An implementation of RasterInterface on top of GLES2Interface.
 class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
-  explicit RasterImplementationGLES(gles2::GLES2Interface* gl);
+  explicit RasterImplementationGLES(gles2::GLES2Interface* gl,
+                                    ContextSupport* context_support);
   ~RasterImplementationGLES() override;
 
   // Command buffer Flush / Finish.
@@ -89,6 +93,30 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                                 const gfx::ColorSpace& target_color_space,
                                 bool needs_mips) override;
 
+  void ReadbackARGBPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      GLenum format,
+      base::OnceCallback<void(bool)> callback) override;
+
+  void ReadbackYUVPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& source_size,
+      const gfx::Rect& output_rect,
+      bool vertically_flip_texture,
+      int y_plane_row_stride_bytes,
+      unsigned char* y_plane_data,
+      int u_plane_row_stride_bytes,
+      unsigned char* u_plane_data,
+      int v_plane_row_stride_bytes,
+      unsigned char* v_plane_data,
+      const gfx::Point& paste_location,
+      base::OnceCallback<void()> release_mailbox,
+      base::OnceCallback<void(bool)> readback_done) override;
+
   // Raster via GrContext.
   GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   void DeleteGpuRasterTexture(GLuint texture) override;
@@ -111,7 +139,21 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
  private:
+  GLHelper* GetGLHelper();
+  void OnReadARGBPixelsAsync(GLuint texture_id,
+                             base::OnceCallback<void(bool)> callback,
+                             bool success);
+  void OnReadYUVPixelsAsync(GLuint copy_texture_id,
+                            base::OnceCallback<void()> on_release_mailbox,
+                            base::OnceCallback<void(bool)> readback_done,
+                            bool success);
+  void OnReleaseMailbox(GLuint shared_texture_id,
+                        base::OnceCallback<void()> release_mailbox);
+
   gles2::GLES2Interface* gl_;
+  ContextSupport* context_support_;
+  std::unique_ptr<GLHelper> gl_helper_;
+  base::WeakPtrFactory<RasterImplementationGLES> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

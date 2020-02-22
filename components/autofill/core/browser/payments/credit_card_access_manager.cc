@@ -234,7 +234,8 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
   }
 
 #if !defined(OS_IOS)
-  GetOrCreateFIDOAuthenticator()->SyncUserOptIn(unmask_details);
+  opt_in_intention_ =
+      GetOrCreateFIDOAuthenticator()->GetUserOptInIntention(unmask_details);
 #endif
   ready_to_start_authentication_.Signal();
 
@@ -354,18 +355,23 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
 
 UnmaskAuthFlowType CreditCardAccessManager::GetAuthenticationType(
     bool get_unmask_details_returned) {
-  bool fido_auth_suggested =
+  bool fido_auth_enabled =
       get_unmask_details_returned && unmask_details_.unmask_auth_method ==
                                          AutofillClient::UnmaskAuthMethod::FIDO;
+#if !defined(OS_IOS)
+  // Even if payments return FIDO enabled, we have to double check local pref,
+  // because if user locally opted out, we need to fall back to CVC flow.
+  fido_auth_enabled &= GetOrCreateFIDOAuthenticator()->IsUserOptedIn();
+#endif
 
   bool card_is_authorized_for_fido =
-      fido_auth_suggested && IsSelectedCardFidoAuthorized();
+      fido_auth_enabled && IsSelectedCardFidoAuthorized();
 
   // If FIDO authentication was suggested, but card is not in authorized list,
   // must authenticate with CVC followed by FIDO in order to authorize this card
   // for future FIDO use.
   bool should_follow_up_cvc_with_fido_auth =
-      fido_auth_suggested && !card_is_authorized_for_fido;
+      fido_auth_enabled && !card_is_authorized_for_fido;
 
   // Only use FIDO if card is authorized and not expired.
   bool card_is_eligible_for_fido =
@@ -551,6 +557,16 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
     // CreditCardFIDOAuthenticator will handle enrollment completely.
     ShowWebauthnOfferDialog(response.card_authorization_token);
   }
+
+#if !defined(OS_IOS)
+  // If user intended to opt out, we will opt user out after cvc auth completes
+  // (no matter cvc auth succeeded or failed).
+  if (opt_in_intention_ == UserOptInIntention::kIntentToOptOut) {
+    FIDOAuthOptChange(/*opt_in=*/false);
+  }
+  // Reset |opt_in_intention_| after cvc auth completes.
+  opt_in_intention_ = UserOptInIntention::kUnspecified;
+#endif
 }
 
 #if !defined(OS_IOS)

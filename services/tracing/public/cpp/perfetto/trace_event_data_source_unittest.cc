@@ -1766,7 +1766,7 @@ TEST_F(TraceEventDataSourceTest, HistogramSample) {
 
   UMA_HISTOGRAM_BOOLEAN("Foo.Bar", true);
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 5u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 4u);
   ExpectStandardPreamble();  // 3 preamble packets.
 
   auto* e_packet = producer_client()->GetFinalizedPacket(3);

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
@@ -39,7 +40,8 @@ class AppsGridView;
 
 class APP_LIST_EXPORT AppListItemView : public views::Button,
                                         public views::ContextMenuController,
-                                        public AppListItemObserver {
+                                        public AppListItemObserver,
+                                        public ui::ImplicitAnimationObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -222,6 +224,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // Returns the radius of preview circle.
   int GetPreviewCircleRadius() const;
 
@@ -230,6 +235,10 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // Modifies AppListItemView bounds to match the selected highlight bounds.
   void AdaptBoundsForSelectionHighlight(gfx::Rect* rect);
+
+  // Calculates the transform between the icon scaled by |icon_scale| and the
+  // normal size icon.
+  gfx::Transform GetScaleTransform(float icon_scale);
 
   const bool is_folder_;
 
@@ -284,6 +293,12 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // The shadow margins added to the app list item title.
   gfx::Insets title_shadow_margins_;
+
+  // The bitmap image for this app list item.
+  gfx::ImageSkia icon_image_;
+
+  // The scaling factor for displaying the app icon.
+  float icon_scale_ = 1.0f;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 

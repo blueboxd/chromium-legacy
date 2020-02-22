@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 200 tests; 186 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 200 tests; 189 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -46,9 +46,9 @@ PASS XRSession interface: attribute oninputsourceschange
 PASS XRSession interface: attribute onselect
 PASS XRSession interface: attribute onselectstart
 PASS XRSession interface: attribute onselectend
-FAIL XRSession interface: attribute onsqueeze assert_true: The prototype object must have a property "onsqueeze" expected true got false
-FAIL XRSession interface: attribute onsqueezestart assert_true: The prototype object must have a property "onsqueezestart" expected true got false
-FAIL XRSession interface: attribute onsqueezeend assert_true: The prototype object must have a property "onsqueezeend" expected true got false
+PASS XRSession interface: attribute onsqueeze
+PASS XRSession interface: attribute onsqueezestart
+PASS XRSession interface: attribute onsqueezeend
 PASS XRSession interface: attribute onvisibilitychange
 PASS XRRenderState interface: existence and properties of interface object
 PASS XRRenderState interface object length

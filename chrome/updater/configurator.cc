@@ -7,10 +7,10 @@
 #include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/patcher.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/unzipper.h"
-#include "chrome/updater/updater_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patcher.h"

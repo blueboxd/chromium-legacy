@@ -77,7 +77,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -183,7 +182,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
 
   if ((css_box && css_box->IsListItem()) || IsA<HTMLLIElement>(node))
     return ax::mojom::Role::kListItem;
-  if (layout_object_->IsListMarkerIncludingNGInside())
+  if (layout_object_->IsListMarkerIncludingNGOutsideAndInside())
     return ax::mojom::Role::kListMarker;
   if (layout_object_->IsBR())
     return ax::mojom::Role::kLineBreak;
@@ -695,7 +694,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (alt_text)
     return alt_text->IsEmpty();
 
-  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGInside())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGOutsideAndInside())
     return false;
 
   // Positioned elements and scrollable containers are important for
@@ -1250,7 +1249,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG() ||
+  if (layout_object.IsListMarkerIncludingNGOutside() ||
       !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
   NGInlineCursor cursor;
@@ -1278,7 +1277,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
     return nullptr;
 
   AXObject* result = nullptr;
-  if (GetLayoutObject()->IsListMarkerIncludingNG()) {
+  if (GetLayoutObject()->IsListMarkerIncludingNGOutside()) {
     AXObject* next_sibling = RawNextSibling();
     if (!next_sibling || !next_sibling->Children().size())
       return nullptr;
@@ -1331,7 +1330,7 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNG() ||
+  if (layout_object.IsListMarkerIncludingNGOutside() ||
       !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
   NGInlineCursor cursor;
@@ -1363,7 +1362,7 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
                                    ? PreviousSiblingIncludingIgnored()
                                    : nullptr;
   if (previous_sibling && previous_sibling->GetLayoutObject() &&
-      previous_sibling->GetLayoutObject()->IsLayoutNGListMarker()) {
+      previous_sibling->GetLayoutObject()->IsLayoutNGOutsideListMarker()) {
     if (!previous_sibling->Children().size())
       return nullptr;
     result = previous_sibling->LastChild();

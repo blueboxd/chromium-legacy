@@ -6421,6 +6421,14 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
 
+TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverForPenInput) {
+  // Show virtual keyboard for pen inputs.
+  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_PEN);
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+}
+
 #endif  // defined(OS_WIN)
 
 }  // namespace content

@@ -77,7 +77,7 @@ void LayoutObjectChildList::DestroyLeftoverChildren() {
   while (FirstChild()) {
     // List markers are owned by their enclosing list and so don't get destroyed
     // by this container.
-    if (FirstChild()->IsListMarkerIncludingNG()) {
+    if (FirstChild()->IsListMarkerIncludingNGOutside()) {
       FirstChild()->Remove();
       continue;
     }

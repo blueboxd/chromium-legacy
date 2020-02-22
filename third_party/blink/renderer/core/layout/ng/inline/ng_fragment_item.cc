@@ -150,7 +150,7 @@ bool NGFragmentItem::IsGeneratedText() const {
 }
 
 bool NGFragmentItem::IsListMarker() const {
-  return layout_object_ && layout_object_->IsLayoutNGListMarker();
+  return layout_object_ && layout_object_->IsLayoutNGOutsideListMarker();
 }
 
 bool NGFragmentItem::HasOverflowClip() const {

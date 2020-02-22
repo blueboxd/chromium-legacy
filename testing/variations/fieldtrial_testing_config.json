@@ -4245,25 +4245,6 @@
             ]
         }
     ],
-    "PassiveMixedContentWarning": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PassiveMixedContentWarning"
-                    ]
-                }
-            ]
-        }
-    ],
     "PauseBrowserInitiatedHeavyTrafficForP2P": [
         {
             "platforms": [

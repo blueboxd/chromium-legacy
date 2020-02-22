@@ -131,6 +131,7 @@ public class ManualFillingControllerTest {
     private static class MockActivityTabProvider extends ActivityTabProvider {
         public Tab mTab;
 
+        @Override
         public void set(Tab tab) {
             mTab = tab;
         }

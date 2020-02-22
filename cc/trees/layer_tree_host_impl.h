@@ -885,10 +885,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                      const gfx::Vector2dF& delta,
                                      base::TimeDelta delayed_by,
                                      base::Optional<float> autoscroll_velocity);
-  void ScrollAnimated(const gfx::Point& viewport_point,
-                      const gfx::Vector2dF& scroll_delta,
-                      base::TimeDelta delayed_by = base::TimeDelta());
-  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state);
 
   void CleanUpTileManagerResources();
   void CreateTileManagerResources();
@@ -945,7 +941,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidLatchToScroller(const ScrollState& scroll_state,
                           InputHandler::ScrollInputType type);
 
-  void ScrollLatchedScroller(ScrollState* scroll_state);
+  // Applies the scroll_state to the currently latched scroller. See comment in
+  // InputHandler::ScrollUpdate declaration for the meaning of |delayed_by|.
+  void ScrollLatchedScroller(ScrollState* scroll_state,
+                             base::TimeDelta delayed_by);
 
   bool ShouldAnimateScroll(const ScrollState& scroll_state) const;
 

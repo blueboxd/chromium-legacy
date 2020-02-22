@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "gpu/command_buffer/client/gl_helper.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -37,7 +38,7 @@ namespace {
 
 // Return the gfx::ColorSpace that the pixels resulting from calling
 // ConvertToYUVFrame on |image| will be in.
-gfx::ColorSpace GetImageYUVColorSpace(sk_sp<SkImage> image) {
+gfx::ColorSpace GetImageYUVColorSpace(scoped_refptr<StaticBitmapImage> image) {
   // TODO: Determine the ColorSpace::MatrixID and ColorSpace::RangeID that the
   // calls to libyuv are assuming.
   return gfx::ColorSpace();
@@ -171,7 +172,7 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
 }
 
 void CanvasCaptureHandler::SendNewFrame(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
         context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
@@ -179,25 +180,26 @@ void CanvasCaptureHandler::SendNewFrame(
   if (!image)
     return;
 
-  // Initially try accessing pixels directly if they are in memory.
-  SkPixmap pixmap;
-  if (image->peekPixels(&pixmap) &&
-      (pixmap.colorType() == kRGBA_8888_SkColorType ||
-       pixmap.colorType() == kBGRA_8888_SkColorType) &&
-      (pixmap.alphaType() == kUnpremul_SkAlphaType || image->isOpaque())) {
-    const base::TimeTicks timestamp = base::TimeTicks::Now();
-    SendFrame(ConvertToYUVFrame(image->isOpaque(), false,
-                                static_cast<const uint8_t*>(pixmap.addr(0, 0)),
-                                gfx::Size(pixmap.width(), pixmap.height()),
-                                static_cast<int>(pixmap.rowBytes()),
-                                pixmap.colorType()),
-              timestamp, GetImageYUVColorSpace(image));
-    return;
-  }
+  if (!image->IsTextureBacked()) {
+    // Initially try accessing pixels directly if they are in memory.
+    sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+    SkPixmap pixmap;
+    if (sk_image->peekPixels(&pixmap) &&
+        (pixmap.colorType() == kRGBA_8888_SkColorType ||
+         pixmap.colorType() == kBGRA_8888_SkColorType) &&
+        (pixmap.alphaType() == kUnpremul_SkAlphaType || sk_image->isOpaque())) {
+      const base::TimeTicks timestamp = base::TimeTicks::Now();
+      SendFrame(ConvertToYUVFrame(
+                    sk_image->isOpaque(), false,
+                    static_cast<const uint8_t*>(pixmap.addr(0, 0)),
+                    gfx::Size(pixmap.width(), pixmap.height()),
+                    static_cast<int>(pixmap.rowBytes()), pixmap.colorType()),
+                timestamp, GetImageYUVColorSpace(image));
+      return;
+    }
 
-  // Copy the pixels into memory synchronously. This call may block the main
-  // render thread.
-  if (!image->isTextureBacked()) {
+    // Copy the pixels into memory synchronously. This call may block the main
+    // render thread.
     ReadARGBPixelsSync(image);
     return;
   }
@@ -207,8 +209,8 @@ void CanvasCaptureHandler::SendNewFrame(
     return;
   }
 
-  // Try async reading SkImage if it is texture backed.
-  if (image->isOpaque()) {
+  // Try async reading if image is texture backed.
+  if (image->CurrentFrameKnownToBeOpaque()) {
     ReadYUVPixelsAsync(image, context_provider);
   } else {
     ReadARGBPixelsAsync(image, context_provider->ContextProvider());
@@ -259,11 +261,13 @@ void CanvasCaptureHandler::StopVideoCapture() {
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
-void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
+void CanvasCaptureHandler::ReadARGBPixelsSync(
+    scoped_refptr<StaticBitmapImage> image) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
+  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   const base::TimeTicks timestamp = base::TimeTicks::Now();
-  const gfx::Size image_size(image->width(), image->height());
+  const gfx::Size image_size(sk_image->width(), sk_image->height());
   scoped_refptr<VideoFrame> temp_argb_frame = frame_pool_.CreateFrame(
       media::PIXEL_FORMAT_ARGB, image_size, gfx::Rect(image_size), image_size,
       base::TimeDelta());
@@ -271,14 +275,14 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
     DLOG(ERROR) << "Couldn't allocate video frame";
     return;
   }
-  const bool is_opaque = image->isOpaque();
+  const bool is_opaque = sk_image->isOpaque();
   SkImageInfo image_info = SkImageInfo::MakeN32(
       image_size.width(), image_size.height(),
       is_opaque ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-  if (!image->readPixels(image_info,
-                         temp_argb_frame->visible_data(VideoFrame::kARGBPlane),
-                         temp_argb_frame->stride(VideoFrame::kARGBPlane),
-                         0 /*srcX*/, 0 /*srcY*/)) {
+  if (!sk_image->readPixels(
+          image_info, temp_argb_frame->visible_data(VideoFrame::kARGBPlane),
+          temp_argb_frame->stride(VideoFrame::kARGBPlane), 0 /*srcX*/,
+          0 /*srcY*/)) {
     DLOG(ERROR) << "Couldn't read SkImage using readPixels()";
     return;
   }
@@ -291,7 +295,7 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
 }
 
 void CanvasCaptureHandler::ReadARGBPixelsAsync(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(context_provider);
@@ -305,13 +309,6 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
     DLOG(ERROR) << "Couldn't allocate video frame";
     return;
   }
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  GrBackendTexture backend_texture =
-      image->getBackendTexture(true, &surface_origin);
-  DCHECK(backend_texture.isValid());
-  GrGLTextureInfo texture_info;
-  const bool result = backend_texture.getGLTextureInfo(&texture_info);
-  DCHECK(result);
 
   static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
                     kN32_SkColorType == kBGRA_8888_SkColorType,
@@ -323,19 +320,20 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
   else
     format = GL_BGRA_EXT;
 
-  DCHECK(context_provider->GetGLHelper());
-
   IncrementOngoingAsyncPixelReadouts();
-  context_provider->GetGLHelper()->ReadbackTextureAsync(
-      texture_info.fID, texture_info.fTarget, image_size,
+  gpu::MailboxHolder mailbox_holder = image->GetMailboxHolder();
+  context_provider->RasterInterface()->WaitSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetConstData());
+  context_provider->RasterInterface()->ReadbackARGBPixelsAsync(
+      mailbox_holder.mailbox, mailbox_holder.texture_target, image_size,
       temp_argb_frame->visible_data(VideoFrame::kARGBPlane), format,
       WTF::Bind(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
                 weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,
-                timestamp, surface_origin != kTopLeft_GrSurfaceOrigin));
+                timestamp, !image->IsOriginTopLeft()));
 }
 
 void CanvasCaptureHandler::ReadYUVPixelsAsync(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
         context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
@@ -351,56 +349,29 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
     return;
   }
 
-  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
-  GrBackendTexture backend_texture =
-      image->getBackendTexture(true, &surface_origin);
-  DCHECK(backend_texture.isValid());
-  GrGLTextureInfo texture_info;
-  const bool result = backend_texture.getGLTextureInfo(&texture_info);
-  DCHECK(result);
-
-  // The YUV readback path only works for 2D textures.
-  GLuint texture_for_readback = texture_info.fID;
-  GLuint copy_texture = 0;
-  if (texture_info.fTarget != GL_TEXTURE_2D) {
-    auto* gl = context_provider->ContextProvider()->ContextGL();
-    int width = image->imageInfo().width();
-    int height = image->imageInfo().height();
-
-    gl->GenTextures(1, &copy_texture);
-    gl->BindTexture(GL_TEXTURE_2D, copy_texture);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                   GL_UNSIGNED_BYTE, nullptr);
-    gl->CopyTextureCHROMIUM(texture_info.fID, 0, GL_TEXTURE_2D, copy_texture, 0,
-                            GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 0);
-    image = nullptr;
-    texture_for_readback = copy_texture;
-  }
-
-  DCHECK(context_provider->ContextProvider()->GetGLHelper());
-  gpu::ReadbackYUVInterface* const yuv_reader =
-      context_provider->ContextProvider()
-          ->GetGLHelper()
-          ->GetReadbackPipelineYUV(surface_origin != kTopLeft_GrSurfaceOrigin);
-  yuv_reader->ReadbackYUV(
-      texture_for_readback, image_size, gfx::Rect(image_size),
-      output_frame->stride(media::VideoFrame::kYPlane),
-      output_frame->visible_data(media::VideoFrame::kYPlane),
-      output_frame->stride(media::VideoFrame::kUPlane),
-      output_frame->visible_data(media::VideoFrame::kUPlane),
-      output_frame->stride(media::VideoFrame::kVPlane),
-      output_frame->visible_data(media::VideoFrame::kVPlane), gfx::Point(0, 0),
-      WTF::Bind(&CanvasCaptureHandler::OnYUVPixelsReadAsync,
-                weak_ptr_factory_.GetWeakPtr(), image, copy_texture,
-                context_provider, output_frame, timestamp));
+  gpu::MailboxHolder mailbox_holder = image->GetMailboxHolder();
+  context_provider->ContextProvider()->RasterInterface()->WaitSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetConstData());
+  context_provider->ContextProvider()
+      ->RasterInterface()
+      ->ReadbackYUVPixelsAsync(
+          mailbox_holder.mailbox, mailbox_holder.texture_target, image_size,
+          gfx::Rect(image_size), !image->IsOriginTopLeft(),
+          output_frame->stride(media::VideoFrame::kYPlane),
+          output_frame->visible_data(media::VideoFrame::kYPlane),
+          output_frame->stride(media::VideoFrame::kUPlane),
+          output_frame->visible_data(media::VideoFrame::kUPlane),
+          output_frame->stride(media::VideoFrame::kVPlane),
+          output_frame->visible_data(media::VideoFrame::kVPlane),
+          gfx::Point(0, 0),
+          WTF::Bind(&CanvasCaptureHandler::OnReleaseMailbox,
+                    weak_ptr_factory_.GetWeakPtr(), image),
+          WTF::Bind(&CanvasCaptureHandler::OnYUVPixelsReadAsync,
+                    weak_ptr_factory_.GetWeakPtr(), output_frame, timestamp));
 }
 
 void CanvasCaptureHandler::OnARGBPixelsReadAsync(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     scoped_refptr<media::VideoFrame> temp_argb_frame,
     base::TimeTicks this_frame_ticks,
     bool flip,
@@ -415,9 +386,8 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
     return;
   }
   // Let |image| fall out of scope after we are done reading.
-  const bool is_opaque = image->isOpaque();
+  const bool is_opaque = image->CurrentFrameKnownToBeOpaque();
   const auto color_space = GetImageYUVColorSpace(image);
-  image = nullptr;
 
   SendFrame(
       ConvertToYUVFrame(is_opaque, flip,
@@ -431,23 +401,22 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
 }
 
 void CanvasCaptureHandler::OnYUVPixelsReadAsync(
-    sk_sp<SkImage> image,
-    GLuint copy_texture,
-    base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper> context_provider,
     scoped_refptr<media::VideoFrame> yuv_frame,
     base::TimeTicks this_frame_ticks,
     bool success) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  if (copy_texture && context_provider) {
-    context_provider->ContextProvider()->ContextGL()->DeleteTextures(
-        1, &copy_texture);
-  }
 
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
   }
-  SendFrame(yuv_frame, this_frame_ticks, GetImageYUVColorSpace(image));
+  SendFrame(yuv_frame, this_frame_ticks, gfx::ColorSpace());
+}
+
+void CanvasCaptureHandler::OnReleaseMailbox(
+    scoped_refptr<StaticBitmapImage> image) {
+  // All shared image operations have been completed, stop holding the ref.
+  image = nullptr;
 }
 
 scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(

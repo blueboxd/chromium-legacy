@@ -275,6 +275,21 @@ public class Tab {
                 callback.onRenderProcessGone();
             }
         }
+
+        @Override
+        public void showContextMenu(IObjectWrapper pageUrl, IObjectWrapper linkUrl,
+                IObjectWrapper linkText, IObjectWrapper titleOrAltText) {
+            StrictModeWorkaround.apply();
+            String pageUrlString = ObjectWrapper.unwrap(pageUrl, String.class);
+            String linkUrlString = ObjectWrapper.unwrap(linkUrl, String.class);
+            ContextMenuParams params = new ContextMenuParams(Uri.parse(pageUrlString),
+                    linkUrlString != null ? Uri.parse(linkUrlString) : null,
+                    ObjectWrapper.unwrap(linkText, String.class),
+                    ObjectWrapper.unwrap(titleOrAltText, String.class));
+            for (TabCallback callback : mCallbacks) {
+                callback.showContextMenu(params);
+            }
+        }
     }
 
     private static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {

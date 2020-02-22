@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -103,11 +103,11 @@ class CORE_EXPORT NGLayoutInputNode {
   }
   bool IsListItem() const { return IsBlock() && box_->IsLayoutNGListItem(); }
   bool IsListMarker() const {
-    return IsBlock() && box_->IsLayoutNGListMarker();
+    return IsBlock() && box_->IsLayoutNGOutsideListMarker();
   }
   bool ListMarkerOccupiesWholeLine() const {
     DCHECK(IsListMarker());
-    return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
+    return ToLayoutNGOutsideListMarker(box_)->NeedsOccupyWholeLine();
   }
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();

@@ -303,7 +303,11 @@ TEST(SecurityStateTest, MixedContentWithPolicyCertificate) {
   // Verify that passive mixed content downgrades the security level.
   helper.set_contained_mixed_form(false);
   helper.set_displayed_mixed_content(true);
-  EXPECT_EQ(NONE, helper.GetSecurityLevel());
+  SecurityLevel expected_passive_level =
+      base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning)
+          ? WARNING
+          : NONE;
+  EXPECT_EQ(expected_passive_level, helper.GetSecurityLevel());
 
   // Ensure that active mixed content downgrades the security level.
   helper.set_contained_mixed_form(false);

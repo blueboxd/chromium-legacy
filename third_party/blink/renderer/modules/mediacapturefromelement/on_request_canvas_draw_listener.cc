@@ -15,7 +15,7 @@ OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() = default;
 
 void OnRequestCanvasDrawListener::SendNewFrame(
-    sk_sp<SkImage> image,
+    scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
   frame_capture_requested_ = false;
   AutoCanvasDrawListener::SendNewFrame(image, context_provider);

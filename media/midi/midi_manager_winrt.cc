@@ -54,24 +54,13 @@ using Win::Devices::Enumeration::IDeviceWatcher;
 using Win::Foundation::IAsyncOperation;
 using Win::Foundation::ITypedEventHandler;
 
+// Alias for printing HRESULT.
+const auto PrintHr = logging::SystemErrorCodeToString;
+
 enum {
   kDefaultTaskRunner = TaskService::kDefaultRunnerId,
   kComTaskRunner
 };
-
-// Helpers for printing HRESULTs.
-struct PrintHr {
-  PrintHr(HRESULT hr) : hr(hr) {}
-  HRESULT hr;
-};
-
-std::ostream& operator<<(std::ostream& os, const PrintHr& phr) {
-  std::ios_base::fmtflags ff = os.flags();
-  os << _com_error(phr.hr).ErrorMessage() << " (0x" << std::hex
-     << std::uppercase << std::setfill('0') << std::setw(8) << phr.hr << ")";
-  os.flags(ff);
-  return os;
-}
 
 template <typename T>
 std::string GetIdString(T* obj) {

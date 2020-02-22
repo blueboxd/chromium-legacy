@@ -288,4 +288,34 @@ TEST_F(PipTest, PipRestoreOnWorkAreaChangeDoesNotChangeWindowSize) {
   EXPECT_EQ(gfx::Rect(292, 44, 100, 100), window->GetBoundsInScreen());
 }
 
+TEST_F(PipTest, PipSnappedToEdgeWhenSavingSnapFraction) {
+  ForceHideShelvesForTest();
+  UpdateDisplay("400x400");
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100)));
+  WindowState* window_state = WindowState::Get(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  window->Show();
+
+  // Show the floating keyboard and make the PIP window detached from the screen
+  // edges.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboardInDisplay(window_state->GetDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
+
+  window->SetBounds(gfx::Rect(100, 192, 100, 100));
+
+  // Set restore position to where the window currently is.
+  PipPositioner::SaveSnapFraction(window_state);
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
+
+  // Ensure that the correct value is saved as snap fraction even when the PIP
+  // bounds is detached from the screen edge.
+  EXPECT_EQ(gfx::Rect(100, 192, 100, 100),
+            PipPositioner::GetSnapFractionAppliedBounds(window_state));
+}
+
 }  // namespace ash

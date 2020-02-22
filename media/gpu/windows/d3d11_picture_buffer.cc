@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/media_log.h"
-#include "media/gpu/windows/return_on_failure.h"
+#include "media/base/win/mf_helpers.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/color_space.h"

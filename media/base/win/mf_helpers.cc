@@ -6,8 +6,6 @@
 
 namespace media {
 
-namespace mf {
-
 Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
     uint32_t buffer_length,
     int align) {
@@ -78,7 +76,5 @@ HRESULT DXGIDeviceScopedHandle::LockDevice(REFIID riid, void** device_out) {
                                    /*block=*/FALSE);
   return hr;
 }
-
-}  // namespace mf
 
 }  // namespace media

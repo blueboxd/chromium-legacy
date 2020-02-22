@@ -53,6 +53,13 @@ class ASH_EXPORT CollisionDetectionUtils {
   // display |display|.
   static gfx::Rect GetMovementArea(const display::Display& display);
 
+  // Returns the result of adjusting |bounds_in_screen| according to gravity
+  // inside the movement area of |display| without taking obstacles into
+  // account.
+  static gfx::Rect AdjustToFitMovementAreaByGravity(
+      const display::Display& display,
+      const gfx::Rect& bounds_in_screen);
+
   // Returns the position the window should come to rest at. For example,
   // this will be at a screen edge, not in the middle of the screen.
   // TODO(edcourtney): This should consider drag velocity for fling as well.

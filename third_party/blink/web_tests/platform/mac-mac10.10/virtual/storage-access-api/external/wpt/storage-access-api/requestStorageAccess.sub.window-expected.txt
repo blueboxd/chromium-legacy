@@ -9,6 +9,6 @@ PASS [same-origin-frame] document.requestStorageAccess() should be rejected by d
 PASS [nested-cross-origin-frame] document.requestStorageAccess() should be supported on the document interface
 PASS [nested-cross-origin-frame] document.requestStorageAccess() should be rejected by default with no user gesture
 PASS [nested-same-origin-frame] document.requestStorageAccess() should be supported on the document interface
-FAIL [nested-same-origin-frame] document.requestStorageAccess() should be rejected by default with no user gesture assert_unreached: Should have rejected: document.requestStorageAccess() call without user gesture Reached unreachable code
+PASS [nested-same-origin-frame] document.requestStorageAccess() should be rejected by default with no user gesture
 Harness: the test ran to completion.
 

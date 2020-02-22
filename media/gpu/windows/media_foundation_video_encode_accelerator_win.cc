@@ -27,7 +27,7 @@
 #include "media/base/win/mf_initializer.h"
 #include "third_party/libyuv/include/libyuv.h"
 
-using media::mf::MediaBufferScopedPointer;
+using media::MediaBufferScopedPointer;
 
 namespace media {
 
@@ -229,7 +229,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   HRESULT hr =
       encoder_->GetInputStreamInfo(input_stream_id_, &input_stream_info);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get input stream info", false);
-  input_sample_ = mf::CreateEmptySampleWithBuffer(
+  input_sample_ = CreateEmptySampleWithBuffer(
       input_stream_info.cbSize
           ? input_stream_info.cbSize
           : VideoFrame::AllocationSize(PIXEL_FORMAT_I420, input_visible_size_),
@@ -238,7 +238,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   MFT_OUTPUT_STREAM_INFO output_stream_info;
   hr = encoder_->GetOutputStreamInfo(output_stream_id_, &output_stream_info);
   RETURN_ON_HR_FAILURE(hr, "Couldn't get output stream info", false);
-  output_sample_ = mf::CreateEmptySampleWithBuffer(
+  output_sample_ = CreateEmptySampleWithBuffer(
       output_stream_info.cbSize
           ? output_stream_info.cbSize
           : bitstream_buffer_size_ * kOutputSampleBufferSizeRatio,

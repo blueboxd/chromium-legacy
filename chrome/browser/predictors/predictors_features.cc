@@ -26,9 +26,4 @@ const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork{
     "LoadingPredictorDisregardAlwaysAccessesNetwork",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Modifies loading predictor so that it can also use predictions coming from
-// the optimization guide.
-const base::Feature kLoadingPredictorUseOptimizationGuide{
-    "LoadingPredictorUseOptimizationGuide", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features

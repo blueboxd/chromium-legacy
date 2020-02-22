@@ -151,7 +151,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
   // AutofillPopupRowView:
   void CreateContent() override;
-  void RefreshStyle() final;
+  void RefreshStyle() override;
   std::unique_ptr<views::Background> CreateBackground() final;
 
   int frontend_id() const { return frontend_id_; }
@@ -258,6 +258,7 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
  protected:
   // AutofillPopupItemView:
   void CreateContent() override;
+  void RefreshStyle() override;
   int GetPrimaryTextStyle() override;
   gfx::Font::Weight GetPrimaryTextWeight() const override;
 
@@ -708,13 +709,6 @@ AutofillPopupFooterView* AutofillPopupFooterView::Create(
 }
 
 void AutofillPopupFooterView::CreateContent() {
-  SetBorder(views::CreateSolidSidedBorder(
-      /*top=*/views::MenuConfig::instance().separator_thickness,
-      /*left=*/0,
-      /*bottom=*/0,
-      /*right=*/0,
-      /*color=*/popup_view()->GetSeparatorColor()));
-
   AutofillPopupController* controller = popup_view()->controller();
 
   views::BoxLayout* layout_manager =
@@ -757,6 +751,16 @@ void AutofillPopupFooterView::CreateContent() {
     AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
     AddIcon(icon);
   }
+}
+
+void AutofillPopupFooterView::RefreshStyle() {
+  AutofillPopupItemView::RefreshStyle();
+  SetBorder(views::CreateSolidSidedBorder(
+      /*top=*/views::MenuConfig::instance().separator_thickness,
+      /*left=*/0,
+      /*bottom=*/0,
+      /*right=*/0,
+      /*color=*/popup_view()->GetSeparatorColor()));
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -967,7 +971,6 @@ AutofillPopupRowView::AutofillPopupRowView(
 
 void AutofillPopupRowView::Init() {
   CreateContent();
-  RefreshStyle();
 }
 
 bool AutofillPopupRowView::HandleAccessibleAction(

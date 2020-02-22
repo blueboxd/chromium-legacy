@@ -73,17 +73,17 @@ TEST_F(DXGIDeviceScopedHandleTest, UseDXGIDeviceScopedHandle) {
   {
     // Create DXGIDeviceScopedHandle in an inner scope without LockDevice
     // call.
-    mf::DXGIDeviceScopedHandle device_handle_1(dxgi_device_man_.Get());
+    DXGIDeviceScopedHandle device_handle_1(dxgi_device_man_.Get());
   }
   {
     // Create DXGIDeviceScopedHandle in an inner scope with LockDevice call.
-    mf::DXGIDeviceScopedHandle device_handle_2(dxgi_device_man_.Get());
+    DXGIDeviceScopedHandle device_handle_2(dxgi_device_man_.Get());
     ComPtr<ID3D11Device> device2;
     ASSERT_HRESULT_SUCCEEDED(
         device_handle_2.LockDevice(IID_PPV_ARGS(&device2)));
   }
   // Use the device in an outer scope.
-  mf::DXGIDeviceScopedHandle device_handle_3(dxgi_device_man_.Get());
+  DXGIDeviceScopedHandle device_handle_3(dxgi_device_man_.Get());
   ComPtr<ID3D11Device> device3;
   ASSERT_HRESULT_SUCCEEDED(device_handle_3.LockDevice(IID_PPV_ARGS(&device3)));
 }

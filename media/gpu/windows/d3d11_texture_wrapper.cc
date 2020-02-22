@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "media/gpu/windows/return_on_failure.h"
+#include "media/base/win/mf_helpers.h"
 #include "ui/gl/gl_image.h"
 
 namespace media {

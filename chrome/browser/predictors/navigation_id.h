@@ -29,7 +29,6 @@ struct NavigationID {
 
   bool operator<(const NavigationID& rhs) const;
   bool operator==(const NavigationID& rhs) const;
-  bool operator!=(const NavigationID& rhs) const;
 
   // Returns true iff the tab_id is valid and the Main frame URL is set.
   bool is_valid() const;

@@ -245,17 +245,23 @@ gfx::Rect CollisionDetectionUtils::GetMovementArea(
   return work_area;
 }
 
+gfx::Rect CollisionDetectionUtils::AdjustToFitMovementAreaByGravity(
+    const display::Display& display,
+    const gfx::Rect& bounds_in_screen) {
+  gfx::Rect resting_bounds = bounds_in_screen;
+  gfx::Rect area = GetMovementArea(display);
+  resting_bounds.AdjustToFit(area);
+  const CollisionDetectionUtils::Gravity gravity =
+      GetGravityToClosestEdge(resting_bounds, area);
+  return GetAdjustedBoundsByGravity(resting_bounds, area, gravity);
+}
+
 gfx::Rect CollisionDetectionUtils::GetRestingPosition(
     const display::Display& display,
     const gfx::Rect& bounds_in_screen,
     CollisionDetectionUtils::RelativePriority priority) {
-  gfx::Rect resting_bounds = bounds_in_screen;
-  gfx::Rect area = GetMovementArea(display);
-  resting_bounds.AdjustToFit(area);
-
-  const CollisionDetectionUtils::Gravity gravity =
-      GetGravityToClosestEdge(resting_bounds, area);
-  resting_bounds = GetAdjustedBoundsByGravity(resting_bounds, area, gravity);
+  gfx::Rect resting_bounds =
+      AdjustToFitMovementAreaByGravity(display, bounds_in_screen);
   return AvoidObstacles(display, resting_bounds, priority);
 }
 

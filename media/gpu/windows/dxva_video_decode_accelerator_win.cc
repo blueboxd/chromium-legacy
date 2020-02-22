@@ -196,7 +196,7 @@ static Microsoft::WRL::ComPtr<IMFSample> CreateInputSample(
   CHECK(stream);
   CHECK_GT(size, 0U);
   Microsoft::WRL::ComPtr<IMFSample> sample;
-  sample = mf::CreateEmptySampleWithBuffer(std::max(min_size, size), alignment);
+  sample = CreateEmptySampleWithBuffer(std::max(min_size, size), alignment);
   RETURN_ON_FAILURE(sample.Get(), "Failed to create empty sample",
                     Microsoft::WRL::ComPtr<IMFSample>());
 
@@ -2964,7 +2964,7 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(IMFSample* sample,
   HRESULT hr = sample->GetBufferByIndex(0, &buffer);
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from input sample", hr);
 
-  mf::MediaBufferScopedPointer scoped_media_buffer(buffer.Get());
+  MediaBufferScopedPointer scoped_media_buffer(buffer.Get());
 
   if (!config_change_detector_->DetectConfig(
           scoped_media_buffer.get(), scoped_media_buffer.current_length())) {

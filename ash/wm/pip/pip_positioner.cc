@@ -126,7 +126,13 @@ bool PipPositioner::HasSnapFraction(WindowState* window_state) {
 }
 
 void PipPositioner::SaveSnapFraction(WindowState* window_state) {
-  gfx::Rect bounds = window_state->window()->GetBoundsInScreen();
+  // Ensure that |bounds| is along one of the edges of the movement area.
+  // If the PIP window is drag-moved onto some system UI, it's possible that
+  // the PIP window is detached from any of them.
+  gfx::Rect bounds =
+      ash::CollisionDetectionUtils::AdjustToFitMovementAreaByGravity(
+          window_state->GetDisplay(),
+          window_state->window()->GetBoundsInScreen());
   gfx::Rect movement_area =
       CollisionDetectionUtils::GetMovementArea(window_state->GetDisplay());
   float width_fraction = (float)(bounds.x() - movement_area.x()) /

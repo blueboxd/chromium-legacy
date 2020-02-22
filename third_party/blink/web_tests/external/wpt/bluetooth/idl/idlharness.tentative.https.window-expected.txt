@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 204 tests; 147 PASS, 57 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 206 tests; 147 PASS, 59 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -30,6 +30,7 @@ PASS Bluetooth interface: existence and properties of interface prototype object
 PASS Bluetooth interface: operation getAvailability()
 FAIL Bluetooth interface: attribute onavailabilitychanged assert_true: The prototype object must have a property "onavailabilitychanged" expected true got false
 FAIL Bluetooth interface: attribute referringDevice assert_true: The prototype object must have a property "referringDevice" expected true got false
+FAIL Bluetooth interface: operation getDevices() assert_own_property: interface prototype object missing non-static operation expected property "getDevices" missing
 PASS Bluetooth interface: operation requestDevice(optional RequestDeviceOptions)
 PASS Bluetooth interface: attribute onadvertisementreceived
 FAIL Bluetooth interface: attribute ongattserverdisconnected assert_true: The prototype object must have a property "ongattserverdisconnected" expected true got false
@@ -42,6 +43,7 @@ PASS Stringification of navigator.bluetooth
 PASS Bluetooth interface: navigator.bluetooth must inherit property "getAvailability()" with the proper type
 FAIL Bluetooth interface: navigator.bluetooth must inherit property "onavailabilitychanged" with the proper type assert_inherits: property "onavailabilitychanged" not found in prototype chain
 FAIL Bluetooth interface: navigator.bluetooth must inherit property "referringDevice" with the proper type assert_inherits: property "referringDevice" not found in prototype chain
+FAIL Bluetooth interface: navigator.bluetooth must inherit property "getDevices()" with the proper type assert_inherits: property "getDevices" not found in prototype chain
 PASS Bluetooth interface: navigator.bluetooth must inherit property "requestDevice(optional RequestDeviceOptions)" with the proper type
 PASS Bluetooth interface: calling requestDevice(optional RequestDeviceOptions) on navigator.bluetooth with too few arguments must throw TypeError
 PASS Bluetooth interface: navigator.bluetooth must inherit property "onadvertisementreceived" with the proper type

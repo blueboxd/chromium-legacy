@@ -365,7 +365,7 @@ bool AutocompleteHistoryManager::IsFieldValueSaveable(
   // We don't want to save a trimmed string, but we want to make sure that the
   // value is non-empty nor only whitespaces.
   bool is_value_valid = false;
-  for (const char& c : field.value) {
+  for (const base::string16::value_type& c : field.value) {
     if (c != ' ') {
       is_value_valid = true;
       break;

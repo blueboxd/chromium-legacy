@@ -183,14 +183,14 @@ bool UpdateClientImpl::GetCrxUpdateState(const std::string& id,
 bool UpdateClientImpl::IsUpdating(const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (const auto task : tasks_) {
+  for (const auto& task : tasks_) {
     const auto ids = task->GetIds();
     if (base::Contains(ids, id)) {
       return true;
     }
   }
 
-  for (const auto task : task_queue_) {
+  for (const auto& task : task_queue_) {
     const auto ids = task->GetIds();
     if (base::Contains(ids, id)) {
       return true;

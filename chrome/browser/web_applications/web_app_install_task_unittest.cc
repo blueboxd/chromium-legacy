@@ -889,7 +889,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
             // Make sure they're all derived from the yellow icon.
-            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
                  final_web_app_info->icon_bitmaps) {
               EXPECT_FALSE(icon.second.drawsNothing());
               EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
@@ -1005,7 +1005,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
-            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
                  final_web_app_info->icon_bitmaps) {
               EXPECT_FALSE(icon.second.drawsNothing());
             }
@@ -1036,7 +1036,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
                 test_install_finalizer().web_app_info();
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
-            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
                  final_web_app_info->icon_bitmaps) {
               EXPECT_FALSE(icon.second.drawsNothing());
             }

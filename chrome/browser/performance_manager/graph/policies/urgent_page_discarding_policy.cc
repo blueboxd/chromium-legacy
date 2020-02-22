@@ -257,7 +257,7 @@ void UrgentPageDiscardingPolicy::UrgentlyDiscardAPage() {
 
   // List all the processes associated with these page nodes.
   base::flat_set<const ProcessNode*> process_nodes;
-  for (const auto iter : discardable_pages) {
+  for (const auto& iter : discardable_pages) {
     auto processes = GraphOperations::GetAssociatedProcessNodes(iter.first);
     process_nodes.insert(processes.begin(), processes.end());
   }

@@ -299,7 +299,8 @@ TEST(ExtensionFromWebApp, Basic) {
 
   EXPECT_EQ(web_app.icon_bitmaps.size(),
             IconsInfo::GetIcons(extension.get()).map().size());
-  for (const std::pair<SquareSizePx, SkBitmap>& icon : web_app.icon_bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+       web_app.icon_bitmaps) {
     int size = icon.first;
     EXPECT_EQ(base::StringPrintf("icons/%i.png", size),
               IconsInfo::GetIcons(extension.get())

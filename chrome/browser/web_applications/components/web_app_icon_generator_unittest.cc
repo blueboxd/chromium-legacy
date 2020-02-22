@@ -375,7 +375,7 @@ TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
       GenerateIcons("+", bg_color);
   EXPECT_EQ(sizes.size(), icon_bitmaps.size());
 
-  for (const std::pair<SquareSizePx, SkBitmap>& icon : icon_bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon : icon_bitmaps) {
     SquareSizePx size = icon.first;
     const SkBitmap& bitmap = icon.second;
     EXPECT_EQ(size, bitmap.width());

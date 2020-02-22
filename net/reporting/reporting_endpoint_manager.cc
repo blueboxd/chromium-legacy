@@ -67,7 +67,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     // Total weight of endpoints in |available_endpoints|.
     int total_weight = 0;
 
-    for (const ReportingEndpoint endpoint : endpoints) {
+    for (const ReportingEndpoint& endpoint : endpoints) {
       if (!delegate_->CanUseClient(endpoint.group_key.origin,
                                    endpoint.info.url)) {
         continue;

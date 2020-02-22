@@ -130,9 +130,6 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
     case DrawQuad::Material::kTextureContent:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad), candidate);
-    case DrawQuad::Material::kTiledContent:
-      return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
-                          candidate);
     case DrawQuad::Material::kVideoHole:
       return FromVideoHoleQuad(
           resource_provider, VideoHoleDrawQuad::MaterialCast(quad), candidate);
@@ -302,19 +299,6 @@ bool OverlayCandidate::FromTextureQuad(
   }
   candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
   candidate->uv_rect = BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
-  return true;
-}
-
-// static
-bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
-                                    const TileDrawQuad* quad,
-                                    OverlayCandidate* candidate) {
-  if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
-                            candidate)) {
-    return false;
-  }
-  candidate->resource_size_in_pixels = quad->texture_size;
-  candidate->uv_rect = quad->tex_coord_rect;
   return true;
 }
 

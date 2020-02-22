@@ -441,7 +441,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest,
   std::vector<FakeVideoCaptureDeviceSettings> config;
   FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       GetParam().switch_value_string, &config);
-  for (const auto settings : config) {
+  for (const auto& settings : config) {
     EXPECT_EQ(GetParam().expected_display_media_type,
               settings.display_media_type);
   }

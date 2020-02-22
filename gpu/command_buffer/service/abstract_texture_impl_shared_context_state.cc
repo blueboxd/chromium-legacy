@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -155,6 +156,30 @@ AbstractTextureImplOnSharedContextPassthrough::
     ~AbstractTextureImplOnSharedContextPassthrough() {
   if (cleanup_cb_)
     std::move(cleanup_cb_).Run(this);
+
+  // Save the current context and make it current again after deleting the
+  // |texture_|.
+  scoped_refptr<gl::GLContext> previous_context = gl::GLContext::GetCurrent();
+  scoped_refptr<gl::GLSurface> previous_surface = gl::GLSurface::GetCurrent();
+
+  // If the shared context is lost, |shared_context_state_| will be null and the
+  // |texture_| is already marked to have lost its context.
+  if (shared_context_state_) {
+    // Make the |shared_context_state_|'s context current before destroying the
+    // |texture_| since
+    // destructor is not guaranteed to be called on the context on which the
+    // |texture_| was created.
+    if (!shared_context_state_->IsCurrent(nullptr)) {
+      shared_context_state_->MakeCurrent(shared_context_state_->surface(),
+                                         true /* needs_gl */);
+    }
+    shared_context_state_->RemoveContextLostObserver(this);
+  }
+  texture_.reset();
+
+  // Make the previous context current again.
+  if (!previous_context->IsCurrent(previous_surface.get()))
+    previous_context->MakeCurrent(previous_surface.get());
 }
 
 TextureBase* AbstractTextureImplOnSharedContextPassthrough::GetTextureBase()

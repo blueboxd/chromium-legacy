@@ -164,7 +164,7 @@ void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
 
   std::vector<std::string> reliable_results;
 
-  for (const auto res : results) {
+  for (const auto& res : results) {
     // The output of FindTopNMostFreqLangs is already sorted by byte count,
     // this seems good enough for now.
     // Only consider results which are 'reliable', this will also remove

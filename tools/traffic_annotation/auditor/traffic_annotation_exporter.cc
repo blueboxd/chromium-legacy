@@ -480,7 +480,8 @@ bool TrafficAnnotationExporter::GetOtherPlatformsAnnotationIDs(
     return false;
 
   ids->clear();
-  for (const std::pair<std::string, ArchivedAnnotation>& item : archive_) {
+  for (const std::pair<const std::string, ArchivedAnnotation>& item :
+       archive_) {
     if (item.second.deprecation_date.empty() &&
         !MatchesCurrentPlatform(item.second))
       ids->push_back(item.first);

@@ -511,7 +511,7 @@ TEST_F(ScrollInfacesUseCounterSimTest, ScrollTestAll) {
       {"rtl", "vertical-rl", true, true},
   };
 
-  for (const TestCase test_case : test_cases) {
+  for (const TestCase& test_case : test_cases) {
     Reset(test_case.direction, test_case.writingMode);
     CheckScrollLeftOrTop("scrollLeft", test_case.scrollLeftUseCounted);
 

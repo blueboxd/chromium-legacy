@@ -193,7 +193,7 @@ void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
     }
   }
 
-  for (const auto model_feature : prediction_model_features_) {
+  for (const auto& model_feature : prediction_model_features_) {
     switch (model_feature.first) {
       case optimization_guide::proto::CLIENT_MODEL_FEATURE_UNKNOWN: {
         continue;

@@ -41,7 +41,7 @@ AlternativeProxyUsage ConvertProtocolUsageToProxyUsage(
 quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
     base::StringPiece str,
     quic::ParsedQuicVersionVector supported_versions) {
-  for (const quic::ParsedQuicVersion version : supported_versions) {
+  for (const quic::ParsedQuicVersion& version : supported_versions) {
     if (AlpnForVersion(version) == str)
       return version;
   }

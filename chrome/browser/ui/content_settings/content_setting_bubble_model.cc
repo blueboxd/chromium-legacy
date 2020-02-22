@@ -562,7 +562,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
       content_settings->midi_usages_state().state_map();
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
+  for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
     permissions::PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
         ContentSettingsType::MIDI_SYSEX,
@@ -651,7 +651,7 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
       content_settings->geolocation_usages_state().state_map();
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
+  for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
     permissions::PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
         ContentSettingsType::GEOLOCATION,

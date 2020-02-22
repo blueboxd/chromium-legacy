@@ -116,8 +116,7 @@ bool PreviewsResourceLoadingHints::AllowLoad(
   bool allow_load = true;
 
   int pattern_index = 0;
-  for (const WTF::String& subresource_pattern :
-       subresource_patterns_to_block_) {
+  for (const WebString& subresource_pattern : subresource_patterns_to_block_) {
     // TODO(tbansal): https://crbug.com/856247. Add support for wildcard
     // matching.
     if (resource_url_string.Find(subresource_pattern) != kNotFound) {

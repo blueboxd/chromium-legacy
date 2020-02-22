@@ -1543,7 +1543,7 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
   // the input images because there can be name collisions.
   ImageCache temp_output;
 
-  for (const auto frame_values : kFrameValues) {
+  for (const auto& frame_values : kFrameValues) {
     int src_id = frame_values.prs_id;
     // If the theme doesn't provide an image, attempt to fall back to one it
     // does.

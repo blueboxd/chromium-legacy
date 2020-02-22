@@ -41,7 +41,7 @@ base::DictionaryValue MapParams(
 // status error if conversion of one of the keys failed.
 Status ConvertBase64UrlToBase64(base::Value* params,
                                 const std::vector<std::string> keys) {
-  for (const std::string key : keys) {
+  for (const std::string& key : keys) {
     base::Value* maybe_value = params->FindKey(key);
     if (!maybe_value)
       continue;
@@ -65,7 +65,7 @@ Status ConvertBase64UrlToBase64(base::Value* params,
 // Converts the string |keys| in |params| from base64 to base64url.
 void ConvertBase64ToBase64Url(base::Value* params,
                               const std::vector<std::string> keys) {
-  for (const std::string key : keys) {
+  for (const std::string& key : keys) {
     std::string* maybe_value = params->FindStringKey(key);
     if (!maybe_value)
       continue;

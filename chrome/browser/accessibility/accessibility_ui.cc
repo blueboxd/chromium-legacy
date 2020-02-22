@@ -360,7 +360,7 @@ AccessibilityUIObserver::~AccessibilityUIObserver() = default;
 
 void AccessibilityUIObserver::AccessibilityEventReceived(
     const content::AXEventNotificationDetails& details) {
-  for (const ui::AXEvent event : details.events) {
+  for (const ui::AXEvent& event : details.events) {
     event_logs_->push_back(event.ToString());
   }
 }

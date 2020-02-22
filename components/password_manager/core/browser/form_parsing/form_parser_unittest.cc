@@ -325,7 +325,7 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
 // pairs (which represent element values) are unique.
 void CheckAllValuesUnique(const autofill::ValueElementVector& v) {
   std::set<base::string16> all_values;
-  for (const auto pair : v) {
+  for (const auto& pair : v) {
     auto insertion = all_values.insert(pair.first);
     EXPECT_TRUE(insertion.second) << pair.first << " is duplicated";
   }

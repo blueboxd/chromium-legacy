@@ -210,7 +210,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   }
 
   EXPECT_EQ(test_install_options_list.size(), install_options_list.size());
-  for (const auto install_option : test_install_options_list) {
+  for (const auto& install_option : test_install_options_list) {
     EXPECT_TRUE(base::Contains(install_options_list, install_option));
   }
 }

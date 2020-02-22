@@ -2295,7 +2295,7 @@ bool PersonalDataManager::DeleteDisusedCreditCards() {
 
   size_t num_deleted_cards = guid_to_delete.size();
 
-  for (auto const guid : guid_to_delete) {
+  for (auto const& guid : guid_to_delete) {
     database_helper_->GetLocalDatabase()->RemoveCreditCard(guid);
   }
 
@@ -2334,7 +2334,7 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 
   size_t num_deleted_addresses = guids_to_delete.size();
 
-  for (auto const guid : guids_to_delete) {
+  for (auto const& guid : guids_to_delete) {
     RemoveAutofillProfileByGUIDAndBlankCreditCardReference(guid);
   }
 

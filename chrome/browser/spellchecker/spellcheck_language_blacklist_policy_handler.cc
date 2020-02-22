@@ -40,12 +40,12 @@ bool SpellcheckLanguageBlacklistPolicyHandler::CheckPolicySettings(
   SortBlacklistedLanguages(policies, &blacklisted, &unknown, &duplicates);
 
 #if !defined(OS_MACOSX)
-  for (const std::string language : duplicates) {
+  for (const std::string& language : duplicates) {
     errors->AddError(policy_name(), IDS_POLICY_SPELLCHECK_BLACKLIST_IGNORE,
                      language);
   }
 
-  for (const std::string language : unknown) {
+  for (const std::string& language : unknown) {
     errors->AddError(policy_name(), IDS_POLICY_SPELLCHECK_UNKNOWN_LANGUAGE,
                      language);
   }
@@ -75,14 +75,14 @@ void SpellcheckLanguageBlacklistPolicyHandler::ApplyPolicySettings(
   std::vector<std::string> duplicates;
   SortBlacklistedLanguages(policies, &blacklisted, &unknown, &duplicates);
 
-  for (const std::string language : duplicates) {
+  for (const std::string& language : duplicates) {
     SYSLOG(WARNING)
         << "SpellcheckLanguageBlacklist policy: an entry was also found in"
            " the SpellcheckLanguage policy: \""
         << language << "\". Blacklist entry will be ignored.";
   }
 
-  for (const std::string language : unknown) {
+  for (const std::string& language : unknown) {
     SYSLOG(WARNING) << "SpellcheckLanguageBlacklist policy: Unknown or "
                        "unsupported language \""
                     << language << "\"";

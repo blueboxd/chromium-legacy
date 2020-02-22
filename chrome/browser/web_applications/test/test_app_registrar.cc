@@ -136,7 +136,7 @@ std::vector<SquareSizePx> TestAppRegistrar::GetAppDownloadedIconSizes(
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
-  for (const std::pair<AppId, AppInfo>& it : installed_apps_) {
+  for (const std::pair<const AppId, AppInfo>& it : installed_apps_) {
     result.push_back(it.first);
   }
   return result;

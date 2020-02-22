@@ -2384,7 +2384,7 @@ class DownloadItemDestinationUpdateRaceTest
   void ScheduleObservations(
       const ObservationList& observations,
       base::WeakPtr<DownloadDestinationObserver> observer) {
-    for (const auto action : observations)
+    for (const auto& action : observations)
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(action, observer));
   }

@@ -65,7 +65,7 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
       return;
     }
 
-    for (const auto extension : alternate_extensions) {
+    for (const auto& extension : alternate_extensions) {
       EXPECT_EQ(base::FilePath::kExtensionSeparator, extension[0]);
       const auto iter = test_configuration_->result_map.find(extension);
       if (iter != test_configuration_->result_map.end()) {

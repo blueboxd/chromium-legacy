@@ -184,7 +184,7 @@ std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
-  for (const quic::ParsedQuicVersion version : all_supported_versions) {
+  for (const quic::ParsedQuicVersion& version : all_supported_versions) {
     params.push_back(TestParams{version, false});
     params.push_back(TestParams{version, true});
   }
@@ -195,7 +195,7 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
-  for (const quic::ParsedQuicVersion version : all_supported_versions) {
+  for (const quic::ParsedQuicVersion& version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
     params.push_back(PoolingTestParams{version, SAME_AS_SECOND, false});

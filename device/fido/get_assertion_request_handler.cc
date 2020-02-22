@@ -191,7 +191,7 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
   }
 
   base::flat_set<FidoTransportProtocol> transports;
-  for (const auto credential : allowed_list) {
+  for (const auto& credential : allowed_list) {
     if (credential.transports().empty())
       return kAllTransports;
     transports.insert(credential.transports().begin(),

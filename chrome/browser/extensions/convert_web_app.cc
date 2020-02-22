@@ -232,7 +232,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     linked_icons->Append(std::move(linked_icon));
   }
   auto icons = std::make_unique<base::DictionaryValue>();
-  for (const std::pair<SquareSizePx, SkBitmap>& icon : web_app.icon_bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+       web_app.icon_bitmaps) {
     std::string size = base::StringPrintf("%i", icon.first);
     std::string icon_path = base::StringPrintf("%s/%s.png", kIconsDirName,
                                                size.c_str());
@@ -255,7 +256,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     LOG(ERROR) << "Could not create icons directory.";
     return nullptr;
   }
-  for (const std::pair<SquareSizePx, SkBitmap>& icon : web_app.icon_bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+       web_app.icon_bitmaps) {
     DCHECK_NE(icon.second.colorType(), kUnknown_SkColorType);
 
     base::FilePath icon_file =

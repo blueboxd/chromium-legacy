@@ -317,7 +317,7 @@ void LanguageSettingsPrivateDelegate::
 
 void LanguageSettingsPrivateDelegate::RetryDownloadHunspellDictionary(
     const std::string& language) {
-  for (const base::WeakPtr<SpellcheckHunspellDictionary> dictionary :
+  for (const base::WeakPtr<SpellcheckHunspellDictionary>& dictionary :
        GetHunspellDictionaries()) {
     if (dictionary && dictionary->GetLanguage() == language) {
       dictionary->RetryDownloadDictionary(context_);

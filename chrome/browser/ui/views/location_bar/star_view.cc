@@ -168,7 +168,7 @@ bool StarView::IsBookmarkStarHiddenByExtension() const {
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(browser_->profile())
           ->enabled_extensions();
-  for (const scoped_refptr<const extensions::Extension> extension :
+  for (const scoped_refptr<const extensions::Extension>& extension :
        extension_set) {
     if (!extensions::UIOverrides::RemovesBookmarkButton(extension.get()))
       continue;

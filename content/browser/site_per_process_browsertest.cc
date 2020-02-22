@@ -510,7 +510,7 @@ blink::ParsedFeaturePolicyDeclaration CreateParsedFeaturePolicyDeclaration(
     declaration.opaque_value.SetDoubleValue(2.0);
   }
 
-  for (const auto origin : origins)
+  for (const auto& origin : origins)
     declaration.values.insert(std::pair<url::Origin, blink::PolicyValue>(
         url::Origin::Create(origin),
         blink::PolicyValue::CreateMaxPolicyValue(feature_type)));

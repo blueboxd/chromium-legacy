@@ -53,7 +53,7 @@ void PrintersToValues(const PrinterList& printer_list,
                             printer.printer_description);
 
     auto options = std::make_unique<base::DictionaryValue>();
-    for (const auto opt_it : printer.options)
+    for (const auto& opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
 #if defined(OS_CHROMEOS)

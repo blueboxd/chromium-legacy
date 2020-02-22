@@ -123,7 +123,7 @@ TEST_F(ProfileListDesktopTest, NoOmittedProfiles) {
   size_t profile_count = profile_names.size();
 
   // Add the profiles.
-  for (const std::string profile_name : profile_names)
+  for (const std::string& profile_name : profile_names)
     manager()->CreateTestingProfile(profile_name);
 
   // Rebuild avatar menu.

@@ -278,7 +278,7 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
 
   // Any member without the special marker in the all_old_urls list means that
   // there wasn't a "new" URL that mapped to it, so it was deleted.
-  for (const std::pair<GURL, size_t>& old_url : all_old_urls) {
+  for (const std::pair<const GURL, size_t>& old_url : all_old_urls) {
     if (old_url.second != kAlreadyFoundMarker)
       delta->deleted.push_back(old_list[old_url.second]);
   }

@@ -103,7 +103,7 @@ tracing::mojom::TracingService& TracingServiceController::GetService() {
         browser_remote.InitWithNewPipeAndPassReceiver());
     initial_clients.push_back(tracing::mojom::ClientInfo::New(
         base::GetCurrentProcId(), std::move(browser_remote)));
-    for (const std::pair<base::ProcessId, EnableTracingCallback>& entry :
+    for (const std::pair<const base::ProcessId, EnableTracingCallback>& entry :
          clients_) {
       mojo::PendingRemote<tracing::mojom::TracedProcess> remote_process;
       entry.second.Run(remote_process.InitWithNewPipeAndPassReceiver());

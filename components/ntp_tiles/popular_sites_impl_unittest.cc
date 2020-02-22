@@ -117,7 +117,7 @@ class PopularSitesTest : public ::testing::Test {
     auto sites_value = std::make_unique<base::ListValue>();
     for (const TestPopularSite& site : sites) {
       auto site_value = std::make_unique<base::DictionaryValue>();
-      for (const std::pair<std::string, std::string>& kv : site) {
+      for (const std::pair<const std::string, std::string>& kv : site) {
         if (kv.first == kTitleSource) {
           int source;
           bool convert_success = base::StringToInt(kv.second, &source);

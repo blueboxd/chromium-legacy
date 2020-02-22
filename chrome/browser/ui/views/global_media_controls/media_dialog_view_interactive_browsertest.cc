@@ -148,7 +148,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
   // Checks the title and artist of each notification in the dialog to see if
   // |text| is contained anywhere in the dialog.
   bool DialogContainsText(const base::string16& text) {
-    for (const auto notification_pair :
+    for (const auto& notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {
       const media_message_center::MediaNotificationViewImpl* view =
@@ -425,7 +425,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   // Finds a MediaNotificationContainerImplView by title.
   MediaNotificationContainerImplView* GetNotificationByTitle(
       const base::string16& title) {
-    for (const auto notification_pair :
+    for (const auto& notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {
       const media_message_center::MediaNotificationViewImpl* view =

@@ -101,7 +101,8 @@ bool WriteIcons(FileUtilsWrapper* utils,
     return false;
   }
 
-  for (const std::pair<SquareSizePx, SkBitmap>& icon_bitmap : icon_bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon_bitmap :
+       icon_bitmaps) {
     if (!WriteIcon(utils, icons_dir, icon_bitmap.second))
       return false;
   }

@@ -115,7 +115,7 @@ bool ActionsParser::ParsePointerActionSequence() {
        ++action_index) {
     SyntheticPointerActionListParams::ParamList param_list;
     size_t longest_pause_frame = 0;
-    for (const auto pointer_action_list : pointer_actions_list_) {
+    for (const auto& pointer_action_list : pointer_actions_list_) {
       if (action_index < pointer_action_list.size()) {
         param_list.push_back(pointer_action_list[action_index]);
         if (pointer_action_list[action_index].pointer_action_type() ==

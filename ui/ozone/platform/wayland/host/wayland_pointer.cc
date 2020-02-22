@@ -117,9 +117,11 @@ void WaylandPointer::Button(void* data,
       changed_button = EF_RIGHT_MOUSE_BUTTON;
       break;
     case BTN_BACK:
+    case BTN_SIDE:
       changed_button = EF_BACK_MOUSE_BUTTON;
       break;
     case BTN_FORWARD:
+    case BTN_EXTRA:
       changed_button = EF_FORWARD_MOUSE_BUTTON;
       break;
     default:

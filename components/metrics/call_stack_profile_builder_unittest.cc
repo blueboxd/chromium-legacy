@@ -619,7 +619,7 @@ TEST(CallStackProfileBuilderTest,
   EXPECT_EQ(0, profile.metadata_name_hash_size());
   EXPECT_EQ(4, profile.stack_sample_size());
 
-  for (const CallStackProfile::StackSample sample : profile.stack_sample())
+  for (const CallStackProfile::StackSample& sample : profile.stack_sample())
     EXPECT_EQ(0, sample.metadata_size());
 }
 

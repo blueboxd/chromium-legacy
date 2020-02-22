@@ -615,7 +615,7 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
           web_page_replay_support_file_dir.AppendASCII("wpr_key.pem").value())
           .c_str()));
 
-  for (const auto arg : args)
+  for (const auto& arg : args)
     full_command.AppendArg(arg);
 
   LOG(INFO) << full_command.GetArgumentsString();

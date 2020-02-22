@@ -494,7 +494,7 @@ void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {
   base::DictionaryValue group_visual_datas;
   std::vector<tab_groups::TabGroupId> groups =
       browser_->tab_strip_model()->group_model()->ListTabGroups();
-  for (const tab_groups::TabGroupId group : groups) {
+  for (const tab_groups::TabGroupId& group : groups) {
     group_visual_datas.SetDictionary(
         group.ToString(),
         std::make_unique<base::DictionaryValue>(GetTabGroupData(

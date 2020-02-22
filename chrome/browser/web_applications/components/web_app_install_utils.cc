@@ -30,7 +30,8 @@ constexpr SquareSizePx kMaxIconSize = 1024;
 // Get a list of non-empty square icons from |icons_map|.
 void FilterSquareIconsFromMap(const IconsMap& icons_map,
                               std::vector<SkBitmap>* square_icons) {
-  for (const std::pair<GURL, std::vector<SkBitmap>>& url_icon : icons_map) {
+  for (const std::pair<const GURL, std::vector<SkBitmap>>& url_icon :
+       icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height())
         square_icons->push_back(icon);
@@ -42,7 +43,7 @@ void FilterSquareIconsFromMap(const IconsMap& icons_map,
 void FilterSquareIconsFromBitmaps(
     const std::map<SquareSizePx, SkBitmap> bitmaps,
     std::vector<SkBitmap>* square_icons) {
-  for (const std::pair<SquareSizePx, SkBitmap>& icon : bitmaps) {
+  for (const std::pair<const SquareSizePx, SkBitmap>& icon : bitmaps) {
     DCHECK_EQ(icon.first, icon.second.width());
     DCHECK_EQ(icon.first, icon.second.height());
     if (!icon.second.empty())

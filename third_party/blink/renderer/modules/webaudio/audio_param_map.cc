@@ -11,7 +11,7 @@ class AudioParamMapIterationSource final
  public:
   AudioParamMapIterationSource(
       const HeapHashMap<String, Member<AudioParam>>& map) {
-    for (const auto name : map.Keys()) {
+    for (const auto& name : map.Keys()) {
       parameter_names_.push_back(name);
       parameter_objects_.push_back(map.at(name));
     }

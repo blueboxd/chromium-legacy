@@ -90,7 +90,7 @@ std::vector<SquareSizePx> GetSquareSizePxs(
     const std::map<SquareSizePx, SkBitmap>& icon_bitmaps) {
   std::vector<SquareSizePx> sizes;
   sizes.reserve(icon_bitmaps.size());
-  for (const std::pair<SquareSizePx, SkBitmap>& item : icon_bitmaps)
+  for (const std::pair<const SquareSizePx, SkBitmap>& item : icon_bitmaps)
     sizes.push_back(item.first);
   return sizes;
 }

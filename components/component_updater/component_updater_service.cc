@@ -328,7 +328,7 @@ bool CrxUpdateService::CheckForUpdates(
 
   std::vector<std::string> secure_ids;    // Requires HTTPS for update checks.
   std::vector<std::string> unsecure_ids;  // Can fallback to HTTP.
-  for (const auto id : components_order_) {
+  for (const auto& id : components_order_) {
     DCHECK(components_.find(id) != components_.end());
 
     const auto component = GetComponent(id);
@@ -417,7 +417,7 @@ void CrxUpdateService::OnUpdateComplete(Callback callback,
   UMA_HISTOGRAM_LONG_TIMES_100("ComponentUpdater.UpdateCompleteTime",
                                base::TimeTicks::Now() - start_time);
 
-  for (const auto id : components_pending_unregistration_) {
+  for (const auto& id : components_pending_unregistration_) {
     if (!update_client_->IsUpdating(id)) {
       const auto component = GetComponent(id);
       if (component)

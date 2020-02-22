@@ -163,7 +163,7 @@ HeapVector<Member<Element>> ElementsFromRect(const PhysicalRect& rect,
   document.GetFrame()->ContentLayoutObject()->HitTest(location, result);
   HeapVector<Member<Element>> elements;
   Node* previous_node = nullptr;
-  for (const auto hit_test_result_node : result.ListBasedTestResult()) {
+  for (const auto& hit_test_result_node : result.ListBasedTestResult()) {
     Node* node = hit_test_result_node.Get();
     if (!node || node->IsDocumentNode())
       continue;

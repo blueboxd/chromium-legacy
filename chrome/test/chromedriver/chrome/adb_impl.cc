@@ -253,7 +253,7 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
   if (!status.IsOk())
     return status;
 
-  for (const base::StringPiece& line : base::SplitString(
+  for (const base::StringPiece& line : base::SplitStringPiece(
            response, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         line, base::kWhitespaceASCII,
@@ -287,7 +287,7 @@ Status AdbImpl::GetSocketByPattern(const std::string& device_serial,
   if (!status.IsOk())
     return status;
 
-  for (const base::StringPiece& line : base::SplitString(
+  for (const base::StringPiece& line : base::SplitStringPiece(
            response, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         line, base::kWhitespaceASCII, base::TRIM_WHITESPACE,

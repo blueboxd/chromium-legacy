@@ -2274,7 +2274,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
 
   TabStripModel* tabs = browser()->tab_strip_model();
   int i = 0;
-  for (const std::pair<const std::string, const std::string> pair : tests) {
+  for (const std::pair<const std::string, const std::string>& pair : tests) {
     bindings_delegate_->OpenInNewTab(pair.first);
     i++;
 

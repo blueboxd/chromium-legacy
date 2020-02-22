@@ -205,7 +205,7 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
 
   color_ids_.reserve(all_colors.size());
   colors_.reserve(all_colors.size());
-  for (auto const color_pair : all_colors) {
+  for (auto const& color_pair : all_colors) {
     color_ids_.push_back(color_pair.first);
     SkColor color = native_theme->ShouldUseDarkColors()
                         ? color_pair.second.dark_theme_color

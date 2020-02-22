@@ -2075,7 +2075,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
       {GURL("http://user:pass@a.com/frame_tree/page_with_one_frame.html"),
        GURL("http://user:pass@b.com/title1.html"), true},
   };
-  for (const auto test_case : kTestCases) {
+  for (const auto& test_case : kTestCases) {
     // Modify the URLs port to use the embedded test server's port.
     std::string port_str(std::to_string(embedded_test_server()->port()));
     GURL::Replacements set_port;

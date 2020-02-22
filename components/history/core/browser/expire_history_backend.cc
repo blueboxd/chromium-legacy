@@ -447,7 +447,7 @@ VisitVector ExpireHistoryBackend::GetVisitsAndRedirectParents(
     const VisitVector& visits) {
   base::flat_set<VisitID> seen_visits;
   VisitVector visits_and_redirects;
-  for (const auto v : visits) {
+  for (const auto& v : visits) {
     VisitRow current_visit = v;
     do {
       if (!seen_visits.insert(current_visit.visit_id).second)

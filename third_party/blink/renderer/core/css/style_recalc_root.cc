@@ -68,7 +68,7 @@ base::Optional<Member<Element>> FirstFlatTreeAncestorForChildDirty(
     // chain before the removal by checking the child-dirty bits. Since the
     // recalc root was removed, there is at most one such child-dirty insertion
     // point.
-    for (const auto insertion_point : root->V0().DescendantInsertionPoints()) {
+    for (const auto& insertion_point : root->V0().DescendantInsertionPoints()) {
       if (insertion_point->ChildNeedsStyleRecalc())
         return insertion_point;
     }
@@ -80,7 +80,7 @@ base::Optional<Member<Element>> FirstFlatTreeAncestorForChildDirty(
   // assignment directly. Find the slot which was part of the ancestor chain
   // before the removal by checking the child-dirty bits. Since the recalc root
   // was removed, there is at most one such child-dirty slot.
-  for (const auto slot : root->GetSlotAssignment().Slots()) {
+  for (const auto& slot : root->GetSlotAssignment().Slots()) {
     if (slot->ChildNeedsStyleRecalc())
       return slot;
   }

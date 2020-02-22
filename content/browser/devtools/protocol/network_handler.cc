@@ -1705,7 +1705,7 @@ void NetworkHandler::OnSignedExchangeReceived(
 
   if (envelope) {
     std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-    for (const auto it : envelope->response_headers())
+    for (const auto& it : envelope->response_headers())
       headers_dict->setString(it.first, it.second);
 
     const SignedExchangeSignatureHeaderField::Signature& sig =

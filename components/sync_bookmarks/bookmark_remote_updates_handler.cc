@@ -422,8 +422,9 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
   }
   // Iterate over |id_to_updates| and construct |roots| and
   // |parent_to_children|.
-  for (const std::pair<base::StringPiece, const syncer::UpdateResponseData*>&
-           pair : id_to_updates) {
+  for (const std::pair<const base::StringPiece,
+                       const syncer::UpdateResponseData*>& pair :
+       id_to_updates) {
     const syncer::EntityData& update_entity = pair.second->entity;
     parent_to_children[update_entity.parent_id].push_back(update_entity.id);
     // If this entity's parent has no pending update, add it to |roots|.

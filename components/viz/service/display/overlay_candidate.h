@@ -29,7 +29,6 @@ namespace viz {
 class DisplayResourceProvider;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
-class TileDrawQuad;
 class VideoHoleDrawQuad;
 
 class VIZ_SERVICE_EXPORT OverlayCandidate {
@@ -129,9 +128,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static bool FromTextureQuad(DisplayResourceProvider* resource_provider,
                               const TextureDrawQuad* quad,
                               OverlayCandidate* candidate);
-  static bool FromTileQuad(DisplayResourceProvider* resource_provider,
-                           const TileDrawQuad* quad,
-                           OverlayCandidate* candidate);
   static bool FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);

@@ -152,8 +152,8 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 
   Vector<TextSuggestionInfo>& suggestion_infos =
       suggestion_infos_with_node_and_highlight_color.suggestion_infos;
-  for (const std::pair<const Text*, DocumentMarker*>& node_marker_pair :
-       node_suggestion_marker_pairs_sorted_by_length) {
+  for (const std::pair<const Member<const Text>, DocumentMarker*>&
+           node_marker_pair : node_suggestion_marker_pairs_sorted_by_length) {
     if (node_marker_pair.first !=
         suggestion_infos_with_node_and_highlight_color.text_node)
       continue;

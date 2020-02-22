@@ -188,7 +188,7 @@ bool SanitizeResponse(const std::string& key_system,
     if (keys.empty())
       return false;
 
-    for (const auto key_pair : keys) {
+    for (const auto& key_pair : keys) {
       if (key_pair.first.size() < limits::kMinKeyIdLength ||
           key_pair.first.size() > limits::kMaxKeyIdLength) {
         return false;

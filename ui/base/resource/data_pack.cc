@@ -567,7 +567,7 @@ bool DataPack::WritePack(const base::FilePath& path,
 
   // Write the aliases table, if any. Note: |aliases| is an std::map,
   // ensuring values are written in increasing order.
-  for (const std::pair<uint16_t, uint16_t>& alias : aliases) {
+  for (const std::pair<const uint16_t, uint16_t>& alias : aliases) {
     file.Write(&alias, sizeof(alias));
   }
 

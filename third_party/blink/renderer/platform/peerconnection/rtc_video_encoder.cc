@@ -419,7 +419,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
         gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles().value_or(
             media::VideoEncodeAccelerator::SupportedProfiles());
 
-    for (const auto vea_profile : vea_supported_profiles) {
+    for (const auto& vea_profile : vea_supported_profiles) {
       if (vea_profile.profile == profile &&
           (input_visible_size.width() > vea_profile.max_resolution.width() ||
            input_visible_size.height() > vea_profile.max_resolution.height() ||

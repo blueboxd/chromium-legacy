@@ -81,7 +81,7 @@ void ThrottledOfflineContentProvider::GetAllItems(
 void ThrottledOfflineContentProvider::OnGetAllItemsDone(
     MultipleItemCallback callback,
     const OfflineItemList& items) {
-  for (const auto item : items)
+  for (const auto& item : items)
     UpdateItemIfPresent(item);
   std::move(callback).Run(items);
 }

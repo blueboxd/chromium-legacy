@@ -902,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
       {main_url_http, iframe_url_http, true},
       {main_url_http, iframe_url_ftp, false},
   };
-  for (const auto test_case : kTestCases) {
+  for (const auto& test_case : kTestCases) {
     // Blocking the request should work, even after a redirect.
     for (bool redirect : {false, true}) {
       GURL iframe_url =

@@ -72,7 +72,7 @@ std::string SpecificsTitleFromNodeTitle(const base::string16& node_title) {
 void UpdateBookmarkSpecificsMetaInfo(
     const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
     sync_pb::BookmarkSpecifics* bm_specifics) {
-  for (const std::pair<std::string, std::string>& pair : *metainfo_map) {
+  for (const std::pair<const std::string, std::string>& pair : *metainfo_map) {
     sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
     meta_info->set_key(pair.first);
     meta_info->set_value(pair.second);

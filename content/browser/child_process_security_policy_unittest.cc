@@ -320,7 +320,7 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
       "data:text/html,<b>Hi</b>",
       "filesystem:http://localhost/temporary/a.gif",
   });
-  for (const auto url_string : kCommitURLs) {
+  for (const auto& url_string : kCommitURLs) {
     const GURL commit_url(url_string);
     if (AreAllSitesIsolatedForTesting() && IsCitadelProtectionEnabled()) {
       // A non-locked process cannot access URL (because with
@@ -347,7 +347,7 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   const std::vector<std::string> kFailedCommitURLs(
       {"file:///etc/passwd", "view-source:http://www.google.com/",
        kUnreachableWebDataURL, GetWebUIURL("foo/bar").spec()});
-  for (const auto url_string : kFailedCommitURLs) {
+  for (const auto& url_string : kFailedCommitURLs) {
     const GURL commit_url(url_string);
     EXPECT_FALSE(p->CanCommitURL(kRendererID, commit_url)) << commit_url;
     EXPECT_FALSE(handle.CanCommitURL(commit_url)) << commit_url;

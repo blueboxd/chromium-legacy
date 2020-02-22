@@ -161,7 +161,7 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
   pickle->WriteInt(referrer_policy_);
 
   pickle->WriteInt(extended_info_map_.size());
-  for (const auto entry : extended_info_map_) {
+  for (const auto& entry : extended_info_map_) {
     WriteStringToPickle(pickle, &bytes_written, max_size, entry.first);
     WriteStringToPickle(pickle, &bytes_written, max_size, entry.second);
   }

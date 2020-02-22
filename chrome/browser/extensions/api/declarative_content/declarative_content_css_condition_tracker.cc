@@ -283,8 +283,8 @@ std::vector<std::string> DeclarativeContentCssConditionTracker::
 GetWatchedCssSelectors() const {
   std::vector<std::string> selectors;
   selectors.reserve(watched_css_selector_predicate_count_.size());
-  for (const std::pair<std::string, int>& selector_pair :
-           watched_css_selector_predicate_count_) {
+  for (const std::pair<const std::string, int>& selector_pair :
+       watched_css_selector_predicate_count_) {
     selectors.push_back(selector_pair.first);
   }
   return selectors;

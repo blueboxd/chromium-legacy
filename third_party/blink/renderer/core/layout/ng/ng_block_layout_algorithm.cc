@@ -1313,7 +1313,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   // fit where it was laid out, and is pushed downwards, we'll lay out over
   // again, since a new BFC block offset could result in a new fragment size,
   // e.g. when inline size is auto, or if we're block-fragmented.
-  for (const auto opportunity : opportunities) {
+  for (const auto& opportunity : opportunities) {
     if (abort_if_cleared &&
         origin_offset.block_offset < opportunity.rect.BlockStartOffset()) {
       // Abort if we got pushed downwards. We need to adjust

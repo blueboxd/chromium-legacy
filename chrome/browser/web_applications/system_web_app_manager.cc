@@ -322,7 +322,7 @@ void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
             : url_and_result.second);
 
   // Record per-app result.
-  for (const auto type_and_app_info : system_app_infos_) {
+  for (const auto& type_and_app_info : system_app_infos_) {
     const GURL& install_url = type_and_app_info.second.install_url;
     const auto url_and_result = install_results.find(install_url);
     if (url_and_result != install_results.cend()) {
@@ -338,7 +338,7 @@ void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
   }
 
   // Record per-profile result.
-  for (const auto url_and_result : install_results) {
+  for (const auto& url_and_result : install_results) {
     base::UmaHistogramEnumeration(
         install_result_per_profile_histogram_name_,
         shutting_down_

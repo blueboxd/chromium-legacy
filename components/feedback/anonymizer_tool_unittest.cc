@@ -530,7 +530,7 @@ TEST_F(AnonymizerToolTest, AnonymizeBlockDevices) {
       {"0 part /media/removable/My Secret Volume Name         With Spaces   ",
        "0 part /media/removable/<Volume Label: 4>"},
   };
-  for (const auto p : test_cases) {
+  for (const auto& p : test_cases) {
     EXPECT_EQ(anonymizer_.Anonymize(p.first), p.second);
   }
 }

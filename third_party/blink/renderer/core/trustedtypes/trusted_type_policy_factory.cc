@@ -76,7 +76,7 @@ TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
 
 Vector<String> TrustedTypePolicyFactory::getPolicyNames() const {
   Vector<String> policyNames;
-  for (const String name : policy_map_.Keys()) {
+  for (const String& name : policy_map_.Keys()) {
     policyNames.push_back(name);
   }
   return policyNames;

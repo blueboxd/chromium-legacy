@@ -1275,7 +1275,7 @@ void PrintPreviewHandler::OnAccountsInCookieUpdated(
   base::Value account_list(base::Value::Type::LIST);
   const std::vector<gaia::ListedAccount>& accounts =
       accounts_in_cookie_jar_info.signed_in_accounts;
-  for (const auto account : accounts) {
+  for (const auto& account : accounts) {
     account_list.Append(account.email);
   }
   FireWebUIListener("user-accounts-updated", std::move(account_list));

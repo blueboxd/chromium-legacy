@@ -282,7 +282,7 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     HitTestResult& result) const {
   HeapVector<Member<Element>> elements;
   Node* last_node = nullptr;
-  for (const auto rect_based_node : result.ListBasedTestResult()) {
+  for (const auto& rect_based_node : result.ListBasedTestResult()) {
     Node* node = rect_based_node.Get();
     if (!node->IsElementNode() && !ShouldAcceptNonElementNode(*node))
       continue;

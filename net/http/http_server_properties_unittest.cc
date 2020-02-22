@@ -231,7 +231,7 @@ TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWithNetworkIsolationKey) {
 
   // Without network isolation keys enabled for HttpServerProperties, passing in
   // a NetworkIsolationKey should have no effect on behavior.
-  for (const auto network_isolation_key_to_set :
+  for (const auto& network_isolation_key_to_set :
        {NetworkIsolationKey(), network_isolation_key1_}) {
     impl_.SetSupportsSpdy(kServer, network_isolation_key_to_set, true);
     EXPECT_TRUE(impl_.GetSupportsSpdy(kServer, network_isolation_key1_));
@@ -772,7 +772,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {
 
   // Without network isolation keys enabled for HttpServerProperties, passing in
   // a NetworkIsolationKey should have no effect on behavior.
-  for (const auto network_isolation_key_to_set :
+  for (const auto& network_isolation_key_to_set :
        {NetworkIsolationKey(), network_isolation_key1_}) {
     impl_.SetAlternativeServices(kServer, network_isolation_key_to_set,
                                  kAlternativeServices);

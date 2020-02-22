@@ -1156,7 +1156,7 @@ TEST(ExtensionURLPatternTest, Intersection) {
       "    Pattern1:        %s\n"
       "    Pattern2:        %s\n"
       "    Expected Result: %s";
-  for (const auto test_case : test_cases) {
+  for (const auto& test_case : test_cases) {
     SCOPED_TRACE(base::StringPrintf(
         kTestCaseDescriptionTemplate, test_case.pattern1.c_str(),
         test_case.pattern2.c_str(), test_case.expected_intersection.c_str()));

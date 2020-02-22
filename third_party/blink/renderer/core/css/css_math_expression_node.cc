@@ -932,7 +932,7 @@ CSSMathExpressionVariadicOperation::ToCalculationExpression(
     const CSSToLengthConversionData& data) const {
   Vector<scoped_refptr<const CalculationExpressionNode>> operands;
   operands.ReserveCapacity(operands_.size());
-  for (const auto operand : operands_)
+  for (const auto& operand : operands_)
     operands.push_back(operand->ToCalculationExpression(data));
   auto expression_type = operator_ == CSSMathOperator::kMin
                              ? CalculationExpressionComparisonNode::Type::kMin

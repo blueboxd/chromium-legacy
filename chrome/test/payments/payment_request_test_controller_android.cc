@@ -19,6 +19,10 @@ PaymentRequestTestController::GetPaymentHandlerWebContents() {
   return GetPaymentHandlerWebContentsForTest();
 }
 
+bool PaymentRequestTestController::ClickPaymentHandlerSecurityIcon() {
+  return ClickPaymentHandlerSecurityIconForTest();
+}
+
 void PaymentRequestTestController::SetUpOnMainThread() {
   ChromeBackgroundTaskFactory::SetAsDefault();
 

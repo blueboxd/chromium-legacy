@@ -76,6 +76,19 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ConfirmPayment) {
   EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "getResult()"));
 }
 
+// Make sure the security icon is clickable.
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ClickSecurityIcon) {
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ("app_is_ready",
+            content::EvalJs(
+                GetActiveWebContents(),
+                "launchAndWaitUntilReady('./payment_handler_window.html')"));
+
+  DCHECK(test_controller_.GetPaymentHandlerWebContents());
+  EXPECT_TRUE(test_controller_.ClickPaymentHandlerSecurityIcon());
+}
+
 // Make sure merchants can cancel the payment.
 IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, CancelPayment) {
   std::string expected = "success";

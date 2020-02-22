@@ -125,26 +125,26 @@ bool PipPositioner::HasSnapFraction(WindowState* window_state) {
          nullptr;
 }
 
-void PipPositioner::SaveSnapFraction(WindowState* window_state) {
+void PipPositioner::SaveSnapFraction(WindowState* window_state,
+                                     const gfx::Rect& bounds) {
   // Ensure that |bounds| is along one of the edges of the movement area.
   // If the PIP window is drag-moved onto some system UI, it's possible that
   // the PIP window is detached from any of them.
-  gfx::Rect bounds =
+  gfx::Rect snapped_bounds =
       ash::CollisionDetectionUtils::AdjustToFitMovementAreaByGravity(
-          window_state->GetDisplay(),
-          window_state->window()->GetBoundsInScreen());
+          window_state->GetDisplay(), bounds);
   gfx::Rect movement_area =
       CollisionDetectionUtils::GetMovementArea(window_state->GetDisplay());
-  float width_fraction = (float)(bounds.x() - movement_area.x()) /
-                         (movement_area.width() - bounds.width());
-  float height_fraction = (float)(bounds.y() - movement_area.y()) /
-                          (movement_area.height() - bounds.height());
+  float width_fraction = (float)(snapped_bounds.x() - movement_area.x()) /
+                         (movement_area.width() - snapped_bounds.width());
+  float height_fraction = (float)(snapped_bounds.y() - movement_area.y()) /
+                          (movement_area.height() - snapped_bounds.height());
   float snap_fraction;
-  if (bounds.y() == movement_area.y()) {
+  if (snapped_bounds.y() == movement_area.y()) {
     snap_fraction = width_fraction;
-  } else if (bounds.right() == movement_area.right()) {
+  } else if (snapped_bounds.right() == movement_area.right()) {
     snap_fraction = 1. + height_fraction;
-  } else if (bounds.bottom() == movement_area.bottom()) {
+  } else if (snapped_bounds.bottom() == movement_area.bottom()) {
     snap_fraction = 2. + (1. - width_fraction);
   } else {
     snap_fraction = 3. + (1. - height_fraction);

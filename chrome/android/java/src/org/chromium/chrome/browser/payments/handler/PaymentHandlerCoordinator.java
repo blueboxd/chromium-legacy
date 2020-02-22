@@ -30,6 +30,7 @@ import org.chromium.url.URI;
 public class PaymentHandlerCoordinator {
     private Runnable mHider;
     private WebContents mWebContents;
+    private PaymentHandlerToolbarCoordinator mToolbarCoordinator;
 
     /** Constructs the payment-handler component coordinator. */
     public PaymentHandlerCoordinator() {
@@ -78,13 +79,12 @@ public class PaymentHandlerCoordinator {
         webContentsObserver.onWebContentsInitialized(mWebContents);
         mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
 
-        PaymentHandlerToolbarCoordinator toolbarCoordinator =
-                new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);
+        mToolbarCoordinator = new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);
 
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
                 mWebContents, uiObserver, activity.getActivityTab().getView(),
-                toolbarCoordinator.getView(), toolbarCoordinator.getShadowHeightPx());
+                mToolbarCoordinator.getView(), mToolbarCoordinator.getShadowHeightPx());
         activity.getActivityTab().getView().addOnLayoutChangeListener(mediator);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
@@ -92,10 +92,10 @@ public class PaymentHandlerCoordinator {
 
         // Observer is designed to set here rather than in the constructor because
         // PaymentHandlerMediator and PaymentHandlerToolbarCoordinator have mutual dependencies.
-        toolbarCoordinator.setObserver(mediator);
+        mToolbarCoordinator.setObserver(mediator);
         PaymentHandlerView view = new PaymentHandlerView(
-                activity, mWebContents, webContentView, toolbarCoordinator.getView());
-        assert toolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
+                activity, mWebContents, webContentView, mToolbarCoordinator.getView());
+        assert mToolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
         mHider = () -> {
@@ -138,5 +138,10 @@ public class PaymentHandlerCoordinator {
         // this feature.
         return PaymentsExperimentalFeatures.isEnabled(
                 ChromeFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER);
+    }
+
+    @VisibleForTesting
+    public void clickSecurityIconForTest() {
+        mToolbarCoordinator.clickSecurityIconForTest();
     }
 }

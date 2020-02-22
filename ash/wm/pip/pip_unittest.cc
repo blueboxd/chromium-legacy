@@ -203,7 +203,7 @@ TEST_F(PipTest, PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
   const gfx::Rect bounds = gfx::Rect(292, 200, 100, 100);
   // Set restore position to where the window currently is.
   window->SetBounds(bounds);
-  PipPositioner::SaveSnapFraction(window_state);
+  PipPositioner::SaveSnapFraction(window_state, window->GetBoundsInScreen());
   EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 
   // Update the work area so that the PIP window should be pushed upward.
@@ -241,7 +241,7 @@ TEST_F(
   window->SetBounds(gfx::Rect(8, 292, 100, 100));
 
   // Set restore position to where the window currently is.
-  PipPositioner::SaveSnapFraction(window_state);
+  PipPositioner::SaveSnapFraction(window_state, window->GetBoundsInScreen());
   EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 
   // Update the work area so that the PIP window should be pushed upward.
@@ -309,7 +309,7 @@ TEST_F(PipTest, PipSnappedToEdgeWhenSavingSnapFraction) {
   window->SetBounds(gfx::Rect(100, 192, 100, 100));
 
   // Set restore position to where the window currently is.
-  PipPositioner::SaveSnapFraction(window_state);
+  PipPositioner::SaveSnapFraction(window_state, window->GetBoundsInScreen());
   EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 
   // Ensure that the correct value is saved as snap fraction even when the PIP

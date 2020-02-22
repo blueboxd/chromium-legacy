@@ -174,6 +174,12 @@ public class PaymentRequestTestBridge {
         return PaymentRequestImpl.getPaymentHandlerWebContentsForTest();
     }
 
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean clickPaymentHandlerSecurityIconForTest() {
+        return PaymentRequestImpl.clickPaymentHandlerSecurityIconForTest();
+    }
+
     /**
      * The native method responsible to executing RepeatingCallback pointers.
      */

@@ -63,6 +63,9 @@ class PaymentRequestTestController {
   // ScrollToExpandPaymentHandler feature is enabled. 3) PaymentHandler is
   // opening.
   content::WebContents* GetPaymentHandlerWebContents();
+  // Click the security icon on the Expandable Payment Handler toolbar for
+  // testing purpose. return whether it's succeeded.
+  bool ClickPaymentHandlerSecurityIcon();
 #endif
 
  private:

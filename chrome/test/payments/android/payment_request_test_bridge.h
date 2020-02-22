@@ -30,6 +30,8 @@ void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
 // opening.
 content::WebContents* GetPaymentHandlerWebContentsForTest();
 
+bool ClickPaymentHandlerSecurityIconForTest();
+
 // Sets an observer on future Java PaymentRequests that will call these
 // callbacks when the events occur.
 void SetUseNativeObserverOnPaymentRequestForTesting(

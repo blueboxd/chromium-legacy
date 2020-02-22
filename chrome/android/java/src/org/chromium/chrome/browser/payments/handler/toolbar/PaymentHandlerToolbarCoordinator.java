@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.payments.handler.toolbar;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
@@ -93,5 +95,11 @@ public class PaymentHandlerToolbarCoordinator {
     /** @return The toolbar of the PaymentHandler. */
     public View getView() {
         return mToolbarView.getView();
+    }
+
+    /** @return The security icon of the PaymentHandlerToolbar. */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public void clickSecurityIconForTest() {
+        mToolbarView.mSecurityIconView.performClick();
     }
 }

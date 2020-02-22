@@ -239,7 +239,8 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
         // position, we need to set it here.
         if (window_state->IsPip() &&
             !PipPositioner::HasSnapFraction(window_state)) {
-          PipPositioner::SaveSnapFraction(window_state);
+          PipPositioner::SaveSnapFraction(
+              window_state, window_state->window()->GetBoundsInScreen());
         }
 
       } else if (!window_state->IsPinned()) {

@@ -64,7 +64,8 @@ class ASH_EXPORT PipPositioner {
   static bool HasSnapFraction(WindowState* window_state);
 
   // Saves the current PIP snap fraction.
-  static void SaveSnapFraction(WindowState* window_state);
+  static void SaveSnapFraction(WindowState* window_state,
+                               const gfx::Rect& bounds);
 
  private:
   friend class PipPositionerDisplayTest;

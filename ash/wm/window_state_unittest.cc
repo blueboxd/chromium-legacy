@@ -789,7 +789,8 @@ TEST_F(WindowStateTest, SetBoundsSnapsPipBoundsToScreenEdge) {
   EXPECT_EQ(gfx::Rect(541, 50, 51, 51),
             window_state->window()->GetBoundsInScreen());
 
-  PipPositioner::SaveSnapFraction(window_state);
+  PipPositioner::SaveSnapFraction(window_state,
+                                  window_state->window()->GetBoundsInScreen());
   EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
   EXPECT_EQ(gfx::Rect(541, 50, 51, 51),
             PipPositioner::GetPositionAfterMovementAreaChange(window_state));

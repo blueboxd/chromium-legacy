@@ -1287,6 +1287,25 @@ public class PaymentRequestImpl
     }
 
     /**
+     * Click the security icon of the Expandable Payment Handler for testing purpose; return false
+     * if failed.
+     *
+     * @return The WebContents of the Expandable Payment Handler.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean clickPaymentHandlerSecurityIconForTest() {
+        if (sShowingPaymentRequest == null) return false;
+        return sShowingPaymentRequest.clickPaymentHandlerSecurityIconForTestInternal();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    private boolean clickPaymentHandlerSecurityIconForTestInternal() {
+        if (mPaymentHandlerUi == null) return false;
+        mPaymentHandlerUi.clickSecurityIconForTest();
+        return true;
+    }
+
+    /**
      * Called to open a new PaymentHandler UI on the showing PaymentRequest.
      * @param url The url of the payment app to be displayed in the UI.
      * @param paymentHandlerWebContentsObserver The observer of the WebContents of the

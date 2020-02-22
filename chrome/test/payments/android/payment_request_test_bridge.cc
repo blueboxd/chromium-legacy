@@ -32,6 +32,12 @@ content::WebContents* GetPaymentHandlerWebContentsForTest() {
   return web_contents;
 }
 
+bool ClickPaymentHandlerSecurityIconForTest() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_PaymentRequestTestBridge_clickPaymentHandlerSecurityIconForTest(
+      env);
+}
+
 struct NativeObserverCallbacks {
   base::RepeatingClosure on_can_make_payment_called;
   base::RepeatingClosure on_can_make_payment_returned;

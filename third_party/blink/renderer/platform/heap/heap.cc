@@ -144,7 +144,7 @@ void ThreadHeap::VisitRememberedSets(MarkingVisitor* visitor) {
                 "LargeObject arena must be the last one.");
   const auto visit_header = [visitor](HeapObjectHeader* header) {
     // Process only old objects.
-    if (header->IsMarked<HeapObjectHeader::AccessMode::kNonAtomic>()) {
+    if (header->IsOld<HeapObjectHeader::AccessMode::kNonAtomic>()) {
       // The design of young generation requires collections to be executed at
       // the top level (with the guarantee that no objects are currently being
       // in construction). This can be ensured by running young GCs from safe

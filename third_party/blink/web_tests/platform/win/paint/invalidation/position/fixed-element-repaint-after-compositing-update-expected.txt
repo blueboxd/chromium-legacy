@@ -17,6 +17,12 @@
           "reason": "geometry"
         }
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='fixedTransformed'",
+      "position": [8, 88],
+      "contentsOpaque": true,
+      "drawsContent": false
     }
   ]
 }

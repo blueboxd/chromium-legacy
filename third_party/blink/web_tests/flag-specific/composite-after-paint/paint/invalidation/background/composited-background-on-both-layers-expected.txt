@@ -23,6 +23,13 @@
     {
       "name": "LayoutNGBlockFlow DIV id='target'",
       "position": [20, 20],
+      "bounds": [185, 185],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='target'",
+      "position": [20, 20],
       "bounds": [185, 3000],
       "backgroundColor": "#008000",
       "paintInvalidations": [

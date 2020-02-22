@@ -7,6 +7,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutBlockFlow DIV class='overlap'",
+      "bounds": [300, 500],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
@@ -44,6 +50,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV class='overlap'",
+      "bounds": [300, 500],
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='item')",

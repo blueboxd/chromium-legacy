@@ -28,6 +28,13 @@
       "transform": 2
     },
     {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 160],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
       "name": "VerticalScrollbar",
       "position": [218, 5],
       "bounds": [7, 160],

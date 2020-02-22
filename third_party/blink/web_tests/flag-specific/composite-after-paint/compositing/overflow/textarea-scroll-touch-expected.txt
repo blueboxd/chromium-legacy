@@ -9,6 +9,13 @@
     },
     {
       "name": "LayoutTextControl TEXTAREA",
+      "position": [1, 1],
+      "bounds": [189, 124],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutTextControl TEXTAREA",
       "position": [18, 18],
       "bounds": [436, 126]
     },
@@ -24,6 +31,13 @@
       "position": [190, 1],
       "bounds": [15, 109],
       "transform": 1
+    },
+    {
+      "name": "LayoutTextControl TEXTAREA",
+      "position": [1, 1],
+      "bounds": [189, 124],
+      "drawsContent": false,
+      "transform": 3
     },
     {
       "name": "LayoutTextControl TEXTAREA",

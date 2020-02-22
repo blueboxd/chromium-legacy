@@ -43,6 +43,12 @@ Case: Displaying movie
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutVideo VIDEO",
+      "bounds": [352, 288],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
       "name": "ContentsLayer for LayoutVideo VIDEO",
       "bounds": [352, 288],
       "transform": 1

@@ -27,6 +27,12 @@
       "transform": 2
     },
     {
+      "name": "LayoutBlockFlow (relative positioned) DIV",
+      "bounds": [285, 1000],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV)",
       "bounds": [285, 1000],
       "transform": 2

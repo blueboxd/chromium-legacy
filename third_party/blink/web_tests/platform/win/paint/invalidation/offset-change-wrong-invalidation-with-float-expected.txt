@@ -17,6 +17,23 @@
           "reason": "disappeared"
         }
       ]
+    },
+    {
+      "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [48, 44, 0, 1]
+      ]
     }
   ]
 }

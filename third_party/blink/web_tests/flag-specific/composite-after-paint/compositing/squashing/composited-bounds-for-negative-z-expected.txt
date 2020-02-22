@@ -14,6 +14,12 @@
       "transform": 1
     },
     {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [285, 300],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
       "name": "VerticalScrollbar",
       "position": [285, 0],
       "bounds": [15, 300],

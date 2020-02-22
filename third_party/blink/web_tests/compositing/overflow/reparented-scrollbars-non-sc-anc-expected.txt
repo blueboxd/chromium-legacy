@@ -22,6 +22,13 @@
       "transform": 1
     },
     {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='foreground'",
+      "position": [0, 10000],
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [1193, 0],
       "bounds": [7, 1000],

@@ -14,6 +14,18 @@ Before:
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start'",
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "transform": 3
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='side side-1'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
@@ -208,6 +220,18 @@ After:
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='green-box' class='center box-container'",
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='side side-1'",

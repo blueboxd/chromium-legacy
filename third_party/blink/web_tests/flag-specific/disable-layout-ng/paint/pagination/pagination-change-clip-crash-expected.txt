@@ -1,0 +1,30 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 736],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "Scrolling background of LayoutView #document",
+          "rect": [0, 636, 785, 100],
+          "reason": "incremental"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='background'",
+      "position": [8, 428],
+      "bounds": [769, 300],
+      "drawsContent": false
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
+    }
+  ]
+}
+

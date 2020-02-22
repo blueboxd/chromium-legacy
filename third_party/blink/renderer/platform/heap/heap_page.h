@@ -239,6 +239,9 @@ class PLATFORM_EXPORT HeapObjectHeader {
   bool TryMark();
 
   template <AccessMode = AccessMode::kNonAtomic>
+  bool IsOld() const;
+
+  template <AccessMode = AccessMode::kNonAtomic>
   bool IsInConstruction() const;
   template <AccessMode = AccessMode::kNonAtomic>
   void MarkFullyConstructed();
@@ -1202,6 +1205,12 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
   const uint16_t encoded =
       LoadEncoded<mode, EncodedHalf::kLow, std::memory_order_relaxed>();
   return encoded & kHeaderMarkBitMask;
+}
+
+template <HeapObjectHeader::AccessMode mode>
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsOld() const {
+  // Oilpan uses the sticky-mark-bits technique to encode old objects.
+  return IsMarked<mode>();
 }
 
 template <HeapObjectHeader::AccessMode mode>

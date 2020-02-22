@@ -948,6 +948,12 @@
       "transform": 2
     },
     {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "bounds": [135, 135],
+      "drawsContent": false,
+      "transform": 3
+    },
+    {
       "name": "HorizontalScrollbar",
       "position": [0, 135],
       "bounds": [135, 15],

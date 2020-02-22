@@ -7,6 +7,11 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "bounds": [305, 325],
+      "drawsContent": false
+    },
+    {
       "name": "HorizontalScrollbar",
       "position": [0, 325],
       "bounds": [320, 15]

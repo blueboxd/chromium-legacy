@@ -15,6 +15,14 @@
       "backgroundColor": "#FFEFD5"
     },
     {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "position": [1, 1],
+      "bounds": [100, 100],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 1
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
       "position": [60, 60],
       "bounds": [80, 80],

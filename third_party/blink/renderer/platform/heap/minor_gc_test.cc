@@ -102,9 +102,9 @@ TYPED_TEST(MinorGCTestForType, StickyBits) {
 
   Persistent<Type> p1 = MakeGarbageCollected<Type>();
   TestFixture::CollectMinor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(p1.Get())->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(p1.Get())->IsOld());
   TestFixture::CollectMajor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(p1.Get())->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(p1.Get())->IsOld());
   EXPECT_EQ(0u, TestFixture::DestructedObjects());
 }
 
@@ -114,13 +114,13 @@ TYPED_TEST(MinorGCTestForType, OldObjectIsNotVisited) {
   Persistent<Type> p = MakeGarbageCollected<Type>();
   TestFixture::CollectMinor();
   EXPECT_EQ(0u, TestFixture::DestructedObjects());
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(p.Get())->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(p.Get())->IsOld());
 
   // Check that the old deleted object won't be visited during minor GC.
   Type* raw = p.Release();
   TestFixture::CollectMinor();
   EXPECT_EQ(0u, TestFixture::DestructedObjects());
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw)->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw)->IsOld());
   EXPECT_FALSE(HeapObjectHeader::FromPayload(raw)->IsFree());
 
   // Check that the old deleted object will be revisited in major GC.
@@ -132,7 +132,7 @@ template <typename Type1, typename Type2>
 void InterGenerationalPointerTest() {
   Persistent<Type1> old = MakeGarbageCollected<Type1>();
   MinorGCTest::CollectMinor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(old.Get())->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(old.Get())->IsOld());
 
   // Allocate young objects.
   Type2* young = nullptr;
@@ -140,7 +140,7 @@ void InterGenerationalPointerTest() {
     auto* ptr = MakeGarbageCollected<Type2>();
     ptr->next = young;
     young = ptr;
-    EXPECT_FALSE(HeapObjectHeader::FromPayload(young)->IsMarked());
+    EXPECT_FALSE(HeapObjectHeader::FromPayload(young)->IsOld());
   }
 
   // Issue generational barrier.
@@ -150,7 +150,7 @@ void InterGenerationalPointerTest() {
   MinorGCTest::CollectMinor();
   EXPECT_EQ(0u, MinorGCTest::DestructedObjects());
   for (size_t i = 0; i < 64; ++i) {
-    EXPECT_TRUE(HeapObjectHeader::FromPayload(young)->IsMarked());
+    EXPECT_TRUE(HeapObjectHeader::FromPayload(young)->IsOld());
     EXPECT_FALSE(HeapObjectHeader::FromPayload(young)->IsFree());
     young = static_cast<Type2*>(young->next.Get());
   }
@@ -178,9 +178,9 @@ TYPED_TEST(MinorGCTestForType, InterGenerationalPointerInCollection) {
       MakeGarbageCollected<HeapVector<Member<Type>>>();
   old->resize(kCollectionSize);
   void* raw_backing = old->data();
-  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
   MinorGCTest::CollectMinor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
 
   // Issue barrier for every second member.
   size_t i = 0;
@@ -198,7 +198,7 @@ TYPED_TEST(MinorGCTestForType, InterGenerationalPointerInCollection) {
   EXPECT_EQ(kCollectionSize / 2, MinorGCTest::DestructedObjects());
   for (const auto& member : *old) {
     if (member) {
-      EXPECT_TRUE(HeapObjectHeader::FromPayload(member.Get())->IsMarked());
+      EXPECT_TRUE(HeapObjectHeader::FromPayload(member.Get())->IsOld());
       EXPECT_FALSE(HeapObjectHeader::FromPayload(member.Get())->IsFree());
     }
   }
@@ -219,9 +219,9 @@ TYPED_TEST(MinorGCTestForType, InterGenerationalPointerInPlaceBarrier) {
   old->ReserveInitialCapacity(kCollectionSize);
 
   void* raw_backing = old->data();
-  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
   MinorGCTest::CollectMinor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
 
   // Issue barrier (in HeapAllocator::NotifyNewElement).
   old->push_back(std::make_pair("test", MakeGarbageCollected<Type>()));
@@ -235,7 +235,7 @@ TYPED_TEST(MinorGCTestForType, InterGenerationalPointerInPlaceBarrier) {
 
   {
     Type* member = (*old)[0].second;
-    EXPECT_TRUE(HeapObjectHeader::FromPayload(member)->IsMarked());
+    EXPECT_TRUE(HeapObjectHeader::FromPayload(member)->IsOld());
     EXPECT_FALSE(HeapObjectHeader::FromPayload(member)->IsFree());
   }
 
@@ -257,11 +257,11 @@ TYPED_TEST(MinorGCTestForType,
   old->ReserveInitialCapacity(1);
 
   void* raw_backing = old->data();
-  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_FALSE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
 
   // Mark old backing.
   MinorGCTest::CollectMinor();
-  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsMarked());
+  EXPECT_TRUE(HeapObjectHeader::FromPayload(raw_backing)->IsOld());
 
   Persistent<CollectionType> young = MakeGarbageCollected<CollectionType>();
 
@@ -283,7 +283,7 @@ TYPED_TEST(MinorGCTestForType,
 
   {
     Type* member = (*old)[0].second;
-    EXPECT_TRUE(HeapObjectHeader::FromPayload(member)->IsMarked());
+    EXPECT_TRUE(HeapObjectHeader::FromPayload(member)->IsOld());
     EXPECT_FALSE(HeapObjectHeader::FromPayload(member)->IsFree());
   }
 

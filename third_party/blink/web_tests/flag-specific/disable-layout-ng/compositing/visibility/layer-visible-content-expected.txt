@@ -11,6 +11,11 @@
       "bounds": [200, 200]
     },
     {
+      "name": "LayoutBlockFlow DIV class='composited box'",
+      "bounds": [10, 10],
+      "drawsContent": false
+    },
+    {
       "name": "LayoutBlockFlow PRE id='layer-tree'",
       "bounds": [800, 16]
     }

@@ -8,9 +8,16 @@
       "transform": 1
     },
     {
+      "name": "LayoutNGBlockFlow (relative positioned) HEADER",
+      "bounds": [769, 20],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden",
+      "transform": 2
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV id='searchbar'",
       "bounds": [150, 150],
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -31,6 +38,16 @@
     },
     {
       "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 28, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

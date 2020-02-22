@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -14,9 +15,11 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -112,6 +115,56 @@ class WebAppFileHandlingTestBase : public web_app::WebAppControllerBrowserTest {
   web_app::AppId app_id_;
 };
 
+namespace {
+
+base::FilePath NewTestFilePath(const base::FilePath::CharType* extension) {
+  // CreateTemporaryFile blocks, temporarily allow blocking.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // In order to test file handling, we need to be able to supply a file
+  // extension for the temp file.
+  base::FilePath test_file_path;
+  base::CreateTemporaryFile(&test_file_path);
+  base::FilePath new_file_path = test_file_path.AddExtension(extension);
+  EXPECT_TRUE(base::ReplaceFile(test_file_path, new_file_path, nullptr));
+  return new_file_path;
+}
+
+content::WebContents* LaunchApplication(
+    Profile* profile,
+    const std::string& app_id,
+    const GURL& expected_launch_url,
+    const apps::mojom::LaunchContainer launch_container =
+        apps::mojom::LaunchContainer::kLaunchContainerWindow,
+    const apps::mojom::AppLaunchSource launch_source =
+        apps::mojom::AppLaunchSource::kSourceTest,
+    const std::vector<base::FilePath>& files = std::vector<base::FilePath>()) {
+  apps::AppLaunchParams params(app_id, launch_container,
+                               WindowOpenDisposition::NEW_WINDOW,
+                               launch_source);
+
+  if (files.size())
+    params.launch_files = files;
+
+  content::TestNavigationObserver navigation_observer(expected_launch_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  content::WebContents* web_contents =
+      apps::LaunchService::Get(profile)->OpenApplication(params);
+
+  navigation_observer.Wait();
+
+  // Attach the launchParams to the window so we can inspect them easily.
+  auto result = content::EvalJs(web_contents,
+                                "launchQueue.setConsumer(launchParams => {"
+                                "  window.launchParams = launchParams;"
+                                "});");
+
+  return web_contents;
+}
+
+}  // namespace
+
 class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
  public:
   WebAppFileHandlingBrowserTest() {
@@ -120,46 +173,15 @@ class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
          blink::features::kFileHandlingAPI},
         {});
   }
-
-  base::FilePath NewTestFilePath(const base::FilePath::CharType* extension) {
-    // CreateTemporaryFile blocks, temporarily allow blocking.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-
-    // In order to test file handling, we need to be able to supply a file
-    // extension for the temp file.
-    base::FilePath test_file_path;
-    base::CreateTemporaryFile(&test_file_path);
-    base::FilePath new_file_path = test_file_path.AddExtension(extension);
-    EXPECT_TRUE(base::ReplaceFile(test_file_path, new_file_path, nullptr));
-    return new_file_path;
-  }
-
-  virtual content::WebContents* LaunchWithFiles(
+  content::WebContents* LaunchWithFiles(
       const std::string& app_id,
       const GURL& expected_launch_url,
       const std::vector<base::FilePath>& files,
       const apps::mojom::LaunchContainer launch_container =
           apps::mojom::LaunchContainer::kLaunchContainerWindow) {
-    apps::AppLaunchParams params(
-        app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
-        apps::mojom::AppLaunchSource::kSourceFileHandler);
-    params.launch_files = files;
-
-    content::TestNavigationObserver navigation_observer(expected_launch_url);
-    navigation_observer.StartWatchingNewWebContents();
-
-    content::WebContents* web_contents =
-        apps::LaunchService::Get(profile())->OpenApplication(params);
-
-    navigation_observer.Wait();
-
-    // Attach the launchParams to the window so we can inspect them easily.
-    auto result = content::EvalJs(web_contents,
-                                  "launchQueue.setConsumer(launchParams => {"
-                                  "  window.launchParams = launchParams;"
-                                  "});");
-
-    return web_contents;
+    return LaunchApplication(
+        profile(), app_id, expected_launch_url, launch_container,
+        apps::mojom::AppLaunchSource::kSourceFileHandler, files);
   }
 
  private:
@@ -357,6 +379,93 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialBrowserTest,
   EXPECT_EQ(0, file_handler_manager().TriggerFileHandlerCleanupForTesting());
 }
 
+namespace {
+static constexpr char kBaseDataDir[] = "chrome/test/data/web_app_file_handling";
+
+// This is the public key of tools/origin_trials/eftest.key, used to validate
+// origin trial tokens generated by tools/origin_trials/generate_token.py.
+static constexpr char kOriginTrialPublicKeyForTesting[] =
+    "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
+
+// Create a URLLoaderInterceptor that serves a test Web App (with origin trial
+// token) at the given url.
+std::unique_ptr<content::URLLoaderInterceptor>
+CreateURLLoaderInterceptorAndServeTestApp(const GURL& app_url) {
+  return std::make_unique<content::URLLoaderInterceptor>(
+      base::BindLambdaForTesting(
+          [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+            // Only serve this App's url.
+            if (params->url_request.url != app_url)
+              return false;
+
+            content::URLLoaderInterceptor::WriteResponse(
+                base::StrCat(
+                    {kBaseDataDir, params->url_request.url.path_piece()}),
+                params->client.get());
+            return true;
+          }));
+}
+}  // namespace
+
+class WebAppFileHandlingOriginTrialTest
+    : public web_app::WebAppControllerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebAppControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kOriginTrialPublicKey,
+                                    kOriginTrialPublicKeyForTesting);
+  }
+
+ protected:
+  web_app::AppId InstallFileHandlingWebApp(const GURL& app_url) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetWithoutFilename();
+    web_app_info->title = base::ASCIIToUTF16("A Web App");
+
+    blink::Manifest::FileHandler entry1;
+    entry1.action = app_url;
+    entry1.name = base::ASCIIToUTF16("text");
+    entry1.accept[base::ASCIIToUTF16("text/*")].push_back(
+        base::ASCIIToUTF16(".txt"));
+    web_app_info->file_handlers.push_back(std::move(entry1));
+
+    web_app::AppId app_id =
+        WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
+
+    // Here we need first launch the App, so it can update the origin trial
+    // expiry time in prefs. This is needed because the above InstallWebApp
+    // invocation bypassed the normal Web App install pipeline.
+    content::WebContents* web_content =
+        LaunchApplication(profile(), app_id, app_url);
+    web_content->Close();
+
+    return app_id;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
+                       LaunchParamsArePassedCorrectly) {
+  const GURL app_url = GURL("https://file-handling-pwa/index.html");
+
+  // We need to use URLLoaderInterceptor (rather than a EmbeddedTestServer),
+  // because origin trial token is associated with a fixed origin, whereas
+  // EmbeddedTestServer serves content on a random port.
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_ =
+      CreateURLLoaderInterceptorAndServeTestApp(app_url);
+
+  const web_app::AppId app_id = InstallFileHandlingWebApp(app_url);
+  base::FilePath test_file_path = NewTestFilePath(FILE_PATH_LITERAL("txt"));
+  content::WebContents* web_content = LaunchApplication(
+      profile(), app_id, app_url,
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      apps::mojom::AppLaunchSource::kSourceFileHandler, {test_file_path});
+  EXPECT_EQ(1,
+            content::EvalJs(web_content, "window.launchParams.files.length"));
+  EXPECT_EQ(test_file_path.BaseName().AsUTF8Unsafe(),
+            content::EvalJs(web_content, "window.launchParams.files[0].name"));
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppFileHandlingBrowserTest,
@@ -369,6 +478,15 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppFileHandlingOriginTrialBrowserTest,
+    ::testing::Values(
+        web_app::ControllerType::kHostedAppController,
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
+        web_app::ControllerType::kUnifiedControllerWithWebApp),
+    web_app::ControllerTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppFileHandlingOriginTrialTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,

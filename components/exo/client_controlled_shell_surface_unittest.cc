@@ -2280,4 +2280,32 @@ TEST_F(ClientControlledShellSurfaceTest,
   EXPECT_EQ(gfx::Rect(8, 20, 100, 100), window->bounds());
 }
 
+TEST_F(ClientControlledShellSurfaceTest,
+       DoNotApplyCollisionDetectionWhileDragged) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(gfx::Point(8, 50), buffer_size));
+  shell_surface->SetPip();
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ash::WindowState* window_state = ash::WindowState::Get(window);
+  EXPECT_EQ(gfx::Rect(8, 50, 256, 256), window->bounds());
+
+  // Ensure that the collision detection logic is not applied during drag move.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window);
+  event_generator->PressLeftButton();
+  shell_surface->StartDrag(HTTOP, gfx::PointF(0, 0));
+  ASSERT_TRUE(window_state->is_dragged());
+  shell_surface->SetGeometry(gfx::Rect(gfx::Point(20, 50), buffer_size));
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(20, 50, 256, 256), window->bounds());
+}
+
 }  // namespace exo

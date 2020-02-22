@@ -881,7 +881,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   if (!is_display_move_pending) {
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
         target_display.work_area(), &adjusted_bounds);
-    if (GetWindowState()->IsPip()) {
+    if (GetWindowState()->IsPip() && !GetWindowState()->is_dragged()) {
       adjusted_bounds = ash::CollisionDetectionUtils::GetRestingPosition(
           target_display, adjusted_bounds,
           ash::CollisionDetectionUtils::RelativePriority::kPictureInPicture);

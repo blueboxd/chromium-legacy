@@ -236,6 +236,7 @@ check_targets = [
   "//chrome/test/chromedriver",
   "//chrome/third_party/*",
   "//chrome/tools/*",
+  "//chrome/updater/*",
   "//chrome/utility/*",
 
   "//chromecast/*",

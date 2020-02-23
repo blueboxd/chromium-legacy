@@ -150,7 +150,7 @@ bool ConvertURLsToProvidedInfo(
   }
 
   *file_system = nullptr;
-  for (const auto url : urls) {
+  for (const auto& url : urls) {
     const storage::FileSystemURL file_system_url(
         file_system_context->CrackURL(GURL(url)));
 

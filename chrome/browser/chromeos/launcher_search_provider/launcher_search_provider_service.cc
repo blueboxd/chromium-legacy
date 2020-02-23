@@ -56,7 +56,8 @@ void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
       extensions::EventRouter::Get(profile_);
 
   CacheListenerExtensionIds();
-  for (const ExtensionId extension_id : *cached_listener_extension_ids_.get()) {
+  for (const ExtensionId& extension_id :
+       *cached_listener_extension_ids_.get()) {
     // Convert query_id_ to string here since queryId is defined as string in
     // javascript side API while we use uint32_t internally to generate it.
     event_router->DispatchEventToExtension(
@@ -77,7 +78,8 @@ void Service::OnQueryEnded() {
       extensions::EventRouter::Get(profile_);
 
   CacheListenerExtensionIds();
-  for (const ExtensionId extension_id : *cached_listener_extension_ids_.get()) {
+  for (const ExtensionId& extension_id :
+       *cached_listener_extension_ids_.get()) {
     event_router->DispatchEventToExtension(
         extension_id,
         std::make_unique<extensions::Event>(

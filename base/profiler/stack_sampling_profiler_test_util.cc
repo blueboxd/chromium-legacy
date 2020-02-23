@@ -228,7 +228,7 @@ void ExpectStackDoesNotContain(
   };
 
   std::set<FunctionAddressRange, FunctionAddressRangeCompare> seen_functions;
-  for (const auto frame : stack) {
+  for (const auto& frame : stack) {
     for (const auto function : functions) {
       if (frame.instruction_pointer >=
               reinterpret_cast<uintptr_t>(function.start) &&

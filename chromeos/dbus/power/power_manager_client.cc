@@ -977,7 +977,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     // powerd gives clients a limited amount of time to report suspend
     // readiness. Log the stragglers within Chrome to aid in debugging.
-    for (const auto it : suspend_readiness_registry_) {
+    for (const auto& it : suspend_readiness_registry_) {
       LOG(WARNING) << "Didn't report suspend readiness due to "
                    << it.second.debug_info;
     }

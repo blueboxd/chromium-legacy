@@ -86,7 +86,7 @@ public class PlayerFrameMediatorTest {
             if (o.getClass() != this.getClass()) return false;
 
             RequestedBitmap rb = (RequestedBitmap) o;
-            return rb.mClipRect.equals(mClipRect) && rb.mFrameGuid == mFrameGuid
+            return rb.mClipRect.equals(mClipRect) && rb.mFrameGuid.equals(mFrameGuid)
                     && rb.mScaleFactor == mScaleFactor;
         }
 

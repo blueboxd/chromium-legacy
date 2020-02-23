@@ -313,7 +313,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
 
     CryptAuthEciesEncryptor::IdToInputMap id_to_encrypted_metadata_map;
     CryptAuthEciesEncryptor::IdToOutputMap id_to_unencrypted_metadata_map;
-    for (const cryptauthv2::DeviceMetadataPacket metadata :
+    for (const cryptauthv2::DeviceMetadataPacket& metadata :
          expected_device_metadata_packets) {
       id_to_encrypted_metadata_map[metadata.device_id()] =
           CryptAuthEciesEncryptor::PayloadAndKey(

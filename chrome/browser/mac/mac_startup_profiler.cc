@@ -31,7 +31,8 @@ void MacStartupProfiler::RecordMetrics() {
 
   recorded_metrics_ = true;
 
-  for (const std::pair<Location, base::TimeTicks>& entry : profiled_ticks_)
+  for (const std::pair<const Location, base::TimeTicks>& entry :
+       profiled_ticks_)
     RecordHistogram(entry.first, entry.second - main_entry_ticks);
 }
 

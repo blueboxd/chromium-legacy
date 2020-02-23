@@ -52,7 +52,7 @@ base::TimeDelta GetMinTimeBetweenReads() {
 // of strings, each string containing a single line.
 void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
                                        std::vector<std::string>* log_lines) {
-  for (const std::pair<std::string, std::string>& pair : response) {
+  for (const std::pair<const std::string, std::string>& pair : response) {
     std::vector<std::string> new_lines = base::SplitString(
         pair.second, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     log_lines->reserve(log_lines->size() + new_lines.size());

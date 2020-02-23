@@ -208,7 +208,7 @@ WebTimeActivityProvider::CalculateChromeAppActivityState() const {
   int active_count = 0;
   int active_whitelisted_count = 0;
 
-  for (const std::pair<const Browser*, content::WebContents*>& elem :
+  for (const std::pair<const Browser* const, content::WebContents*>& elem :
        browser_activity_) {
     if (!elem.second)
       continue;

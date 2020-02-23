@@ -169,9 +169,10 @@ bool DoDeleteWebAuthnCredentials(const std::string& keychain_access_group,
   // does work however, is to look up and delete by the (unique)
   // kSecAttrApplicationLabel (which stores the credential id). So we clumsily
   // do this for each item instead.
-  for (const CFDictionaryRef& attributes : *keychain_items) {
+  for (const base::ScopedCFTypeRef<CFDictionaryRef>& attributes :
+       *keychain_items) {
     CFDataRef sec_attr_app_label = base::mac::GetValueFromDictionary<CFDataRef>(
-        attributes, kSecAttrApplicationLabel);
+        attributes.get(), kSecAttrApplicationLabel);
     if (!sec_attr_app_label) {
       DLOG(ERROR) << "missing application label";
       continue;

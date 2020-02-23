@@ -285,7 +285,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       writer.AppendString("all");  // TODO(sleffler) parameterize category list
     } else {
       std::string events;
-      for (const std::string event : trace_config.systrace_events()) {
+      for (const std::string& event : trace_config.systrace_events()) {
         if (!events.empty())
           events += " ";
         events += event;

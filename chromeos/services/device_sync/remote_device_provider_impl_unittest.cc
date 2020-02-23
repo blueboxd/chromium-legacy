@@ -190,7 +190,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
       // Fetch only the devices inserted by tests, since GetV1RemoteDevices()
       // contains all available devices.
       multidevice::RemoteDeviceList devices;
-      for (const auto remote_device : GetV1RemoteDevices()) {
+      for (const auto& remote_device : GetV1RemoteDevices()) {
         for (const auto& external_device_info : device_info_list) {
           if (remote_device.public_key == external_device_info.public_key())
             devices.push_back(remote_device);

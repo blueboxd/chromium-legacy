@@ -289,7 +289,7 @@ void ComponentInstaller::StartRegistration(
   base::FilePath base_dir_ = base_component_dir;
   std::vector<base::FilePath::StringType> components;
   installer_policy_->GetRelativeInstallDir().GetComponents(&components);
-  for (const base::FilePath::StringType component : components) {
+  for (const base::FilePath::StringType& component : components) {
     base_dir_ = base_dir_.Append(component);
     if (!base::SetPosixFilePermissions(base_dir_, 0755)) {
       PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();

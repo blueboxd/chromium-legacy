@@ -76,7 +76,7 @@ class PaintPreviewFrame {
         if (obj == null || getClass() != obj.getClass()) return false;
 
         PaintPreviewFrame other = (PaintPreviewFrame) obj;
-        if (this.mGuid != other.mGuid) return false;
+        if (!this.mGuid.equals(other.mGuid)) return false;
 
         if (this.mContentHeight != other.mContentHeight) return false;
 

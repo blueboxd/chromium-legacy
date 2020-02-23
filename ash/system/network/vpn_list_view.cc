@@ -323,7 +323,7 @@ void VPNListView::OnGetNetworkStateList(NetworkStateList networks) {
     }
   }
   if (!hovered_provider) {
-    for (const std::pair<const views::View*, std::string>& entry :
+    for (const std::pair<const views::View* const, std::string>& entry :
          network_view_guid_map_) {
       if (entry.first->IsMouseHovered()) {
         hovered_network_guid = entry.second;
@@ -354,7 +354,7 @@ void VPNListView::OnGetNetworkStateList(NetworkStateList networks) {
       }
     }
   } else if (!hovered_network_guid.empty()) {
-    for (const std::pair<const views::View*, std::string>& entry :
+    for (const std::pair<const views::View* const, std::string>& entry :
          network_view_guid_map_) {
       if (entry.second == hovered_network_guid) {
         scroll_to_show_view = entry.first;

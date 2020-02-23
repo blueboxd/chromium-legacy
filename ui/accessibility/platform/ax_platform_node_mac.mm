@@ -526,7 +526,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   // VoiceOver expects the "press" action to be first. Note that some roles
   // should be given a press action implicitly.
   DCHECK([action_list[0].second isEqualToString:NSAccessibilityPressAction]);
-  for (const auto item : action_list) {
+  for (const auto& item : action_list) {
     if (data.HasAction(item.first) || HasImplicitAction(data, item.first))
       [axActions addObject:item.second];
   }

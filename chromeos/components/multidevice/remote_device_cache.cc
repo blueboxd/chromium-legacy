@@ -72,7 +72,7 @@ void RemoteDeviceCache::SetRemoteDevices(
 
 RemoteDeviceRefList RemoteDeviceCache::GetRemoteDevices() const {
   RemoteDeviceRefList remote_devices;
-  for (const std::shared_ptr<RemoteDevice> device : cached_remote_devices_) {
+  for (const std::shared_ptr<RemoteDevice>& device : cached_remote_devices_) {
     remote_devices.push_back(RemoteDeviceRef(device));
   }
 
@@ -96,7 +96,7 @@ base::Optional<RemoteDeviceRef> RemoteDeviceCache::GetRemoteDevice(
 std::shared_ptr<RemoteDevice> RemoteDeviceCache::GetRemoteDeviceFromCache(
     const base::Optional<std::string>& instance_id,
     const base::Optional<std::string>& legacy_device_id) const {
-  for (const std::shared_ptr<RemoteDevice> cached_device :
+  for (const std::shared_ptr<RemoteDevice>& cached_device :
        cached_remote_devices_) {
     if (instance_id && !instance_id->empty() &&
         cached_device->instance_id == *instance_id) {

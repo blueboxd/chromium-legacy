@@ -153,7 +153,7 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
 
   auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
 
-  for (const std::string app_id : app_ids) {
+  for (const std::string& app_id : app_ids) {
     proxy->AppRegistryCache().ForOneApp(
         app_id, [&preferred_app_id, &apps](const apps::AppUpdate& update) {
           // TODO(crbug.com/853604): Automatically launch the app. At the moment

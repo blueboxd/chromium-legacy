@@ -160,7 +160,7 @@ bool ExtractVmNameAndOwnerIdFromCmdLine(const std::vector<std::string>& cmdline,
   DCHECK(is_plugin_vm_out);
 
   // Find the arg with the disk file path on it.
-  for (const auto arg : cmdline) {
+  for (const auto& arg : cmdline) {
     if (CrostiniExtractVmNameAndOwnerId(arg, vm_name_out, owner_id_out)) {
       *is_plugin_vm_out = false;
       return true;

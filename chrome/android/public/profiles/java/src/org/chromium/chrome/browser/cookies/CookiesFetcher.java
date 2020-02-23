@@ -139,7 +139,7 @@ public class CookiesFetcher {
      */
     public static boolean deleteCookiesIfNecessary() {
         try {
-            if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) return false;
+            if (Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) return false;
             scheduleDeleteCookiesFile();
         } catch (RuntimeException e) {
             e.printStackTrace();

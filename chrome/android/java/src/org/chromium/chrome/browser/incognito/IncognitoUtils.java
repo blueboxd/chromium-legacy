@@ -43,7 +43,7 @@ public class IncognitoUtils {
     @SuppressLint("NewApi")
     public static boolean shouldDestroyIncognitoProfileOnStartup() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                || !Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
+                || !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
             return false;
         }
 

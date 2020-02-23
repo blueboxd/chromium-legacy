@@ -74,7 +74,7 @@ public class IncognitoNotificationService extends IntentService {
             IncognitoNotificationManager.dismissIncognitoNotification();
 
             if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
-                if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
+                if (Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
                     Profile.getLastUsedRegularProfile()
                             .getOffTheRecordProfile()
                             .destroyWhenAppropriate();

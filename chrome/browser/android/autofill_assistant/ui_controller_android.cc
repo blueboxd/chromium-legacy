@@ -1326,7 +1326,7 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
         CounterInputProto counter_input = input.counter();
 
         auto jcounters = Java_AssistantFormInput_createCounterList(env);
-        for (const CounterInputProto::Counter counter :
+        for (const CounterInputProto::Counter& counter :
              counter_input.counters()) {
           std::vector<int> allowed_values;
           for (int value : counter.allowed_values()) {
@@ -1367,7 +1367,7 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
         SelectionInputProto selection_input = input.selection();
 
         auto jchoices = Java_AssistantFormInput_createChoiceList(env);
-        for (const SelectionInputProto::Choice choice :
+        for (const SelectionInputProto::Choice& choice :
              selection_input.choices()) {
           Java_AssistantFormInput_addChoice(
               env, jchoices,

@@ -136,7 +136,7 @@ bool ScriptPrecondition::MatchParameters(const TriggerContext& context) const {
 
 bool ScriptPrecondition::MatchScriptStatus(
     const std::map<std::string, ScriptStatusProto>& executed_scripts) const {
-  for (const auto status_match : status_match_) {
+  for (const auto& status_match : status_match_) {
     auto status = SCRIPT_STATUS_NOT_RUN;
     auto iter = executed_scripts.find(status_match.script());
     if (iter != executed_scripts.end()) {

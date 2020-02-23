@@ -173,7 +173,6 @@ component("common") {
     "blocking_method_caller.cc",
     "blocking_method_caller.h",
     "dbus_client.h",
-    "dbus_method_call_status.cc",
     "dbus_method_call_status.h",
     "initialize_dbus_client.h",
     "pipe_reader.cc",

@@ -440,21 +440,21 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   base::Value ip_address("192.168.1.1");
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kAddressProperty, ip_address,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::ListValue dns_servers;
   dns_servers.AppendString("192.168.1.100");
   dns_servers.AppendString("192.168.1.101");
-  ShillIPConfigClient::Get()->SetProperty(
-      dbus::ObjectPath(kTestIPConfigPath), shill::kNameServersProperty,
-      dns_servers, EmptyVoidDBusMethodCallback());
+  ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
+                                          shill::kNameServersProperty,
+                                          dns_servers, base::DoNothing());
   base::Value prefixlen(8);
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kPrefixlenProperty, prefixlen,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::Value gateway("192.0.0.1");
   ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
                                           shill::kGatewayProperty, gateway,
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Add a service with an empty ipconfig and then update

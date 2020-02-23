@@ -148,14 +148,14 @@ void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
 // brltty.
 void RestartBrltty(const std::string& address) {
   chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
-  client->StopJob(kBrlttyUpstartJobName, {}, EmptyVoidDBusMethodCallback());
+  client->StopJob(kBrlttyUpstartJobName, {}, base::DoNothing());
 
   std::vector<std::string> args;
   if (address.empty())
     return;
 
   args.push_back(base::StringPrintf("ADDRESS=%s", address.c_str()));
-  client->StartJob(kBrlttyUpstartJobName, args, EmptyVoidDBusMethodCallback());
+  client->StartJob(kBrlttyUpstartJobName, args, base::DoNothing());
 }
 
 bool VolumeAdjustSoundEnabled() {
@@ -1336,7 +1336,7 @@ void AccessibilityManager::PostLoadChromeVox() {
     // ChromeVox is toggled off then back on all while a usb braille display is
     // connected.
     chromeos::UpstartClient::Get()->StartJob(kBrlttyUpstartJobName, {},
-                                             EmptyVoidDBusMethodCallback());
+                                             base::DoNothing());
   }
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
@@ -1372,7 +1372,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
   chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName, {},
-                                          EmptyVoidDBusMethodCallback());
+                                          base::DoNothing());
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 

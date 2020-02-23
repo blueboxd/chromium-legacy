@@ -202,7 +202,7 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
     return;
 
   chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
-                                           EmptyVoidDBusMethodCallback());
+                                           base::DoNothing());
 }
 
 bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {

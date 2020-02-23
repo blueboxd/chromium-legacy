@@ -454,11 +454,8 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     return gfx::Size(views::View::CalculatePreferredSize().width(),
                      web_app_menu_button_->GetPreferredSize().height());
   }
+
   void ChildPreferredSizeChanged(views::View* child) override {
-    PreferredSizeChanged();
-  }
-  void ChildVisibilityChanged(views::View* child) override {
-    // Changes to layout need to be taken into account by the toolbar view.
     PreferredSizeChanged();
   }
 
@@ -548,15 +545,23 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
     views::Widget* widget,
     BrowserView* browser_view)
     : browser_view_(browser_view) {
-  views::BoxLayout& layout =
-      *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, WebAppFrameRightMargin()),
-          HorizontalPaddingBetweenPageActionsAndAppMenuButtons()));
-  // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
-  layout.set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  views::FlexLayout* const layout =
+      SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetInteriorMargin(gfx::Insets(0, WebAppFrameRightMargin()))
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets(0,
+                      HorizontalPaddingBetweenPageActionsAndAppMenuButtons()))
+      .SetCollapseMargins(true)
+      .SetIgnoreDefaultMainAxisMargins(true)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification(
+                      views::MinimumFlexSizeRule::kPreferredSnapToZero,
+                      views::MaximumFlexSizeRule::kPreferred)
+                      .WithWeight(0))
+      .SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse);
 
   const auto* app_controller = browser_view_->browser()->app_controller();
 
@@ -595,15 +600,31 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
 
+  // Extensions toolbar area with pinned extensions is lower priority than, for
+  // example, the menu button or other toolbar buttons, and pinned extensions
+  // should hide before other toolbar buttons.
+  constexpr int kLowPriorityFlexOrder = 2;
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_ = AddChildView(
-        std::make_unique<ExtensionsToolbarContainer>(browser_view_->browser()));
+    extensions_container_ =
+        AddChildView(std::make_unique<ExtensionsToolbarContainer>(
+            browser_view_->browser(),
+            ExtensionsToolbarContainer::DisplayMode::kCompact));
+    extensions_container_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(
+            extensions_container_->animating_layout_manager()
+                ->GetDefaultFlexRule())
+            .WithOrder(kLowPriorityFlexOrder));
     views::SetHitTestComponent(extensions_container_,
                                static_cast<int>(HTCLIENT));
   } else {
     browser_actions_container_ =
         AddChildView(std::make_unique<BrowserActionsContainer>(
             browser_view_->browser(), nullptr, this, false /* interactive */));
+    browser_actions_container_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(browser_actions_container_->GetFlexRule())
+            .WithOrder(kLowPriorityFlexOrder));
     views::SetHitTestComponent(browser_actions_container_,
                                static_cast<int>(HTCLIENT));
   }
@@ -624,6 +645,8 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
   web_app_menu_button_->SetID(VIEW_ID_APP_MENU);
   const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
   SetInsetsForWebAppToolbarButton(web_app_menu_button_, is_browser_focus_mode);
+  web_app_menu_button_->SetProperty(views::kFlexBehaviorKey,
+                                    views::FlexSpecification());
 
   browser_view_->immersive_mode_controller()->AddObserver(this);
   scoped_widget_observer_.Add(widget);
@@ -694,7 +717,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
       std::make_unique<ToolbarButtonContainer>(widget, browser_view));
   right_container_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kPreferred)
           .WithOrder(1));
 

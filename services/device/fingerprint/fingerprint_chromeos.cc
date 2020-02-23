@@ -72,10 +72,9 @@ FingerprintChromeOS::FingerprintChromeOS() {
 FingerprintChromeOS::~FingerprintChromeOS() {
   GetBiodClient()->RemoveObserver(this);
   if (opened_session_ == FingerprintSession::ENROLL) {
-    GetBiodClient()->CancelEnrollSession(
-        chromeos::EmptyVoidDBusMethodCallback());
+    GetBiodClient()->CancelEnrollSession(base::DoNothing());
   } else if (opened_session_ == FingerprintSession::AUTH) {
-    GetBiodClient()->EndAuthSession(chromeos::EmptyVoidDBusMethodCallback());
+    GetBiodClient()->EndAuthSession(base::DoNothing());
   }
 }
 

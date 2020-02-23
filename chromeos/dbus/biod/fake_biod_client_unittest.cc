@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
@@ -270,7 +271,7 @@ TEST_F(FakeBiodClientTest, TestDestroyingRecords) {
   EnrollNTestFingerprints(kTestUserId, kTestLabel, GenerateTestFingerprint(2),
                           2);
   EXPECT_EQ(2u, GetRecordsForUser(kTestUserId).size());
-  fake_biod_client_.DestroyAllRecords(EmptyVoidDBusMethodCallback());
+  fake_biod_client_.DestroyAllRecords(base::DoNothing());
   EXPECT_EQ(0u, GetRecordsForUser(kTestUserId).size());
 }
 
@@ -308,7 +309,7 @@ TEST_F(FakeBiodClientTest, TestGetAndSetRecordLabels) {
   // of the new label.
   const std::string kNewLabelTwo = "Finger 2 New";
   fake_biod_client_.SetRecordLabel(enrollment_paths[1], kNewLabelTwo,
-                                   EmptyVoidDBusMethodCallback());
+                                   base::DoNothing());
   fake_biod_client_.RequestRecordLabel(
       enrollment_paths[1],
       base::BindOnce(&test_utils::CopyString, &returned_str));

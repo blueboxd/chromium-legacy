@@ -852,6 +852,20 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,
+                        VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME)) {
+    vkGetMemoryZirconHandleFUCHSIAFn =
+        reinterpret_cast<PFN_vkGetMemoryZirconHandleFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryZirconHandleFUCHSIA"));
+    if (!vkGetMemoryZirconHandleFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetMemoryZirconHandleFUCHSIA";
+      return false;
+    }
+  }
+#endif  // defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+  if (gfx::HasExtension(enabled_extensions,
                         VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME)) {
     vkCreateBufferCollectionFUCHSIAFn =
         reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(

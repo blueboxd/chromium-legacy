@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -557,8 +558,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // TODO(yusukes): Consider removing this stop call once b/142140355 is
     // implemented.
     chromeos::UpstartClient::Get()->StopJob(
-        kArcVmServerProxyJobName, /*environment=*/{},
-        chromeos::EmptyVoidDBusMethodCallback());
+        kArcVmServerProxyJobName, /*environment=*/{}, base::DoNothing());
 
     // If this method is called before even mini VM is started (e.g. very early
     // vm_concierge crash), or this method is called twice (e.g. crosvm crash

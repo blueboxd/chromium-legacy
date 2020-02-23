@@ -51,10 +51,6 @@ using ObjectPathCallback =
 using WaitForServiceToBeAvailableCallback =
     base::OnceCallback<void(bool service_is_available)>;
 
-// Returns an empty callback that does nothing.
-COMPONENT_EXPORT(CHROMEOS_DBUS)
-VoidDBusMethodCallback EmptyVoidDBusMethodCallback();
-
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_

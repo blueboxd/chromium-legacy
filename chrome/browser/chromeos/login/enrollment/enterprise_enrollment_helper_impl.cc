@@ -75,8 +75,7 @@ namespace chromeos {
 EnterpriseEnrollmentHelperImpl::EnterpriseEnrollmentHelperImpl() {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
-  CryptohomeClient::Get()->TpmCanAttemptOwnership(
-      EmptyVoidDBusMethodCallback());
+  CryptohomeClient::Get()->TpmCanAttemptOwnership(base::DoNothing());
 }
 
 EnterpriseEnrollmentHelperImpl::~EnterpriseEnrollmentHelperImpl() {

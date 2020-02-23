@@ -198,6 +198,10 @@ struct VulkanFunctionPointers {
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
+  PFN_vkGetMemoryZirconHandleFUCHSIA vkGetMemoryZirconHandleFUCHSIAFn = nullptr;
+#endif  // defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
   PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIAFn =
       nullptr;
   PFN_vkSetBufferCollectionConstraintsFUCHSIA
@@ -396,6 +400,11 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkImportSemaphoreZirconHandleFUCHSIAFn
 #define vkGetSemaphoreZirconHandleFUCHSIA \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreZirconHandleFUCHSIAFn
+#endif  // defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+#define vkGetMemoryZirconHandleFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkGetMemoryZirconHandleFUCHSIAFn
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)

@@ -127,14 +127,14 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
   // Resize the WebAppFrameToolbarView just enough to clip out the page action
   // icons (and toolbar contents left of them).
   const int original_toolbar_width = web_app_frame_toolbar()->width();
+  const int new_toolbar_width = toolbar_right_container->width() -
+                                page_action_icon_container->bounds().right();
+  const int new_frame_width =
+      frame_view()->width() - original_toolbar_width + new_toolbar_width;
+
   web_app_frame_toolbar()->SetSize(
-      gfx::Size(toolbar_right_container->width() -
-                    page_action_icon_container->bounds().right(),
-                web_app_frame_toolbar()->height()));
-  frame_view()->SetSize(gfx::Size(frame_view()->width() -
-                                      original_toolbar_width +
-                                      web_app_frame_toolbar()->width(),
-                                  frame_view()->height()));
+      {new_toolbar_width, web_app_frame_toolbar()->height()});
+  frame_view()->SetSize({new_frame_width, frame_view()->height()});
 
   // The left container (containing Back and Reload) should be hidden.
   EXPECT_FALSE(toolbar_left_container->GetVisible());
@@ -144,9 +144,9 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
   EXPECT_EQ(window_title->width(), 0);
 #endif
 
-  // The page action icons should be clipped to 0 width while the app menu
-  // button retains its full width.
-  EXPECT_EQ(page_action_icon_container->width(), 0);
+  // The page action icons should be hidden while the app menu button retains
+  // its full width.
+  EXPECT_FALSE(page_action_icon_container->GetVisible());
   EXPECT_EQ(menu_button->width(), original_menu_button_width);
 }
 

@@ -89,7 +89,7 @@ source_set("infobars_ui") {
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios",
     "//ui/base",

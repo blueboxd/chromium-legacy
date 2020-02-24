@@ -134,23 +134,23 @@ void MojoDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void MojoDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                           const DecoderInitCB& init_cb) {
+                                           DecoderInitCB init_cb) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->InitializeAudioDecoder(
-      config, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                  ToOnceCallback(init_cb), false));
+      config,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(init_cb), false));
 }
 
 void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                           const DecoderInitCB& init_cb) {
+                                           DecoderInitCB init_cb) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->InitializeVideoDecoder(
-      config, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                  ToOnceCallback(init_cb), false));
+      config,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(init_cb), false));
 }
 
 void MojoDecryptor::DecryptAndDecodeAudio(

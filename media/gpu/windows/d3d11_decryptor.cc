@@ -212,15 +212,15 @@ void D3D11Decryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void D3D11Decryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                            const DecoderInitCB& init_cb) {
+                                            DecoderInitCB init_cb) {
   // D3D11Decryptor does not support audio decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void D3D11Decryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                            const DecoderInitCB& init_cb) {
+                                            DecoderInitCB init_cb) {
   // D3D11Decryptor does not support video decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void D3D11Decryptor::DecryptAndDecodeAudio(

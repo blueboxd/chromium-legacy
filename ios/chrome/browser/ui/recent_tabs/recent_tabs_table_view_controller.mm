@@ -53,7 +53,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"

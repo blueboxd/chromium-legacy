@@ -23,11 +23,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace media {
 
@@ -89,7 +91,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void Initialize() {
     SetCdmType(CDM_WITH_DECRYPTOR);
     EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-        .WillOnce(RunCallback<1>(true));
+        .WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -100,7 +102,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void Reinitialize(const VideoDecoderConfig& new_config) {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
     EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-        .WillOnce(RunCallback<1>(true));
+        .WillOnce(RunOnceCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -256,7 +258,7 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_CdmWithoutDecryptor) {
 TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
   SetCdmType(CDM_WITH_DECRYPTOR);
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-      .WillRepeatedly(RunCallback<1>(false));
+      .WillRepeatedly(RunOnceCallback<1>(false));
   EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
       .WillRepeatedly(SaveArg<1>(&key_added_cb_));
 
@@ -282,7 +284,7 @@ TEST_F(DecryptingVideoDecoderTest, Reinitialize_Failure) {
 
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-      .WillOnce(RunCallback<1>(false));
+      .WillOnce(RunOnceCallback<1>(false));
 
   // Reinitialize() expects the reinitialization to succeed. Call
   // InitializeAndExpectResult() directly to test the reinitialization failure.
@@ -406,7 +408,9 @@ TEST_F(DecryptingVideoDecoderTest, Reset_AfterReset) {
 TEST_F(DecryptingVideoDecoderTest, Destroy_DuringPendingDecoderInit) {
   SetCdmType(CDM_WITH_DECRYPTOR);
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-      .WillOnce(SaveArg<1>(&pending_init_cb_));
+      .WillOnce(WithArg<1>(Invoke([&](Decryptor::DecoderInitCB init_cb) {
+        pending_init_cb_ = std::move(init_cb);
+      })));
 
   InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
   EXPECT_FALSE(!pending_init_cb_);

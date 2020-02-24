@@ -22,7 +22,7 @@ source_set("table_view") {
     "//base",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/material_components",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
   ]
   public_deps = [
@@ -49,7 +49,7 @@ source_set("styler") {
   ]
   public_deps = [
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
   ]
 }
 
@@ -85,7 +85,7 @@ source_set("views") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
   ]
 }

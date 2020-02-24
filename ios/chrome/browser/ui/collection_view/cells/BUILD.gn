@@ -29,7 +29,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ui/base",
     "//url",

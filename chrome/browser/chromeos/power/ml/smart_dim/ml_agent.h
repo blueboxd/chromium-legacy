@@ -49,6 +49,9 @@ class SmartDimMlAgent {
                         const std::string& preprocessor_proto,
                         const std::string& model_flatbuffer);
 
+  // Called by ml_agent_unittest.cc to reset the builtin and download worker.
+  void ResetForTesting();
+
  protected:
   SmartDimMlAgent();
   virtual ~SmartDimMlAgent();

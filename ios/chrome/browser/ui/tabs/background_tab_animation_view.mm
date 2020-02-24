@@ -9,9 +9,9 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/dynamic_color_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/material_timing.h"
+#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

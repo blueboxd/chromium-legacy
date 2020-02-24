@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

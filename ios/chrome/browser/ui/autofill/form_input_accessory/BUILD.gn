@@ -56,7 +56,7 @@ source_set("form_input_accessory_ui") {
     "//ios/chrome/browser/autofill:autofill_shared",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]

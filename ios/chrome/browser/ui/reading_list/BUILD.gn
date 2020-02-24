@@ -118,7 +118,7 @@ source_set("reading_list_ui") {
     "//ios/chrome/browser/ui/table_view/cells/resources:table_view_cell_check_mark",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ui/base",
     "//ui/strings:ui_strings_grit",

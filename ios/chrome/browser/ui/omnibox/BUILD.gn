@@ -161,7 +161,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util:dynamic_type_util",
     "//ios/public/provider/chrome/browser",

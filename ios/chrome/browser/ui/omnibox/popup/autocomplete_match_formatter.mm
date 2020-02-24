@@ -14,9 +14,9 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_formatter.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/dynamic_color_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -144,7 +144,7 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util:util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
     "//ios/web/common",
@@ -159,7 +159,7 @@ source_set("content_suggestions_constant") {
     "ntp_home_constant.h",
     "ntp_home_constant.mm",
   ]
-  deps = [ "//ios/chrome/common/colors" ]
+  deps = [ "//ios/chrome/common/ui/colors" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -181,7 +181,7 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/third_party/material_components_ios",
     "//ios/web/common",
     "//ui/base",

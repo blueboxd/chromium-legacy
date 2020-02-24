@@ -336,6 +336,11 @@ void SmartDimMlAgent::CancelPreviousRequest() {
   dim_decision_callback_.Cancel();
 }
 
+void SmartDimMlAgent::ResetForTesting() {
+  builtin_worker_.Reset();
+  download_worker_.Reset();
+}
+
 SmartDimWorker* SmartDimMlAgent::GetWorker() {
   if (download_worker_.IsReady()) {
     // When download_worker_ is ready, builtin_worker_ is not useful any more,

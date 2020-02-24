@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b5576b67bcf5ca9ed26590eb5c66b38526785583',
+  'angle_revision': '8b73596fe7046921a5c145db16ff68ede6b71133',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '6e49dff0052a73faaea13dd8bdf6f0724539db07',
+  'freetype_revision': 'fa147af4a5255bf9017c9b004f7abd1d5e72f497',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d358d055a505223da8dfd77e3139f7855b7c734d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5d5361f3bf54910df23a7d2f006e99c2f10f0ede',
     'condition': 'checkout_src_internal',
   },
 

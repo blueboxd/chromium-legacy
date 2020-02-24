@@ -102,7 +102,7 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
 void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
   DCHECK(lifecycle_state_ != state);
   lifecycle_state_ = state;
-  context_lifecycle_observer_set_.ForEachObserver(
+  context_lifecycle_observer_list_.ForEachObserver(
       [&](ContextLifecycleObserver* observer) {
         if (!observer->IsExecutionContextLifecycleObserver())
           return;
@@ -124,30 +124,30 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
 
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
-  context_lifecycle_observer_set_.ForEachObserver(
+  context_lifecycle_observer_list_.ForEachObserver(
       [](ContextLifecycleObserver* observer) {
         observer->ContextDestroyed();
-        observer->ObserverSetWillBeCleared();
+        observer->ObserverListWillBeCleared();
       });
-  context_lifecycle_observer_set_.Clear();
+  context_lifecycle_observer_list_.Clear();
 }
 
 void ExecutionContext::AddContextLifecycleObserver(
     ContextLifecycleObserver* observer) {
-  context_lifecycle_observer_set_.AddObserver(observer);
+  context_lifecycle_observer_list_.AddObserver(observer);
 }
 
 void ExecutionContext::RemoveContextLifecycleObserver(
     ContextLifecycleObserver* observer) {
-  DCHECK(context_lifecycle_observer_set_.HasObserver(observer));
-  context_lifecycle_observer_set_.RemoveObserver(observer);
+  DCHECK(context_lifecycle_observer_list_.HasObserver(observer));
+  context_lifecycle_observer_list_.RemoveObserver(observer);
 }
 
 unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
     const {
-  DCHECK(!context_lifecycle_observer_set_.IsIteratingOverObservers());
+  DCHECK(!context_lifecycle_observer_list_.IsIteratingOverObservers());
   unsigned lifecycle_state_observers = 0;
-  context_lifecycle_observer_set_.ForEachObserver(
+  context_lifecycle_observer_list_.ForEachObserver(
       [&](ContextLifecycleObserver* observer) {
         if (!observer->IsExecutionContextLifecycleObserver())
           return;
@@ -342,7 +342,7 @@ void ExecutionContext::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(origin_trial_context_);
   visitor->Trace(timers_);
-  visitor->Trace(context_lifecycle_observer_set_);
+  visitor->Trace(context_lifecycle_observer_list_);
   ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);

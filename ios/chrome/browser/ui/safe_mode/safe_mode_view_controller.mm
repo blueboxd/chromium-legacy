@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 

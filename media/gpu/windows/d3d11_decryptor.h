@@ -29,9 +29,9 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
                DecryptCB decrypt_cb) final;
   void CancelDecrypt(StreamType stream_type) final;
   void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                              const DecoderInitCB& init_cb) final;
+                              DecoderInitCB init_cb) final;
   void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                              const DecoderInitCB& init_cb) final;
+                              DecoderInitCB init_cb) final;
   void DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                              const AudioDecodeCB& audio_decode_cb) final;
   void DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,

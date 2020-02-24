@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarContainerViewController.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"

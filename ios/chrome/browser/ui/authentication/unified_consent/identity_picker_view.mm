@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 

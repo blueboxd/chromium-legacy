@@ -20,7 +20,7 @@ source_set("text_zoom") {
     "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web_state_list",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -39,7 +39,7 @@ source_set("text_zoom_ui") {
     "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

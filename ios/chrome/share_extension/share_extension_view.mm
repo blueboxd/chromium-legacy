@@ -5,7 +5,7 @@
 #import "ios/chrome/share_extension/share_extension_view.h"
 
 #include "base/logging.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/share_extension/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

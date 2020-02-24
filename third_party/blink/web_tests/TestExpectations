@@ -7,6 +7,9 @@
 # Further documentation:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
+# Temporarily disabled for 1043030
+crbug.com/1043030 http/tests/devtools/sources/source-frame-toolbar-items.js [ Pass Failure ]
+
 # Intentional failures to test the layout test system.
 harness-tests/crash.html [ Crash ]
 harness-tests/timeout.html [ Timeout ]

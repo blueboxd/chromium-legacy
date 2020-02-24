@@ -238,9 +238,9 @@ CdmAdapter::~CdmAdapter() {
   cdm_promise_adapter_.Clear();
 
   if (audio_init_cb_)
-    audio_init_cb_.Run(false);
+    std::move(audio_init_cb_).Run(false);
   if (video_init_cb_)
-    video_init_cb_.Run(false);
+    std::move(video_init_cb_).Run(false);
 }
 
 CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
@@ -494,7 +494,7 @@ void CdmAdapter::CancelDecrypt(StreamType stream_type) {
 }
 
 void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                        const DecoderInitCB& init_cb) {
+                                        DecoderInitCB init_cb) {
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!audio_init_cb_);
@@ -504,7 +504,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   if (cdm_config.codec == cdm::kUnknownAudioCodec) {
     DVLOG(1) << __func__
              << ": Unsupported config: " << config.AsHumanReadableString();
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -512,7 +512,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -521,15 +521,15 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
 
   if (status == cdm::kDeferredInitialization) {
     DVLOG(1) << "Deferred initialization in " << __func__;
-    audio_init_cb_ = init_cb;
+    audio_init_cb_ = std::move(init_cb);
     return;
   }
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                        const DecoderInitCB& init_cb) {
+                                        DecoderInitCB init_cb) {
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!video_init_cb_);
@@ -539,7 +539,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   if (config.alpha_mode() != VideoDecoderConfig::AlphaMode::kIsOpaque) {
     DVLOG(1) << __func__
              << ": Unsupported config: " << config.AsHumanReadableString();
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -550,7 +550,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   if (cdm_config.codec == cdm::kUnknownVideoCodec) {
     DVLOG(1) << __func__
              << ": Unsupported config: " << config.AsHumanReadableString();
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -558,7 +558,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
     DCHECK(status == cdm::kInitializationError);
     DVLOG(1) << __func__ << ": status = " << status;
-    init_cb.Run(false);
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -567,11 +567,11 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
 
   if (status == cdm::kDeferredInitialization) {
     DVLOG(1) << "Deferred initialization in " << __func__;
-    video_init_cb_ = init_cb;
+    video_init_cb_ = std::move(init_cb);
     return;
   }
 
-  init_cb.Run(true);
+  std::move(init_cb).Run(true);
 }
 
 void CdmAdapter::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,

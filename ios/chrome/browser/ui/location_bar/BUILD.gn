@@ -73,7 +73,7 @@ source_set("location_bar") {
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common:timing",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser:browser",
     "//ios/public/provider/chrome/browser/voice",

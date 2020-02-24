@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
@@ -216,6 +217,7 @@ void BrowserContextImpl::RegisterPrefs(
   pref_registry->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
 
+  ChromeSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
 }

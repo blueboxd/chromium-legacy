@@ -59,15 +59,15 @@ void FuchsiaDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void FuchsiaDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                              const DecoderInitCB& init_cb) {
+                                              DecoderInitCB init_cb) {
   // Only decryption is supported.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void FuchsiaDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                              const DecoderInitCB& init_cb) {
+                                              DecoderInitCB init_cb) {
   // Only decryption is supported.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void FuchsiaDecryptor::DecryptAndDecodeAudio(

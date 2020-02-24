@@ -20,7 +20,7 @@ source_set("promos") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//net",

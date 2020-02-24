@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_view.h"
 
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/ui/util/dynamic_type_util.h"
 

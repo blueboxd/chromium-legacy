@@ -27,6 +27,7 @@
 #endif
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Assign;
@@ -104,7 +105,7 @@ class VideoDecoderStreamTest
       // Decryptor can only decrypt (not decrypt-and-decode) so that
       // DecryptingDemuxerStream will be used.
       EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-          .WillRepeatedly(RunCallback<1>(false));
+          .WillRepeatedly(RunOnceCallback<1>(false));
       EXPECT_CALL(*decryptor_, Decrypt(_, _, _))
           .WillRepeatedly(Invoke(this, &VideoDecoderStreamTest::Decrypt));
     }

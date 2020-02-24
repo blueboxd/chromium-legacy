@@ -76,7 +76,7 @@ source_set("translate_ui") {
     "//ios/chrome/browser/ui/translate/resources:translate_options",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common:common_extension",
-    "//ios/chrome/common/colors:colors",
+    "//ios/chrome/common/ui/colors:colors",
     "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ui/base",

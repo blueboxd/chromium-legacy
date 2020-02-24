@@ -8,8 +8,8 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
-#import "ios/chrome/common/colors/dynamic_color_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

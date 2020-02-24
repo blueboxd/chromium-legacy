@@ -45,8 +45,7 @@ ios_appex_bundle("credential_provider_extension") {
 
   deps = [
     ":system_strings",
-    "//base",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/chrome/credential_provider_extension/resources",
     "//ios/chrome/credential_provider_extension/ui",
   ]

@@ -7,7 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_dynamic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_dynamic_colors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

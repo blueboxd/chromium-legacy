@@ -524,15 +524,15 @@ void AesDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void AesDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                          const DecoderInitCB& init_cb) {
+                                          DecoderInitCB init_cb) {
   // AesDecryptor does not support audio decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void AesDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                          const DecoderInitCB& init_cb) {
+                                          DecoderInitCB init_cb) {
   // AesDecryptor does not support video decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void AesDecryptor::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,

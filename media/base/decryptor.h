@@ -94,14 +94,14 @@ class MEDIA_EXPORT Decryptor {
   //
   // First Parameter: Indicates initialization success.
   // - Set to true if initialization was successful. False if an error occurred.
-  typedef base::Callback<void(bool)> DecoderInitCB;
+  using DecoderInitCB = base::OnceCallback<void(bool)>;
 
   // Initializes a decoder with the given |config|, executing the |init_cb|
   // upon completion.
   virtual void InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) = 0;
+                                      DecoderInitCB init_cb) = 0;
   virtual void InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) = 0;
+                                      DecoderInitCB init_cb) = 0;
 
   // Helper structure for managing multiple decoded audio buffers per input.
   typedef std::list<scoped_refptr<AudioBuffer> > AudioFrames;

@@ -27,6 +27,7 @@
 #endif  // !defined(OS_ANDROID)
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::IsNull;
 using ::testing::NiceMock;
@@ -232,11 +233,13 @@ class DecoderSelectorTest : public ::testing::Test {
     switch (TypeParam::kStreamType) {
       case DemuxerStream::AUDIO:
         EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(capability == kDecryptAndDecode));
+            .WillRepeatedly(
+                RunOnceCallback<1>(capability == kDecryptAndDecode));
         break;
       case DemuxerStream::VIDEO:
         EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(capability == kDecryptAndDecode));
+            .WillRepeatedly(
+                RunOnceCallback<1>(capability == kDecryptAndDecode));
         break;
       default:
         NOTREACHED();

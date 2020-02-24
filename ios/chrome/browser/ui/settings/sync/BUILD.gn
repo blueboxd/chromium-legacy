@@ -44,7 +44,7 @@ source_set("sync") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",

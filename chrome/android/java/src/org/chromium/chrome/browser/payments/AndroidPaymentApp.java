@@ -25,11 +25,13 @@ import org.chromium.IsReadyToPayService;
 import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -239,6 +241,7 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
     }
 
     private void respondToIsReadyToPayQuery(boolean isReadyToPay) {
+        ThreadUtils.assertOnUiThread();
         if (mServiceConnection != null) {
             if (mIsServiceBindingInitiated) {
                 // mServiceConnection "parameter must not be null."
@@ -255,12 +258,14 @@ public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.Inten
     }
 
     private void sendIsReadyToPayIntentToPaymentApp(IsReadyToPayService isReadyToPayService) {
+        ThreadUtils.assertOnUiThread();
         if (mIsReadyToPayCallback == null) return;
         mIsReadyToPayQueried = true;
         IsReadyToPayServiceCallback.Stub callback = new IsReadyToPayServiceCallback.Stub() {
             @Override
             public void handleIsReadyToPay(boolean isReadyToPay) throws RemoteException {
-                respondToIsReadyToPayQuery(isReadyToPay);
+                PostTask.runOrPostTask(
+                        UiThreadTaskTraits.DEFAULT, () -> respondToIsReadyToPayQuery(isReadyToPay));
             }
         };
         try {

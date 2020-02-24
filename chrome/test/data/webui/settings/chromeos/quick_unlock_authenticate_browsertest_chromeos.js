@@ -74,6 +74,7 @@ cr.define('settings_people_page_quick_unlock', function() {
     suite('authenticate', function() {
       let passwordPromptDialog = null;
       let passwordElement = null;
+      let authTokenObtainedFired = false;
 
       setup(function() {
         PolymerTest.clearBody();
@@ -84,6 +85,9 @@ cr.define('settings_people_page_quick_unlock', function() {
         testElement = document.createElement(
             'settings-lock-screen-password-prompt-dialog');
         testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
+        testElement.addEventListener('auth-token-obtained', (e) => {
+          authTokenObtainedFired = true;
+        });
         document.body.appendChild(testElement);
 
         passwordPromptDialog = getFromElement('#passwordPrompt');
@@ -155,7 +159,7 @@ cr.define('settings_people_page_quick_unlock', function() {
             0,
             fakeUma.getHistogramValue(
                 LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
-        assertFalse(!!testElement.setModes);
+        assertFalse(authTokenObtainedFired);
       });
 
       // A valid password provides an authenticated setModes object, and a
@@ -170,7 +174,7 @@ cr.define('settings_people_page_quick_unlock', function() {
             1,
             fakeUma.getHistogramValue(
                 LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
-        assertTrue(!!testElement.setModes);
+        assertTrue(authTokenObtainedFired);
       });
 
       // The setModes objects times out after a delay.
@@ -298,8 +302,8 @@ cr.define('settings_people_page_quick_unlock', function() {
               Polymer.dom.flush();
 
               testElement.setModes_ = quickUnlockPrivateApi.setModes.bind(
-                  quickUnlockPrivateApi, quickUnlockPrivateApi.getFakeToken(),
-                  [], [], () => {
+                  quickUnlockPrivateApi,
+                  quickUnlockPrivateApi.getFakeToken().token, [], [], () => {
                     return true;
                   });
 
@@ -360,6 +364,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           assertFalse(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
         }
+        testElement.authToken = quickUnlockPrivateApi.getFakeToken();
 
         // Verify toggling PIN on/off does not disable screen lock.
         setLockScreenPref(true);
@@ -433,7 +438,8 @@ cr.define('settings_people_page_quick_unlock', function() {
         const testPinKeyboard = testElement.$.pinKeyboard;
         testPinKeyboard.setModes = (modes, credentials, onComplete) => {
           quickUnlockPrivateApi.setModes(
-              quickUnlockPrivateApi.getFakeToken(), modes, credentials, () => {
+              quickUnlockPrivateApi.getFakeToken().token, modes, credentials,
+              () => {
                 onComplete(true);
               });
         };

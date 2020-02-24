@@ -16,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.permissions.AndroidPermissionRequester;
 import org.chromium.chrome.browser.tab.Tab;
@@ -250,7 +249,7 @@ public class DownloadController {
     @CalledByNative
     private static void onDownloadStarted() {
         if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
-        if (CachedFeatureFlags.isDownloadProgressInfoBarEnabled()) return;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) return;
         DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
     }
 

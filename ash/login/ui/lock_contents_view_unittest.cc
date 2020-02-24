@@ -1065,7 +1065,7 @@ TEST_F(LockContentsViewUnitTest, GaiaNeverShownOnLockAfterFailedAuth) {
   };
 
   // ShowGaiaSignin is never triggered.
-  EXPECT_CALL(*client, ShowGaiaSignin(_, _)).Times(0);
+  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
   for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog + 1; ++i)
     submit_password();
 }
@@ -1091,14 +1091,13 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
   };
 
   // The first n-1 attempts do not trigger ShowGaiaSignin.
-  EXPECT_CALL(*client, ShowGaiaSignin(_, _)).Times(0);
+  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
   for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog - 1; ++i)
     submit_password();
   Mock::VerifyAndClearExpectations(client.get());
 
   // The final attempt triggers ShowGaiaSignin.
-  EXPECT_CALL(*client, ShowGaiaSignin(true /*can_close*/,
-                                      users()[0].basic_user_info.account_id))
+  EXPECT_CALL(*client, ShowGaiaSignin(users()[0].basic_user_info.account_id))
       .Times(1);
   submit_password();
   Mock::VerifyAndClearExpectations(client.get());
@@ -2886,11 +2885,30 @@ TEST_F(LockContentsViewUnitTest, NoUsersToShow) {
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi test_api(contents);
+  DataDispatcher()->SetUserList(users());
 
   // Verify that primary big view is null.
   EXPECT_THAT(test_api.primary_big_view(), IsNull());
   // Verify that the main view has no children.
   EXPECT_TRUE(test_api.main_view()->children().empty());
+}
+
+TEST_F(LockContentsViewUnitTest, ToggleGaiaOnUsersChanged) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+  auto client = std::make_unique<MockLoginScreenClient>();
+  // Expect Gaia to show when there is no users.
+  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(1);
+  AddUsers(0);
+  Mock::VerifyAndClearExpectations(client.get());
+
+  // Hide Gaia when users added.
+  EXPECT_CALL(*client, HideGaiaSignin()).Times(1);
+  AddPublicAccountUsers(1);
 }
 
 }  // namespace ash

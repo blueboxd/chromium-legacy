@@ -69,8 +69,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // Returns the process-wide instance of the PerfettoTracedProcess.
   static PerfettoTracedProcess* Get();
 
-  ProducerClient* producer_client();
-  SystemProducer* SystemProducerForTesting();
+  ProducerClient* producer_client() const;
+  SystemProducer* system_producer() const;
 
   ~PerfettoTracedProcess();
 
@@ -132,7 +132,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // A PerfettoProducer that connects to the system Perfetto service. If there
   // is no system Perfetto service this pointer will be valid, but all function
   // calls will be noops.
-  std::unique_ptr<SystemProducer> system_producer_endpoint_;
+  std::unique_ptr<SystemProducer> system_producer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracedProcess);

@@ -715,10 +715,19 @@ void ProfileImpl::DoFinalInit() {
                               std::make_unique<PrefsInternalsSource>(this));
 
   if (delegate_) {
-    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
-    delegate_->OnProfileCreated(this, true, IsNewProfile());
+    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated");
+    // Fails if the browser is shutting down. This is done to avoid
+    // launching new UI, finalising profile creation, etc. which
+    // would trigger a crash down the line. See ...
+    const bool shutting_down = g_browser_process->IsShuttingDown();
+    delegate_->OnProfileCreated(this, !shutting_down, IsNewProfile());
+    // The current Profile may be immediately deleted as part of
+    // the call to OnProfileCreated(...) if the initialisation is
+    // reported as a failure, thus no code should be executed past
+    // that point.
+    if (shutting_down)
+      return;
   }
-
   // Ensure that the SharingService is initialized now that io_data_ is
   // initialized. https://crbug.com/171406
   SharingServiceFactory::GetForBrowserContext(this);

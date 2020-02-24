@@ -24,7 +24,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.ThemeType;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -60,7 +59,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
 
     public ThemeSettingsFragmentTest(boolean defaultToLight) {
         mDefaultToLight = defaultToLight;
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(defaultToLight);
+        NightModeUtils.setNightModeDefaultToLightForTesting(defaultToLight);
     }
 
     @Override
@@ -83,7 +82,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             SharedPreferencesManager.getInstance().removeKey(UI_THEME_DARKEN_WEBSITES_ENABLED);
         });
 
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(null);
+        NightModeUtils.setNightModeDefaultToLightForTesting(null);
         super.tearDownTest();
     }
 
@@ -95,7 +94,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             // Default to light parameter is only applicable pre-Q.
             if (mDefaultToLight && BuildInfo.isAtLeastQ()) {
                 Assert.assertFalse("Q should not default to light.",
-                        CachedFeatureFlags.isNightModeDefaultToLight());
+                        NightModeUtils.isNightModeDefaultToLight());
                 return;
             }
 
@@ -140,7 +139,7 @@ public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {
             // Default to light parameter is only applicable pre-Q.
             if (mDefaultToLight && BuildInfo.isAtLeastQ()) {
                 Assert.assertFalse("Q should not default to light.",
-                        CachedFeatureFlags.isNightModeDefaultToLight());
+                        NightModeUtils.isNightModeDefaultToLight());
                 return;
             }
 

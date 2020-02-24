@@ -14,7 +14,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -28,16 +28,15 @@ namespace content {
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
-  FrameReplicationState(
-      blink::WebTreeScopeType scope,
-      const std::string& name,
-      const std::string& unique_name,
-      blink::mojom::InsecureRequestPolicy insecure_request_policy,
-      const std::vector<uint32_t>& insecure_navigations_set,
-      bool has_potentially_trustworthy_unique_origin,
-      bool has_received_user_gesture,
-      bool has_received_user_gesture_before_nav,
-      blink::FrameOwnerElementType owner_type);
+  FrameReplicationState(blink::WebTreeScopeType scope,
+                        const std::string& name,
+                        const std::string& unique_name,
+                        blink::WebInsecureRequestPolicy insecure_request_policy,
+                        const std::vector<uint32_t>& insecure_navigations_set,
+                        bool has_potentially_trustworthy_unique_origin,
+                        bool has_received_user_gesture,
+                        bool has_received_user_gesture_before_nav,
+                        blink::FrameOwnerElementType owner_type);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -124,7 +123,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // The insecure request policy that a frame's current document is enforcing.
   // Updates are immediately sent to all frame proxies when frames live in
   // different processes.
-  blink::mojom::InsecureRequestPolicy insecure_request_policy;
+  blink::WebInsecureRequestPolicy insecure_request_policy;
 
   // The upgrade insecure navigations set that a frame's current document is
   // enforcing. Updates are immediately sent to all frame proxies when frames

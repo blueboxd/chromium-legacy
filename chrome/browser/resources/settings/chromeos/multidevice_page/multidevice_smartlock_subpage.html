@@ -58,7 +58,8 @@
     </iron-collapse>
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
       <settings-password-prompt-dialog id="smartLockSignInPasswordPrompt"
-          on-close="onEnableSignInDialogClose_" auth-token="{{authToken_}}">
+          on-close="onEnableSignInDialogClose_"
+          on-token-obtained="onTokenObtained_">
       </settings-password-prompt-dialog>
     </template>
   </template>

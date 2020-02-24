@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_CONTENT_SECURITY_POLICY_CSP_SOURCE_LIST_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_CONTENT_SECURITY_POLICY_CSP_SOURCE_LIST_H_
 
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"

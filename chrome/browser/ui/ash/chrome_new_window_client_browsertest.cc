@@ -282,8 +282,6 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kResetSubPage));
   TestOpenChromePage(ChromePage::STORAGE,
                      base_url.Resolve(chrome::kStorageSubPage));
-  TestOpenChromePage(ChromePage::SYNCSETUP,
-                     base_url.Resolve(chrome::kSyncSetupSubPage));
   TestOpenChromePage(ChromePage::ACCESSIBILITY,
                      base_url.Resolve(chrome::kAccessibilitySubPage));
   TestOpenChromePage(ChromePage::ACCOUNTMANAGER,
@@ -347,6 +345,8 @@ void TestAllBrowserSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kPasswordManagerSubPage));
   TestOpenChromePage(ChromePage::SEARCH,
                      base_url.Resolve(chrome::kSearchSubPage));
+  TestOpenChromePage(ChromePage::SYNCSETUP,
+                     base_url.Resolve(chrome::kSyncSetupSubPage));
 }
 
 void TestAllAboutPages() {

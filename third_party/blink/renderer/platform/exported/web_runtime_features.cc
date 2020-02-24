@@ -654,10 +654,6 @@ void WebRuntimeFeatures::EnableSmsReceiver(bool enable) {
   RuntimeEnabledFeatures::SetSmsReceiverEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableDisplayLocking(bool enable) {
-  RuntimeEnabledFeatures::SetDisplayLockingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
 }

@@ -60,6 +60,63 @@ void QuadList::ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at) {
                       needs_blending, SK_ColorTRANSPARENT, true);
 }
 
+QuadList::Iterator QuadList::InsertCopyBeforeDrawQuad(Iterator at,
+                                                      size_t count) {
+  DCHECK(at->shared_quad_state);
+  switch (at->material) {
+    case DrawQuad::Material::kDebugBorder: {
+      const auto copy = *DebugBorderDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
+          at, count, copy);
+    }
+    case DrawQuad::Material::kPictureContent: {
+      const auto copy = *PictureDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<PictureDrawQuad>(at, count,
+                                                                   copy);
+    }
+    case DrawQuad::Material::kTextureContent: {
+      const auto copy = *TextureDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<TextureDrawQuad>(at, count,
+                                                                   copy);
+    }
+    case DrawQuad::Material::kSolidColor: {
+      const auto copy = *SolidColorDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(at, count,
+                                                                      copy);
+    }
+    case DrawQuad::Material::kTiledContent: {
+      const auto copy = *TileDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<TileDrawQuad>(at, count,
+                                                                copy);
+    }
+    case DrawQuad::Material::kStreamVideoContent: {
+      const auto copy = *StreamVideoDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<StreamVideoDrawQuad>(
+          at, count, copy);
+    }
+    case DrawQuad::Material::kSurfaceContent: {
+      const auto copy = *SurfaceDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<SurfaceDrawQuad>(at, count,
+                                                                   copy);
+    }
+    case DrawQuad::Material::kVideoHole: {
+      const auto copy = *VideoHoleDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<VideoHoleDrawQuad>(at, count,
+                                                                     copy);
+    }
+    case DrawQuad::Material::kYuvVideoContent: {
+      const auto copy = *YUVVideoDrawQuad::MaterialCast(*at);
+      return InsertBeforeAndInvalidateAllPointers<YUVVideoDrawQuad>(at, count,
+                                                                    copy);
+    }
+    // RenderPass quads should not be copied.
+    case DrawQuad::Material::kRenderPass:
+    case DrawQuad::Material::kInvalid:
+      NOTREACHED();  // Invalid DrawQuad material.
+      return at;
+  }
+}
+
 std::unique_ptr<RenderPass> RenderPass::Create() {
   return base::WrapUnique(new RenderPass());
 }

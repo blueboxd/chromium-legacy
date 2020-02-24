@@ -15,7 +15,6 @@ import androidx.annotation.StringRes;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.ui.base.PermissionCallback;
@@ -89,9 +88,8 @@ public class AndroidPermissionRequester {
      * If true is returned, this method will asynchronously request the necessary permissions using
      * a dialog, running methods on the RequestDelegate when the user has made a decision.
      */
-    public static boolean requestAndroidPermissions(
-            final Tab tab, final int[] contentSettingsTypes, final RequestDelegate delegate) {
-        final WindowAndroid windowAndroid = tab.getWindowAndroid();
+    public static boolean requestAndroidPermissions(final WindowAndroid windowAndroid,
+            final int[] contentSettingsTypes, final RequestDelegate delegate) {
         if (windowAndroid == null) return false;
 
         final SparseArray<String[]> contentSettingsTypesToPermissionsMap =
@@ -149,7 +147,9 @@ public class AndroidPermissionRequester {
                                     + deniedContentSettings;
 
                     showMissingPermissionDialog(activity, deniedStringId,
-                            () -> requestAndroidPermissions(tab, contentSettingsTypes, delegate),
+                            ()
+                                    -> requestAndroidPermissions(
+                                            windowAndroid, contentSettingsTypes, delegate),
                             delegate::onAndroidPermissionCanceled);
                 } else if (deniedContentSettings.isEmpty()) {
                     delegate.onAndroidPermissionAccepted();

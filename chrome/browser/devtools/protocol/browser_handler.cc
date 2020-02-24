@@ -112,8 +112,12 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce([]() { chrome::ExitIgnoreUnloadHandlers(); }));
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce([]() {
+        if (ChromeDevToolsManagerDelegate::GetInstance())
+          ChromeDevToolsManagerDelegate::GetInstance()->BrowserCloseRequested();
+        chrome::ExitIgnoreUnloadHandlers();
+      }));
   return Response::OK();
 }
 

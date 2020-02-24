@@ -12,7 +12,6 @@
 #include "components/performance_manager/graph/worker_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/process_node_source.h"
-#include "content/public/browser/shared_worker_instance.h"
 
 namespace performance_manager {
 
@@ -142,20 +141,21 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 }
 
 void WorkerWatcher::OnWorkerStarted(
-    const content::SharedWorkerInstance& instance,
+    content::SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
   auto worker_node = PerformanceManagerImpl::GetInstance()->CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kShared,
       process_node_source_->GetProcessNode(worker_process_id), dev_tools_token);
   bool inserted =
-      shared_worker_nodes_.emplace(instance, std::move(worker_node)).second;
+      shared_worker_nodes_.emplace(shared_worker_id, std::move(worker_node))
+          .second;
   DCHECK(inserted);
 }
 
 void WorkerWatcher::OnBeforeWorkerTerminated(
-    const content::SharedWorkerInstance& instance) {
-  auto it = shared_worker_nodes_.find(instance);
+    content::SharedWorkerId shared_worker_id) {
+  auto it = shared_worker_nodes_.find(shared_worker_id);
   DCHECK(it != shared_worker_nodes_.end());
 
   auto worker_node = std::move(it->second);
@@ -168,15 +168,16 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 }
 
 void WorkerWatcher::OnClientAdded(
-    const content::SharedWorkerInstance& instance,
+    content::SharedWorkerId shared_worker_id,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  AddClientFrame(GetSharedWorkerNode(instance), render_frame_host_id);
+  AddClientFrame(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
 }
 
 void WorkerWatcher::OnClientRemoved(
-    const content::SharedWorkerInstance& instance,
+    content::SharedWorkerId shared_worker_id,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  RemoveClientFrame(GetSharedWorkerNode(instance), render_frame_host_id);
+  RemoveClientFrame(GetSharedWorkerNode(shared_worker_id),
+                    render_frame_host_id);
 }
 
 void WorkerWatcher::AddClientFrame(
@@ -306,8 +307,8 @@ WorkerNodeImpl* WorkerWatcher::GetDedicatedWorkerNode(
 }
 
 WorkerNodeImpl* WorkerWatcher::GetSharedWorkerNode(
-    const content::SharedWorkerInstance& instance) {
-  auto it = shared_worker_nodes_.find(instance);
+    content::SharedWorkerId shared_worker_id) {
+  auto it = shared_worker_nodes_.find(shared_worker_id);
   if (it == shared_worker_nodes_.end()) {
     NOTREACHED();
     return nullptr;

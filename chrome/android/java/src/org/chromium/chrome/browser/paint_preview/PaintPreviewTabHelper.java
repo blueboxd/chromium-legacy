@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.paint_preview;
 
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.NavigationHandle;
 
 /**
  * Manages the Paint Preview component for a given {@link Tab}. Destroyed together with the tab.
@@ -26,7 +25,7 @@ public class PaintPreviewTabHelper extends EmptyTabObserver {
     }
 
     @Override
-    public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
+    public void onPageLoadFinished(Tab tab, String url) {
         if (qualifiesForCapture(tab)) {
             PaintPreviewExperiments.runCaptureExperiment(tab.getWebContents());
         }

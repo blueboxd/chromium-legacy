@@ -13,9 +13,6 @@
 #include "chrome/android/chrome_jni_headers/PermissionDialogController_jni.h"
 #include "chrome/android/chrome_jni_headers/PermissionDialogDelegate_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -30,19 +27,19 @@ void PermissionDialogDelegate::Create(
     PermissionPromptAndroid* permission_prompt) {
   DCHECK(web_contents);
 
-  // If we don't have a tab, just act as though the prompt was dismissed.
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  if (!tab) {
+  // If we don't have a window, just act as though the prompt was dismissed.
+  if (!web_contents->GetTopLevelNativeWindow()) {
     permission_prompt->Closing();
     return;
   }
 
   // Dispatch the dialog to Java, which manages the lifetime of this object.
-  new PermissionDialogDelegate(tab, permission_prompt);
+  new PermissionDialogDelegate(web_contents, permission_prompt);
 }
 
-void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
-                                                  TabAndroid* tab) {
+void PermissionDialogDelegate::CreateJavaDelegate(
+    JNIEnv* env,
+    content::WebContents* web_contents) {
   base::android::ScopedJavaLocalRef<jstring> primaryButtonText =
       ConvertUTF16ToJavaString(env,
                                l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
@@ -57,7 +54,8 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
   }
 
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(
-      env, reinterpret_cast<uintptr_t>(this), tab->GetJavaObject(),
+      env, reinterpret_cast<uintptr_t>(this),
+      web_contents->GetTopLevelNativeWindow()->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types),
       ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
@@ -85,16 +83,15 @@ void PermissionDialogDelegate::Destroy(JNIEnv* env,
 }
 
 PermissionDialogDelegate::PermissionDialogDelegate(
-    TabAndroid* tab,
+    content::WebContents* web_contents,
     PermissionPromptAndroid* permission_prompt)
-    : content::WebContentsObserver(tab->web_contents()),
+    : content::WebContentsObserver(web_contents),
       permission_prompt_(permission_prompt) {
-  DCHECK(tab);
   DCHECK(permission_prompt_);
 
   // Create our Java counterpart, which manages our lifetime.
   JNIEnv* env = base::android::AttachCurrentThread();
-  CreateJavaDelegate(env, tab);
+  CreateJavaDelegate(env, web_contents);
 
   // Send the Java delegate to the Java PermissionDialogController for display.
   // The controller takes over lifetime management; when the Java delegate is no

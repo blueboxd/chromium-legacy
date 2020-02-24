@@ -680,7 +680,16 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   //
   // Startup tracing flags are not (and should not be) passed to Zygote
   // processes. We will enable tracing when forked, if needed.
-  if (process_type != service_manager::switches::kZygoteProcess)
+  bool enable_startup_tracing =
+      process_type != service_manager::switches::kZygoteProcess;
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+  // In the browser process, we have to enable startup tracing after
+  // InitializeZygoteSandboxForBrowserProcess() is run below, because that
+  // function forks and may call trace macros in the forked process.
+  if (process_type.empty())
+    enable_startup_tracing = false;
+#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+  if (enable_startup_tracing)
     tracing::EnableStartupTracingIfNeeded();
 
 #if defined(OS_WIN)
@@ -820,6 +829,13 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
       // SandboxInitialized().
       InitializeZygoteSandboxForBrowserProcess(
           *base::CommandLine::ForCurrentProcess());
+
+      // We can only enable startup tracing after
+      // InitializeZygoteSandboxForBrowserProcess(), because the latter may fork
+      // and run code that calls trace event macros in the forked process (which
+      // could cause all sorts of issues, like writing to the same tracing SMB
+      // from two processes).
+      tracing::EnableStartupTracingIfNeeded();
     }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 

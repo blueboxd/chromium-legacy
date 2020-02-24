@@ -152,7 +152,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 
   Vector<TextSuggestionInfo>& suggestion_infos =
       suggestion_infos_with_node_and_highlight_color.suggestion_infos;
-  for (const std::pair<const Member<const Text>, DocumentMarker*>&
+  for (const std::pair<Member<const Text>, Member<DocumentMarker>>&
            node_marker_pair : node_suggestion_marker_pairs_sorted_by_length) {
     if (node_marker_pair.first !=
         suggestion_infos_with_node_and_highlight_color.text_node)
@@ -161,7 +161,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
     if (suggestion_infos.size() == max_number_of_suggestions)
       break;
 
-    const auto* marker = To<SuggestionMarker>(node_marker_pair.second);
+    const auto* marker = To<SuggestionMarker>(node_marker_pair.second.Get());
     const Vector<String>& marker_suggestions = marker->Suggestions();
     for (wtf_size_t suggestion_index = 0;
          suggestion_index < marker_suggestions.size(); ++suggestion_index) {

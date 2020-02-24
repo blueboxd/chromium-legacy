@@ -8,7 +8,6 @@
 #include "chrome/browser/task_manager/providers/worker_task.h"
 #include "chrome/browser/task_manager/providers/worker_task_provider.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/shared_worker_instance.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace task_manager {
@@ -67,16 +66,18 @@ void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
 }
 
 void PerProfileWorkerTaskTracker::OnWorkerStarted(
-    const content::SharedWorkerInstance& instance,
+    content::SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  CreateWorkerTask(instance, Task::Type::SHARED_WORKER, worker_process_id,
-                   instance.url(), &shared_worker_tasks_);
+  // TODO(https://crbug.com/1047787): Make use of the worker's URL when it is
+  //                                  available.
+  CreateWorkerTask(shared_worker_id, Task::Type::SHARED_WORKER,
+                   worker_process_id, GURL(), &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
-    const content::SharedWorkerInstance& instance) {
-  DeleteWorkerTask(instance, &shared_worker_tasks_);
+    content::SharedWorkerId shared_worker_id) {
+  DeleteWorkerTask(shared_worker_id, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnVersionStartedRunning(

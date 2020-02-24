@@ -570,9 +570,6 @@ class CONTENT_EXPORT RenderWidget
     return last_capture_sequence_number_;
   }
 
-  // Returns true if a page scale animation is active.
-  bool HasPendingPageScaleAnimation() const;
-
   // MainThreadEventQueueClient overrides.
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,

@@ -84,11 +84,10 @@ void SetSystemProducerSocketAndChecksAsync(const std::string& producer_socket) {
                 // PosixSystemProducer so this assert ensures that the
                 // static_cast below is safe.
                 ASSERT_FALSE(tracing::PerfettoTracedProcess::Get()
-                                 ->SystemProducerForTesting()
+                                 ->system_producer()
                                  ->IsDummySystemProducerForTesting());
                 auto* producer = static_cast<tracing::PosixSystemProducer*>(
-                    tracing::PerfettoTracedProcess::Get()
-                        ->SystemProducerForTesting());
+                    tracing::PerfettoTracedProcess::Get()->system_producer());
                 producer->SetNewSocketForTesting(producer_socket.c_str());
                 producer->SetDisallowPreAndroidPieForTesting(false);
               },

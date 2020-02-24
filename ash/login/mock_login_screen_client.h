@@ -103,8 +103,9 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD(void, FocusLockScreenApps, (bool reverse), (override));
   MOCK_METHOD(void,
               ShowGaiaSignin,
-              (bool can_close, const AccountId& prefilled_account),
+              (const AccountId& prefilled_account),
               (override));
+  MOCK_METHOD(void, HideGaiaSignin, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));
   MOCK_METHOD(void, RemoveUser, (const AccountId& account_id), (override));
   MOCK_METHOD(void,

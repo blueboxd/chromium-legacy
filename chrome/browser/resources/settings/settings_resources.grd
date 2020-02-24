@@ -898,6 +898,13 @@
                  file="metrics_browser_proxy.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_RECENT_SITE_PERMISSIONS_HTML"
+                 file="site_settings_page/recent_site_permissions.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RECENT_SITE_PERMISSIONS_JS"
+                 file="site_settings_page/recent_site_permissions.js"
+                 preprocess="true"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ROUTE_HTML"
                  file="route.html"
                  type="chrome_html" />

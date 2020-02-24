@@ -302,7 +302,7 @@ void MockConsumer::CheckForAllDataSourcesStopped() {
 MockProducerHost::MockProducerHost(
     const std::string& producer_name,
     const std::string& data_source_name,
-    perfetto::TracingService* service,
+    PerfettoService* service,
     MockProducerClient* producer_client,
     base::OnceClosure datasource_registered_callback)
     : producer_name_(producer_name),
@@ -311,7 +311,7 @@ MockProducerHost::MockProducerHost(
   mojo::PendingRemote<mojom::ProducerClient> client;
   mojo::PendingRemote<mojom::ProducerHost> host_remote;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  Initialize(std::move(client), service, producer_name_);
+  Initialize(std::move(client), service->GetService(), producer_name_);
   receiver_.Bind(host_remote.InitWithNewPipeAndPassReceiver());
   producer_client->BindClientAndHostPipesForTesting(std::move(client_receiver),
                                                     std::move(host_remote));
@@ -347,7 +347,7 @@ void MockProducerHost::OnCommit(
 
 MockProducer::MockProducer(const std::string& producer_name,
                            const std::string& data_source_name,
-                           perfetto::TracingService* service,
+                           PerfettoService* service,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {

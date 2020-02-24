@@ -37,7 +37,6 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -304,11 +303,11 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
   // case, it should be the Document that called update(). For soft update case,
   // it seems to be 'null' document.
 
-  mojom::blink::InsecureRequestPolicy insecure_requests_policy =
+  WebInsecureRequestPolicy insecure_requests_policy =
       passed_settings_object.insecure_requests_policy ==
               mojom::InsecureRequestsPolicy::kUpgrade
-          ? mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests
-          : mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent;
+          ? kUpgradeInsecureRequests
+          : kBlockAllMixedContent;
 
   return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
       script_url.Copy() /* global_object_url */,

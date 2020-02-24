@@ -81,6 +81,8 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 
   void InitializeDarkModeStateAndObserver();
 
+  void InitializeWebThemeState() const;
+
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
   id high_contrast_notification_token_;

@@ -6,11 +6,11 @@
   margin: 0 4px; /* So that two adjacent buttons are 8px separated. */
 }
 
-/* Default slot data is not selected by ::slotted() selector, see
- * https://crbug.com/703984.
+/*
+ * TODO(https://crbug.com/703984): remove the fallback class when fixed.
  */
 :host ::slotted(*),
-#text {
+.fallback {
   font-family: var(--oobe-button-font-family);
   font-size: 12px;
 }

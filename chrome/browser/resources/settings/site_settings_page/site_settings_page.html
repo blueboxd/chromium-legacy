@@ -12,6 +12,7 @@
 <link rel="import" href="../site_settings/constants.html">
 <link rel="import" href="../site_settings/site_settings_behavior.html">
 <link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
+<link rel="import" href="recent_site_permissions.html">
 <link rel="import" href="../metrics_browser_proxy.html">
 
 <dom-module id="settings-site-settings-page">
@@ -31,10 +32,23 @@
         border-top: none;
       }
     </style>
-    <div class="settings-box first line-only">
-      <h2 class="first">$i18n{siteSettingsAllSites}</h2>
-    </div>
+    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+      <div class="settings-box first line-only">
+        <h2 class="first">$i18n{siteSettingsAllSites}</h2>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
+      <div class="settings-box first line-only">
+        <h2 class="first">$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
+      </div>
+      <settings-recent-site-permissions id="recentSitePermissions"
+          no-recent-permissions="{{noRecentSitePermissions_}}">
+      </settings-recent-site-permissions>
+    </template>
+
     <cr-link-row data-route="SITE_SETTINGS_ALL" id="allSites"
+        class$="[[getClassForSiteSettingsAllLink_(noRecentSitePermissions_)]]"
         label="$i18n{siteSettingsAllSitesDescription}"
         on-click="onTapNavigate_"
         role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>

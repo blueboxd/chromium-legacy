@@ -59,6 +59,7 @@ class PopupOpenerTabHelper
                        const base::TickClock* tick_clock);
 
   // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -79,6 +80,9 @@ class PopupOpenerTabHelper
   base::TimeTicks last_popup_open_time_;
 
   bool has_opened_popup_since_last_user_gesture_ = false;
+
+  // Whether this WebContents has opened a popup.
+  bool has_opened_popup_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

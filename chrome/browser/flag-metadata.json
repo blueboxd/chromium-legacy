@@ -30,7 +30,7 @@
 [
   {
     "name": "accessibility-internals-page-improvements",
-    "owners": [ "abigailbklein" ],
+    "owners": [ "abigailbklein@google.com" ],
     "expiry_milestone": 82
   },
   {
@@ -599,42 +599,42 @@
   },
   {
     "name": "crostini-disk-resizing",
-    "owners": [ "davidmunro", "nverne", "clumptini" ],
+    "owners": [ "davidmunro@google.com", "nverne" ],
     "expiry_milestone": 83
   },
   {
     "name": "crostini-gpu-support",
-    "owners": [ "nverne", "benwells", "clumptini" ],
+    "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 85
   },
   {
     "name": "crostini-port-forwarding",
-    "owners": [ "matterchen", "davidmunro", "hollingum" ],
+    "owners": [ "matterchen", "davidmunro@google.com", "hollingum@google.com" ],
     "expiry_milestone": 84
   },
   {
     "name": "crostini-usb-allow-unsupported",
-    "owners": [ "nverne", "benwells", "clumptini" ],
+    "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-support",
-    "owners": [ "jopra", "nverne", "benwells", "clumptini" ],
+    "owners": [ "jopra", "nverne", "benwells" ],
     "expiry_milestone": 76
   },
   {
     "name": "crostini-use-buster-image",
-    "owners": [ "davidmunro", "benwells", "clumptini" ],
+    "owners": [ "davidmunro@google.com", "benwells" ],
     "expiry_milestone": 82
   },
   {
     "name": "crostini-username",
-    "owners": [ "davidmunro", "lxj", "clumptini" ],
+    "owners": [ "davidmunro@google.com", "lxj" ],
     "expiry_milestone": 83
   },
   {
     "name": "crostini-webui-upgrader",
-    "owners": [ "nverne", "davidmunro", "benwells", "clumptini" ],
+    "owners": [ "nverne", "davidmunro@google.com", "benwells" ],
     "expiry_milestone": 84
   },
   {
@@ -1452,7 +1452,7 @@
   },
   {
     "name": "enable-history-favicons-google-server-query",
-    "owners": ["victorvianna", "jkrcal"],
+    "owners": [ "jkrcal" ],
     "expiry_milestone": 79
   },
   {
@@ -2207,7 +2207,7 @@
   },
   {
     "name": "exo-pointer-lock",
-    "owners": [ "hollingum" ],
+    "owners": [ "hollingum@google.com" ],
     "expiry_milestone": 82
   },
   {
@@ -2360,7 +2360,7 @@
   },
   {
     "name": "gaia-action-buttons",
-    "owners": [ "jeroendh", "rsorokin" ],
+    "owners": [ "jeroendh@google.com", "rsorokin" ],
     "expiry_milestone": 79
   },
   {
@@ -3595,7 +3595,7 @@
   },
   {
     "name": "translate-ui-bubble-options",
-    "owners": [ "hhw", "anthonyvd", "chrome-language@google.com" ],
+    "owners": [ "anthonyvd", "chrome-language@google.com" ],
     "expiry_milestone": 82
   },
   {
@@ -3621,7 +3621,7 @@
   {
     "name": "turn-off-streaming-media-caching",
     "owners": [ "shawnpi@microsoft.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "ui-disable-partial-swap",

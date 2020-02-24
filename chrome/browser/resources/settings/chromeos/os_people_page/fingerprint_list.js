@@ -84,6 +84,7 @@ Polymer({
       if (this.browserProxy_) {
         this.browserProxy_.endCurrentAuthentication();
       }
+      this.showSetupFingerprintDialog_ = false;
     } else if (oldRoute == settings.routes.LOCK_SCREEN) {
       // Start fingerprint authentication when going from LOCK_SCREEN to
       // FINGERPRINT page.

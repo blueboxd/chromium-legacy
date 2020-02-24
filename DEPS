@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cc5415a8ce36c4f129e56adb8f18adf220407e8e',
+  'skia_revision': '108a494984daeef864432f77be92d5a6be089bfa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'bc3173307c010f11fd384918505e7c5eca180d24',
+  'v8_revision': 'cb8594a9b83399ea3d194d4c12ba90c6916c9a81',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -298,7 +298,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'bc34d908f60d458c6d9e416a7404eac4703e1192',
+  'dawn_revision': '33466973bc4c52effb520832d538b48c38695ca5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1242,7 +1242,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8c5bd85a9ac22e87974b20c7003f4a236bcc1dba',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3bde4517dec7e1b528202a4709785aa798abe480',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6b9651c5ec90058d2f1834fe387ad175cd6d81e1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@207c622c1ef0b060d7641c9e4f56352330e1c97a',
     'condition': 'checkout_src_internal',
   },
 

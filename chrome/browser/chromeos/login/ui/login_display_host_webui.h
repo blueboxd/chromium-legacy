@@ -81,8 +81,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
-  void ShowGaiaDialog(bool can_close,
-                      const AccountId& prefilled_account) override;
+  void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
@@ -91,7 +90,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
-
   void OnCancelPasswordChangedFlow() override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login

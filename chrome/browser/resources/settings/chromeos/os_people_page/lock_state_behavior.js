@@ -103,7 +103,13 @@ const LockStateBehaviorImpl = {
     });
   },
 
-  /** Sets the lock screen enabled state. */
+  /**
+   * Sets the lock screen enabled state.
+   * @param {string} authToken The token returned by
+   *                           QuickUnlockPrivate.getAuthToken
+   * @param {boolean} enabled
+   * @see quickUnlockPrivate.setLockScreenEnabled
+   */
   setLockScreenEnabled(authToken, enabled) {
     this.quickUnlockPrivate.setLockScreenEnabled(authToken, enabled);
   },

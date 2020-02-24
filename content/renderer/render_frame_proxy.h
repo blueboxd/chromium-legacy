@@ -26,7 +26,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "url/origin.h"
@@ -227,8 +227,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
-  void OnEnforceInsecureRequestPolicy(
-      blink::mojom::InsecureRequestPolicy policy);
+  void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnTransferUserActivationFrom(int32_t source_routing_id);
 
   // mojom::RenderFrameProxy implementation:

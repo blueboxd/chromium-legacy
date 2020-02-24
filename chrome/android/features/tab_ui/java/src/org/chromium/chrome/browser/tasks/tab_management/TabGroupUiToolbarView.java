@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.support.v4.widget.TextViewCompat;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -16,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;

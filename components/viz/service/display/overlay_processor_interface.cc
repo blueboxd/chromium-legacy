@@ -136,6 +136,10 @@ OverlayProcessorInterface::CreateOverlayProcessor(
 #endif
 }
 
+bool OverlayProcessorInterface::DisableSplittingQuads() const {
+  return false;
+}
+
 OverlayProcessorInterface::OutputSurfaceOverlayPlane
 OverlayProcessorInterface::ProcessOutputSurfaceAsOverlay(
     const gfx::Size& viewport_size,

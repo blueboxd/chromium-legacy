@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
-import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.core.content.res.ResourcesCompat;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;

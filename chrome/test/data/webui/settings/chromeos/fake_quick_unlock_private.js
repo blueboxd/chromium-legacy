@@ -39,7 +39,7 @@ cr.define('settings', function() {
   FakeQuickUnlockPrivate.prototype = {
     // Public testing methods.
     getFakeToken: function() {
-      return FAKE_TOKEN;
+      return {token: FAKE_TOKEN, lifetime: 0};
     },
 
     // Public fake API implementations.

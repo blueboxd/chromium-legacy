@@ -343,8 +343,6 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
-    response.mutable_malware_scan_verdict()->set_status(
-        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::MALWARE);
     response.mutable_dlp_scan_verdict()->set_status(
@@ -367,8 +365,6 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
-    response.mutable_malware_scan_verdict()->set_status(
-        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::UWS);
     response.mutable_dlp_scan_verdict()->set_status(
@@ -471,8 +467,8 @@ TEST_F(DeepScanningRequestTest, ProcessesResponseCorrectly) {
         &download_protection_service_);
 
     DeepScanningClientResponse response;
-    response.mutable_malware_scan_verdict()->set_status(
-        MalwareDeepScanningVerdict::FAILURE);
+    response.mutable_malware_scan_verdict()->set_verdict(
+        MalwareDeepScanningVerdict::SCAN_FAILURE);
     download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
         BinaryUploadService::Result::SUCCESS, response);
 

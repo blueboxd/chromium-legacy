@@ -15,7 +15,6 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/windows_spell_checker.h"
@@ -35,7 +34,6 @@ class WindowsSpellCheckerTest : public testing::Test {
           spellcheck::kWinUseBrowserSpellChecker);
 
       win_spell_checker_ = std::make_unique<WindowsSpellChecker>(
-          base::ThreadTaskRunnerHandle::Get(),
           base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()}));
 
       win_spell_checker_->CreateSpellChecker(

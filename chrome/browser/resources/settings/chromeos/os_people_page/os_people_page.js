@@ -47,11 +47,11 @@ Polymer({
 
     /**
      * Authentication token provided by settings-lock-screen.
-     * @private
+     * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
      */
     authToken_: {
-      type: String,
-      value: '',
+      type: Object,
+      observer: 'onAuthTokenChanged_',
     },
 
     /**
@@ -368,5 +368,33 @@ Polymer({
       return this.i18n('lockScreenTitleLoginLock');
     }
     return this.i18n('lockScreenTitleLock');
+  },
+
+  /**
+   * The timeout ID to pass to clearTimeout() to cancel auth token
+   * invalidation.
+   * @private {number|undefined}
+   */
+  clearAccountPasswordTimeoutId_: undefined,
+
+  /** @private */
+  onAuthTokenChanged_() {
+    if (this.clearAuthTokenTimeoutId_) {
+      clearTimeout(this.clearAccountPasswordTimeoutId_);
+    }
+    if (this.authToken_ === undefined) {
+      return;
+    }
+    // Clear |this.authToken_| after
+    // |this.authToken_.tokenInfo.lifetimeSeconds|.
+    // Subtract time from the expiration time to account for IPC delays.
+    // Treat values less than the minimum as 0 for testing.
+    const IPC_SECONDS = 2;
+    const lifetimeMs = this.authToken_.lifetimeSeconds > IPC_SECONDS ?
+        (this.authToken_.lifetimeSeconds - IPC_SECONDS) * 1000 :
+        0;
+    this.clearAccountPasswordTimeoutId_ = setTimeout(() => {
+      this.authToken_ = undefined;
+    }, lifetimeMs);
   },
 });

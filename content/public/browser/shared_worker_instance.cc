@@ -4,8 +4,6 @@
 
 #include "content/public/browser/shared_worker_instance.h"
 
-#include <tuple>
-
 #include "base/logging.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -13,7 +11,6 @@
 namespace content {
 
 SharedWorkerInstance::SharedWorkerInstance(
-    SharedWorkerId id,
     const GURL& url,
     blink::mojom::ScriptType script_type,
     network::mojom::CredentialsMode credentials_mode,
@@ -23,8 +20,7 @@ SharedWorkerInstance::SharedWorkerInstance(
     network::mojom::ContentSecurityPolicyType security_policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
-    : id_(id),
-      url_(url),
+    : url_(url),
       script_type_(script_type),
       credentials_mode_(credentials_mode),
       name_(name),
@@ -45,12 +41,6 @@ SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
 
 SharedWorkerInstance::SharedWorkerInstance(SharedWorkerInstance&& other) =
     default;
-
-SharedWorkerInstance& SharedWorkerInstance::operator=(
-    const SharedWorkerInstance& other) = default;
-
-SharedWorkerInstance& SharedWorkerInstance::operator=(
-    SharedWorkerInstance&& other) = default;
 
 SharedWorkerInstance::~SharedWorkerInstance() = default;
 
@@ -74,11 +64,6 @@ bool SharedWorkerInstance::Matches(
     return false;
 
   return true;
-}
-
-bool operator<(const SharedWorkerInstance& lhs,
-               const SharedWorkerInstance& rhs) {
-  return lhs.id_ < rhs.id_;
 }
 
 }  // namespace content

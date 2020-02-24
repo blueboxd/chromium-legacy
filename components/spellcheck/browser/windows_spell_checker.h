@@ -15,6 +15,7 @@
 #include "components/spellcheck/browser/platform_spell_checker.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
+#include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 
 namespace base {
@@ -27,7 +28,6 @@ class SingleThreadTaskRunner;
 class WindowsSpellChecker : public PlatformSpellChecker {
  public:
   WindowsSpellChecker(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
 
   WindowsSpellChecker(const WindowsSpellChecker&) = delete;
@@ -79,7 +79,6 @@ class WindowsSpellChecker : public PlatformSpellChecker {
   class BackgroundHelper {
    public:
     BackgroundHelper(
-        scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
     ~BackgroundHelper();
 
@@ -88,27 +87,25 @@ class WindowsSpellChecker : public PlatformSpellChecker {
     void CreateSpellCheckerFactory();
 
     // Creates a native |ISpellchecker| for the given language |lang_tag| and
-    // invokes the given callback with the creation result.
-    void CreateSpellChecker(const std::string& lang_tag,
-                            base::OnceCallback<void(bool)> callback);
+    // returns a boolean indicating success.
+    bool CreateSpellChecker(const std::string& lang_tag);
 
     // Removes the native spell checker for the given language |lang_tag| from
     // the map of active spell checkers.
     void DisableSpellChecker(const std::string& lang_tag);
 
     // Requests spell checking of string |text| for all active spell checkers
-    // (all languages) and invokes the given callback with the results.
-    void RequestTextCheckForAllLanguages(
+    // (all languages) and returns a vector of |SpellCheckResult| containing the
+    // results.
+    std::vector<SpellCheckResult> RequestTextCheckForAllLanguages(
         int document_tag,
-        const base::string16& text,
-        spellcheck_platform::TextCheckCompleteCallback callback);
+        const base::string16& text);
 
     // Gets spelling suggestions for |word| from all active spell checkers (all
-    // languages), keeping the suggestions separate per language, and invokes
-    // the given callback with the results.
-    void GetPerLanguageSuggestions(
-        const base::string16& word,
-        spellcheck_platform::GetSuggestionsCallback callback);
+    // languages), keeping the suggestions separate per language, and returns
+    // the results in a vector of vector of strings.
+    spellcheck::PerLanguageSuggestions GetPerLanguageSuggestions(
+        const base::string16& word);
 
     // Fills the given vector |optional_suggestions| with a number (up to
     // kMaxSuggestions) of suggestions for the string |wrong_word| using the
@@ -135,12 +132,6 @@ class WindowsSpellChecker : public PlatformSpellChecker {
     // OS settings.
     bool IsLanguageSupported(const std::string& lang_tag);
 
-    // Checks if a native spell checker is available for the given language
-    // |lang_tag| and invokes the given callback with the result.
-    void IsLanguageSupportedWithCallback(
-        const std::string& lang_tag,
-        base::OnceCallback<void(bool)> callback);
-
     // Returns |true| if an |ISpellCheckerFactory| has been initialized.
     bool IsSpellCheckerFactoryInitialized();
 
@@ -166,8 +157,7 @@ class WindowsSpellChecker : public PlatformSpellChecker {
     // Gets the user's preferred languages from the OS settings, filters out
     // languages for which a native spell checker isn't available, and invokes
     // the given callback with the results.
-    void GetSupportedWindowsPreferredLanguages(
-        spellcheck_platform::GetSupportedLanguagesCompleteCallback callback);
+    std::vector<std::string> GetSupportedWindowsPreferredLanguages();
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
 
     // Sorts the given locales into four buckets based on spell check support
@@ -183,9 +173,6 @@ class WindowsSpellChecker : public PlatformSpellChecker {
     // |ISpellChecker| (there is one |ISpellChecker| per language).
     std::map<std::string, Microsoft::WRL::ComPtr<ISpellChecker>>
         spell_checker_map_;
-
-    // Task runner used to post callback invocations to the main thread.
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
     // Task runner only used to enforce valid sequencing.
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;

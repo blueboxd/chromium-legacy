@@ -254,15 +254,8 @@ void LoginDisplayHostMojo::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
-                                          const AccountId& prefilled_account) {
+void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
-  can_close_dialog_ = can_close;
-
-  // Always disabling closing if there are no users, otherwise a blank screen
-  // will be displayed.
-  if (users_.empty())
-    can_close_dialog_ = false;
 
   ShowGaiaDialogCommon(prefilled_account);
 
@@ -271,8 +264,6 @@ void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
 
 void LoginDisplayHostMojo::HideOobeDialog() {
   DCHECK(dialog_);
-  if (!can_close_dialog_)
-    return;
 
   // The dialog can not be hidden if there are no users on the login screen.
   // Reload it instead.

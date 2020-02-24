@@ -203,5 +203,53 @@ cr.define('settings_people_page', function() {
           settings.Router.getInstance().getCurrentRoute(),
           settings.routes.ACCOUNT_MANAGER);
     });
+
+    test('Fingerprint dialog closes when token expires', async () => {
+      loadTimeData.overrideValues({
+        fingerprintUnlockEnabled: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+
+      await accountManagerBrowserProxy.whenCalled('getAccounts');
+      await syncBrowserProxy.whenCalled('getSyncStatus');
+      quickUnlockPrivateApi = new settings.FakeQuickUnlockPrivate();
+      peoplePage.authToken_ = quickUnlockPrivateApi.getFakeToken();
+
+      settings.Router.getInstance().navigateTo(settings.routes.LOCK_SCREEN);
+      Polymer.dom.flush();
+
+      const subpageTrigger = peoplePage.$$('#lock-screen-subpage-trigger');
+      // Sub-page trigger navigates to the lock screen page.
+      subpageTrigger.click();
+      Polymer.dom.flush();
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.LOCK_SCREEN);
+      const lockScreenPage = assert(peoplePage.$$('#lock-screen'));
+
+      // Password dialog should not open because the authToken_ is set.
+      assertFalse(lockScreenPage.showPasswordPromptDialog_);
+
+      const editFingerprintsTrigger = lockScreenPage.$$('#editFingerprints');
+      editFingerprintsTrigger.click();
+      Polymer.dom.flush();
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.FINGERPRINT);
+
+      const fingerprintTrigger =
+          peoplePage.$$('#fingerprint-list').$$('#addFingerprint');
+      fingerprintTrigger.click();
+      peoplePage.authToken_ = undefined;
+
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.LOCK_SCREEN);
+      assertTrue(lockScreenPage.showPasswordPromptDialog_);
+    });
   });
 });

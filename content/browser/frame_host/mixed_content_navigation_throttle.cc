@@ -20,10 +20,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
-
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -147,10 +144,9 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   // If we're in strict mode, we'll automagically fail everything, and
   // intentionally skip the client/embedder checks in order to prevent degrading
   // the site's security UI.
-  bool block_all_mixed_content =
-      (mixed_content_node->current_replication_state().insecure_request_policy &
-       blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent) !=
-      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
+  bool block_all_mixed_content = !!(
+      mixed_content_node->current_replication_state().insecure_request_policy &
+      blink::kBlockAllMixedContent);
   const WebPreferences& prefs = mixed_content_node->current_frame_host()
                                     ->render_view_host()
                                     ->GetWebkitPreferences();

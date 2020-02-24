@@ -25,6 +25,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "LOGIN_DISPLAY_HOST_WEBUI";
     case KeepAliveOrigin::PIN_MIGRATION:
       return out << "PIN_MIGRATION";
+    case KeepAliveOrigin::REMOTE_DEBUGGING:
+      return out << "REMOTE_DEBUGGING";
     case KeepAliveOrigin::NOTIFICATION:
       return out << "NOTIFICATION";
     case KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT:

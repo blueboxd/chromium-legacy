@@ -100,6 +100,11 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #endif
 
 #if defined(OS_ANDROID)
+  WebRuntimeFeatures::EnableWebNfc(
+      base::FeatureList::IsEnabled(features::kWebNfc));
+#endif
+
+#if defined(OS_ANDROID)
   // APIs for Web Authentication are not available prior to N.
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth) &&
@@ -274,8 +279,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableSkipTouchEventFilter, features::kSkipTouchEventFilter,
            kUseFeatureState},
           {wf::EnableSmsReceiver, features::kSmsReceiver, kDisableOnly},
-          {wf::EnableDisplayLocking, blink::features::kDisplayLocking,
-           kUseFeatureState},
           {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY,
            kUseFeatureState},
           {wf::EnableCooperativeScheduling, features::kCooperativeScheduling,
@@ -307,10 +310,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kBrowserVerifiedUserActivationMouse, kEnableOnly},
           {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling,
            kUseFeatureState},
-#if defined(OS_ANDROID)
-          {wf::EnableWebNfc,
-           features::kWebNfc, kDisableOnly},
-#endif
       };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     const bool featureEnabled =
@@ -548,7 +547,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
     WebRuntimeFeatures::EnableFetchMetadata(true);
     WebRuntimeFeatures::EnableFetchMetadataDestination(true);
-    WebRuntimeFeatures::EnableDisplayLocking(true);
   }
 
   WebRuntimeFeatures::EnableBackForwardCache(

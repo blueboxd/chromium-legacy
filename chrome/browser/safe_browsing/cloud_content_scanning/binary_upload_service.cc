@@ -368,8 +368,8 @@ void BinaryUploadService::RecordRequestMetrics(
 
   if (response.has_malware_scan_verdict()) {
     base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
-                              response.malware_scan_verdict().status() ==
-                                  MalwareDeepScanningVerdict::SUCCESS);
+                              response.malware_scan_verdict().verdict() !=
+                                  MalwareDeepScanningVerdict::SCAN_FAILURE);
   }
 
   if (response.has_dlp_scan_verdict()) {

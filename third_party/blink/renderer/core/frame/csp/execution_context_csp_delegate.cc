@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 
-#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/security_policy_violation_event.h"
@@ -71,7 +69,7 @@ void ExecutionContextCSPDelegate::SetRequireTrustedTypes() {
 }
 
 void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
-    mojom::blink::InsecureRequestPolicy policy) {
+    WebInsecureRequestPolicy policy) {
   SecurityContext& security_context = GetSecurityContext();
 
   Document* document = GetDocument();
@@ -84,9 +82,7 @@ void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
     document->DidEnforceInsecureRequestPolicy();
 
   // Upgrade Insecure Requests: Update the set of insecure URLs to upgrade.
-  if ((policy &
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
-      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {
+  if (policy & kUpgradeInsecureRequests) {
     // Spec: Enforcing part of:
     // https://w3c.github.io/webappsec-upgrade-insecure-requests/#delivery
     // Step 3. Let tuple be a tuple of the protected resource’s URL's host and

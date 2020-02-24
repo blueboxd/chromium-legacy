@@ -60,6 +60,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   bool IsTracingActive() override;
 
   // SystemProducer implementation.
+  void ConnectToSystemService() override;
   void ActivateTriggers(const std::vector<std::string>& triggers) override;
   // When Chrome's tracing service wants to trace it always takes priority over
   // the system Perfetto service. To cleanly shut down and let the system
@@ -123,7 +124,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   std::string socket_name_;
   uint32_t connection_backoff_ms_;
   uint64_t data_sources_tracing_ = 0;
-  bool disallow_pre_android_pie = true;
+  bool disallow_pre_android_pie_ = true;
   State state_ = State::kDisconnected;
   std::vector<base::OnceClosure> on_disconnect_callbacks_;
 

@@ -32,10 +32,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -174,9 +173,7 @@ bool IsWebSocketAllowedInFrame(const BaseFetchContext& fetch_context,
   // intentionally skip the client checks in order to prevent degrading the
   // site's security UI.
   bool strict_mode =
-      (security_context->GetInsecureRequestPolicy() &
-       mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent) !=
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone ||
+      security_context->GetInsecureRequestPolicy() & kBlockAllMixedContent ||
       settings->GetStrictMixedContentChecking();
   if (strict_mode)
     return false;
@@ -197,13 +194,11 @@ bool IsWebSocketAllowedInWorker(const BaseFetchContext& fetch_context,
   // If we're in strict mode, we'll automagically fail everything, and
   // intentionally skip the client checks in order to prevent degrading the
   // site's security UI.
-  bool strict_mode =
-      (fetch_context.GetResourceFetcherProperties()
-           .GetFetchClientSettingsObject()
-           .GetInsecureRequestsPolicy() &
-       mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent) !=
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone ||
-      settings->GetStrictMixedContentChecking();
+  bool strict_mode = fetch_context.GetResourceFetcherProperties()
+                             .GetFetchClientSettingsObject()
+                             .GetInsecureRequestsPolicy() &
+                         kBlockAllMixedContent ||
+                     settings->GetStrictMixedContentChecking();
   if (strict_mode)
     return false;
   return settings && settings->GetAllowRunningOfInsecureContent();
@@ -425,9 +420,8 @@ bool MixedContentChecker::ShouldBlockFetch(
   // intentionally skip the client checks in order to prevent degrading the
   // site's security UI.
   bool strict_mode =
-      (mixed_frame->GetSecurityContext()->GetInsecureRequestPolicy() &
-       mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent) !=
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone ||
+      mixed_frame->GetSecurityContext()->GetInsecureRequestPolicy() &
+          kBlockAllMixedContent ||
       settings->GetStrictMixedContentChecking();
 
   WebMixedContentContextType context_type =
@@ -536,9 +530,8 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     allowed = false;
   } else {
     bool strict_mode =
-        (fetch_client_settings_object.GetInsecureRequestsPolicy() &
-         mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent) !=
-            mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone ||
+        fetch_client_settings_object.GetInsecureRequestsPolicy() &
+            kBlockAllMixedContent ||
         settings->GetStrictMixedContentChecking();
     bool should_ask_embedder =
         !strict_mode && (!settings->GetStrictlyBlockBlockableMixedContent() ||
@@ -840,9 +833,8 @@ void MixedContentChecker::UpgradeInsecureRequest(
 
   DCHECK(fetch_client_settings_object);
 
-  if ((fetch_client_settings_object->GetInsecureRequestsPolicy() &
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) ==
-      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {
+  if (!(fetch_client_settings_object->GetInsecureRequestsPolicy() &
+        kUpgradeInsecureRequests)) {
     mojom::RequestContextType context = resource_request.GetRequestContext();
     if (context != mojom::RequestContextType::UNSPECIFIED &&
         resource_request.Url().ProtocolIs("http") &&

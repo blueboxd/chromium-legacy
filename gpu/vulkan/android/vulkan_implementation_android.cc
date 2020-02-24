@@ -121,6 +121,11 @@ bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationAndroid::GetRequiredDeviceExtensions() {
+  return {};
+}
+
+std::vector<const char*>
+VulkanImplementationAndroid::GetOptionalDeviceExtensions() {
   // VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME also requires
   // VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME as per spec.
   return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,

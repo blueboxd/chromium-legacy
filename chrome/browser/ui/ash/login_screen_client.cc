@@ -180,11 +180,16 @@ void LoginScreenClient::FocusOobeDialog() {
     delegate_->HandleFocusOobeDialog();
 }
 
-void LoginScreenClient::ShowGaiaSignin(bool can_close,
-                                       const AccountId& prefilled_account) {
+void LoginScreenClient::ShowGaiaSignin(const AccountId& prefilled_account) {
   if (chromeos::LoginDisplayHost::default_host()) {
     chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
-        can_close, prefilled_account);
+        prefilled_account);
+  }
+}
+
+void LoginScreenClient::HideGaiaSignin() {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()->HideOobeDialog();
   }
 }
 

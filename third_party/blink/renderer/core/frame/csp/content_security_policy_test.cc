@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
@@ -55,20 +55,14 @@ class ContentSecurityPolicyTest : public testing::Test {
 TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
   struct TestCase {
     const char* header;
-    mojom::blink::InsecureRequestPolicy expected_policy;
-  } cases[] = {
-      {"default-src 'none'",
-       mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone},
-      {"upgrade-insecure-requests",
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests},
-      {"block-all-mixed-content",
-       mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent},
-      {"upgrade-insecure-requests; block-all-mixed-content",
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests |
-           mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent},
-      {"upgrade-insecure-requests, block-all-mixed-content",
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests |
-           mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent}};
+    WebInsecureRequestPolicy expected_policy;
+  } cases[] = {{"default-src 'none'", kLeaveInsecureRequestsAlone},
+               {"upgrade-insecure-requests", kUpgradeInsecureRequests},
+               {"block-all-mixed-content", kBlockAllMixedContent},
+               {"upgrade-insecure-requests; block-all-mixed-content",
+                kUpgradeInsecureRequests | kBlockAllMixedContent},
+               {"upgrade-insecure-requests, block-all-mixed-content",
+                kUpgradeInsecureRequests | kBlockAllMixedContent}};
 
   // Enforced
   for (const auto& test : cases) {
@@ -86,10 +80,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy,
               document->GetSecurityContext().GetInsecureRequestPolicy());
-    bool expect_upgrade =
-        (test.expected_policy &
-         mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
-        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
+    bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
     EXPECT_EQ(
         expect_upgrade,
         document->GetSecurityContext().InsecureNavigationsToUpgrade().Contains(
@@ -103,14 +94,13 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->DidReceiveHeader(test.header, ContentSecurityPolicyType::kReport,
                           ContentSecurityPolicySource::kHTTP);
-    EXPECT_EQ(mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
-              csp->GetInsecureRequestPolicy());
+    EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
 
     execution_context = CreateExecutionContext();
     execution_context->GetSecurityContext().SetSecurityOrigin(secure_origin);
     csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(
-        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
+        kLeaveInsecureRequestsAlone,
         execution_context->GetSecurityContext().GetInsecureRequestPolicy());
     EXPECT_FALSE(execution_context->GetSecurityContext()
                      .InsecureNavigationsToUpgrade()
@@ -1629,8 +1619,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_FALSE(csp->IsActive());
   EXPECT_FALSE(csp->IsActiveForConnections());
   EXPECT_TRUE(csp->FallbackUrlForPlugin().IsEmpty());
-  EXPECT_EQ(mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
-            csp->GetInsecureRequestPolicy());
+  EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
   EXPECT_FALSE(csp->HasHeaderDeliveredPolicy());
   EXPECT_FALSE(csp->SupportsWasmEval());
   EXPECT_EQ(mojom::blink::WebSandboxFlags::kNone, csp->GetSandboxMask());

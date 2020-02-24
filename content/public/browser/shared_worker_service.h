@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/observer_list_types.h"
+#include "base/util/type_safety/id_type.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 
@@ -23,7 +24,7 @@ class Origin;
 
 namespace content {
 
-class SharedWorkerInstance;
+using SharedWorkerId = util::IdType64<class SharedWorkerTag>;
 
 // An interface for managing shared workers. These may be run in a separate
 // process, since multiple renderer processes can be talking to a single shared
@@ -38,20 +39,19 @@ class CONTENT_EXPORT SharedWorkerService {
     // running in the renderer. This differs a bit from the "started" state of
     // the embedded worker.
     virtual void OnWorkerStarted(
-        const SharedWorkerInstance& instance,
+        SharedWorkerId shared_worker_id,
         int worker_process_id,
         const base::UnguessableToken& dev_tools_token) = 0;
-    virtual void OnBeforeWorkerTerminated(
-        const SharedWorkerInstance& instance) = 0;
+    virtual void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) = 0;
 
     // Called when a frame starts/stop being a client of a shared worker. It is
     // guaranteed that OnWorkerStarted() is called before receiving these
     // notifications.
     virtual void OnClientAdded(
-        const SharedWorkerInstance& instance,
+        SharedWorkerId shared_worker_id,
         content::GlobalFrameRoutingId render_frame_host_id) = 0;
     virtual void OnClientRemoved(
-        const SharedWorkerInstance& instance,
+        SharedWorkerId shared_worker_id,
         content::GlobalFrameRoutingId render_frame_host_id) = 0;
   };
 

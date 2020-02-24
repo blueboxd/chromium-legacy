@@ -31,6 +31,9 @@ enum class KeepAliveOrigin {
   LOGIN_DISPLAY_HOST_WEBUI,
   PIN_MIGRATION,
 
+  // c/b/devtools
+  REMOTE_DEBUGGING,
+
   // c/b/extensions
   NATIVE_MESSAGING_HOST_ERROR_REPORT,
 

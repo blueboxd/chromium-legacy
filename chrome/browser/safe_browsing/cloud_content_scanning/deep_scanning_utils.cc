@@ -91,8 +91,8 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
     return;
 
   if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().status() !=
-          MalwareDeepScanningVerdict::SUCCESS) {
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::SCAN_FAILURE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, "malwareScanFailed",
@@ -296,8 +296,6 @@ DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
   }
 
   if (malware_success.has_value()) {
-    response.mutable_malware_scan_verdict()->set_status(
-        MalwareDeepScanningVerdict::SUCCESS);
     if (malware_success.value()) {
       response.mutable_malware_scan_verdict()->set_verdict(
           MalwareDeepScanningVerdict::CLEAN);

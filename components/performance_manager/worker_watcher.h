@@ -17,10 +17,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 
-namespace content {
-class SharedWorkerInstance;
-}
-
 namespace performance_manager {
 
 class FrameNodeImpl;
@@ -56,16 +52,16 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
 
   // content::SharedWorkerService::Observer:
-  void OnWorkerStarted(const content::SharedWorkerInstance& instance,
+  void OnWorkerStarted(content::SharedWorkerId shared_worker_id,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerTerminated(
-      const content::SharedWorkerInstance& instance) override;
+      content::SharedWorkerId shared_worker_id) override;
   void OnClientAdded(
-      const content::SharedWorkerInstance& instance,
+      content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override;
   void OnClientRemoved(
-      const content::SharedWorkerInstance& instance,
+      content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override;
 
  private:
@@ -90,8 +86,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   // Helper function to retrieve an existing shared worker node.
   WorkerNodeImpl* GetDedicatedWorkerNode(
       content::DedicatedWorkerId dedicated_worker_id);
-  WorkerNodeImpl* GetSharedWorkerNode(
-      const content::SharedWorkerInstance& instance);
+  WorkerNodeImpl* GetSharedWorkerNode(content::SharedWorkerId shared_worker_id);
 
   // The ID of the BrowserContext who owns the shared worker service.
   const std::string browser_context_id_;
@@ -117,8 +112,8 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   base::flat_map<content::DedicatedWorkerId, std::unique_ptr<WorkerNodeImpl>>
       dedicated_worker_nodes_;
 
-  // Maps each SharedWorkerInstance to its worker node.
-  base::flat_map<content::SharedWorkerInstance, std::unique_ptr<WorkerNodeImpl>>
+  // Maps each shared worker ID to its worker node.
+  base::flat_map<content::SharedWorkerId, std::unique_ptr<WorkerNodeImpl>>
       shared_worker_nodes_;
 
   // Maps each frame to the shared workers that this frame is a client of. This

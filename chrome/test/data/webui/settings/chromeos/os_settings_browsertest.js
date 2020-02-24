@@ -891,10 +891,13 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'sync_test_util.js',
       BROWSER_SETTINGS_PATH + 'test_profile_info_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_sync_browser_proxy.js',
+      BROWSER_SETTINGS_PATH +
+          '../settings/chromeos/fake_quick_unlock_private.js',
       'os_people_page_test.js',
     ]);
   }

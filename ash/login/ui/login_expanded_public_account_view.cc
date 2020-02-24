@@ -442,7 +442,7 @@ class RightPaneView : public NonAccessibleView,
       // take selected_language_item_.value, selected_keyboard_item_.value too.
       if (current_user_.public_account_info->using_saml) {
         Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-            true /*can_close*/, current_user_.basic_user_info.account_id);
+            current_user_.basic_user_info.account_id);
       } else {
         Shell::Get()->login_screen_controller()->LaunchPublicSession(
             current_user_.basic_user_info.account_id,

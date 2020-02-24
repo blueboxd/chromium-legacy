@@ -240,7 +240,7 @@ class LoginShelfButton : public views::LabelButton {
 
 void StartAddUser() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-      true /*can_close*/, EmptyAccountId() /*prefilled_account*/);
+      EmptyAccountId() /*prefilled_account*/);
 }
 
 bool DialogStateGuestAllowed(OobeDialogState state) {

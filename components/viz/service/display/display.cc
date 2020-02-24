@@ -10,6 +10,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -46,6 +47,18 @@
 namespace viz {
 
 namespace {
+
+const DrawQuad::Material kNonSplittableMaterials[] = {
+    // Exclude debug quads from quad splitting
+    DrawQuad::Material::kDebugBorder,
+    // Exclude possible overlay candidates from quad splitting
+    // See OverlayCandidate::FromDrawQuad
+    DrawQuad::Material::kStreamVideoContent,
+    DrawQuad::Material::kTextureContent,
+    DrawQuad::Material::kVideoHole,
+    // See DCLayerOverlayProcessor::ProcessRenderPass
+    DrawQuad::Material::kYuvVideoContent,
+};
 
 constexpr base::TimeDelta kAllowedDeltaFromFuture =
     base::TimeDelta::FromMilliseconds(16);
@@ -143,6 +156,28 @@ gfx::Rect SafeConvertRectForRegion(const gfx::Rect& r) {
   if (safe_rect.height() == INT_MAX)
     safe_rect.set_height(INT_MAX - 1);
   return safe_rect;
+}
+
+// TODO(sashamcintosh): consider moving to cc::Region
+int ComputeRegionArea(const cc::Region& region) {
+  int area = 0;
+  for (const auto& r : region)
+    area += r.size().GetArea();
+  return area;
+}
+
+bool CanSplitQuad(const DrawQuad::Material m,
+                  const cc::Region& visible_region,
+                  const int quad_split_limit,
+                  const int minimum_fragments_reduced,
+                  const int device_scale_factor,
+                  const bool enable_quad_splitting) {
+  return enable_quad_splitting && !base::Contains(kNonSplittableMaterials, m) &&
+         visible_region.GetRegionComplexity() < quad_split_limit &&
+         (visible_region.bounds().size().GetArea() -
+          ComputeRegionArea(visible_region)) *
+                 device_scale_factor * device_scale_factor >
+             minimum_fragments_reduced;
 }
 
 }  // namespace
@@ -987,10 +1022,27 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         // Case 2: for simple transforms, if the quad is partially shown on
         // screen and the region formed by (occlusion region - visible_rect) is
         // a rect, then update visible_rect to the resulting rect.
-        cc::Region origin_rect = quad->visible_rect;
-        origin_rect.Subtract(occlusion_in_quad_content_space);
-        quad->visible_rect = origin_rect.bounds();
-        ++quad;
+        cc::Region visible_region = quad->visible_rect;
+        visible_region.Subtract(occlusion_in_quad_content_space);
+        quad->visible_rect = visible_region.bounds();
+
+        // Split quad into multiple draw quads when area can be reduce by
+        // more than X fragments.
+        const bool should_split_quads = CanSplitQuad(
+            quad->material, visible_region, settings_.quad_split_limit,
+            settings_.minimum_fragments_reduced, device_scale_factor_,
+            !overlay_processor_->DisableSplittingQuads());
+        if (should_split_quads) {
+          auto new_quad = pass->quad_list.InsertCopyBeforeDrawQuad(
+              quad, visible_region.GetRegionComplexity() - 1);
+          for (const auto& visible_rect : visible_region) {
+            new_quad->visible_rect = visible_rect;
+            ++new_quad;
+          }
+          quad = new_quad;
+        } else {
+          ++quad;
+        }
       } else if (occlusion_in_quad_content_space.IsEmpty() &&
                  occlusion_in_target_space.Contains(
                      cc::MathUtil::MapEnclosingClippedRect(

@@ -29,6 +29,10 @@ OverlayProcessorMac::OverlayProcessorMac(
 
 OverlayProcessorMac::~OverlayProcessorMac() = default;
 
+bool OverlayProcessorMac::DisableSplittingQuads() const {
+  return true;
+}
+
 bool OverlayProcessorMac::IsOverlaySupported() const {
   return could_overlay_;
 }

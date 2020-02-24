@@ -14,7 +14,8 @@
   width: 512px;
 }
 
-#help-dialog-title ::slotted(h1) {
+#help-dialog-title ::slotted(h1),
+#help-dialog-title .fallback {
   color: var(--oobe-header-text-color);
   @apply --oobe-help-dialog-header-font;
   margin: 0;

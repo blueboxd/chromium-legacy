@@ -52,6 +52,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   using FilterOperationsMap =
       base::flat_map<RenderPassId, cc::FilterOperations*>;
 
+  virtual bool DisableSplittingQuads() const;
+
   // Used by Window's DCLayerOverlay system and OverlayProcessorUsingStrategy.
   static void RecordOverlayDamageRectHistograms(
       bool is_overlay,

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -161,7 +162,7 @@ class MockProducerHost : public ProducerHost {
   MockProducerHost(
       const std::string& producer_name,
       const std::string& data_source_name,
-      perfetto::TracingService* service,
+      PerfettoService* service,
       MockProducerClient* producer_client,
       base::OnceClosure datasource_registered_callback = base::OnceClosure());
   ~MockProducerHost() override;
@@ -188,7 +189,7 @@ class MockProducer {
  public:
   MockProducer(const std::string& producer_name,
                const std::string& data_source_name,
-               perfetto::TracingService* service,
+               PerfettoService* service,
                base::OnceClosure on_datasource_registered,
                base::OnceClosure on_tracing_started,
                size_t num_packets = 10);

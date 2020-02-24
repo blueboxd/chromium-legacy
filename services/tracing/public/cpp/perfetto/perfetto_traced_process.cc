@@ -77,19 +77,9 @@ PerfettoTracedProcess::PerfettoTracedProcess()
     : PerfettoTracedProcess(MaybeSocket()) {}
 
 PerfettoTracedProcess::PerfettoTracedProcess(const char* system_socket)
-    : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())) {
-  CHECK(IsTracingInitialized());
+    : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())),
+      system_producer_(NewSystemProducer(GetTaskRunner(), system_socket)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  // All communication with the system Perfetto service should occur on a single
-  // sequence. To ensure we set up the socket correctly we construct the
-  // |system_producer_endpoint_| on the task runner it will use.
-  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](PerfettoTracedProcess* ptr, const char* socket) {
-                       ptr->system_producer_endpoint_ =
-                           NewSystemProducer(GetTaskRunner(), socket);
-                     },
-                     base::Unretained(this), system_socket));
 }
 
 PerfettoTracedProcess::~PerfettoTracedProcess() {}
@@ -118,8 +108,8 @@ PerfettoTracedProcess::SetProducerClientForTesting(
 std::unique_ptr<SystemProducer>
 PerfettoTracedProcess::SetSystemProducerForTesting(
     std::unique_ptr<SystemProducer> producer) {
-  auto old_for_testing = std::move(system_producer_endpoint_);
-  system_producer_endpoint_ = std::move(producer);
+  auto old_for_testing = std::move(system_producer_);
+  system_producer_ = std::move(producer);
   return old_for_testing;
 }
 
@@ -156,10 +146,9 @@ void PerfettoTracedProcess::ResetTaskRunnerForTesting(
   PerfettoTracedProcess::Get();
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce([]() {
-        auto* producer =
-            PerfettoTracedProcess::Get()->SystemProducerForTesting();
-        CHECK(producer);
-        producer->ResetSequenceForTesting();
+        PerfettoTracedProcess::Get()
+            ->system_producer()
+            ->ResetSequenceForTesting();
       }));
 }
 
@@ -206,13 +195,13 @@ bool PerfettoTracedProcess::CanStartTracing(
   // the |producer_client_| go. The system Producer will periodically attempt to
   // reconnect if we call DisconnectWithReply().
   if (producer == producer_client_.get()) {
-    if (system_producer_endpoint_->IsTracingActive()) {
-      system_producer_endpoint_->DisconnectWithReply(std::move(start_tracing));
+    if (system_producer_->IsTracingActive()) {
+      system_producer_->DisconnectWithReply(std::move(start_tracing));
       return true;
     }
-  } else if (producer == system_producer_endpoint_.get()) {
+  } else if (producer == system_producer_.get()) {
     if (producer_client_->IsTracingActive()) {
-      system_producer_endpoint_->DisconnectWithReply(base::DoNothing().Once());
+      system_producer_->DisconnectWithReply(base::DoNothing().Once());
       return false;
     }
   } else {
@@ -231,7 +220,6 @@ bool PerfettoTracedProcess::CanStartTracing(
 
 void PerfettoTracedProcess::ActivateSystemTriggers(
     const std::vector<std::string>& triggers) {
-  DCHECK(system_producer_endpoint_.get());
   if (!GetTaskRunner()->GetOrCreateTaskRunner()->RunsTasksInCurrentSequence()) {
     GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
         FROM_HERE,
@@ -239,15 +227,15 @@ void PerfettoTracedProcess::ActivateSystemTriggers(
                        base::Unretained(this), triggers));
     return;
   }
-  system_producer_endpoint_->ActivateTriggers(triggers);
+  system_producer_->ActivateTriggers(triggers);
 }
 
-ProducerClient* PerfettoTracedProcess::producer_client() {
+ProducerClient* PerfettoTracedProcess::producer_client() const {
   return producer_client_.get();
 }
 
-SystemProducer* PerfettoTracedProcess::SystemProducerForTesting() {
-  return system_producer_endpoint_.get();
+SystemProducer* PerfettoTracedProcess::system_producer() const {
+  return system_producer_.get();
 }
 
 void PerfettoTracedProcess::AddDataSourceOnSequence(
@@ -255,10 +243,8 @@ void PerfettoTracedProcess::AddDataSourceOnSequence(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (data_sources_.insert(data_source).second) {
-    DCHECK(producer_client_);
-    DCHECK(system_producer_endpoint_);
     producer_client_->NewDataSourceAdded(data_source);
-    system_producer_endpoint_->NewDataSourceAdded(data_source);
+    system_producer_->NewDataSourceAdded(data_source);
   }
 }
 }  // namespace tracing

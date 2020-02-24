@@ -15,7 +15,6 @@
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"

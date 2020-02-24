@@ -71,6 +71,7 @@ class ApplicationContextImpl : public ApplicationContext {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
+  BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
 
  private:
   // Sets the locale used by the application.
@@ -90,6 +91,9 @@ class ApplicationContextImpl : public ApplicationContext {
   // Logger which observers and logs application wide events to
   // |breadcrumb_manager_|. Will be null if breadcrumbs feature is not enabled.
   std::unique_ptr<ApplicationBreadcrumbsLogger> application_breadcrumbs_logger_;
+
+  // Must be destroyed after |local_state_|.
+  std::unique_ptr<BrowserPolicyConnectorIOS> browser_policy_connector_;
 
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;

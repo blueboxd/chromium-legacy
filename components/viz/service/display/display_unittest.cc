@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
+#include "cc/base/region.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -4116,6 +4117,99 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
   TearDownDisplay();
 }
 
+TEST_F(DisplayTest, DrawOcclusionSplit) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  // The two partially occluded quads will be split into two additional quads,
+  // preserving only the visible regions.
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+
+  //  +--------------------------------+
+  //  |***+----------------------+ <- Large occluding Rect
+  //  +---|-  -   -  - +  -  -  -|-----+
+  //  |***|            .         |*****|
+  //  |***+----------------------+*****|
+  //  |****************|***************|
+  //  +----------------+---------------+
+  //
+  // * -> Visible rect for the quads.
+
+  const gfx::Rect occluding_rect(10, 10, 1000, 490);
+  const gfx::Rect quad_rects[3] = {
+      gfx::Rect(0, 0, 1200, 20),
+      gfx::Rect(0, 20, 600, 490),
+      gfx::Rect(600, 20, 600, 490),
+  };
+  gfx::Rect occluded_sqs_rect(0, 0, 1200, 510);
+
+  const bool is_clipped = false;
+  const bool are_contents_opaque = true;
+  const float opacity = 1.f;
+  SharedQuadState* shared_quad_state_occluder =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_quad_state_occluded =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+
+  SolidColorDrawQuad* quads[4];
+  for (auto*& quad : quads) {
+    quad = frame.render_pass_list.front()
+               ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  }
+
+  {
+    shared_quad_state_occluder->SetAll(
+        gfx::Transform(), occluding_rect, occluding_rect, gfx::RRectF(),
+        occluding_rect, is_clipped, are_contents_opaque, opacity,
+        SkBlendMode::kSrcOver, 0);
+    quads[0]->SetNew(shared_quad_state_occluder, occluding_rect, occluding_rect,
+                     SK_ColorRED, false);
+
+    shared_quad_state_occluded->SetAll(
+        gfx::Transform(), occluded_sqs_rect, occluded_sqs_rect, gfx::RRectF(),
+        occluded_sqs_rect, is_clipped, are_contents_opaque, opacity,
+        SkBlendMode::kSrcOver, 0);
+    for (int i = 1; i < 4; i++) {
+      quads[i]->SetNew(shared_quad_state_occluded, quad_rects[i - 1],
+                       quad_rects[i - 1], SK_ColorRED, false);
+    }
+
+    EXPECT_EQ(4u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    ASSERT_EQ(6u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(occluding_rect.ToString(), frame.render_pass_list.front()
+                                             ->quad_list.ElementAt(0)
+                                             ->visible_rect.ToString());
+
+    // Computed the expected quads
+    //  +--------------------------------+
+    //  |                1               |
+    //  +---+----------------------+-----+
+    //  | 2 |                      |  3  |
+    //  +---+------------+---------+-----+
+    //  |        4       |        5      |
+    //  +----------------+---------------+
+    const gfx::Rect expected_visible_rects[5]{
+        // The occluded region of rest one is small, so we do not split the
+        // quad.
+        quad_rects[0],
+        gfx::Rect(0, 20, 10, 480),
+        gfx::Rect(0, 500, 600, 10),
+        gfx::Rect(1010, 20, 190, 480),
+        gfx::Rect(600, 500, 600, 10),
+    };
+
+    const QuadList& quad_list = frame.render_pass_list.front()->quad_list;
+    for (int i = 0; i < 5; i++) {
+      EXPECT_EQ(expected_visible_rects[i],
+                quad_list.ElementAt(i + 1)->visible_rect);
+    }
+  }
+  TearDownDisplay();
+}
+
 TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
   SetUpGpuDisplay(RendererSettings());
 
@@ -4139,7 +4233,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
   //      |                      |
   //      +----------------------+
   //
-  // * -> Visiblg rect for the quads.
+  // * -> Visible rect for the quads.
   gfx::Rect quad_rect(10, 10, 1000, 1000);
   gfx::RRectF rounded_corner_bounds(gfx::RectF(quad_rect), 10.f);
   gfx::Rect occluded_quad_rect_1(0, 20, 600, 490);

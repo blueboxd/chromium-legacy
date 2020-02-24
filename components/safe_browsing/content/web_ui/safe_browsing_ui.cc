@@ -1338,18 +1338,6 @@ std::string SerializeDeepScanningResponse(
   if (response.has_malware_scan_verdict()) {
     base::DictionaryValue malware_verdict;
 
-    switch (response.malware_scan_verdict().status()) {
-      case MalwareDeepScanningVerdict::STATUS_UNKNOWN:
-        malware_verdict.SetStringKey("status", "STATUS_UNKNOWN");
-        break;
-      case MalwareDeepScanningVerdict::SUCCESS:
-        malware_verdict.SetStringKey("status", "SUCCESS");
-        break;
-      case MalwareDeepScanningVerdict::FAILURE:
-        malware_verdict.SetStringKey("status", "FAILURE");
-        break;
-    }
-
     switch (response.malware_scan_verdict().verdict()) {
       case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
         malware_verdict.SetStringKey("verdict", "VERDICT_UNSPECIFIED");
@@ -1362,6 +1350,9 @@ std::string SerializeDeepScanningResponse(
         break;
       case MalwareDeepScanningVerdict::MALWARE:
         malware_verdict.SetStringKey("verdict", "MALWARE");
+        break;
+      case MalwareDeepScanningVerdict::SCAN_FAILURE:
+        malware_verdict.SetStringKey("verdict", "SCAN_FAILURE");
         break;
     }
 

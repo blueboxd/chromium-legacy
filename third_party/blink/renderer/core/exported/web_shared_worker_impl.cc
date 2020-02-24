@@ -37,7 +37,6 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -197,9 +196,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
           creation_address_space,
           outside_fetch_client_settings_object.insecure_requests_policy ==
                   mojom::blink::InsecureRequestsPolicy::kUpgrade
-              ? mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests |
-                    mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent
-              : mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent,
+              ? kUpgradeInsecureRequests | kBlockAllMixedContent
+              : kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =

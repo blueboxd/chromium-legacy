@@ -156,7 +156,7 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   // 2. We're activated (in the CSS version), which means that we need to know
   //    when we stop intersecting the viewport so that we can re-lock.
   bool should_observe =
-      (IsLocked() || (!IsAttributeVersion(this) && IsActivated())) &&
+      (IsLocked() || IsActivated()) &&
       IsActivatable(DisplayLockActivationReason::kViewportIntersection) &&
       ConnectedToView();
   if (should_observe && !is_observed_) {
@@ -454,24 +454,16 @@ void DisplayLockContext::CommitForActivationWithSignal(
   if (reason_for_metrics == DisplayLockActivationReason::kFindInPage)
     document_->MarkHasFindInPageRenderSubtreeActiveMatch();
 
-  if (!IsAttributeVersion(this)) {
-    css_is_activated_ = true;
-    // Since size containment depends on the activatability state, we should
-    // invalidate the style for this element, so that the style adjuster can
-    // properly remove the containment.
-    element_->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
-  }
-
-  // Since setting the attribute might trigger a commit if we are still locked,
-  // we set it after we start the commit.
-  if (element_->FastHasAttribute(html_names::kRendersubtreeAttr))
-    element_->setAttribute(html_names::kRendersubtreeAttr, "");
+  css_is_activated_ = true;
+  // Since size containment depends on the activatability state, we should
+  // invalidate the style for this element, so that the style adjuster can
+  // properly remove the containment.
+  element_->SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
 }
 
 bool DisplayLockContext::IsActivated() const {
-  DCHECK(!IsAttributeVersion(this));
   return css_is_activated_;
 }
 
@@ -618,7 +610,6 @@ StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
   // Note that since we're already in self style recalc, this code is shorter
   // since it doesn't have to deal with dirtying self-style.
   DCHECK(document_->InStyleRecalc());
-  DCHECK(!IsAttributeVersion(this));
 
   if (reattach_layout_tree_was_blocked_) {
     change = change.ForceReattachLayoutTree();

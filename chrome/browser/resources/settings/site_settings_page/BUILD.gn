@@ -5,11 +5,26 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [ ":site_settings_page" ]
+  deps = [
+    ":recent_site_permissions",
+    ":site_settings_page",
+  ]
+}
+
+js_library("recent_site_permissions") {
+  deps = [
+    "../people_page:sync_browser_proxy",
+    "../prefs:prefs_behavior",
+    "../site_settings:site_settings_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
 }
 
 js_library("site_settings_page") {
   deps = [
+    ":recent_site_permissions",
     "..:metrics_browser_proxy",
     "..:route",
     "..:router",

@@ -30,7 +30,6 @@
 #include "net/base/network_isolation_key.h"
 #include "net/http/alternative_service.h"
 #include "net/http/broken_alternative_services.h"
-#include "net/http/http_server_properties.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"

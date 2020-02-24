@@ -131,7 +131,7 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
     producer_ = std::make_unique<MockProducer>(
         base::StrCat({mojom::kPerfettoProducerNamePrefix,
                       base::NumberToString(kProducerPid)}),
-        data_source_name, perfetto_service_->GetService(),
+        data_source_name, perfetto_service_.get(),
         std::move(on_datasource_registered), std::move(on_tracing_started),
         num_packets);
   }

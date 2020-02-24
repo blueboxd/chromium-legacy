@@ -71,7 +71,7 @@ class OverviewAnimationsTest
 };
 
 ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_Overview", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "Interaction.ui_Overview", this);
   // Browser window is used just to identify display.
   ui_controls::SendKeyPress(window(), ui::VKEY_MEDIA_LAUNCH_APP1,
                             /*control=*/false,
@@ -88,7 +88,7 @@ ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
                             /*command=*/false);
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kExitAnimationComplete);
-  TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_Overview", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ui", "Interaction.ui_Overview", this);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

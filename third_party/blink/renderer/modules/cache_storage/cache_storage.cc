@@ -138,8 +138,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                   resolver->Resolve();
                   break;
                 default:
-                  resolver->Reject(
-                      CacheStorageError::CreateException(result->get_status()));
+                  RejectCacheStorageWithError(resolver, result->get_status());
                   break;
               }
             } else {
@@ -211,7 +210,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                 resolver->Resolve(false);
                 break;
               default:
-                resolver->Reject(CacheStorageError::CreateException(result));
+                RejectCacheStorageWithError(resolver, result);
                 break;
             }
           },
@@ -273,7 +272,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                 resolver->Resolve(false);
                 break;
               default:
-                resolver->Reject(CacheStorageError::CreateException(result));
+                RejectCacheStorageWithError(resolver, result);
                 break;
             }
           },
@@ -423,8 +422,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                   resolver->Resolve();
                   break;
                 default:
-                  resolver->Reject(
-                      CacheStorageError::CreateException(result->get_status()));
+                  RejectCacheStorageWithError(resolver, result->get_status());
                   break;
               }
             } else {

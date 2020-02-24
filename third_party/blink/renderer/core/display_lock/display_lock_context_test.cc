@@ -88,9 +88,9 @@ class DisplayLockEmptyEventListener final : public NativeEventListener {
 }  // namespace
 
 class DisplayLockContextTest : public testing::Test,
-                               private ScopedDisplayLockingForTest {
+                               private ScopedCSSRenderSubtreeForTest {
  public:
-  DisplayLockContextTest() : ScopedDisplayLockingForTest(true) {}
+  DisplayLockContextTest() : ScopedCSSRenderSubtreeForTest(true) {}
 
   void SetUp() override {
     web_view_helper_.Initialize();
@@ -127,21 +127,17 @@ class DisplayLockContextTest : public testing::Test,
     test::RunPendingTasks();
   }
 
-  void LockElement(Element& element,
-                   bool activatable,
-                   bool update_lifecycle = true) {
+  void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("invisible");
+    value.Append("render-subtree: invisible");
     if (!activatable)
       value.Append(" skip-activation");
-    element.setAttribute(html_names::kRendersubtreeAttr,
-                         value.ToAtomicString());
-    if (update_lifecycle)
-      UpdateAllLifecyclePhasesForTest();
+    element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());
+    UpdateAllLifecyclePhasesForTest();
   }
 
   void CommitElement(Element& element, bool update_lifecycle = true) {
-    element.setAttribute(html_names::kRendersubtreeAttr, "");
+    element.setAttribute(html_names::kStyleAttr, "");
     if (update_lifecycle)
       UpdateAllLifecyclePhasesForTest();
   }
@@ -195,7 +191,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  LockElement(*element, false, false);
+  LockElement(*element, false);
 
   // Finished acquiring the lock.
   // Note that because the element is locked after append, the "self" phase for
@@ -211,7 +207,9 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
 
   // If the element is dirty, style recalc would handle it in the next recalc.
-  element->setAttribute("style", "color: red;");
+  element->setAttribute(
+      html_names::kStyleAttr,
+      "render-subtree: invisible skip-activation; color: red;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
@@ -223,7 +221,11 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   EXPECT_EQ(
       element->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()),
       MakeRGB(255, 0, 0));
-  CommitElement(*element, false);
+  // Manually commit the lock so that we can verify which dirty bits get
+  // propagated.
+  element->GetDisplayLockContext()->StartCommit();
+  element->setAttribute(html_names::kStyleAttr, "color: red;");
+
   auto* child = GetDocument().getElementById("child");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc());
@@ -236,32 +238,25 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(child->NeedsStyleRecalc());
 
-  // Re-acquire.
-  LockElement(*element, false);
-
-  // If a child is dirty, it will still be dirty.
-  child->setAttribute("style", "color: blue;");
-  EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
-  EXPECT_FALSE(element->NeedsStyleRecalc());
-  EXPECT_TRUE(element->ChildNeedsStyleRecalc());
-  EXPECT_TRUE(child->NeedsStyleRecalc());
-  EXPECT_FALSE(child->ChildNeedsStyleRecalc());
-
+  // Lock the child.
+  child->setAttribute(
+      html_names::kStyleAttr,
+      "render-subtree: invisible skip-activation; color: blue;");
   UpdateAllLifecyclePhasesForTest();
+
   EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsStyleRecalc());
-  EXPECT_TRUE(element->ChildNeedsStyleRecalc());
-  EXPECT_TRUE(child->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(child->NeedsStyleRecalc());
   ASSERT_TRUE(child->GetComputedStyle());
-  EXPECT_NE(
+  EXPECT_EQ(
       child->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()),
       MakeRGB(0, 0, 255));
 
-  CommitElement(*element, false);
+  child->GetDisplayLockContext()->StartCommit();
+  child->setAttribute(html_names::kStyleAttr, "color: blue;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
-  // Since the rendersubtree attribute changes, it will force self style to put
-  // in proper containment in place.
-  EXPECT_TRUE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsStyleRecalc());
   EXPECT_TRUE(element->ChildNeedsStyleRecalc());
   EXPECT_TRUE(child->NeedsStyleRecalc());
   UpdateAllLifecyclePhasesForTest();
@@ -624,8 +619,8 @@ TEST_F(DisplayLockContextTest,
   auto* div_two = GetDocument().getElementById("two");
   auto* div_three = GetDocument().getElementById("three");
   // Lock three divs, make #div_two non-activatable.
-  LockElement(*div_one, true /* activatable */, false /* update_lifecycle */);
-  LockElement(*div_two, false /* activatable */, false /* update_lifecycle */);
+  LockElement(*div_one, true /* activatable */);
+  LockElement(*div_two, false /* activatable */);
   LockElement(*div_three, true /* activatable */);
 
   DisplayLockTestFindInPageClient client;
@@ -675,6 +670,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   LockElement(*element, false);
 
   // Sanity checks to ensure the element is locked.
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
@@ -719,9 +715,9 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
 
-  CommitElement(*element, false);
-  // Since containment may change, we need self style recalc.
-  EXPECT_TRUE(element->NeedsStyleRecalc());
+  // Manually start commit, so that we can verify which dirty bits get
+  // propagated.
+  element->GetDisplayLockContext()->StartCommit();
   EXPECT_TRUE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
@@ -732,8 +728,6 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   element->GetDisplayLockContext()->DidStyle(
       DisplayLockLifecycleTarget::kChildren);
 
-  // Self style still needs updating.
-  EXPECT_TRUE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_TRUE(element->ChildNeedsReattachLayoutTree());
@@ -846,7 +840,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_FALSE(GetDocument().FocusedElement());
 
   // Now commit the lock and ensure we can focus the input
-  CommitElement(*element, false);
+  CommitElement(*element);
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
       DisplayLockLifecycleTarget::kChildren));
@@ -902,7 +896,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   EXPECT_FALSE(slotted->DisplayLockPreventsActivation(
       DisplayLockActivationReason::kAny));
 
-  LockElement(*container, false, false);
+  LockElement(*container, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
@@ -917,7 +911,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   // step.
   UpdateAllLifecyclePhasesForTest();
 
-  CommitElement(*container, false);
+  CommitElement(*container);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
@@ -941,7 +935,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
 
   SetHtmlInnerHTML(R"HTML(
     <body>
-    <div id="nonviewport" rendersubtree="invisible skip-viewport-activation">
+    <div id="nonviewport" style="render-subtree: invisible skip-viewport-activation">
     </div>
     </body>
   )HTML");
@@ -1037,22 +1031,26 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
 
   LockElement(*two, false);
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 2);
+  // Because |two| is nested, the lock counts aren't updated since the lock
+  // doesn't actually take effect until style can determine that we should lock.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   LockElement(*three, false);
 
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 3);
-
-  // Now commit the inner lock.
-  CommitElement(*two);
-
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 2);
 
-  // Commit the outer lock.
+  // Now commit the outer lock.
   CommitElement(*one);
+
+  // The counts remain the same since now the inner lock is determined to be
+  // locked.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 2);
+
+  // Commit the inner lock.
+  CommitElement(*two);
 
   // Both inner and outer locks should have committed.
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
@@ -1090,10 +1088,8 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
 
   // Initial display lock context should be activatable, since nothing skipped
   // activation for it.
-  EXPECT_TRUE(
-      activatable
-          ->EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
-          .IsActivatable(DisplayLockActivationReason::kAny));
+  EXPECT_TRUE(activatable->EnsureDisplayLockContext().IsActivatable(
+      DisplayLockActivationReason::kAny));
 
   LockElement(*activatable, true);
 
@@ -1122,9 +1118,8 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   // Set just the skip activation token, without the invisible token. This
   // should make the element not be locked, but also not be activatable.
   StringBuilder value;
-  value.Append("skip-activation");
-  non_activatable->setAttribute(html_names::kRendersubtreeAttr,
-                                value.ToAtomicString());
+  value.Append("render-subtree: skip-activation");
+  non_activatable->setAttribute(html_names::kStyleAttr, value.ToAtomicString());
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsLocked());
@@ -1183,11 +1178,11 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
-  EXPECT_TRUE(child->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(child->GetDisplayLockContext());
 
-  // commit() will unlock the element.
+  // Commit also works, but does nothing.
   CommitElement(*child);
-  EXPECT_FALSE(child->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(child->GetDisplayLockContext());
 
   // Try to lock an element that was moved from a template to a document.
   auto* document_child =
@@ -1197,22 +1192,32 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   LockElement(*document_child, false);
 
+  // These should be 0, since container is display: none, so locking its child
+  // is not visible to style.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
+  ASSERT_FALSE(document_child->GetDisplayLockContext());
+
+  container->setAttribute(html_names::kStyleAttr, "display: block;");
+  EXPECT_TRUE(container->NeedsStyleRecalc());
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
+  ASSERT_TRUE(document_child->GetDisplayLockContext());
   EXPECT_TRUE(document_child->GetDisplayLockContext()->IsLocked());
 
-  container->setAttribute("style", "display: block;");
-  document_child->setAttribute("style", "color: red;");
-
-  EXPECT_TRUE(container->NeedsStyleRecalc());
-  EXPECT_FALSE(document_child->NeedsStyleRecalc());
-
+  document_child->setAttribute(
+      html_names::kStyleAttr,
+      "render-subtree: invisible skip-activation; color: red;");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(document_child->NeedsStyleRecalc());
 
-  // commit() will unlock the element and update the style.
-  CommitElement(*document_child);
+  // Commit will unlock the element and update the style.
+  document_child->setAttribute(html_names::kStyleAttr, "color: red;");
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_FALSE(document_child->GetDisplayLockContext()->IsLocked());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
@@ -1326,7 +1331,10 @@ TEST_F(DisplayLockContextTest, AncestorAllowedTouchAction) {
   EXPECT_TRUE(locked_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(lockedchild_object->InsideBlockingTouchEventHandler());
 
+  // Manually commit the lock so that we can verify which dirty bits get
+  // propagated.
   CommitElement(*locked_element, false);
+  locked_element->GetDisplayLockContext()->StartCommit();
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(handler_object->EffectiveAllowedTouchActionChanged());
@@ -1467,7 +1475,10 @@ TEST_F(DisplayLockContextTest, DescendantAllowedTouchAction) {
   EXPECT_FALSE(locked_object->InsideBlockingTouchEventHandler());
   EXPECT_FALSE(handler_object->InsideBlockingTouchEventHandler());
 
+  // Manually commit the lock so that we can verify which dirty bits get
+  // propagated.
   CommitElement(*locked_element, false);
+  locked_element->GetDisplayLockContext()->StartCommit();
 
   EXPECT_FALSE(ancestor_object->EffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(descendant_object->EffectiveAllowedTouchActionChanged());
@@ -1618,7 +1629,10 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   EXPECT_TRUE(locked_object->DescendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
 
+  // Manually commit the lock so that we can verify which dirty bits get
+  // propagated.
   CommitElement(*locked_element, false);
+  locked_element->GetDisplayLockContext()->StartCommit();
 
   EXPECT_FALSE(ancestor_object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(descendant_object->NeedsPaintPropertyUpdate());
@@ -1700,11 +1714,11 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
 }
 
 class DisplayLockContextRenderingTest : public RenderingTest,
-                                        private ScopedDisplayLockingForTest {
+                                        private ScopedCSSRenderSubtreeForTest {
  public:
   DisplayLockContextRenderingTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedDisplayLockingForTest(true) {}
+        ScopedCSSRenderSubtreeForTest(true) {}
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1723,8 +1737,7 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   auto* target = ChildDocument().getElementById("target");
   GetDocument().getElementById("frame")->remove();
 
-  target->EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
-      .StartAcquire();
+  target->EnsureDisplayLockContext().StartAcquire();
 }
 
 TEST_F(DisplayLockContextRenderingTest,
@@ -1795,8 +1808,8 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(dirty_count, 10u);
   EXPECT_EQ(total_count, 10u);
 
-  GetDocument().getElementById("e")->setAttribute(
-      html_names::kRendersubtreeAttr, "invisible");
+  GetDocument().getElementById("e")->setAttribute(html_names::kStyleAttr,
+                                                  "render-subtree: invisible");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that the dirty_all call propagate the dirty bit from the unlocked
@@ -1811,8 +1824,8 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   // We still see the locked element, so the total is 8.
   EXPECT_EQ(total_count, 8u);
 
-  GetDocument().getElementById("a")->setAttribute(
-      html_names::kRendersubtreeAttr, "invisible");
+  GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
+                                                  "render-subtree: invisible");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that this dirty_all call is now not propagating the dirty bits at all,

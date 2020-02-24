@@ -185,7 +185,7 @@
         <settings-subpage
             page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-          <settings-lock-screen
+          <settings-lock-screen id="lock-screen"
               prefs="{{prefs}}" auth-token="{{authToken_}}">
           </settings-lock-screen>
         </settings-subpage>
@@ -193,7 +193,8 @@
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
           <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-            <settings-fingerprint-list auth-token="[[authToken_]]">
+            <settings-fingerprint-list id="fingerprint-list"
+                auth-token="[[authToken_.token]]">
             </settings-fingerprint-list>
           </settings-subpage>
         </template>

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
 
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -38,7 +37,7 @@ struct CrossThreadFetchClientSettingsObjectData {
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
       network::mojom::IPAddressSpace address_space,
-      mojom::blink::InsecureRequestPolicy insecure_requests_policy,
+      WebInsecureRequestPolicy insecure_requests_policy,
       FetchClientSettingsObject::InsecureNavigationsSet
           insecure_navigations_set)
       : global_object_url(std::move(global_object_url)),
@@ -62,7 +61,7 @@ struct CrossThreadFetchClientSettingsObjectData {
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
   const network::mojom::IPAddressSpace address_space;
-  const mojom::blink::InsecureRequestPolicy insecure_requests_policy;
+  const WebInsecureRequestPolicy insecure_requests_policy;
   const FetchClientSettingsObject::InsecureNavigationsSet
       insecure_navigations_set;
 
@@ -95,7 +94,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck,
       network::mojom::IPAddressSpace,
-      mojom::blink::InsecureRequestPolicy,
+      WebInsecureRequestPolicy,
       InsecureNavigationsSet);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
@@ -117,8 +116,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
     return address_space_;
   }
 
-  mojom::blink::InsecureRequestPolicy GetInsecureRequestsPolicy()
-      const override {
+  WebInsecureRequestPolicy GetInsecureRequestsPolicy() const override {
     return insecure_requests_policy_;
   }
 
@@ -153,7 +151,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       mime_type_check_for_classic_worker_script_;
   const network::mojom::IPAddressSpace address_space_;
 
-  const mojom::blink::InsecureRequestPolicy insecure_requests_policy_;
+  const WebInsecureRequestPolicy insecure_requests_policy_;
   const InsecureNavigationsSet insecure_navigations_set_;
 };
 

@@ -639,8 +639,8 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
 
   return MakeGarbageCollected<StyleRuleImport>(
       uri,
-      MediaQueryParser::ParseMediaQuerySet(
-          prelude, context_->GetDocument()->ToExecutionContext()),
+      MediaQueryParser::ParseMediaQuerySet(prelude,
+                                           context_->GetExecutionContext()),
       context_->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
 }
 
@@ -674,7 +674,7 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
     style_sheet_->SetHasMediaQueries();
 
   const auto media = MediaQueryParser::ParseMediaQuerySet(
-      prelude, context_->GetDocument()->ToExecutionContext());
+      prelude, context_->GetExecutionContext());
 
   ConsumeRuleList(block, kRegularRuleList,
                   [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
@@ -1010,7 +1010,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
                                         parsed_properties_);
   } else {
     unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID(
-        context_->GetDocument()->ToExecutionContext(), context_->Mode());
+        context_->GetExecutionContext(), context_->Mode());
   }
 
   // @rules other than FontFace still handled with legacy code.

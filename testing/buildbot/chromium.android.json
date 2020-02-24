@@ -57,55 +57,6 @@
       },
       {
         "args": [
-          "--disable-field-trial-config",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "system_webview_shell_layout_test_apk_no_field_trial"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "system_webview_shell_layout_test_apk_no_field_trial",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "LMY48I",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "hammerhead",
-              "os": "Android"
-            }
-          ],
-          "expiration": 10800,
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
-      },
-      {
-        "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -326,54 +277,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
-      },
-      {
-        "args": [
-          "--disable-field-trial-config",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "system_webview_shell_layout_test_apk_no_field_trial"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "system_webview_shell_layout_test_apk_no_field_trial",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -670,54 +573,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "NRD90M",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
-      },
-      {
-        "args": [
-          "--disable-field-trial-config",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "system_webview_shell_layout_test_apk_no_field_trial"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "system_webview_shell_layout_test_apk_no_field_trial",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1144,54 +999,6 @@
       },
       {
         "args": [
-          "--disable-field-trial-config",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "system_webview_shell_layout_test_apk_no_field_trial"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "system_webview_shell_layout_test_apk_no_field_trial",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "OPM4.171019.021.P2",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
-      },
-      {
-        "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -1550,54 +1357,6 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
-      },
-      {
-        "args": [
-          "--disable-field-trial-config",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "system_webview_shell_layout_test_apk_no_field_trial"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "system_webview_shell_layout_test_apk_no_field_trial",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

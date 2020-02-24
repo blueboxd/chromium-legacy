@@ -50,6 +50,9 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
+#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
+#include "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
@@ -66,6 +69,7 @@
 #include "services/network/network_change_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -143,6 +147,13 @@ void ApplicationContextImpl::StartTearDown() {
 
   // Need to clear browser states before the IO thread.
   chrome_browser_state_manager_.reset();
+
+  // The policy providers managed by |browser_policy_connector_| need to shut
+  // down while the IO threads is still alive. The monitoring framework owned by
+  // |browser_policy_connector_| relies on |gcm_driver_|, so this must be
+  // shutdown before |gcm_driver_| below.
+  if (browser_policy_connector_)
+    browser_policy_connector_->Shutdown();
 
   // The GCMDriver must shut down while the IO thread is still alive.
   if (gcm_driver_)
@@ -371,6 +382,22 @@ ApplicationContextImpl::GetNetworkConnectionTracker() {
   return network_connection_tracker_.get();
 }
 
+BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (IsEnterprisePolicyEnabled()) {
+    if (!browser_policy_connector_.get()) {
+      // Ensure that the ResourceBundle has already been initialized. If this
+      // DCHECK ever fails, a call to
+      // BrowserPolicyConnector::OnResourceBundleCreated() will need to be added
+      // later in the startup sequence, after the ResourceBundle is initialized.
+      DCHECK(ui::ResourceBundle::HasSharedInstance());
+      browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
+          base::Bind(&BuildPolicyHandlerList));
+    }
+  }
+  return browser_policy_connector_.get();
+}
+
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
   DCHECK(thread_checker_.CalledOnValidThread());
   application_locale_ = locale;
@@ -389,8 +416,9 @@ void ApplicationContextImpl::CreateLocalState() {
   // Register local state preferences.
   RegisterLocalStatePrefs(pref_registry.get());
 
-  local_state_ = ::CreateLocalState(
-      local_state_path, local_state_task_runner_.get(), pref_registry);
+  local_state_ =
+      ::CreateLocalState(local_state_path, local_state_task_runner_.get(),
+                         pref_registry, GetBrowserPolicyConnector());
   DCHECK(local_state_);
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());

@@ -1,0 +1,99 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../site_settings/site_settings_behavior.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-recent-site-permissions">
+  <template>
+    <style include="settings-shared">
+      paper-tooltip {
+        --paper-tooltip: var(--cr-tooltip);
+      }
+
+      site-favicon {
+        /** Pad the difference between --cr-link-row-icon-width and
+            site-favicon width to align with link rows */
+        padding-inline-end: 24px;
+      }
+
+      .row-aligned {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .link-button {
+        flex: auto;
+        padding-bottom: var(--cr-section-vertical-padding);
+        padding-top: var(--cr-section-vertical-padding);
+      }
+
+      .link-button[disabled] {
+        cursor: auto;
+        pointer-events: none;
+      }
+
+      .incognito-icon {
+        cursor: auto;
+        pointer-events: auto;
+      }
+
+      .display-name {
+        flex: 1;
+        max-width: 100%;
+      }
+    </style>
+    <div id="noPermissionsText" class="list-frame"
+        hidden$="[[!noRecentPermissions]]">
+      <div class="list-item secondary">$i18n{noRecentPermissions}</div>
+    </div>
+    <template is="dom-repeat" id="recentPermissionsList"
+        items="[[recentSitePermissionsList_]]">
+      <div class$="settings-box [[getClassForIndex_(index)]]">
+        <div class="start row-aligned link-button"
+            on-click="onRecentSitePermissionClick_" actionable
+            disabled$="[[item.incognito]]">
+          <site-favicon url="[[item.origin]]"></site-favicon>
+          <div id="displayName_[[index]]" class="display-name">
+            <div class="site-representation">
+              <span class="url-directionality">[[getDisplayName_(item)]]</span>
+              <span class="secondary"
+                  hidden$="[[!getSiteScheme_(item)]]">
+              &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
+              </span>
+              <span class="secondary"
+                  hidden$="[[!getSiteScheme_(item)]]">
+                [[getSiteScheme_(item)]]
+              </span>
+            </div>
+            <div class="second-line secondary">
+                [[getPermissionsText_(item)]]
+            </div>
+          </div>
+          <cr-icon-button class="subpage-arrow"
+              hidden$="[[item.incognito]]"
+              aria-label$="[[getDisplayName_(item)]]"
+              aria-describedby$="displayName_[[index]]"
+              focus-row-control focus-type="show-detail"></cr-icon-button>
+          <cr-tooltip-icon class="incognito-icon"
+              hidden$="[[!item.incognito]]"
+              disabled$="[[item.incognito]]"
+              icon-aria-label="$i18n{incognitoSiteExceptionDesc}"
+              icon-class="settings20:incognito"
+              on-click="onShowIncognitoTooltip_"
+              on-mouseenter="onShowIncognitoTooltip_"
+              on-focus="onShowIncognitoTooltip_"></cr-tooltip-icon>
+        </div>
+      </div>
+    </template>
+    <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode
+        position="top">
+      $i18n{incognitoSiteExceptionDesc}
+    </paper-tooltip>
+  </template>
+  <script src="recent_site_permissions.js"></script>
+</dom-module

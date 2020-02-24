@@ -2386,6 +2386,10 @@ RenderProcessHostWatcher::~RenderProcessHostWatcher() {
 
 void RenderProcessHostWatcher::Wait() {
   run_loop_.Run();
+
+  DCHECK(allow_renderer_crashes_)
+      << "RenderProcessHostWatcher::Wait() may only be called once";
+  allow_renderer_crashes_.reset();
 }
 
 void RenderProcessHostWatcher::RenderProcessReady(RenderProcessHost* host) {

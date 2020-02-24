@@ -8,13 +8,13 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediat
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;

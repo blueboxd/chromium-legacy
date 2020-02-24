@@ -14,6 +14,8 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/android/window_android.h"
 
 namespace {
 
@@ -23,7 +25,7 @@ using base::android::ScopedJavaLocalRef;
 ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
     JNIEnv* env,
     int enumerated_icon_id,
-    const JavaRef<jobject>& tab,
+    const JavaRef<jobject>& window,
     const base::string16& compact_message_text,
     const base::string16& compact_link_text,
     const base::string16& message_text,
@@ -47,7 +49,7 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
   ScopedJavaLocalRef<jintArray> content_settings_types =
       base::android::ToJavaIntArray(env, content_settings);
   return Java_PermissionInfoBar_create(
-      env, tab, content_settings_types, enumerated_icon_id,
+      env, window, content_settings_types, enumerated_icon_id,
       compact_message_text_java, compact_link_text_java, message_text_java,
       description_text_java, ok_button_text_java, cancel_button_text_java);
 }
@@ -82,9 +84,10 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   return CreateRenderInfoBarHelper(
-      env, permission_icon, GetTab()->GetJavaObject(), compact_message_text,
-      compact_link_text, message_text, description_text, ok_button_text,
-      cancel_button_text, content_settings_types);
+      env, permission_icon,
+      GetTab()->web_contents()->GetTopLevelNativeWindow()->GetJavaObject(),
+      compact_message_text, compact_link_text, message_text, description_text,
+      ok_button_text, cancel_button_text, content_settings_types);
 }
 
 GroupedPermissionInfoBarDelegate* GroupedPermissionInfoBar::GetDelegate() {

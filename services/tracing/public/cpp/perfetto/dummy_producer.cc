@@ -37,6 +37,7 @@ void DummyProducer::NewDataSourceAdded(
     const PerfettoTracedProcess::DataSourceBase* const data_source) {}
 
 // SystemProducer implementation.
+void DummyProducer::ConnectToSystemService() {}
 void DummyProducer::ActivateTriggers(const std::vector<std::string>&) {}
 void DummyProducer::DisconnectWithReply(
     base::OnceClosure on_disconnect_complete) {

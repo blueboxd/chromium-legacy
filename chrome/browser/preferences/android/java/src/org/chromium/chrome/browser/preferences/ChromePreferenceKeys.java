@@ -343,12 +343,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_NIGHT_MODE_CCT_AVAILABLE = "night_mode_cct_available";
     /**
-     * Whether or not night mode should set "light" as the default option.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT =
-            "night_mode_default_to_light";
-    /**
      * Whether the Paint Preview Capture menu item is enabled.
      * Default value is false.
      */
@@ -744,6 +738,7 @@ public final class ChromePreferenceKeys {
                 "home_page_button_force_enabled",
                 "homepage_tile_enabled",
                 "inflate_toolbar_on_background_thread",
+                "night_mode_default_to_light",
                 "ntp_button_enabled",
                 "ntp_button_variant",
                 "physical_web",
@@ -841,7 +836,6 @@ public final class ChromePreferenceKeys {
                 FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED,
                 FLAGS_CACHED_NIGHT_MODE_AVAILABLE,
                 FLAGS_CACHED_NIGHT_MODE_CCT_AVAILABLE,
-                FLAGS_CACHED_NIGHT_MODE_DEFAULT_TO_LIGHT,
                 FLAGS_CACHED_PRIORITIZE_BOOTSTRAP_TASKS,
                 FLAGS_CACHED_SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH,
                 FLAGS_CACHED_SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION,

@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
 
   // SystemProducer implementation.
+  void ConnectToSystemService() override;
   void ActivateTriggers(const std::vector<std::string>& triggers) override;
   void DisconnectWithReply(base::OnceClosure on_disconnect_complete) override;
   bool IsDummySystemProducerForTesting() override;

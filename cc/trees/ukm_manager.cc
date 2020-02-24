@@ -95,7 +95,7 @@ void UkmManager::RecordThroughputUKM(
     FrameSequenceTrackerType tracker_type,
     FrameSequenceMetrics::ThreadType thread_type,
     int64_t throughput) const {
-  ukm::builders::Graphics_Smoothness_Throughput builder(source_id_);
+  ukm::builders::Graphics_Smoothness_PercentDroppedFrames builder(source_id_);
   switch (thread_type) {
     case FrameSequenceMetrics::ThreadType::kMain: {
       switch (tracker_type) {

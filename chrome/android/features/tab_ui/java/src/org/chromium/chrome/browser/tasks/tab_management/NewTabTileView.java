@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;

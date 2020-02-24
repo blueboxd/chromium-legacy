@@ -62,19 +62,14 @@ message DeepScanningClientRequest {
 
 // Malware-specific response given back for scanned content.
 message MalwareDeepScanningVerdict {
-  // The status of the malware verdict.
-  enum Status {
-    STATUS_UNKNOWN = 0;
-    SUCCESS = 1;
-    FAILURE = 2;
-  }
-  optional Status status = 2;
+  reserved 2;
 
   enum Verdict {
     VERDICT_UNSPECIFIED = 0;
     CLEAN = 1;
     UWS = 2;
     MALWARE = 3;
+    SCAN_FAILURE = 4;
   }
   // Verdict given to scanned content.
   optional Verdict verdict = 1;

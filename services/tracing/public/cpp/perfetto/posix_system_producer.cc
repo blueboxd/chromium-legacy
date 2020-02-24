@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
@@ -54,7 +55,7 @@ PosixSystemProducer::PosixSystemProducer(const char* socket,
     : SystemProducer(task_runner),
       socket_name_(socket),
       connection_backoff_ms_(kInitialConnectionBackoffMs) {
-  Connect();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PosixSystemProducer::~PosixSystemProducer() {
@@ -62,8 +63,9 @@ PosixSystemProducer::~PosixSystemProducer() {
 }
 
 void PosixSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
-  disallow_pre_android_pie = disallow;
-  if (!disallow && state_ == State::kDisconnected) {
+  bool was_disallowed = SkipIfOnAndroidAndPreAndroidPie();
+  disallow_pre_android_pie_ = disallow;
+  if (!disallow && was_disallowed && state_ == State::kDisconnected) {
     // If previously we would not have connected, we now attempt to connect
     // since we are now skipping a check.
     Connect();
@@ -72,17 +74,23 @@ void PosixSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
 
 void PosixSystemProducer::SetNewSocketForTesting(const char* socket) {
   socket_name_ = socket;
+
+  if (state_ == State::kDisconnected) {
+    // Not connected yet, wait for ConnectToSystemService().
+    return;
+  }
+
   if (state_ == State::kConnected) {
     // If we are fully connected we need to reset the service before we
     // reconnect.
     DisconnectWithReply(base::BindOnce(&PosixSystemProducer::OnDisconnect,
                                        base::Unretained(this)));
-  } else {
-    // In any other case we just need to do a normal disconnect and
-    // DisconnectWithReply will ensure we set up the retries on the new
-    // |socket|.
-    DisconnectWithReply(base::OnceClosure());
+    return;
   }
+
+  // In any other case, we just need to do a normal disconnect and
+  // DisconnectWithReply will ensure we set up the retries on the new |socket|.
+  DisconnectWithReply(base::OnceClosure());
 }
 
 perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
@@ -122,6 +130,13 @@ void PosixSystemProducer::NewDataSourceAdded(
 bool PosixSystemProducer::IsTracingActive() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_sources_tracing_ > 0;
+}
+
+void PosixSystemProducer::ConnectToSystemService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(IsTracingInitialized());
+  DCHECK(state_ == State::kDisconnected);
+  Connect();
 }
 
 void PosixSystemProducer::ActivateTriggers(
@@ -360,7 +375,7 @@ void PosixSystemProducer::ConnectSocket() {
 
 bool PosixSystemProducer::SkipIfOnAndroidAndPreAndroidPie() const {
 #if defined(OS_ANDROID)
-  return disallow_pre_android_pie &&
+  return disallow_pre_android_pie_ &&
          base::android::BuildInfo::GetInstance()->sdk_int() <
              base::android::SDK_VERSION_P;
 #endif  // defined(OS_ANDROID)

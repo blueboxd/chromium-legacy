@@ -111,11 +111,13 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // Passes focus to the OOBE dialog if it is showing. No-op otherwise.
   virtual void FocusOobeDialog() = 0;
 
-  // Show the gaia sign-in dialog. If |can_close| is true, the dialog can be
-  // closed. The value in |prefilled_account| will be used to prefill the
-  // sign-in dialog so the user does not need to type the account email.
-  virtual void ShowGaiaSignin(bool can_close,
-                              const AccountId& prefilled_account) = 0;
+  // Show the gaia sign-in dialog.
+  // The value in |prefilled_account| will be used to prefill the sign-in dialog
+  // so the user does not need to type the account email.
+  virtual void ShowGaiaSignin(const AccountId& prefilled_account) = 0;
+
+  // Hides the Gaia sign-in dialog if it was open.
+  virtual void HideGaiaSignin() = 0;
 
   // Notification that the remove user warning was shown.
   virtual void OnRemoveUserWarningShown() = 0;

@@ -832,10 +832,9 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
 const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Kill switch for the WebNFC feature. This feature can be enabled for all sites
-// using the kEnableExperimentalWebPlatformFeatures flag or by a particular site
-// if it includes an Origin Trial key.  https://w3c.github.io/web-nfc/
-const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether the WebNFC API is enabled:
+// https://w3c.github.io/web-nfc/
+const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

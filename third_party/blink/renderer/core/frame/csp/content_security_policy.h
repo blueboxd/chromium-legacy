@@ -31,8 +31,8 @@
 
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -99,8 +99,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
   // Directives support.
   virtual void SetSandboxFlags(SandboxFlags) = 0;
   virtual void SetRequireTrustedTypes() = 0;
-  virtual void AddInsecureRequestPolicy(
-      mojom::blink::InsecureRequestPolicy) = 0;
+  virtual void AddInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
 
   // Violation reporting.
 
@@ -429,7 +428,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   // |m_insecureRequestPolicy|
   void EnforceStrictMixedContentChecking();
   void UpgradeInsecureRequests();
-  mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const {
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const {
     return insecure_request_policy_;
   }
 
@@ -575,7 +574,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   SandboxFlags sandbox_mask_;
   bool require_trusted_types_;
   String disable_eval_error_message_;
-  mojom::blink::InsecureRequestPolicy insecure_request_policy_;
+  WebInsecureRequestPolicy insecure_request_policy_;
 
   Member<CSPSource> self_source_;
   String self_protocol_;

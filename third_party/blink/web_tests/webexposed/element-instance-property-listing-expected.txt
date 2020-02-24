@@ -289,12 +289,10 @@ namespace http://www.w3.org/1999/xhtml
     property removeAttributeNode
     property removeChild
     property removeEventListener
-    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
     property requestPointerLock
-    property resetSubtreeRendered
     property role
     property scroll
     property scrollBy
@@ -321,7 +319,6 @@ namespace http://www.w3.org/1999/xhtml
     property toString
     property toggleAttribute
     property translate
-    property updateRendering
     property webkitMatchesSelector
     property webkitRequestFullScreen
     property webkitRequestFullscreen
@@ -1482,12 +1479,10 @@ namespace http://www.w3.org/2000/svg
     property removeAttributeNode
     property removeChild
     property removeEventListener
-    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
     property requestPointerLock
-    property resetSubtreeRendered
     property role
     property scroll
     property scrollBy
@@ -1510,7 +1505,6 @@ namespace http://www.w3.org/2000/svg
     property tagName
     property textContent
     property toggleAttribute
-    property updateRendering
     property viewportElement
     property webkitMatchesSelector
     property webkitRequestFullScreen

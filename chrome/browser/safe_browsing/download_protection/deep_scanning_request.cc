@@ -36,9 +36,7 @@ namespace {
 void DeepScanningClientResponseToDownloadCheckResult(
     const DeepScanningClientResponse& response,
     DownloadCheckResult* download_result) {
-  if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().status() ==
-          MalwareDeepScanningVerdict::SUCCESS) {
+  if (response.has_malware_scan_verdict()) {
     if (response.malware_scan_verdict().verdict() ==
         MalwareDeepScanningVerdict::MALWARE) {
       *download_result = DownloadCheckResult::DANGEROUS;

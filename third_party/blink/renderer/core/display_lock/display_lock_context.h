@@ -64,11 +64,6 @@ static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
                   std::numeric_limits<uint16_t>::max(),
               "DisplayLockActivationReason is too large");
 
-// Since we currently, and temporarily, support both CSS and attribute version,
-// we need to distinguish the two so that lack of CSS, for example, doesn't
-// unlock the attribute version and vice versa.
-enum class DisplayLockContextCreateMethod { kUnknown, kCSS, kAttribute };
-
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
       public ExecutionContextLifecycleObserver,
@@ -273,20 +268,6 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
-  void SetMethod(DisplayLockContextCreateMethod method) { method_ = method; }
-  DisplayLockContextCreateMethod GetMethod() const {
-    DCHECK(method_ != DisplayLockContextCreateMethod::kUnknown);
-    return method_;
-  }
-
-  // Note that this returns true if there is no context at all, so in order to
-  // check whether this is strictly an attribute version, as opposed to a null
-  // context, one needs to compare context with nullptr first.
-  static bool IsAttributeVersion(const DisplayLockContext* context) {
-    return !context ||
-           context->GetMethod() == DisplayLockContextCreateMethod::kAttribute;
-  }
-
   // This is called by the style recalc code in lieu of
   // MarkForStyleRecalcIfNeeded() in order to adjust the child change if we need
   // to recalc children nodes here.
@@ -440,9 +421,6 @@ class CORE_EXPORT DisplayLockContext final
   // State that tracks whether we've been activated. Note that this is only
   // valid for CSS version of render-subtree.
   bool css_is_activated_ = false;
-
-  DisplayLockContextCreateMethod method_ =
-      DisplayLockContextCreateMethod::kUnknown;
 
   base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };

@@ -307,7 +307,8 @@ void OverviewController::ToggleOverview(
 
   if (InOverviewSession()) {
     DCHECK(CanEndOverview(type));
-    TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::ExitOverview", this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::ExitOverview",
+                                      this);
 
     // Suspend occlusion tracker until the exit animation is complete.
     PauseOcclusionTracker();
@@ -370,7 +371,8 @@ void OverviewController::ToggleOverview(
       OnEndingAnimationComplete(/*canceled=*/false);
   } else {
     DCHECK(CanEnterOverview());
-    TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview",
+                                      this);
 
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
@@ -508,8 +510,8 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   overview_session_->OnStartingAnimationComplete(canceled,
                                                  should_focus_overview_);
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStart);
-  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
-                         "canceled", canceled);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ui", "OverviewController::EnterOverview",
+                                  this, "canceled", canceled);
 }
 
 void OverviewController::OnEndingAnimationComplete(bool canceled) {
@@ -522,8 +524,8 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
   for (auto& observer : observers_)
     observer.OnOverviewModeEndingAnimationComplete(canceled);
   UnpauseOcclusionTracker(occlusion_pause_duration_for_end_);
-  TRACE_EVENT_ASYNC_END1("ui", "OverviewController::ExitOverview", this,
-                         "canceled", canceled);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ui", "OverviewController::ExitOverview",
+                                  this, "canceled", canceled);
 }
 
 void OverviewController::ResetPauser() {

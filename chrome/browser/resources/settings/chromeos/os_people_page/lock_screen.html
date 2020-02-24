@@ -155,7 +155,7 @@
           </div>
           <div class="separator"></div>
           <div class="secondary-action">
-            <cr-button on-click="onEditFingerprints_"
+            <cr-button id="editFingerprints" on-click="onEditFingerprints_"
                 aria-label="$i18n{lockScreenEditFingerprints}"
                 aria-descibedby="lockScreenEditFingerprintsSecondary">
               $i18n{lockScreenSetupFingerprintButton}
@@ -167,8 +167,8 @@
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
         <settings-lock-screen-password-prompt-dialog
             id="lockScreenPasswordPrompt"
-            on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}"
-            auth-token="{{authToken}}">
+            on-close="onPasswordPromptDialogClose_"
+            on-auth-token-obtained="onAuthTokenObtained_">
         </settings-lock-screen-password-prompt-dialog>
       </template>
 

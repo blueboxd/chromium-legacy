@@ -30,7 +30,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -110,13 +109,13 @@ public class GlobalNightModeStateControllerTest {
     @Test
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.P)
     public void testUpdateNightMode_PowerSaveMode_DefaultsToLight() {
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(true);
+        NightModeUtils.setNightModeDefaultToLightForTesting(true);
 
         // Enable power save mode and verify night mode is not enabled.
         setIsPowerSaveMode(true);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(null);
+        NightModeUtils.setNightModeDefaultToLightForTesting(null);
     }
 
     @Test
@@ -137,13 +136,13 @@ public class GlobalNightModeStateControllerTest {
     @Test
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.P)
     public void testUpdateNightMode_SystemNightMode_DefaultsToLight() {
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(true);
+        NightModeUtils.setNightModeDefaultToLightForTesting(true);
 
         // Enable system night mode and verify night mode is not enabled.
         setSystemNightMode(true);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
 
-        CachedFeatureFlags.setNightModeDefaultToLightForTesting(null);
+        NightModeUtils.setNightModeDefaultToLightForTesting(null);
     }
 
     @Test

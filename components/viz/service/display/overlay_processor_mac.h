@@ -32,6 +32,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorMac
       std::unique_ptr<CALayerOverlayProcessor> ca_layer_overlay_processor);
   ~OverlayProcessorMac() override;
 
+  bool DisableSplittingQuads() const override;
+
   bool IsOverlaySupported() const override;
   gfx::Rect GetAndResetOverlayDamage() override;
 

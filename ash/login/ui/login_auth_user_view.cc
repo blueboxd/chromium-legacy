@@ -1415,7 +1415,7 @@ void LoginAuthUserView::OnUserViewTap() {
 
 void LoginAuthUserView::OnOnlineSignInMessageTap() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-      true /*can_close*/, current_user().basic_user_info.account_id);
+      current_user().basic_user_info.account_id);
 }
 
 void LoginAuthUserView::OnPinBack() {

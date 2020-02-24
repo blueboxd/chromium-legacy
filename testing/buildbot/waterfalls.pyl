@@ -3692,9 +3692,6 @@
         'additional_compile_targets': [
           'cast_test_lists',
         ],
-        'args': [
-          '--qemu-require-kvm',
-        ],
       },
       'fuchsia-x64-dbg': {
         'additional_compile_targets': [

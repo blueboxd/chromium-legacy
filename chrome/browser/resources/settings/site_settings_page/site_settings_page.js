@@ -40,7 +40,6 @@ cr.define('settings', function() {
    */
   let CategoryListItem;
 
-
   /**
    * @return {!Map<!settings.ContentSettingsTypes, !settings.CategoryListItem>}
    */
@@ -309,7 +308,10 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-site-settings-page',
 
-    behaviors: [SiteSettingsBehavior, WebUIListenerBehavior, I18nBehavior],
+    behaviors: [
+      SiteSettingsBehavior, WebUIListenerBehavior, I18nBehavior,
+      settings.RouteObserverBehavior
+    ],
 
     properties: {
       /** @private {!Array<!settings.CategoryListItem>} */
@@ -369,6 +371,17 @@ cr.define('settings', function() {
       focusConfig: {
         type: Object,
         observer: 'focusConfigChanged_',
+      },
+
+      /** @private */
+      privacySettingsRedesignEnabled_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('privacySettingsRedesignEnabled'),
+      },
+
+      /* @private */
+      noRecentSitePermissions_: {
+        type: Boolean,
       },
     },
 
@@ -464,6 +477,35 @@ cr.define('settings', function() {
           dataItem.disabledLabel ? this.i18n(dataItem.disabledLabel) : '',
           dataItem.otherLabel ? this.i18n(dataItem.otherLabel) : null);
       this.set(`categoryList_.${index}.subLabel`, subLabel);
+    },
+
+    /**
+     * Reload the site recent site permission list when the page is navigated
+     * to.
+     * settings.RouteObserverBehavior
+     * @param {!settings.Route} currentRoute
+     * @protected
+     */
+    currentRouteChanged(currentRoute) {
+      if (currentRoute == settings.routes.SITE_SETTINGS &&
+          this.privacySettingsRedesignEnabled_) {
+        // Needs to be async to await the surrounding dom-if, should be removed
+        // when the dom-if is removed.
+        this.async(() => {
+          this.$$('#recentSitePermissions').populateList();
+        });
+      }
+    },
+
+    /**
+     * @return {string} Class for the all site settings link
+     * @private
+     */
+    getClassForSiteSettingsAllLink_() {
+      return (this.privacySettingsRedesignEnabled_ &&
+              !this.noRecentSitePermissions_) ?
+          'hr' :
+          '';
     },
 
     /**

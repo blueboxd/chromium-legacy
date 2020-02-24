@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.permissions;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Delegate class for modal permission dialogs. Contains all of the data displayed in a prompt,
@@ -24,8 +24,8 @@ public class PermissionDialogDelegate {
     /** The controller for this class */
     private PermissionDialogController mDialogController;
 
-    /** The tab for which to create the dialog. */
-    private Tab mTab;
+    /** The window for which to create the dialog. */
+    private WindowAndroid mWindow;
 
     /** The icon to display in the dialog. */
     private int mDrawableId;
@@ -42,8 +42,8 @@ public class PermissionDialogDelegate {
     /** The {@link ContentSettingsType}s requested in this dialog.  */
     private int[] mContentSettingsTypes;
 
-    public Tab getTab() {
-        return mTab;
+    public WindowAndroid getWindow() {
+        return mWindow;
     }
 
     public int[] getContentSettingsTypes() {
@@ -105,7 +105,7 @@ public class PermissionDialogDelegate {
      * Called from C++ by |nativeDelegatePtr| to instantiate this class.
      *
      * @param nativeDelegatePtr     The native counterpart that this object owns.
-     * @param tab                   The tab to create the dialog for.
+     * @param window                   The window to create the dialog for.
      * @param contentSettingsTypes  The content settings types requested by this dialog.
      * @param iconResourceId        The id of the icon to display in the dialog.
      * @param message               The message to display in the dialog.
@@ -113,21 +113,21 @@ public class PermissionDialogDelegate {
      * @param secondaryTextButton   The text to display on the primary button.
      */
     @CalledByNative
-    private static PermissionDialogDelegate create(long nativeDelegatePtr, Tab tab,
+    private static PermissionDialogDelegate create(long nativeDelegatePtr, WindowAndroid window,
             int[] contentSettingsTypes, int enumeratedIconId, String message,
             String primaryButtonText, String secondaryButtonText) {
-        return new PermissionDialogDelegate(nativeDelegatePtr, tab, contentSettingsTypes,
+        return new PermissionDialogDelegate(nativeDelegatePtr, window, contentSettingsTypes,
                 enumeratedIconId, message, primaryButtonText, secondaryButtonText);
     }
 
     /**
      * Upon construction, this class takes ownership of the passed in native delegate.
      */
-    private PermissionDialogDelegate(long nativeDelegatePtr, Tab tab, int[] contentSettingsTypes,
-            int enumeratedIconId, String message, String primaryButtonText,
-            String secondaryButtonText) {
+    private PermissionDialogDelegate(long nativeDelegatePtr, WindowAndroid window,
+            int[] contentSettingsTypes, int enumeratedIconId, String message,
+            String primaryButtonText, String secondaryButtonText) {
         mNativeDelegatePtr = nativeDelegatePtr;
-        mTab = tab;
+        mWindow = window;
         mContentSettingsTypes = contentSettingsTypes;
         mDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
         mMessageText = message;

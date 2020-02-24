@@ -73,6 +73,10 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
   DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
 
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&AuthenticatorRequestDialogView::OnDialogClosing,
+                     base::Unretained(this)));
+
   // Currently, all sheets have a label on top and controls at the bottom.
   // Consider moving this to AuthenticatorRequestSheetView if this changes.
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -113,7 +117,7 @@ bool AuthenticatorRequestDialogView::Cancel() {
   return false;
 }
 
-bool AuthenticatorRequestDialogView::Close() {
+void AuthenticatorRequestDialogView::OnDialogClosing() {
   // To keep the UI responsive, always allow immediately closing the dialog when
   // desired; but still trigger cancelling the AuthenticatorRequest unless it is
   // already complete.
@@ -141,8 +145,6 @@ bool AuthenticatorRequestDialogView::Close() {
   // over observers in SetCurrentStep().
   if (!model_->should_dialog_be_closed())
     Cancel();
-
-  return true;
 }
 
 bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(

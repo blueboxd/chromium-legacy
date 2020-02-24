@@ -217,6 +217,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // execute the pre-sandbox steps now.
     sandbox_helper_->PreSandboxStartup();
   }
+#else
+  // For some reasons MacOSX's VideoToolbox might crash when called after
+  // initializing GL, see crbug.com/1047643 and crbug.com/871280. On other
+  // operating systems like Windows and Android the pre-sandbox steps have
+  // always been executed before initializing GL so keep it this way.
+  sandbox_helper_->PreSandboxStartup();
 #endif
 
   // Start the GPU watchdog only after anything that is expected to be time
@@ -313,6 +319,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
 
+#if defined(OS_LINUX)
   // The ContentSandboxHelper is currently the only one implementation of
   // gpu::GpuSandboxHelper and it has no dependency. Except on Linux where
   // VaapiWrapper checks the GL implementation to determine which display
@@ -329,6 +336,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     if (watchdog_thread_)
       watchdog_thread_->ResumeWatchdog();
   }
+#endif
 
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 

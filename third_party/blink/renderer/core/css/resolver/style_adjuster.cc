@@ -584,14 +584,9 @@ static void AdjustStateForRenderSubtree(ComputedStyle& style,
   if (!should_be_invisible && !context)
     return;
 
-  // If we're using an attribute version of display locking, then also abort.
-  if (context && DisplayLockContext::IsAttributeVersion(context))
-    return;
-
   // Create a context if we need to be invisible.
   if (should_be_invisible && !context) {
-    context = &element->EnsureDisplayLockContext(
-        DisplayLockContextCreateMethod::kCSS);
+    context = &element->EnsureDisplayLockContext();
   }
   DCHECK(context);
 
@@ -679,24 +674,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   } else {
     AdjustStyleForFirstLetter(style);
-  }
-
-  if (element &&
-      RuntimeEnabledFeatures::DisplayLockingEnabled(
-          element->GetExecutionContext()) &&
-      element->FastHasAttribute(html_names::kRendersubtreeAttr)) {
-    // The element has the rendersubtree attr, so we should add style and
-    // layout containment. If the attribute contains "invisible" we should
-    // also add size containment.
-    Containment contain = kContainsStyle | kContainsLayout;
-    SpaceSplitString tokens(
-        element->FastGetAttribute(html_names::kRendersubtreeAttr).LowerASCII());
-    if (style.ContainsSize() || tokens.Contains("invisible")) {
-      contain |= kContainsSize;
-    }
-    if (style.ContainsPaint())
-      contain |= kContainsPaint;
-    style.SetContain(contain);
   }
 
   if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())

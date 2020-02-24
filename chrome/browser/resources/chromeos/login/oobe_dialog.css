@@ -35,7 +35,11 @@
   padding-top: 20px;
 }
 
-#oobe-title ::slotted(h1) {
+/*
+ * TODO(https://crbug.com/703984): remove the fallback class when fixed.
+ */
+#oobe-title ::slotted(h1),
+#oobe-title .fallback {
   color: var(--oobe-header-text-color);
   @apply --oobe-header-font;
   margin: 0;
@@ -45,7 +49,11 @@
   padding-top: 8px;
 }
 
-#oobe-subtitle ::slotted(*) {
+/*
+ * TODO(https://crbug.com/703984): remove the fallback class when fixed.
+ */
+#oobe-subtitle ::slotted(*),
+#oobe-subtitle .fallback {
   color: var(--oobe-subheader-text-color);
   line-height: var(--subtitle-line-height);
   margin: 0;

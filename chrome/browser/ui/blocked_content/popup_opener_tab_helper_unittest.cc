@@ -17,6 +17,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
@@ -318,6 +319,73 @@ TEST_F(PopupOpenerTabHelperTest, SimulateTabUnderNavBeforePopup_LogsMetrics) {
   //    log for navigations after the popup.
   histogram_tester()->ExpectTotalCount(kTabUnderVisibleTime, 0);
   histogram_tester()->ExpectTotalCount(kPopupToTabUnder, 0);
+}
+
+// Navigate to a site without pop-ups, verify the user popup settings are not
+// logged to ukm.
+TEST_F(PopupOpenerTabHelperTest,
+       PageWithNoPopups_NoProfileSettingsLoggedInUkm) {
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const GURL url("https://first.test/");
+  NavigateAndCommitWithoutGesture(url);
+  DeleteContents();
+
+  auto entries =
+      test_ukm_recorder.GetEntriesByName(ukm::builders::Popup_Page::kEntryName);
+  EXPECT_EQ(0u, entries.size());
+}
+
+// Navigate to a site, verify histogram for user site pop up settings
+// when there is at least one popup.
+TEST_F(PopupOpenerTabHelperTest,
+       PageWithDefaultPopupBlocker_ProfileSettingsLoggedInUkm) {
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const GURL url("https://first.test/");
+  NavigateAndCommitWithoutGesture(url);
+  SimulatePopup();
+  DeleteContents();
+
+  auto entries =
+      test_ukm_recorder.GetEntriesByName(ukm::builders::Popup_Page::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+
+  test_ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
+  test_ukm_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::Popup_Page::kAllowedName, false);
+}
+
+// Same as the test with the default pop up blocker, however, with the user
+// explicitly allowing popups on the site.
+TEST_F(PopupOpenerTabHelperTest,
+       PageWithPopupsAllowed_ProfileSettingsLoggedInUkm) {
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const GURL url("https://first.test/");
+
+  // Allow popups on url for the test profile.
+  TestingProfile* test_profile = profile();
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(test_profile);
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::POPUPS, std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  NavigateAndCommitWithoutGesture(url);
+  SimulatePopup();
+  DeleteContents();
+
+  auto entries =
+      test_ukm_recorder.GetEntriesByName(ukm::builders::Popup_Page::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+
+  test_ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
+  test_ukm_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::Popup_Page::kAllowedName, true);
 }
 
 class BlockTabUnderTest : public PopupOpenerTabHelperTest {

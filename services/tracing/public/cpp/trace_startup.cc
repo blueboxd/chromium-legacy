@@ -11,6 +11,7 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
@@ -110,9 +111,17 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
   if (ShouldSetupSystemTracing()) {
     // We have to ensure that we register all the data sources we care about.
     TraceEventAgent::GetInstance();
-    // To ensure System tracing connects we have to initialize the process wide
-    // state. This Get() call ensures that the constructor has run.
-    PerfettoTracedProcess::Get();
+    // Connect to system service if available (currently a no-op except on
+    // Posix). Has to happen on the producer's sequence, as all communication
+    // with the system Perfetto service should occur on a single sequence.
+    PerfettoTracedProcess::Get()
+        ->GetTaskRunner()
+        ->GetOrCreateTaskRunner()
+        ->PostTask(FROM_HERE, base::BindOnce([]() {
+                     PerfettoTracedProcess::Get()
+                         ->system_producer()
+                         ->ConnectToSystemService();
+                   }));
   }
 }
 

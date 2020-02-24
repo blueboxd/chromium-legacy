@@ -315,8 +315,8 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
         }
       });
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      local_service()->GetService(), local_producer_client.get());
+      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      local_producer_client.get());
 
   system_consumer.WaitForAllDataSourcesStopped();
   system_data_source_disabled_runloop.Run();
@@ -390,8 +390,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
       local_data_source_enabled_runloop.QuitClosure(),
       local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      local_service()->GetService(), local_producer_client.get());
+      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      local_producer_client.get());
 
   local_data_source_enabled_runloop.Run();
   local_consumer->WaitForAllDataSourcesStarted();
@@ -519,8 +519,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
       local_data_source_enabled_runloop.QuitClosure(),
       local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      local_service()->GetService(), local_producer_client.get());
+      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      local_producer_client.get());
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
        base::StrCat({kPerfettoTestDataSourceName, "1"}),
@@ -614,8 +614,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
       local_data_source_enabled_runloop.QuitClosure(),
       local_data_source_disabled_runloop.QuitClosure());
   auto local_producer_host = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      local_service()->GetService(), local_producer_client.get());
+      kPerfettoProducerName, kPerfettoTestDataSourceName, local_service(),
+      local_producer_client.get());
   MockConsumer local_consumer(
       {kPerfettoTestDataSourceName,
        base::StrCat({kPerfettoTestDataSourceName, "1"}),
@@ -781,11 +781,11 @@ TEST_F(SystemPerfettoTest, EnabledOnDebugBuilds) {
   PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
   if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
     EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->SystemProducerForTesting()
+                     ->system_producer()
                      ->IsDummySystemProducerForTesting());
   } else {
     EXPECT_TRUE(PerfettoTracedProcess::Get()
-                    ->SystemProducerForTesting()
+                    ->system_producer()
                     ->IsDummySystemProducerForTesting());
   }
 }
@@ -797,7 +797,7 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
     // The feature list is ignored on debug android builds so we should have a
     // real system producer so just bail out of this test.
     EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->SystemProducerForTesting()
+                     ->system_producer()
                      ->IsDummySystemProducerForTesting());
     return;
   }
@@ -807,7 +807,7 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
     PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
     EXPECT_FALSE(PerfettoTracedProcess::Get()
-                     ->SystemProducerForTesting()
+                     ->system_producer()
                      ->IsDummySystemProducerForTesting());
   }
   {
@@ -815,7 +815,7 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
     feature_list.InitAndDisableFeature(features::kEnablePerfettoSystemTracing);
     PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
     EXPECT_TRUE(PerfettoTracedProcess::Get()
-                    ->SystemProducerForTesting()
+                    ->system_producer()
                     ->IsDummySystemProducerForTesting());
   }
 }

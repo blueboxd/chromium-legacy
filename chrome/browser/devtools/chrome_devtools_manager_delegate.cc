@@ -23,13 +23,17 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
@@ -88,6 +92,18 @@ ChromeDevToolsManagerDelegate* ChromeDevToolsManagerDelegate::GetInstance() {
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
   DCHECK(!g_instance);
   g_instance = this;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kNoStartupWindow) &&
+      (command_line->HasSwitch(switches::kRemoteDebuggingPipe) ||
+       command_line->HasSwitch(switches::kRemoteDebuggingPort))) {
+    // If running without a startup window with remote debugging,
+    // we are controlled entirely by the automation process.
+    // Keep the application running until explicit close through DevTools
+    // protocol.
+    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::REMOTE_DEBUGGING,
+                                          KeepAliveRestartOption::DISABLED));
+  }
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
@@ -318,4 +334,10 @@ void ChromeDevToolsManagerDelegate::ResetAndroidDeviceManagerForTesting() {
   // We also need |device_discovery_| to go away because there may be a pending
   // task using a raw pointer to the DeviceManager we just deleted.
   device_discovery_.reset();
+}
+
+void ChromeDevToolsManagerDelegate::BrowserCloseRequested() {
+  // Do not keep the application running anymore, we got an explicit request
+  // to close.
+  keep_alive_.reset();
 }

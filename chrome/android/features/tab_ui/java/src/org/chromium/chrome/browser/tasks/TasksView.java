@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.design.widget.AppBarLayout;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,6 +15,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+
+import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;

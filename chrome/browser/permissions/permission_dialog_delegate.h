@@ -10,7 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_util.h"
@@ -21,7 +20,6 @@ using base::android::JavaParamRef;
 namespace content {
 class WebContents;
 }
-class TabAndroid;
 
 // Delegate class for displaying a permission prompt as a modal dialog. Used as
 // the native to Java interface to allow Java to communicate the user's
@@ -46,12 +44,11 @@ class PermissionDialogDelegate : public content::WebContentsObserver {
   void Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
  private:
-  PermissionDialogDelegate(
-      TabAndroid* tab,
-      PermissionPromptAndroid* permission_prompt);
+  PermissionDialogDelegate(content::WebContents* web_contents,
+                           PermissionPromptAndroid* permission_prompt);
   ~PermissionDialogDelegate() override;
 
-  void CreateJavaDelegate(JNIEnv* env, TabAndroid* tab);
+  void CreateJavaDelegate(JNIEnv* env, content::WebContents* web_contents);
 
   // On navigation or page destruction, hide the dialog.
   void DismissDialog();

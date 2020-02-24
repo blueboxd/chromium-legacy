@@ -295,7 +295,8 @@ void DevToolsPipeHandler::Shutdown() {
   if (!write_thread_) {
     base::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+         base::TaskPriority::BEST_EFFORT},
         base::BindOnce([](base::Thread* rthread) { delete rthread; },
                        read_thread_.release()));
     return;
@@ -326,7 +327,8 @@ void DevToolsPipeHandler::Shutdown() {
   // Post background task that would join and destroy the threads.
   base::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](base::Thread* rthread, base::Thread* wthread) {
             delete rthread;

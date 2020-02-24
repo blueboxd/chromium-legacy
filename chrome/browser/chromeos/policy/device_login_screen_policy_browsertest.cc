@@ -5,6 +5,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -17,12 +18,15 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/core/common/policy_types.h"
@@ -196,4 +200,36 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest,
   prefs->SetBoolean(prefs::kPrimaryMouseButtonRight, false);
   EXPECT_EQ(base::Value(false), GetPrefValue(prefs::kPrimaryMouseButtonRight));
 }
+
+// Tests that enabling/disabling public accounts correctly reflects in the login
+// UI.
+IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
+  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+
+  // Wait for Gaia dialog to be open.
+  chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
+    return ash::LoginScreenTestApi::IsOobeDialogVisible();
+  })).Wait();
+
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  auto* account = proto.mutable_device_local_accounts()->add_account();
+  account->set_account_id("test");
+  account->set_type(
+      em::DeviceLocalAccountInfoProto_AccountType_ACCOUNT_TYPE_PUBLIC_SESSION);
+  RefreshDevicePolicy();
+
+  // Wait for Gaia dialog to be hidden.
+  chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
+    return !ash::LoginScreenTestApi::IsOobeDialogVisible();
+  })).Wait();
+
+  proto.clear_device_local_accounts();
+  RefreshDevicePolicy();
+
+  // Wait for Gaia dialog to be open.
+  chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
+    return ash::LoginScreenTestApi::IsOobeDialogVisible();
+  })).Wait();
+}
+
 }  // namespace policy

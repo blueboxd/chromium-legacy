@@ -71,8 +71,10 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
   using DelegateNotifyFn = void (Delegate::*)();
   auto notify_delegate = [](ProfileSigninConfirmationDialogViews* dialog,
                             DelegateNotifyFn fn) {
-    (dialog->delegate_.get()->*fn)();
-    dialog->delegate_.reset();
+    if (dialog->delegate_) {
+      (dialog->delegate_.get()->*fn)();
+      dialog->delegate_.reset();
+    }
   };
   DialogDelegate::set_accept_callback(
       base::BindOnce(notify_delegate, base::Unretained(this),

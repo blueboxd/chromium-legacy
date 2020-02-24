@@ -6,15 +6,21 @@ source_set("policy") {
   sources = [
     "browser_policy_connector_ios.h",
     "browser_policy_connector_ios.mm",
+    "configuration_policy_handler_list_factory.h",
+    "configuration_policy_handler_list_factory.mm",
   ]
 
   deps = [
     "//base",
+    "//components/policy:generated",
     "//components/policy/core/common",
     "//services/network/public/cpp",
   ]
 
-  public_deps = [ "//components/policy/core/browser" ]
+  public_deps = [
+    ":feature_flags",
+    "//components/policy/core/browser",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

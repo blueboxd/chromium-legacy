@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
 
 import androidx.annotation.ColorInt;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;

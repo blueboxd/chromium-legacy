@@ -17,7 +17,13 @@
 namespace blink {
 
 class HeapThreadTest : public TestSupportingGC {};
-class HeapThreadDeathTest : public TestSupportingGC {};
+
+class HeapThreadDeathTest : public TestSupportingGC {
+ public:
+  HeapThreadDeathTest() {
+    testing::FLAGS_gtest_death_test_style = "threadsafe";
+  }
+};
 
 namespace heap_thread_test {
 
@@ -136,14 +142,9 @@ class MemberSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac-rel bot.
-// crbug.com/709069
-// It it also flaky on Linux. crbug.com/1046332.
-#if !defined(OS_MACOSX) && !defined(OS_LINUX)
 TEST_F(HeapThreadDeathTest, MemberSameThreadCheck) {
   EXPECT_DEATH(MemberSameThreadCheckTester().Test(), "");
 }
-#endif
 #endif
 
 class PersistentSameThreadCheckTester : public AlternatingThreadTester {
@@ -160,14 +161,9 @@ class PersistentSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac-rel bot.
-// crbug.com/709069
-// This test is also flaky on Linux. crbug.com/1043580.
-#if !defined(OS_MACOSX) && !defined(OS_LINUX)
 TEST_F(HeapThreadDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
 }
-#endif
 #endif
 
 class MarkingSameThreadCheckTester : public AlternatingThreadTester {
@@ -201,8 +197,6 @@ class MarkingSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac-rel bot. https://crbug.com/709069, and
-// times out on other bots. https://crbug.com/993148.
 TEST_F(HeapThreadDeathTest, DISABLED_MarkingSameThreadCheck) {
   // This will crash during marking, at the DCHECK in Visitor::markHeader() or
   // earlier.

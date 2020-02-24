@@ -74,13 +74,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);
 
-  void NotifyWorkerStarted(const SharedWorkerInstance& instance,
+  void NotifyWorkerStarted(SharedWorkerId shared_worker_id,
                            int worker_process_id,
                            const base::UnguessableToken& dev_tools_token);
-  void NotifyWorkerTerminating(const SharedWorkerInstance& instance);
-  void NotifyClientAdded(const SharedWorkerInstance& instance,
+  void NotifyWorkerTerminating(SharedWorkerId shared_worker_id);
+  void NotifyClientAdded(SharedWorkerId shared_worker_id,
                          GlobalFrameRoutingId render_frame_host_id);
-  void NotifyClientRemoved(const SharedWorkerInstance& instance,
+  void NotifyClientRemoved(SharedWorkerId shared_worker_id,
                            GlobalFrameRoutingId render_frame_host_id);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
@@ -93,6 +93,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Creates a new worker in the creator's renderer process.
   SharedWorkerHost* CreateWorker(
+      SharedWorkerId shared_worker_id,
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
@@ -102,7 +103,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   void StartWorker(
-      const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
       const blink::MessagePortChannel& message_port,
       blink::mojom::FetchClientSettingsObjectPtr
@@ -142,7 +142,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // duplicate OnClientAdded() notifications if the same frame connects multiple
   // times to the same shared worker. Note that this is a situation unique to
   // shared worker and cannot happen with dedicated workers and service workers.
-  base::flat_map<std::pair<SharedWorkerInstance, GlobalFrameRoutingId>, int>
+  base::flat_map<std::pair<SharedWorkerId, GlobalFrameRoutingId>, int>
       shared_worker_client_counts_;
 
   base::ObserverList<Observer> observers_;

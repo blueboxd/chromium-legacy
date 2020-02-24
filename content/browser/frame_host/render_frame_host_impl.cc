@@ -212,7 +212,6 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
@@ -3577,7 +3576,7 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
 }
 
 void RenderFrameHostImpl::EnforceInsecureRequestPolicy(
-    blink::mojom::InsecureRequestPolicy policy) {
+    blink::WebInsecureRequestPolicy policy) {
   frame_tree_node()->SetInsecureRequestPolicy(policy);
 }
 

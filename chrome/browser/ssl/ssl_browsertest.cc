@@ -4519,6 +4519,51 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
   EXPECT_FALSE(state->HasAllowException(https_server_host, tab));
 }
 
+// Verifies that if a bad certificate is seen for a host and the user proceeds
+// through the interstitial, the decision to proceed is not forgotten once blob
+// URLs are loaded (blob loads never have certificate errors).  This is a
+// regression test for https://crbug.com/1049625.
+IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByBlobUrl) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  std::string https_server_host =
+      https_server_expired_.GetURL("/ssl/google.html").host();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  ChromeSSLHostStateDelegate* state =
+      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+          profile->GetSSLHostStateDelegate());
+
+  // Proceed through the interstitial, accepting the broken cert.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ProceedThroughInterstitial(tab);
+  ASSERT_TRUE(state->HasAllowException(https_server_host, tab));
+
+  // Load a blob URL.
+  content::WebContentsConsoleObserver console_observer(tab);
+  console_observer.SetPattern("hello from blob");
+  const char kScript[] = R"(
+      new Promise(function (resolvePromise, rejectPromise) {
+          var blob = new Blob(['console.log("hello from blob")'],
+                              {type : 'application/javascript'});
+          script = document.createElement('script');
+          script.onerror = rejectPromise;
+          script.onload = () => resolvePromise('success');
+          script.src = URL.createObjectURL(blob);
+          document.body.appendChild(script);
+      });
+  )";
+  ASSERT_EQ("success", content::EvalJs(tab, kScript));
+
+  // Verify that the script from the blob has successfully run.
+  console_observer.Wait();
+
+  // Verify that the decision to accept the broken cert has not been revoked
+  // (this is a regression test for https://crbug.com/1049625).
+  EXPECT_TRUE(state->HasAllowException(https_server_host, tab));
+}
+
 // Tests that the SSLStatus of a navigation entry for an SSL
 // interstitial matches the navigation entry once the interstitial is
 // clicked through. https://crbug.com/529456

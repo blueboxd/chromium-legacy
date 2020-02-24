@@ -36,7 +36,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -374,6 +373,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
+    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
+                        OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
@@ -424,6 +425,11 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name,
                                        const std::string& unique_name) {
   web_frame_->SetReplicatedName(blink::WebString::FromUTF8(name));
   unique_name_ = unique_name;
+}
+
+void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  web_frame_->SetReplicatedInsecureRequestPolicy(policy);
 }
 
 void RenderFrameProxy::OnTransferUserActivationFrom(int32_t source_routing_id) {

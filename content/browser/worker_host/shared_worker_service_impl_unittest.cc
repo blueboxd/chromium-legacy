@@ -1272,26 +1272,26 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   ~TestSharedWorkerServiceObserver() override = default;
 
   // SharedWorkerService::Observer:
-  void OnWorkerStarted(const SharedWorkerInstance& instance,
+  void OnWorkerStarted(SharedWorkerId shared_worker_id,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override {
-    EXPECT_TRUE(running_workers_.insert({instance, {}}).second);
+    EXPECT_TRUE(running_workers_.insert({shared_worker_id, {}}).second);
   }
-  void OnBeforeWorkerTerminated(const SharedWorkerInstance& instance) override {
-    EXPECT_EQ(1u, running_workers_.erase(instance));
+  void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) override {
+    EXPECT_EQ(1u, running_workers_.erase(shared_worker_id));
   }
   void OnClientAdded(
-      const SharedWorkerInstance& instance,
+      SharedWorkerId shared_worker_id,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = running_workers_.find(instance);
+    auto it = running_workers_.find(shared_worker_id);
     EXPECT_TRUE(it != running_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_TRUE(clients.insert(client_render_frame_host_id).second);
   }
   void OnClientRemoved(
-      const SharedWorkerInstance& instance,
+      SharedWorkerId shared_worker_id,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = running_workers_.find(instance);
+    auto it = running_workers_.find(shared_worker_id);
     EXPECT_TRUE(it != running_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_EQ(1u, clients.erase(client_render_frame_host_id));
@@ -1307,7 +1307,7 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   }
 
  private:
-  base::flat_map<SharedWorkerInstance, std::set<GlobalFrameRoutingId>>
+  base::flat_map<SharedWorkerId, std::set<GlobalFrameRoutingId>>
       running_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSharedWorkerServiceObserver);

@@ -32,7 +32,7 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
                                           DisplayLockActivationReason reason) {
   if (range.IsNull() || range.IsCollapsed())
     return false;
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       range.GetDocument().LockedDisplayLockCount() ==
           range.GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
@@ -61,7 +61,7 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
 
 bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()))
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     return false;
   DCHECK(!range.IsNull());
   DCHECK(!range.IsCollapsed());
@@ -86,7 +86,7 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
   if (range.IsNull() || range.IsCollapsed())
     return false;
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       range.GetDocument().LockedDisplayLockCount() ==
           range.GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
@@ -114,8 +114,7 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
     DisplayLockActivationReason reason) {
   HeapVector<Member<Element>> elements_to_activate;
   const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       node.GetDocument().LockedDisplayLockCount() ==
           node.GetDocument().DisplayLockBlockingAllActivationCount())
     return elements_to_activate;
@@ -142,8 +141,7 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
 DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     const Node* node,
     bool include_self) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node->GetExecutionContext()))
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     return;
 
   CreateParentFrameScopeIfNeeded(node);
@@ -199,8 +197,7 @@ const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
   auto* element = DynamicTo<Element>(node);
   if (!element)
     return NearestLockedExclusiveAncestor(node);
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       !node.isConnected() || node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;
@@ -219,8 +216,7 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
 
 Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       !node.isConnected() || node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;
@@ -242,8 +238,7 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
 
 Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;
@@ -264,8 +259,7 @@ Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
 
 Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;
@@ -299,8 +293,7 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
 }
 
 bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          node.GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       node.GetDocument().DisplayLockBlockingAllActivationCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
@@ -319,8 +312,7 @@ bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
     const Node& source_node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
-          source_node.GetExecutionContext()))
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     return false;
   const Node* node = &source_node;
 

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browsing_data/core/history_notice_utils.h"
@@ -64,9 +65,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
-#else
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/profile_helper.h"
 #endif
 
@@ -95,15 +94,7 @@ struct SyncConfigInfo {
 };
 
 bool IsSyncSubpage(const GURL& current_url) {
-  if (current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage))
-    return true;
-#if defined(OS_CHROMEOS)
-  if (!chromeos::features::IsSplitSettingsSyncEnabled() &&
-      current_url == chrome::GetOSSettingsUrl(chrome::kSyncSetupSubPage)) {
-    return true;
-  }
-#endif  // defined(OS_CHROMEOS)
-  return false;
+  return current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage);
 }
 
 SyncConfigInfo::SyncConfigInfo()
@@ -893,6 +884,10 @@ void PeopleHandler::InitializeSyncBlocker() {
   if (!service)
     return;
 
+  // The user opened settings directly to the syncSetup sub-page, because they
+  // clicked "Settings" in the browser sync consent dialog or because they
+  // clicked "Review sync options" in the Chrome OS out-of-box experience.
+  // Don't start syncing until they finish setup.
   if (IsSyncSubpage(web_contents->GetVisibleURL())) {
     sync_blocker_ = service->GetSetupInProgressHandle();
   }

@@ -2421,9 +2421,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
   Node* node = &root;
   while (node) {
     auto* element = DynamicTo<Element>(node);
-    if (element &&
-        RuntimeEnabledFeatures::DisplayLockingEnabled(
-            root.GetExecutionContext()) &&
+    if (element && RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() &&
         element->StyleRecalcBlockedByDisplayLock(
             DisplayLockLifecycleTarget::kChildren)) {
       node = FlatTreeTraversal::NextSkippingChildren(*node);
@@ -8452,11 +8450,10 @@ void Document::ProcessDisplayLockActivationObservation(
           DisplayLockActivationReason::kViewportIntersection));
       context->CommitForActivationWithSignal(
           entry->target(), DisplayLockActivationReason::kViewportIntersection);
-    } else if (!DisplayLockContext::IsAttributeVersion(context)) {
-      // In a CSS version, if we're not visible, but are observing viewport
-      // intersections, it means that we're either locked (in which case we
-      // should remain locked), or we've been activated (in which case we should
-      // relock).
+    } else {
+      // If we're not visible, but are observing viewport intersections, it
+      // means that we're either locked (in which case we should remain locked),
+      // or we've been activated (in which case we should relock).
       DCHECK(context->IsLocked() || context->IsActivated());
       if (context->IsLocked())
         continue;

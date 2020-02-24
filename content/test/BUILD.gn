@@ -1854,6 +1854,7 @@ test("content_unittests") {
     "../browser/webrtc/webrtc_internals_unittest.cc",
     "../browser/webui/web_ui_data_source_unittest.cc",
     "../browser/webui/web_ui_message_handler_unittest.cc",
+    "../browser/webui/web_ui_unittest.cc",
     "../browser/worker_host/dedicated_worker_service_impl_unittest.cc",
     "../browser/worker_host/mock_shared_worker.cc",
     "../browser/worker_host/mock_shared_worker.h",

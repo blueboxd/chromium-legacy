@@ -14,37 +14,28 @@
 namespace blink {
 
 class DisplayLockUtilitiesTest : public RenderingTest,
-                                 private ScopedDisplayLockingForTest {
+                                 private ScopedCSSRenderSubtreeForTest {
  public:
   DisplayLockUtilitiesTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedDisplayLockingForTest(true) {}
+        ScopedCSSRenderSubtreeForTest(true) {}
 
-  void LockElement(Element& element,
-                   bool activatable,
-                   bool update_lifecycle = true) {
+  void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("invisible");
+    value.Append("render-subtree: invisible");
     if (!activatable)
       value.Append(" skip-activation");
-    element.setAttribute(html_names::kRendersubtreeAttr,
-                         value.ToAtomicString());
-    if (update_lifecycle)
-      UpdateAllLifecyclePhasesForTest();
+    element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());
+    UpdateAllLifecyclePhasesForTest();
   }
 
-  void CommitElement(Element& element, bool update_lifecycle = true) {
-    element.setAttribute(html_names::kRendersubtreeAttr, "");
-    if (update_lifecycle)
-      UpdateAllLifecyclePhasesForTest();
+  void CommitElement(Element& element) {
+    element.setAttribute(html_names::kStyleAttr, "");
+    UpdateAllLifecyclePhasesForTest();
   }
 };
 
-TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
-  // TODO(vmpstr): Implement for layout ng.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
+TEST_F(DisplayLockUtilitiesTest, DISABLED_ActivatableLockedInclusiveAncestors) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div {
@@ -138,7 +129,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   EXPECT_EQ(result_for_shadow_div.at(0), outer);
 
   // Unlock everything.
-  CommitElement(innermost, false);
+  CommitElement(innermost);
   CommitElement(outer);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
@@ -233,5 +224,4 @@ TEST_F(DisplayLockUtilitiesTest, LockedSubtreeCrossingFrames) {
   EXPECT_FALSE(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*parent));
   EXPECT_FALSE(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*child));
 }
-
 }  // namespace blink

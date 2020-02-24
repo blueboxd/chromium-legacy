@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/browser/shared_worker_service.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -54,14 +55,14 @@ class ServiceWorkerObjectHost;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerServiceImpl;
 
-// The SharedWorkerHost is the interface that represents the browser side of
-// the browser <-> worker communication channel. This is owned by
-// SharedWorkerServiceImpl and destroyed when the connection to the worker in
-// the renderer is lost, or the RenderProcessHost of the worker is destroyed.
+// SharedWorkerHost is the browser-side host of a single shared worker running
+// in the renderer. This class is owned by the SharedWorkerServiceImpl of the
+// current BrowserContext.
 class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
                                         public RenderProcessHostObserver {
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
+                   SharedWorkerId id,
                    const SharedWorkerInstance& instance,
                    RenderProcessHost* worker_process_host);
   ~SharedWorkerHost() override;
@@ -128,6 +129,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   // Returns true if this worker is connected to at least one client.
   bool HasClients() const;
 
+  SharedWorkerId id() const { return id_; }
+
   const SharedWorkerInstance& instance() const { return instance_; }
 
   const base::UnguessableToken& dev_tools_token() const {
@@ -192,7 +195,13 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   mojo::Receiver<blink::mojom::SharedWorkerHost> receiver_{this};
 
   // |service_| owns |this|.
-  SharedWorkerServiceImpl* service_;
+  SharedWorkerServiceImpl* const service_;
+
+  // An identifier for this worker that is unique within a storage partition.
+  SharedWorkerId id_;
+
+  // This holds information used to match a shared worker connection request to
+  // this shared worker.
   SharedWorkerInstance instance_;
   ClientList clients_;
 

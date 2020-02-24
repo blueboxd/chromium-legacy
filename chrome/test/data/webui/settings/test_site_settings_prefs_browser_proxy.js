@@ -28,6 +28,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'fetchBlockAutoplayStatus',
       'fetchZoomLevels',
       'getAllSites',
+      'getRecentSitePermissions',
       'getChooserExceptionList',
       'getDefaultValueForContentType',
       'getFormattedBytes',
@@ -234,6 +235,12 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     });
 
     return Promise.resolve(result);
+  }
+
+  /** @override */
+  getRecentSitePermissions(contentTypes, numSources) {
+    this.methodCalled('getRecentSitePermissions', contentTypes);
+    return this.getResultFor('getRecentSitePermissions');
   }
 
   /** @override */

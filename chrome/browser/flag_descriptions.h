@@ -385,9 +385,6 @@ extern const char kBuiltInModuleInfraDescription[];
 extern const char kBuiltInModuleKvStorageName[];
 extern const char kBuiltInModuleKvStorageDescription[];
 
-extern const char kEnableDisplayLockingName[];
-extern const char kEnableDisplayLockingDescription[];
-
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 

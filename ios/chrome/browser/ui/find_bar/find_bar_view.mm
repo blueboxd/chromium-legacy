@@ -110,7 +110,6 @@ const CGFloat kButtonLength = 44;
     [self.inputField.leadingAnchor
         constraintEqualToAnchor:safeArea.leadingAnchor
                        constant:kPadding],
-
     [self.inputField.trailingAnchor
         constraintEqualToAnchor:self.previousButton.leadingAnchor
                        constant:-kPadding],

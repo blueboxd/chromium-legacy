@@ -356,7 +356,7 @@ HacksAndPatchesCommon() {
 
   # fcntl64() was introduced in glibc 2.28.  Make sure to use fcntl() instead.
   local fcntl_h="${INSTALL_ROOT}/usr/include/fcntl.h"
-  sed -i '{N; s/#ifndef \(__USE_FILE_OFFSET64\nextern int fcntl\)/#ifdef \1/}' \
+  sed -i '{N; s/#ifndef __USE_FILE_OFFSET64\(\nextern int fcntl\)/#if 1\1/}' \
       "${fcntl_h}"
   # On i386, fcntl() was updated in glibc 2.28.
   nm -D --defined-only --with-symbol-versions "${libc_so}" | \

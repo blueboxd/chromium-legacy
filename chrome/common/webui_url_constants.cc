@@ -10,10 +10,6 @@
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "extensions/buildflags/buildflags.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
-#endif
-
 namespace chrome {
 
 // Please keep this file in the same order as the header.
@@ -485,6 +481,9 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kStorageSubPage,
       kStylusSubPage,
       kSwitchAccessSubPage,
+      // kSyncSetupSubPage is both an OS and browser sub page, but prefer the
+      // browser version. Delete this comment when SplitSettingsSync is the
+      // default, because it will introduce an "osSync" sub-page.
       kVPNSettingsSubPage,
       kWiFiSettingsSubPage,
   };
@@ -493,12 +492,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
   std::string::size_type index = sub_page.find('?');
   if (index != std::string::npos)
     sub_page_without_query.resize(index);
-
-  // SplitSettingsSync doesn't use the same sync subpage as browser.
-  if (!chromeos::features::IsSplitSettingsSyncEnabled() &&
-      sub_page_without_query == kSyncSetupSubPage) {
-    return true;
-  }
 
   for (const char* p : kSubPages) {
     if (sub_page_without_query == p)

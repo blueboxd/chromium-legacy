@@ -11,7 +11,6 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -91,7 +90,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       const FeaturePolicy::FeatureState&);
 
   void SetReplicatedSandboxFlags(mojom::blink::WebSandboxFlags);
-  void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
+  void SetInsecureRequestPolicy(WebInsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
 
   // blink::mojom::RemoteFrame overrides:
@@ -103,8 +102,6 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
       mojom::blink::FrameOwnerPropertiesPtr properties) override;
-  void EnforceInsecureRequestPolicy(
-      mojom::blink::InsecureRequestPolicy policy) override;
   void SetReplicatedOrigin(
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;

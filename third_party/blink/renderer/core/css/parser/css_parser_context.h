@@ -120,6 +120,7 @@ class CORE_EXPORT CSSParserContext final
   bool IsUseCounterRecordingEnabled() const { return document_; }
   bool IsDocumentHandleEqual(const Document* other) const;
   const Document* GetDocument() const;
+  const ExecutionContext* GetExecutionContext() const;
 
   network::mojom::CSPDisposition ShouldCheckContentSecurityPolicy() const {
     return should_check_content_security_policy_;

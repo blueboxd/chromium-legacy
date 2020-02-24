@@ -24,8 +24,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-using IconPurpose = blink::Manifest::ImageResource::Purpose;
-
 namespace {
 
 const char kInsecureOrigin[] = "http://www.google.com";
@@ -731,12 +729,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_TRUE(manager->valid_manifest());
     EXPECT_TRUE(manager->has_worker());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
+    EXPECT_FALSE((
+        manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
+    EXPECT_NE(nullptr,
+              (manager->icon(InstallableManager::IconUsage::kPrimary)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
+    EXPECT_EQ(NO_ERROR_DETECTED,
+              (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 
@@ -768,12 +769,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_TRUE(manager->valid_manifest());
     EXPECT_TRUE(manager->has_worker());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
+    EXPECT_FALSE((
+        manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
+    EXPECT_NE(nullptr,
+              (manager->icon(InstallableManager::IconUsage::kPrimary)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
+    EXPECT_EQ(NO_ERROR_DETECTED,
+              (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 
@@ -862,6 +866,34 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckMaskableIcon) {
     NavigateAndRunInstallableManager(browser(), tester.get(),
                                      GetPrimaryIconPreferMaskableParams(),
                                      "/banners/manifest_test_page.html");
+
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_FALSE(tester->primary_icon_url().is_empty());
+    EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->has_maskable_primary_icon());
+
+    EXPECT_FALSE(tester->valid_manifest());
+    EXPECT_FALSE(tester->has_worker());
+    EXPECT_TRUE(tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->badge_icon());
+    EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+  }
+
+  // Checks that we fall back to using an ANY icon if a MASKABLE icon is
+  // requested but the maskable icon is bad.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        browser(), tester.get(), GetPrimaryIconPreferMaskableParams(),
+        GetURLOfPageWithServiceWorkerAndManifest(
+            "/banners/manifest_bad_maskable.json"));
 
     run_loop.Run();
 
@@ -1037,12 +1069,14 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_TRUE(manager->valid_manifest());
   EXPECT_FALSE(manager->has_worker());
   EXPECT_EQ(1u, manager->icons_.size());
-  EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
-  EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
+  EXPECT_FALSE(
+      (manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(InstallableManager::IconUsage::kPrimary)));
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
+  EXPECT_EQ(NO_ERROR_DETECTED,
+            (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
   EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   EXPECT_TRUE(!manager->task_queue_.paused_tasks_.empty());
 
@@ -1091,12 +1125,14 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_TRUE(manager->valid_manifest());
   EXPECT_TRUE(manager->has_worker());
   EXPECT_EQ(1u, manager->icons_.size());
-  EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
-  EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
+  EXPECT_FALSE(
+      (manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(InstallableManager::IconUsage::kPrimary)));
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
+  EXPECT_EQ(NO_ERROR_DETECTED,
+            (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
   EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   EXPECT_FALSE(!manager->task_queue_.paused_tasks_.empty());
 }
@@ -1488,6 +1524,37 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                 {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
                  MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
                  NO_ACCEPTABLE_ICON}),
+            tester->errors());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       DebugModeBadFallbackMaskable) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  InstallableParams params = GetPrimaryIconPreferMaskableParams();
+  params.is_debug_mode = true;
+
+  NavigateAndRunInstallableManager(
+      browser(), tester.get(), params,
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_one_bad_maskable.json"));
+
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+
+  EXPECT_TRUE(tester->primary_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_FALSE(tester->has_maskable_primary_icon());
+
+  EXPECT_FALSE(tester->valid_manifest());
+  EXPECT_FALSE(tester->has_worker());
+  EXPECT_TRUE(tester->badge_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->badge_icon());
+  EXPECT_EQ(std::vector<InstallableStatusCode>{NO_ACCEPTABLE_ICON},
             tester->errors());
 }
 

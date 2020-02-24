@@ -134,10 +134,9 @@ class LoginDisplayHost {
   // Starts web kiosk splash screen.
   virtual void StartWebKiosk(const AccountId& account_id) = 0;
 
-  // Show the gaia dialog. |can_close| determines if the user is allowed to
-  // close the dialog. If available, |account| is preloaded in the gaia dialog.
-  virtual void ShowGaiaDialog(bool can_close,
-                              const AccountId& prefilled_account) = 0;
+  // Show the gaia dialog. If available, |account| is preloaded in the gaia
+  // dialog.
+  virtual void ShowGaiaDialog(const AccountId& prefilled_account) = 0;
 
   // Hide any visible oobe dialog.
   virtual void HideOobeDialog() = 0;

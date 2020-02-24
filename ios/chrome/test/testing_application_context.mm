@@ -189,3 +189,12 @@ TestingApplicationContext::GetNetworkConnectionTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return test_network_connection_tracker_.get();
 }
+
+BrowserPolicyConnectorIOS*
+TestingApplicationContext::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(crbug.com/1055318): Determine what level of support is needed for
+  // unittesting and return a mock or fake here.
+  return nullptr;
+}

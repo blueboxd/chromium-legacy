@@ -177,8 +177,8 @@ class NGInlineNodeTest : public NGLayoutTest {
   Vector<unsigned> ToEndOffsetList(
       NGInlineItemSegments::const_iterator segments) {
     Vector<unsigned> end_offsets;
-    for (const NGInlineItemSegment& segment : segments)
-      end_offsets.push_back(segment.EndOffset());
+    for (const RunSegmenter::RunSegmenterRange& segment : segments)
+      end_offsets.push_back(segment.end);
     return end_offsets;
   }
 

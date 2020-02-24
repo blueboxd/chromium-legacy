@@ -450,7 +450,7 @@
       // Support for CSS intrinsic-* sizing properties.
       // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
       name: "CSSIntrinsicSize",
-      implied_by: ["DisplayLocking"],
+      implied_by: ["CSSRenderSubtree"],
       status: "experimental",
     },
     {
@@ -604,12 +604,6 @@
     {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
-    },
-    {
-      name: "DisplayLocking",
-      origin_trial_feature_name: "DisplayLocking",
-      status: "experimental",
-      implied_by: ["CSSRenderSubtree"],
     },
     {
       name: "DocumentCookie",

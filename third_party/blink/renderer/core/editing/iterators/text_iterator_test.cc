@@ -1034,7 +1034,7 @@ TEST_P(TextIteratorTest, EmitsSpaceForNbsp) {
 TEST_P(TextIteratorTest, IterateWithLockedSubtree) {
   SetBodyContent("<div id='parent'>foo<div id='locked'>text</div>bar</div>");
   auto* locked = GetDocument().getElementById("locked");
-  locked->setAttribute("rendersubtree", "invisible");
+  locked->setAttribute(html_names::kStyleAttr, "render-subtree: invisible");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   auto* parent = GetDocument().getElementById("parent");
   const Position start_position = Position::FirstPositionInNode(*parent);

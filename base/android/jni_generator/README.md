@@ -58,25 +58,15 @@ functions to the others via additional wrapper functions.
 
 ### Calling Java -> Native
 
-There are two ways to call native methods:
-
-**Method 1 - Using the 'native' keyword (soon to be deprecated)**
-
-- Works for both static and non-static methods.
-- Methods marked as `native` will have stubs generated for them that forward
-  calls to C++ function (that you must write).
-- If the first parameter is a C++ object (e.g. `long mNativePointer`), then the
-  bindings will automatically generate the appropriate cast and call into C++
-  code (JNI itself is only C).
-
-**Method 2 - Using an interface annotated with @NativeMethods**
-
 - Declare methods using a nested interface annotated with `@NativeMethods`.
 - The JNI annotation processor generates a class named `${OriginalClassName}Jni`
   with a `get()` method that returns an implementation of the annotated
   interface. The C++ function that it routes to is the same as if it would be
   in the legacy method.
-- See example below for usage.
+- For each JNI method:
+  - C++ stubs are generated that forward to C++ functions that you must write.
+  - If the first parameter is a C++ object (e.g. `long mNativePointer`), then
+    the bindings will generate the appropriate cast and call into C++ code.
 
 To add JNI to a class:
 
@@ -97,32 +87,7 @@ To add JNI to a class:
 
 Example:
 ```java
-// The following classes would have the same generated native bindings (with the
-// exception of differing class names).
-
-// Legacy/deprecated static methods
-class Legacy {
-  static native void nativeFoo();
-  static native double nativeBar(int a, int b);
-
-  // Either the |ClassName| part of the |nativeClassName| parameter name must
-  // match the native class name exactly, or the method annotation
-  // @NativeClassQualifiedName("ClassName") must be used.
-  //
-  // If the native class is nested, use
-  // @NativeClassQualifiedName("FooClassName::BarClassName") and call the
-  // parameter |nativePointer|.
-  native void nativeNonStatic(long nativeClassName);
-
-  void callNatives() {
-    nativeFoo()
-    nativeBar(1,2);
-    nativeNonStatic(mNativePointer);
-  }
-}
-
-// Equivalent using new style:
-class NewStyle {
+class MyClass {
   // Cannot be private. Must be package or public.
   @NativeMethods
   /* package */ interface Natives {
@@ -149,6 +114,13 @@ class NewStyle {
   }
 }
 ```
+
+**Using the 'native' keyword**
+
+- The binding generator also looks for `native` JNI method declarations and
+  generates stubs for them. This used to be the norm, but is now obsolete.
+- If you have native methods that you don't want stubs generated for, you should
+  add @JniIgnoreNatives to the class.
 
 #### Testing Mockable Natives
 

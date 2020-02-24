@@ -89,10 +89,10 @@ let SiteException;
 /**
  * Represents a list of exceptions recently configured for a site, where recent
  * is defined by the maximum number of sources parameter passed to
- * GetRecentSiterPermissions.
- * @typedef {{origin: string,
+ * GetRecentSitePermissions.
+ * @typedef {{origin: !string,
  *            incognito: boolean,
- *            recentPermissions: Array<RawSiteException>}}
+ *            recentPermissions: !Array<!RawSiteException>}}
  */
 let RecentSitePermissions;
 

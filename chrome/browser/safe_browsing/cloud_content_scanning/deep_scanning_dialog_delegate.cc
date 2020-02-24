@@ -514,12 +514,8 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
   bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
   bool malware_ok = true;
   if (response.has_malware_scan_verdict()) {
-    malware_ok = response.malware_scan_verdict().status() ==
-                     MalwareDeepScanningVerdict::SUCCESS &&
-                 response.malware_scan_verdict().verdict() !=
-                     MalwareDeepScanningVerdict::UWS &&
-                 response.malware_scan_verdict().verdict() !=
-                     MalwareDeepScanningVerdict::MALWARE;
+    malware_ok = response.malware_scan_verdict().verdict() ==
+                 MalwareDeepScanningVerdict::CLEAN;
   }
 
   bool file_complies = ResultShouldAllowDataUse(result) && dlp_ok && malware_ok;

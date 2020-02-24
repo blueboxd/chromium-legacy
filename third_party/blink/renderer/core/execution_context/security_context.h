@@ -37,7 +37,7 @@
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -134,10 +134,10 @@ class CORE_EXPORT SecurityContext {
   }
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#insecure-requests-policy
-  void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy policy) {
+  void SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
     insecure_request_policy_ = policy;
   }
-  mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const {
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const {
     return insecure_request_policy_;
   }
 
@@ -180,7 +180,7 @@ class CORE_EXPORT SecurityContext {
   Member<ContentSecurityPolicy> content_security_policy_;
 
   network::mojom::IPAddressSpace address_space_;
-  mojom::blink::InsecureRequestPolicy insecure_request_policy_;
+  WebInsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
   const SecurityContextType context_type_;

@@ -28,8 +28,7 @@
 #include <limits>
 
 #include "base/auto_reset.h"
-#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
@@ -590,9 +589,8 @@ void HTMLFormElement::ParseAttribute(
     // If we're not upgrading insecure requests, and the new action attribute is
     // pointing to an insecure "action" location from a secure page it is marked
     // as "passive" mixed content.
-    if ((GetDocument().GetSecurityContext().GetInsecureRequestPolicy() &
-         mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
-        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone)
+    if (GetDocument().GetSecurityContext().GetInsecureRequestPolicy() &
+        kUpgradeInsecureRequests)
       return;
     KURL action_url = GetDocument().CompleteURL(
         attributes_.Action().IsEmpty() ? GetDocument().Url().GetString()

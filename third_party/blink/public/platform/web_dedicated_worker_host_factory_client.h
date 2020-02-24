@@ -11,6 +11,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 
 namespace base {
 class SingleThreadTaskRunner;

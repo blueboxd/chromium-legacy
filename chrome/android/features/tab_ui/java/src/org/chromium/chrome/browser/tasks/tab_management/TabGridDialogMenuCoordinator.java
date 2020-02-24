@@ -9,10 +9,11 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.support.annotation.IntDef;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;

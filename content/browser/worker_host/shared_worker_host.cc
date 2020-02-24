@@ -88,9 +88,11 @@ class SharedWorkerHost::ScopedProcessHostRef {
 };
 
 SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
+                                   SharedWorkerId id,
                                    const SharedWorkerInstance& instance,
                                    RenderProcessHost* worker_process_host)
     : service_(service),
+      id_(id),
       instance_(instance),
       worker_process_host_(worker_process_host),
       scoped_process_host_ref_(
@@ -117,9 +119,9 @@ SharedWorkerHost::~SharedWorkerHost() {
     // Notify the service that each client still connected will be removed and
     // that the worker will terminate.
     for (const auto& client : clients_) {
-      service_->NotifyClientRemoved(instance_, client.render_frame_host_id);
+      service_->NotifyClientRemoved(id_, client.render_frame_host_id);
     }
-    service_->NotifyWorkerTerminating(instance_);
+    service_->NotifyWorkerTerminating(id_);
   } else {
     // Tell clients that this worker failed to start.
     for (const ClientInfo& info : clients_)
@@ -237,10 +239,10 @@ void SharedWorkerHost::Start(
 
   // Notify the service that the worker was started and that some clients were
   // already connected.
-  service_->NotifyWorkerStarted(instance_, worker_process_host_->GetID(),
+  service_->NotifyWorkerStarted(id_, worker_process_host_->GetID(),
                                 dev_tools_token_);
   for (const auto& client : clients_) {
-    service_->NotifyClientAdded(instance_, client.render_frame_host_id);
+    service_->NotifyClientAdded(id_, client.render_frame_host_id);
   }
 }
 
@@ -436,7 +438,7 @@ void SharedWorkerHost::AddClient(
   // Start() function will handle sending a notification for each existing
   // client.
   if (started_)
-    service_->NotifyClientAdded(instance_, client_render_frame_host_id);
+    service_->NotifyClientAdded(id_, client_render_frame_host_id);
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
@@ -485,7 +487,7 @@ void SharedWorkerHost::OnClientConnectionLost() {
       // Notify the service that a client was removed while the worker was
       // running.
       if (started_) {
-        service_->NotifyClientRemoved(instance_, it->render_frame_host_id);
+        service_->NotifyClientRemoved(id_, it->render_frame_host_id);
       }
       clients_.erase(it);
       break;

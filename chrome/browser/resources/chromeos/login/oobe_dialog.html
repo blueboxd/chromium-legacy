@@ -83,12 +83,12 @@
         <div id="oobe-title" class="slot-container layout vertical
             end-justified">
           <slot name="title">
-            <h1>[[i18nDynamic(locale, titleKey)]]</h1>
+            <h1 class="fallback">[[i18nDynamic(locale, titleKey)]]</h1>
           </slot>
         </div>
         <div id="oobe-subtitle" class="slot-container layout vertical">
           <slot name="subtitle">
-            <div>[[i18nDynamic(locale, subtitleKey)]]</div>
+            <div class="fallback">[[i18nDynamic(locale, subtitleKey)]]</div>
           </slot>
         </div>
         <div id="oobe-progress" class="slot-container layout vertical">

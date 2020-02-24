@@ -129,7 +129,10 @@ js_library("passwords_section") {
     "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
-  externs_list = [ "$externs_path/passwords_private.js" ]
+  externs_list = [
+    "$externs_path/passwords_private.js",
+    "$externs_path/quick_unlock_private.js",
+  ]
 }
 
 js_library("password_edit_dialog") {

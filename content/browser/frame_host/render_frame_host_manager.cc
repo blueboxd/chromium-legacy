@@ -60,7 +60,6 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
@@ -1025,10 +1024,10 @@ void RenderFrameHostManager::OnDidResetContentSecurityPolicy() {
 }
 
 void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
-    blink::mojom::InsecureRequestPolicy policy) {
+    blink::WebInsecureRequestPolicy policy) {
   for (const auto& pair : proxy_hosts_) {
-    pair.second->GetAssociatedRemoteFrame()->EnforceInsecureRequestPolicy(
-        policy);
+    pair.second->Send(new FrameMsg_EnforceInsecureRequestPolicy(
+        pair.second->GetRoutingID(), policy));
   }
 }
 

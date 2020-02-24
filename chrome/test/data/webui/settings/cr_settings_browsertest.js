@@ -1260,6 +1260,35 @@ TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_All', function() {
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/site_settings_page/
+ * recent_site_permissions.js
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsRecentSitePermissionsTest() {}
+
+CrSettingsRecentSitePermissionsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/recent_site_permissions.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    '../test_util.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'test_util.js',
+    'recent_site_permissions_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsRecentSitePermissionsTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/privacy_page/security_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}

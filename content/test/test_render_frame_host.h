@@ -24,7 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 
 namespace net {
@@ -121,8 +120,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void DidChangeOpener(int opener_routing_id);
 
-  void DidEnforceInsecureRequestPolicy(
-      blink::mojom::InsecureRequestPolicy policy);
+  void DidEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame

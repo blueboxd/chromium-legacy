@@ -75,7 +75,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
     // Enable display locking, used in some tests.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "DisplayLocking");
+        switches::kEnableBlinkFeatures, "CSSRenderSubtree");
   }
 
   void RunAriaTest(const base::FilePath::CharType* file_path) {
@@ -2273,7 +2273,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DeleteSelectionCrash) {
   RunHtmlTest(FILE_PATH_LITERAL("delete-selection-crash.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingActivatable) {
+// crbug.com/1053526: Disabled pending the referenced bug fix.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DISABLED_DisplayLockingActivatable) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("activatable.html"));
 }
 

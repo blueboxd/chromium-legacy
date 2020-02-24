@@ -27,7 +27,7 @@ The dialog provides two properties that can be set directly from HTML.
       <!-- Title -->
       <div id="help-dialog-title">
         <slot name="title">
-            <h1>[[i18nDynamic(locale, titleKey)]]</h1>
+            <h1 class="fallback">[[i18nDynamic(locale, titleKey)]]</h1>
         </slot>
       </div>
       <!-- Content to be shown -->

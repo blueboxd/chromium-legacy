@@ -7,8 +7,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_filter.h"
@@ -18,6 +22,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_factory.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_model_associator_client.h"
 
 namespace {
@@ -34,7 +39,16 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 
 void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
                     const base::FilePath& pref_filename,
-                    base::SequencedTaskRunner* pref_io_task_runner) {
+                    base::SequencedTaskRunner* pref_io_task_runner,
+                    policy::BrowserPolicyConnector* policy_connector) {
+  if (policy_connector) {
+    DCHECK(IsEnterprisePolicyEnabled());
+    policy::PolicyService* policy_service =
+        policy_connector->GetPolicyService();
+    factory->SetManagedPolicies(policy_service, policy_connector);
+    factory->SetRecommendedPolicies(policy_service, policy_connector);
+  }
+
   factory->set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
       pref_filename, std::unique_ptr<PrefFilter>(), pref_io_task_runner));
 
@@ -48,9 +62,11 @@ void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
-    const scoped_refptr<PrefRegistry>& pref_registry) {
+    const scoped_refptr<PrefRegistry>& pref_registry,
+    policy::BrowserPolicyConnector* policy_connector) {
   sync_preferences::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, pref_filename, pref_io_task_runner);
+  PrepareFactory(&factory, pref_filename, pref_io_task_runner,
+                 policy_connector);
   return factory.Create(pref_registry.get());
 }
 
@@ -65,7 +81,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
   // on platforms that do not track preference modifications).
   sync_preferences::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, browser_state_path.Append(kPreferencesFilename),
-                 pref_io_task_runner);
+                 pref_io_task_runner, nullptr);
   std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   return pref_service;

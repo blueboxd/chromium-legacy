@@ -140,16 +140,6 @@ Polymer({
     listBlurred_: Boolean,
 
     // <if expr="chromeos">
-    /**
-     * Auth token for retrieving passwords if required by OS.
-     * @private
-     */
-    authToken_: {
-      type: String,
-      value: '',
-      observer: 'onAuthTokenChanged_',
-    },
-
     /** @private */
     showPasswordPromptDialog_: Boolean,
 
@@ -309,24 +299,23 @@ Polymer({
 
   // <if expr="chromeos">
   /**
-   * When |authToken_| changes to a new non-empty value, it means that the
-   * password-prompt-dialog succeeded in creating a fresh token in the
-   * quickUnlockPrivate API. Because new tokens can only ever be created
-   * immediately following a GAIA password check, the passwordsPrivate API can
-   * now safely grant requests for secure data (i.e. saved passwords) for a
-   * limited time. This observer resolves the request, triggering a callback
-   * that requires a fresh auth token to succeed and that was provided to the
-   * BlockingRequestManager by another DOM element seeking secure data.
+   * When this event fired, it means that the password-prompt-dialog succeeded
+   * in creating a fresh token in the quickUnlockPrivate API. Because new tokens
+   * can only ever be created immediately following a GAIA password check, the
+   * passwordsPrivate API can now safely grant requests for secure data (i.e.
+   * saved passwords) for a limited time. This observer resolves the request,
+   * triggering a callback that requires a fresh auth token to succeed and that
+   * was provided to the BlockingRequestManager by another DOM element seeking
+   * secure data.
    *
-   * @param {string} newToken The newly created auth token. Note that its
-   *     precise value is not relevant here, only the facts that it changed and
-   *     that it is non-empty (i.e. not expired).
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e - Contains
+   *     newly created auth token. Note that its precise value is not relevant
+   *     here, only the facts that it's created.
    * @private
    */
-  onAuthTokenChanged_(newToken) {
-    if (newToken) {
-      this.tokenRequestManager_.resolve();
-    }
+  onTokenObtained_(e) {
+    assert(e.detail);
+    this.tokenRequestManager_.resolve();
   },
 
   onPasswordPromptClosed_() {

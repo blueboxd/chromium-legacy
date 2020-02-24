@@ -77,7 +77,6 @@ class PseudoElement;
 class PseudoElementStyleRequest;
 class ResizeObservation;
 class ResizeObserver;
-class ScriptPromise;
 class ScrollIntoViewOptions;
 class ScrollIntoViewOptionsOrBoolean;
 class ScrollToOptions;
@@ -96,7 +95,6 @@ enum class CSSPropertyID;
 enum class CSSValueID;
 enum class DisplayLockActivationReason;
 enum class DisplayLockLifecycleTarget;
-enum class DisplayLockContextCreateMethod;
 
 using ScrollOffset = FloatSize;
 
@@ -946,11 +944,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetNeedsResizeObserverUpdate();
 
   DisplayLockContext* GetDisplayLockContext() const;
-  DisplayLockContext& EnsureDisplayLockContext(DisplayLockContextCreateMethod);
-
-  // Display locking IDL implementation
-  ScriptPromise updateRendering(ScriptState*);
-  void resetSubtreeRendered();
+  DisplayLockContext& EnsureDisplayLockContext();
 
   bool StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget) const;
 

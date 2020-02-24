@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceEntry;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
@@ -233,7 +233,7 @@ public class OfflinePageDownloadBridge {
      */
     @CalledByNative
     public static void showDownloadingToast() {
-        if (CachedFeatureFlags.isDownloadProgressInfoBarEnabled()) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) {
             DownloadManagerService.getDownloadManagerService()
                     .getInfoBarController(false)
                     .onDownloadStarted();

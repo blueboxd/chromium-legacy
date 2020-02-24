@@ -158,7 +158,8 @@
       'filepath': 'ash/',
     },
     'assistant': {
-      'filepath': 'ash/app_list/views/assistant/'\
+      'filepath': 'ash/ambient/ui/.*assistant.*'\
+                  '|ash/app_list/views/assistant/'\
                   '|ash/assistant/'\
                   '|chromeos/assistant/'\
                   '|chromeos/services/assistant/'\
@@ -1546,6 +1547,11 @@
     'push_messaging': {
       'filepath': 'push_messaging'
     },
+    'quick_answers': {
+      'filepath': 'ash/quick_answers/'\
+                  '|chrome/browser/renderer_context_menu/quick_answers.*'\
+                  '|chromeos/components/quick_answers/'
+    },
     'reading_list': {
       'filepath': 'components/reading_list|'\
                   'ios/chrome/browser/reading_list|'\
@@ -2633,6 +2639,7 @@
     'preview_features': ['chrome-lite-pages+watch@google.com'],
     'print_preview': ['print-reviews+preview@chromium.org'],
     'push_messaging': ['peter@chromium.org'],
+    'quick_answers': ['croissant-eng+reviews@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
     'relaunch_notification': ['grt+watch@chromium.org'],
     'remoteplayback': ['mfoltz+watch@chromium.org'],

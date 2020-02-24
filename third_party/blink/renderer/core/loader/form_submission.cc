@@ -30,8 +30,7 @@
 
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 
-#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -213,9 +212,8 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                              ? document.Url().GetString()
                                              : copied_attributes.Action());
 
-  if ((document.GetSecurityContext().GetInsecureRequestPolicy() &
-       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone &&
+  if (document.GetSecurityContext().GetInsecureRequestPolicy() &
+          kUpgradeInsecureRequests &&
       action_url.ProtocolIs("http") &&
       !SecurityOrigin::Create(action_url)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(document,

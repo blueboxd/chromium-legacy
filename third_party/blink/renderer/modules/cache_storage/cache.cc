@@ -298,8 +298,8 @@ class Cache::BarrierCallbackForPut final
                   message.Append(": ");
                   message.Append(error->message);
                 }
-                resolver->Reject(CacheStorageError::CreateException(
-                    error->value, message.ToString()));
+                RejectCacheStorageWithError(resolver, error->value,
+                                            message.ToString());
               }
             },
             method_name_, WrapPersistent(resolver_.Get()),
@@ -743,8 +743,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                   resolver->Resolve();
                   break;
                 default:
-                  resolver->Reject(
-                      CacheStorageError::CreateException(result->get_status()));
+                  RejectCacheStorageWithError(resolver, result->get_status());
                   break;
               }
             } else {
@@ -824,8 +823,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
                   "CacheStorage", "Cache::MatchAllImpl::Callback",
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   CacheStorageTracedValue(result->get_status()));
-              resolver->Reject(
-                  CacheStorageError::CreateException(result->get_status()));
+              RejectCacheStorageWithError(resolver, result->get_status());
             } else {
               TRACE_EVENT_WITH_FLOW1(
                   "CacheStorage", "Cache::MatchAllImpl::Callback",
@@ -940,8 +938,8 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                     message.Append("Cache.delete(): ");
                     message.Append(error->message);
                   }
-                  resolver->Reject(CacheStorageError::CreateException(
-                      error->value, message.ToString()));
+                  RejectCacheStorageWithError(resolver, error->value,
+                                              message.ToString());
                   break;
               }
             } else {
@@ -1092,8 +1090,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
                   "CacheStorage", "Cache::KeysImpl::Callback",
                   TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN, "status",
                   CacheStorageTracedValue(result->get_status()));
-              resolver->Reject(
-                  CacheStorageError::CreateException(result->get_status()));
+              RejectCacheStorageWithError(resolver, result->get_status());
             } else {
               TRACE_EVENT_WITH_FLOW1(
                   "CacheStorage", "Cache::KeysImpl::Callback",

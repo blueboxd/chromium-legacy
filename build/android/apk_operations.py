@@ -66,9 +66,9 @@ def _Colorize(text, style=''):
 def _InstallApk(devices, apk, install_dict):
   def install(device):
     if install_dict:
-      installer.Install(device, install_dict, apk=apk)
+      installer.Install(device, install_dict, apk=apk, permissions=[])
     else:
-      device.Install(apk, allow_downgrade=True, reinstall=True)
+      device.Install(apk, permissions=[], allow_downgrade=True, reinstall=True)
 
   logging.info('Installing %sincremental apk.', '' if install_dict else 'non-')
   device_utils.DeviceUtils.parallel(devices).pMap(install)
@@ -151,6 +151,7 @@ def _InstallBundle(devices, apk_helper_instance, package_name,
 
     device.Install(
         apk_helper_instance,
+        permissions=[],
         modules=modules,
         fake_modules=fake_modules,
         allow_downgrade=True)

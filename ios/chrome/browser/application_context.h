@@ -64,6 +64,7 @@ class VariationsService;
 }
 
 class ApplicationContext;
+class BrowserPolicyConnectorIOS;
 class IOSChromeIOThread;
 class PrefService;
 
@@ -145,6 +146,10 @@ class ApplicationContext {
 
   // Returns the NetworkConnectionTracker instance for this ApplicationContext.
   virtual network::NetworkConnectionTracker* GetNetworkConnectionTracker() = 0;
+
+  // Returns the BrowserPolicyConnectorIOS that starts and manages the policy
+  // system. May be |nullptr| if policy is not enabled.
+  virtual BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

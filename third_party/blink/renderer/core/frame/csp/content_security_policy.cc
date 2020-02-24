@@ -29,7 +29,6 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -158,8 +157,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       sandbox_mask_(mojom::blink::WebSandboxFlags::kNone),
       require_trusted_types_(false),
-      insecure_request_policy_(
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {}
+      insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
 bool ContentSecurityPolicy::IsBound() {
   return delegate_;
@@ -941,13 +939,11 @@ void ContentSecurityPolicy::RequireTrustedTypes() {
 }
 
 void ContentSecurityPolicy::EnforceStrictMixedContentChecking() {
-  insecure_request_policy_ |=
-      mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent;
+  insecure_request_policy_ |= kBlockAllMixedContent;
 }
 
 void ContentSecurityPolicy::UpgradeInsecureRequests() {
-  insecure_request_policy_ |=
-      mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests;
+  insecure_request_policy_ |= kUpgradeInsecureRequests;
 }
 
 static String StripURLForUseInReport(

@@ -116,7 +116,6 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::STORAGE, chrome::kStorageSubPage},
      {ChromePage::STYLUS, chrome::kStylusSubPage},
      {ChromePage::SWITCHACCESS, chrome::kSwitchAccessSubPage},
-     {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage},
      {ChromePage::TETHERSETTINGS, chrome::kTetherSettingsSubPage},
      {ChromePage::WIFI, chrome::kWiFiSettingsSubPage}};
 
@@ -130,7 +129,8 @@ constexpr std::pair<arc::mojom::ChromePage, const char*>
         {ChromePage::ONSTARTUP, chrome::kOnStartupSubPage},
         {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
         {ChromePage::PRIVACY, chrome::kPrivacySubPage},
-        {ChromePage::SEARCH, chrome::kSearchSubPage}};
+        {ChromePage::SEARCH, chrome::kSearchSubPage},
+        {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage}};
 
 constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
     {{ChromePage::ABOUTBLANK, url::kAboutBlankURL},

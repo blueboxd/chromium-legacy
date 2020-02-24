@@ -13,12 +13,14 @@ source_set("prefs") {
   deps = [
     "//base",
     "//components/content_settings/core/browser",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/prefs/ios",
     "//components/proxy_config",
     "//components/search_engines",
     "//components/sync_preferences",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/policy:feature_flags",
   ]
 }
 

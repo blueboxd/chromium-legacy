@@ -10,9 +10,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/scoped_visibility_tracker.h"
 
 // static
@@ -43,6 +51,7 @@ PopupOpenerTabHelper::~PopupOpenerTabHelper() {
 
 void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
   has_opened_popup_since_last_user_gesture_ = true;
+  has_opened_popup_ = true;
   last_popup_open_time_ = tick_clock_->NowTicks();
 }
 
@@ -65,6 +74,28 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(content::WebContents* web_contents,
   visibility_tracker_ = std::make_unique<ui::ScopedVisibilityTracker>(
       tick_clock_,
       web_contents->GetVisibility() != content::Visibility::HIDDEN);
+}
+
+void PopupOpenerTabHelper::WebContentsDestroyed() {
+  // If the user has opened a popup, record the page popup settings ukm.
+  if (has_opened_popup_) {
+    const GURL& url = web_contents()->GetLastCommittedURL();
+    if (!url.is_valid()) {
+      return;
+    }
+
+    const ukm::SourceId source_id =
+        ukm::GetSourceIdForWebContentsDocument(web_contents());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    bool user_allows_popups =
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->GetContentSetting(url, url, ContentSettingsType::POPUPS,
+                                std::string()) == CONTENT_SETTING_ALLOW;
+    ukm::builders::Popup_Page(source_id)
+        .SetAllowed(user_allows_popups)
+        .Record(ukm::UkmRecorder::Get());
+  }
 }
 
 void PopupOpenerTabHelper::OnVisibilityChanged(content::Visibility visibility) {

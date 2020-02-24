@@ -74,7 +74,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   // initialized.
   if (spellcheck::WindowsVersionSupportsSpellchecker()) {
     platform_spell_checker_ = std::make_unique<WindowsSpellChecker>(
-        base::ThreadTaskRunnerHandle::Get(),
         base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()}));
   }
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)

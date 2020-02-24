@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.test;
 
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.Fragment;
 import android.view.View;
@@ -16,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -73,6 +75,8 @@ public class TopControlsTest {
         helper.waitForCallback(0);
     }
 
+    // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @Test
     @SmallTest
     public void testBasic() throws Exception {
@@ -95,15 +99,16 @@ public class TopControlsTest {
         mInitialVisiblePageHeight = getVisiblePageHeight();
         Assert.assertTrue(mInitialVisiblePageHeight > 0);
 
+        // Move by the size of the top-controls.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, -mTopControlsHeight);
+
         // Moving should change the size of the page. Don't attempt to correlate the size as the
         // page doesn't see pixels, and to attempt to compare may result in rounding errors. Poll
         // for this value as there is no good way to detect when done.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                // Move by the size of the top-controls.
-                EventUtils.simulateDragFromCenterOfView(
-                        activity.getWindow().getDecorView(), 0, -mTopControlsHeight);
                 return mInitialVisiblePageHeight != getVisiblePageHeight();
             }
         });
@@ -113,13 +118,14 @@ public class TopControlsTest {
             Assert.assertEquals(View.INVISIBLE, activity.getTopContentsContainer().getVisibility());
         });
 
+        // Move so top-controls are shown again.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, mTopControlsHeight);
+
         // Wait for the page height to match initial height.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                // Move so top-controls are shown again.
-                EventUtils.simulateDragFromCenterOfView(
-                        activity.getWindow().getDecorView(), 0, mTopControlsHeight);
                 return mInitialVisiblePageHeight == getVisiblePageHeight();
             }
         });

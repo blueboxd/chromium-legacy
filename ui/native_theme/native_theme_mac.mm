@@ -299,6 +299,8 @@ NativeThemeMac::NativeThemeMac() {
 //                    }];
   }
 
+  InitializeWebThemeState();
+
   // Add the web native theme as an observer to stay in sync with dark mode,
   // high contrast, and preferred color scheme changes.
   if (features::IsFormControlsRefreshEnabled()) {
@@ -334,6 +336,18 @@ void NativeThemeMac::InitializeDarkModeStateAndObserver() {
         theme->set_preferred_color_scheme(CalculatePreferredColorScheme());
         theme->NotifyObservers();
       }]);
+}
+
+void NativeThemeMac::InitializeWebThemeState() const {
+  if (!features::IsFormControlsRefreshEnabled())
+    return;
+
+  // For FormControlsRefresh, NativeThemeAura is used as web instance so we need
+  // to initialize its state.
+  NativeTheme* web_instance = NativeTheme::GetInstanceForWeb();
+  web_instance->set_use_dark_colors(IsDarkMode());
+  web_instance->set_preferred_color_scheme(CalculatePreferredColorScheme());
+  web_instance->set_high_contrast(IsHighContrast());
 }
 
 }  // namespace ui

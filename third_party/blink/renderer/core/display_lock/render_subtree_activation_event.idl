@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=DisplayLocking
+    RuntimeEnabled=CSSRenderSubtree
 ] interface RenderSubtreeActivationEvent : Event {
     readonly attribute Element activatedElement;
 };

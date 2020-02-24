@@ -36,11 +36,10 @@ Polymer({
 
     /**
      * Authentication token provided by password-prompt-dialog.
-     * @private {string}
+     * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
      */
     authToken_: {
-      type: String,
-      value: '',
+      type: Object,
     },
 
     /**
@@ -264,13 +263,13 @@ Polymer({
     if (this.authToken_) {
       this.browserProxy_.setFeatureEnabledState(
           this.featureToBeEnabledOnceAuthenticated_, true /* enabled */,
-          this.authToken_);
+          this.authToken_.token);
       settings.recordSettingChange();
 
       // Reset |this.authToken_| now that it has been used. This ensures that
       // users cannot keep an old auth token and reuse it on an subsequent
       // request.
-      this.authToken_ = '';
+      this.authToken_ = undefined;
     }
 
     // Either the feature was enabled above or the user canceled the request by
@@ -380,5 +379,13 @@ Polymer({
   onPageContentDataChanged_(newData) {
     this.pageContentData = newData;
     this.leaveNestedPageIfNoHostIsSet_();
+  },
+
+  /**
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
+   * @private
+   */
+  onTokenObtained_(e) {
+    this.authToken_ = e.detail;
   },
 });

@@ -41,11 +41,12 @@ Polymer({
 
     /**
      * Authentication token provided by lock-screen-password-prompt-dialog.
+     * @type {!chrome.quickUnlockPrivate.TokenInfo|undefined}
      */
     authToken: {
-      type: String,
-      value: '',
+      type: Object,
       notify: true,
+      observer: 'onAuthTokenChanged_',
     },
 
     /**
@@ -131,7 +132,10 @@ Polymer({
     },
 
     /** @private */
-    showPasswordPromptDialog_: Boolean,
+    showPasswordPromptDialog_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private */
     showSetupPinDialog_: Boolean,
@@ -169,13 +173,6 @@ Polymer({
 
     if (this.shouldAskForPassword_(newRoute)) {
       this.openPasswordPromptDialog_();
-    } else if (
-        newRoute != settings.routes.FINGERPRINT &&
-        oldRoute != settings.routes.FINGERPRINT) {
-      // If the user navigated away from the lock screen settings page they will
-      // have to re-enter their password. An exception is if they are navigating
-      // to or from the fingerprint subpage.
-      this.setModes_ = undefined;
     }
   },
 
@@ -190,7 +187,7 @@ Polymer({
       target.checked = !target.checked;
       return;
     }
-    this.setLockScreenEnabled(this.authToken, target.checked);
+    this.setLockScreenEnabled(this.authToken.token, target.checked);
   },
 
   /**
@@ -215,10 +212,20 @@ Polymer({
 
   /** @private */
   onSetModesChanged_() {
+    this.maybeReturnToLockPage_();
+
     if (this.shouldAskForPassword_(
             settings.Router.getInstance().getCurrentRoute())) {
       this.showSetupPinDialog_ = false;
       this.openPasswordPromptDialog_();
+    }
+  },
+
+  /** @private */
+  maybeReturnToLockPage_() {
+    const route = settings.Router.getInstance().getCurrentRoute();
+    if (route == settings.routes.FINGERPRINT && !this.setModes_) {
+      settings.Router.getInstance().navigateTo(settings.routes.LOCK_SCREEN);
     }
   },
 
@@ -320,5 +327,33 @@ Polymer({
       return this.i18n('lockScreenOptionsLoginLock');
     }
     return this.i18n('lockScreenOptionsLock');
+  },
+
+  /**
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
+   * @private
+   * */
+  onAuthTokenObtained_(e) {
+    this.authToken = e.detail;
+  },
+
+  /** @private */
+  onAuthTokenChanged_() {
+    if (this.authToken === undefined) {
+      this.setModes_ = undefined;
+      return;
+    }
+    this.setModes_ = (modes, credentials, onComplete) => {
+      this.quickUnlockPrivate.setModes(
+          this.authToken.token, modes, credentials, () => {
+            let result = true;
+            if (chrome.runtime.lastError) {
+              console.error(
+                  'setModes failed: ' + chrome.runtime.lastError.message);
+              result = false;
+            }
+            onComplete(result);
+          });
+    };
   },
 });

@@ -10,8 +10,6 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.graphics.drawable.Animatable2Compat;
-import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +20,8 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;

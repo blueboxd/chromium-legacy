@@ -12,10 +12,11 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CA
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
-import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;

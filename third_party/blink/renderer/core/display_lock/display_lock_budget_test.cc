@@ -19,9 +19,9 @@
 namespace blink {
 
 class DisplayLockBudgetTest : public RenderingTest,
-                              private ScopedDisplayLockingForTest {
+                              private ScopedCSSRenderSubtreeForTest {
  public:
-  DisplayLockBudgetTest() : ScopedDisplayLockingForTest(true) {}
+  DisplayLockBudgetTest() : ScopedCSSRenderSubtreeForTest(true) {}
   void SetUp() override {
     RenderingTest::SetUp();
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
@@ -44,16 +44,15 @@ class DisplayLockBudgetTest : public RenderingTest,
     context->update_budget_ = std::move(budget);
   }
 
-  void LockElement(Element& element, bool update_lifecycle = true) {
-    element.setAttribute(html_names::kRendersubtreeAttr, "invisible");
-    if (update_lifecycle)
-      UpdateAllLifecyclePhasesForTest();
+  void LockElement(Element& element) {
+    element.setAttribute(html_names::kStyleAttr,
+                         "render-subtree: invisible skip-activation");
+    UpdateAllLifecyclePhasesForTest();
   }
 
-  void CommitElement(Element& element, bool update_lifecycle = true) {
-    element.setAttribute(html_names::kRendersubtreeAttr, "");
-    if (update_lifecycle)
-      UpdateAllLifecyclePhasesForTest();
+  void CommitElement(Element& element) {
+    element.setAttribute(html_names::kStyleAttr, "");
+    UpdateAllLifecyclePhasesForTest();
   }
 
  protected:
@@ -77,7 +76,7 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  LockElement(*element, false);
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   UnyieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -120,7 +119,7 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  LockElement(*element, false);
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -291,7 +290,7 @@ TEST_F(DisplayLockBudgetTest,
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  LockElement(*element, false);
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
@@ -334,7 +333,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   )HTML");
 
   auto* element = GetDocument().getElementById("container");
-  LockElement(*element, false);
+  LockElement(*element);
 
   ASSERT_TRUE(element->GetDisplayLockContext());
   YieldingDisplayLockBudget budget(element->GetDisplayLockContext());

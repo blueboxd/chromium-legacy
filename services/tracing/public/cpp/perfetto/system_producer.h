@@ -16,6 +16,13 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemProducer : public PerfettoProducer,
   SystemProducer(PerfettoTaskRunner* task_runner);
   ~SystemProducer() override;
 
+  // Initiate connection to the system service. Should only be called once on
+  // the producer's task runner (while disconnected) and after the thread pool
+  // was initialized.
+  virtual void ConnectToSystemService() = 0;
+
+  // Send the given trigger names to the system service. Should only be called
+  // on the producer's task runner.
   virtual void ActivateTriggers(const std::vector<std::string>& triggers) = 0;
 
   // Since Chrome does not support concurrent tracing sessions, and system

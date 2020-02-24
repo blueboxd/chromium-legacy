@@ -425,8 +425,8 @@ class BoundsAnimationObserver : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override {
     StopObservingImplicitAnimations();
     view_->OnBoundsAnimationCompleted();
-    TRACE_EVENT_ASYNC_END1("ui", "AppList::StateTransitionAnimations", this,
-                           "state", target_state_.value());
+    TRACE_EVENT_NESTABLE_ASYNC_END1("ui", "AppList::StateTransitionAnimations",
+                                    this, "state", target_state_.value());
     target_state_ = base::nullopt;
   }
 
@@ -1705,8 +1705,8 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   animation.SetAnimationMetricsReporter(GetStateTransitionMetricsReporter());
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations",
-                           bounds_animation_observer_.get());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations",
+                                    bounds_animation_observer_.get());
   bounds_animation_observer_->set_target_state(target_state);
   animation.AddObserver(bounds_animation_observer_.get());
   if (animation_observer) {

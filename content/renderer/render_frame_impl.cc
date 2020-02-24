@@ -90,7 +90,6 @@
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/crash_helpers.h"
@@ -6149,7 +6148,9 @@ void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
 
   rect_for_scrolled_focused_editable_node_ = rect;
   has_scrolled_focused_editable_node_into_rect_ = true;
-  if (!GetLocalRootRenderWidget()->HasPendingPageScaleAnimation() &&
+  if (!GetLocalRootRenderWidget()
+           ->layer_tree_host()
+           ->HasPendingPageScaleAnimation() &&
       autofill_client) {
     autofill_client->DidCompleteFocusChangeInFrame();
   }

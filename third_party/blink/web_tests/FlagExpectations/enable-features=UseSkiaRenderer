@@ -15,3 +15,9 @@ crbug.com/1052768 [ Win ] css3/filters/effect-reference-colorspace.html [ Failur
 crbug.com/1052768 [ Linux ] css3/filters/effect-reference-colorspace.html [ Failure Pass ]
 crbug.com/1052768 [ Win ] css3/filters/effect-reference-subregion.html [ Failure Pass ]
 crbug.com/1052768 [ Linux ] css3/filters/effect-reference-subregion.html [ Failure Pass ]
+
+# Flaky on Windows.
+crbug.com/1026375 [ Win ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Failure Pass ]
+crbug.com/1026375 [ Win ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Failure Pass ]
+crbug.com/1026375 [ Win ] media/video-currentTime-delay.html [ Failure Pass ]
+crbug.com/1026375 [ Win ] media/video-pause-immediately.html [ Failure Pass ]

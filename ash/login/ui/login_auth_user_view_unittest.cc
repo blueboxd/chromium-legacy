@@ -144,8 +144,7 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   // Clicking the message triggers |ShowGaiaSignin|.
   EXPECT_CALL(
       *client,
-      ShowGaiaSignin(true /*can_close*/,
-                     user_view->current_user().basic_user_info.account_id));
+      ShowGaiaSignin(user_view->current_user().basic_user_info.account_id));
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   view_->ButtonPressed(online_sign_in_message, event);

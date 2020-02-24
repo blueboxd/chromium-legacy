@@ -35,16 +35,6 @@ Polymer({
     },
 
     /**
-     * Authentication token returned by quickUnlockPrivate.getAuthToken().
-     * Should be passed to API calls which require authentication.
-     * @type {string}
-     */
-    authToken: {
-      type: String,
-      notify: true,
-    },
-
-    /**
      * @private {string}
      */
     inputValue_: {
@@ -101,19 +91,11 @@ Polymer({
   },
 
   /**
-   * The timeout ID to pass to clearTimeout() to cancel auth token
-   * invalidation.
-   * @private {number|undefined}
-   */
-  clearAccountPasswordTimeoutId_: undefined,
-
-  /**
    * Run the account password check.
    * @private
    */
   submitPassword_() {
     this.waitingForPasswordCheck_ = true;
-    clearTimeout(this.clearAccountPasswordTimeoutId_);
 
     const password = this.passwordInput.value;
     // The user might have started entering a password and then deleted it all.
@@ -133,19 +115,8 @@ Polymer({
         return;
       }
 
-      this.authToken = tokenInfo.token;
+      this.fire('token-obtained', tokenInfo);
       this.passwordInvalid_ = false;
-
-      // Clear |this.authToken| after tokenInfo.lifetimeSeconds.
-      // Subtract time from the expiration time to account for IPC delays.
-      // Treat values less than the minimum as 0 for testing.
-      const IPC_SECONDS = 2;
-      const lifetimeMs = tokenInfo.lifetimeSeconds > IPC_SECONDS ?
-          (tokenInfo.lifetimeSeconds - IPC_SECONDS) * 1000 :
-          0;
-      this.clearAccountPasswordTimeoutId_ = setTimeout(() => {
-        this.authToken = '';
-      }, lifetimeMs);
 
       if (this.$.dialog.open) {
         this.$.dialog.close();

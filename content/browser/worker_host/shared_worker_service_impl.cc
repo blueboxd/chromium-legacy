@@ -79,8 +79,7 @@ void SharedWorkerServiceImpl::RemoveObserver(Observer* observer) {
 void SharedWorkerServiceImpl::EnumerateSharedWorkers(Observer* observer) {
   for (const auto& host : worker_hosts_) {
     if (host->started()) {
-      observer->OnWorkerStarted(host->instance(),
-                                host->GetProcessHost()->GetID(),
+      observer->OnWorkerStarted(host->id(), host->GetProcessHost()->GetID(),
                                 host->dev_tools_token());
     }
   }
@@ -196,12 +195,11 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
   SharedWorkerInstance instance(
-      shared_worker_id_generator_.GenerateNextId(), info->url,
-      info->options->type, info->options->credentials, info->options->name,
-      constructor_origin, info->content_security_policy,
+      info->url, info->options->type, info->options->credentials,
+      info->options->name, constructor_origin, info->content_security_policy,
       info->content_security_policy_type, info->creation_address_space,
       creation_context_type);
-  host = CreateWorker(instance,
+  host = CreateWorker(shared_worker_id_generator_.GenerateNextId(), instance,
                       std::move(info->outside_fetch_client_settings_object),
                       client_render_frame_host_id, storage_domain, message_port,
                       std::move(blob_url_loader_factory));
@@ -216,24 +214,26 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
 }
 
 void SharedWorkerServiceImpl::NotifyWorkerStarted(
-    const SharedWorkerInstance& instance,
+    SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  for (Observer& observer : observers_)
-    observer.OnWorkerStarted(instance, worker_process_id, dev_tools_token);
+  for (Observer& observer : observers_) {
+    observer.OnWorkerStarted(shared_worker_id, worker_process_id,
+                             dev_tools_token);
+  }
 }
 
 void SharedWorkerServiceImpl::NotifyWorkerTerminating(
-    const SharedWorkerInstance& instance) {
+    SharedWorkerId shared_worker_id) {
   for (Observer& observer : observers_)
-    observer.OnBeforeWorkerTerminated(instance);
+    observer.OnBeforeWorkerTerminated(shared_worker_id);
 }
 
 void SharedWorkerServiceImpl::NotifyClientAdded(
-    const SharedWorkerInstance& instance,
+    SharedWorkerId shared_worker_id,
     GlobalFrameRoutingId client_render_frame_host_id) {
   auto insertion_result = shared_worker_client_counts_.insert(
-      {{instance, client_render_frame_host_id}, 0});
+      {{shared_worker_id, client_render_frame_host_id}, 0});
 
   int& count = insertion_result.first->second;
   ++count;
@@ -242,15 +242,15 @@ void SharedWorkerServiceImpl::NotifyClientAdded(
   // shared worker.
   if (insertion_result.second) {
     for (Observer& observer : observers_)
-      observer.OnClientAdded(instance, client_render_frame_host_id);
+      observer.OnClientAdded(shared_worker_id, client_render_frame_host_id);
   }
 }
 
 void SharedWorkerServiceImpl::NotifyClientRemoved(
-    const SharedWorkerInstance& instance,
+    SharedWorkerId shared_worker_id,
     GlobalFrameRoutingId client_render_frame_host_id) {
   auto it = shared_worker_client_counts_.find(
-      std::make_pair(instance, client_render_frame_host_id));
+      std::make_pair(shared_worker_id, client_render_frame_host_id));
   DCHECK(it != shared_worker_client_counts_.end());
 
   int& count = it->second;
@@ -262,11 +262,12 @@ void SharedWorkerServiceImpl::NotifyClientRemoved(
   if (count == 0) {
     shared_worker_client_counts_.erase(it);
     for (Observer& observer : observers_)
-      observer.OnClientRemoved(instance, client_render_frame_host_id);
+      observer.OnClientRemoved(shared_worker_id, client_render_frame_host_id);
   }
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
+    SharedWorkerId shared_worker_id,
     const SharedWorkerInstance& instance,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
@@ -286,8 +287,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // because we are about to bounce to the IO thread. If another ConnectToWorker
   // request arrives in the meantime, it finds and reuses the host instead of
   // creating a new host and therefore new SharedWorker thread.
-  auto insertion_result = worker_hosts_.insert(
-      std::make_unique<SharedWorkerHost>(this, instance, worker_process_host));
+  auto insertion_result =
+      worker_hosts_.insert(std::make_unique<SharedWorkerHost>(
+          this, shared_worker_id, instance, worker_process_host));
   DCHECK(insertion_result.second);
   SharedWorkerHost* host = insertion_result.first->get();
 
@@ -335,8 +337,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain,
       base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
-                     weak_factory_.GetWeakPtr(), instance, weak_host,
-                     message_port,
+                     weak_factory_.GetWeakPtr(), weak_host, message_port,
                      std::move(cloned_outside_fetch_client_settings_object)));
 
   // Ensures that WorkerScriptFetchInitiator::Start() doesn't synchronously
@@ -347,7 +348,6 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
 }
 
 void SharedWorkerServiceImpl::StartWorker(
-    const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
     const blink::MessagePortChannel& message_port,
     blink::mojom::FetchClientSettingsObjectPtr

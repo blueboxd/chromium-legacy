@@ -1036,10 +1036,6 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
   return input_handler_->GetFrameSinkIdAtPoint(point, local_point);
 }
 
-bool RenderWidget::HasPendingPageScaleAnimation() const {
-  return layer_tree_host_->HasPendingPageScaleAnimation();
-}
-
 bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,

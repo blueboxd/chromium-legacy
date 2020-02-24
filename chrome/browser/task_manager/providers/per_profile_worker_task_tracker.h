@@ -49,16 +49,16 @@ class PerProfileWorkerTaskTracker
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
 
   // content::SharedWorkerService::Observer:
-  void OnWorkerStarted(const content::SharedWorkerInstance& instance,
+  void OnWorkerStarted(content::SharedWorkerId shared_worker_id,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerTerminated(
-      const content::SharedWorkerInstance& instance) override;
+      content::SharedWorkerId shared_worker_id) override;
   void OnClientAdded(
-      const content::SharedWorkerInstance& instance,
+      content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
   void OnClientRemoved(
-      const content::SharedWorkerInstance& instance,
+      content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
 
   // content::ServiceWorkerContextObserver:
@@ -104,7 +104,7 @@ class PerProfileWorkerTaskTracker
                  content::SharedWorkerService::Observer>
       scoped_shared_worker_service_observer_{this};
 
-  base::flat_map<content::SharedWorkerInstance, std::unique_ptr<WorkerTask>>
+  base::flat_map<content::SharedWorkerId, std::unique_ptr<WorkerTask>>
       shared_worker_tasks_;
 
   // For service workers:

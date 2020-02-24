@@ -556,7 +556,9 @@ def _JetifyArchive(dep_path, output_path):
         _JETIFY_SCRIPT_PATH, '-i', temp_archive.name, '-o', temp_archive.name,
         '-l', 'error'
     ]
-    subprocess.check_call(jetify_cmd)
+    env = os.environ.copy()
+    env['JAVA_HOME'] = build_utils.JAVA_HOME
+    subprocess.check_call(jetify_cmd, env=env)
     with zipfile.ZipFile(temp_archive.name) as zf:
       zf.extractall(output_path)
 

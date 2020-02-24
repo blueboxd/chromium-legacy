@@ -7,20 +7,18 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-
-namespace base {
-class ListValue;
-class Value;
-}
 
 namespace content {
 
@@ -82,6 +80,16 @@ class CONTENT_EXPORT WebUI {
   virtual void RegisterMessageCallback(base::StringPiece message,
                                        const MessageCallback& callback) = 0;
 
+  template <typename... Args>
+  void RegisterHandlerCallback(
+      base::StringPiece message,
+      base::RepeatingCallback<void(Args...)> callback) {
+    RegisterMessageCallback(
+        message, base::BindRepeating(
+                     &Call<std::index_sequence_for<Args...>, Args...>::Impl,
+                     callback, message));
+  }
+
   // This is only needed if an embedder overrides handling of a WebUIMessage and
   // then later wants to undo that, or to route it to a different WebUI object.
   virtual void ProcessWebUIMessage(const GURL& source_url,
@@ -125,6 +133,40 @@ class CONTENT_EXPORT WebUI {
   // Allows mutable access to this WebUI's message handlers for testing.
   virtual std::vector<std::unique_ptr<WebUIMessageHandler>>*
   GetHandlersForTesting() = 0;
+
+ private:
+  template <typename T>
+  static T GetValue(const base::Value& value);
+
+  template <>
+  inline bool GetValue<bool>(const base::Value& value) {
+    return value.GetBool();
+  }
+
+  template <>
+  inline int GetValue<int>(const base::Value& value) {
+    return value.GetInt();
+  }
+
+  template <>
+  inline const std::string& GetValue<const std::string&>(
+      const base::Value& value) {
+    return value.GetString();
+  }
+
+  template <typename Is, typename... Args>
+  struct Call;
+
+  template <size_t... Is, typename... Args>
+  struct Call<std::index_sequence<Is...>, Args...> {
+    static void Impl(base::RepeatingCallback<void(Args...)> callback,
+                     base::StringPiece message,
+                     const base::ListValue* list) {
+      base::span<const base::Value> args = list->GetList();
+      CHECK_EQ(args.size(), sizeof...(Args)) << message;
+      callback.Run(GetValue<Args>(args[Is])...);
+    }
+  };
 };
 
 }  // namespace content

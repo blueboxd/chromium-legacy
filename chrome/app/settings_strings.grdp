@@ -1920,6 +1920,9 @@
   <message name="IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for enabling quickly reconnecting to known Wi-Fi SSIDs.">
     Keep Wi-Fi on during sleep
   </message>
+  <message name="IDS_SETTINGS_PERMISSIONS" desc="Name of the settings page which allows users to manage permissions and site content settings">
+    Permissions and content settings
+  </message>
   <message name="IDS_SETTINGS_SECURITY" desc="Name of the settings page which allows
   users to manage security settings">
     Security
@@ -1974,6 +1977,48 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT" desc="The description of the 'Sync and Google services' row in the privacy section">
     More settings that relate to privacy, security, and data collection
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_NO_CHANGES" desc="Text shown to a user when they have not changed any site permissions instead of showing recently changed permissions">
+    No recently changed permissions
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_AUTOBLOCKED_SENTENCE_START" desc="An indicator that a specific permission has been automatically blocked by the browser, This will be used to start a sentence or by itself">
+    Automatically blocked <ph name="PERMISSION">$1<ex>Notifications</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_BLOCKED_SENTENCE_START" desc="An indicator that a specific permission has been blocked for a website by the user. This will be used to start a sentence or by itself">
+    Blocked <ph name="PERMISSION">$1<ex>Location</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_ALLOWED_SENTENCE_START" desc="An indicator that a specific permission has been allowed for a website by the user. This will be used to start a sentence or by itself">
+    Allowed <ph name="PERMISSION">$1<ex>Camera</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_AUTOBLOCKED" desc="An indicator that a specific permission has been automatically blocked by the browser, This will be used inside a sentance">
+    automatically blocked <ph name="PERMISSION">$1<ex>Notifications</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_BLOCKED" desc="An indicator that a specific permission has been blocked for a website by the user. This will be used inside a sentance">
+    blocked <ph name="PERMISSION">$1<ex>Location</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_CHANGE_ALLOWED" desc="An indicator that a specific permission has been allowed for a website by the user. This will be used inside of a sentance">
+    allowed <ph name="PERMISSION">$1<ex>Camera</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_TWO_ITEMS" desc="A list containing two permissions which have recently changed">
+    <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>Automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE">$2<ex>blocked Location</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_THREE_ITEMS" desc="A list containing three permissions which have recently changed">
+    <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>Automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_1">$2<ex>blocked Location</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_2">$3<ex>allowed Camera</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_OVER_THREE_ITEMS" desc="A list containing three permissions that have recently changed, but indicating that more have also changed recently">
+    <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>Automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_1">$2<ex>blocked Location</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_2">$3<ex>allowed Camera</ex></ph>, and more
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_ONE_ITEM_INCOGNITO" desc="A list containing a single permission which has recently changed in the users incognito session">
+    Current incognito session: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>automatically blocked Notifications</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_TWO_ITEMS_INCOGNITO" desc="A list containing two permissions which have recently changed in the users incognito session">
+    Current incognito session: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_1">$2<ex>blocked Location</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_THREE_ITEMS_INCOGNITO" desc="A list containing three permissions which have recently changed in the users incognito session">
+    Current incognito session: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_1">$2<ex>blocked Location</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_2">$3<ex>allowed Camera</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_RECENT_PERMISSIONS_OVER_THREE_ITEMS_INCOGNITO" desc="A list containing three permissions that have recently changed, but indicating that more have also changed recently">
+    Current incognito session: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START">$1<ex>automatically blocked Notifications</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_1">$2<ex>blocked Location</ex></ph>, <ph name="RECENT_PERMISSIONS_CHANGE_2">$3<ex>allowed Camera</ex></ph>, and more
   </message>
 
   <!-- Reset Settings Page -->
@@ -2322,6 +2367,9 @@
       Allow identifiers for protected content (computer restart may be required)
     </message>
   </if>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_RECENT_ACTIVITY" desc="Label for the section which contains the user's recent permissions changes">
+    Recent activity
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS" desc="Label for the unsandboxed plugin access site settings.">
     Unsandboxed plugin access
   </message>
@@ -3369,7 +3417,7 @@
     <message name="IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT" desc="The link to navigate to the language and input method settings.">
       Change language and input settings
     </message>
-    
+
     <!-- Display -->
     <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
       Displays

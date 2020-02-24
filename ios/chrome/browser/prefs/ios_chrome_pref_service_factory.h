@@ -17,6 +17,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+}
+
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -33,7 +37,8 @@ class PrefRegistrySyncable;
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
-    const scoped_refptr<PrefRegistry>& pref_registry);
+    const scoped_refptr<PrefRegistry>& pref_registry,
+    policy::BrowserPolicyConnector* policy_connector);
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,

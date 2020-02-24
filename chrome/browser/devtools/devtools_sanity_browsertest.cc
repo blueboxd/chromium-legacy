@@ -39,9 +39,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -61,6 +63,8 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -2358,6 +2362,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
 }
 
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::REMOTE_DEBUGGING));
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(
@@ -2368,6 +2374,30 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
   BrowserHandler handler(nullptr, std::string());
   handler.Close();
   ui_test_utils::WaitForBrowserToClose(browser());
+}
+
+class KeepAliveDevToolsTest : public InProcessBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "0");
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(KeepAliveDevToolsTest, KeepsAliveUntilBrowserClose) {
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(BrowserList::GetInstance()->empty());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::REMOTE_DEBUGGING));
+  chrome::NewEmptyWindow(ProfileManager::GetLastUsedProfile());
+  EXPECT_FALSE(BrowserList::GetInstance()->empty());
+  BrowserHandler handler(nullptr, std::string());
+  handler.Close();
+  ui_test_utils::WaitForBrowserToClose();
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::REMOTE_DEBUGGING));
 }
 
 class DevToolsPolicyTest : public InProcessBrowserTest {

@@ -61,6 +61,7 @@ class TestingApplicationContext : public ApplicationContext {
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
+  BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
 
  private:
   base::ThreadChecker thread_checker_;

@@ -2062,7 +2062,6 @@ interface Element : Node
     getter part
     getter prefix
     getter previousElementSibling
-    getter renderSubtree
     getter role
     getter scrollHeight
     getter scrollLeft
@@ -2112,7 +2111,6 @@ interface Element : Node
     method replaceWith
     method requestFullscreen
     method requestPointerLock
-    method resetSubtreeRendered
     method scroll
     method scrollBy
     method scrollIntoView
@@ -2124,7 +2122,6 @@ interface Element : Node
     method setAttributeNodeNS
     method setPointerCapture
     method toggleAttribute
-    method updateRendering
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
@@ -2190,7 +2187,6 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
-    setter renderSubtree
     setter role
     setter scrollLeft
     setter scrollTop

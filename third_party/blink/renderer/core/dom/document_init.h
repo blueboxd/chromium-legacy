@@ -32,8 +32,7 @@
 
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -95,7 +95,7 @@ class CORE_EXPORT DocumentInit final {
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
   mojom::blink::WebSandboxFlags GetSandboxFlags() const;
-  mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const;
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
   bool GrantLoadLocalResources() const { return grant_load_local_resources_; }

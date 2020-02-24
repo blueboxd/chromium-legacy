@@ -2471,41 +2471,6 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->presentation_attribute_style_is_dirty_ = true;
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
-    } else if (RuntimeEnabledFeatures::DisplayLockingEnabled(
-                   GetExecutionContext()) &&
-               name == html_names::kRendersubtreeAttr &&
-               params.old_value != params.new_value &&
-               DisplayLockContext::IsAttributeVersion(
-                   GetDisplayLockContext())) {
-      UseCounter::Count(GetDocument(), WebFeature::kRenderSubtreeAttribute);
-
-      // This is needed to ensure that proper containment is put in place.
-      SetNeedsStyleRecalc(kLocalStyleChange,
-                          StyleChangeReasonForTracing::FromAttribute(name));
-      SpaceSplitString tokens(params.new_value.LowerASCII());
-      uint16_t activation_mask =
-          static_cast<uint16_t>(DisplayLockActivationReason::kAny);
-
-      // Figure out the activation mask.
-      if (tokens.Contains("skip-activation"))
-        activation_mask = 0;
-      if (tokens.Contains("skip-viewport-activation")) {
-        activation_mask &=
-            ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
-      }
-
-      EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
-          .SetActivatable(activation_mask);
-      const bool should_be_invisible = tokens.Contains("invisible");
-      if (should_be_invisible) {
-        if (!GetDisplayLockContext()->IsLocked())
-          GetDisplayLockContext()->StartAcquire();
-      } else {
-        // Getting unlocked.
-        if (GetDisplayLockContext()->IsLocked())
-          GetDisplayLockContext()->StartCommit();
-      }
-
     } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
                name == html_names::kInvisibleAttr &&
                params.old_value != params.new_value) {
@@ -3336,11 +3301,9 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
     // change for children, since this could be the first time we unlocked the
     // context and as a result need to process more of the subtree than we would
     // normally. Note that if this is not the first time, then
-    // AdjustTyleRecalcChangeForChildren() won't do any adjustments.
-    if (!DisplayLockContext::IsAttributeVersion(context) &&
-        !context->IsLocked()) {
+    // AdjustStyleRecalcChangeForChildren() won't do any adjustments.
+    if (!context->IsLocked())
       child_change = context->AdjustStyleRecalcChangeForChildren(child_change);
-    }
   }
 
   if (new_style) {
@@ -4422,7 +4385,7 @@ bool Element::IsAutofocusable() const {
 }
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()) ||
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
       GetDocument().LockedDisplayLockCount() ==
           GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
@@ -4459,7 +4422,7 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
 
 bool Element::DisplayLockPreventsActivation(
     DisplayLockActivationReason reason) const {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()))
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     return false;
 
   if (GetDocument().LockedDisplayLockCount() == 0)
@@ -4845,40 +4808,15 @@ void Element::SetNeedsResizeObserverUpdate() {
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()))
+  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
     return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;
 }
 
-DisplayLockContext& Element::EnsureDisplayLockContext(
-    DisplayLockContextCreateMethod method) {
-  auto& result = *EnsureElementRareData().EnsureDisplayLockContext(
+DisplayLockContext& Element::EnsureDisplayLockContext() {
+  return *EnsureElementRareData().EnsureDisplayLockContext(
       this, GetExecutionContext());
-  result.SetMethod(method);
-  return result;
-}
-
-ScriptPromise Element::updateRendering(ScriptState* script_state) {
-  auto* context = GetDisplayLockContext();
-  if (context)
-    return context->UpdateRendering(script_state);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  auto promise = resolver->Promise();
-  resolver->Resolve();
-  return promise;
-}
-
-void Element::resetSubtreeRendered() {
-  if (auto* context = GetDisplayLockContext()) {
-    context->ClearActivated();
-    // Note that we need to schedule a style invalidation since we may need to
-    // adjust the lock state, which happens during style recalc for
-    // CSS-render-subtree.
-    SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
-  }
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

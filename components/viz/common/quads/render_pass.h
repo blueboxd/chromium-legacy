@@ -54,6 +54,7 @@ class VIZ_COMMON_EXPORT QuadList : public cc::ListContainer<DrawQuad> {
   // This function is used by overlay algorithm to fill the backbuffer with
   // transparent black.
   void ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at);
+  Iterator InsertCopyBeforeDrawQuad(Iterator at, size_t count);
 };
 
 using SharedQuadStateList = cc::ListContainer<SharedQuadState>;

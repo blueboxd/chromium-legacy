@@ -775,12 +775,18 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
     else
       new_users.push_back(UserState(user));
   }
+
+  // Hide gaia signin dialog if it was open due to empty user list and the list
+  // is not empty anymore.
+  const bool hide_gaia_signin = users_.empty() && !new_users.empty() &&
+                                screen_type_ == LockScreen::ScreenType::kLogin;
+
   users_ = std::move(new_users);
 
   // If there are no users, show gaia signin if login.
   if (users.empty() && screen_type_ == LockScreen::ScreenType::kLogin) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        false /*can_close*/, EmptyAccountId() /*prefilled_account*/);
+        EmptyAccountId() /*prefilled_account*/);
     return;
   }
 
@@ -813,6 +819,9 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   // Force layout.
   PreferredSizeChanged();
   Layout();
+
+  if (hide_gaia_signin)
+    Shell::Get()->login_screen_controller()->HideGaiaSignin();
 
   // If one of the child views had focus before we deleted them, then this view
   // will get focused. Move focus back to the primary big view.
@@ -1854,7 +1863,6 @@ void LockContentsView::ShowAuthErrorMessage() {
   if (screen_type_ == LockScreen::ScreenType::kLogin &&
       unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        true /*can_close*/,
         big_view->auth_user()->current_user().basic_user_info.account_id);
     return;
   }

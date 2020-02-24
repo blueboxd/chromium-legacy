@@ -211,7 +211,10 @@ InstallableManager::ValidManifestProperty::ValidManifestProperty() = default;
 InstallableManager::ValidManifestProperty::~ValidManifestProperty() = default;
 
 InstallableManager::IconProperty::IconProperty()
-    : error(NO_ERROR_DETECTED), url(), icon(), fetched(false) {}
+    : error(NO_ERROR_DETECTED),
+      purpose(IconPurpose::ANY),
+      icon(),
+      fetched(false) {}
 
 InstallableManager::IconProperty::IconProperty(IconProperty&& other) = default;
 
@@ -316,36 +319,33 @@ void InstallableManager::GetPrimaryIcon(
           base::BindOnce(OnDidCompleteGetPrimaryIcon, std::move(callback)));
 }
 
-bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {
-  const auto it = icons_.find(purpose);
-  return it != icons_.end() && it->second.fetched;
-}
+bool InstallableManager::IsIconFetchComplete(const IconUsage usage) const {
+  const auto it = icons_.find(usage);
+  if (it == icons_.end() || !it->second.fetched)
+    return false;
 
-bool InstallableManager::IsPrimaryIconFetched(
-    const InstallableParams& params) const {
-  return IsIconFetched(GetPrimaryIconPurpose(params));
-}
-
-void InstallableManager::SetIconFetched(const IconPurpose purpose) {
-  icons_[purpose].fetched = true;
-}
-
-IconPurpose InstallableManager::GetPrimaryIconPurpose(
-    const InstallableParams& params) const {
-  if (params.prefer_maskable_icon) {
-    const auto it = icons_.find(IconPurpose::MASKABLE);
-
-    // If we haven't attempted fetching the maskable icon yet, we still plan
-    // to use that one for primary.
-    if (it == icons_.end() || !it->second.fetched)
-      return IconPurpose::MASKABLE;
-
-    // If fetching was successful, use MASKABLE.
-    if (it->second.error == NO_ERROR_DETECTED)
-      return IconPurpose::MASKABLE;
+  // If we fetched maskable icon, but fetching was not success, do not consider
+  // it's completed since we want to fallback to fetch ANY icon.
+  if (it->second.purpose == IconPurpose::MASKABLE &&
+      it->second.error != NO_ERROR_DETECTED) {
+    return false;
   }
-  // Otherwise fall back to ANY.
-  return IconPurpose::ANY;
+
+  return true;
+}
+
+bool InstallableManager::IsMaskableIconFetched(const IconUsage usage) const {
+  const auto it = icons_.find(usage);
+  if (it == icons_.end() || !it->second.fetched)
+    return false;
+  // if we fetched MASKABLE icon, or fetched ANY icon for fallback, consider
+  // maskable icon is fetched.
+  return it->second.purpose == IconPurpose::MASKABLE ||
+         it->second.purpose == IconPurpose::ANY;
+}
+
+void InstallableManager::SetIconFetched(const IconUsage usage) {
+  icons_[usage].fetched = true;
 }
 
 std::vector<InstallableStatusCode> InstallableManager::GetErrors(
@@ -369,13 +369,17 @@ std::vector<InstallableStatusCode> InstallableManager::GetErrors(
     errors.push_back(worker_->error);
 
   if (params.valid_primary_icon) {
-    IconProperty& icon = icons_[GetPrimaryIconPurpose(params)];
-    if (icon.error != NO_ERROR_DETECTED)
+    IconProperty& icon = icons_[IconUsage::kPrimary];
+    // If the icon is MASKABLE, ignore any error since we want to fallback to
+    // fetch IconPurpose::ANY.
+    if (icon.error != NO_ERROR_DETECTED &&
+        icon.purpose != IconPurpose::MASKABLE) {
       errors.push_back(icon.error);
+    }
   }
 
   if (params.valid_badge_icon) {
-    IconProperty& icon = icons_[IconPurpose::BADGE];
+    IconProperty& icon = icons_[IconUsage::kBadge];
 
     // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a badge
     // in the manifest. Ignore this case since we only want to fail the check if
@@ -412,17 +416,16 @@ InstallableStatusCode InstallableManager::worker_error() const {
   return worker_->error;
 }
 
-InstallableStatusCode InstallableManager::icon_error(
-    const IconPurpose purpose) {
-  return icons_[purpose].error;
+InstallableStatusCode InstallableManager::icon_error(const IconUsage usage) {
+  return icons_[usage].error;
 }
 
-GURL& InstallableManager::icon_url(const IconPurpose purpose) {
-  return icons_[purpose].url;
+GURL& InstallableManager::icon_url(const IconUsage usage) {
+  return icons_[usage].url;
 }
 
-const SkBitmap* InstallableManager::icon(const IconPurpose purpose) {
-  return icons_[purpose].icon.get();
+const SkBitmap* InstallableManager::icon(const IconUsage usage) {
+  return icons_[usage].icon.get();
 }
 
 content::WebContents* InstallableManager::GetWebContents() {
@@ -440,8 +443,9 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          manifest_->fetched &&
          (!params.valid_manifest || valid_manifest_->fetched) &&
          (!params.has_worker || worker_->fetched) &&
-         (!params.valid_primary_icon || IsPrimaryIconFetched(params)) &&
-         (!params.valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
+         (!params.valid_primary_icon ||
+          IsIconFetchComplete(IconUsage::kPrimary)) &&
+         (!params.valid_badge_icon || IsIconFetchComplete(IconUsage::kBadge));
 }
 
 void InstallableManager::Reset() {
@@ -464,9 +468,8 @@ void InstallableManager::Reset() {
 void InstallableManager::SetManifestDependentTasksComplete() {
   valid_manifest_->fetched = true;
   worker_->fetched = true;
-  SetIconFetched(IconPurpose::ANY);
-  SetIconFetched(IconPurpose::BADGE);
-  SetIconFetched(IconPurpose::MASKABLE);
+  SetIconFetched(IconUsage::kPrimary);
+  SetIconFetched(IconUsage::kBadge);
 }
 
 void InstallableManager::CleanupAndStartNextTask() {
@@ -489,13 +492,13 @@ void InstallableManager::RunCallback(
   bool has_maskable_primary_icon = false;
   IconProperty* badge_icon = &null_icon;
 
-  IconPurpose purpose = GetPrimaryIconPurpose(params);
-  if (params.valid_primary_icon && IsIconFetched(purpose)) {
-    primary_icon = &icons_[purpose];
-    has_maskable_primary_icon = (purpose == IconPurpose::MASKABLE);
+  if (params.valid_primary_icon && IsIconFetchComplete(IconUsage::kPrimary)) {
+    primary_icon = &icons_[IconUsage::kPrimary];
+    has_maskable_primary_icon =
+        (primary_icon->purpose == IconPurpose::MASKABLE);
   }
-  if (params.valid_badge_icon && IsIconFetched(IconPurpose::BADGE))
-    badge_icon = &icons_[IconPurpose::BADGE];
+  if (params.valid_badge_icon && IsIconFetchComplete(IconUsage::kBadge))
+    badge_icon = &icons_[IconUsage::kBadge];
 
   InstallableData data = {
       std::move(errors),   manifest_url(),           &manifest(),
@@ -532,21 +535,25 @@ void InstallableManager::WorkOnTask() {
   } else if (!manifest_->fetched) {
     FetchManifest();
   } else if (params.valid_primary_icon && params.prefer_maskable_icon &&
-             !IsIconFetched(IconPurpose::MASKABLE)) {
+             !IsMaskableIconFetched(IconUsage::kPrimary)) {
     CheckAndFetchBestIcon(GetIdealPrimaryAdaptiveLauncherIconSizeInPx(),
                           kMinimumPrimaryAdaptiveLauncherIconSizeInPx,
-                          IconPurpose::MASKABLE);
-  } else if (params.valid_primary_icon && !IsIconFetched(IconPurpose::ANY)) {
+                          IconPurpose::MASKABLE, IconUsage::kPrimary);
+  } else if (params.valid_primary_icon &&
+             !IsIconFetchComplete(IconUsage::kPrimary)) {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
-                          GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);
+                          GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY,
+                          IconUsage::kPrimary);
   } else if (params.valid_manifest && !valid_manifest_->fetched) {
     CheckManifestValid(params.check_webapp_manifest_display,
                        params.prefer_maskable_icon);
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
-  } else if (params.valid_badge_icon && !IsIconFetched(IconPurpose::BADGE)) {
+  } else if (params.valid_badge_icon &&
+             !IsIconFetchComplete(IconUsage::kBadge)) {
     CheckAndFetchBestIcon(GetIdealBadgeIconSizeInPx(),
-                          GetIdealBadgeIconSizeInPx(), IconPurpose::BADGE);
+                          GetIdealBadgeIconSizeInPx(), IconPurpose::BADGE,
+                          IconUsage::kBadge);
   } else {
     NOTREACHED();
   }
@@ -696,11 +703,14 @@ void InstallableManager::OnDidCheckHasServiceWorker(
 
 void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
                                                int minimum_icon_size_in_px,
-                                               const IconPurpose purpose) {
+                                               const IconPurpose purpose,
+                                               const IconUsage usage) {
   DCHECK(!manifest().IsEmpty());
 
-  IconProperty& icon = icons_[purpose];
+  IconProperty& icon = icons_[usage];
   icon.fetched = true;
+  icon.purpose = purpose;
+  icon.error = NO_ERROR_DETECTED;
 
   GURL icon_url = blink::ManifestIconSelector::FindBestMatchingSquareIcon(
       manifest().icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
@@ -713,7 +723,7 @@ void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
         GetWebContents(), icon_url, ideal_icon_size_in_px,
         minimum_icon_size_in_px,
         base::BindOnce(&InstallableManager::OnIconFetched,
-                       weak_factory_.GetWeakPtr(), icon_url, purpose));
+                       weak_factory_.GetWeakPtr(), icon_url, usage));
     if (can_download_icon)
       return;
     icon.error = CANNOT_DOWNLOAD_ICON;
@@ -723,12 +733,12 @@ void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
 }
 
 void InstallableManager::OnIconFetched(const GURL icon_url,
-                                       const IconPurpose purpose,
+                                       const IconUsage usage,
                                        const SkBitmap& bitmap) {
   if (!GetWebContents())
     return;
 
-  IconProperty& icon = icons_[purpose];
+  IconProperty& icon = icons_[usage];
   if (bitmap.drawsNothing()) {
     icon.error = NO_ICON_AVAILABLE;
   } else {

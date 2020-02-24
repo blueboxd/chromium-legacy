@@ -60,8 +60,7 @@ void FakeLocalFrameHost::DidFailLoadWithError(const ::blink::KURL& url,
 
 void FakeLocalFrameHost::DidFocusFrame() {}
 
-void FakeLocalFrameHost::EnforceInsecureRequestPolicy(
-    mojom::InsecureRequestPolicy policy_bitmap) {}
+void FakeLocalFrameHost::EnforceInsecureRequestPolicy(uint8_t policy_bitmap) {}
 
 void FakeLocalFrameHost::EnforceInsecureNavigationsSet(
     const WTF::Vector<uint32_t>& set) {}

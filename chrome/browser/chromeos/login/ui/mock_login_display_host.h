@@ -52,7 +52,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
   MOCK_METHOD1(StartWebKiosk, void(const AccountId&));
-  MOCK_METHOD2(ShowGaiaDialog, void(bool, const AccountId&));
+  MOCK_METHOD1(ShowGaiaDialog, void(const AccountId&));
   MOCK_METHOD0(HideOobeDialog, void());
   MOCK_METHOD1(UpdateOobeDialogState, void(ash::OobeDialogState state));
   MOCK_METHOD0(GetUsers, const user_manager::UserList(void));

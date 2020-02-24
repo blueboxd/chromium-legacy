@@ -452,7 +452,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   int GetScrollbarWidth() {
-    blink::WebView* webview = view()->webview();
+    blink::WebView* webview = view()->GetWebView();
     return webview->MainFrameWidget()->Size().width -
            webview->MainFrame()->ToWebLocalFrame()->VisibleContentRect().width;
   }
@@ -467,7 +467,7 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
     RenderViewImplTest::SetUp();
   }
 
-  blink::WebSettings* settings() { return view()->webview()->GetSettings(); }
+  blink::WebSettings* settings() { return view()->GetWebView()->GetSettings(); }
 
  protected:
   // Blink settings may be specified on the command line, which must
@@ -606,7 +606,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   args.browser_controls_constraint = cc::BrowserControlsState::kHidden;
   args.scroll_gesture_did_end = false;
 
-  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->GetWebView()->MainFrameWidget()->ApplyViewportChanges(args);
   EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Create a new remote child, and get its proxy. Unloading will force creation
@@ -623,7 +623,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
 
   // Reset the flag, make sure both children respond.
   args.is_pinch_gesture_active = false;
-  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->GetWebView()->MainFrameWidget()->ApplyViewportChanges(args);
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
   EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
 }
@@ -1179,7 +1179,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       ReconstructReplicationStateForTesting(frame());
   // replication_state.origin = url::Origin(GURL("http://foo.com"));
   frame()->Unload(kProxyRoutingId, true, replication_state);
-  EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
+  EXPECT_TRUE(view()->GetWebView()->MainFrame()->IsWebRemoteFrame());
 
   // Do the remote-to-local transition for the proxy, which is to create a
   // provisional local frame.
@@ -1219,7 +1219,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
-  EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
+  EXPECT_EQ(device_scale,
+            view()->GetWebView()->ZoomFactorForDeviceScaleFactor());
 
   double device_pixel_ratio;
   base::string16 get_dpr =
@@ -1232,7 +1233,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   base::string16 get_width =
       base::ASCIIToUTF16("Number(document.documentElement.clientWidth)");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
-  EXPECT_EQ(view()->webview()->MainFrameWidget()->Size().width,
+  EXPECT_EQ(view()->GetWebView()->MainFrameWidget()->Size().width,
             width * device_scale);
 }
 
@@ -1304,7 +1305,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   main_frame->Unload(kProxyRoutingId, true,
                      ReconstructReplicationStateForTesting(main_frame));
-  EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
+  EXPECT_TRUE(view()->GetWebView()->MainFrame()->IsWebRemoteFrame());
 }
 
 // Test that our IME backend sends a notification message when the input focus
@@ -2737,8 +2738,8 @@ TEST_F(RenderViewImplBlinkSettingsTest, DefaultPageScaleSettings) {
       "}"
       "</style>");
 
-  EXPECT_EQ(1.f, view()->webview()->PageScaleFactor());
-  EXPECT_EQ(1.f, view()->webview()->MinimumPageScaleFactor());
+  EXPECT_EQ(1.f, view()->GetWebView()->PageScaleFactor());
+  EXPECT_EQ(1.f, view()->GetWebView()->MinimumPageScaleFactor());
 
   WebPreferences prefs;
   prefs.shrinks_viewport_contents_to_fit = true;
@@ -2746,9 +2747,9 @@ TEST_F(RenderViewImplBlinkSettingsTest, DefaultPageScaleSettings) {
   prefs.default_maximum_page_scale_factor = 5.5f;
   view()->SetWebkitPreferences(prefs);
 
-  EXPECT_EQ(1.f, view()->webview()->PageScaleFactor());
-  EXPECT_EQ(1.f, view()->webview()->MinimumPageScaleFactor());
-  EXPECT_EQ(5.5f, view()->webview()->MaximumPageScaleFactor());
+  EXPECT_EQ(1.f, view()->GetWebView()->PageScaleFactor());
+  EXPECT_EQ(1.f, view()->GetWebView()->MinimumPageScaleFactor());
+  EXPECT_EQ(5.5f, view()->GetWebView()->MaximumPageScaleFactor());
 }
 
 TEST_F(RenderViewImplDisableZoomForDSFTest,

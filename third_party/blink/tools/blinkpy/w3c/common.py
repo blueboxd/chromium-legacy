@@ -15,7 +15,8 @@ WPT_GH_REPO_NAME = 'wpt'
 WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_MIRROR_URL = 'https://chromium.googlesource.com/external/github.com/web-platform-tests/wpt.git'
 WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
-WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
+WPT_REVISION_FOOTER = 'WPT-Export-Revision: '
+CHANGE_ID_FOOTER = 'Change-Id: '
 EXPORT_PR_LABEL = 'chromium-export'
 PROVISIONAL_PR_LABEL = 'do not merge yet'
 

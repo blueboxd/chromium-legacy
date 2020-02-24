@@ -65,8 +65,7 @@ class ExportNotifier(object):
                     'Can not retrieve Change-Id for %s.', pr.number)
                 continue
 
-            gerrit_sha = self.wpt_github.extract_metadata(
-                WPT_REVISION_FOOTER + ' ', pr.body)
+            gerrit_sha = self.wpt_github.extract_metadata(WPT_REVISION_FOOTER, pr.body)
             gerrit_dict[gerrit_id] = PRStatusInfo(
                 taskcluster_status['node_id'],
                 taskcluster_status['target_url'],

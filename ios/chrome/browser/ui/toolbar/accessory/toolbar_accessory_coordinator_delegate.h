@@ -9,9 +9,6 @@
 
 @protocol ToolbarAccessoryCoordinatorDelegate
 
-- (void)setHeadersForToolbarAccessoryCoordinator:
-    (ChromeCoordinator*)toolbarAccessoryCoordinator;
-
 - (void)toolbarAccessoryCoordinatorDidDismissUI:
     (ChromeCoordinator*)toolbarAccessoryCoordinator;
 

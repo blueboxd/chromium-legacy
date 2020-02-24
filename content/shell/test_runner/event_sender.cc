@@ -1824,7 +1824,7 @@ void EventSender::ZoomPageIn() {
     content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
     if (main_frame) {
       main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
-          view_proxy->webview()->ZoomLevel() + 1);
+          view_proxy->GetWebView()->ZoomLevel() + 1);
     }
   }
 }
@@ -1837,7 +1837,7 @@ void EventSender::ZoomPageOut() {
     content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
     if (main_frame) {
       main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
-          view_proxy->webview()->ZoomLevel() - 1);
+          view_proxy->GetWebView()->ZoomLevel() - 1);
     }
   }
 }
@@ -2855,11 +2855,11 @@ WebTestDelegate* EventSender::delegate() {
 }
 
 const blink::WebView* EventSender::view() const {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->GetWebView();
 }
 
 blink::WebView* EventSender::view() {
-  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->GetWebView();
 }
 
 blink::WebWidget* EventSender::widget() {

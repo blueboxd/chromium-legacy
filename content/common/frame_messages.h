@@ -558,11 +558,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* name */,
                     std::string /* unique_name */)
 
-// Update a proxy's replicated enforcement of insecure request policy.
-// Used when the frame's policy is changed in another process.
-IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
-                    blink::mojom::InsecureRequestPolicy)
-
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,

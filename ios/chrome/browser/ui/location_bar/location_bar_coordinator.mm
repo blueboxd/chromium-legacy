@@ -168,8 +168,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
   self.omniboxPopupCoordinator = [self.omniboxCoordinator
       createPopupCoordinator:self.popupPresenterDelegate];
-  self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
-  self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
   // Create button factory that wil be used by the ViewController to get

@@ -30,7 +30,7 @@ scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
 
   container_builder_.SetBaseline(
       border_padding_.block_start +
-      ValueForLength(Style().GetVerticalAlignLength(), LayoutUnit()));
+      ValueForLength(Style().GetMathBaseline(), LayoutUnit()));
   return container_builder_.ToBoxFragment();
 }
 

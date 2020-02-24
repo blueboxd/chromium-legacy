@@ -35,7 +35,7 @@ class SVGRadialGradientElement final : public SVGGradientElement {
  public:
   explicit SVGRadialGradientElement(Document&);
 
-  bool CollectGradientAttributes(RadialGradientAttributes&);
+  void CollectGradientAttributes(RadialGradientAttributes&) const;
 
   SVGAnimatedLength* cx() const { return cx_.Get(); }
   SVGAnimatedLength* cy() const { return cy_.Get(); }

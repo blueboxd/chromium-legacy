@@ -10,7 +10,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
-#include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/public/profile.h"
 
 namespace user_prefs {
@@ -81,7 +80,6 @@ class BrowserContextImpl : public content::BrowserContext {
   std::unique_ptr<ResourceContextImpl, content::BrowserThread::DeleteOnIOThread>
       resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
-  SSLHostStateDelegateImpl ssl_host_state_delegate_;
   std::unique_ptr<PrefService> user_pref_service_;
   std::unique_ptr<content::PermissionControllerDelegate>
       permission_controller_delegate_;

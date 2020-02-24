@@ -59,7 +59,9 @@ using signin_metrics::PromoAction;
   self.viewController = [[UserSigninViewController alloc] init];
   self.viewController.delegate = self;
 
-  self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+  self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]
+      initWithBaseViewController:nil
+                         browser:self.browser];
   self.unifiedConsentCoordinator.delegate = self;
 
   // Set UnifiedConsentCoordinator properties.

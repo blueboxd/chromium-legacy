@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/delete_selection_command.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -225,6 +226,15 @@ static Position TrailingWhitespacePosition(const Position& position,
   return Position();
 }
 
+// Workaround: GCC fails to resolve overloaded template functions, passed as
+// parameters of EnclosingNodeType. But it works wrapping that in a utility
+// function.
+#if defined(COMPILER_GCC)
+static bool IsHTMLTableRowElement(const blink::Node* node) {
+  return IsA<HTMLTableRowElement>(node);
+}
+#endif
+
 void DeleteSelectionCommand::InitializePositionData(
     EditingState* editing_state) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
@@ -253,10 +263,18 @@ void DeleteSelectionCommand::InitializePositionData(
   start_root_ = RootEditableElementOf(start);
   end_root_ = RootEditableElementOf(end);
 
+#if defined(COMPILER_GCC)
+  // Workaround. See declaration of IsHTMLTableRowElement
+  start_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(start, &IsHTMLTableRowElement));
+  end_table_row_ =
+      To<HTMLTableRowElement>(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
+#else
   start_table_row_ = To<HTMLTableRowElement>(
       EnclosingNodeOfType(start, &IsA<HTMLTableRowElement>));
   end_table_row_ = To<HTMLTableRowElement>(
       EnclosingNodeOfType(end, &IsA<HTMLTableRowElement>));
+#endif
 
   // Don't move content out of a table cell.
   // If the cell is non-editable, enclosingNodeOfType won't return it by

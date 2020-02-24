@@ -70,8 +70,7 @@ std::unique_ptr<GradientData> LayoutSVGResourceGradient::BuildGradientData(
   // currently working on. Preferably the state validation should have
   // no side-effects though.
   if (should_collect_gradient_attributes_) {
-    if (!CollectGradientAttributes())
-      return gradient_data;
+    CollectGradientAttributes();
     should_collect_gradient_attributes_ = false;
   }
 

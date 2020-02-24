@@ -16,7 +16,6 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -160,10 +159,6 @@ class SharingDeviceRegistrationTest : public testing::Test {
     pref_service_->SetBoolean(prefs::kSharedClipboardEnabled, val);
   }
 
-  void EnableSharedClipboardReceiverFlag() {
-    scoped_feature_list_.InitAndEnableFeature(kSharedClipboardReceiver);
-  }
-
   void RegisterDeviceSync() {
     base::RunLoop run_loop;
     sharing_device_registration_.RegisterDevice(
@@ -247,14 +242,12 @@ class SharingDeviceRegistrationTest : public testing::Test {
 
 TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_True) {
   SetSharedClipboardPolicy(true);
-  EnableSharedClipboardReceiverFlag();
 
   EXPECT_TRUE(sharing_device_registration_.IsSharedClipboardSupported());
 }
 
 TEST_F(SharingDeviceRegistrationTest, IsSharedClipboardSupported_False) {
   SetSharedClipboardPolicy(false);
-  EnableSharedClipboardReceiverFlag();
 
   EXPECT_FALSE(sharing_device_registration_.IsSharedClipboardSupported());
 }

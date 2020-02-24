@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -35,6 +36,7 @@ class ChromeBrowserState;
 // which implement the interface.
 @interface BrowserViewController
     : UIViewController <LogoAnimationControllerOwnerOwner,
+                        FindBarPresentationDelegate,
                         PageInfoPresentation,
                         SyncPresenter,
                         ToolbarCoordinatorDelegate>
@@ -95,6 +97,10 @@ class ChromeBrowserState;
 // The container used for infobar modal overlays.
 @property(nonatomic, strong)
     UIViewController* infobarModalOverlayContainerViewController;
+
+// Presenter used to display accessories over the toolbar (e.g. Find In Page).
+@property(nonatomic, strong)
+    ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
 
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;

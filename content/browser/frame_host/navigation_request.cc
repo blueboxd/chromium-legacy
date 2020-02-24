@@ -1753,7 +1753,7 @@ void NavigationRequest::OnResponseStarted(
       if (cross_origin_embedder_policy ==
           network::mojom::CrossOriginEmbedderPolicy::kNone) {
         OnRequestFailedInternal(
-            network::URLLoaderCompletionStatus(net::ERR_FAILED),
+            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
             false /* skip_throttles */, base::nullopt /* error_page_content */,
             false /* collapse_frame */);
         // DO NOT ADD CODE after this. The previous call to
@@ -1772,7 +1772,7 @@ void NavigationRequest::OnResponseStarted(
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
          blink::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(
-          network::URLLoaderCompletionStatus(net::ERR_FAILED),
+          network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
           false /* skip_throttles */, base::nullopt /* error_page_content */,
           false /* collapse_frame */);
       // DO NOT ADD CODE after this. The previous call to

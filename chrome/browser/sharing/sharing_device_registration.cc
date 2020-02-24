@@ -316,7 +316,7 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
       !pref_service_->GetBoolean(prefs::kSharedClipboardEnabled)) {
     return false;
   }
-  return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
+  return true;
 }
 
 bool SharingDeviceRegistration::IsSmsFetcherSupported() const {

@@ -500,6 +500,11 @@ interface RemoteFrame {
   // navigation.  This matches the in-process frame behavior.
   SetFrameOwnerProperties(FrameOwnerProperties properties);
 
+  // Updates the remote frame's replicated enforcement of insecure request
+  // policy. Used when the frame's policy is changed in another renderer
+  // process. Argument |policy| is a bitfield for InsecureRequestPolicy.
+  EnforceInsecureRequestPolicy(blink.mojom.InsecureRequestPolicy policy);
+
   // Update the replicated origin. Used when the frame is navigated to a
   // new origin.
   SetReplicatedOrigin(url.mojom.Origin origin,

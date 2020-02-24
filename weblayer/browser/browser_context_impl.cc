@@ -18,6 +18,7 @@
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
+#include "weblayer/browser/chrome_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/fake_permission_controller_delegate.h"
 #include "weblayer/public/common/switches.h"
 
@@ -140,7 +141,7 @@ BrowserContextImpl::GetStorageNotificationService() {
 }
 
 content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate() {
-  return &ssl_host_state_delegate_;
+  return ChromeSSLHostStateDelegateFactory::GetForBrowserContext(this);
 }
 
 content::PermissionControllerDelegate*

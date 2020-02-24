@@ -1706,7 +1706,7 @@ void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
 
     bool allowed = web_test_runtime_flags_.plugins_allowed();
     for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-      window->webview()->GetSettings()->SetPluginsEnabled(allowed);
+      window->GetWebView()->GetSettings()->SetPluginsEnabled(allowed);
   }
 }
 
@@ -2167,7 +2167,7 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   }
 
   for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
-    blink::WebFrame* main_frame = window->webview()->MainFrame();
+    blink::WebFrame* main_frame = window->GetWebView()->MainFrame();
     // TODO(lukasza): Need to make this work for remote frames.
     if (main_frame->IsWebLocalFrame()) {
       bool screen_orientation_changed =
@@ -2264,7 +2264,7 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
   OnWebTestRuntimeFlagsChanged();
 
   for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-    window->webview()->AcceptLanguagesChanged();
+    window->GetWebView()->AcceptLanguagesChanged();
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
@@ -2373,7 +2373,7 @@ void TestRunner::SetPluginsAllowed(bool allowed) {
   web_test_runtime_flags_.set_plugins_allowed(allowed);
 
   for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
-    window->webview()->GetSettings()->SetPluginsEnabled(allowed);
+    window->GetWebView()->GetSettings()->SetPluginsEnabled(allowed);
 
   OnWebTestRuntimeFlagsChanged();
 }

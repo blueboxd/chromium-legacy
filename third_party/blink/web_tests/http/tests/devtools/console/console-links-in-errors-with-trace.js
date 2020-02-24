@@ -12,8 +12,12 @@
   var messages = Console.ConsoleView.instance()._visibleViewMessages;
 
   TestRunner.runTestSuite([
-    function testClickRelativeLink(next) {
-      var clickTarget = messages[0].element().querySelectorAll('.console-message-text .devtools-link')[1];
+    async function testClickRelativeLink(next) {
+      // Ordering is important here, as accessing the element the first time around
+      // triggers live location creation and updates which we need to await properly.
+      const element = messages[0].element();
+      await TestRunner.waitForPendingLiveLocationUpdates();
+      const clickTarget = element.querySelectorAll('.console-message-text .devtools-link')[1];
       TestRunner.addResult('Clicking link ' + clickTarget.textContent);
       UI.inspectorView._tabbedPane.once(UI.TabbedPane.Events.TabSelected).then(() => {
         TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened.');

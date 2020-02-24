@@ -11,14 +11,15 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/prefs/pref_member.h"
 #include "components/undo/undo_manager.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -91,6 +92,7 @@ class PasswordManagerPresenter
   // Undoes the last saved password or exception removal.
   void UndoRemoveSavedPasswordOrException();
 
+#if !defined(OS_ANDROID)
   // Requests to reveal the plain text password corresponding to |sort_key|. If
   // |sort_key| is a valid key into |password_map_|, runs |callback| with the
   // corresponding value, or nullopt otherwise.
@@ -98,7 +100,9 @@ class PasswordManagerPresenter
   // instead.
   void RequestPlaintextPassword(
       const std::string& sort_key,
+      password_manager::PlaintextReason reason,
       base::OnceCallback<void(base::Optional<base::string16>)> callback) const;
+#endif
 
   // Wrapper around |PasswordStore::AddLogin| that adds the corresponding undo
   // action to |undo_manager_|.

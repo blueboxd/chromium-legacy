@@ -63,7 +63,7 @@ std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {
   std::vector<blink::WebView*> result;
   for (WebViewTestProxy* proxy : interfaces_->GetWindowList())
-    result.push_back(proxy->webview());
+    result.push_back(proxy->GetWebView());
   return result;
 }
 

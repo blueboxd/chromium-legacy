@@ -3878,11 +3878,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-    {"shared-clipboard-receiver",
-     flag_descriptions::kSharedClipboardReceiverName,
-     flag_descriptions::kSharedClipboardReceiverDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharedClipboardReceiver)},
-
     {"shared-clipboard-ui", flag_descriptions::kSharedClipboardUIName,
      flag_descriptions::kSharedClipboardUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharedClipboardUI)},

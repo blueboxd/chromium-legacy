@@ -25,29 +25,29 @@
   var viewportMessagesCount;
 
   var testSuite = [
-    function testSelectionSingleLineText(next) {
+    async function testSelectionSingleLineText(next) {
       viewport.invalidate();
       viewport.forceScrollItemToBeFirst(0);
       viewportMessagesCount = viewport.lastVisibleIndex() - viewport.firstVisibleIndex() + 1;
-      selectMessages(middleMessage, 2, middleMessage, 7);
+      await selectMessages(middleMessage, 2, middleMessage, 7);
       dumpSelectionText();
       next();
     },
 
-    function testReversedSelectionSingleLineText(next) {
-      selectMessages(middleMessage, 7, middleMessage, 2);
+    async function testReversedSelectionSingleLineText(next) {
+      await selectMessages(middleMessage, 7, middleMessage, 2);
       dumpSelectionText();
       next();
     },
 
-    function testSelectionMultiLineText(next) {
-      selectMessages(middleMessage - 1, 4, middleMessage + 1, 7);
+    async function testSelectionMultiLineText(next) {
+      await selectMessages(middleMessage - 1, 4, middleMessage + 1, 7);
       dumpSelectionText();
       next();
     },
 
-    function testSimpleVisibleSelection(next) {
-      selectMessages(middleMessage - 3, 6, middleMessage + 2, 6);
+    async function testSimpleVisibleSelection(next) {
+      await selectMessages(middleMessage - 3, 6, middleMessage + 2, 6);
       dumpSelectionModel();
       next();
     },
@@ -77,14 +77,14 @@
       next();
     },
 
-    function testShiftClickSelectionOver(next) {
-      emulateShiftClickOnMessage(minimumViewportMessagesCount);
+    async function testShiftClickSelectionOver(next) {
+      await emulateShiftClickOnMessage(minimumViewportMessagesCount);
       dumpSelectionModel();
       next();
     },
 
-    function testShiftClickSelectionBelow(next) {
-      emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
+    async function testShiftClickSelectionBelow(next) {
+      await emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
       dumpSelectionModel();
       next();
     },
@@ -96,20 +96,20 @@
       next();
     },
 
-    function testReversedVisibleSelection(next) {
-      selectMessages(middleMessage + 1, 6, middleMessage - 4, 6);
+    async function testReversedVisibleSelection(next) {
+      await selectMessages(middleMessage + 1, 6, middleMessage - 4, 6);
       dumpSelectionModel();
       next();
     },
 
-    function testShiftClickReversedSelectionOver(next) {
-      emulateShiftClickOnMessage(minimumViewportMessagesCount);
+    async function testShiftClickReversedSelectionOver(next) {
+      await emulateShiftClickOnMessage(minimumViewportMessagesCount);
       dumpSelectionModel();
       next();
     },
 
-    function testShiftClickReversedSelectionBelow(next) {
-      emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
+    async function testShiftClickReversedSelectionBelow(next) {
+      await emulateShiftClickOnMessage(messagesCount - minimumViewportMessagesCount);
       dumpSelectionModel();
       next();
     },
@@ -196,7 +196,7 @@
     TestRunner.addResult('Selected text:<<<EOL\n' + text + '\nEOL');
   }
 
-  function emulateShiftClickOnMessage(messageIndex) {
+  async function emulateShiftClickOnMessage(messageIndex) {
     viewport.refresh();
     var selection = window.getSelection();
     if (!selection || !selection.rangeCount) {
@@ -205,11 +205,13 @@
     }
     viewport.forceScrollItemToBeFirst(Math.max(messageIndex - minimumViewportMessagesCount / 2, 0));
     var element = consoleView.itemElement(messageIndex).element();
+    // Console messages contain live locations.
+    await TestRunner.waitForPendingLiveLocationUpdates();
     selection.setBaseAndExtent(selection.anchorNode, selection.anchorOffset, element, 0);
     viewport.refresh();
   }
 
-  function selectMessages(fromMessage, fromTextOffset, toMessage, toTextOffset) {
+  async function selectMessages(fromMessage, fromTextOffset, toMessage, toTextOffset) {
     if (Math.abs(toMessage - fromMessage) > minimumViewportMessagesCount) {
       TestRunner.addResult(String.sprintf(
           'FAILURE: Cannot select more than %d messages (requested to select from %d to %d',
@@ -219,7 +221,7 @@
     }
     viewport.forceScrollItemToBeFirst(Math.min(fromMessage, toMessage));
 
-    ConsoleTestRunner.selectConsoleMessages(fromMessage, fromTextOffset, toMessage, toTextOffset);
+    await ConsoleTestRunner.selectConsoleMessages(fromMessage, fromTextOffset, toMessage, toTextOffset);
     viewport.refresh();
   }
 })();

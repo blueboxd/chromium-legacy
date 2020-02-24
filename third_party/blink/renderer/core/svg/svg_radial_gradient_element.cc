@@ -130,8 +130,8 @@ static void SetGradientAttributes(const SVGGradientElement& element,
     attributes.SetFr(radial.fr()->CurrentValue());
 }
 
-bool SVGRadialGradientElement::CollectGradientAttributes(
-    RadialGradientAttributes& attributes) {
+void SVGRadialGradientElement::CollectGradientAttributes(
+    RadialGradientAttributes& attributes) const {
   DCHECK(GetLayoutObject());
 
   VisitedSet visited;
@@ -143,10 +143,12 @@ bool SVGRadialGradientElement::CollectGradientAttributes(
     visited.insert(current);
 
     current = current->ReferencedElement();
-    if (!current || visited.Contains(current))
+    // Ignore the referenced gradient element if it is not attached.
+    if (!current || !current->GetLayoutObject())
       break;
-    if (!current->GetLayoutObject())
-      return false;
+    // Cycle detection.
+    if (visited.Contains(current))
+      break;
   }
 
   // Handle default values for fx/fy
@@ -155,8 +157,6 @@ bool SVGRadialGradientElement::CollectGradientAttributes(
 
   if (!attributes.HasFy())
     attributes.SetFy(attributes.Cy());
-
-  return true;
 }
 
 bool SVGRadialGradientElement::SelfHasRelativeLengths() const {

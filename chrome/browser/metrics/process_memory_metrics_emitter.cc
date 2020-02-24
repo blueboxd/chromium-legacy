@@ -757,7 +757,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 
   if (memory_dump_in_progress_ || get_process_urls_in_progress_)
     return;
-  DCHECK(global_dump_);
+  if (!global_dump_)
+    return;
 
   uint32_t private_footprint_total_kb = 0;
   uint32_t renderer_private_footprint_total_kb = 0;
@@ -908,8 +909,6 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     // processes.
     per_tab_metrics.RecordPmfs(GetUkmRecorder());
   }
-
-  global_dump_ = nullptr;
 }
 
 namespace {

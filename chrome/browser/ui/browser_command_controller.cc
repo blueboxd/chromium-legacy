@@ -80,6 +80,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
+#include "components/session_manager/core/session_manager.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -472,6 +473,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3:
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_4:
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_5:
       ExecuteVisitDesktopCommand(id, window()->GetNativeWindow());
       break;
 #endif
@@ -958,8 +961,19 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
+  // The VisitDesktop command is only supported for up to 5 logged in users
+  // because that's the max number of user sessions. If that number is increased
+  // the IDC_VISIT_DESKTOP_OF_LRU_USER_ command ids should be updated as well.
+  // crbug.com/940461
+  static_assert(
+      session_manager::kMaximumNumberOfUserSessions <=
+          IDC_VISIT_DESKTOP_OF_LRU_USER_LAST -
+              IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT + 2,
+      "The max number of user sessions exceeds the number of users supported.");
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_2, true);
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
+  command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_4, true);
+  command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_5, true);
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);

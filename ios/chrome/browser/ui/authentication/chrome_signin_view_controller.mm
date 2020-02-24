@@ -692,7 +692,9 @@ enum AuthenticationState {
     // The user can refuse to sign-in into a managed account, so the state
     // returns to "IdentityPicker". In that case, there is no need to create a
     // new UnifiedConsentCoordinator. The current one should be used.
-    _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+    _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]
+        initWithBaseViewController:nil
+                           browser:self.browser];
     _unifiedConsentCoordinator.delegate = self;
     if (_selectedIdentity)
       _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;

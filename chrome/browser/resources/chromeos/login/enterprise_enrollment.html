@@ -134,17 +134,17 @@
           <hd-iron-icon slot="oobe-icon"
               icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
           </hd-iron-icon>
-          <div slot="footer" class="flex layout vertical center end-justified">
-            <!-- Hide the subtitle if the domain could not be determined. -->
-            <div hidden="[[isEmpty_(enrolledDomain_)]]" class="self-start">
-                <html-echo content=
-                    "[[successText_(locale, deviceName_, enrolledDomain_)]]">
-                </html-echo>
-                <!-- Attestation-based enrollment happens automatically and may
-                      not be wanted by the user. Simple warning. -->
-                <div hidden="[[!isAutoEnroll_]]"
-                    >[[i18nDynamic(locale, 'oauthEnrollAbeSuccessSupport')]]</div>
+          <!-- Hide the subtitle if the domain could not be determined. -->
+          <div hidden="[[isEmpty_(enrolledDomain_)]]" class="self-start"
+              slot="subtitle">
+            <div>[[successText_(locale, deviceName_, enrolledDomain_)]]</div>
+            <!-- Attestation-based enrollment happens automatically and may
+                 not be wanted by the user. Simple warning. -->
+            <div hidden="[[!isAutoEnroll_]]"
+               >[[i18nDynamic(locale, 'oauthEnrollAbeSuccessSupport')]]
             </div>
+          </div>
+          <div slot="footer" class="flex layout vertical center end-justified">
             <img srcset="images/enrollment_success_illustration_1x.png 1x,
                     images/enrollment_success_illustration_2x.png 2x"
                  i18n-values="alt:enrollmentSuccessIllustrationTitle"

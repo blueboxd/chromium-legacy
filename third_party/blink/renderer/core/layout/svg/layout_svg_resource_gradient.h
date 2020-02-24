@@ -47,7 +47,7 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
  protected:
   virtual SVGUnitTypes::SVGUnitType GradientUnits() const = 0;
   virtual AffineTransform CalculateGradientTransform() const = 0;
-  virtual bool CollectGradientAttributes() = 0;
+  virtual void CollectGradientAttributes() = 0;
   virtual scoped_refptr<Gradient> BuildGradient() const = 0;
 
   static GradientSpreadMethod PlatformSpreadMethodFromSVGType(

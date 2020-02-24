@@ -84,15 +84,19 @@ std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
       return model;
     auto* menu = new MultiUserContextMenuChromeos(window);
     model.reset(menu);
+    int command_id = IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT;
     for (size_t user_index = 1; user_index < logged_in_users.size();
          ++user_index) {
+      if (command_id > IDC_VISIT_DESKTOP_OF_LRU_USER_LAST) {
+        break;
+      }
       const user_manager::UserInfo* user_info = logged_in_users[user_index];
       menu->AddItem(
-          user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
-                          : IDC_VISIT_DESKTOP_OF_LRU_USER_3,
+          command_id,
           l10n_util::GetStringFUTF16(
               IDS_VISIT_DESKTOP_OF_LRU_USER, user_info->GetDisplayName(),
               base::ASCIIToUTF16(user_info->GetDisplayEmail())));
+      ++command_id;
     }
   }
   return model;
@@ -101,13 +105,15 @@ std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
 void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
   switch (command_id) {
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
-    case IDC_VISIT_DESKTOP_OF_LRU_USER_3: {
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_3:
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_4:
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_5: {
       const user_manager::UserList logged_in_users =
           user_manager::UserManager::Get()->GetLRULoggedInUsers();
       // When running the multi user mode on Chrome OS, windows can "visit"
       // another user's desktop.
       const AccountId account_id =
-          logged_in_users[IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1 : 2]
+          logged_in_users[command_id - IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT + 1]
               ->GetAccountId();
       base::OnceCallback<void(bool, bool)> on_accept =
           base::Bind(&OnAcceptTeleportWarning, account_id, window);

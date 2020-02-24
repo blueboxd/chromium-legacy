@@ -1366,7 +1366,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_frame->InitializeBlameContext(nullptr);
 
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
-      render_view->webview(), render_frame,
+      render_view->GetWebView(), render_frame,
       render_frame->blink_interface_registry_.get(), opener,
       // This conversion is a little sad, as this often comes from a
       // WebString...
@@ -1394,7 +1394,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
   // WebViewImpl's DidAttachLocalMainFrame().
-  render_view->webview()->DidAttachLocalMainFrame();
+  render_view->GetWebView()->DidAttachLocalMainFrame();
 
   // The RenderWidget should start with valid VisualProperties, including a
   // non-zero size. While RenderWidget would not normally receive IPCs and
@@ -1992,7 +1992,7 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
     PepperPluginInstanceImpl* plugin) {
   // Get the URL of the main frame if possible.
   blink::WebURL main_frame_url;
-  WebFrame* main_frame = render_view()->webview()->MainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
   if (main_frame->IsWebLocalFrame())
     main_frame_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
 
@@ -2397,7 +2397,7 @@ void RenderFrameImpl::OnContextMenuClosed(
       frame_->SendPings(custom_context.link_followed);
   }
 
-  render_view()->webview()->DidCloseContextMenu();
+  render_view()->GetWebView()->DidCloseContextMenu();
 }
 
 void RenderFrameImpl::OnCustomContextMenuAction(
@@ -2411,7 +2411,7 @@ void RenderFrameImpl::OnCustomContextMenuAction(
       client->OnMenuAction(custom_context.request_id, action);
   } else {
     // Internal request, forward to WebKit.
-    render_view_->webview()->PerformCustomContextMenuAction(action);
+    render_view_->GetWebView()->PerformCustomContextMenuAction(action);
   }
 }
 
@@ -2669,41 +2669,41 @@ void RenderFrameImpl::OnAdvanceFocus(blink::mojom::FocusType type,
   RenderFrameProxy* source_frame =
       RenderFrameProxy::FromRoutingID(source_routing_id);
   if (!source_frame) {
-    render_view_->webview()->SetInitialFocus(
+    render_view_->GetWebView()->SetInitialFocus(
         type == blink::mojom::FocusType::kBackward);
     return;
   }
 
-  render_view_->webview()->AdvanceFocusAcrossFrames(
+  render_view_->GetWebView()->AdvanceFocusAcrossFrames(
       type, source_frame->web_frame(), frame_);
 }
 
 void RenderFrameImpl::OnTextTrackSettingsChanged(
     const FrameMsg_TextTrackSettings_Params& params) {
   DCHECK(!frame_->Parent());
-  if (!render_view_->webview())
+  if (!render_view_->GetWebView())
     return;
 
   if (params.text_tracks_enabled) {
-    render_view_->webview()->GetSettings()->SetTextTrackKindUserPreference(
+    render_view_->GetWebView()->GetSettings()->SetTextTrackKindUserPreference(
         WebSettings::TextTrackKindUserPreference::kCaptions);
   } else {
-    render_view_->webview()->GetSettings()->SetTextTrackKindUserPreference(
+    render_view_->GetWebView()->GetSettings()->SetTextTrackKindUserPreference(
         WebSettings::TextTrackKindUserPreference::kDefault);
   }
-  render_view_->webview()->GetSettings()->SetTextTrackBackgroundColor(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackBackgroundColor(
       WebString::FromUTF8(params.text_track_background_color));
-  render_view_->webview()->GetSettings()->SetTextTrackFontFamily(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackFontFamily(
       WebString::FromUTF8(params.text_track_font_family));
-  render_view_->webview()->GetSettings()->SetTextTrackFontStyle(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackFontStyle(
       WebString::FromUTF8(params.text_track_font_style));
-  render_view_->webview()->GetSettings()->SetTextTrackFontVariant(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackFontVariant(
       WebString::FromUTF8(params.text_track_font_variant));
-  render_view_->webview()->GetSettings()->SetTextTrackTextColor(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackTextColor(
       WebString::FromUTF8(params.text_track_text_color));
-  render_view_->webview()->GetSettings()->SetTextTrackTextShadow(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackTextShadow(
       WebString::FromUTF8(params.text_track_text_shadow));
-  render_view_->webview()->GetSettings()->SetTextTrackTextSize(
+  render_view_->GetWebView()->GetSettings()->SetTextTrackTextSize(
       WebString::FromUTF8(params.text_track_text_size));
 }
 
@@ -4934,7 +4934,7 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::EncryptedMediaClient() {
 }
 
 blink::WebString RenderFrameImpl::UserAgentOverride() {
-  if (!render_view_->webview() || !render_view_->webview()->MainFrame() ||
+  if (!render_view_->GetWebView() || !render_view_->GetWebView()->MainFrame() ||
       render_view_->renderer_preferences_.user_agent_override.empty()) {
     return blink::WebString();
   }
@@ -4943,10 +4943,10 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
   // WebDocumentLoader associated with it, so the checks below are not valid.
   // Temporarily return early and fix properly as part of
   // https://crbug.com/426555.
-  if (render_view_->webview()->MainFrame()->IsWebRemoteFrame())
+  if (render_view_->GetWebView()->MainFrame()->IsWebRemoteFrame())
     return blink::WebString();
   WebLocalFrame* main_frame =
-      render_view_->webview()->MainFrame()->ToWebLocalFrame();
+      render_view_->GetWebView()->MainFrame()->ToWebLocalFrame();
 
   WebDocumentLoader* document_loader = main_frame->GetDocumentLoader();
   InternalDocumentStateData* internal_data =
@@ -5306,7 +5306,7 @@ void RenderFrameImpl::UpdateStateForCommit(
   UpdateNavigationHistory(item, commit_type);
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
-    render_view_->webview()->ResetScrollAndScaleState();
+    render_view_->GetWebView()->ResetScrollAndScaleState();
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
   if (!frame_->Parent()) {  // Only for top frames.
@@ -5341,13 +5341,13 @@ void RenderFrameImpl::UpdateStateForCommit(
   // existing autoplay flags on the Page. This is because flags are stored at
   // the page level so subframes would only add to them.
   if (!frame_->Parent() && !navigation_state->WasWithinSameDocument()) {
-    render_view_->webview()->ClearAutoplayFlags();
+    render_view_->GetWebView()->ClearAutoplayFlags();
   }
 
   // Set the correct autoplay flags on the Page and wipe the cached origin so
   // this will not be used incorrectly.
   if (url::Origin(frame_->GetSecurityOrigin()) == autoplay_flags_.first) {
-    render_view_->webview()->AddAutoplayFlags(autoplay_flags_.second);
+    render_view_->GetWebView()->AddAutoplayFlags(autoplay_flags_.second);
     autoplay_flags_.first = url::Origin();
   }
 }
@@ -5505,7 +5505,7 @@ bool RenderFrameImpl::SwapIn() {
     // its main frame, and the WebFrameWidget was previously initialized when
     // the frame was created, so we can call WebViewImpl's
     // DidAttachLocalMainFrame().
-    render_view_->webview()->DidAttachLocalMainFrame();
+    render_view_->GetWebView()->DidAttachLocalMainFrame();
   }
 
   return true;
@@ -6172,7 +6172,7 @@ void RenderFrameImpl::InitializeMediaStreamDeviceObserver() {
 void RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
     const mojom::CommitNavigationParams& commit_params) {
-  DCHECK(render_view_->webview());
+  DCHECK(render_view_->GetWebView());
 
   render_view_->history_list_offset_ =
       commit_params.current_history_list_offset;

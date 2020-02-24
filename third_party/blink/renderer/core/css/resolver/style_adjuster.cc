@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -772,6 +773,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // https://drafts.csswg.org/css-display/#unbox-mathml
       style.SetDisplay(EDisplay::kNone);
     }
+    if (auto* space = DynamicTo<MathMLSpaceElement>(*element))
+      space->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
   }
 
   // If this node is sticky it marks the creation of a sticky subtree, which we

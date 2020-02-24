@@ -54,6 +54,7 @@ namespace {
 constexpr int kOldEnoughForDemographicsUserBirthYear = 1983;
 
 constexpr char kTestUser[] = "test_user@gmail.com";
+constexpr char kTestCacheGuid[] = "test_cache_guid";
 
 // Now time in string format.
 constexpr char kNowTimeInStringFormat[] = "23 Mar 2019 16:00:00 UDT";
@@ -231,6 +232,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void InitializeForNthSync() {
     // Set first sync time before initialize to simulate a complete sync setup.
     SyncPrefs sync_prefs(prefs());
+    sync_prefs.SetCacheGuid(kTestCacheGuid);
+    sync_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
     sync_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetSyncRequested(true);
     sync_prefs.SetSelectedTypes(
@@ -387,13 +390,18 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   CreateService(ProfileSyncService::MANUAL_START);
 
   SyncPrefs sync_prefs(prefs());
-  base::Time now = base::Time::Now();
-  sync_prefs.SetLastSyncedTime(now);
   sync_prefs.SetSyncRequested(true);
   sync_prefs.SetSelectedTypes(
       /*keep_everything_synced=*/true,
       /*registered_types=*/UserSelectableTypeSet::All(),
       /*selected_types=*/UserSelectableTypeSet::All());
+
+  // Mimic a sync cycle (transport-only) having completed earlier.
+  const base::Time kLastSyncedTime = base::Time::Now();
+  sync_prefs.SetLastSyncedTime(kLastSyncedTime);
+  sync_prefs.SetCacheGuid(kTestCacheGuid);
+  sync_prefs.SetBirthday(FakeSyncEngine::kTestBirthday);
+
   service()->Initialize();
 
   EXPECT_EQ(SyncService::DisableReasonSet(), service()->GetDisableReasons());
@@ -404,10 +412,9 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   EXPECT_FALSE(service()->IsSyncFeatureActive());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
-  // The last sync time shouldn't be cleared.
-  // TODO(zea): figure out a way to check that the directory itself wasn't
-  // cleared.
-  EXPECT_EQ(now, sync_prefs.GetLastSyncedTime());
+  // The local sync data shouldn't be cleared.
+  EXPECT_EQ(kTestCacheGuid, sync_prefs.GetCacheGuid());
+  EXPECT_EQ(kLastSyncedTime, sync_prefs.GetLastSyncedTime());
 }
 
 // Verify that the SetSetupInProgress function call updates state

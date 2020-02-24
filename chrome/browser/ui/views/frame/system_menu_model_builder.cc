@@ -165,16 +165,19 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
     return;
 
   model->AddSeparator(ui::NORMAL_SEPARATOR);
-  DCHECK_LE(logged_in_users.size(), 3u);
+  int command_id = IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT;
   for (size_t user_index = 1; user_index < logged_in_users.size();
        ++user_index) {
+    if (command_id > IDC_VISIT_DESKTOP_OF_LRU_USER_LAST) {
+      break;
+    }
     const user_manager::UserInfo* user_info = logged_in_users[user_index];
     model->AddItem(
-        user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2
-                        : IDC_VISIT_DESKTOP_OF_LRU_USER_3,
+        command_id,
         l10n_util::GetStringFUTF16(
             IDS_VISIT_DESKTOP_OF_LRU_USER, user_info->GetDisplayName(),
             base::ASCIIToUTF16(user_info->GetDisplayEmail())));
+    ++command_id;
   }
 #endif
 }

@@ -5,39 +5,39 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_COORDINATOR_H_
 
-#import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 #include <memory>
 
-class ChromeBrowserState;
-@class CommandDispatcher;
 @protocol OmniboxPopupPresenterDelegate;
 @protocol OmniboxFocuser;
 class OmniboxPopupViewIOS;
-class WebStateList;
 
 // Coordinator for the Omnibox Popup.
-@interface OmniboxPopupCoordinator : NSObject
+@interface OmniboxPopupCoordinator : ChromeCoordinator
 
-- (instancetype)initWithPopupView:
-    (std::unique_ptr<OmniboxPopupViewIOS>)popupView NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)
+    initWithBaseViewController:(UIViewController*)viewController
+                       browser:(Browser*)browser
+                     popupView:(std::unique_ptr<OmniboxPopupViewIOS>)popupView
+    NS_DESIGNATED_INITIALIZER;
 
-// BrowserState.
-@property(nonatomic, assign) ChromeBrowserState* browserState;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // Positioner for the popup.
 @property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> presenterDelegate;
 // Whether this coordinator has results to show.
 @property(nonatomic, assign, readonly) BOOL hasResults;
 // Whether the popup is open.
 @property(nonatomic, assign, readonly) BOOL isOpen;
-// The dispatcher for this view controller.
-@property(nonatomic, readwrite, weak) CommandDispatcher* dispatcher;
-// The web state list this coordinator is handling.
-@property(nonatomic, assign) WebStateList* webStateList;
-
-- (void)start;
-- (void)stop;
 
 @end
 

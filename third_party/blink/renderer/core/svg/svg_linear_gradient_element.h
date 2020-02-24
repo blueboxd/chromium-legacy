@@ -35,7 +35,7 @@ class SVGLinearGradientElement final : public SVGGradientElement {
  public:
   explicit SVGLinearGradientElement(Document&);
 
-  bool CollectGradientAttributes(LinearGradientAttributes&);
+  void CollectGradientAttributes(LinearGradientAttributes&) const;
 
   SVGAnimatedLength* x1() const { return x1_.Get(); }
   SVGAnimatedLength* y1() const { return y1_.Get(); }

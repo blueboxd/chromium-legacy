@@ -740,7 +740,7 @@ WebWidgetTestProxy* TestRunnerForSpecificView::main_frame_render_widget() {
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {
-  return web_view_test_proxy_->webview();
+  return web_view_test_proxy_->GetWebView();
 }
 
 WebTestDelegate* TestRunnerForSpecificView::delegate() {

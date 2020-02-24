@@ -122,13 +122,12 @@ const CGFloat kAnimationDuration = 0.15;
     [weakSelf.presentedViewController.view removeFromSuperview];
     [weakSelf.presentedViewController removeFromParentViewController];
     [weakSelf.backgroundView removeFromSuperview];
+    weakSelf.backgroundView = nil;
+    weakSelf.presenting = NO;
     if ([weakSelf.delegate
             respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
       [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
     }
-    weakSelf.backgroundView = nil;
-    weakSelf.presenting = NO;
-    [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
   };
   if (animated) {
     void (^animation)();

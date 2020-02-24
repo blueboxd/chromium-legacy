@@ -241,7 +241,7 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   // main frame is remote, and doesn't have a corresponding RenderWidget.
   // Currently none of those tests are run out of headless mode.
   blink::WebFrame* frame =
-      web_widget_test_proxy->GetWebViewTestProxy()->webview()->MainFrame();
+      web_widget_test_proxy->GetWebViewTestProxy()->GetWebView()->MainFrame();
   if (frame->IsWebLocalFrame()) {
     test_runner::WebWidgetTestProxy* root_widget =
         GetWebWidgetTestProxy(frame->ToWebLocalFrame());

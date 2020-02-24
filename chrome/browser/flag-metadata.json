@@ -485,7 +485,7 @@
   {
     "name": "click-to-call-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "click-to-open-pdf",
@@ -3267,12 +3267,12 @@
   {
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "sharing-derive-vapid-key",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "sharing-device-expiration",

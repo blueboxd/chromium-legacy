@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
@@ -34,8 +35,9 @@
 
 @implementation UnifiedConsentCoordinator
 
-- (instancetype)init {
-  self = [super init];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _unifiedConsentViewController = [[UnifiedConsentViewController alloc] init];
     _unifiedConsentViewController.delegate = self;

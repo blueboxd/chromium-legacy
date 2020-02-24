@@ -1046,5 +1046,14 @@
       default_value: "false",
       inherited: false,
     },
+    {
+      name: "MathBaseline",
+      field_template: "external",
+      default_value: "Length()",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
+      type_name: "Length",
+      field_group: "*",
+      getter: "GetMathBaseline",
+    },
   ],
 }

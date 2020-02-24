@@ -407,7 +407,7 @@ void TextInputController::ForceTextInputStateUpdate() {
 }
 
 blink::WebView* TextInputController::view() {
-  return web_view_test_proxy_->webview();
+  return web_view_test_proxy_->GetWebView();
 }
 
 blink::WebInputMethodController*

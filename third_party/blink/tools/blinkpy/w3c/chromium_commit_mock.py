@@ -44,6 +44,8 @@ class MockChromiumCommit(object):
 
     def body(self):
         # The final newline is intentionally added to match the real behavior.
+        if not self.change_id():
+            return self._body + '\n'
         return self._body + '\n\nChange-Id: ' + self.change_id() + '\n'
 
     def message(self):

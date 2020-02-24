@@ -74,7 +74,7 @@ blink::WebString WebViewTestProxy::AcceptLanguages() {
 }
 
 void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
-  GetTestRunner()->SetFocus(webview(), true);
+  GetTestRunner()->SetFocus(GetWebView(), true);
   RenderViewImpl::DidFocus(calling_frame);
 }
 
@@ -88,7 +88,7 @@ void WebViewTestProxy::Reset() {
     widget_proxy->Reset();
   }
 
-  for (blink::WebFrame* frame = webview()->MainFrame(); frame;
+  for (blink::WebFrame* frame = GetWebView()->MainFrame(); frame;
        frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame())
       delegate_->GetWebWidgetTestProxy(frame->ToWebLocalFrame())->Reset();

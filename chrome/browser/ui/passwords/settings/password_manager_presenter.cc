@@ -345,6 +345,7 @@ void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
 #if !defined(OS_ANDROID)  // This is never called on Android.
 void PasswordManagerPresenter::RequestPlaintextPassword(
     const std::string& sort_key,
+    password_manager::PlaintextReason reason,
     base::OnceCallback<void(base::Optional<base::string16>)> callback) const {
   auto it = password_map_.find(sort_key);
   if (it == password_map_.end()) {
@@ -369,9 +370,12 @@ void PasswordManagerPresenter::RequestPlaintextPassword(
 
   // Call back the front end to reveal the password.
   std::move(callback).Run(form.password_value);
+  auto metric_type =
+      reason == password_manager::PlaintextReason::kCopy
+          ? password_manager::metrics_util::ACCESS_PASSWORD_COPIED
+          : password_manager::metrics_util::ACCESS_PASSWORD_VIEWED;
   UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.AccessPasswordInSettings",
-      password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      "PasswordManager.AccessPasswordInSettings", metric_type,
       password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
 }
 #endif

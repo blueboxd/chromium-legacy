@@ -95,6 +95,8 @@ IN_PROC_BROWSER_TEST_F(SystemMenuModelBuilderMultiUserTest,
   // Settings window cannot be teleported.
   EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_2));
   EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_3));
+  EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_4));
+  EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_5));
 }
 
 }  // namespace

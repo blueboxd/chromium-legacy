@@ -266,10 +266,10 @@ void SVGPatternElement::CollectPatternAttributes(
     // from that element to override values this pattern didn't set.
     current = current->ReferencedElement();
 
-    // Only consider attached SVG pattern elements.
+    // Ignore the referenced pattern element if it is not attached.
     if (!current || !current->GetLayoutObject())
       break;
-    // Cycle detection
+    // Cycle detection.
     if (processed_patterns.Contains(current))
       break;
   }

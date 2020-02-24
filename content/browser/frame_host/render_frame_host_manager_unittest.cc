@@ -87,21 +87,6 @@ void VerifyPageFocusMessage(TestRenderWidgetHost* twh, bool expected_focus) {
   EXPECT_EQ(expected_focus, focus_message->focused());
 }
 
-// Helper function for strict mixed content checking tests.
-void CheckInsecureRequestPolicyIPC(
-    TestRenderFrameHost* rfh,
-    blink::mojom::InsecureRequestPolicy expected_param,
-    int expected_routing_id) {
-  const IPC::Message* message =
-      rfh->GetProcess()->sink().GetUniqueMessageMatching(
-          FrameMsg_EnforceInsecureRequestPolicy::ID);
-  ASSERT_TRUE(message);
-  EXPECT_EQ(expected_routing_id, message->routing_id());
-  FrameMsg_EnforceInsecureRequestPolicy::Param params;
-  EXPECT_TRUE(FrameMsg_EnforceInsecureRequestPolicy::Read(message, &params));
-  EXPECT_EQ(expected_param, std::get<0>(params));
-}
-
 class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
@@ -2917,6 +2902,53 @@ TEST_P(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
+// This class intercepts RenderFrameProxyHost creations, and overrides their
+// respective blink::mojom::RemoteFrame instances.
+class InsecureRequestPolicyProxyObserver {
+ public:
+  InsecureRequestPolicyProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        base::BindRepeating(&InsecureRequestPolicyProxyObserver::
+                                RenderFrameProxyHostCreatedCallback,
+                            base::Unretained(this)));
+  }
+  ~InsecureRequestPolicyProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        RenderFrameProxyHost::CreatedCallback());
+  }
+  blink::mojom::InsecureRequestPolicy GetRequestPolicy(
+      RenderFrameProxyHost* proxy_host) {
+    return remote_frames_[proxy_host]->enforce_insecure_request_policy();
+  }
+
+ private:
+  // Stub out remote frame mojo binding. Intercepts calls to
+  // EnforceInsecureRequestPolicy and marks the message as received.
+  class RemoteFrame : public content::FakeRemoteFrame {
+   public:
+    explicit RemoteFrame(RenderFrameProxyHost* render_frame_proxy_host) {
+      Init(render_frame_proxy_host->GetRemoteAssociatedInterfacesTesting());
+    }
+
+    void EnforceInsecureRequestPolicy(
+        blink::mojom::InsecureRequestPolicy policy) override {
+      enforce_insecure_request_policy_ = policy;
+    }
+    blink::mojom::InsecureRequestPolicy enforce_insecure_request_policy() {
+      return enforce_insecure_request_policy_;
+    }
+
+   private:
+    blink::mojom::InsecureRequestPolicy enforce_insecure_request_policy_;
+  };
+
+  void RenderFrameProxyHostCreatedCallback(RenderFrameProxyHost* proxy_host) {
+    remote_frames_[proxy_host] = std::make_unique<RemoteFrame>(proxy_host);
+  }
+
+  std::map<RenderFrameProxyHost*, std::unique_ptr<RemoteFrame>> remote_frames_;
+};
+
 // Tests that frame proxies receive updates when a frame's enforcement
 // of insecure request policy changes.
 TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
@@ -2924,6 +2956,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   const GURL kUrl1("http://www.google.test");
   const GURL kUrl2("http://www.google2.test");
   const GURL kUrl3("http://www.google2.test/foo");
+  InsecureRequestPolicyProxyObserver observer;
 
   contents()->NavigateAndCommit(kUrl1);
 
@@ -2959,9 +2992,9 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   RenderFrameProxyHost* proxy_to_child =
       root->render_manager()->GetRenderFrameProxyHost(
           child_host->GetSiteInstance());
-  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
-      child_host, blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
-      proxy_to_child->GetRoutingID()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
+            observer.GetRequestPolicy(proxy_to_child));
   EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
             root->current_replication_state().insecure_request_policy);
 
@@ -2978,10 +3011,9 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent);
   RenderFrameProxyHost* proxy_to_parent =
       child->GetRenderFrameProxyHost(main_test_rfh()->GetSiteInstance());
-  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
-      main_test_rfh(),
-      blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
-      proxy_to_parent->GetRoutingID()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
+            observer.GetRequestPolicy(proxy_to_parent));
   EXPECT_EQ(
       blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
       root->child_at(0)->current_replication_state().insecure_request_policy);
@@ -2990,10 +3022,9 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   // when the child navigates.
   main_test_rfh()->GetProcess()->sink().ClearMessages();
   NavigationSimulator::NavigateAndCommitFromDocument(kUrl3, child_host);
-  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
-      main_test_rfh(),
-      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
-      proxy_to_parent->GetRoutingID()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
+            observer.GetRequestPolicy(proxy_to_parent));
   EXPECT_EQ(
       blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
       root->child_at(0)->current_replication_state().insecure_request_policy);

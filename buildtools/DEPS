@@ -22,7 +22,7 @@ vars = {
   # once libassistant's copy of buildtools rolls up to the rename.
   'libcxx_revision_v2':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
   'libcxxabi_revision_v2':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
-  'libunwind_revision_v2':    'd999d54f4bca789543a2eb6c995af2d9b5a1f3ed',
+  'libunwind_revision_v2':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 deps = {

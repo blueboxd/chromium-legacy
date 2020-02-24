@@ -24,37 +24,40 @@
 
   TestRunner.evaluateInPage('boo()', step1);
 
-  function step1() {
-    dumpConsoleMessageURLs();
+  async function step1() {
+    await dumpConsoleMessageURLs();
 
     TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step2);
     var frameworkRegexString = 'foo\\.js';
     Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
   }
 
-  function step2() {
-    dumpConsoleMessageURLs();
+  async function step2() {
+    await dumpConsoleMessageURLs();
     TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step3);
     var frameworkRegexString = 'foo\\.js|boo\\.js';
     Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
   }
 
-  function step3() {
-    dumpConsoleMessageURLs();
+  async function step3() {
+    await dumpConsoleMessageURLs();
     TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step4);
     var frameworkRegexString = '';
     Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
   }
 
-  function step4() {
-    dumpConsoleMessageURLs();
+  async function step4() {
+    await dumpConsoleMessageURLs();
     TestRunner.completeTest();
   }
 
-  function dumpConsoleMessageURLs() {
+  async function dumpConsoleMessageURLs() {
     var messages = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messages.length; ++i) {
+      // Ordering is important here. Retrieveing the message element the first time triggers
+      // live location creation and updates, which we need to await for correct locations.
       var element = messages[i].toMessageElement();
+      await TestRunner.waitForPendingLiveLocationUpdates();
       var anchor = element.querySelector('.console-message-anchor');
       TestRunner.addResult(anchor.textContent.replace(/VM\d+/g, 'VM'));
     }

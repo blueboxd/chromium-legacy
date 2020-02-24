@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -41,10 +43,11 @@ using ::testing::Eq;
 using ::testing::Ne;
 using ::testing::Return;
 using ::testing::StrictMock;
-
 namespace extensions {
 
 namespace {
+
+constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 
 using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
@@ -117,6 +120,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   // PasswordsPrivateEventRouter.
   void SetUpRouters();
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
@@ -125,6 +130,7 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
       ui::TestClipboard::CreateForCurrentThread();
 
  private:
+  base::HistogramTester histogram_tester_;
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateDelegateImplTest);
 };
 
@@ -266,6 +272,10 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
   base::string16 result;
   test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(form.password_value, result);
+
+  histogram_tester().ExpectUniqueSample(
+      kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
+      1);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
@@ -292,6 +302,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
   test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(base::string16(), result);
   EXPECT_EQ(before_call, test_clipboard_->GetLastModifiedTime());
+
+  // Since Reauth had failed password was not copied and metric wasn't recorded
+  histogram_tester().ExpectTotalCount(kHistogramName, 0);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
@@ -313,6 +326,10 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
   delegate.RequestPlaintextPassword(
       0, api::passwords_private::PLAINTEXT_REASON_VIEW, password_callback.Get(),
       nullptr);
+
+  histogram_tester().ExpectUniqueSample(
+      kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      1);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
@@ -334,6 +351,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
   delegate.RequestPlaintextPassword(
       0, api::passwords_private::PLAINTEXT_REASON_VIEW, password_callback.Get(),
       nullptr);
+
+  // Since Reauth had failed password was not viewed and metric wasn't recorded
+  histogram_tester().ExpectTotalCount(kHistogramName, 0);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {

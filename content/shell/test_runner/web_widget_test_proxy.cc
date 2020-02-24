@@ -221,7 +221,7 @@ void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
   // WebView without a main frame, would have no opportunity to execute this
   // method call.
   if (delegate()) {
-    blink::WebView* view = GetWebViewTestProxy()->webview();
+    blink::WebView* view = GetWebViewTestProxy()->GetWebView();
     if (blink::WebPagePopup* popup = view->GetPagePopup()) {
       auto* popup_render_widget =
           static_cast<RenderWidget*>(popup->GetClientForTesting());

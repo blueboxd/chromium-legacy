@@ -4412,7 +4412,8 @@ void WebContentsImpl::SetFocusToLocationBar() {
 void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
   TRACE_EVENT1("navigation", "WebContentsImpl::DidStartNavigation",
                "navigation_handle", navigation_handle);
-  favicon_urls_.clear();
+  if (navigation_handle->IsInMainFrame())
+    favicon_urls_.clear();
 
   for (auto& observer : observers_)
     observer.DidStartNavigation(navigation_handle);

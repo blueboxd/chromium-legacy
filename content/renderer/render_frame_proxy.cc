@@ -374,8 +374,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
-                        OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
@@ -426,11 +424,6 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name,
                                        const std::string& unique_name) {
   web_frame_->SetReplicatedName(blink::WebString::FromUTF8(name));
   unique_name_ = unique_name;
-}
-
-void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
-    blink::mojom::InsecureRequestPolicy policy) {
-  web_frame_->SetReplicatedInsecureRequestPolicy(policy);
 }
 
 void RenderFrameProxy::OnTransferUserActivationFrom(int32_t source_routing_id) {

@@ -24,8 +24,10 @@
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
@@ -1493,14 +1495,15 @@ class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  const extensions::Extension* installed_extension =
-      observer.WaitForExtensionWillBeInstalled();
-
-  ASSERT_TRUE(installed_extension);
-  const GURL installed_app_url =
-      extensions::AppLaunchInfo::GetFullLaunchURL(installed_extension);
-  EXPECT_EQ(policy_app_url_, installed_app_url);
+  const web_app::AppRegistrar& registrar =
+      web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
+          ->registrar();
+  web_app::WebAppInstallObserver install_observer(browser()->profile());
+  base::Optional<web_app::AppId> app_id =
+      registrar.FindAppWithUrlInScope(policy_app_url_);
+  if (!app_id)
+    app_id = install_observer.AwaitNextInstall();
+  EXPECT_EQ(policy_app_url_, registrar.GetAppLaunchURL(*app_id));
 }
 
 // Fixture for tests that have two profiles with a different policy for each.

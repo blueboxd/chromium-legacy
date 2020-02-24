@@ -2652,7 +2652,7 @@
     Successful enrollment illustration
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN" desc="Success message to be shown once enterprise enrollment completes.">
-    This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be managed by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    This <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be managed by <ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_SUPPORT" desc="Recommendation to contact support. Shown once attestation-based enterprise enrollment completes.">
     If this is unexpected, please contact support.

@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '57bc977e124cb20258268157e5010e9c787c6fe0',
+  'skia_revision': 'cc5415a8ce36c4f129e56adb8f18adf220407e8e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a66f0bf66ea25ae7448b35fe74cef5642cdc0310',
+  'v8_revision': 'bc3173307c010f11fd384918505e7c5eca180d24',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8b73596fe7046921a5c145db16ff68ede6b71133',
+  'angle_revision': '959d077f605ee90652362033240188223f5c2816',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -242,7 +242,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e1d7a0fe6ffbde5ea6fe9bd664d15f994880d03c',
+  'devtools_frontend_revision': 'e0897515da03963f98a43f92b8809118397c416f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -338,7 +338,7 @@ vars = {
   # once libassistant's copy of buildtools rolls up to the rename.
   'libcxx_revision_v2':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
   'libcxxabi_revision_v2':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
-  'libunwind_revision_v2':    'd999d54f4bca789543a2eb6c995af2d9b5a1f3ed',
+  'libunwind_revision_v2':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -1242,7 +1242,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5ca404665a4c706b64d9fd74663984f87c800572',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8c5bd85a9ac22e87974b20c7003f4a236bcc1dba',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1518,7 +1518,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5d5361f3bf54910df23a7d2f006e99c2f10f0ede',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6b9651c5ec90058d2f1834fe387ad175cd6d81e1',
     'condition': 'checkout_src_internal',
   },
 

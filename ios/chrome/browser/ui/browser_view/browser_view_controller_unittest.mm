@@ -29,7 +29,9 @@
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -135,6 +137,17 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         std::make_unique<TestBrowser>(chrome_browser_state_.get(), tabModel_);
     SessionRestorationBrowserAgent::CreateForBrowser(
         browser_.get(), [[TestSessionService alloc] init]);
+
+    id mockFindInPageCommandHandler =
+        OCMProtocolMock(@protocol(FindInPageCommands));
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mockFindInPageCommandHandler
+                     forProtocol:@protocol(FindInPageCommands)];
+    id mockTextZoomCommandHandler =
+        OCMProtocolMock(@protocol(TextZoomCommands));
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mockTextZoomCommandHandler
+                     forProtocol:@protocol(TextZoomCommands)];
 
     // Create three web states.
     for (int i = 0; i < 3; i++) {

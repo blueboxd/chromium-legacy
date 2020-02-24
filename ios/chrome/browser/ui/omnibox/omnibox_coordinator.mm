@@ -161,9 +161,10 @@
   _editView->model()->set_popup_model(popupView->model());
   _editView->SetPopupProvider(popupView.get());
 
-  OmniboxPopupCoordinator* coordinator =
-      [[OmniboxPopupCoordinator alloc] initWithPopupView:std::move(popupView)];
-  coordinator.browserState = self.browser->GetBrowserState();
+  OmniboxPopupCoordinator* coordinator = [[OmniboxPopupCoordinator alloc]
+      initWithBaseViewController:nil
+                         browser:self.browser
+                       popupView:std::move(popupView)];
   coordinator.presenterDelegate = presenterDelegate;
 
   return coordinator;

@@ -25,6 +25,7 @@
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -223,25 +224,39 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
     return;
   }
 
-  if (reason == api::passwords_private::PLAINTEXT_REASON_COPY) {
-    // In case of copy we don't need to give password back to UI. callback
-    // will receive either empty string in case of success or null otherwise.
-    // Copying occurs here so javascript doesn't need plaintext password.
-    callback = base::BindOnce(
-        [](PlaintextPasswordCallback callback,
-           base::Optional<base::string16> password) {
-          if (!password) {
-            std::move(callback).Run(base::nullopt);
-            return;
-          }
-          ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-              .WriteText(*password);
-          std::move(callback).Run(base::string16());
-        },
-        std::move(callback));
+  password_manager::PlaintextReason presenter_reason =
+      password_manager::PlaintextReason::kView;
+
+  switch (reason) {
+    case api::passwords_private::PLAINTEXT_REASON_VIEW:
+      break;
+    case api::passwords_private::PLAINTEXT_REASON_COPY:
+      presenter_reason = password_manager::PlaintextReason::kCopy;
+      // In case of copy we don't need to give password back to UI. callback
+      // will receive either empty string in case of success or null otherwise.
+      // Copying occurs here so javascript doesn't need plaintext password.
+      callback = base::BindOnce(
+          [](PlaintextPasswordCallback callback,
+             base::Optional<base::string16> password) {
+            if (!password) {
+              std::move(callback).Run(base::nullopt);
+              return;
+            }
+            ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+                .WriteText(*password);
+            std::move(callback).Run(base::string16());
+          },
+          std::move(callback));
+      break;
+    case api::passwords_private::PLAINTEXT_REASON_EDIT:
+      presenter_reason = password_manager::PlaintextReason::kEdit;
+      break;
+    case api::passwords_private::PLAINTEXT_REASON_NONE:
+      NOTREACHED();
+      break;
   }
-  password_manager_presenter_->RequestPlaintextPassword(*sort_key,
-                                                        std::move(callback));
+  password_manager_presenter_->RequestPlaintextPassword(
+      *sort_key, presenter_reason, std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(

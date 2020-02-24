@@ -977,9 +977,6 @@ extern const char kSendTabToSelfWhenSignedInDescription[];
 extern const char kServiceWorkerOnUIName[];
 extern const char kServiceWorkerOnUIDescription[];
 
-extern const char kSharedClipboardReceiverName[];
-extern const char kSharedClipboardReceiverDescription[];
-
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 

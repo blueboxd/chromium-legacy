@@ -292,7 +292,7 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
 }
 
 blink::WebView* AccessibilityController::web_view() {
-  return web_view_test_proxy_->webview();
+  return web_view_test_proxy_->GetWebView();
 }
 
 blink::WebAXObject

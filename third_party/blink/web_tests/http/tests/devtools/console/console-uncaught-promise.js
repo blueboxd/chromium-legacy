@@ -97,22 +97,12 @@
       }
   `);
 
-  ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
-  Common.console.showPromise();
-
-  checkConsoleMessages();
-
-  function checkConsoleMessages() {
-    TestRunner.evaluateInPage('runNextPromiseTest()', callback);
-
-    function callback(result) {
-      if (!result)
-        ConsoleTestRunner.expandConsoleMessages(dump);
-    }
+  while (await TestRunner.evaluateInPagePromise('runNextPromiseTest()')) {
+      // Run all the test cases until there are no more.
   }
 
-  function dump() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-    TestRunner.completeTest();
-  }
+  ConsoleTestRunner.expandConsoleMessages(async () => {
+      await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+      TestRunner.completeTest();
+  });
 })();

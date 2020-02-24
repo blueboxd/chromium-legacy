@@ -7588,3 +7588,9 @@ crbug.com/1050549 http/tests/devtools/unit/string-util.js [ Skip ]
 crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.html [ Pass Failure Timeout ]
 crbug.com/1055006 [ Linux ] external/wpt/std-toast/methods.html [ Pass Failure Timeout ]
 crbug.com/1055006 [ Linux ] external/wpt/std-toast/options.html [ Pass Failure Timeout ]
+
+# These tests test invalid behavior, a fix in V8 is in flight.
+crbug.com/v8/10126 external/wpt/wasm/webapi/invalid-code.any.html [ Skip ]
+crbug.com/v8/10126 external/wpt/wasm/webapi/invalid-code.any.serviceworker.html [ Skip ]
+crbug.com/v8/10126 external/wpt/wasm/webapi/invalid-code.any.sharedworker.html [ Skip ]
+crbug.com/v8/10126 external/wpt/wasm/webapi/invalid-code.any.worker.html [ Skip ]

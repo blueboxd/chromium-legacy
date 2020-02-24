@@ -13,6 +13,7 @@
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "ui/events/types/scroll_types.h"
 
 namespace base {
@@ -45,6 +46,8 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
       blink::mojom::FrameOwnerPropertiesPtr properties) override;
+  void EnforceInsecureRequestPolicy(
+      blink::mojom::InsecureRequestPolicy policy) override;
   void SetReplicatedOrigin(
       const url::Origin& origin,
       bool is_potentially_trustworthy_unique_origin) override;

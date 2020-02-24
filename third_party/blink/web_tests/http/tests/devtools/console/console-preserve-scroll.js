@@ -37,7 +37,11 @@
     },
 
     async function testClickLinkToRevealAnotherPanel(next) {
-      consoleView._visibleViewMessages[0]._element.querySelector('.devtools-link').click();
+      // Ordering is important here, as accessing the element the first time around
+      // triggers live location creation and updates which we need to await properly.
+      const element = consoleView._visibleViewMessages[0]._element;
+      await TestRunner.waitForPendingLiveLocationUpdates();
+      element.querySelector('.devtools-link').click();
       await UI.inspectorView._tabbedPane.once(UI.TabbedPane.Events.TabSelected);
       await TestRunner.showPanel('console');
       dumpScrollTop();

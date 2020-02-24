@@ -24,125 +24,125 @@
   await ConsoleTestRunner.waitForPendingViewportUpdates();
 
   TestRunner.runTestSuite([
-    function testBetweenViewportAndExternal(next) {
+    async function testBetweenViewportAndExternal(next) {
       TestRunner.addResult(`Setting focus in prompt:`);
       prompt.focus();
-      dumpFocus();
+      await dumpFocus();
 
       shiftPress('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       shiftPress('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       press('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
 
-    function testBetweenViewportAndExternalWithSelectedItemNotInDOM(next) {
+    async function testBetweenViewportAndExternalWithSelectedItemNotInDOM(next) {
       TestRunner.addResult(`Setting focus in prompt:`);
       prompt.focus();
-      dumpFocus();
+      await dumpFocus();
 
       shiftPress('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToTop();
-      dumpFocus();
+      await dumpFocus();
 
       shiftPress('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       TestRunner.addResult(`\nSetting focus in prompt:`);
       prompt.focus();
-      dumpFocus();
+      await dumpFocus();
 
       shiftPress('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToTop();
-      dumpFocus();
+      await dumpFocus();
 
       press('Tab');
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
 
-    function testMoveAcrossLogsWithinViewport(next) {
+    async function testMoveAcrossLogsWithinViewport(next) {
       forceSelect(logCount - 1);
-      dumpFocus();
+      await dumpFocus();
 
       press('Home');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowDown');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowDown');
-      dumpFocus();
+      await dumpFocus();
 
       press('End');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       press('ArrowUp');
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
 
-    function testViewportDoesNotChangeFocusOnScroll(next) {
+    async function testViewportDoesNotChangeFocusOnScroll(next) {
       forceSelect(logCount - 2);
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToTop();
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToBottom();
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
 
-    function testViewportDoesNotStealFocusOnScroll(next) {
+    async function testViewportDoesNotStealFocusOnScroll(next) {
       forceSelect(logCount - 1);
-      dumpFocus();
+      await dumpFocus();
 
       TestRunner.addResult(`Setting focus in prompt:`);
       prompt.focus();
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToTop();
-      dumpFocus();
+      await dumpFocus();
 
       scrollViewportToBottom();
-      dumpFocus();
+      await dumpFocus();
 
       next();
     },
@@ -150,20 +150,20 @@
     async function testNewLogsShouldNotMoveFocus(next) {
       TestRunner.addResult(`Setting focus in prompt:`);
       prompt.focus();
-      dumpFocus();
+      await dumpFocus();
 
       await TestRunner.evaluateInPagePromise(`console.log("New Message")`);
       await ConsoleTestRunner.waitForConsoleMessagesPromise(logCount + 1);
       await ConsoleTestRunner.waitForPendingViewportUpdates();
 
-      dumpFocus();
+      await dumpFocus();
       next();
     },
 
-    function testClearingConsoleFocusesPrompt(next) {
+    async function testClearingConsoleFocusesPrompt(next) {
       TestRunner.addResult(`\nConsole cleared:`);
       consoleView._consoleCleared();
-      dumpFocus();
+      await dumpFocus();
       next();
     }
   ]);
@@ -200,8 +200,10 @@
     eventSender.keyDown(key, ['shiftKey']);
   }
 
-  function dumpFocus() {
+  async function dumpFocus() {
     var element = document.deepActiveElement();
+    // Console elements contain live locations that might not be fully resolved yet.
+    await TestRunner.waitForPendingLiveLocationUpdates();
     if (!element) {
       TestRunner.addResult('null');
       return;

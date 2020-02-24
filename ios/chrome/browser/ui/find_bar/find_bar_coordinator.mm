@@ -77,8 +77,6 @@
   }
   [self.findBarController findBarViewWillHide];
   [self.presenter dismissAnimated:animated];
-
-  self.mediator = nil;
 }
 
 - (void)showAnimated:(BOOL)animated shouldFocus:(BOOL)shouldFocus {
@@ -99,7 +97,7 @@
   if (!self.browserState->IsOffTheRecord()) {
     helper->RestoreSearchTerm();
   }
-  [self.delegate setHeadersForToolbarAccessoryCoordinator:self];
+  [self.presentationDelegate setHeadersForFindBarCoordinator:self];
   [self.findBarController updateView:helper->GetFindResult()
                        initialUpdate:YES
                       focusTextfield:shouldFocus];

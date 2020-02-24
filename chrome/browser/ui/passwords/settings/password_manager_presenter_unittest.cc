@@ -15,14 +15,21 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#if !defined(OS_ANDROID)
+#include "base/test/metrics/histogram_tester.h"
+#endif
+#include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +52,9 @@ constexpr char kPassword[] = "pass";
 constexpr char kPassword2[] = "pass2";
 constexpr char kUsername[] = "user";
 constexpr char kUsername2[] = "user2";
-
+#if !defined(OS_ANDROID)
+constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
+#endif
 MATCHER(IsNotBlacklisted, "") {
   return !arg->blacklisted_by_user;
 }
@@ -82,9 +91,9 @@ class PasswordManagerPresenterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void AddPasswordEntry(const GURL& origin,
-                        base::StringPiece username,
-                        base::StringPiece password) {
+  autofill::PasswordForm AddPasswordEntry(const GURL& origin,
+                                          base::StringPiece username,
+                                          base::StringPiece password) {
     autofill::PasswordForm form;
     form.origin = origin;
     form.signon_realm = origin.GetOrigin().spec();
@@ -93,6 +102,7 @@ class PasswordManagerPresenterTest : public testing::Test {
     form.password_element = base::ASCIIToUTF16("Passwd");
     form.password_value = base::ASCIIToUTF16(password);
     store_->AddLogin(form);
+    return form;
   }
 
   void AddPasswordException(const GURL& origin) {
@@ -371,5 +381,29 @@ TEST_F(PasswordManagerPresenterTest, BlacklistDoesNotPreventExporting) {
   ASSERT_EQ(1u, passwords_for_export.size());
   EXPECT_EQ(kSameOrigin, passwords_for_export[0]->origin);
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(PasswordManagerPresenterTest, TestRequestPlaintextPassword) {
+  base::HistogramTester histogram_tester_;
+  autofill::PasswordForm form =
+      AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+
+  EXPECT_CALL(GetUIController(), SetPasswordList(SizeIs(1)));
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
+  UpdatePasswordLists();
+  base::MockOnceCallback<void(base::Optional<base::string16>)>
+      password_callback;
+  EXPECT_CALL(password_callback,
+              Run(testing::Eq(base::ASCIIToUTF16(kPassword))));
+  std::string sort_key = password_manager::CreateSortKey(form);
+  GetUIController().GetPasswordManagerPresenter()->RequestPlaintextPassword(
+      sort_key, password_manager::PlaintextReason::kView,
+      password_callback.Get());
+
+  histogram_tester_.ExpectUniqueSample(
+      kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      1);
+}
+#endif
 
 }  // namespace

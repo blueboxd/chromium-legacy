@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_util.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
@@ -93,9 +92,6 @@
 #import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -129,8 +125,6 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
-#import "ios/chrome/browser/ui/text_zoom/text_zoom_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
@@ -365,7 +359,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      SigninPresenter,
                                      SnapshotGeneratorDelegate,
                                      TabStripPresentation,
-                                     ToolbarAccessoryCoordinatorDelegate,
+                                     FindBarPresentationDelegate,
                                      ToolbarHeightProviderForFullscreen,
                                      WebStateListObserving,
                                      UIGestureRecognizerDelegate,
@@ -498,8 +492,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
 @property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
-// Helper method to check web controller canShowFindBar method.
-@property(nonatomic, assign, readonly) BOOL canShowFindBar;
 // Whether the controller's view is currently available.
 // YES from viewWillAppear to viewWillDisappear.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
@@ -517,9 +509,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether BVC prefers to hide the status bar. This value is used to determine
 // the response from the |prefersStatusBarHidden| method.
 @property(nonatomic, assign) BOOL hideStatusBar;
-// Presenter used to display accessories over the toolbar (e.g. Find In Page).
-@property(nonatomic, strong)
-    ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
 // Coordinator for displaying a modal overlay with activity indicator to prevent
 // the user from interacting with the browser view.
 @property(nonatomic, strong)
@@ -553,15 +542,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Coordinator for the popup menus.
 @property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
 
-// Coordinator for find in page.
-@property(nonatomic, strong) FindBarCoordinator* findBarCoordinator;
-
-// Coordinator for text zoom.
-@property(nonatomic, strong) TextZoomCoordinator* textZoomCoordinator;
-
-@property(nonatomic, weak) ChromeCoordinator* nextToolbarCoordinator;
-
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
+
+// Command handler for text zoom commands
+@property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
 
 // Primary toolbar.
 @property(nonatomic, strong)
@@ -742,15 +726,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _browserContainerViewController = browserContainerViewController;
     _dependencyFactory = factory;
     self.commandDispatcher = browser->GetCommandDispatcher();
+    self.textZoomHandler =
+        HandlerForProtocol(self.commandDispatcher, TextZoomCommands);
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
-    [self.commandDispatcher
-        startDispatchingToTarget:self
-                     forProtocol:@protocol(FindInPageCommands)];
-    [self.commandDispatcher
-        startDispatchingToTarget:self
-                     forProtocol:@protocol(TextZoomCommands)];
     [self.commandDispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationCommands)];
@@ -914,18 +894,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
   }
   return _keyCommandsProvider;
-}
-
-- (BOOL)canShowFindBar {
-  // Make sure web controller can handle find in page.
-  web::WebState* webState = self.currentWebState;
-  if (!webState) {
-    return NO;
-  }
-
-  auto* helper = FindTabHelper::FromWebState(webState);
-  return (helper && helper->CurrentPageSupportsFindInPage() &&
-          !helper->IsFindUIActive());
 }
 
 - (BOOL)canShowTabStrip {
@@ -1148,11 +1116,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                         completion:nil];
   }
   [self.bubblePresenter userEnteredTabSwitcher];
-
-  // TODO(crbug.com/1052818): These should not be necessary once the
-  // coordinators are moved up to BrowserCoordinator.
-  [self.dispatcher hideFindUI];
-  [self.textZoomCoordinator stop];
 }
 
 - (void)presentBubblesIfEligible {
@@ -1236,7 +1199,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
   [self.dispatcher closeFindInPage];
-  [self hideTextZoom];
+  [self.textZoomHandler hideTextZoom];
   [[self viewForWebState:self.currentWebState] endEditing:NO];
 
   // Ensure that voice search objects are created.
@@ -1322,7 +1285,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [_ntpCoordinatorsForWebStates[webState] dismissModals];
     }
     [self.dispatcher closeFindInPage];
-    [self.textZoomCoordinator stop];
+    [self.textZoomHandler hideTextZoom];
   }
 
   [self.dispatcher dismissPopupMenuAnimated:NO];
@@ -1717,7 +1680,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar()) {
     [self.dispatcher hideFindUI];
-    [self.textZoomCoordinator stop];
+    [self.textZoomHandler hideTextZoom];
   }
 
   // Update the toolbar visibility.
@@ -2394,7 +2357,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
     [self.dispatcher hideFindUI];
-    [self.textZoomCoordinator stop];
+    [self.textZoomHandler hideTextZoom];
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
@@ -4203,26 +4166,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)showTextZoom {
-  if (self.toolbarAccessoryPresenter.isPresenting) {
-    self.nextToolbarCoordinator = self.textZoomCoordinator;
-    [self closeFindInPage];
-    return;
-  }
-
-  self.textZoomCoordinator =
-      [[TextZoomCoordinator alloc] initWithBaseViewController:self
-                                                      browser:self.browser];
-  self.textZoomCoordinator.presenter = self.toolbarAccessoryPresenter;
-  self.textZoomCoordinator.delegate = self;
-
-  [self.textZoomCoordinator start];
-}
-
-- (void)hideTextZoom {
-  [self.textZoomCoordinator stop];
-}
-
 #pragma mark - BrowserCommands helpers
 
 // Reloads the original url of the last non-redirect item (including non-history
@@ -4233,92 +4176,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   web::WebState* webState = self.currentWebState;
   web::NavigationManager* navigationManager = webState->GetNavigationManager();
   navigationManager->ReloadWithUserAgentType(userAgentType);
-}
-
-#pragma mark - FindInPageCommands
-
-- (void)openFindInPage {
-  if (!self.canShowFindBar)
-    return;
-
-  if (self.toolbarAccessoryPresenter.isPresenting) {
-    self.nextToolbarCoordinator = self.findBarCoordinator;
-    [self hideTextZoom];
-    return;
-  }
-
-  self.findBarCoordinator =
-      [[FindBarCoordinator alloc] initWithBaseViewController:self
-                                                     browser:self.browser];
-  self.findBarCoordinator.presenter = self.toolbarAccessoryPresenter;
-  self.findBarCoordinator.delegate = self;
-
-  [self.findBarCoordinator start];
-}
-
-- (void)closeFindInPage {
-  __weak BrowserViewController* weakSelf = self;
-  if (self.currentWebState) {
-    FindTabHelper* findTabHelper =
-        FindTabHelper::FromWebState(self.currentWebState);
-    if (findTabHelper->IsFindUIActive()) {
-      findTabHelper->StopFinding(^{
-        [weakSelf hideFindUI];
-      });
-    } else {
-      [self hideFindUI];
-    }
-  }
-}
-
-- (void)showFindUIIfActive {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  auto* findHelper = FindTabHelper::FromWebState(currentWebState);
-  if (findHelper && findHelper->IsFindUIActive() &&
-      !self.findBarCoordinator.presenter.isPresenting) {
-    [self.findBarCoordinator start];
-  }
-}
-
-- (void)hideFindUI {
-  [self.findBarCoordinator stop];
-}
-
-- (void)defocusFindInPage {
-  [self.findBarCoordinator defocusFindBar];
-}
-
-- (void)searchFindInPage {
-  DCHECK(self.currentWebState);
-  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
-  __weak __typeof(self) weakSelf = self;
-  helper->StartFinding([self.findBarCoordinator.findBarController searchTerm],
-                       ^(FindInPageModel* model) {
-                         [weakSelf.findBarCoordinator.findBarController
-                             updateResultsCount:model];
-                       });
-
-  if (!_isOffTheRecord)
-    helper->PersistSearchTerm();
-}
-
-- (void)findNextStringInPage {
-  DCHECK(self.currentWebState);
-  // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(self.currentWebState)
-      ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
-}
-
-- (void)findPreviousStringInPage {
-  DCHECK(self.currentWebState);
-  // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(self.currentWebState)
-      ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
 }
 
 #pragma mark - WebStateListObserving methods
@@ -4363,7 +4220,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Remove the find bar for now.
   [self.dispatcher hideFindUI];
-  [self.textZoomCoordinator stop];
+  [self.textZoomHandler hideTextZoom];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -4630,7 +4487,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
     [self.dispatcher hideFindUI];
-    [self.textZoomCoordinator stop];
+    [self.textZoomHandler hideTextZoom];
     [self.infobarContainerCoordinator hideContainer:YES];
   }
 }
@@ -4803,30 +4660,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [[self view] addSubview:tabStripView];
 }
 
-#pragma mark - ToolbarAccessoryCoordinatorDelegate
+#pragma mark - FindBarPresentationDelegate
 
-- (void)setHeadersForToolbarAccessoryCoordinator:
-    (ChromeCoordinator*)toolbarAccessoryCoordinator {
+- (void)setHeadersForFindBarCoordinator:
+    (FindBarCoordinator*)findBarCoordinator {
   [self setFramesForHeaders:[self headerViews]
                    atOffset:[self currentHeaderOffset]];
-}
-
-- (void)toolbarAccessoryCoordinatorDidDismissUI:
-    (ChromeCoordinator*)coordinator {
-  if (!self.nextToolbarCoordinator) {
-    return;
-  }
-  if (self.nextToolbarCoordinator == self.findBarCoordinator) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self openFindInPage];
-    });
-    self.nextToolbarCoordinator = nil;
-  } else if (self.nextToolbarCoordinator == self.textZoomCoordinator) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self showTextZoom];
-    });
-    self.nextToolbarCoordinator = nil;
-  }
 }
 
 #pragma mark - Toolbar Accessory Methods

@@ -54,7 +54,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldInitializePollPrefs) {
 // This test verifies that updates of the poll interval get persisted
 // That's important make sure clients with short live times will eventually poll
 // (e.g. Android).
-IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldUpdatePollPrefs) {
+IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
+                       PRE_ShouldUsePollIntervalFromPrefs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   sync_pb::ClientCommand client_command;
@@ -76,17 +77,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldUpdatePollPrefs) {
 
 IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
                        ShouldUsePollIntervalFromPrefs) {
-  // Setup clients and provide new poll interval via prefs.
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  SyncPrefs sync_prefs(GetProfile(0)->GetPrefs());
-  sync_prefs.SetPollInterval(base::TimeDelta::FromSeconds(123));
-
   // Execute a sync cycle and verify this cycle used that interval.
   // This test assumes the SyncScheduler reads the actual interval from the
   // context. This is covered in the SyncSchedulerImpl's unittest.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_THAT(GetClient(0)->GetLastCycleSnapshot().poll_interval().InSeconds(),
-              Eq(123));
+              Eq(67));
 }
 
 // This test simulates the poll interval expiring between restarts.

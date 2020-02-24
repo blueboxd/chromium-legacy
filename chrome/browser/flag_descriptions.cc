@@ -1677,12 +1677,6 @@ const char kServiceWorkerOnUIDescription[] =
     "Enables browser process logic related to service workers to run on the UI "
     "thread rather than the IO thread.";
 
-const char kSharedClipboardReceiverName[] =
-    "Enable receiver device to handle shared clipboard feature";
-const char kSharedClipboardReceiverDescription[] =
-    "Enables receiver device to handle shared clipboard feature by showing a "
-    "notification to receive the clipboard to share.";
-
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
 const char kSharedClipboardUIDescription[] =

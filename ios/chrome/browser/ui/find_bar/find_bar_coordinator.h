@@ -12,6 +12,12 @@
 @class ToolbarAccessoryPresenter;
 @protocol ToolbarAccessoryCoordinatorDelegate;
 
+@protocol FindBarPresentationDelegate
+
+- (void)setHeadersForFindBarCoordinator:(FindBarCoordinator*)findBarCoordinator;
+
+@end
+
 // Coordinator for the Find Bar and the Find In page feature. Currently, this
 // is mostly a collection of code extracted from BrowserViewController and not
 // a good example of the ideal coordinator architecture.
@@ -21,6 +27,8 @@
 @property(nonatomic, strong) ToolbarAccessoryPresenter* presenter;
 
 @property(nonatomic, weak) id<ToolbarAccessoryCoordinatorDelegate> delegate;
+
+@property(nonatomic, weak) id<FindBarPresentationDelegate> presentationDelegate;
 
 // Find bar controller object. This should probably be private, but is not to
 // make the transition easier.

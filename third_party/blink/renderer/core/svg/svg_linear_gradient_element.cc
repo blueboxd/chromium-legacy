@@ -110,8 +110,8 @@ static void SetGradientAttributes(const SVGGradientElement& element,
     attributes.SetY2(linear.y2()->CurrentValue());
 }
 
-bool SVGLinearGradientElement::CollectGradientAttributes(
-    LinearGradientAttributes& attributes) {
+void SVGLinearGradientElement::CollectGradientAttributes(
+    LinearGradientAttributes& attributes) const {
   DCHECK(GetLayoutObject());
 
   VisitedSet visited;
@@ -123,12 +123,14 @@ bool SVGLinearGradientElement::CollectGradientAttributes(
     visited.insert(current);
 
     current = current->ReferencedElement();
-    if (!current || visited.Contains(current))
+
+    // Ignore the referenced gradient element if it is not attached.
+    if (!current || !current->GetLayoutObject())
       break;
-    if (!current->GetLayoutObject())
-      return false;
+    // Cycle detection.
+    if (visited.Contains(current))
+      break;
   }
-  return true;
 }
 
 bool SVGLinearGradientElement::SelfHasRelativeLengths() const {

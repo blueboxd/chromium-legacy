@@ -1527,6 +1527,13 @@ config("default_warnings") {
           "-Wno-range-loop-analysis",
         ]
 
+        if (is_android) {
+          cflags += [
+            # TODO(https://crbug.com/1016947) Clean up, enable.
+            "-Wno-bitwise-conditional-parentheses",
+          ]
+        }
+
         if (llvm_force_head_revision) {
           cflags += [
             # TODO(https://crbug.com/1050281): Clean up, enable.

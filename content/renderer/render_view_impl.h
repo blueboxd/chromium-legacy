@@ -124,10 +124,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 
-  // May return NULL when the view is closing.
-  blink::WebView* webview();
-  const blink::WebView* webview() const;
-
   // When true, a hint to all RenderWidgets that they will never be
   // user-visible and thus never need to produce pixels for display. This is
   // separate from page visibility, as background pages can be marked visible in

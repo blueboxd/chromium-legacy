@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -124,6 +125,28 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
   // Navigate to the app's launch page; the toolbar should not be visible,
   // because extensions pages are secure.
   NavigateAndCheckForToolbar(app_browser, popup_url, false);
+}
+
+// Tests that Create Shortcut doesn't timeout on a page that has a delayed
+// iframe load. Context: crbug.com/1046883
+IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest, WorksAfterDelayedIFrameLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURLAndWait(browser(), embedded_test_server()->GetURL(
+                                      "/favicon/page_with_favicon.html"));
+
+  // Append an iframe and wait for it to finish loading.
+  const char script[] = R"(
+    const iframe = document.createElement('iframe');
+    iframe.onload = _ => domAutomationController.send('success');
+    iframe.srcdoc = 'inner page';
+    document.body.appendChild(iframe);
+  )";
+  EXPECT_EQ(content::EvalJsWithManualReply(
+                browser()->tab_strip_model()->GetActiveWebContents(), script)
+                .ExtractString(),
+            "success");
+
+  InstallShortcutAppForCurrentUrl();
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -11,9 +11,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 
-// Feature to allow devices to receive the shared clipboard message.
-extern const base::Feature kSharedClipboardReceiver;
-
 // Feature to allow shared clipboard gets processed.
 extern const base::Feature kSharedClipboardUI;
 

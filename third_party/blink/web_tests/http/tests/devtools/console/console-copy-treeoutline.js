@@ -20,11 +20,13 @@
   var consoleView = Console.ConsoleView.instance();
   var viewport = consoleView._viewport;
 
-  TestRunner.runTestSuite([function testSelectAll(next) {
+  TestRunner.runTestSuite([async function testSelectAll(next) {
     viewport.forceScrollItemToBeFirst(0);
 
     // Set some initial selection in console.
     var base = consoleView.itemElement(0).element();
+    // Console messages contain live locations.
+    await TestRunner.waitForPendingLiveLocationUpdates();
     window.getSelection().setBaseAndExtent(base, 0, base, 1);
 
     // Try to select all messages.

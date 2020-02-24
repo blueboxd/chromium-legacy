@@ -11,6 +11,7 @@
 #import "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -38,16 +39,16 @@
 
 @implementation OmniboxPopupCoordinator
 
-@synthesize browserState = _browserState;
 @synthesize mediator = _mediator;
 @synthesize popupViewController = _popupViewController;
-@synthesize dispatcher = _dispatcher;
 
 #pragma mark - Public
 
-- (instancetype)initWithPopupView:
-    (std::unique_ptr<OmniboxPopupViewIOS>)popupView {
-  self = [super init];
+- (instancetype)
+    initWithBaseViewController:(UIViewController*)viewController
+                       browser:(Browser*)browser
+                     popupView:(std::unique_ptr<OmniboxPopupViewIOS>)popupView {
+  self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _popupView = std::move(popupView);
   }
@@ -57,26 +58,31 @@
 - (void)start {
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
       std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
-          self.browserState->GetSharedURLLoaderFactory());
+          self.browser->GetBrowserState()->GetSharedURLLoaderFactory());
 
   self.mediator = [[OmniboxPopupMediator alloc]
       initWithFetcher:std::move(imageFetcher)
         faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
-                          self.browserState)
+                          self.browser->GetBrowserState())
              delegate:_popupView.get()];
-  self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
-  self.mediator.webStateList = self.webStateList;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.mediator.dispatcher =
+      static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
+  self.mediator.webStateList = self.browser->GetWebStateList();
   TemplateURLService* templateURLService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator.defaultSearchEngineIsGoogle =
       templateURLService && templateURLService->GetDefaultSearchProvider() &&
       templateURLService->GetDefaultSearchProvider()->GetEngineType(
           templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
-  self.popupViewController.incognito = self.browserState->IsOffTheRecord();
+  self.popupViewController.incognito =
+      self.browser->GetBrowserState()->IsOffTheRecord();
 
-  BOOL isIncognito = self.browserState->IsOffTheRecord();
+  BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
   self.mediator.incognito = isIncognito;
   self.mediator.consumer = self.popupViewController;
   self.mediator.presenter = [[OmniboxPopupPresenter alloc]
@@ -86,7 +92,7 @@
   self.popupViewController.imageRetriever = self.mediator;
   self.popupViewController.faviconRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
-  [self.dispatcher
+  [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self.popupViewController
                    forProtocol:@protocol(OmniboxSuggestionCommands)];
 
@@ -95,7 +101,7 @@
 
 - (void)stop {
   _popupView.reset();
-  [self.dispatcher
+  [self.browser->GetCommandDispatcher()
       stopDispatchingForProtocol:@protocol(OmniboxSuggestionCommands)];
 }
 

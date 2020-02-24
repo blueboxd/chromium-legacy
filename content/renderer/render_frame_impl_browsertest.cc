@@ -157,7 +157,7 @@ class RenderFrameImplTest : public RenderViewTest {
   }
 
   static int32_t AutoplayFlagsForFrame(TestRenderFrame* frame) {
-    return frame->render_view()->webview()->AutoplayFlagsForTest();
+    return frame->render_view()->GetWebView()->AutoplayFlagsForTest();
   }
 
 #if defined(OS_ANDROID)

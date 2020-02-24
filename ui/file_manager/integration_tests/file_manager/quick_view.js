@@ -1111,6 +1111,70 @@
   };
 
   /**
+   * Tests that opening Quick View on an image and clicking the image does not
+   * focus the image. Instead, the user should still be able to cycle through
+   * file list items in Quick View: crbug.com/1038835.
+   */
+  testcase.openQuickViewImageClick = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    // Open Files app on Downloads containing two images.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.desktop, ENTRIES.image3], []);
+
+    // Open the first image in Quick View.
+    await openQuickView(appId, ENTRIES.desktop.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: the correct file mimeType should be displayed.
+    let mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/png', mimeType);
+
+    // Click the image in Quick View to attempt to focus it.
+    await remoteCall.waitAndClickElement(appId, webView);
+
+    // Press the down arrow key to attempt to select the next file.
+    const downArrow = ['#quick-view', 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
+
+    // Wait for the Quick View <webview> to load and display its content.
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: the next should be displayed in the Quick View.
+    mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('image/jpeg', mimeType);
+
+    // Check: Quick View should be able to close.
+    await closeQuickView(appId);
+  };
+
+  /**
    * Tests that opening a broken image in Quick View displays the "no-preview
    * available" generic icon and has a [load-error] attribute.
    */

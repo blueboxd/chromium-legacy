@@ -839,11 +839,23 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   }
   is_pinch_gesture_active_from_impl_ = info.is_pinch_gesture_active;
 
+  // Preemptively apply the scroll offset and scale delta here before sending
+  // it to the client.  If the client comes back and sets it to the same
+  // value, then the layer can early out without needing a full commit.
   if (auto* inner_scroll = property_trees()->scroll_tree.Node(
           viewport_property_ids_.inner_scroll)) {
-    UpdateScrollOffsetFromImpl(
-        inner_scroll->element_id, inner_viewport_scroll_delta,
-        info.inner_viewport_scroll.snap_target_element_ids);
+    if (IsUsingLayerLists()) {
+      auto& scroll_tree = property_trees()->scroll_tree;
+      scroll_tree.NotifyDidScroll(
+          inner_scroll->element_id,
+          scroll_tree.current_scroll_offset(inner_scroll->element_id) +
+              inner_viewport_scroll_delta,
+          info.inner_viewport_scroll.snap_target_element_ids);
+    } else if (auto* inner_scroll_layer =
+                   LayerByElementId(inner_scroll->element_id)) {
+      inner_scroll_layer->SetScrollOffsetFromImplSide(
+          inner_scroll_layer->scroll_offset() + inner_viewport_scroll_delta);
+    }
   }
 
   ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
@@ -877,46 +889,6 @@ void LayerTreeHost::SendOverscrollAndScrollEndEventsFromImplSide(
     client_->SendScrollEndEventFromImplSide(info.scroll_latched_element_id);
 }
 
-void LayerTreeHost::UpdateScrollOffsetFromImpl(
-    const ElementId& id,
-    const gfx::ScrollOffset& delta,
-    const base::Optional<TargetSnapAreaElementIds>& snap_target_ids) {
-  if (IsUsingLayerLists()) {
-    auto& scroll_tree = property_trees()->scroll_tree;
-    auto new_offset = scroll_tree.current_scroll_offset(id) + delta;
-    TRACE_EVENT_INSTANT2("cc", "NotifyDidScroll", TRACE_EVENT_SCOPE_THREAD,
-                         "cur_y", scroll_tree.current_scroll_offset(id).y(),
-                         "delta", delta.y());
-    if (auto* scroll_node = scroll_tree.FindNodeFromElementId(id)) {
-      // This update closely follows
-      // blink::PropertyTreeManager::DirectlyUpdateScrollOffsetTransform.
-
-      // Update the offset in the scroll tree.
-      scroll_tree.SetScrollOffset(id, new_offset);
-
-      // Update the offset in the transform node.
-      DCHECK(scroll_node->transform_id != TransformTree::kInvalidNodeId);
-      TransformTree& transform_tree = property_trees()->transform_tree;
-      auto* transform_node = transform_tree.Node(scroll_node->transform_id);
-      if (transform_node->scroll_offset != new_offset) {
-        transform_node->scroll_offset = new_offset;
-        transform_node->needs_local_transform_update = true;
-        transform_node->transform_changed = true;
-        transform_tree.set_needs_update(true);
-      }
-
-      // The transform tree has been modified which requires a call to
-      // |LayerTreeHost::UpdateLayers| to update the property trees.
-      SetNeedsUpdateLayers();
-    }
-
-    scroll_tree.NotifyDidScroll(id, new_offset, snap_target_ids);
-  } else if (Layer* layer = LayerByElementId(id)) {
-    layer->SetScrollOffsetFromImplSide(layer->scroll_offset() + delta);
-    SetNeedsUpdateLayers();
-  }
-}
-
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   DCHECK(info);
   TRACE_EVENT0("cc", "LayerTreeHost::ApplyScrollAndScale");
@@ -931,8 +903,21 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   if (root_layer_) {
     auto& scroll_tree = property_trees()->scroll_tree;
     for (auto& scroll : info->scrolls) {
-      UpdateScrollOffsetFromImpl(scroll.element_id, scroll.scroll_delta,
-                                 scroll.snap_target_element_ids);
+      if (IsUsingLayerLists()) {
+        TRACE_EVENT_INSTANT2(
+            "cc", "NotifyDidScroll", TRACE_EVENT_SCOPE_THREAD, "cur_y",
+            scroll_tree.current_scroll_offset(scroll.element_id).y(), "delta",
+            scroll.scroll_delta.y());
+        scroll_tree.NotifyDidScroll(
+            scroll.element_id,
+            scroll_tree.current_scroll_offset(scroll.element_id) +
+                scroll.scroll_delta,
+            scroll.snap_target_element_ids);
+      } else if (Layer* layer = LayerByElementId(scroll.element_id)) {
+        layer->SetScrollOffsetFromImplSide(layer->scroll_offset() +
+                                           scroll.scroll_delta);
+        SetNeedsUpdateLayers();
+      }
     }
     for (auto& scrollbar : info->scrollbars) {
       scroll_tree.NotifyDidChangeScrollbarsHidden(scrollbar.element_id,

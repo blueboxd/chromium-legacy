@@ -77,10 +77,11 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
     // The window title appears above the web app frame toolbar (if present),
     // which surrounds the title with minimal-ui buttons on the left,
     // and other controls (such as the app menu button) on the right.
-    DCHECK(browser_view->ShouldShowWindowTitle());
-    window_title_ = AddChildView(
-        std::make_unique<views::Label>(browser_view->GetWindowTitle()));
-    window_title_->SetID(VIEW_ID_WINDOW_TITLE);
+    if (browser_view->ShouldShowWindowTitle()) {
+      window_title_ = AddChildView(
+          std::make_unique<views::Label>(browser_view->GetWindowTitle()));
+      window_title_->SetID(VIEW_ID_WINDOW_TITLE);
+    }
   }
 }
 

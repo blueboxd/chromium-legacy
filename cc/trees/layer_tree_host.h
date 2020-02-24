@@ -730,13 +730,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void UpdateDeferMainFrameUpdateInternal();
 
-  // Preemptively applies the scroll offset and delta before sending it to the
-  // client. This lets the client skip a commit if the value does not change.
-  void UpdateScrollOffsetFromImpl(
-      const ElementId&,
-      const gfx::ScrollOffset& delta,
-      const base::Optional<TargetSnapAreaElementIds>&);
-
   const CompositorMode compositor_mode_;
 
   std::unique_ptr<UIResourceManager> ui_resource_manager_;

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/appcache/appcache_update_job_state.h"
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "net/base/load_flags.h"

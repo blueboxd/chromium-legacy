@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/loader/url_loader_throttles.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"

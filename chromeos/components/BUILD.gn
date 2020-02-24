@@ -33,6 +33,7 @@ test("chromeos_components_unittests") {
 group("closure_compile") {
   testonly = true
   deps = [
+    "//chromeos/components/help_app_ui:closure_compile",
     "//chromeos/components/media_app_ui:closure_compile",
     "//chromeos/components/multidevice/debug_webui/resources:closure_compile",
   ]

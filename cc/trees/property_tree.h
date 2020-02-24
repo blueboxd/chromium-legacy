@@ -451,7 +451,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void SetBaseScrollOffset(ElementId id,
                            const gfx::ScrollOffset& scroll_offset);
-  // Returns true if the scroll offset is changed.
   bool SetScrollOffset(ElementId id, const gfx::ScrollOffset& scroll_offset);
   void SetScrollOffsetClobberActiveValue(ElementId id) {
     GetOrCreateSyncedScrollOffset(id)->set_clobber_active_value();

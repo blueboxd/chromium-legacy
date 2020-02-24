@@ -298,11 +298,13 @@ void CrostiniUpgrader::OnUpgradeContainerProgress(
       break;
     case UpgradeContainerProgressStatus::SUCCEEDED:
       for (auto& observer : upgrader_observers_) {
+        observer.OnUpgradeProgress(messages);
         observer.OnUpgradeSucceeded();
       }
       break;
     case UpgradeContainerProgressStatus::FAILED:
       for (auto& observer : upgrader_observers_) {
+        observer.OnUpgradeProgress(messages);
         observer.OnUpgradeFailed();
       }
       break;

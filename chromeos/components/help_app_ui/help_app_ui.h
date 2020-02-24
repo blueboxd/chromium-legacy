@@ -5,19 +5,44 @@
 #ifndef CHROMEOS_COMPONENTS_HELP_APP_UI_HELP_APP_UI_H_
 #define CHROMEOS_COMPONENTS_HELP_APP_UI_HELP_APP_UI_H_
 
-#include "base/macros.h"
+#include <memory>
+
+#include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
+#include "chromeos/components/help_app_ui/help_app_ui_delegate.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+
+class HelpAppPageHandler;
 
 namespace chromeos {
 
 // The WebUI controller for chrome://help-app.
-class HelpAppUI : public ui::MojoWebUIController {
+class HelpAppUI : public ui::MojoWebUIController,
+                  public help_app_ui::mojom::PageHandlerFactory {
  public:
-  explicit HelpAppUI(content::WebUI* web_ui);
+  HelpAppUI(content::WebUI* web_ui,
+            std::unique_ptr<HelpAppUIDelegate> delegate);
   ~HelpAppUI() override;
 
+  HelpAppUI(const HelpAppUI&) = delete;
+  HelpAppUI& operator=(const HelpAppUI&) = delete;
+
+  void BindInterface(
+      mojo::PendingReceiver<help_app_ui::mojom::PageHandlerFactory> receiver);
+  HelpAppUIDelegate* delegate() { return delegate_.get(); }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(HelpAppUI);
+  // help_app_ui::mojom::PageHandlerFactory:
+  void CreatePageHandler(
+      mojo::PendingReceiver<help_app_ui::mojom::PageHandler> receiver) override;
+
+  std::unique_ptr<HelpAppPageHandler> page_handler_;
+  mojo::Receiver<help_app_ui::mojom::PageHandlerFactory> page_factory_receiver_{
+      this};
+  std::unique_ptr<HelpAppUIDelegate> delegate_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 };
 
 }  // namespace chromeos

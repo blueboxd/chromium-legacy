@@ -56,7 +56,6 @@
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -607,9 +606,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          fullscreen::features::kFullscreenControllerBrowserScoped)},
-    {"enterprise-policy-ios", flag_descriptions::kEnterprisePolicyIOSName,
-     flag_descriptions::kEnterprisePolicyIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnterprisePolicyIOS)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -196,10 +196,6 @@ extern const char kEnableSyncUSSPasswordsDescription[];
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
-// Title and description for the flag to enable enterprise policy.
-extern const char kEnterprisePolicyIOSName[];
-extern const char kEnterprisePolicyIOSDescription[];
-
 // Title and description for the flag to search in iFrames in Find In Page.
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];

@@ -46,9 +46,21 @@
     line-height: 18px;
   }
 
+  #progress-submessage {
+    color: var(--google-grey-600);
+    flex-grow: 1;
+    font-family: Roboto;
+    font-size: 13px;
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   paper-progress {
     --paper-progress-active-color: var(--cros-default-button-color);
     --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
+    --paper-progress-indeterminate-cycle-duration: 10s;
     margin-top: 36px;
     width: 100%;
   }
@@ -73,12 +85,16 @@
 
     <!-- Prompt message.  Has Learn More link.-->
     <div id="prompt-message" hidden="[[!isState_(state_, State.PROMPT)]]">
-      <span>[[getProgressMessage_(state_)]]</span>
+      <span>[[getProgressMessage_(state_)]] </span>
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
     <!-- Progress message. -->
     <div id="progress-message" hidden="[[isState_(state_, State.PROMPT)]]">
       <span>[[getProgressMessage_(state_)]]</span>
+      <div id = "progress-submessage"
+          hidden="[[!isState_(state_, State.UPGRADING)]]">
+        <span>[[lastProgressLine_]]</span>
+      </div>
     </div>
     <!-- Progress bar containers. Depending on the current state, only one
       of them is visible. -->

@@ -43,7 +43,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
       {"close", IDS_APP_CLOSE},
       {"cancel", IDS_APP_CANCEL},
-      {"launch", IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON},
+      {"done", IDS_CROSTINI_UPGRADER_DONE_BUTTON},
       {"restore", IDS_CROSTINI_UPGRADER_RESTORE_BUTTON},
       {"learnMore", IDS_LEARN_MORE},
 

@@ -72,6 +72,24 @@ Polymer({
       value: [],
     },
 
+    /** @private */
+    progressLineNumber_: {
+      type: Number,
+      value: 0,
+    },
+
+    /** @private */
+    lastProgressLine_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    progressLineDisplayMs_: {
+      type: Number,
+      value: 300,
+    },
+
     /**
      * Enable the html template to use State.
      * @private
@@ -125,6 +143,10 @@ Polymer({
         assert(this.state_ === State.UPGRADING);
         this.progressMessages_.push(...progressMessages);
         this.upgradeProgress_ = this.progressMessages_.length;
+
+        if (this.progressLineNumber_ < this.upgradeProgress_) {
+          this.updateProgressLine_();
+        }
       }),
       callbackRouter.onUpgradeSucceeded.addListener(() => {
         assert(this.state_ === State.UPGRADING);
@@ -160,7 +182,7 @@ Polymer({
     ];
 
     document.addEventListener('keyup', event => {
-      if (event.key == 'Escape') {
+      if (event.key == 'Escape' && this.canCancel_(this.state_)) {
         this.onCancelButtonClick_();
         event.preventDefault();
       }
@@ -213,12 +235,11 @@ Polymer({
         break;
       case State.PRECHECKS_FAILED:
       case State.ERROR:
+      case State.OFFER_RESTORE:
       case State.SUCCEEDED:
         this.closeDialog_();
         break;
       case State.CANCELING:
-        // Although cancel button has been disabled, we can reach here if users
-        // press <esc> key.
         break;
       default:
         assertNotReached();
@@ -288,10 +309,12 @@ Polymer({
    */
   canCancel_(state) {
     switch (state) {
+      case State.UPGRADING:  // TODO(nverne): remove once we have OK from UX.
       case State.BACKUP:
       case State.RESTORE:
       case State.BACKUP_SUCCEEDED:
       case State.CANCELING:
+      case State.SUCCEEDED:
         return false;
     }
     return true;
@@ -352,7 +375,7 @@ Polymer({
       case State.ERROR:
         return loadTimeData.getString('cancel');
       case State.SUCCEEDED:
-        return loadTimeData.getString('launch');
+        return loadTimeData.getString('done');
       case State.OFFER_RESTORE:
         return loadTimeData.getString('restore');
     }
@@ -428,7 +451,8 @@ Polymer({
   getErrorMessage_(state) {
     // TODO(nverne): Surface error messages once we have better details.
     let messageId = null;
-    return messageId ? loadTimeData.getString(messageId) : '';
+    return messageId ? loadTimeData.getString(messageId) :
+                       this.lastProgressLine_;
   },
 
   /**
@@ -462,4 +486,12 @@ Polymer({
     return 'images/linux_illustration.png';
   },
 
+  updateProgressLine_() {
+    if (this.progressLineNumber_ < this.upgradeProgress_) {
+      this.lastProgressLine_ =
+          this.progressMessages_[this.progressLineNumber_++];
+      var t = setTimeout(
+          this.updateProgressLine_.bind(this), this.progressLineDisplayMs_);
+    }
+  },
 });

@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_request_handler.h"
-#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

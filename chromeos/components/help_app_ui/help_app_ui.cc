@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "chromeos/components/help_app_ui/help_app_ui.h"
-#include "chromeos/components/help_app_ui/help_app_guest_ui.h"
 
+#include <utility>
+
+#include "chromeos/components/help_app_ui/help_app_guest_ui.h"
+#include "chromeos/components/help_app_ui/help_app_page_handler.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -24,11 +27,16 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("manifest.json", IDR_HELP_APP_MANIFEST);
   source->AddResourcePath("app_icon_192.png", IDR_HELP_APP_ICON_192);
   source->AddResourcePath("app_icon_512.png", IDR_HELP_APP_ICON_512);
+  source->AddResourcePath("browser_proxy.js", IDR_HELP_APP_BROWSER_PROXY_JS);
+  source->AddResourcePath("help_app.mojom-lite.js",
+                          IDR_HELP_APP_HELP_APP_MOJOM_JS);
   return source;
 }
 }  // namespace
 
-HelpAppUI::HelpAppUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
+HelpAppUI::HelpAppUI(content::WebUI* web_ui,
+                     std::unique_ptr<HelpAppUIDelegate> delegate)
+    : MojoWebUIController(web_ui), delegate_(std::move(delegate)) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource* host_source = CreateHostDataSource();
@@ -42,5 +50,19 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 }
 
 HelpAppUI::~HelpAppUI() = default;
+
+void HelpAppUI::BindInterface(
+    mojo::PendingReceiver<help_app_ui::mojom::PageHandlerFactory> receiver) {
+  page_factory_receiver_.reset();
+  page_factory_receiver_.Bind(std::move(receiver));
+}
+
+void HelpAppUI::CreatePageHandler(
+    mojo::PendingReceiver<help_app_ui::mojom::PageHandler> receiver) {
+  page_handler_ =
+      std::make_unique<HelpAppPageHandler>(this, std::move(receiver));
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(HelpAppUI)
 
 }  // namespace chromeos

@@ -25,5 +25,8 @@ source_set("feature_flags") {
     "policy_features.cc",
     "policy_features.h",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser:utils",
+  ]
 }

@@ -101,6 +101,16 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
         tabbed_app_url_));
   }
 
+  void InstallAndLaunchMockPopup() {
+    test_system_web_app_installation_->WaitForAppInstall();
+    auto params = web_app::CreateSystemWebAppLaunchParams(
+        browser()->profile(), test_system_web_app_installation_->GetType());
+    params->disposition = WindowOpenDisposition::NEW_POPUP;
+    app_browser_ = web_app::LaunchSystemWebApp(
+        browser()->profile(), test_system_web_app_installation_->GetType(),
+        test_system_web_app_installation_->GetAppUrl(), *params);
+  }
+
   GURL GetActiveTabURL() {
     return app_browser_->tab_strip_model()
         ->GetActiveWebContents()
@@ -186,6 +196,12 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabLoadNoThemeChange) {
   EXPECT_EQ(GetTabColor(app_browser_), SK_ColorYELLOW);
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(GetTabColor(app_browser_), SK_ColorGREEN);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
+                       WhiteThemeForSystemAppPopup) {
+  InstallAndLaunchMockPopup();
+  EXPECT_FALSE(app_browser_->app_controller()->GetThemeColor().has_value());
 }
 
 }  // namespace web_app

@@ -73,6 +73,10 @@ gfx::ImageSkia WebAppBrowserController::GetWindowIcon() const {
 }
 
 base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
+  // System App popups (settings pages) always use default theme.
+  if (is_for_system_web_app() && browser()->is_type_app_popup())
+    return base::nullopt;
+
   base::Optional<SkColor> web_theme_color =
       AppBrowserController::GetThemeColor();
   if (web_theme_color)

@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
+#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "net/base/ip_endpoint.h"

@@ -1,0 +1,114 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "media/renderers/win/media_engine_notify_impl.h"
+
+namespace media {
+
+namespace {
+
+PipelineStatus MediaEngineStatusToPipelineStatus(
+    MF_MEDIA_ENGINE_ERR media_engine_status) {
+  switch (media_engine_status) {
+    case MF_MEDIA_ENGINE_ERR_NOERROR:
+      return PipelineStatus::PIPELINE_OK;
+    case MF_MEDIA_ENGINE_ERR_ABORTED:
+      return PipelineStatus::PIPELINE_ERROR_ABORT;
+    case MF_MEDIA_ENGINE_ERR_NETWORK:
+      return PipelineStatus::PIPELINE_ERROR_NETWORK;
+    case MF_MEDIA_ENGINE_ERR_DECODE:
+      FALLTHROUGH;
+    case MF_MEDIA_ENGINE_ERR_ENCRYPTED:
+      return PipelineStatus::PIPELINE_ERROR_DECODE;
+    case MF_MEDIA_ENGINE_ERR_SRC_NOT_SUPPORTED:
+      return PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN;
+    default:
+      NOTREACHED();
+      return PipelineStatus::PIPELINE_ERROR_INVALID_STATE;
+  }
+}
+
+}  // namespace
+
+MediaEngineNotifyImpl::MediaEngineNotifyImpl() = default;
+MediaEngineNotifyImpl::~MediaEngineNotifyImpl() = default;
+
+HRESULT MediaEngineNotifyImpl::RuntimeClassInitialize(
+    ErrorCB error_cb,
+    EndedCB ended_cb,
+    DurationChangedCB duration_changed_cb,
+    BufferingStateChangedCB buffering_state_changed_cb,
+    VideoNaturalSizeChangedCB video_natural_size_changed_cb) {
+  DVLOG(1) << __func__ << ": this=" << this;
+
+  error_cb_ = std::move(error_cb);
+  ended_cb_ = std::move(ended_cb);
+  duration_changed_cb_ = std::move(duration_changed_cb);
+  buffering_state_changed_cb_ = std::move(buffering_state_changed_cb);
+  video_natural_size_changed_cb_ = std::move(video_natural_size_changed_cb);
+  return S_OK;
+}
+
+// |param1| and |param2|'s meaning depends on the |event_code| from
+// https://docs.microsoft.com/en-us/windows/win32/api/mfmediaengine/ne-mfmediaengine-mf_media_engine_event
+// This method always return S_OK. Even for error |event_code| because we
+// successfully handled the event.
+HRESULT MediaEngineNotifyImpl::EventNotify(DWORD event_code,
+                                           DWORD_PTR param1,
+                                           DWORD param2) {
+  DVLOG(3) << __func__ << ": this=" << this << ",eventCode=" << event_code
+           << ",param1=" << static_cast<unsigned>(param1)
+           << ",param2=" << static_cast<unsigned>(param2);
+
+  base::AutoLock lock(lock_);
+  if (has_shutdown_)
+    return S_OK;
+
+  switch (static_cast<MF_MEDIA_ENGINE_EVENT>(event_code)) {
+    case MF_MEDIA_ENGINE_EVENT_ERROR: {
+      // |param1| - A member of the MF_MEDIA_ENGINE_ERR enumeration.
+      // |param2| - An HRESULT error code, or zero.
+      MF_MEDIA_ENGINE_ERR error = static_cast<MF_MEDIA_ENGINE_ERR>(param1);
+      DLOG(ERROR) << __func__ << ": error=" << error << ",hr=" << param2;
+      error_cb_.Run(MediaEngineStatusToPipelineStatus(error));
+      break;
+    }
+    case MF_MEDIA_ENGINE_EVENT_ENDED:
+      ended_cb_.Run();
+      break;
+    case MF_MEDIA_ENGINE_EVENT_DURATIONCHANGE:
+      duration_changed_cb_.Run();
+      break;
+    case MF_MEDIA_ENGINE_EVENT_FORMATCHANGE:
+      video_natural_size_changed_cb_.Run();
+      break;
+    case MF_MEDIA_ENGINE_EVENT_LOADEDDATA:
+      video_natural_size_changed_cb_.Run();
+      FALLTHROUGH;
+    case MF_MEDIA_ENGINE_EVENT_PLAYING:
+      buffering_state_changed_cb_.Run(
+          BufferingState::BUFFERING_HAVE_ENOUGH,
+          BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
+      break;
+    case MF_MEDIA_ENGINE_EVENT_WAITING:
+      buffering_state_changed_cb_.Run(
+          BufferingState::BUFFERING_HAVE_NOTHING,
+          BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
+      break;
+    default:
+      DVLOG(3) << __func__ << ": this=" << this
+               << ", unhandled event_code=" << event_code;
+      break;
+  }
+  return S_OK;
+}
+
+void MediaEngineNotifyImpl::Shutdown() {
+  DVLOG(1) << __func__ << ": this=" << this;
+
+  base::AutoLock lock(lock_);
+  has_shutdown_ = true;
+}
+
+}  // namespace media

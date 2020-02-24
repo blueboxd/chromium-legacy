@@ -67,8 +67,6 @@ class CONTENT_EXPORT AppCacheStorageReference
 // on disk.
 class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
  public:
-  using OnceCompletionCallback = base::OnceCallback<void(int)>;
-
   class CONTENT_EXPORT Observer {
    public:
     Observer(const Observer&) = delete;
@@ -112,7 +110,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   // AppCacheService
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                          OnceCompletionCallback callback) override;
+                          net::CompletionOnceCallback callback) override;
   void DeleteAppCachesForOrigin(const url::Origin& origin,
                                 net::CompletionOnceCallback callback) override;
 

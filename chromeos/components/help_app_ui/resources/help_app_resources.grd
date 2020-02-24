@@ -23,6 +23,11 @@
           type="BINDATA" />
       <include name="IDR_HELP_APP_ICON_512" file="app_icon_512.png"
           type="BINDATA" />
+      <include name="IDR_HELP_APP_BROWSER_PROXY_JS"
+          file="browser_proxy.js" type="BINDATA" />
+      <include name="IDR_HELP_APP_HELP_APP_MOJOM_JS"
+          file="${root_gen_dir}/chromeos/components/help_app_ui/help_app_ui.mojom-lite.js"
+          use_base_dir="false" type="BINDATA" />
     </includes>
   </release>
 </grit>

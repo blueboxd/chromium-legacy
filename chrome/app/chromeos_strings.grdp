@@ -3703,8 +3703,8 @@
   <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
     Upgrade
   </message>
-  <message name="IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON" desc="Label for the button in the Crostini upgrader dialog to launch the Linux terminal after upgrading Linux.">
-    Launch
+  <message name="IDS_CROSTINI_UPGRADER_DONE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to indicate upgrading Linux is complete.">
+    Done
   </message>
     <message name="IDS_CROSTINI_UPGRADER_RESTORE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to restore a backup if there was an error upgrading Linux.">
     Restore
@@ -3740,7 +3740,7 @@
     This may take up to 30 minutes.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade is finished successfully.">
-    Upgrading Linux
+    Upgrade complete
   </message>
   <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
     Linux has been successfully upgraded.

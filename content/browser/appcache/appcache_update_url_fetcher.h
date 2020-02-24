@@ -9,12 +9,13 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"
 
 namespace content {
+
+class AppCacheResponseWriter;
 
 // Fetches a manifest or a referenced resource.
 //

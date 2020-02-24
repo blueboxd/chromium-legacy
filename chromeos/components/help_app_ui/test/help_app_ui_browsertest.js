@@ -23,6 +23,11 @@ var HelpAppUIBrowserTest = class extends testing.Test {
   }
 
   /** @override */
+  get isAsync() {
+    return true;
+  }
+
+  /** @override */
   get runAccessibilityChecks() {
     return false;
   }
@@ -34,4 +39,14 @@ TEST_F('HelpAppUIBrowserTest', 'HasChromeSchemeURL', () => {
 
   assertEquals(document.location.origin, HOST_ORIGIN);
   assertEquals(guest.src, GUEST_ORIGIN + "/app.html");
+  testDone();
+});
+
+// Tests that chrome://help-app can successfully send a request to open the
+// feedback dialog and receive a response.
+TEST_F('HelpAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
+  const result = await help_app.handler.openFeedbackDialog();
+
+  assertEquals(result.errorMessage, '');
+  testDone();
 });

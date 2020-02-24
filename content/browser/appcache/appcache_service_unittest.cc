@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
 #include "content/public/test/browser_task_environment.h"
@@ -51,7 +51,7 @@ class MockResponseReader : public AppCacheResponseReader {
         data_(data),
         data_size_(data_size) {}
   void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                OnceCompletionCallback callback) override {
+                net::CompletionOnceCallback callback) override {
     info_buffer_ = info_buf;
     callback_ = std::move(callback);  // Cleared on completion.
 
@@ -62,7 +62,7 @@ class MockResponseReader : public AppCacheResponseReader {
   }
   void ReadData(net::IOBuffer* buf,
                 int buf_len,
-                OnceCompletionCallback callback) override {
+                net::CompletionOnceCallback callback) override {
     buffer_ = buf;
     buffer_len_ = buf_len;
     callback_ = std::move(callback);  // Cleared on completion.

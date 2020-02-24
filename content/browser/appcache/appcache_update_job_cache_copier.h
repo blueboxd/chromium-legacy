@@ -5,9 +5,27 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_JOB_CACHE_COPIER_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_JOB_CACHE_COPIER_H_
 
+#include <stdint.h>
+
+#include <memory>
+
+#include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/appcache/appcache_update_job.h"
+#include "net/base/io_buffer.h"
+#include "url/gurl.h"
+
+namespace net {
+
+class IOBuffer;
+class HttpResponseInfo;
+
+}  // namespace net
 
 namespace content {
+
+class AppCacheResponseInfo;
+class AppCacheResponseReader;
+class AppCacheResponseWriter;
 
 // Helper class to read cache info from and write cache info to disk.
 class AppCacheUpdateJob::CacheCopier : public AppCacheStorage::Delegate {

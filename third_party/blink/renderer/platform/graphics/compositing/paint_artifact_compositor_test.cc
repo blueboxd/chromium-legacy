@@ -4814,9 +4814,8 @@ TEST_P(PaintArtifactCompositorTest, DirectlySetScrollOffset) {
 
   ASSERT_TRUE(GetPaintArtifactCompositor().DirectlySetScrollOffset(
       scroll_element_id, FloatPoint(-10, -20)));
+  EXPECT_TRUE(host.LayersThatShouldPushProperties().contains(scroll_layer));
   EXPECT_TRUE(host.proxy()->CommitRequested());
-  // Scroll offset is not a layer property so no property push is needed.
-  EXPECT_FALSE(host.LayersThatShouldPushProperties().contains(scroll_layer));
   EXPECT_EQ(gfx::ScrollOffset(-10, -20),
             scroll_tree.current_scroll_offset(scroll_element_id));
   // DirectlySetScrollOffset doesn't update transform node.

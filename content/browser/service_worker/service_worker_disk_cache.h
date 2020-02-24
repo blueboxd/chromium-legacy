@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_disk_cache.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/common/content_export.h"
 
 namespace content {

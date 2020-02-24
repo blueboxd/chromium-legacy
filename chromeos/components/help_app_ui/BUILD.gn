@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos, "Help App is Chrome OS only")
 
@@ -10,21 +12,37 @@ static_library("help_app_ui") {
   sources = [
     "help_app_guest_ui.cc",
     "help_app_guest_ui.h",
+    "help_app_page_handler.cc",
+    "help_app_page_handler.h",
     "help_app_ui.cc",
     "help_app_ui.h",
+    "help_app_ui_delegate.h",
     "url_constants.cc",
     "url_constants.h",
   ]
 
   deps = [
+    ":mojo_bindings",
+    ":mojo_bindings_js",
     "//chromeos/constants",
     "//chromeos/resources:help_app_bundle_resources",
     "//chromeos/resources:help_app_resources",
     "//chromeos/system",
     "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/platform",
     "//ui/resources:webui_resources_grd_grit",
     "//ui/webui",
   ]
+}
+
+mojom("mojo_bindings") {
+  sources = [ "help_app_ui.mojom" ]
+}
+
+group("closure_compile") {
+  testonly = true
+  deps = [ "resources:closure_compile" ]
 }
 
 js2gtest("browser_tests_js") {

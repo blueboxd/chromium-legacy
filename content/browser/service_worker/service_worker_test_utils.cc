@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
@@ -533,7 +534,7 @@ MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
 
 void MockServiceWorkerResponseReader::ReadInfo(
     HttpResponseInfoIOBuffer* info_buf,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_TRUE(expected.info);
@@ -550,7 +551,7 @@ void MockServiceWorkerResponseReader::ReadInfo(
 void MockServiceWorkerResponseReader::ReadData(
     net::IOBuffer* buf,
     int buf_len,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_FALSE(expected.info);
@@ -615,7 +616,7 @@ void MockServiceWorkerResponseReader::CompletePendingRead() {
   }
   pending_info_ = nullptr;
   pending_buffer_ = nullptr;
-  OnceCompletionCallback callback = std::move(pending_callback_);
+  net::CompletionOnceCallback callback = std::move(pending_callback_);
   pending_callback_.Reset();
   std::move(callback).Run(expected.result);
 }
@@ -629,7 +630,7 @@ MockServiceWorkerResponseWriter::~MockServiceWorkerResponseWriter() = default;
 
 void MockServiceWorkerResponseWriter::WriteInfo(
     HttpResponseInfoIOBuffer* info_buf,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_TRUE(write.is_info);
@@ -648,7 +649,7 @@ void MockServiceWorkerResponseWriter::WriteInfo(
 void MockServiceWorkerResponseWriter::WriteData(
     net::IOBuffer* buf,
     int buf_len,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_FALSE(write.is_info);

@@ -131,9 +131,6 @@ class PropertyTreeManager {
   static bool DirectlyUpdateCompositedOpacityValue(
       cc::LayerTreeHost&,
       const EffectPaintPropertyNode&);
-  // Returns true if the compositor scroll offsets were updated, even if the
-  // values did not change. This function updates both the cc scroll tree scroll
-  // offset and the cc transform node's scroll offset.
   static bool DirectlyUpdateScrollOffsetTransform(
       cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
@@ -143,9 +140,7 @@ class PropertyTreeManager {
       cc::LayerTreeHost&,
       const TransformPaintPropertyNode&);
 
-  // This function only updates the cc scroll tree scroll offset and does not
-  // update the cc transform node's scroll offset.
-  static void DirectlySetScrollOffset(cc::LayerTreeHost&,
+  static bool DirectlySetScrollOffset(cc::LayerTreeHost&,
                                       CompositorElementId,
                                       const gfx::ScrollOffset&);
 

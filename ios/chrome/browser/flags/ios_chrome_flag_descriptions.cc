@@ -232,10 +232,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kEnterprisePolicyIOSName[] = "Enable enterprise policy";
-const char kEnterprisePolicyIOSDescription[] =
-    "When enabled, enterprise policies will be loaded and respected.";
-
 const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";

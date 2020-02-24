@@ -11,7 +11,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/autofill/core/browser/field_types.h"

@@ -44,7 +44,6 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
   base::string16 GetFormattedUrlOrigin() const override;
   GURL GetAppLaunchURL() const override;
   bool IsUrlInAppScope(const GURL& url) const override;
-  const Extension* GetExtensionForTesting() const;
   bool CanUninstall() const override;
   void Uninstall() override;
   bool IsInstalled() const override;

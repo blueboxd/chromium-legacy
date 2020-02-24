@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/completion_once_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -232,10 +233,10 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
 
   // ServiceWorkerResponseReader overrides
   void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                OnceCompletionCallback callback) override;
+                net::CompletionOnceCallback callback) override;
   void ReadData(net::IOBuffer* buf,
                 int buf_len,
-                OnceCompletionCallback callback) override;
+                net::CompletionOnceCallback callback) override;
 
   // Test helpers. ExpectReadInfo() and ExpectReadData() give precise control
   // over both the data to be written and the result to return.
@@ -284,7 +285,7 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
   scoped_refptr<net::IOBuffer> pending_buffer_;
   size_t pending_buffer_len_;
   scoped_refptr<HttpResponseInfoIOBuffer> pending_info_;
-  OnceCompletionCallback pending_callback_;
+  net::CompletionOnceCallback pending_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseReader);
 };
@@ -316,10 +317,10 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
 
   // ServiceWorkerResponseWriter overrides
   void WriteInfo(HttpResponseInfoIOBuffer* info_buf,
-                 OnceCompletionCallback callback) override;
+                 net::CompletionOnceCallback callback) override;
   void WriteData(net::IOBuffer* buf,
                  int buf_len,
-                 OnceCompletionCallback callback) override;
+                 net::CompletionOnceCallback callback) override;
 
   // Enqueue expected writes.
   void ExpectWriteInfoOk(size_t len, bool async);
@@ -350,7 +351,7 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
   size_t info_written_;
   size_t data_written_;
 
-  OnceCompletionCallback pending_callback_;
+  net::CompletionOnceCallback pending_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseWriter);
 };

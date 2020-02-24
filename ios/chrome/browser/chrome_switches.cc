@@ -21,6 +21,9 @@ const char kDisableIOSPasswordSuggestions[] =
 const char kDisableThirdPartyKeyboardWorkaround[] =
     "disable-third-party-keyboard-workaround";
 
+// Enables enterprise policy support.
+const char kEnableEnterprisePolicy[] = "enable-enterprise-policy";
+
 // Enables support for Handoff from Chrome on iOS to the default browser of
 // other Apple devices.
 const char kEnableIOSHandoffToOtherDevices[] =

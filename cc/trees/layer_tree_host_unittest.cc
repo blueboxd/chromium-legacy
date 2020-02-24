@@ -3240,11 +3240,9 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
         layer_tree_host()->InnerViewportScrollLayerForTesting();
     EXPECT_EQ(scroll_layer->element_id(), last_scrolled_element_id_);
     EXPECT_EQ(gfx::ScrollOffset(50, 50), last_scrolled_offset_);
-    // The scroll offset in the scroll tree is typically updated from blink
-    // which doesn't exist in this test. Because we preemptively apply the
-    // scroll offset in LayerTreeHost::UpdateScrollOffsetFromImpl, the current
-    // scroll offset will still be updated.
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), CurrentScrollOffset(scroll_layer));
+    // The scroll offset in scroll tree needs update from blink which doesn't
+    // exist in this test.
+    EXPECT_EQ(gfx::ScrollOffset(), CurrentScrollOffset(scroll_layer));
     EndTest();
   }
 

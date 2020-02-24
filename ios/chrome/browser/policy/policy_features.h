@@ -5,9 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_
 
-#include "base/feature_list.h"
-
-// Feature flag to enable enterprise policy on iOS.
-extern const base::Feature kEnterprisePolicyIOS;
+// Returns true if enterprise policy support is enabled.
+bool IsEnterprisePolicyEnabled();
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_FEATURES_H_

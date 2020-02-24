@@ -1,36 +1,28 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 
-#include <stddef.h>
-
+#include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
+#include "base/numerics/checked_math.h"
 #include "base/pickle.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_disk_cache.h"
-#include "content/browser/appcache/appcache_storage.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/common/storage_histograms.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
 namespace {
-
-using OnceCompletionCallback = base::OnceCallback<void(int)>;
 
 // Disk cache entry data indices.
 enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
@@ -50,31 +42,7 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
   const std::unique_ptr<const base::Pickle> pickle_;
 };
 
-}  // anon namespace
-
-
-// AppCacheResponseInfo ----------------------------------------------
-
-AppCacheResponseInfo::AppCacheResponseInfo(
-    base::WeakPtr<AppCacheStorage> storage,
-    const GURL& manifest_url,
-    int64_t response_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
-    int64_t response_data_size)
-    : manifest_url_(manifest_url),
-      response_id_(response_id),
-      http_response_info_(std::move(http_info)),
-      response_data_size_(response_data_size),
-      storage_(std::move(storage)) {
-  DCHECK(http_response_info_);
-  DCHECK(response_id != blink::mojom::kAppCacheNoResponseId);
-  storage_->working_set()->AddResponseInfo(this);
-}
-
-AppCacheResponseInfo::~AppCacheResponseInfo() {
-  if (storage_)
-    storage_->working_set()->RemoveResponseInfo(this);
-}
+}  // namespace
 
 // HttpResponseInfoIOBuffer ------------------------------------------
 
@@ -114,13 +82,15 @@ void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {
   // so the caller can schedule additional operations in the callback.
   buffer_ = nullptr;
   info_buffer_ = nullptr;
-  OnceCompletionCallback cb = std::move(callback_);
+  net::CompletionOnceCallback cb = std::move(callback_);
   callback_.Reset();
   std::move(cb).Run(result);
 }
 
-void AppCacheResponseIO::ReadRaw(int index, int offset,
-                                 net::IOBuffer* buf, int buf_len) {
+void AppCacheResponseIO::ReadRaw(int index,
+                                 int offset,
+                                 net::IOBuffer* buf,
+                                 int buf_len) {
   DCHECK(entry_);
   int rv = entry_->Read(
       index, offset, buf, buf_len,
@@ -129,8 +99,10 @@ void AppCacheResponseIO::ReadRaw(int index, int offset,
     ScheduleIOCompletionCallback(rv);
 }
 
-void AppCacheResponseIO::WriteRaw(int index, int offset,
-                                 net::IOBuffer* buf, int buf_len) {
+void AppCacheResponseIO::WriteRaw(int index,
+                                  int offset,
+                                  net::IOBuffer* buf,
+                                  int buf_len) {
   DCHECK(entry_);
   int rv = entry_->Write(
       index, offset, buf, buf_len,
@@ -183,7 +155,6 @@ void AppCacheResponseIO::OpenEntryCallback(
   response->OnOpenEntryComplete();
 }
 
-
 // AppCacheResponseReader ----------------------------------------------
 
 AppCacheResponseReader::AppCacheResponseReader(
@@ -198,7 +169,7 @@ AppCacheResponseReader::AppCacheResponseReader(
 AppCacheResponseReader::~AppCacheResponseReader() = default;
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                                      OnceCompletionCallback callback) {
+                                      net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsReadPending());
   DCHECK(info_buf);
@@ -224,7 +195,7 @@ void AppCacheResponseReader::ContinueReadInfo() {
 
 void AppCacheResponseReader::ReadData(net::IOBuffer* buf,
                                       int buf_len,
-                                      OnceCompletionCallback callback) {
+                                      net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsReadPending());
   DCHECK(buf);
@@ -244,9 +215,7 @@ void AppCacheResponseReader::ContinueReadData() {
   DCHECK_GE(range_length_, read_position_);
   if (range_length_ - read_position_ < buffer_len_)
     buffer_len_ = range_length_ - read_position_;
-  ReadRaw(kResponseContentIndex,
-          range_offset_ + read_position_,
-          buffer_.get(),
+  ReadRaw(kResponseContentIndex, range_offset_ + read_position_, buffer_.get(),
           buffer_len_);
 }
 
@@ -277,8 +246,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
 
       // Also return the size of the response body
       DCHECK(entry_);
-      info_buffer_->response_data_size =
-          entry_->GetSize(kResponseContentIndex);
+      info_buffer_->response_data_size = entry_->GetSize(kResponseContentIndex);
 
       int64_t metadata_size = entry_->GetSize(kResponseMetadataIndex);
       if (metadata_size > 0) {
@@ -301,7 +269,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
 }
 
 void AppCacheResponseReader::OnOpenEntryComplete() {
-  if (!entry_)  {
+  if (!entry_) {
     ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
     return;
   }
@@ -329,7 +297,7 @@ AppCacheResponseWriter::AppCacheResponseWriter(
 AppCacheResponseWriter::~AppCacheResponseWriter() = default;
 
 void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
-                                       OnceCompletionCallback callback) {
+                                       net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsWritePending());
   DCHECK(info_buf);
@@ -361,7 +329,7 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
 
 void AppCacheResponseWriter::WriteData(net::IOBuffer* buf,
                                        int buf_len,
-                                       OnceCompletionCallback callback) {
+                                       net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsWritePending());
   DCHECK(buf);
@@ -380,8 +348,8 @@ void AppCacheResponseWriter::ContinueWriteData() {
     ScheduleIOCompletionCallback(net::ERR_FAILED);
     return;
   }
-  WriteRaw(
-      kResponseContentIndex, write_position_, buffer_.get(), write_amount_);
+  WriteRaw(kResponseContentIndex, write_position_, buffer_.get(),
+           write_amount_);
 }
 
 void AppCacheResponseWriter::OnIOComplete(int result) {

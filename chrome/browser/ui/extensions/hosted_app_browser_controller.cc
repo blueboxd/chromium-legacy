@@ -159,10 +159,6 @@ const Extension* HostedAppBrowserController::GetExtension() const {
       ->GetExtensionById(GetAppId(), ExtensionRegistry::EVERYTHING);
 }
 
-const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
-  return GetExtension();
-}
-
 std::string HostedAppBrowserController::GetAppShortName() const {
   const Extension* extension = GetExtension();
   return extension ? extension->short_name() : std::string();

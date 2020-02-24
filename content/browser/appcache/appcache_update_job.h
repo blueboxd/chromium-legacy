@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
-#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/appcache/appcache_update_job_state.h"
@@ -43,6 +42,7 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 }
 
+class AppCacheResponseInfo;
 class HostNotifier;
 
 CONTENT_EXPORT extern const base::Feature kAppCacheUpdateResourceOn304Feature;

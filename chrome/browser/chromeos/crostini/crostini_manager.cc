@@ -2552,7 +2552,10 @@ void CrostiniManager::OnUpgradeContainerProgress(
   std::vector<std::string> progress_messages;
   progress_messages.reserve(signal.progress_messages().size());
   for (const auto& msg : signal.progress_messages()) {
-    progress_messages.push_back(msg);
+    if (!msg.empty()) {
+      // Blank lines aren't sent to observers.
+      progress_messages.push_back(msg);
+    }
   }
 
   ContainerId container_id(signal.vm_name(), signal.container_name());

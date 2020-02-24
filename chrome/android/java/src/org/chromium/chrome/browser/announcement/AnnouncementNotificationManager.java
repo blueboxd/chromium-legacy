@@ -119,7 +119,7 @@ public class AnnouncementNotificationManager {
 
     private static void recordHistogram(@AnnouncementNotificationEvent int event) {
         RecordHistogram.recordEnumeratedHistogram("Notifications.Announcement.Events", event,
-                org.chromium.chrome.browser.announcement.AnnouncementNotificationEvent.MAX_VALUE);
+                AnnouncementNotificationEvent.MAX_VALUE + 1);
     }
 
     @CalledByNative

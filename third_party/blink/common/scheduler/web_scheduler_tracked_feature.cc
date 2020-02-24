@@ -83,6 +83,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WebShare";
     case WebSchedulerTrackedFeature::kRequestedStorageAccessGrant:
       return "requested storage access permission";
+    case WebSchedulerTrackedFeature::kWebNfc:
+      return "WebNfc";
   }
 }
 

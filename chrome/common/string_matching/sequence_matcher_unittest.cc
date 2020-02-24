@@ -127,5 +127,11 @@ TEST_F(SequenceMatcherTest, TestEditDistanceRatio) {
                               base::UTF8ToUTF16("cats white"), true)
                   .Ratio(),
               0.2, 0.01);
+
+  // Totally different
+  EXPECT_NEAR(SequenceMatcher(base::UTF8ToUTF16("dog"),
+                              base::UTF8ToUTF16("elphant"), true)
+                  .Ratio(),
+              0.0, 0.01);
 }
 }  // namespace

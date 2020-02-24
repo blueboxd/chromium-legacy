@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -88,7 +88,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
       network::mojom::ContentSecurityPolicyType,
       network::mojom::ContentSecurityPolicySource) override;
   void ResetReplicatedContentSecurityPolicy() override;
-  void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
+  void SetReplicatedInsecureRequestPolicy(
+      mojom::blink::InsecureRequestPolicy) override;
   void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
   void SetReplicatedAdFrameType(
       mojom::blink::AdFrameType ad_frame_type) override;

@@ -339,17 +339,41 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TREE_POSITION: {
-        // If this is a "before text" position, it's pointing to the anchor
-        // itself, which we've determined to be unignored.
+        // If this is a "before text" or an "after text" tree position, it's
+        // pointing to the anchor itself, which we've determined to be
+        // unignored.
+        DCHECK(AnchorChildCount() || child_index_ == BEFORE_TEXT ||
+               child_index_ == 0)
+            << "\"Before text\" and \"after text\" tree positions are only "
+               "valid on leaf nodes.";
         if (child_index_ == BEFORE_TEXT)
           return false;
-        // If there is a node at the position pointed to by "child_index_", i.e.
-        // this position is neither a leaf position nor an "after children"
-        // position, consider this tree position to be ignored if the child node
-        // is ignored.
-        if (!AnchorChildCount() || child_index_ == AnchorChildCount())
+        if (!AnchorChildCount())
           return false;
-        AXPositionInstance child_position = CreateChildPositionAt(child_index_);
+
+        // If this position is an "after children" position, consider the
+        // position to be ignored if the last child is ignored. This is because
+        // the last child will not be visible in the unignored tree. If the
+        // position is not adjusted, the resulting position would erroneously
+        // point before the second child in the unignored subtree rooted at the
+        // last child.
+        //
+        // 1 kRootWebArea
+        // ++2 kGenericContainer ignored
+        // ++++3 kStaticText "Line 1."
+        // ++++4 kStaticText "Line 2."
+        //
+        // Tree position anchor=kGenericContainer, child_index=1.
+        //
+        // Alternatively, if there is a node at the position pointed to by
+        // "child_index_", i.e. this position is neither a leaf position nor an
+        // "after children" position, consider this tree position to be ignored
+        // if the child node is ignored.
+        int adjusted_child_index = child_index_ != AnchorChildCount()
+                                       ? child_index_
+                                       : child_index_ - 1;
+        AXPositionInstance child_position =
+            CreateChildPositionAt(adjusted_child_index);
         DCHECK(child_position && !child_position->IsNullPosition());
         return child_position->GetAnchor()->IsIgnored();
       }

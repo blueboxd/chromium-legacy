@@ -16,7 +16,7 @@ bool CompareMatches(const Match& m1, const Match& m2) {
 }
 }  // namespace
 
-SequenceMatcher::Match::Match() {}
+SequenceMatcher::Match::Match() = default;
 SequenceMatcher::Match::Match(int pos_first, int pos_second, int len)
     : pos_first_string(pos_first), pos_second_string(pos_second), length(len) {
   DCHECK_GE(pos_first_string, 0);
@@ -175,9 +175,9 @@ double SequenceMatcher::Ratio() {
   if (use_edit_distance_) {
     if (edit_distance_ratio_ < 0) {
       const int edit_distance = EditDistance();
-      edit_distance_ratio_ =
-          1.0 - static_cast<double>(edit_distance) * 2 /
-                    (first_string_.size() + second_string_.size());
+      edit_distance_ratio_ = std::max(
+          0.0, 1.0 - static_cast<double>(edit_distance) * 2 /
+                         (first_string_.size() + second_string_.size()));
     }
     return edit_distance_ratio_;
   }

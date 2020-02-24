@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -147,6 +148,7 @@ class AppServiceProxy : public KeyedService,
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
   void ReInitializeCrostiniForTesting(Profile* profile);
+  void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
 
   // Returns a list of apps (represented by their ids) which can handle |url|.
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
@@ -330,6 +332,8 @@ class AppServiceProxy : public KeyedService,
   using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
                                     base::UniquePtrComparator>;
   UninstallDialogs uninstall_dialogs_;
+
+  base::OnceClosure dialog_created_callback_;
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
 

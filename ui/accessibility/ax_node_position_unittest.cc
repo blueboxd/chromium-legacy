@@ -855,12 +855,11 @@ TEST_F(AXPositionTest, IsIgnored) {
   EXPECT_TRUE(tree_position_4->IsIgnored());
 
   // An "after children" tree position on the root node, where the last child is
-  // ignored, should not be ignored, because conceptually it could be
-  // interpreted to point to after the last unignored child.
+  // ignored, should be ignored.
   TestPositionType tree_position_5 = AXNodePosition::CreateTreePosition(
       GetTreeID(), root_data.id, 2 /* child_index */);
   ASSERT_TRUE(tree_position_5->IsTreePosition());
-  EXPECT_FALSE(tree_position_5->IsIgnored());
+  EXPECT_TRUE(tree_position_5->IsIgnored());
 
   // A "before text" position on an unignored node should not be ignored.
   TestPositionType tree_position_6 = AXNodePosition::CreateTreePosition(
@@ -2968,6 +2967,18 @@ TEST_F(AXPositionTest, AsUnignoredPosition) {
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
   EXPECT_EQ(inline_box_data_3.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // "After children" tree positions that are anchored to an unignored node
+  // whose last child is ignored.
+  tree_position = AXNodePosition::CreateTreePosition(
+      GetTreeID(), static_text_data_1.id, 2 /* child_index */);
+  ASSERT_TRUE(tree_position->IsIgnored());
+  test_position = tree_position->AsUnignoredPosition(
+      AXPositionAdjustmentBehavior::kMoveBackward);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(inline_box_data_1.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->child_index());
 
   // 2. If no equivalent and unignored parent position can be computed, we try

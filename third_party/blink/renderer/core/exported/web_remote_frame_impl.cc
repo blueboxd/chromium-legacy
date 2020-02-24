@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -293,7 +294,7 @@ void WebRemoteFrameImpl::ResetReplicatedContentSecurityPolicy() {
 }
 
 void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
-    WebInsecureRequestPolicy policy) {
+    mojom::blink::InsecureRequestPolicy policy) {
   DCHECK(GetFrame());
   GetFrame()->SetInsecureRequestPolicy(policy);
 }

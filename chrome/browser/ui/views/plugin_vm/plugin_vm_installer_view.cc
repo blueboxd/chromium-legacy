@@ -123,7 +123,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   views::BoxLayout* message_container_layout =
       message_container_view->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kHorizontal,
+              views::BoxLayout::Orientation::kVertical,
               gfx::Insets(kMessageHeight - kMessageFontSize, 0, 0, 0)));
   upper_container_view->AddChildView(message_container_view);
 

@@ -2065,7 +2065,7 @@ if (!is_android) {
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
         "../browser/ui/views/translate/translate_language_browsertest.cc",
-        "../browser/ui/views/web_apps/bookmark_app_uninstall_dialog_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_uninstall_dialog_browsertest.cc",
         "payments/payment_request_platform_browsertest_base.cc",
       ]
       if (!is_chromeos) {
@@ -2459,6 +2459,7 @@ if (!is_android) {
         "../browser/ui/ash/tablet_mode_page_behavior_browsertest.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/browser_finder_chromeos_browsertest.cc",
+        "../browser/ui/views/apps/app_dialog_view_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
         "../browser/ui/views/arc_app_dialog_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_ansible_software_config_view_browsertest.cc",

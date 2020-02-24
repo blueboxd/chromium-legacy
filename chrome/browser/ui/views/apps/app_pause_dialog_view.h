@@ -16,6 +16,8 @@ class ImageSkia;
 // the callback to notify AppService, which pauses the app.
 class AppPauseDialogView : public AppDialogView {
  public:
+  static AppPauseDialogView* GetActiveViewForTesting();
+
   AppPauseDialogView(
       const std::string& app_name,
       const gfx::ImageSkia& image,

@@ -4,16 +4,27 @@
 
 source_set("smart_dim") {
   public = [
+    "ml_agent.h",
     "model.h",
     "model_impl.h",
   ]
 
   sources = [
+    "builtin_worker.cc",
+    "builtin_worker.h",
+    "download_worker.cc",
+    "download_worker.h",
+    "ml_agent.cc",
+    "ml_agent.h",
+    "ml_agent_util.cc",
+    "ml_agent_util.h",
     "ml_service_client.cc",
     "ml_service_client.h",
     "model.h",
     "model_impl.cc",
     "model_impl.h",
+    "smart_dim_worker.cc",
+    "smart_dim_worker.h",
   ]
 
   deps = [

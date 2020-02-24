@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -51,9 +51,13 @@ class ArcApps : public KeyedService,
 
   ~ArcApps() override;
 
+  void SetUseTestingProfile();
+  void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
+
  private:
   using AppIdToTaskIds = std::map<std::string, std::set<int>>;
   using TaskIdToAppId = std::map<int, std::string>;
+  using BlockedApps = std::set<std::string>;
 
   static void CreateBlockDialog(const std::string& app_name,
                                 const gfx::ImageSkia& image,
@@ -145,6 +149,13 @@ class ArcApps : public KeyedService,
       arc::ArcIntentHelperBridge* intent_helper_bridge,
       std::vector<apps::mojom::IntentFilterPtr>* intent_filters);
 
+  void LoadIconForBlockDialog(const std::string& app_id,
+                              const ArcAppListPrefs::AppInfo& app_info);
+
+  // Callback invoked when the icon is loaded.
+  void OnLoadIconForBlockDialog(const std::string& app_name,
+                                apps::mojom::IconValuePtr icon_value);
+
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -155,8 +166,13 @@ class ArcApps : public KeyedService,
 
   PausedApps paused_apps_;
 
+  BlockedApps blocked_apps_;
+
   AppIdToTaskIds app_id_to_task_ids_;
   TaskIdToAppId task_id_to_app_id_;
+
+  bool is_using_testing_profile_ = false;
+  base::OnceClosure dialog_created_callback_;
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};

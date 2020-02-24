@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -48,6 +50,9 @@ void OnScanRequestCompleted(ScriptPromiseResolver* resolver,
 
 // static
 NDEFReader* NDEFReader::Create(ExecutionContext* context) {
+  context->GetScheduler()->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kWebNfc,
+      {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   return MakeGarbageCollected<NDEFReader>(context);
 }
 

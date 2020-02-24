@@ -47,15 +47,6 @@ dialog#delete-confirm-dialog::backdrop {
   max-width: 100%;
 }
 
-:host(:not([files-ng])) cr-button:focus:not(:active) {
-  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5);
-  font-weight: bold;
-}
-
-:host([files-ng]) {
-  box-shadow: none;
-}
-
 #audio-artwork {
   height: 100%;
   margin: 0 auto;
@@ -185,11 +176,12 @@ dialog#delete-confirm-dialog::backdrop {
   --text-color: currentColor;
   border: 2px solid transparent;
   border-radius: 50%;
+  box-shadow: none;
   box-sizing: border-box;
   height: 36px;
   margin: 0 6px;
   min-width: 36px;
-  padding: calc(6px - 1px);
+  padding: calc(6px - 2px);
   width: 36px;
 }
 
@@ -263,6 +255,11 @@ iron-icon {
 
 :host([files-ng]) #info-button > .icon {
   -webkit-mask-image: url(../images/files/ui/info.svg);
+}
+
+:host(:not([files-ng])) cr-button:focus:not(:active) {
+  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5);
+  font-weight: bold;
 }
 
 :host([files-ng]) cr-button:focus:not(:active) {

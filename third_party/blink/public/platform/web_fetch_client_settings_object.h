@@ -10,6 +10,8 @@
 #include "third_party/blink/public/platform/web_url.h"
 
 #if INSIDE_BLINK
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"  // nogncheck
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"  // nogncheck
 #endif
@@ -56,8 +58,10 @@ struct WebFetchClientSettingsObject {
                               ? KURL()
                               : KURL(settings_object.GetOutgoingReferrer())),
         insecure_requests_policy(
-            settings_object.GetInsecureRequestsPolicy() &
-                    blink::kUpgradeInsecureRequests
+            (settings_object.GetInsecureRequestsPolicy() &
+             blink::mojom::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+                    mojom::blink::InsecureRequestPolicy::
+                        kLeaveInsecureRequestsAlone
                 ? blink::mojom::InsecureRequestsPolicy::kUpgrade
                 : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade) {}
 #endif  // INSIDE_BLINK

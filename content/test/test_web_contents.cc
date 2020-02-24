@@ -30,6 +30,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/test/test_render_view_host.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -184,7 +185,8 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.is_overriding_user_agent = false;
   params.history_list_was_cleared = false;
   params.origin = url::Origin::Create(url);
-  params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
+  params.insecure_request_policy =
+      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
   params.has_potentially_trustworthy_unique_origin = false;
 
   rfh->SendNavigateWithParams(&params, was_within_same_document);

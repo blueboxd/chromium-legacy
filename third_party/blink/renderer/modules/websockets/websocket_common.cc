@@ -7,15 +7,15 @@
 #include <stddef.h>
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-
-#include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -41,8 +41,9 @@ WebSocketCommon::ConnectResult WebSocketCommon::Connect(
   url_ = KURL(NullURL(), url);
 
   bool upgrade_insecure_requests_set =
-      execution_context->GetSecurityContext().GetInsecureRequestPolicy() &
-      kUpgradeInsecureRequests;
+      (execution_context->GetSecurityContext().GetInsecureRequestPolicy() &
+       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
 
   if (upgrade_insecure_requests_set && url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {

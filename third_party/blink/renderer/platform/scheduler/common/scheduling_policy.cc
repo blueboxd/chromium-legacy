@@ -48,6 +48,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebLocks:
     case Feature::kWakeLock:
     case Feature::kRequestedStorageAccessGrant:
+    case Feature::kWebNfc:
       return true;
   }
 }

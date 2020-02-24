@@ -158,6 +158,9 @@ class UserActivityManager : public ui::UserActivityObserver,
   // Cancel any pending request to |smart_dim_model_| to get a dim decision.
   void CancelDimDecisionRequest();
 
+  // If old smart dim model or new SmartDimMlAgent is ready, based on Finch.
+  bool SmartDimModelReady();
+
   // Time when an idle event is received and we start logging. Null if an idle
   // event hasn't been observed.
   base::Optional<base::TimeDelta> idle_event_start_since_boot_;

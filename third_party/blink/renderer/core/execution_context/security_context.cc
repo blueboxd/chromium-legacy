@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -61,7 +62,8 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       document_policy_(init.CreateDocumentPolicy()),
       content_security_policy_(init.GetCSP()),
       address_space_(network::mojom::IPAddressSpace::kUnknown),
-      insecure_request_policy_(kLeaveInsecureRequestsAlone),
+      insecure_request_policy_(
+          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
       require_safe_types_(false),
       context_type_(context_type) {}
 

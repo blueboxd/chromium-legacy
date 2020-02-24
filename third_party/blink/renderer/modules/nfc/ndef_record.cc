@@ -270,6 +270,29 @@ static NDEFRecord* CreateUnknownRecord(const String& id,
       id, bytes);
 }
 
+static NDEFRecord* CreateSmartPosterRecord(
+    const ExecutionContext* execution_context,
+    const String& id,
+    const NDEFRecordDataSource& data,
+    ExceptionState& exception_state) {
+  // https://w3c.github.io/web-nfc/#dfn-map-smart-poster-to-ndef
+  if (!data.IsNDEFMessageInit()) {
+    exception_state.ThrowTypeError(
+        "The data for 'smart-poster' NDEFRecord must be an NDEFMessageInit.");
+    return nullptr;
+  }
+
+  NDEFMessage* payload_message = NDEFMessage::CreateAsPayloadOfSmartPoster(
+      execution_context, data.GetAsNDEFMessageInit(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  DCHECK(payload_message);
+
+  return MakeGarbageCollected<NDEFRecord>(
+      device::mojom::blink::NDEFRecordTypeCategory::kStandardized,
+      "smart-poster", id, payload_message);
+}
+
 static NDEFRecord* CreateExternalRecord(
     const ExecutionContext* execution_context,
     const String& record_type,
@@ -379,9 +402,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
   } else if (record_type == "unknown") {
     return CreateUnknownRecord(init->id(), init->data(), exception_state);
   } else if (record_type == "smart-poster") {
-    // TODO(https://crbug.com/520391): Support creating smart-poster records.
-    exception_state.ThrowTypeError("smart-poster type is not supported yet");
-    return nullptr;
+    return CreateSmartPosterRecord(execution_context, init->id(), init->data(),
+                                   exception_state);
   } else if (IsValidExternalType(record_type)) {
     return CreateExternalRecord(execution_context, record_type, init->id(),
                                 init->data(), exception_state);

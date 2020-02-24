@@ -5,12 +5,13 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -107,15 +108,16 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
             settings_manager_->FindBrowserForProfile(browser()->profile()));
   EXPECT_EQ(1u, observer_.new_settings_count());
 
-  // Launching via application_launch.h should also dedupe to the same browser.
+  // Launching via LaunchService should also de-dupe to the same browser.
   web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
       browser()->profile(), web_app::SystemAppType::SETTINGS);
-  content::WebContents* contents = OpenApplication(
-      browser()->profile(),
-      apps::AppLaunchParams(
-          settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::AppLaunchSource::kSourceCommandLine));
+  content::WebContents* contents =
+      apps::LaunchService::Get(browser()->profile())
+          ->OpenApplication(apps::AppLaunchParams(
+              settings_app_id,
+              apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceCommandLine));
   EXPECT_EQ(contents,
             settings_browser->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(1u, observer_.new_settings_count());

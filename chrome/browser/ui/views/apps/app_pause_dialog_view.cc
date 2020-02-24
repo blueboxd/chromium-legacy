@@ -12,6 +12,12 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace {
+
+AppPauseDialogView* g_app_pause_dialog_view = nullptr;
+
+}  // namespace
+
 // static
 void apps::AppServiceProxy::CreatePauseDialog(
     const std::string& app_name,
@@ -23,6 +29,11 @@ void apps::AppServiceProxy::CreatePauseDialog(
                              std::move(closed_callback)),
       nullptr, nullptr)
       ->Show();
+}
+
+// static
+AppPauseDialogView* AppPauseDialogView::GetActiveViewForTesting() {
+  return g_app_pause_dialog_view;
 }
 
 AppPauseDialogView::AppPauseDialogView(
@@ -41,9 +52,13 @@ AppPauseDialogView::AppPauseDialogView(
               base::TimeDelta::FromMinutes(pause_data.minutes)));
 
   InitializeView(image, heading_text);
+
+  g_app_pause_dialog_view = this;
 }
 
-AppPauseDialogView::~AppPauseDialogView() = default;
+AppPauseDialogView::~AppPauseDialogView() {
+  g_app_pause_dialog_view = nullptr;
+}
 
 bool AppPauseDialogView::Accept() {
   std::move(closed_callback_).Run();

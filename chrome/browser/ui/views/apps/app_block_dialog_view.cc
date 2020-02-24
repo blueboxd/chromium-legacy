@@ -11,6 +11,12 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace {
+
+AppBlockDialogView* g_app_block_dialog_view = nullptr;
+
+}  // namespace
+
 namespace apps {
 
 // static
@@ -24,6 +30,11 @@ void ArcApps::CreateBlockDialog(const std::string& app_name,
 
 }  // namespace apps
 
+// static
+AppBlockDialogView* AppBlockDialogView::GetActiveViewForTesting() {
+  return g_app_block_dialog_view;
+}
+
 AppBlockDialogView::AppBlockDialogView(const std::string& app_name,
                                        const gfx::ImageSkia& image,
                                        Profile* profile) {
@@ -33,9 +44,13 @@ AppBlockDialogView::AppBlockDialogView(const std::string& app_name,
       base::UTF8ToUTF16(app_name));
 
   InitializeView(image, heading_text);
+
+  g_app_block_dialog_view = this;
 }
 
-AppBlockDialogView::~AppBlockDialogView() = default;
+AppBlockDialogView::~AppBlockDialogView() {
+  g_app_block_dialog_view = nullptr;
+}
 
 base::string16 AppBlockDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_APP_BLOCK_PROMPT_TITLE);

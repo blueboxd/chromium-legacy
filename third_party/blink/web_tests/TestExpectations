@@ -7497,6 +7497,8 @@ crbug.com/1049607 [ Win ] external/wpt/html/semantics/selectors/pseudo-classes/l
 crbug.com/1054577 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Win ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 crbug.com/1054577 [ Mac ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
+crbug.com/1054577 [ Mac ] virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
+crbug.com/1054577 [ Mac ] external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Pass Failure ]
 
 # Sheriff 2020-02-07
 

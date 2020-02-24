@@ -66,7 +66,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
@@ -90,7 +90,7 @@ void VerifyPageFocusMessage(TestRenderWidgetHost* twh, bool expected_focus) {
 // Helper function for strict mixed content checking tests.
 void CheckInsecureRequestPolicyIPC(
     TestRenderFrameHost* rfh,
-    blink::WebInsecureRequestPolicy expected_param,
+    blink::mojom::InsecureRequestPolicy expected_param,
     int expected_routing_id) {
   const IPC::Message* message =
       rfh->GetProcess()->sink().GetUniqueMessageMatching(
@@ -2952,17 +2952,17 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   // Change the parent's enforcement of strict mixed content checking,
   // and check that the correct IPC is sent to the child frame's
   // process.
-  EXPECT_EQ(blink::kLeaveInsecureRequestsAlone,
+  EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
             root->current_replication_state().insecure_request_policy);
   main_test_rfh()->DidEnforceInsecureRequestPolicy(
-      blink::kBlockAllMixedContent);
+      blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent);
   RenderFrameProxyHost* proxy_to_child =
       root->render_manager()->GetRenderFrameProxyHost(
           child_host->GetSiteInstance());
-  EXPECT_NO_FATAL_FAILURE(
-      CheckInsecureRequestPolicyIPC(child_host, blink::kBlockAllMixedContent,
-                                    proxy_to_child->GetRoutingID()));
-  EXPECT_EQ(blink::kBlockAllMixedContent,
+  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
+      child_host, blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
+      proxy_to_child->GetRoutingID()));
+  EXPECT_EQ(blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
             root->current_replication_state().insecure_request_policy);
 
   // Do the same for the child's enforcement. In general, the parent
@@ -2972,16 +2972,18 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   // A.com process needs to know B.com's flag so that the grandchild
   // A.com frame can inherit it.
   EXPECT_EQ(
-      blink::kLeaveInsecureRequestsAlone,
+      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
       root->child_at(0)->current_replication_state().insecure_request_policy);
-  child_host->DidEnforceInsecureRequestPolicy(blink::kBlockAllMixedContent);
+  child_host->DidEnforceInsecureRequestPolicy(
+      blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent);
   RenderFrameProxyHost* proxy_to_parent =
       child->GetRenderFrameProxyHost(main_test_rfh()->GetSiteInstance());
   EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
-      main_test_rfh(), blink::kBlockAllMixedContent,
+      main_test_rfh(),
+      blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
       proxy_to_parent->GetRoutingID()));
   EXPECT_EQ(
-      blink::kBlockAllMixedContent,
+      blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent,
       root->child_at(0)->current_replication_state().insecure_request_policy);
 
   // Check that the flag for the parent's proxy to the child is reset
@@ -2989,10 +2991,11 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   main_test_rfh()->GetProcess()->sink().ClearMessages();
   NavigationSimulator::NavigateAndCommitFromDocument(kUrl3, child_host);
   EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
-      main_test_rfh(), blink::kLeaveInsecureRequestsAlone,
+      main_test_rfh(),
+      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
       proxy_to_parent->GetRoutingID()));
   EXPECT_EQ(
-      blink::kLeaveInsecureRequestsAlone,
+      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
       root->child_at(0)->current_replication_state().insecure_request_policy);
 }
 

@@ -302,6 +302,76 @@ void DeleteIconFolderFromFileThread(const base::FilePath& path) {
   DCHECK(deleted);
 }
 
+template <typename List>
+static std::string Join(const List& list);
+
+static std::string ToString(bool b) {
+  return b ? "true" : "false";
+}
+
+static std::string ToString(const std::string& string) {
+  return '"' + string + '"';
+}
+
+static std::string ToString(
+    const google::protobuf::RepeatedPtrField<std::string>& list) {
+  return Join(list);
+}
+
+static std::string ToString(
+    const vm_tools::apps::App_LocaleString_Entry& entry) {
+  return "{locale: " + ToString(entry.locale()) +
+         ", value: " + ToString(entry.value()) + "}";
+}
+
+static std::string ToString(
+    const vm_tools::apps::App_LocaleStrings_StringsWithLocale&
+        strings_with_locale) {
+  return "{locale: " + ToString(strings_with_locale.locale()) +
+         ", value: " + ToString(strings_with_locale.value()) + "}";
+}
+
+static std::string ToString(const vm_tools::apps::App_LocaleString& string) {
+  return Join(string.values());
+}
+
+static std::string ToString(const vm_tools::apps::App_LocaleStrings& strings) {
+  return Join(strings.values());
+}
+
+static std::string ToString(const vm_tools::apps::App& app) {
+  return "{desktop_file_id: " + ToString(app.desktop_file_id()) +
+         ", name: " + ToString(app.name()) +
+         ", comment: " + ToString(app.comment()) +
+         ", mime_types: " + ToString(app.mime_types()) +
+         ", no_display: " + ToString(app.no_display()) +
+         ", startup_wm_class: " + ToString(app.startup_wm_class()) +
+         ", startup_notify: " + ToString(app.startup_notify()) +
+         ", keywords: " + ToString(app.keywords()) +
+         ", executable_file_name: " + ToString(app.executable_file_name()) +
+         ", package_id: " + ToString(app.package_id()) +
+         ", extensions: " + ToString(app.extensions()) + "}";
+}
+
+static std::string ToString(const vm_tools::apps::ApplicationList& list) {
+  return "{apps: " + Join(list.apps()) +
+         ", vm_name: " + ToString(list.vm_name()) +
+         ", container_name: " + ToString(list.container_name()) +
+         ", owner_id: " + ToString(list.owner_id()) + "}";
+}
+
+template <typename List>
+static std::string Join(const List& list) {
+  std::string joined = "[";
+  const char* seperator = "";
+  for (const auto& list_item : list) {
+    joined += ToString(list_item) + seperator;
+    seperator = ", ";
+  }
+  joined += "]";
+  return joined;
+}
+
 }  // namespace
 
 CrostiniRegistryService::Registration::Registration(const base::Value* pref,
@@ -745,6 +815,8 @@ void CrostiniRegistryService::ClearApplicationList(
 
 void CrostiniRegistryService::UpdateApplicationList(
     const vm_tools::apps::ApplicationList& app_list) {
+  VLOG(1) << "Received ApplicationList : " << ToString(app_list);
+
   if (app_list.vm_name().empty()) {
     LOG(WARNING) << "Received app list with missing VM name";
     return;

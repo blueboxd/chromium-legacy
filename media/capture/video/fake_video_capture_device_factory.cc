@@ -32,7 +32,7 @@ static const media::FakeVideoCaptureDevice::DeliveryMode kDefaultDeliveryMode =
 static constexpr std::array<gfx::Size, 6> kDefaultResolutions{
     {gfx::Size(96, 96), gfx::Size(320, 240), gfx::Size(640, 480),
      gfx::Size(1280, 720), gfx::Size(1920, 1080), gfx::Size(3840, 2160)}};
-static constexpr std::array<float, 1> kDefaultFrameRates{{30.0f}};
+static constexpr std::array<float, 1> kDefaultFrameRates{{20.0f}};
 
 static const double kInitialPan = 100.0;
 static const double kInitialTilt = 100.0;

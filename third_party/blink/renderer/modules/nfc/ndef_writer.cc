@@ -19,6 +19,8 @@
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -29,6 +31,9 @@ using mojom::blink::PermissionStatus;
 
 // static
 NDEFWriter* NDEFWriter::Create(ExecutionContext* context) {
+  context->GetScheduler()->RegisterStickyFeature(
+      blink::SchedulingPolicy::Feature::kWebNfc,
+      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
   return MakeGarbageCollected<NDEFWriter>(context);
 }
 

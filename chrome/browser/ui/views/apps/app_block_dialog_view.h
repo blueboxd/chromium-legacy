@@ -20,6 +20,8 @@ class ImageSkia;
 // launched.
 class AppBlockDialogView : public AppDialogView {
  public:
+  static AppBlockDialogView* GetActiveViewForTesting();
+
   AppBlockDialogView(const std::string& app_name,
                      const gfx::ImageSkia& image,
                      Profile* profile);

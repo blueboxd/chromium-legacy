@@ -121,6 +121,8 @@ extern const base::Feature kShowBluetoothDeviceBattery;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSmartDimNewMlAgent;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettingsSync;

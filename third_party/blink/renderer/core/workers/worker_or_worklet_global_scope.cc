@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -84,7 +85,7 @@ class OutsideSettingsCSPDelegate final
   // https://crbug.com/924041 https://crbug.com/924043
   void SetSandboxFlags(SandboxFlags) override {}
   void SetRequireTrustedTypes() override {}
-  void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
+  void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override {}
   void DisableEval(const String& error_message) override {}
 
   std::unique_ptr<SourceLocation> GetSourceLocation() override {

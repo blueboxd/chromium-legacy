@@ -31,6 +31,7 @@ import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/timing/resource_timing.mojom";
+import "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -176,10 +177,8 @@ interface LocalFrameHost {
   // this information in DidCommitProvisionalLoad isn't sufficient; this
   // message is needed because, for example, a document can dynamically insert
   // a <meta> tag that causes strict mixed content checking to be enforced.
-  //
-  // Argument |policy_bitmap| represents blink::WebInsecureRequestPolicy uint8
-  // bitfield.
-  EnforceInsecureRequestPolicy(uint8 policy_bitmap);
+  // |policy_bitmap| is a bitfield for InsecureRequestPolicy.
+  EnforceInsecureRequestPolicy(blink.mojom.InsecureRequestPolicy policy_bitmap);
 
   // Elements of |set| are hashes of hosts to upgrade.
   EnforceInsecureNavigationsSet(array<uint32> set);

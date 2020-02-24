@@ -33,6 +33,9 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   static NDEFMessage* Create(const ExecutionContext*,
                              const NDEFMessageSource&,
                              ExceptionState&);
+  static NDEFMessage* CreateAsPayloadOfSmartPoster(const ExecutionContext*,
+                                                   const NDEFMessageInit*,
+                                                   ExceptionState&);
 
   NDEFMessage();
   explicit NDEFMessage(const device::mojom::blink::NDEFMessage&);

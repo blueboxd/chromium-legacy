@@ -351,6 +351,11 @@ void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
 #endif
 }
 
+void AppServiceProxy::SetDialogCreatedCallbackForTesting(
+    base::OnceClosure callback) {
+  dialog_created_callback_ = std::move(callback);
+}
+
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
   return GetAppIdsForIntent(apps_util::CreateIntentFromUrl(url));
 }
@@ -511,6 +516,10 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
       app_name, icon_value->uncompressed, pause_data,
       base::BindOnce(&AppServiceProxy::OnPauseDialogClosed,
                      weak_ptr_factory_.GetWeakPtr(), app_type, app_id));
+
+  if (!dialog_created_callback_.is_null()) {
+    std::move(dialog_created_callback_).Run();
+  }
 #endif  // OS_CHROMEOS
 }
 

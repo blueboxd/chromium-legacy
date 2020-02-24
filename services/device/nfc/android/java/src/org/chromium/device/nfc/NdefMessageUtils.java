@@ -149,8 +149,7 @@ public final class NdefMessageUtils {
                     return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_EMPTY,
                             null /* type */, null /* id */, null /* payload */);
                 case RECORD_TYPE_SMART_POSTER:
-                    // TODO(https://crbug.com/520391): Support 'smart-poster' type records.
-                    throw new InvalidNdefMessageException();
+                    return createPlatformSmartPosterRecord(record.id, record.payloadMessage);
             }
             throw new InvalidNdefMessageException();
         }
@@ -295,6 +294,18 @@ public final class NdefMessageUtils {
     }
 
     /**
+     * Constructs smart-poster NdefRecord
+     */
+    private static NdefRecord createSmartPosterRecord(byte[] payload) {
+        NdefRecord nfcRecord = new NdefRecord();
+        nfcRecord.category = NdefRecordTypeCategory.STANDARDIZED;
+        nfcRecord.recordType = RECORD_TYPE_SMART_POSTER;
+        nfcRecord.data = payload;
+        nfcRecord.payloadMessage = getNdefMessageFromPayloadBytes(payload);
+        return nfcRecord;
+    }
+
+    /**
      * Constructs local type NdefRecord
      */
     private static NdefRecord createLocalRecord(String localType, byte[] payload) {
@@ -319,7 +330,9 @@ public final class NdefMessageUtils {
             return createTextRecord(record.getPayload());
         }
 
-        // TODO(https://crbug.com/520391): Support RTD_SMART_POSTER type records.
+        if (Arrays.equals(record.getType(), android.nfc.NdefRecord.RTD_SMART_POSTER)) {
+            return createSmartPosterRecord(record.getPayload());
+        }
 
         // Prefix the raw local type with ':' to differentiate from other type names in WebNFC APIs,
         // e.g. |localType| being "text" will become ":text" to differentiate from the standardized
@@ -472,6 +485,75 @@ public final class NdefMessageUtils {
         return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
                 ApiCompatibilityUtils.getBytesUtf8(recordType.toLowerCase(Locale.ROOT)),
                 id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), payload);
+    }
+
+    /**
+     * Creates a TNF_WELL_KNOWN + RTD_SMART_POSTER android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformSmartPosterRecord(
+            String id, NdefMessage payloadMessage) throws InvalidNdefMessageException {
+        if (payloadMessage == null) {
+            throw new InvalidNdefMessageException();
+        }
+
+        List<android.nfc.NdefRecord> records = new ArrayList<android.nfc.NdefRecord>();
+        boolean hasUrlRecord = false;
+        boolean hasSizeRecord = false;
+        boolean hasTypeRecord = false;
+        boolean hasActionRecord = false;
+        for (int i = 0; i < payloadMessage.data.length; ++i) {
+            NdefRecord record = payloadMessage.data[i];
+            if (record.recordType.equals("url")) {
+                // The single mandatory url record.
+                if (hasUrlRecord) {
+                    throw new InvalidNdefMessageException();
+                }
+                hasUrlRecord = true;
+            } else if (record.recordType.equals(":s")) {
+                // Zero or one size record.
+                // Size record must contain a 4-byte 32 bit unsigned integer.
+                if (hasSizeRecord || record.data.length != 4) {
+                    throw new InvalidNdefMessageException();
+                }
+                hasSizeRecord = true;
+            } else if (record.recordType.equals(":t")) {
+                // Zero or one type record.
+                if (hasTypeRecord) {
+                    throw new InvalidNdefMessageException();
+                }
+                hasTypeRecord = true;
+            } else if (record.recordType.equals(":act")) {
+                // Zero or one action record.
+                // Action record must contain only a single byte.
+                if (hasActionRecord || record.data.length != 1) {
+                    throw new InvalidNdefMessageException();
+                }
+                hasActionRecord = true;
+            } else {
+                // No restriction on other record types.
+            }
+
+            try {
+                records.add(toNdefRecord(payloadMessage.data[i]));
+            } catch (UnsupportedEncodingException | InvalidNdefMessageException
+                    | IllegalArgumentException e) {
+                throw new InvalidNdefMessageException();
+            }
+        }
+
+        // The single url record is mandatory.
+        if (!hasUrlRecord) {
+            throw new InvalidNdefMessageException();
+        }
+
+        android.nfc.NdefRecord[] ndefRecords = new android.nfc.NdefRecord[records.size()];
+        records.toArray(ndefRecords);
+        android.nfc.NdefMessage ndefMessage = new android.nfc.NdefMessage(ndefRecords);
+
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                android.nfc.NdefRecord.RTD_SMART_POSTER,
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id),
+                ndefMessage.toByteArray());
     }
 
     /**

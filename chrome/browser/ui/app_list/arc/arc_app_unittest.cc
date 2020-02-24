@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/arc_apps.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -2029,6 +2030,9 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
 
 // Test that icon is correctly updated for suspended/non-suspended app.
 TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
+  apps::ArcAppsFactory::GetInstance()
+      ->GetForProfile(profile_.get())
+      ->SetUseTestingProfile();
   arc::mojom::AppInfo app = fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app);
 

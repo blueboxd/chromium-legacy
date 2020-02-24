@@ -8,6 +8,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/apps/app_service/arc_apps.h"
+#include "chrome/browser/apps/app_service/arc_apps_factory.h"
+#endif  // OS_CHROMEOS
+
 namespace apps {
 
 AppServiceTest::AppServiceTest() = default;
@@ -15,6 +20,7 @@ AppServiceTest::AppServiceTest() = default;
 AppServiceTest::~AppServiceTest() = default;
 
 void AppServiceTest::SetUp(Profile* profile) {
+  profile_ = profile;
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(app_service_proxy_);
   app_service_proxy_->ReInitializeForTesting(profile);
@@ -60,5 +66,13 @@ void AppServiceTest::FlushMojoCalls() {
     app_service_proxy_->FlushMojoCallsForTesting();
   }
 }
+
+#if defined(OS_CHROMEOS)
+void AppServiceTest::SetArcAppsUseTestingProfile() {
+  ArcAppsFactory::GetInstance()
+      ->GetForProfile(profile_)
+      ->SetUseTestingProfile();
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace apps

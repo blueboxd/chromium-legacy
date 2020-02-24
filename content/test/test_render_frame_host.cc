@@ -38,6 +38,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/base/page_transition_types.h"
@@ -358,7 +359,7 @@ void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {
 }
 
 void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
-    blink::WebInsecureRequestPolicy policy) {
+    blink::mojom::InsecureRequestPolicy policy) {
   EnforceInsecureRequestPolicy(policy);
 }
 

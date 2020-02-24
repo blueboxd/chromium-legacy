@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_EXECUTION_CONTEXT_CSP_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_EXECUTION_CONTEXT_CSP_DELEGATE_H_
 
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ class ExecutionContextCSPDelegate final
   const KURL& Url() const override;
   void SetSandboxFlags(SandboxFlags) override;
   void SetRequireTrustedTypes() override;
-  void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override;
+  void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override;
   std::unique_ptr<SourceLocation> GetSourceLocation() override;
   base::Optional<uint16_t> GetStatusCode() override;
   String GetDocumentReferrer() override;

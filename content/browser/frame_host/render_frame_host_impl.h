@@ -111,6 +111,7 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-forward.h"
@@ -121,7 +122,6 @@
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_handler.h"
@@ -1357,7 +1357,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidAddContentSecurityPolicies(
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
   void EnforceInsecureRequestPolicy(
-      blink::WebInsecureRequestPolicy policy) override;
+      blink::mojom::InsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void SuddenTerminationDisablerChanged(

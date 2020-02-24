@@ -97,6 +97,7 @@ class AppServiceWrapperTest : public testing::Test {
 
     app_service_test_.SetUp(&profile_);
     arc_test_.SetUp(&profile_);
+    app_service_test_.SetArcAppsUseTestingProfile();
     task_environment_.RunUntilIdle();
 
     tested_wrapper_.AddObserver(&test_listener_);

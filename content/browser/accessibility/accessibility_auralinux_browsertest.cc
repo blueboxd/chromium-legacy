@@ -1568,4 +1568,39 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(div2);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestOffsetsOfSelectionAll) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello world.</p>
+      <p>Another paragraph.</p>
+      <p>Goodbye world.</p>
+      <script>
+      var root = document.documentElement;
+      window.getSelection().selectAllChildren(root);
+      </script>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+      ui::AXPlatformNode::FromNativeViewAccessible(document));
+  std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
+  EXPECT_EQ(0, offsets.first);
+  EXPECT_EQ(3, offsets.second);
+
+  std::vector<int> expected = {12, 18, 14};  // text length of each child
+  int number_of_children = atk_object_get_n_accessible_children(document);
+  for (int i = 0; i < number_of_children; i++) {
+    AtkObject* p = atk_object_ref_accessible_child(document, i);
+    EXPECT_NE(p, nullptr);
+    auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(p));
+    std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
+    EXPECT_EQ(0, offsets.first);
+    EXPECT_EQ(expected[i], offsets.second);
+    g_object_unref(p);
+  }
+}
+
 }  // namespace content

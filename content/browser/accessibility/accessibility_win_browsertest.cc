@@ -4240,4 +4240,45 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   destroyed_watcher.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestOffsetsOfSelectionAll) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello world.</p>
+      <p>Another paragraph.</p>
+      <p>Goodbye world.</p>
+      <script>
+      var root = document.documentElement;
+      window.getSelection().selectAllChildren(root);
+      </script>)HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+
+  auto* node = static_cast<ui::AXPlatformNodeWin*>(
+      ui::AXPlatformNode::FromNativeViewAccessible(document.Get()));
+  LONG start_offset = 0;
+  LONG end_offset = 0;
+  HRESULT hr = node->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(3, end_offset);
+
+  std::vector<int> expected = {12, 18, 14};  // text length of each child
+  std::vector<base::win::ScopedVariant> children =
+      GetAllAccessibleChildren(node);
+  for (size_t i = 0; i < children.size(); ++i) {
+    Microsoft::WRL::ComPtr<IAccessible> child_accessible(
+        GetAccessibleFromVariant(node, children[i].AsInput()));
+    if (child_accessible) {
+      auto* child = static_cast<ui::AXPlatformNodeWin*>(
+          ui::AXPlatformNode::FromNativeViewAccessible(child_accessible.Get()));
+      LONG start_offset = 0;
+      LONG end_offset = 0;
+      HRESULT hr = child->get_selection(0, &start_offset, &end_offset);
+      EXPECT_EQ(S_OK, hr);
+      EXPECT_EQ(0, start_offset);
+      EXPECT_EQ(expected[i], end_offset);
+    }
+  }
+}
+
 }  // namespace content

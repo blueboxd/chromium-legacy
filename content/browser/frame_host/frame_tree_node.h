@@ -25,7 +25,8 @@
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
+
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -189,7 +190,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Sets the current insecure request policy, and notifies proxies about the
   // update.
-  void SetInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
+  void SetInsecureRequestPolicy(blink::mojom::InsecureRequestPolicy policy);
 
   // Sets the current set of insecure urls to upgrade, and notifies proxies
   // about the update.

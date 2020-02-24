@@ -298,7 +298,7 @@ gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
 }
 
-void UnifiedSystemTray::UpdateAfterLoginStatusChange(LoginStatus status) {
+void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
   SetVisiblePreferred(true);
   PreferredSizeChanged();
 }

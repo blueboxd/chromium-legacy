@@ -142,11 +142,13 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   // the mask bounds.
   shadows.emplace_back(gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
                        theme->GetSystemColor(shadow_color_id));
-  return std::make_unique<InkDropHighlight>(
+  auto highlight = std::make_unique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
-      base::WrapUnique(new BorderShadowLayerDelegate(
+      std::make_unique<BorderShadowLayerDelegate>(
           shadows, GetLocalBounds(), theme->GetSystemColor(fill_color_id),
-          corner_radius_)));
+          corner_radius_));
+  highlight->set_visible_opacity(1.0f);
+  return highlight;
 }
 
 void MdTextButton::SetEnabledTextColors(base::Optional<SkColor> color) {

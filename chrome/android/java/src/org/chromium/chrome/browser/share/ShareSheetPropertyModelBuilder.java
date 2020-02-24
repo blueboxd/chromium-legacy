@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -54,6 +55,7 @@ class ShareSheetPropertyModelBuilder {
             PropertyModel propertyModel =
                     createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
                             (String) info.loadLabel(mPackageManager), (shareParams) -> {
+                                RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
                                 ActivityInfo ai = info.activityInfo;
 
                                 ComponentName component =

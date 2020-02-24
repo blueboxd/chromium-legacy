@@ -35,9 +35,6 @@ class ResizeObserverController final
   bool SkippedObservations();
   void DeliverObservations();
   void ClearObservations();
-  void ObserverChanged() { observers_changed_ = true; }
-
-  void SetNeedsForcedResizeObservations();
 
   void Trace(Visitor*);
 
@@ -49,8 +46,6 @@ class ResizeObserverController final
  private:
   // Active observers
   HeapLinkedHashSet<WeakMember<ResizeObserver>> observers_;
-  // True if any observers were changed since last notification.
-  bool observers_changed_;
 };
 
 }  // namespace blink

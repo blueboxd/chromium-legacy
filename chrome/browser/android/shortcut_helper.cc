@@ -228,12 +228,6 @@ int ShortcutHelper::GetMinimumSplashImageSizeInPx() {
   return g_minimum_splash_image_size;
 }
 
-int ShortcutHelper::GetIdealBadgeIconSizeInPx() {
-  if (g_ideal_badge_icon_size == -1)
-    GetIconSizes();
-  return g_ideal_badge_icon_size;
-}
-
 int ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx() {
   if (g_ideal_adaptive_launcher_icon_size == -1)
     GetIconSizes();

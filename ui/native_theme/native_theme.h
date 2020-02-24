@@ -363,6 +363,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_HighlightedMenuItemBackgroundColor,
     kColorId_HighlightedMenuItemForegroundColor,
     kColorId_MenuItemAlertBackgroundColor,
+    // Dropdown
+    kColorId_DropdownBackgroundColor,
+    kColorId_DropdownForegroundColor,
+    kColorId_DropdownSelectedBackgroundColor,
+    kColorId_DropdownSelectedForegroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,

@@ -57,8 +57,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  // todo(juanmihd@) ResourceUsage will be removed soon, try avoiding using this
   enum class ResourceUsage {
-    kSoftwareResourceUsage = 0,
+    kSoftwareResourceUsage = 0,  // deprecated
     kSoftwareCompositedResourceUsage = 1,
     kAcceleratedResourceUsage = 2,
     kAcceleratedCompositedResourceUsage = 3,
@@ -93,20 +94,22 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kMaxValue = kSwapChain,
   };
 
-  void static RecordTypeToUMA(ResourceProviderType type);
-
-  // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
-  static std::unique_ptr<CanvasResourceProvider> CreateForCanvas(
+  // todo(juanmihd@) Check whether SkFilterQuality is needed in all of this, or
+  // just call setFilterQuality explicitly
+  static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize&,
-      ResourceUsage,
+      SkFilterQuality,
+      const CanvasColorParams&);
+
+  static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
+      const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      unsigned msaa_sample_count,
       SkFilterQuality,
       const CanvasColorParams&,
-      uint8_t presentation_mode,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      bool is_origin_top_left = true);
+      bool is_origin_top_left,
+      uint32_t shared_image_usage_flags);
 
+  // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
   static std::unique_ptr<CanvasResourceProvider> Create(
       const IntSize&,
       ResourceUsage,
@@ -117,13 +120,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       uint8_t presentation_mode,
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
-
-  static std::unique_ptr<CanvasResourceProvider> CreateAccelerated(
-      const IntSize&,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      const CanvasColorParams&,
-      bool is_origin_top_left,
-      uint32_t shared_image_usage_flags);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
@@ -211,6 +207,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   }
 
   void RestoreBackBuffer(const cc::PaintImage&);
+
+  ResourceProviderType GetType() const { return type_; }
 
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;

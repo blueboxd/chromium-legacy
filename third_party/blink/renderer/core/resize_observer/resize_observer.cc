@@ -32,8 +32,7 @@ ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
                                Document& document)
     : ExecutionContextClient(document.ToExecutionContext()),
       callback_(callback),
-      skipped_observations_(false),
-      element_size_changed_(false) {
+      skipped_observations_(false) {
   DCHECK(callback_);
   controller_ = &document.EnsureResizeObserverController();
   controller_->AddObserver(*this);
@@ -42,8 +41,7 @@ ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
 ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
     : ExecutionContextClient(document.ToExecutionContext()),
       delegate_(delegate),
-      skipped_observations_(false),
-      element_size_changed_(false) {
+      skipped_observations_(false) {
   DCHECK(delegate_);
   controller_ = &document.EnsureResizeObserverController();
   controller_->AddObserver(*this);
@@ -129,8 +127,6 @@ size_t ResizeObserver::GatherObservations(size_t deeper_than) {
   DCHECK(active_observations_.IsEmpty());
 
   size_t min_observed_depth = ResizeObserverController::kDepthBottom;
-  if (!element_size_changed_)
-    return min_observed_depth;
   for (auto& observation : observations_) {
     if (!observation->ObservationSizeOutOfSync())
       continue;
@@ -146,9 +142,6 @@ size_t ResizeObserver::GatherObservations(size_t deeper_than) {
 }
 
 void ResizeObserver::DeliverObservations() {
-  // We can only clear this flag after all observations have been
-  // broadcast.
-  element_size_changed_ = skipped_observations_;
   if (active_observations_.IsEmpty())
     return;
 
@@ -189,12 +182,6 @@ void ResizeObserver::DeliverObservations() {
 void ResizeObserver::ClearObservations() {
   active_observations_.clear();
   skipped_observations_ = false;
-}
-
-void ResizeObserver::ElementSizeChanged() {
-  element_size_changed_ = true;
-  if (controller_)
-    controller_->ObserverChanged();
 }
 
 bool ResizeObserver::HasPendingActivity() const {

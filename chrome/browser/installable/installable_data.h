@@ -25,8 +25,8 @@ struct InstallableData {
                   const GURL& primary_icon_url,
                   const SkBitmap* primary_icon,
                   bool has_maskable_primary_icon,
-                  const GURL& badge_icon_url,
-                  const SkBitmap* badge_icon,
+                  const GURL& splash_icon_url,
+                  const SkBitmap* splash_icon,
                   bool valid_manifest,
                   bool has_worker);
   ~InstallableData();
@@ -65,6 +65,17 @@ struct InstallableData {
   // specifying |valid_badge_icon| must check that the bitmap exists before
   // using it.
   const SkBitmap* badge_icon;
+
+  // The URL of the chosen splash icon.
+  const GURL& splash_icon_url;
+
+  // nullptr if the most appropriate splash icon couldn't be determined or
+  // downloaded. The underlying splash icon is owned by the InstallableManager;
+  // clients must copy the bitmap if they want to use it. Since the splash
+  // icon is optional, no error code is set if it cannot be fetched, and clients
+  // specifying |valid_splash_icon| must check that the bitmap exists before
+  // using it.
+  const SkBitmap* splash_icon;
 
   // true if the site has a valid, installable web app manifest. If
   // |valid_manifest| or |has_worker| was true and the site isn't installable,

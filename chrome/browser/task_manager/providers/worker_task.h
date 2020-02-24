@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_WORKER_TASK_H_
 
 #include "chrome/browser/task_manager/providers/task.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace task_manager {
 
@@ -17,7 +18,6 @@ namespace task_manager {
 class WorkerTask : public Task {
  public:
   WorkerTask(base::ProcessHandle handle,
-             const GURL& script_url,
              Task::Type task_type,
              int render_process_id);
   ~WorkerTask() override;
@@ -29,6 +29,9 @@ class WorkerTask : public Task {
   // task_manager::Task:
   Task::Type GetType() const override;
   int GetChildProcessUniqueID() const override;
+
+  // Invoked when the final response URL of the worker script is determined.
+  void SetScriptUrl(const GURL& script_url);
 
  private:
   // The type of this worker task. Can be one of DEDICATED_WORKER, SHARED_WORKER

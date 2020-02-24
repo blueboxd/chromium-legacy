@@ -11,19 +11,22 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class AccountId;
+class GoogleServiceAuthError;
 
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
+
+namespace signin {
+struct AccessTokenInfo;
+class IdentityManager;
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace signin
 
 namespace drivefs {
 
@@ -36,8 +39,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
     virtual scoped_refptr<network::SharedURLLoaderFactory>
     GetURLLoaderFactory() = 0;
-    virtual void BindIdentityAccessor(
-        mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver) = 0;
+    virtual signin::IdentityManager* GetIdentityManager() = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
     virtual bool IsMetricsCollectionEnabled() = 0;
@@ -71,14 +73,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
       mojom::DriveFsDelegate::GetAccessTokenCallback callback);
 
  private:
-  void AccountReady(const CoreAccountId& account_id,
-                    const std::string& gaia,
-                    const std::string& email,
-                    const identity::AccountState& state);
-
-  void GotChromeAccessToken(const base::Optional<std::string>& access_token,
-                            base::Time expiration_time,
-                            const GoogleServiceAuthError& error);
+  void GotChromeAccessToken(GoogleServiceAuthError error,
+                            signin::AccessTokenInfo access_token_info);
 
   const std::string& GetOrResetCachedToken(bool use_cached);
 
@@ -86,16 +82,14 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
   void AuthTimeout();
 
-  identity::mojom::IdentityAccessor* GetIdentityAccessor();
-
   SEQUENCE_CHECKER(sequence_checker_);
   const base::Clock* const clock_;
   const base::FilePath profile_path_;
   const std::unique_ptr<base::OneShotTimer> timer_;
   Delegate* const delegate_;
 
-  // The connection to the identity service. Access via |GetIdentityAccessor()|.
-  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   // Pending callback for an in-flight GetAccessToken request.
   mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;
@@ -103,7 +97,6 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
   std::string last_token_;
   base::Time last_token_expiry_;
 
-  base::WeakPtrFactory<DriveFsAuth> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveFsAuth);
 };
 

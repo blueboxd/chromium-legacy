@@ -43,6 +43,19 @@ message Accessibility {
     // ID coming from a template.
     ParameterizedTextBindingRef accessibility_id_binding = 5;
   }
+
+  oneof context_data {
+    // A string that may be spoken by the system that describes the result of an
+    // action. For example, "Opens the article." This provides additional
+    // context over the description.
+
+    // NOTE: Only supported by iOS and maps to accessibilityHint on an
+    // accessible element.
+    ParameterizedText context = 6;
+
+    // In case this is coming from a template.
+    ParameterizedTextBindingRef context_binding = 7;
+  }
 }
 
 // Semantic roles played by a UI element related to accessibility.

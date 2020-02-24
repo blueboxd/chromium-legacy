@@ -1179,6 +1179,8 @@ component("ash") {
     "wm/desks/desks_bar_view.h",
     "wm/desks/desks_controller.cc",
     "wm/desks/desks_histogram_enums.h",
+    "wm/desks/desks_restore_util.cc",
+    "wm/desks/desks_restore_util.h",
     "wm/desks/desks_util.cc",
     "wm/desks/new_desk_button.cc",
     "wm/desks/new_desk_button.h",

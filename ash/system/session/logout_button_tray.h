@@ -36,7 +36,7 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // TrayBackgroundView:
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
+  void UpdateAfterLoginStatusChange() override;
   void UpdateAfterShelfChange() override;
   void UpdateBackground() override;
   void ClickedOutsideBubble() override;

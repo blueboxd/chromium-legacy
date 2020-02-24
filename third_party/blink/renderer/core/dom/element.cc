@@ -3003,7 +3003,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
     GetDocument().UserActionElements().DidDetach(*this);
   }
 
-  SetNeedsResizeObserverUpdate();
   GetDocument().GetStyleEngine().ClearNeedsWhitespaceReattachmentFor(this);
 }
 
@@ -4798,13 +4797,6 @@ Element::ResizeObserverData() const {
 HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>&
 Element::EnsureResizeObserverData() {
   return EnsureElementRareData().EnsureResizeObserverData();
-}
-
-void Element::SetNeedsResizeObserverUpdate() {
-  if (auto* data = ResizeObserverData()) {
-    for (auto& observation : data->Values())
-      observation->ElementSizeChanged();
-  }
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {

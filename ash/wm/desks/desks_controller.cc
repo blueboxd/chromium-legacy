@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_animations.h"
+#include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -475,6 +476,9 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
 
+  // The first default desk should not overwrite any desks restore data.
+  const bool is_first_ever_desk = desks_.empty();
+
   desks_.push_back(std::make_unique<Desk>(available_container_ids_.front()));
   available_container_ids_.pop();
   Desk* new_desk = desks_.back().get();
@@ -491,6 +495,9 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
 
   for (auto& observer : observers_)
     observer.OnDeskAdded(new_desk);
+
+  if (!is_first_ever_desk)
+    desks_restore_util::UpdatePrimaryUserDesksPrefs();
 }
 
 void DesksController::RemoveDesk(const Desk* desk,
@@ -639,6 +646,14 @@ void DesksController::RevertDeskNameToDefault(Desk* desk) {
   desk->SetName(GetDeskDefaultName(GetDeskIndex(desk)), /*set_by_user=*/false);
 }
 
+void DesksController::RestoreNameOfDeskAtIndex(base::string16 name,
+                                               size_t index) {
+  DCHECK(!name.empty());
+  DCHECK_LT(index, desks_.size());
+
+  desks_[index]->SetName(std::move(name), /*set_by_user=*/true);
+}
+
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {
   for (auto& desk : desks_)
     desk->OnRootWindowAdded(root_window);
@@ -704,6 +719,10 @@ void DesksController::OnActiveUserSessionChanged(const AccountId& account_id) {
 
   ActivateDesk(desks_[new_user_active_desk_index].get(),
                DesksSwitchSource::kUserSwitch);
+}
+
+void DesksController::OnFirstSessionStarted() {
+  desks_restore_util::RestorePrimaryUserDesks();
 }
 
 void DesksController::OnAnimationFinished(DeskAnimationBase* animation) {
@@ -883,6 +902,8 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
           IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_REMOVED,
           base::NumberToString16(removed_desk_number),
           base::NumberToString16(active_desk_number)));
+
+  desks_restore_util::UpdatePrimaryUserDesksPrefs();
 
   DCHECK_LE(available_container_ids_.size(), desks_util::kMaxNumberOfDesks);
 }

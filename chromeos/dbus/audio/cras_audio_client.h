@@ -163,6 +163,18 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
       int32_t channels,
       const std::vector<double>& mixer) = 0;
 
+  // Sets the player playback status. Possible status are "Playing", "Paused" or
+  // "Stopped".
+  virtual void SetPlayerPlaybackStatus(const std::string& playback_status) = 0;
+
+  // Sets the player identity. Identity is a human readable title for the source
+  // of the media player. This could be the name of the app or the name of the
+  // site playing media.
+  virtual void SetPlayerIdentity(const std::string& playback_identity) = 0;
+
+  // Sets the current track position for the player in microseconds
+  virtual void SetPlayerPosition(const int64_t& position) = 0;
+
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) = 0;

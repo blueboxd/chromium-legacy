@@ -140,7 +140,8 @@ GURL PingManager::SafeBrowsingHitUrl(
          hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE);
   std::string url =
-      GetReportUrl(config_, "report", &hit_report.extended_reporting_level);
+      GetReportUrl(config_, "report", &hit_report.extended_reporting_level,
+                   hit_report.is_enhanced_protection);
   std::string threat_list = "none";
   switch (hit_report.threat_type) {
     case SB_THREAT_TYPE_URL_MALWARE:

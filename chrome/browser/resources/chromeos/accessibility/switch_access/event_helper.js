@@ -25,7 +25,7 @@ const EventHelper = {
    * Sends a synthetic mouse event.
    * @param {number} x
    * @param {number} y
-   * @param {number=} delayMs The delay between mouse press and mouse release,
+   * @param {?number} delayMs The delay between mouse press and mouse release,
    *     in milliseconds.
    */
   simulateMouseClick: (x, y, delayMs) => {
@@ -37,7 +37,7 @@ const EventHelper = {
       chrome.accessibilityPrivate.sendSyntheticMouseEvent({type, x, y});
     };
 
-    if (delayMs) {
+    if (delayMs !== null) {
       setTimeout(callback, delayMs);
     } else {
       callback();

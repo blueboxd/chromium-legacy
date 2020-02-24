@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/mime_util.h"
+#include "url/gurl.h"
 
 namespace drivefs {
 namespace {

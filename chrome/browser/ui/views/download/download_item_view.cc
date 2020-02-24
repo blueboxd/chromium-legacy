@@ -348,12 +348,6 @@ void DownloadItemView::OnDownloadUpdated() {
              model_->GetState() != DownloadItem::CANCELLED) {
     if (!IsShowingDeepScanning())
       TransitionToDeepScanningDialog();
-
-    if (should_open_while_scanning_ &&
-        model_->GetState() == DownloadItem::COMPLETE) {
-      should_open_while_scanning_ = false;
-      model_->OpenDownload();
-    }
   } else {
     TransitionToNormalMode();
   }
@@ -1626,7 +1620,7 @@ base::string16 DownloadItemView::ElidedFilename() {
 
 void DownloadItemView::OpenDownloadDuringAsyncScanning() {
   model_->CompleteSafeBrowsingScan();
-  should_open_while_scanning_ = true;
+  model_->SetOpenWhenComplete(true);
 }
 
 void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {

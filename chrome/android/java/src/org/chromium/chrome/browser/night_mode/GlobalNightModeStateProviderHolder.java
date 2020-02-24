@@ -12,7 +12,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -59,8 +58,7 @@ public class GlobalNightModeStateProviderHolder {
     public static NightModeStateProvider getInstance() {
         if (sInstance == null) {
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_NIGHT_MODE)
-                    || !NightModeUtils.isNightModeSupported()
-                    || !CachedFeatureFlags.isNightModeAvailable()) {
+                    || !NightModeUtils.isNightModeSupported()) {
                 sInstance = new DummyNightModeStateProvider();
             } else {
                 sInstance = new GlobalNightModeStateController(SystemNightModeMonitor.getInstance(),

@@ -5,6 +5,9 @@
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/strings/string_number_conversions.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -20,6 +23,18 @@ void FrameTokenMessageQueue::Init(Client* client) {
 void FrameTokenMessageQueue::DidProcessFrame(uint32_t frame_token) {
   // Frame tokens always increase.
   if (frame_token <= last_received_frame_token_) {
+    // TODO(samans): Remove this once the investigation into
+    // https://crbug.com/1045372 is over.
+    static auto* last_frame_token = base::debug::AllocateCrashKeyString(
+        "last_frame_token", base::debug::CrashKeySize::Size32);
+    static auto* new_frame_token = base::debug::AllocateCrashKeyString(
+        "new_frame_token", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(
+        last_frame_token, base::NumberToString(last_received_frame_token_));
+    base::debug::SetCrashKeyString(new_frame_token,
+                                   base::NumberToString(frame_token));
+    base::debug::DumpWithoutCrashing();
+
     client_->OnInvalidFrameToken(frame_token);
     return;
   }
@@ -58,6 +73,11 @@ void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
 void FrameTokenMessageQueue::OnFrameSwapMessagesReceived(
     uint32_t frame_token,
     std::vector<IPC::Message> messages) {
+  // TODO(samans): Remove this once the investigation into
+  // https://crbug.com/1045372 is over.
+  if (!frame_token) {
+    base::debug::DumpWithoutCrashing();
+  }
   EnqueueOrRunFrameTokenCallback(
       frame_token, base::BindOnce(&FrameTokenMessageQueue::ProcessSwapMessages,
                                   base::Unretained(this), std::move(messages)));

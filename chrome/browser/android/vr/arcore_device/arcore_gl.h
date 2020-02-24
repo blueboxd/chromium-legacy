@@ -143,8 +143,14 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void OnWebXrTokenSignaled(int16_t frame_index,
                             std::unique_ptr<gfx::GpuFence> gpu_fence);
 
-  void OnScreenTouch(bool touching, const gfx::PointF& touch_point);
-  mojom::XRInputSourceStatePtr GetInputSourceState();
+  // Notifies that the screen was touched at |touch_point| using a pointer.
+  // |touching| will be set to true if the screen is still touched. |is_primary|
+  // signifies that the used pointer is considered primary.
+  void OnScreenTouch(bool is_primary,
+                     bool touching,
+                     int32_t pointer_id,
+                     const gfx::PointF& touch_point);
+  std::vector<mojom::XRInputSourceStatePtr> GetInputSourceStates();
 
   base::WeakPtr<ArCoreGl> GetWeakPtr();
 
@@ -247,28 +253,45 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // Currently estimated floor height.
   base::Optional<float> floor_height_estimate_;
 
-  std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
-  gfx::PointF screen_last_touch_;
+  // Touch-related data.
+  // Android will report touch events via MotionEvent - see ArImmersiveOverlay
+  // for details.
+  struct ScreenTouchEvent {
+    gfx::PointF screen_last_touch;
 
-  // Screen touch start/end events get reported asynchronously. We want to
-  // report at least one "clicked" event even if start and end happen within a
-  // single frame. The "active" state corresponds to the current state and is
-  // updated asynchronously. The "pending" state is set to true whenever the
-  // screen is touched, but only gets cleared by the input source handler.
-  //
-  //    active   pending    event
-  //         0         0
-  //         1         1
-  //         1         1    pressed=true (selectstart)
-  //         1         1    pressed=true
-  //         0         1->0 pressed=false clicked=true (selectend, click)
-  //
-  //         0         0
-  //         1         1
-  //         0         1
-  //         0         1->0 pressed=false clicked=true (selectend, click)
-  float screen_touch_pending_ = false;
-  float screen_touch_active_ = false;
+    // Screen touch start/end events get reported asynchronously. We want to
+    // report at least one "clicked" event even if start and end happen within a
+    // single frame. The "active" state corresponds to the current state and is
+    // updated asynchronously. The "pending" state is set to true whenever the
+    // screen is touched, but only gets cleared by the input source handler.
+    //
+    //    active   pending    event
+    //         0         0
+    //         1         1
+    //         1         1    pressed=true (selectstart)
+    //         1         1    pressed=true
+    //         0         1->0 pressed=false clicked=true (selectend, click)
+    //
+    //         0         0
+    //         1         1
+    //         0         1
+    //         0         1->0 pressed=false clicked=true (selectend, click)
+    float screen_touch_pending = false;
+    float screen_touch_active = false;
+
+    // ID of the pointer that raised this event.
+    int32_t pointer_id;
+    bool is_primary;
+  };
+
+  // Map from input source ID to its latest information.
+  std::unordered_map<uint32_t, ScreenTouchEvent> screen_touch_events_;
+  // Map from pointer ID to input source ID currently assigned to that pointer.
+  std::unordered_map<int32_t, uint32_t> pointer_id_to_input_source_id_;
+
+  // TODO(https://crbug.com/1048329): change to a data type that will wrap
+  // around faster to exercise blink's handling of this case.
+  uint32_t next_input_source_id_ = 1;
 
   // Must be last.
   base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_{this};

@@ -571,11 +571,6 @@ class MenuManager {
       this.exit();
       return;
     }
-    if (action === SAConstants.MenuAction.OPEN_KEYBOARD) {
-      this.navigationManager_.enterKeyboard();
-      this.exit();
-      return;
-    }
 
     // Handle global actions.
     if (action === SAConstants.MenuAction.SETTINGS) {

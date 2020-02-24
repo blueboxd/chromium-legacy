@@ -1557,7 +1557,9 @@ void XRSession::OnInputStateChangeInternal(
   // Build up our added array, and update the frame id of any active input
   // sources so we can flag the ones that are no longer active.
   for (const auto& input_state : input_states) {
-    DVLOG(2) << __func__ << ": input_state->primary_input_pressed="
+    DVLOG(2) << __func__
+             << ": input_state->source_id=" << input_state->source_id
+             << " input_state->primary_input_pressed="
              << input_state->primary_input_pressed
              << " clicked=" << input_state->primary_input_clicked;
 

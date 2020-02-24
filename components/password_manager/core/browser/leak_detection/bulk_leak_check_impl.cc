@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
+#include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -27,7 +28,7 @@ std::unique_ptr<BulkLeakCheckImpl::CredentialHolder> RemoveFromQueue(
                          [weak_holder](const auto& element) {
                            return element.get() == weak_holder;
                          });
-  DCHECK(it != queue->end());
+  CHECK(it != queue->end());
   std::unique_ptr<BulkLeakCheckImpl::CredentialHolder> holder = std::move(*it);
   queue->erase(it);
   return holder;
@@ -51,6 +52,9 @@ struct BulkLeakCheckImpl::CredentialHolder {
 
   // Request for the needed access token.
   std::unique_ptr<signin::AccessTokenFetcher> token_fetcher;
+
+  // Network request for the API call.
+  std::unique_ptr<LeakDetectionRequestInterface> network_request_;
 };
 
 LeakCheckCredential::LeakCheckCredential(base::string16 username,
@@ -138,7 +142,25 @@ void BulkLeakCheckImpl::OnTokenReady(
     // |this| can be destroyed here.
     return;
   }
-  // TODO(crbug.com/1049185): make a network request.
+
+  holder->token_fetcher.reset();
+  holder->network_request_ = network_request_factory_->CreateNetworkRequest();
+  holder->network_request_->LookupSingleLeak(
+      url_loader_factory_.get(), access_token_info.token,
+      std::move(holder->payload),
+      base::BindOnce(&BulkLeakCheckImpl::OnLookupLeakResponse,
+                     weak_ptr_factory_.GetWeakPtr(), holder.get()));
+  waiting_response_.push_back(std::move(holder));
+}
+
+void BulkLeakCheckImpl::OnLookupLeakResponse(
+    CredentialHolder* weak_holder,
+    std::unique_ptr<SingleLookupResponse> response) {
+  std::unique_ptr<CredentialHolder> holder =
+      RemoveFromQueue(weak_holder, &waiting_response_);
+
+  holder->network_request_.reset();
+  // TODO(crbug.com/1049185): decrypt the stuff.
 }
 
 }  // namespace password_manager

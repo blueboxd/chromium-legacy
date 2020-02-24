@@ -467,10 +467,9 @@ TEST_F(AddToHomescreenDataFetcherTest, InstallableManifest) {
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
             GURL(kDefaultIconUrl));
 
-  // Check that the badge icon is requested.
-  EXPECT_FALSE(fetcher->badge_icon().drawsNothing());
-  EXPECT_EQ(fetcher->shortcut_info().best_badge_icon_url,
-            GURL(kDefaultIconUrl));
+  // No badge icon as InstallableManager does not fetch badge icon.
+  EXPECT_TRUE(fetcher->badge_icon().drawsNothing());
+  EXPECT_TRUE(fetcher->shortcut_info().best_badge_icon_url.is_empty());
   CheckHistograms(histograms);
 }
 

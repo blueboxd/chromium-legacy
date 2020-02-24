@@ -101,19 +101,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
 
   LOG(INFO) << "Using software decoder for " << config.codec;
 
-  output_config_.codec = media::kCodecPCM;
-  output_config_.sample_format = media::kSampleFormatS16;
-  // The underlying software decoder will always convert mono to stereo,
-  // so set output stereo in the case of mono input.
-  if (config.channel_number == kMonoChannelCount) {
-    output_config_.channel_number = kStereoChannelCount;
-  } else {
-    output_config_.channel_number = config.channel_number;
-  }
-  output_config_.bytes_per_channel = 2;
-  output_config_.samples_per_second = config.samples_per_second;
-  output_config_.encryption_scheme = EncryptionScheme::kUnencrypted;
-  output_config_.channel_layout = config.channel_layout;
+  output_config_ = software_decoder_->GetOutputConfig();
   return backend_decoder_->SetConfig(output_config_);
 }
 
@@ -140,20 +128,13 @@ bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(
   // TODO(kmackay) Consider using planar float instead.
   software_decoder_ = media::CastAudioDecoder::Create(
       base::ThreadTaskRunnerHandle::Get(), config,
-      media::CastAudioDecoder::kOutputSigned16,
-      base::BindOnce(&AudioDecoderSoftwareWrapper::OnDecoderInitialized,
-                     base::Unretained(this)));
-  return (software_decoder_.get() != nullptr);
-}
-
-void AudioDecoderSoftwareWrapper::OnDecoderInitialized(bool success) {
-  if (!success) {
+      media::CastAudioDecoder::kOutputSigned16);
+  if (!software_decoder_) {
     decoder_error_ = true;
     LOG(ERROR) << "Failed to initialize software decoder";
-    if (delegate_) {
-      delegate_->OnDecoderError();
-    }
+    return false;
   }
+  return true;
 }
 
 void AudioDecoderSoftwareWrapper::OnDecodedBuffer(

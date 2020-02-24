@@ -399,6 +399,8 @@ void SharedWorkerServiceImpl::StartWorker(
               std::move(subresource_loader_factories), std::move(controller),
               std::move(controller_service_worker_object_host),
               std::move(outside_fetch_client_settings_object));
+  for (Observer& observer : observers_)
+    observer.OnFinalResponseURLDetermined(host->id(), final_response_url);
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(

@@ -9,7 +9,7 @@
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 const HOST_ORIGIN = 'chrome://help-app';
-const GUEST_ORIGIN = 'chrome://help-app-guest';
+const GUEST_ORIGIN = 'chrome-untrusted://help-app';
 
 var HelpAppUIBrowserTest = class extends testing.Test {
   /** @override */

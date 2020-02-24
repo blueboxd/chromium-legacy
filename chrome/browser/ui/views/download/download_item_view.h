@@ -439,10 +439,6 @@ class DownloadItemView : public views::View,
   // Deep scanning open now button.
   views::MdTextButton* open_now_button_ = nullptr;
 
-  // Whether the user has selected "open now" on a download pending asynchronous
-  // scanning.
-  bool should_open_while_scanning_ = false;
-
   // Deep scanning modal dialog confirming choice to "open now".
   TabModalConfirmDialog* open_now_modal_dialog_;
 

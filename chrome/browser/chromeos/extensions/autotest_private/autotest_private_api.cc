@@ -568,6 +568,20 @@ ash::AppListViewState ToAppListViewState(
   return ash::AppListViewState::kClosed;
 }
 
+ash::OverviewAnimationState ToOverviewAnimationState(
+    api::autotest_private::OverviewStateType state) {
+  switch (state) {
+    case api::autotest_private::OverviewStateType::OVERVIEW_STATE_TYPE_SHOWN:
+      return ash::OverviewAnimationState::kEnterAnimationComplete;
+    case api::autotest_private::OverviewStateType::OVERVIEW_STATE_TYPE_HIDDEN:
+      return ash::OverviewAnimationState::kExitAnimationComplete;
+    case api::autotest_private::OverviewStateType::OVERVIEW_STATE_TYPE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return ash::OverviewAnimationState::kExitAnimationComplete;
+}
+
 ui::KeyboardCode StringToKeyCode(const std::string& str) {
   constexpr struct Map {
     const char* str;
@@ -2904,6 +2918,36 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   ash::SetShelfAlignmentPref(profile->GetPrefs(), display_id, alignment);
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateWaitForOverviewStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateWaitForOverviewStateFunction::
+    AutotestPrivateWaitForOverviewStateFunction() = default;
+AutotestPrivateWaitForOverviewStateFunction::
+    ~AutotestPrivateWaitForOverviewStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateWaitForOverviewStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::WaitForOverviewState::Params> params(
+      api::autotest_private::WaitForOverviewState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const ash::OverviewAnimationState overview_state =
+      ToOverviewAnimationState(params->overview_state);
+  ash::OverviewTestApi().WaitForOverviewState(
+      overview_state,
+      base::BindOnce(&AutotestPrivateWaitForOverviewStateFunction::Done, this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void AutotestPrivateWaitForOverviewStateFunction::Done(bool success) {
+  if (!success) {
+    Respond(Error("Overview animation was canceled."));
+    return;
+  }
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

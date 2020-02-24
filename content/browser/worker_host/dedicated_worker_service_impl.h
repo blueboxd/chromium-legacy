@@ -25,13 +25,20 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
 
   DedicatedWorkerId GenerateNextDedicatedWorkerId();
 
+  // Notifies all observers about a starting worker.
   void NotifyWorkerStarted(DedicatedWorkerId dedicated_worker_id,
                            int worker_process_id,
                            GlobalFrameRoutingId ancestor_render_frame_host_id);
 
+  // Notifies all observers about a terminating worker.
   void NotifyWorkerTerminating(
       DedicatedWorkerId dedicated_worker_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id);
+
+  // Notifies all observers that a worker's final response URL was determined.
+  void NotifyWorkerFinalResponseURLDetermined(
+      DedicatedWorkerId dedicated_worker_id,
+      const GURL& url);
 
  private:
   // Generates IDs for new dedicated workers.

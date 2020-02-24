@@ -8073,15 +8073,12 @@ CanvasResourceProvider* WebGLRenderingContextBase::
     return resource_provider;
   }
 
-  // TODO(fserb): why is this software?
-  std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      nullptr,  // context_provider_wrapper
-      0,        // msaa_sample_count,
-      kLow_SkFilterQuality,
-      CanvasColorParams(),  // TODO: should this use the canvas's colorspace?
-      CanvasResourceProvider::kDefaultPresentationMode,
-      nullptr));  // canvas_resource_dispatcher
+  // TODO(fserb): why is this a BITMAP?
+  std::unique_ptr<CanvasResourceProvider> temp(
+      CanvasResourceProvider::CreateBitmapProvider(
+          size, kLow_SkFilterQuality,
+          CanvasColorParams()));  // TODO: should this use the canvas's
+
   if (!temp)
     return nullptr;
   i = std::min(resource_providers_.size() - 1, i);

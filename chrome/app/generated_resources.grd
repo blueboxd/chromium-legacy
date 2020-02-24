@@ -1744,6 +1744,10 @@ are declared in tools/grit/grit_rule.gni.
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is mixed-content.">
         This file can't be downloaded securely.
       </message>
+      <message name="IDS_BLOCK_REASON_DEEP_SCANNING"
+        desc="Message shown on chrome://downloads when a download is being scanned">
+        This file is being scanned.
+      </message>
       <message name="IDS_DEEP_SCANNED_SAFE_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be safe.">
         Scan complete, no issues identified.

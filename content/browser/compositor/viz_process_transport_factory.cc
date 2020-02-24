@@ -324,15 +324,21 @@ void VizProcessTransportFactory::DisableGpuCompositing(
   worker_context_provider_.reset();
   main_context_provider_.reset();
 
+  // ReleaseAcceleratedWidget() removes an entry from |compositor_data_map_|,
+  // so first copy the compositors to a new set.
+  base::flat_set<ui::Compositor*> all_compositors;
+  all_compositors.reserve(compositor_data_map_.size());
+  for (auto& pair : compositor_data_map_)
+    all_compositors.insert(pair.first);
+
   // Remove the FrameSink from every compositor that needs to fall back to
   // software compositing.
-  for (auto& pair : compositor_data_map_) {
-    ui::Compositor* compositor = pair.first;
+  for (auto* compositor : all_compositors) {
     // The |guilty_compositor| is in the process of setting up its FrameSink
     // so removing it from |compositor_data_map_| would be both pointless and
     // the cause of a crash.
     // Compositors with force_software_compositor() do not follow the global
-    // compositing mode, so they do not need to changed.
+    // compositing mode, so they do not need to be changed.
     if (compositor == guilty_compositor ||
         compositor->force_software_compositor())
       continue;

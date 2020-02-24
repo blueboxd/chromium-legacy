@@ -219,6 +219,9 @@ enum class ParallelDownloadCreationEvent {
   // Range support is unknown from the response.
   FALLBACK_REASON_UNKNOWN_RANGE_SUPPORT,
 
+  // Resumed download doesn't have any slices.
+  FALLBACK_REASON_RESUMPTION_WITHOUT_SLICES,
+
   // Last entry of the enum.
   COUNT,
 };

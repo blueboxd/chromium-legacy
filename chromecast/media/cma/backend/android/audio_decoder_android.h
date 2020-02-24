@@ -79,7 +79,6 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
   void ResetSinkForNewConfig(const AudioConfig& config);
   void CreateDecoder();
   void CreateRateShifter(const AudioConfig& config);
-  void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
                        const AudioConfig& config,

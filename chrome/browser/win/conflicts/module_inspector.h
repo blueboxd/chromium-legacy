@@ -78,10 +78,6 @@ class ModuleInspector : public ModuleDatabaseObserver {
 
   static base::FilePath GetInspectionResultsCachePath();
 
-  void SetModuleInspectionResultForTesting(
-      const ModuleInfoKey& module_key,
-      ModuleInspectionResult inspection_result);
-
   void SetRemoteUtilWinForTesting(
       mojo::PendingRemote<chrome::mojom::UtilWin> remote) {
     test_remote_util_win_.Bind(std::move(remote));

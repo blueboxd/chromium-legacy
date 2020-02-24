@@ -42,6 +42,18 @@ void RemoveWorkersFromFrameNode(
     worker_node->RemoveClientFrame(frame_node);
 }
 
+// Helper function that posts a task on the PM sequence that will invoke
+// OnFinalResponseURLDetermined() on |worker_node|.
+void SetFinalResponseURL(WorkerNodeImpl* worker_node, const GURL& url) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(
+          [](WorkerNodeImpl* worker_node, const GURL& url, GraphImpl* graph) {
+            worker_node->OnFinalResponseURLDetermined(url);
+          },
+          worker_node, url));
+}
+
 }  // namespace
 
 WorkerWatcher::WorkerWatcher(
@@ -140,6 +152,12 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
   dedicated_worker_nodes_.erase(it);
 }
 
+void WorkerWatcher::OnFinalResponseURLDetermined(
+    content::DedicatedWorkerId dedicated_worker_id,
+    const GURL& url) {
+  SetFinalResponseURL(GetDedicatedWorkerNode(dedicated_worker_id), url);
+}
+
 void WorkerWatcher::OnWorkerStarted(
     content::SharedWorkerId shared_worker_id,
     int worker_process_id,
@@ -165,6 +183,12 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
   PerformanceManagerImpl::GetInstance()->DeleteNode(std::move(worker_node));
 
   shared_worker_nodes_.erase(it);
+}
+
+void WorkerWatcher::OnFinalResponseURLDetermined(
+    content::SharedWorkerId shared_worker_id,
+    const GURL& url) {
+  SetFinalResponseURL(GetSharedWorkerNode(shared_worker_id), url);
 }
 
 void WorkerWatcher::OnClientAdded(

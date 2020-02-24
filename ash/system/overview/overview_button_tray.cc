@@ -61,7 +61,7 @@ OverviewButtonTray::~OverviewButtonTray() {
   Shell::Get()->shelf_config()->RemoveObserver(this);
 }
 
-void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
+void OverviewButtonTray::UpdateAfterLoginStatusChange() {
   UpdateIconVisibility();
 }
 

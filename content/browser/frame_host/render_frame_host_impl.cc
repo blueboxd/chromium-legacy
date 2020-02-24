@@ -7049,13 +7049,10 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
         receiver) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableWebAuthTestingAPI)) {
-      auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
-      environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);
-      environment_singleton->AddVirtualAuthenticatorReceiver(
-          frame_tree_node_, std::move(receiver));
-    }
+    auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
+    environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);
+    environment_singleton->AddVirtualAuthenticatorReceiver(frame_tree_node_,
+                                                           std::move(receiver));
   }
 #endif  // !defined(OS_ANDROID)
 }

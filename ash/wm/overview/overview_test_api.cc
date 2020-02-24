@@ -47,6 +47,27 @@ void OverviewTestApi::SetOverviewMode(
     waiter->Cancel();
 }
 
+void OverviewTestApi::WaitForOverviewState(
+    OverviewAnimationState expected_state,
+    DoneCallback callback) {
+  auto* overview_controller = Shell::Get()->overview_controller();
+  const bool overview_finished_showing =
+      overview_controller->InOverviewSession() &&
+      !overview_controller->IsInStartAnimation();
+  const bool overview_finished_hiding =
+      !overview_controller->InOverviewSession() &&
+      !overview_controller->IsCompletingShutdownAnimations();
+  if ((expected_state == OverviewAnimationState::kEnterAnimationComplete &&
+       overview_finished_showing) ||
+      (expected_state == OverviewAnimationState::kExitAnimationComplete &&
+       overview_finished_hiding)) {
+    std::move(callback).Run(/*animation_succeeded=*/true);
+    return;
+  }
+
+  new OverviewAnimationStateWaiter(expected_state, std::move(callback));
+}
+
 base::Optional<OverviewInfo> OverviewTestApi::GetOverviewInfo() const {
   auto* overview_controller = Shell::Get()->overview_controller();
   if (!overview_controller->InOverviewSession())

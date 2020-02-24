@@ -11,6 +11,8 @@
 // true, otherwise, all tasks will be run and a complete list of errors will be
 // returned.
 struct InstallableParams {
+  InstallableParams();
+  InstallableParams(const InstallableParams&);
   // Check whether the current WebContents is eligible to be installed, i.e it:
   //  - is served over HTTPS
   //  - is a top-level frame
@@ -27,6 +29,10 @@ struct InstallableParams {
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the badge icon size parameters.
   bool valid_badge_icon = false;
+
+  // Check whether there is a fetchable, non-empty icon in the manifest
+  // conforming to the splash icon size parameters.
+  bool valid_splash_icon = false;
 
   // Check whether the site has a manifest valid for a web app.
   bool valid_manifest = false;

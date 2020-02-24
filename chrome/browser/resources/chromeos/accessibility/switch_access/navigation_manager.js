@@ -16,7 +16,7 @@ class NavigationManager {
     this.desktop_ = desktop;
 
     /** @private {!SARootNode} */
-    this.group_ = RootNodeWrapper.buildDesktopTree(this.desktop_);
+    this.group_ = DesktopNode.build(this.desktop_);
 
     /** @private {!SAChildNode} */
     this.node_ = this.group_.firstChild;
@@ -25,7 +25,7 @@ class NavigationManager {
     this.groupStack_ = [];
 
     /** @private {!MenuManager} */
-    this.menuManager_ = new MenuManager(this, desktop);
+    this.menuManager_ = new MenuManager(this, this.desktop_);
 
     /** @private {!FocusRingManager} */
     this.focusRingManager_ = new FocusRingManager();
@@ -42,6 +42,18 @@ class NavigationManager {
   // =============== Static Methods ==============
 
   /**
+   * Puts focus on the virtual keyboard, if the current node is a text input.
+   * TODO(crbug/946190): Handle the case where the user has not enabled the
+   *     onscreen keyboard.
+   */
+  static enterKeyboard() {
+    const navigator = NavigationManager.instance;
+    const keyboard = KeyboardRootNode.buildTree();
+    navigator.jumpTo_(keyboard);
+    navigator.node_.automationNode.focus();
+  }
+
+  /**
    * Open the Switch Access menu for the currently highlighted node. If there
    * are not enough actions available to trigger the menu, the current element
    * is selected.
@@ -54,6 +66,28 @@ class NavigationManager {
     if (!didEnter) {
       navigator.selectCurrentNode();
     }
+  }
+
+  static exitKeyboard() {
+    const navigator = NavigationManager.instance;
+    let foundKeyboard = navigator.group_ instanceof KeyboardRootNode;
+    for (const group of navigator.groupStack_) {
+      foundKeyboard |= group instanceof KeyboardRootNode;
+    }
+    // If we are not in the keyboard, do nothing.
+    if (!foundKeyboard) {
+      return;
+    }
+
+    while (navigator.groupStack_.length > 0) {
+      if (navigator.group_ instanceof KeyboardRootNode) {
+        break;
+      }
+      navigator.exitGroup_();
+    }
+    navigator.exitGroup_();
+
+    NavigationManager.moveToValidNode();
   }
 
   /**
@@ -79,8 +113,7 @@ class NavigationManager {
       return NavigationManager.instance.group_;
     }
 
-    const desktopRoot =
-        RootNodeWrapper.buildDesktopTree(NavigationManager.instance.desktop_);
+    const desktopRoot = DesktopNode.build(NavigationManager.instance.desktop_);
     console.log(desktopRoot.debugString(
         wholeTree, '', NavigationManager.instance.node_));
     return desktopRoot;
@@ -164,7 +197,7 @@ class NavigationManager {
     }
 
     // If there is no valid node in the group stack, go to the desktop.
-    navigator.setGroup_(RootNodeWrapper.buildDesktopTree(navigator.desktop_));
+    navigator.setGroup_(DesktopNode.build(navigator.desktop_));
     navigator.groupStack_ = [];
   }
 
@@ -181,6 +214,14 @@ class NavigationManager {
   // =============== Instance Methods ==============
 
   /**
+   * Returns the desktop automation node object.
+   * @return {!chrome.automation.AutomationNode}
+   */
+  get desktopNode() {
+    return this.desktop_;
+  }
+
+  /**
    * Enters |this.node_|.
    */
   enterGroup() {
@@ -195,17 +236,6 @@ class NavigationManager {
       this.groupStack_.push(this.group_);
       this.setGroup_(newGroup);
     }
-  }
-
-  /**
-   * Puts focus on the virtual keyboard, if the current node is a text input.
-   * TODO(cbug/946190): Handle the case where the user has not enabled the
-   *     onscreen keyboard.
-   */
-  enterKeyboard() {
-    const keyboard = KeyboardRootNode.buildTree(this.desktop_);
-    this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
-    this.jumpTo_(keyboard);
   }
 
   /**
@@ -227,7 +257,6 @@ class NavigationManager {
       SwitchAccessMetrics.recordMenuAction(
           SAConstants.MenuAction.OPEN_KEYBOARD);
       this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
-      this.enterKeyboard();
       return;
     }
 
@@ -303,7 +332,7 @@ class NavigationManager {
     }
 
     this.groupStack_ = [];
-    let group = RootNodeWrapper.buildDesktopTree(this.desktop_);
+    let group = DesktopNode.build(this.desktop_);
     while (ancestorList.length > 0) {
       const ancestor = ancestorList.pop();
       if (ancestor.role === chrome.automation.RoleType.DESKTOP) {

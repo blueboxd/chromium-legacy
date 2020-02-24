@@ -90,18 +90,32 @@ class KeyboardNode extends NodeWrapper {
  */
 class KeyboardRootNode extends RootNodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} keyboard
+   * @param {!chrome.automation.AutomationNode} groupNode
    * @private
    */
-  constructor(keyboard) {
-    super(keyboard);
+  constructor(groupNode) {
+    super(groupNode);
   }
 
   // ================= General methods =================
 
+
+  /** @override */
+  isValidGroup() {
+    // To ensure we can find the keyboard root node to appropriately respond to
+    // visibility changes, never mark it as invalid.
+    return true;
+  }
+
   /** @override */
   onExit() {
-    chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
+    // If the keyboard is currently visible, ignore the corresponding
+    // state change.
+    if (KeyboardRootNode.isVisible_) {
+      KeyboardRootNode.explicitStateChange_ = true;
+      chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
+    }
+
     AutoScanManager.setInKeyboard(false);
   }
 
@@ -109,20 +123,23 @@ class KeyboardRootNode extends RootNodeWrapper {
 
   /**
    * Creates the tree structure for the system menu.
-   * @param {!chrome.automation.AutomationNode} desktop
    * @return {!KeyboardRootNode}
    */
-  static buildTree(desktop) {
+  static buildTree() {
     KeyboardRootNode.loadKeyboard_();
     AutoScanManager.setInKeyboard(true);
 
-    const keyboardContainer =
-        desktop.find({role: chrome.automation.RoleType.KEYBOARD});
+    if (!KeyboardRootNode.keyboardObject_) {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.MISSING_KEYBOARD,
+          'Could not find keyboard in the automation tree');
+    }
     const keyboard =
-        new AutomationTreeWalker(keyboardContainer, constants.Dir.FORWARD, {
-          visit: (node) => SwitchAccessPredicate.isGroup(node, null),
-          root: (node) => node === keyboardContainer
-        })
+        new AutomationTreeWalker(
+            KeyboardRootNode.keyboardObject_, constants.Dir.FORWARD, {
+              visit: (node) => SwitchAccessPredicate.isGroup(node, null),
+              root: (node) => node === KeyboardRootNode.keyboardObject_
+            })
             .next()
             .node;
 
@@ -132,10 +149,68 @@ class KeyboardRootNode extends RootNodeWrapper {
   }
 
   /**
+   * Start listening for keyboard open/closed.
+   */
+  static startWatchingVisibility() {
+    KeyboardRootNode.isVisible_ =
+        SwitchAccessPredicate.isVisible(KeyboardRootNode.keyboardObject_);
+
+    KeyboardRootNode.keyboardObject_.addEventListener(
+        chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED,
+        KeyboardRootNode.checkVisibilityChanged_, false /* capture */);
+  }
+
+  // ================= Private static methods =================
+
+  /**
+   * @param {chrome.automation.AutomationEvent} event
+   * @private
+   */
+  static checkVisibilityChanged_(event) {
+    const currentlyVisible =
+        SwitchAccessPredicate.isVisible(KeyboardRootNode.keyboardObject_);
+    if (currentlyVisible === KeyboardRootNode.isVisible_) {
+      return;
+    }
+
+    KeyboardRootNode.isVisible_ = currentlyVisible;
+
+    if (KeyboardRootNode.explicitStateChange_) {
+      // When the user has explicitly shown / hidden the keyboard, do not
+      // enter / exit the keyboard again to avoid looping / double-calls.
+      KeyboardRootNode.explicitStateChange_ = false;
+      return;
+    }
+
+    if (KeyboardRootNode.isVisible_) {
+      NavigationManager.enterKeyboard();
+    } else {
+      NavigationManager.exitKeyboard();
+    }
+  }
+
+  /**
+   * @return {chrome.automation.AutomationNode}
+   * @private
+   */
+  static get keyboardObject_() {
+    if (!this.object_ || !this.object_.role) {
+      this.object_ = NavigationManager.instance.desktopNode.find(
+          {role: chrome.automation.RoleType.KEYBOARD});
+    }
+    return this.object_;
+  }
+
+  /**
    * Loads the keyboard.
    * @private
    */
   static loadKeyboard_() {
+    if (KeyboardRootNode.isVisible_) {
+      return;
+    }
+
+    KeyboardRootNode.explicitStateChange_ = true;
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
   }
 }

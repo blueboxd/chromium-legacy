@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/permission_request_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -102,43 +103,6 @@ bool JavascriptErrorDetectingLogHandler(int severity,
   return false;
 }
 
-// PermissionRequestObserver ---------------------------------------------------
-
-// Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver
-    : public permissions::PermissionRequestManager::Observer {
- public:
-  explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
-            web_contents)),
-        request_shown_(false),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    request_manager_->AddObserver(this);
-  }
-  ~PermissionRequestObserver() override {
-    // Safe to remove twice if it happens.
-    request_manager_->RemoveObserver(this);
-  }
-
-  void Wait() { message_loop_runner_->Run(); }
-
-  bool request_shown() const { return request_shown_; }
-
- private:
-  // PermissionRequestManager::Observer
-  void OnBubbleAdded() override {
-    request_shown_ = true;
-    request_manager_->RemoveObserver(this);
-    message_loop_runner_->Quit();
-  }
-
-  permissions::PermissionRequestManager* request_manager_;
-  bool request_shown_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
-};
-
 std::vector<std::string> JsonArrayToVectorOfStrings(
     const std::string& json_array) {
   std::unique_ptr<base::Value> value =
@@ -192,9 +156,9 @@ bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
   permissions::PermissionRequestManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(
           permissions::PermissionRequestManager::ACCEPT_ALL);
-  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  permissions::PermissionRequestObserver observer(tab_contents);
   GetUserMedia(tab_contents, constraints);
-  EXPECT_TRUE(permissionRequestObserver.request_shown());
+  EXPECT_TRUE(observer.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   return kOkGotStream == result;
@@ -225,9 +189,9 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
   permissions::PermissionRequestManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(
           permissions::PermissionRequestManager::DENY_ALL);
-  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  permissions::PermissionRequestObserver observer(tab_contents);
   GetUserMedia(tab_contents, constraints);
-  EXPECT_TRUE(permissionRequestObserver.request_shown());
+  EXPECT_TRUE(observer.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithNotAllowedError, result);
@@ -239,9 +203,9 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
   permissions::PermissionRequestManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(
           permissions::PermissionRequestManager::DISMISS);
-  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  permissions::PermissionRequestObserver observer(tab_contents);
   GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-  EXPECT_TRUE(permissionRequestObserver.request_shown());
+  EXPECT_TRUE(observer.request_shown());
   // A dismiss should be treated like a deny.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
@@ -262,9 +226,9 @@ void WebRtcTestBase::GetUserMediaAndExpectAutoAcceptWithoutPrompt(
   permissions::PermissionRequestManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(
           permissions::PermissionRequestManager::DENY_ALL);
-  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  permissions::PermissionRequestObserver observer(tab_contents);
   GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-  EXPECT_FALSE(permissionRequestObserver.request_shown());
+  EXPECT_FALSE(observer.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kOkGotStream, result);
@@ -284,9 +248,9 @@ void WebRtcTestBase::GetUserMediaAndExpectAutoDenyWithoutPrompt(
   permissions::PermissionRequestManager::FromWebContents(tab_contents)
       ->set_auto_response_for_test(
           permissions::PermissionRequestManager::ACCEPT_ALL);
-  PermissionRequestObserver permissionRequestObserver(tab_contents);
+  permissions::PermissionRequestObserver observer(tab_contents);
   GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-  EXPECT_FALSE(permissionRequestObserver.request_shown());
+  EXPECT_FALSE(observer.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithNotAllowedError, result);

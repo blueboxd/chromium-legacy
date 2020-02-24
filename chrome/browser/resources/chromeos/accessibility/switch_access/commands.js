@@ -8,14 +8,6 @@ const SwitchAccessCommand = chrome.accessibilityPrivate.SwitchAccessCommand;
  * Runs user commands.
  */
 class Commands {
-  // ============= Static Methods ===============
-
-  static initialize() {
-    Commands.instance = new Commands();
-  }
-
-  // ============= Private Methods ===============
-
   /** @private */
   constructor() {
     /**
@@ -30,6 +22,10 @@ class Commands {
 
     chrome.accessibilityPrivate.onSwitchAccessCommand.addListener(
         this.runCommand_.bind(this));
+  }
+
+  static initialize() {
+    Commands.instance = new Commands();
   }
 
   /**

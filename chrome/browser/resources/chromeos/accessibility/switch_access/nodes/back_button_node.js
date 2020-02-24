@@ -105,21 +105,18 @@ class BackButtonNode extends SAChildNode {
   }
 
   // ================= Static methods =================
-  /**
-   * Looks for the back button node.
-   * @param {!chrome.automation.AutomationNode} desktop The Switch Access panel
-   *     node.
-   */
-  static findAutomationNode(desktop) {
+
+  /** Looks for the back button node. */
+  static findAutomationNode() {
     const treeWalker = new AutomationTreeWalker(
-        desktop, constants.Dir.FORWARD,
+        NavigationManager.instance.desktopNode, constants.Dir.FORWARD,
         {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
     BackButtonNode.automationNode_ = treeWalker.next().node;
 
     // TODO(anastasi): Generate event when Switch Access Panel is loaded instead
     // of polling.
     if (!BackButtonNode.automationNode_) {
-      setTimeout(() => BackButtonNode.findAutomationNode(desktop), 100);
+      setTimeout(BackButtonNode.findAutomationNode, 100);
     }
   }
 }

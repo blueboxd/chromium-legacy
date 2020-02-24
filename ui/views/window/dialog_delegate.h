@@ -125,17 +125,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // DEPRECATED: use |set_accept_callback| instead.
   virtual bool Accept();
 
-  // Called when the user closes the window without selecting an option, e.g. by
-  // pressing the close button on the window, pressing the Esc key, or using a
-  // window manager gesture. By default, this calls Accept() if the only button
-  // in the dialog is Accept, Cancel() otherwise. This function should return
-  // true if the window can be closed after it returns, or false if it must
-  // remain open.
-  // DEPRECATED: use |set_close_callback| instead.
-  // NOTE: If **any** of the {accept,cancel,close} callbacks is set,
-  // DefaultClose() is not called and closing is unconditional.
-  virtual bool Close();
-
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
@@ -244,6 +233,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // initialized.
   void CancelDialog();
   void AcceptDialog();
+
+  // Deprecated, for compatibility with a few remaining unit tests.
+  // TODO(https://crbug.com/1011446): Delete this method.
+  bool Close();
 
   // Reset the dialog's shown timestamp, for tests that are subject to the
   // "unintended interaction" detection mechanism.

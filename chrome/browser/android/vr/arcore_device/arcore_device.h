@@ -57,7 +57,10 @@ class ArCoreDevice : public VRDeviceBase {
   void OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
                              display::Display::Rotation rotation,
                              const gfx::Size& frame_size);
-  void OnDrawingSurfaceTouch(bool touching, const gfx::PointF& location);
+  void OnDrawingSurfaceTouch(bool is_primary,
+                             bool touching,
+                             int32_t pointer_id,
+                             const gfx::PointF& location);
   void OnDrawingSurfaceDestroyed();
   void OnSessionEnded();
 

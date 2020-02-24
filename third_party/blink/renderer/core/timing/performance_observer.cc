@@ -170,17 +170,6 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
               mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
-    if (filter_options_ & entry_type) {
-      String message =
-          "The PerformanceObserver has already been called with the entry type "
-          "'" +
-          observer_init->type() + "'.";
-      GetExecutionContext()->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kJavaScript,
-              mojom::ConsoleMessageLevel::kWarning, message));
-      return;
-    }
     if (observer_init->buffered()) {
       // Append all entries of this type to the current performance_entries_
       // to be returned on the next callback.
@@ -221,6 +210,7 @@ void PerformanceObserver::disconnect() {
   if (performance_)
     performance_->UnregisterPerformanceObserver(*this);
   is_registered_ = false;
+  filter_options_ = PerformanceEntry::kInvalid;
 }
 
 PerformanceEntryVector PerformanceObserver::takeRecords() {

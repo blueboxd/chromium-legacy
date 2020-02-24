@@ -126,6 +126,28 @@ base::Optional<SkColor> SkColorFromColorId(
       }
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
 
+    // Dropdown
+    case ui::NativeTheme::kColorId_DropdownBackgroundColor:
+      return GetBgColor(
+          "GtkComboBoxText#combobox GtkWindow#window.background.popup "
+          "GtkTreeMenu#menu(gtk-combobox-popup-menu) GtkMenuItem#menuitem "
+          "GtkCellView#cellview");
+    case ui::NativeTheme::kColorId_DropdownForegroundColor:
+      return GetFgColor(
+          "GtkComboBoxText#combobox GtkWindow#window.background.popup "
+          "GtkTreeMenu#menu(gtk-combobox-popup-menu) GtkMenuItem#menuitem "
+          "GtkCellView#cellview");
+    case ui::NativeTheme::kColorId_DropdownSelectedBackgroundColor:
+      return GetBgColor(
+          "GtkComboBoxText#combobox GtkWindow#window.background.popup "
+          "GtkTreeMenu#menu(gtk-combobox-popup-menu) "
+          "GtkMenuItem#menuitem:hover GtkCellView#cellview");
+    case ui::NativeTheme::kColorId_DropdownSelectedForegroundColor:
+      return GetFgColor(
+          "GtkComboBoxText#combobox GtkWindow#window.background.popup "
+          "GtkTreeMenu#menu(gtk-combobox-popup-menu) "
+          "GtkMenuItem#menuitem:hover GtkCellView#cellview");
+
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
       return GetFgColor("GtkLabel");
@@ -368,6 +390,14 @@ NativeThemeGtk::NativeThemeGtk() {
   g_type_class_unref(g_type_class_ref(gtk_toggle_button_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_combo_box_text_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_cell_view_get_type()));
+
+  // Initialize the GtkTreeMenu type.  _gtk_tree_menu_get_type() is private, so
+  // we need to initialize it indirectly.
+  ScopedGObject<GtkTreeModel> model{
+      GTK_TREE_MODEL(gtk_tree_store_new(1, G_TYPE_STRING))};
+  ScopedGObject<GtkWidget> combo{gtk_combo_box_new_with_model(model)};
 
   OnThemeChanged(gtk_settings_get_default(), nullptr);
 }

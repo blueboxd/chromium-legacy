@@ -407,10 +407,9 @@ void StatusBubbleViews::StatusView::SetTextLabelColors(views::Label* text) {
   SkColor bubble_color =
       theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
   text->SetBackgroundColor(bubble_color);
-  // Text color is the foreground tab text color at 60% alpha.
-  text->SetEnabledColor(color_utils::AlphaBlend(
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0.6f));
+  // Text color is the background tab text color, adjusted if required.
+  text->SetEnabledColor(
+      theme_provider->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT));
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {

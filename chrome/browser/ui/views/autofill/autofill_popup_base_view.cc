@@ -37,22 +37,22 @@ int AutofillPopupBaseView::GetCornerRadius() {
 
 SkColor AutofillPopupBaseView::GetBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_MenuBackgroundColor);
+      ui::NativeTheme::kColorId_DropdownBackgroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetForegroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+      ui::NativeTheme::kColorId_DropdownForegroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+      ui::NativeTheme::kColorId_DropdownSelectedBackgroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetSelectedForegroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
+      ui::NativeTheme::kColorId_DropdownSelectedForegroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {

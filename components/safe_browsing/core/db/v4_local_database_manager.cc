@@ -518,7 +518,6 @@ void V4LocalDatabaseManager::StartOnIOThread(
   db_updated_callback_ = base::BindRepeating(
       &V4LocalDatabaseManager::DatabaseUpdated, weak_factory_.GetWeakPtr());
 
-  SetupRealTimeUrlLookupService(url_loader_factory);
   SetupUpdateProtocolManager(url_loader_factory, config);
   SetupDatabase();
 
@@ -542,8 +541,6 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
   // This operation happens on the task_runner on which v4_database_ operates
   // and doesn't block the IO thread.
   V4Database::Destroy(std::move(v4_database_));
-
-  ResetRealTimeUrlLookupService();
 
   // Delete the V4UpdateProtocolManager.
   // This cancels any in-flight update request.

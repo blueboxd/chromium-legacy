@@ -9,8 +9,8 @@ Runs the bindings code generator for the given tasks.
 import optparse
 import sys
 
-import bind_gen
 import web_idl
+import bind_gen
 
 
 def parse_options():

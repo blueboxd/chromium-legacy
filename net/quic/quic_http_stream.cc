@@ -105,6 +105,9 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3
                  ? HttpResponseInfo::CONNECTION_INFO_QUIC_T050
                  : HttpResponseInfo::CONNECTION_INFO_QUIC_Q050;
+    case quic::QUIC_VERSION_IETF_DRAFT_25:
+      DCHECK(quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3);
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_25;
     case quic::QUIC_VERSION_99:
       return quic_version.handshake_protocol == quic::PROTOCOL_TLS1_3
                  ? HttpResponseInfo::CONNECTION_INFO_QUIC_T099

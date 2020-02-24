@@ -46,8 +46,6 @@ namespace {
 constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
     0.f, 0.f, 1.f, 0.f, 0.f, 1.f};
 
-constexpr uint32_t kInputSourceId = 1;
-
 const char kInputSourceProfileName[] = "generic-touchscreen";
 
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
@@ -641,12 +639,12 @@ void ArCoreGl::SubscribeToHitTest(
   // check if we recognize the input source id.
 
   if (native_origin_information->is_input_source_id()) {
-    if (native_origin_information->get_input_source_id() != kInputSourceId) {
-      DVLOG(1) << __func__ << ": incorrect input source ID passed";
-      std::move(callback).Run(
-          device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
-      return;
-    }
+    DVLOG(1) << __func__
+             << ": ARCore device supports only transient input sources for "
+                "now. Rejecting subscription request.";
+    std::move(callback).Run(
+        device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+    return;
   }
 
   base::Optional<uint64_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
@@ -759,11 +757,7 @@ void ArCoreGl::ProcessFrame(
   DCHECK(is_initialized_);
 
   if (frame_data->pose) {
-    mojom::XRInputSourceStatePtr input_state = GetInputSourceState();
-    if (input_state) {
-      input_states_.push_back(std::move(input_state));
-      frame_data->input_state = std::move(input_states_);
-    }
+    frame_data->input_state = GetInputSourceStates();
 
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
@@ -787,117 +781,199 @@ void ArCoreGl::ProcessFrame(
   std::move(callback).Run(std::move(frame_data));
 }
 
-void ArCoreGl::OnScreenTouch(bool touching, const gfx::PointF& touch_point) {
-  DVLOG(2) << __func__ << ": touching=" << touching;
-  screen_last_touch_ = touch_point;
-  screen_touch_active_ = touching;
-  if (touching)
-    screen_touch_pending_ = true;
-}
+void ArCoreGl::OnScreenTouch(bool is_primary,
+                             bool touching,
+                             int32_t pointer_id,
+                             const gfx::PointF& touch_point) {
+  DVLOG(2) << __func__ << ": is_primary=" << is_primary
+           << ", pointer_id=" << pointer_id << ", touching=" << touching
+           << ", touch_point=" << touch_point.ToString();
 
-mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
-  DVLOG(3) << __func__;
+  if (!base::Contains(pointer_id_to_input_source_id_, pointer_id)) {
+    // assign ID
+    DCHECK(next_input_source_id_ != 0) << "ID equal to 0 cannot be used!";
+    pointer_id_to_input_source_id_[pointer_id] = next_input_source_id_;
 
-  // If there's no active screen touch, and no unreported past click event,
-  // don't report a device.
-  if (!screen_touch_pending_ && !screen_touch_active_)
-    return nullptr;
+    DVLOG(3)
+        << __func__
+        << " : pointer id not previously recognized, assigned input source id="
+        << next_input_source_id_;
 
-  device::mojom::XRInputSourceStatePtr state =
-      device::mojom::XRInputSourceState::New();
-
-  // Only one controller is supported, so the source id can be static.
-  state->source_id = kInputSourceId;
-
-  state->primary_input_pressed = screen_touch_active_;
-  if (!screen_touch_active_ && screen_touch_pending_) {
-    state->primary_input_clicked = true;
-    screen_touch_pending_ = false;
+    // Overflow is defined behavior for unsigned integers, just make sure that
+    // we never send out ID = 0.
+    next_input_source_id_++;
+    if (next_input_source_id_ == 0) {
+      next_input_source_id_ = 1;
+    }
   }
 
-  // Save the touch point for use in Blink's XR input event deduplication.
-  state->overlay_pointer_position = base::make_optional<gfx::PointF>(
-      screen_last_touch_.x(), screen_last_touch_.y());
+  uint32_t inputSourceId = pointer_id_to_input_source_id_[pointer_id];
+  ScreenTouchEvent& screen_touch_event = screen_touch_events_[inputSourceId];
 
-  state->description = device::mojom::XRInputSourceDescription::New();
+  screen_touch_event.pointer_id = pointer_id;
+  screen_touch_event.is_primary = is_primary;
+  screen_touch_event.screen_last_touch = touch_point;
+  screen_touch_event.screen_touch_active = touching;
+  if (touching) {
+    screen_touch_event.screen_touch_pending = true;
+  }
+}
 
-  state->description->handedness = device::mojom::XRHandedness::NONE;
+std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
+  DVLOG(3) << __func__;
 
-  state->description->target_ray_mode = device::mojom::XRTargetRayMode::TAPPING;
+  std::vector<mojom::XRInputSourceStatePtr> result;
 
-  state->description->profiles.push_back(kInputSourceProfileName);
+  for (auto& id_and_touch_event : screen_touch_events_) {
+    bool is_primary = id_and_touch_event.second.is_primary;
+    bool screen_touch_pending = id_and_touch_event.second.screen_touch_pending;
+    bool screen_touch_active = id_and_touch_event.second.screen_touch_active;
+    gfx::PointF screen_last_touch = id_and_touch_event.second.screen_last_touch;
 
-  // Controller doesn't have a measured position.
-  state->emulated_position = true;
+    // TODO(https://crbug.com/1048329): For now, we are ignoring non-primary
+    // pointers to maintain previous behavior. Once mojo changes, send out the
+    // non-primary pointer information as well.
+    if (!is_primary) {
+      DVLOG(3) << __func__
+               << " : pointer for input source id=" << id_and_touch_event.first
+               << " not considered primary, ignoring. pointer_id="
+               << id_and_touch_event.second.pointer_id;
+      continue;
+    }
 
-  // The Renderer code ignores state->grip for TAPPING (screen-based) target ray
-  // mode, so we don't bother filling it in here. If this does get used at
-  // some point in the future, this should be set to the inverse of the
-  // pose rigid transform.
+    DVLOG(3) << __func__
+             << " : pointer for input source id=" << id_and_touch_event.first
+             << ", pointer_id=" << id_and_touch_event.second.pointer_id
+             << ", active=" << screen_touch_active
+             << ", pending=" << screen_touch_pending;
 
-  // Get a viewer-space ray from screen-space coordinates by applying the
-  // inverse of the projection matrix. Z coordinate of -1 means the point will
-  // be projected onto the projection matrix near plane. See also
-  // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
-  const float x_normalized =
-      screen_last_touch_.x() / transfer_size_.width() * 2.f - 1.f;
-  const float y_normalized =
-      (1.f - screen_last_touch_.y() / transfer_size_.height()) * 2.f - 1.f;
-  gfx::Point3F touch_point(x_normalized, y_normalized, -1.f);
-  DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
-  inverse_projection_.TransformPoint(&touch_point);
-  DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
+    // If there's no active screen touch, and no unreported past click
+    // event, don't report a device.
+    if (!screen_touch_pending && !screen_touch_active) {
+      continue;
+    }
 
-  // Ray points along -Z in ray space, so we need to flip it to get
-  // the +Z axis unit vector.
-  gfx::Vector3dF ray_backwards(-touch_point.x(), -touch_point.y(),
-                               -touch_point.z());
-  gfx::Vector3dF new_z;
-  bool can_normalize = ray_backwards.GetNormalized(&new_z);
-  DCHECK(can_normalize);
+    device::mojom::XRInputSourceStatePtr state =
+        device::mojom::XRInputSourceState::New();
 
-  // Complete the ray-space basis by adding X and Y unit
-  // vectors based on cross products.
-  const gfx::Vector3dF kUp(0.f, 1.f, 0.f);
-  gfx::Vector3dF new_x(kUp);
-  new_x.Cross(new_z);
-  new_x.GetNormalized(&new_x);
-  gfx::Vector3dF new_y(new_z);
-  new_y.Cross(new_x);
-  new_y.GetNormalized(&new_y);
+    state->source_id = id_and_touch_event.first;
 
-  // Fill in the transform matrix in row-major order. The first three columns
-  // contain the basis vectors, the fourth column the position offset.
-  gfx::Transform viewer_from_pointer(
-      new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
-      new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
-      new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3
-      0, 0, 0, 1);
-  DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
-           << viewer_from_pointer.ToString();
+    state->primary_input_pressed = screen_touch_active;
 
-  state->description->input_from_pointer = viewer_from_pointer;
+    // If the touch is not active but pending, it means that it was clicked
+    // within a single frame.
+    if (!screen_touch_active && screen_touch_pending) {
+      state->primary_input_clicked = true;
 
-  // Create the gamepad object and modify necessary fields.
-  state->gamepad = device::Gamepad{};
-  state->gamepad->connected = true;
-  state->gamepad->id[0] = '\0';
-  state->gamepad->timestamp =
-      base::TimeTicks::Now().since_origin().InMicroseconds();
+      // Clear screen_touch_pending for this input source - we have consumed it.
+      id_and_touch_event.second.screen_touch_pending = false;
+    }
 
-  state->gamepad->axes_length = 2;
-  state->gamepad->axes[0] = x_normalized;
-  state->gamepad->axes[1] = -y_normalized;  //  Gamepad's Y axis is actually
-                                            //  inverted (1.0 means "backward").
+    // Save the touch point for use in Blink's XR input event deduplication.
+    state->overlay_pointer_position = screen_last_touch;
 
-  state->gamepad->buttons_length = 3;  // 2 placeholders + the real one
-  // Default-constructed buttons are already valid placeholders.
-  state->gamepad->buttons[2].touched = true;
-  state->gamepad->buttons[2].value = 1.0;
-  state->gamepad->mapping = device::GamepadMapping::kNone;
-  state->gamepad->hand = device::GamepadHand::kNone;
+    state->description = device::mojom::XRInputSourceDescription::New();
 
-  return state;
+    state->description->handedness = device::mojom::XRHandedness::NONE;
+
+    state->description->target_ray_mode =
+        device::mojom::XRTargetRayMode::TAPPING;
+
+    state->description->profiles.push_back(kInputSourceProfileName);
+
+    // Controller doesn't have a measured position.
+    state->emulated_position = true;
+
+    // The Renderer code ignores state->grip for TAPPING (screen-based) target
+    // ray mode, so we don't bother filling it in here. If this does get used at
+    // some point in the future, this should be set to the inverse of the
+    // pose rigid transform.
+
+    // Get a viewer-space ray from screen-space coordinates by applying the
+    // inverse of the projection matrix. Z coordinate of -1 means the point will
+    // be projected onto the projection matrix near plane. See also
+    // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
+    const float x_normalized =
+        screen_last_touch.x() / transfer_size_.width() * 2.f - 1.f;
+    const float y_normalized =
+        (1.f - screen_last_touch.y() / transfer_size_.height()) * 2.f - 1.f;
+    gfx::Point3F touch_point(x_normalized, y_normalized, -1.f);
+    DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
+    inverse_projection_.TransformPoint(&touch_point);
+    DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
+
+    // Ray points along -Z in ray space, so we need to flip it to get
+    // the +Z axis unit vector.
+    gfx::Vector3dF ray_backwards(-touch_point.x(), -touch_point.y(),
+                                 -touch_point.z());
+    gfx::Vector3dF new_z;
+    bool can_normalize = ray_backwards.GetNormalized(&new_z);
+    DCHECK(can_normalize);
+
+    // Complete the ray-space basis by adding X and Y unit
+    // vectors based on cross products.
+    const gfx::Vector3dF kUp(0.f, 1.f, 0.f);
+    gfx::Vector3dF new_x(kUp);
+    new_x.Cross(new_z);
+    new_x.GetNormalized(&new_x);
+    gfx::Vector3dF new_y(new_z);
+    new_y.Cross(new_x);
+    new_y.GetNormalized(&new_y);
+
+    // Fill in the transform matrix in row-major order. The first three columns
+    // contain the basis vectors, the fourth column the position offset.
+    gfx::Transform viewer_from_pointer(
+        new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
+        new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
+        new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3
+        0, 0, 0, 1);
+    DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
+             << viewer_from_pointer.ToString();
+
+    state->description->input_from_pointer = viewer_from_pointer;
+
+    // Create the gamepad object and modify necessary fields.
+    state->gamepad = device::Gamepad{};
+    state->gamepad->connected = true;
+    state->gamepad->id[0] = '\0';
+    state->gamepad->timestamp =
+        base::TimeTicks::Now().since_origin().InMicroseconds();
+
+    state->gamepad->axes_length = 2;
+    state->gamepad->axes[0] = x_normalized;
+    state->gamepad->axes[1] =
+        -y_normalized;  //  Gamepad's Y axis is actually
+                        //  inverted (1.0 means "backward").
+
+    state->gamepad->buttons_length = 3;  // 2 placeholders + the real one
+    // Default-constructed buttons are already valid placeholders.
+    state->gamepad->buttons[2].touched = true;
+    state->gamepad->buttons[2].value = 1.0;
+    state->gamepad->mapping = device::GamepadMapping::kNone;
+    state->gamepad->hand = device::GamepadHand::kNone;
+
+    result.push_back(std::move(state));
+  }
+
+  // All the input source IDs that are no longer touching need to remain unused
+  // for at least one frame. For now, we always assign new ID for input source
+  // so there's no need to remember the IDs that have to be put on hold. Just
+  // clean up all the no longer touching pointers:
+  std::unordered_map<uint32_t, ScreenTouchEvent> still_touching_events;
+  for (const auto& screen_touch_event : screen_touch_events_) {
+    if (!screen_touch_event.second.screen_touch_active) {
+      // This pointer is no longer touching - remove it from the mapping, do not
+      // consider it as still touching:
+      pointer_id_to_input_source_id_.erase(
+          screen_touch_event.second.pointer_id);
+    } else {
+      still_touching_events.insert(screen_touch_event);
+    }
+  }
+
+  screen_touch_events_.swap(still_touching_events);
+
+  return result;
 }
 
 void ArCoreGl::Pause() {

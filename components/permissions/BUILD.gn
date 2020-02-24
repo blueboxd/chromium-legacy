@@ -61,6 +61,8 @@ source_set("test_support") {
     "test/mock_permission_prompt_factory.h",
     "test/mock_permission_request.cc",
     "test/mock_permission_request.h",
+    "test/permission_request_observer.cc",
+    "test/permission_request_observer.h",
     "test/test_permissions_client.cc",
     "test/test_permissions_client.h",
   ]

@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -26,14 +25,14 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 public class GlobalNightModeStateProviderHolderTest {
     @After
     public void tearDown() {
-        CachedFeatureFlags.setNightModeAvailableForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
+        NightModeUtils.setNightModeSupportedForTesting(null);
         SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING);
     }
 
     @Test
     public void testNightModeNotAvailable() {
-        CachedFeatureFlags.setNightModeAvailableForTesting(false);
+        NightModeUtils.setNightModeSupportedForTesting(false);
 
         // Verify that night mode is disabled.
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
@@ -47,7 +46,6 @@ public class GlobalNightModeStateProviderHolderTest {
     public void testNightModeAvailable() {
         // Verify that the instance is a GlobalNightModeStateController. Other tests are covered
         // in GlobalNightModeStateControllerTest.java.
-        CachedFeatureFlags.setNightModeAvailableForTesting(true);
         assertTrue(GlobalNightModeStateProviderHolder.getInstance()
                            instanceof GlobalNightModeStateController);
     }

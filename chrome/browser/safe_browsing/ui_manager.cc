@@ -94,6 +94,8 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
   hit_report.extended_reporting_level =
       profile ? GetExtendedReportingLevel(*profile->GetPrefs())
               : SBER_LEVEL_OFF;
+  hit_report.is_enhanced_protection =
+      IsEnhancedProtectionEnabled(*profile->GetPrefs());
   hit_report.is_metrics_reporting_active =
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 

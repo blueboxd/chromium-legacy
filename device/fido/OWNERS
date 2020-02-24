@@ -1,29 +1,28 @@
-# Webauthn OWNERS
+# WebAuthn OWNERS.
+#
+# Any non-emeriti are reasonable reviewers for WebAuthn-related code. Some
+# people are more familiar with certain areas of the code so, if you spot that
+# your area of alteration is listed, you should prefer to select that person.
 
-# General, esp chrome/ UI and Android integration.
-kpaulhamus@chromium.org
-
-# TouchID, Windows Hello.
+# esp TouchID, Windows Hello.
 martinkr@google.com
 # (Secondary email; prefer google.com address.)
 martinkr@chromium.org
 
-# Attestation and legacy U2F implementation.
+# esp attestation and legacy U2F implementation.
 agl@chromium.org
 
-# Bluetooth.
+# esp Bluetooth.
 kenrb@chromium.org
 
-# chrome/ UI and VirtualAuthenticator environment.
+# esp chrome/ UI and VirtualAuthenticator environment.
 nsatragno@chromium.org
 
+
 # Emeriti; for occasional reviews
-# esp. view & frame lifetimes
-engedy@chromium.org
-# Bluetooth
-jdoerrie@chromium.org
-# CTAP2 implementation
-hongjunchoi@chromium.org
+
+# General, esp chrome/ UI and Android integration.
+kpaulhamus@chromium.org
 
 # TEAM: identity-dev@chromium.org
 # COMPONENT: Blink>WebAuthentication

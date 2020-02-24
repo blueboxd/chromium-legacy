@@ -342,8 +342,6 @@ void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
 
-  SetupRealTimeUrlLookupService(url_loader_factory);
-
   enabled_ = true;
 }
 
@@ -360,8 +358,6 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
     req->OnRequestDone(SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
   enabled_ = false;
-
-  ResetRealTimeUrlLookupService();
 
   SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }

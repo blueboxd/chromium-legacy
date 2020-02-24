@@ -345,8 +345,7 @@ void TrayBackgroundView::UpdateAfterShelfChange() {
   tray_container_->UpdateAfterShelfChange();
 }
 
-void TrayBackgroundView::UpdateAfterLoginStatusChange(
-    LoginStatus login_status) {
+void TrayBackgroundView::UpdateAfterLoginStatusChange() {
   // Handled in subclasses.
 }
 

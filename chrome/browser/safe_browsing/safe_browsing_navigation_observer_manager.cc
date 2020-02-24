@@ -514,7 +514,8 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
 size_t SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
     const Profile& profile,
     AttributionResult result) {
-  if (!IsExtendedReportingEnabled(*profile.GetPrefs()) ||
+  if ((!IsExtendedReportingEnabled(*profile.GetPrefs()) &&
+       !IsEnhancedProtectionEnabled(*profile.GetPrefs())) ||
       profile.IsOffTheRecord() || result == SUCCESS_LANDING_REFERRER) {
     return 0u;
   }

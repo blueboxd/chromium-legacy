@@ -103,19 +103,6 @@ std::unique_ptr<::device::FidoDiscoveryBase>
 VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
 
-  if (receivers_.empty() && authenticators_.empty() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebAuthTestingAPI)) {
-    // If no bindings are active then create a virtual device. This is a
-    // stop-gap measure for running web-platform tests on the chromium CI.
-    // See crbug.com/1020361
-    CreateAuthenticator(
-        ::device::ProtocolVersion::kCtap2,
-        ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
-        ::device::AuthenticatorAttachment::kCrossPlatform,
-        false /* has_resident_key */, false /* has_user_verification */);
-  }
-
   for (auto& authenticator : authenticators_) {
     if (discovery->transport() != authenticator.second->transport())
       continue;

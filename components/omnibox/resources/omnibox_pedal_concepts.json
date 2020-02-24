@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "20200106T192754",
+  "time_generated": "20200224T180007",
   "primary_language_code": "en",
   "locales": [
     {
@@ -420,6 +420,7 @@
               "required": true,
               "single": true,
               "synonyms": [
+                "edit",
                 "manager",
                 "manage",
                 "update",
@@ -461,7 +462,9 @@
               "single": true,
               "synonyms": [
                 "home page",
-                "homepage"
+                "homepage",
+                "home",
+                "home button"
               ]
             }
           ]
@@ -482,6 +485,7 @@
               "required": true,
               "single": true,
               "synonyms": [
+                "manage",
                 "update",
                 "edit",
                 "change"
@@ -495,7 +499,10 @@
                 "credit cards",
                 "credit card",
                 "card info",
-                "cards"
+                "cards",
+                "payment",
+                "payments",
+                "payment methods"
               ]
             }
           ]

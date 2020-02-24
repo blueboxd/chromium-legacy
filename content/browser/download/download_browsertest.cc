@@ -1259,6 +1259,12 @@ class ParallelDownloadTest : public DownloadContentTest {
       file.Close();
     }
 
+    // Parallel download should create more than 1 slices in most cases. If
+    // there is only one slice, consider this is a regular download and remove
+    // all slices.
+    download::DownloadItem::ReceivedSlices parallel_slices;
+    if (slices.size() != 1 || slices[0].offset != 0)
+      parallel_slices = slices;
     download::DownloadItem* download =
         DownloadManagerForShell(shell())->CreateDownloadItem(
             "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, path, base::FilePath(),
@@ -1269,7 +1275,7 @@ class ParallelDownloadTest : public DownloadContentTest {
             std::string(), download::DownloadItem::INTERRUPTED,
             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
             download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false,
-            base::Time(), false, slices);
+            base::Time(), false, parallel_slices);
     ClearAutoResumptionCount(download);
     return download;
   }
@@ -4179,6 +4185,18 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
   // The server shouldn't receive an additional request, since the last slice
   // is marked as finished.
   RunResumptionTest(received_slices, 3000000, kTestRequestCount - 1,
+                    true /* support_partial_response */);
+}
+
+// Verify parallel download resumption when only 1 slice was created in previous
+// attempt.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionWithOnlyOneSlice) {
+  // Create the received slices data with only 1 slice.
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
+      download::DownloadItem::ReceivedSlice(0, 1000, false /* finished */)};
+
+  // Only 1 request should be sent.
+  RunResumptionTest(received_slices, 3000000, 1,
                     true /* support_partial_response */);
 }
 

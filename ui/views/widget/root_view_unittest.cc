@@ -12,6 +12,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
@@ -802,6 +803,61 @@ TEST_F(RootViewTest, AnnounceTextTest) {
 }
 
 #endif  // !defined(OS_MACOSX)
+
+TEST_F(RootViewTest, MouseEventDispatchedToClosestEnabledView) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = {100, 100, 100, 100};
+  widget.Init(std::move(init_params));
+  widget.Show();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetContentsView(new View());
+
+  View* const contents_view = root_view->GetContentsView();
+  EventCountView* const v1 =
+      contents_view->AddChildView(std::make_unique<EventCountView>());
+  EventCountView* const v2 =
+      v1->AddChildView(std::make_unique<EventCountView>());
+  EventCountView* const v3 =
+      v2->AddChildView(std::make_unique<EventCountView>());
+
+  contents_view->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+  v1->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+  v2->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+  v3->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+
+  v1->set_handle_mode(EventCountView::CONSUME_EVENTS);
+  v2->set_handle_mode(EventCountView::CONSUME_EVENTS);
+  v3->set_handle_mode(EventCountView::CONSUME_EVENTS);
+
+  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
+                               gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
+                                gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMousePressed(pressed_event);
+  root_view->OnMouseReleased(released_event);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, v3->GetEventCount(ui::ET_MOUSE_PRESSED));
+
+  v3->SetEnabled(false);
+  root_view->OnMousePressed(pressed_event);
+  root_view->OnMouseReleased(released_event);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, v3->GetEventCount(ui::ET_MOUSE_PRESSED));
+
+  v3->SetEnabled(true);
+  v2->SetEnabled(false);
+  root_view->OnMousePressed(pressed_event);
+  root_view->OnMouseReleased(released_event);
+  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, v3->GetEventCount(ui::ET_MOUSE_PRESSED));
+}
 
 }  // namespace test
 }  // namespace views

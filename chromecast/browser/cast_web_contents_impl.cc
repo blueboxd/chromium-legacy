@@ -598,6 +598,26 @@ void CastWebContentsImpl::DidStartNavigation(
 
 void CastWebContentsImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  DCHECK(navigation_handle);
+  if (!web_contents_ || closing_ || stopped_)
+    return;
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  // Main frame has begun navigating/loading.
+  OnPageLoading();
+  start_loading_ticks_ = base::TimeTicks::Now();
+  GURL loading_url;
+  content::NavigationEntry* nav_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (nav_entry) {
+    loading_url = nav_entry->GetVirtualURL();
+  }
+  TracePageLoadBegin(loading_url);
+  UpdatePageState();
+  DCHECK_EQ(page_state_, PageState::LOADING);
+  NotifyPageState();
+
   if (before_load_scripts_.empty())
     return;
 

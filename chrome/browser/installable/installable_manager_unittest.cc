@@ -205,7 +205,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresPurposeAny) {
   blink::Manifest manifest = GetValidManifest();
 
   // The icon MUST have IconPurpose::ANY at least.
-  manifest.icons[0].purpose[0] = IconPurpose::BADGE;
+  manifest.icons[0].purpose[0] = IconPurpose::MASKABLE;
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
 

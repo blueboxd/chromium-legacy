@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/help_app_ui/help_app_guest_ui.h"
+#include "chromeos/components/help_app_ui/help_app_untrusted_ui.h"
 
 #include "base/system/sys_info.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
@@ -16,9 +16,9 @@
 namespace chromeos {
 
 // static
-content::WebUIDataSource* CreateHelpAppGuestDataSource() {
+content::WebUIDataSource* CreateHelpAppUntrustedDataSource() {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(kChromeUIHelpAppGuestHost);
+      content::WebUIDataSource::Create(kChromeUIHelpAppUntrustedURL);
   source->AddResourcePath("app.html", IDR_HELP_APP_APP_HTML);
   source->AddResourcePath("app_bin.js", IDR_HELP_APP_APP_BIN_JS);
   source->AddResourcePath("load_time_data.js", IDR_WEBUI_JS_LOAD_TIME_DATA);
@@ -40,8 +40,7 @@ content::WebUIDataSource* CreateHelpAppGuestDataSource() {
   source->AddString("customizationId", customization_id);
   source->UseStringsJs();
 
-  // TODO(crbug.com/1023700): Better solution before launch.
-  source->DisableDenyXFrameOptions();
+  source->AddFrameAncestor(GURL(kChromeUIHelpAppURL));
   return source;
 }
 

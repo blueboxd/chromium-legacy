@@ -69,7 +69,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 73;
+const int kThemePackVersion = 74;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1054,9 +1054,9 @@ void BrowserThemePack::AddCustomThemeColorMixers(
 void BrowserThemePack::AdjustThemePack() {
   CropImages(&images_);
 
-  // Set toolbar related elements' colors (e.g. status bubble, info bar,
-  // download shelf) to toolbar color.
-  SetToolbarRelatedColors();
+  // Set frame and toolbar related elements' colors (e.g. status bubble,
+  // info bar, download shelf) to frame or toolbar color.
+  SetFrameAndToolbarRelatedColors();
 
   // Create toolbar image, and generate toolbar color from image where relevant.
   // This must be done after reading colors from JSON (so they can be used for
@@ -1470,15 +1470,16 @@ void BrowserThemePack::CropImages(ImageCache* images) const {
   }
 }
 
-void BrowserThemePack::SetToolbarRelatedColors() {
-  // Propagate the user-specified Toolbar Color to similar elements (for
-  // backwards-compatibility with themes written before this toolbar processing
-  // was introduced).
+void BrowserThemePack::SetFrameAndToolbarRelatedColors() {
+  // Propagate the user-specified Frame and Toolbar Colors to similar elements.
+  SkColor frame_color;
+  if (GetColor(TP::COLOR_FRAME, &frame_color))
+    SetColor(TP::COLOR_STATUS_BUBBLE, frame_color);
+
   SkColor toolbar_color;
   if (GetColor(TP::COLOR_TOOLBAR, &toolbar_color)) {
     SetColor(TP::COLOR_INFOBAR, toolbar_color);
     SetColor(TP::COLOR_DOWNLOAD_SHELF, toolbar_color);
-    SetColor(TP::COLOR_STATUS_BUBBLE, toolbar_color);
   }
   SkColor toolbar_button_icon_color;
   if (GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &toolbar_button_icon_color)) {

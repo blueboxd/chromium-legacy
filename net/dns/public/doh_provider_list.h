@@ -20,14 +20,20 @@ namespace net {
 // menu for secure mode. To be eligible for auto-upgrade, entries must have a
 // non-empty |ip_strs| or non-empty |dns_over_tls_hostnames|. To be eligible for
 // the dropdown menu, entries must have non-empty |ui_name| and
-// |privacy_policy|.
+// |privacy_policy|. If |display_globally| is true, the entry is eligible for
+// being displayed globally in the dropdown menu. If |display_globally| is
+// false, |display_countries| should contain the two-letter ISO 3166-1 country
+// codes, if any, where the entry is eligible for being displayed in the
+// dropdown menu.
 struct NET_EXPORT DohProviderEntry {
   DohProviderEntry(std::string provider,
                    std::set<std::string> ip_strs,
                    std::set<std::string> dns_over_tls_hostnames,
                    std::string dns_over_https_template,
                    std::string ui_name,
-                   std::string privacy_policy);
+                   std::string privacy_policy,
+                   bool display_globally,
+                   std::set<std::string> display_countries);
   DohProviderEntry(const DohProviderEntry& other);
   ~DohProviderEntry();
 
@@ -37,6 +43,8 @@ struct NET_EXPORT DohProviderEntry {
   const std::string dns_over_https_template;
   const std::string ui_name;
   const std::string privacy_policy;
+  bool display_globally;
+  std::set<std::string> display_countries;
 };
 
 // Returns the full list of DoH providers. A subset of this list may be used

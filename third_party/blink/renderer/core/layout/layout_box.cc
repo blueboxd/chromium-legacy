@@ -2107,10 +2107,6 @@ void LayoutBox::SizeChanged() {
   // object for paint invalidation.
   if (!NeedsLayout())
     SetShouldCheckForPaintInvalidation();
-
-  if (auto* element = DynamicTo<Element>(GetNode())) {
-    element->SetNeedsResizeObserverUpdate();
-  }
 }
 
 bool LayoutBox::IntersectsVisibleViewport() const {

@@ -50,6 +50,9 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   void OnBeforeWorkerTerminated(
       content::DedicatedWorkerId dedicated_worker_id,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
+  void OnFinalResponseURLDetermined(
+      content::DedicatedWorkerId dedicated_worker_id,
+      const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
   void OnWorkerStarted(content::SharedWorkerId shared_worker_id,
@@ -57,6 +60,8 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerTerminated(
       content::SharedWorkerId shared_worker_id) override;
+  void OnFinalResponseURLDetermined(content::SharedWorkerId shared_worker_id,
+                                    const GURL& url) override;
   void OnClientAdded(
       content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override;

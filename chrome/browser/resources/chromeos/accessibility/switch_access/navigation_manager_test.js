@@ -43,7 +43,7 @@ SwitchAccessNavigationManagerTest.prototype = {
 function moveToPageContents() {
   const navigator = NavigationManager.instance;
   // Start from the desktop node.
-  navigator.group_ = RootNodeWrapper.buildDesktopTree(navigator.desktop_);
+  navigator.group_ = DesktopNode.build(navigator.desktop_);
   navigator.node_ = navigator.group_.firstChild;
 
   // The first item should be the browser window.

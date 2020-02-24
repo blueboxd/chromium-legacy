@@ -6,14 +6,6 @@
  * Class to manage user preferences.
  */
 class SwitchAccessPreferences {
-  // =============== Static Methods ==============
-
-  static initialize() {
-    SwitchAccessPreferences.instance = new SwitchAccessPreferences();
-  }
-
-  // =============== Private Methods ==============
-
   /** @private */
   constructor() {
     /**
@@ -25,6 +17,14 @@ class SwitchAccessPreferences {
 
     this.init_();
   }
+
+  // =============== Static Methods ==============
+
+  static initialize() {
+    SwitchAccessPreferences.instance = new SwitchAccessPreferences();
+  }
+
+  // =============== Private Methods ==============
 
   /**
    * Get the boolean value for the given name, or |null| if the value is not a
@@ -68,6 +68,32 @@ class SwitchAccessPreferences {
   }
 
   /**
+   * Whether the current settings configuration is reasonably usable;
+   * specifically, whether there is a way to select and a way to navigate.
+   * @return {boolean}
+   * @private
+   */
+  settingsAreConfigured_() {
+    const selectSetting =
+        this.getNumber_(SAConstants.Preference.SELECT_SETTING);
+    const nextSetting = this.getNumber_(SAConstants.Preference.NEXT_SETTING);
+    const previousSetting =
+        this.getNumber_(SAConstants.Preference.PREVIOUS_SETTING);
+    const autoScanEnabled =
+        !!this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED);
+
+    if (!selectSetting) {
+      return false;
+    }
+
+    if (nextSetting || previousSetting) {
+      return true;
+    }
+
+    return autoScanEnabled;
+  }
+
+  /**
    * Updates the cached preferences.
    * @param {!Array<chrome.settingsPrivate.PrefObject>} preferences
    * @param {boolean} isFirstLoad
@@ -76,7 +102,7 @@ class SwitchAccessPreferences {
   updateFromSettings_(preferences, isFirstLoad = false) {
     for (const pref of preferences) {
       // Ignore preferences that are not used by Switch Access.
-      if (!Object.values(SAConstants.Preference).includes(pref.key)) {
+      if (!this.usesPreference_(pref)) {
         continue;
       }
 
@@ -106,45 +132,17 @@ class SwitchAccessPreferences {
       }
     }
 
-    if (isFirstLoad) {
-      this.onInitialLoadComplete_();
-    }
-  }
-
-  /**
-   * Called when the preferences are finished loading for the first time.
-   * @private
-   */
-  onInitialLoadComplete_() {
-    if (!this.settingsAreConfigured_()) {
+    if (isFirstLoad && !this.settingsAreConfigured_()) {
       chrome.accessibilityPrivate.openSettingsSubpage(
           'manageAccessibility/switchAccess');
     }
   }
 
   /**
-   * Whether the current settings configuration is reasonably usable;
-   * specifically, whether there is a way to select and a way to navigate.
+   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean}
-   * @private
    */
-  settingsAreConfigured_() {
-    const selectSetting =
-        this.getNumber_(SAConstants.Preference.SELECT_SETTING);
-    const nextSetting = this.getNumber_(SAConstants.Preference.NEXT_SETTING);
-    const previousSetting =
-        this.getNumber_(SAConstants.Preference.PREVIOUS_SETTING);
-    const autoScanEnabled =
-        !!this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED);
-
-    if (!selectSetting) {
-      return false;
-    }
-
-    if (nextSetting || previousSetting) {
-      return true;
-    }
-
-    return autoScanEnabled;
+  usesPreference_(pref) {
+    return Object.values(SAConstants.Preference).includes(pref.key);
   }
 }

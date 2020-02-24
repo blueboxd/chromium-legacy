@@ -12,3 +12,5 @@ per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
+per-file sandbox*=set noparent
+per-file sandbox*=file://sandbox/OWNERS

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.flags;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.SysUtils;
@@ -200,7 +199,6 @@ public class CachedFeatureFlags {
      * Do not add new simple boolean flags here, use {@link #cacheNativeFlags} instead.
      */
     public static void cacheAdditionalNativeFlags() {
-        cacheNightModeAvailable();
         cacheNetworkServiceWarmUpEnabled();
         cacheNativeTabSwitcherUiFlags();
         cacheReachedCodeProfilerTrialGroup();
@@ -274,36 +272,6 @@ public class CachedFeatureFlags {
      */
     public static boolean isLabeledBottomToolbarEnabled() {
         return isEnabled(ChromeFeatureList.CHROME_DUET_LABELED) && isBottomToolbarEnabled();
-    }
-
-    /**
-     * Cache whether or not night mode is available (i.e. night mode experiment is enabled) so on
-     * next startup, the value can be made available immediately.
-     */
-    public static void cacheNightModeAvailable() {
-        boolean available = ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE)
-                || (BuildInfo.isAtLeastQ()
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_FOR_Q));
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, available);
-    }
-
-    /**
-     * @return Whether or not night mode experiment is enabled (i.e. night mode experiment is
-     *         enabled).
-     */
-    public static boolean isNightModeAvailable() {
-        return getConsistentBooleanValue(
-                ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, true);
-    }
-
-    /**
-     * Toggles whether the night mode experiment is enabled for testing. Should be reset back to
-     * null after the test has finished.
-     */
-    @VisibleForTesting
-    public static void setNightModeAvailableForTesting(@Nullable Boolean available) {
-        sBoolValuesReturned.put(ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_AVAILABLE, available);
     }
 
     /**

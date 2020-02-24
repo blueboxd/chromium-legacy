@@ -44,6 +44,13 @@ class CONTENT_EXPORT SharedWorkerService {
         const base::UnguessableToken& dev_tools_token) = 0;
     virtual void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) = 0;
 
+    // Called when the final response URL (the URL after redirects) was
+    // determined when fetching the worker's script.
+    //
+    // TODO(pmonette): Implement this in derived classes and make it pure.
+    virtual void OnFinalResponseURLDetermined(SharedWorkerId shared_worker_id,
+                                              const GURL& url) {}
+
     // Called when a frame starts/stop being a client of a shared worker. It is
     // guaranteed that OnWorkerStarted() is called before receiving these
     // notifications.

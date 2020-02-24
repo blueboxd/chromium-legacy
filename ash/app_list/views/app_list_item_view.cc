@@ -71,7 +71,8 @@ constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 constexpr SkColor kFolderGridFocusRingColor = gfx::kGoogleBlue600;
 
 // The color of an item selected via right-click context menu.
-constexpr SkColor kContextSelection = SkColorSetA(gfx::kGoogleGrey100, 31);
+constexpr SkColor kContextSelection =
+    SkColorSetA(SK_ColorWHITE, 41);  // 16% opacity
 
 // The color of an item selected via right-click context menu in a folder.
 constexpr SkColor kContextSelectionFolder =

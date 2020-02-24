@@ -45,6 +45,7 @@ struct HitReport {
   std::string population_id;
 
   ExtendedReportingLevel extended_reporting_level;
+  bool is_enhanced_protection = false;
   bool is_metrics_reporting_active;
 
   std::string post_data;

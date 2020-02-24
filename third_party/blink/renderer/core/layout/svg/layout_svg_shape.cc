@@ -229,7 +229,6 @@ void LayoutSVGShape::UpdateLayout() {
     FloatRect old_object_bounding_box = ObjectBoundingBox();
     UpdateShapeFromElement();
     if (old_object_bounding_box != ObjectBoundingBox()) {
-      GetElement()->SetNeedsResizeObserverUpdate();
       SetShouldDoFullPaintInvalidation();
       bbox_changed = true;
     }

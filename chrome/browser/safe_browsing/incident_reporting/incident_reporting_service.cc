@@ -305,7 +305,8 @@ bool IncidentReportingService::IsEnabledForProfile(Profile* profile) {
     return false;
   if (!profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
     return false;
-  return IsExtendedReportingEnabled(*profile->GetPrefs());
+  return IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+         IsEnhancedProtectionEnabled(*profile->GetPrefs());
 }
 
 IncidentReportingService::IncidentReportingService(

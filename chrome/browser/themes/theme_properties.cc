@@ -55,6 +55,7 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
     case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
+    case ThemeProperties::COLOR_STATUS_BUBBLE:
       return SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
@@ -66,7 +67,6 @@ SkColor GetLightModeColor(int id) {
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
-    case ThemeProperties::COLOR_STATUS_BUBBLE:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
       return gfx::kGoogleGrey300;

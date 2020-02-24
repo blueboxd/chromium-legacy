@@ -41,7 +41,9 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
       int height);
   void OnDrawingSurfaceTouch(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
+                             bool primary,
                              bool touching,
+                             int32_t pointer_id,
                              float x,
                              float y);
   void OnDrawingSurfaceDestroyed(
@@ -49,7 +51,6 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
 
   SurfaceReadyCallback surface_ready_callback_;

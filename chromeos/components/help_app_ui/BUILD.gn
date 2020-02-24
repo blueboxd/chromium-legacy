@@ -10,13 +10,13 @@ assert(is_chromeos, "Help App is Chrome OS only")
 
 static_library("help_app_ui") {
   sources = [
-    "help_app_guest_ui.cc",
-    "help_app_guest_ui.h",
     "help_app_page_handler.cc",
     "help_app_page_handler.h",
     "help_app_ui.cc",
     "help_app_ui.h",
     "help_app_ui_delegate.h",
+    "help_app_untrusted_ui.cc",
+    "help_app_untrusted_ui.h",
     "url_constants.cc",
     "url_constants.h",
   ]
@@ -29,6 +29,7 @@ static_library("help_app_ui") {
     "//chromeos/resources:help_app_resources",
     "//chromeos/system",
     "//content/public/browser",
+    "//content/public/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
     "//ui/resources:webui_resources_grd_grit",

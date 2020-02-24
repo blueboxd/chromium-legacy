@@ -275,6 +275,9 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
         state = "DANGEROUS";
       } else if (download_item->IsMixedContent()) {
         state = "MIXED_CONTENT";
+      } else if (download_item->GetDangerType() ==
+                 download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+        state = "ASYNC_SCANNING";
       } else if (download_item->IsPaused()) {
         state = "PAUSED";
       } else {

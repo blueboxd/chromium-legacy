@@ -39,7 +39,7 @@ class EditableTextNode extends NodeWrapper {
   performAction(action) {
     switch (action) {
       case SAConstants.MenuAction.OPEN_KEYBOARD:
-        this.automationNode.focus();
+        NavigationManager.enterKeyboard();
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();

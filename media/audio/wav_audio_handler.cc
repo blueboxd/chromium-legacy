@@ -58,10 +58,13 @@ struct WavAudioParameters {
 };
 
 bool ParamsAreValid(const WavAudioParameters& params) {
+  const uint16_t bytes_per_sample = params.bits_per_sample / 8;
   return (params.audio_format == kAudioFormatPCM && params.num_channels != 0u &&
           params.num_channels <= static_cast<uint16_t>(limits::kMaxChannels) &&
           params.sample_rate != 0u && params.bits_per_sample != 0u &&
           params.bits_per_sample % 8u == 0u &&
+          (bytes_per_sample == 1 || bytes_per_sample == 2 ||
+           bytes_per_sample == 4) &&
           (!params.is_extensible ||
            params.valid_bits_per_sample == params.bits_per_sample));
 }

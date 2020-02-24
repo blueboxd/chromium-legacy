@@ -394,13 +394,14 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
   auto image_info = skia_image->imageInfo()
                         .makeColorSpace(color_space)
                         .makeColorType(color_type);
+
   auto usage_flags = ContextProviderWrapper()
                          ->ContextProvider()
                          ->SharedImageInterface()
                          ->UsageForMailbox(mailbox_);
-  auto provider = CanvasResourceProvider::CreateAccelerated(
-      Size(), ContextProviderWrapper(), CanvasColorParams(image_info),
-      IsOriginTopLeft(), usage_flags);
+  auto provider = CanvasResourceProvider::CreateSharedImageProvider(
+      Size(), ContextProviderWrapper(), kLow_SkFilterQuality,
+      CanvasColorParams(image_info), IsOriginTopLeft(), usage_flags);
   if (!provider) {
     return nullptr;
   }

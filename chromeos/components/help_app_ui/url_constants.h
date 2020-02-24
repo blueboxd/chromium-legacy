@@ -9,8 +9,7 @@ namespace chromeos {
 
 extern const char kChromeUIHelpAppHost[];
 extern const char kChromeUIHelpAppURL[];
-extern const char kChromeUIHelpAppGuestHost[];
-extern const char kChromeUIHelpAppGuestURL[];
+extern const char kChromeUIHelpAppUntrustedURL[];
 
 }  // namespace chromeos
 

@@ -229,7 +229,8 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   }
 
   // TODO(https://crbug.com/986188): Check if the main script's final response
-  // URL is commitable.
+  // URL is committable.
+  service_->NotifyWorkerFinalResponseURLDetermined(id_, final_response_url);
 
   // TODO(cammie): Change this approach when we support shared workers
   // creating dedicated workers, as there might be no ancestor frame.

@@ -94,6 +94,18 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
+  'boringssl_crypto_tests': {
+    'remove_from': [
+      # https://crbug.com/1054545
+      'Fuchsia x64',
+    ],
+  },
+  'boringssl_ssl_tests': {
+    'remove_from': [
+      # https://crbug.com/1054545
+      'Fuchsia x64',
+    ],
+  },
   'breakpad_unittests': {
     'modifications': {
       'android-asan': {

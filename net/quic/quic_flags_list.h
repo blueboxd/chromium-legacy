@@ -365,3 +365,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_quic_time_for_received_timestamp2,
           false)
+
+// If true, enable QUIC version h3-25.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_25, false)

@@ -197,6 +197,7 @@ if (enable_pdf) {
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
         "pdfium/pdfium_engine_unittest.cc",
+        "pdfium/pdfium_form_filler_unittest.cc",
         "pdfium/pdfium_page_unittest.cc",
         "pdfium/pdfium_permissions_unittest.cc",
         "pdfium/pdfium_print_unittest.cc",

@@ -13,6 +13,7 @@ import android.support.v7.content.res.AppCompatResources;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -79,6 +80,7 @@ public class ShareSheetCoordinator {
                 activity.getResources().getString(R.string.qr_code_share_icon_label),
                 (currentActivity)
                         -> {
+                    RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
                     QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
                     qrCodeCoordinator.show();
@@ -95,6 +97,8 @@ public class ShareSheetCoordinator {
                                         R.string.send_tab_to_self_share_activity_title),
                                 (shareParams)
                                         -> {
+                                    RecordUserAction.record(
+                                            "SharingHubAndroid.SendTabToSelfSelected");
                                     mBottomSheetController.hideContent(bottomSheet, true);
                                     SendTabToSelfShareActivity.actionHandler(activity,
                                             mActivityTabProvider.get()
@@ -110,6 +114,7 @@ public class ShareSheetCoordinator {
         PropertyModel copyPropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
                 activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
+                    RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
                     Tab tab = mActivityTabProvider.get();
                     NavigationEntry entry =
@@ -132,6 +137,7 @@ public class ShareSheetCoordinator {
                     activity.getResources().getString(R.string.sharing_screenshot),
                     (shareParams)
                             -> {
+                        RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
                         mBottomSheetController.hideContent(bottomSheet, true);
                         Tab tab = mActivityTabProvider.get();
                         ScreenshotCoordinator screenshotCoordinator =
@@ -156,6 +162,7 @@ public class ShareSheetCoordinator {
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 (shareParams)
                         -> {
+                    RecordUserAction.record("SharingHubAndroid.MoreSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
                     ShareHelper.showDefaultShareUi(params);
                 },

@@ -985,6 +985,12 @@
                  file="site_settings_page/site_settings_page.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_LIST_HTML"
+                 file="site_settings_page/site_settings_list.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_LIST_JS"
+                 file="site_settings_page/site_settings_list.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_HTML"
                  file="site_settings/site_settings_prefs_browser_proxy.html"
                  type="chrome_html" />

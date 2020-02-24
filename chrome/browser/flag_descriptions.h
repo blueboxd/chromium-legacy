@@ -1565,9 +1565,6 @@ extern const char kNtpWebUIDescription[];
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 
-extern const char kEnableWebAuthenticationTestingAPIName[];
-extern const char kEnableWebAuthenticationTestingAPIDescription[];
-
 extern const char kEnterpriseReportingInBrowserName[];
 extern const char kEnterpriseReportingInBrowserDescription[];
 

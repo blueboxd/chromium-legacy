@@ -4,6 +4,8 @@
 
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 
+#include "base/stl_util.h"
+
 namespace content {
 
 DedicatedWorkerServiceImpl::DedicatedWorkerServiceImpl() = default;
@@ -61,6 +63,15 @@ void DedicatedWorkerServiceImpl::NotifyWorkerTerminating(
     observer.OnBeforeWorkerTerminated(dedicated_worker_id,
                                       ancestor_render_frame_host_id);
   }
+}
+
+void DedicatedWorkerServiceImpl::NotifyWorkerFinalResponseURLDetermined(
+    DedicatedWorkerId dedicated_worker_id,
+    const GURL& url) {
+  DCHECK(base::Contains(dedicated_worker_infos_, dedicated_worker_id));
+
+  for (Observer& observer : observers_)
+    observer.OnFinalResponseURLDetermined(dedicated_worker_id, url);
 }
 
 }  // namespace content

@@ -144,15 +144,15 @@ void AudioDecoderForMixer::Initialize() {
 bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
                                  bool start_playback_asap) {
   TRACE_FUNCTION_ENTRY0();
-  DCHECK(IsValidConfig(config_));
-
-  CreateMixerInput(config_, start_playback_asap);
+  DCHECK(IsValidConfig(input_config_));
 
   // Create decoder_ if necessary. This can happen if Stop() was called, and
   // SetConfig() was not called since then.
   if (!decoder_) {
     CreateDecoder();
   }
+  decoded_config_ = (decoder_ ? decoder_->GetOutputConfig() : input_config_);
+  CreateMixerInput(decoded_config_, start_playback_asap);
   playback_start_pts_ = playback_start_pts;
   start_playback_asap_ = start_playback_asap;
 
@@ -316,7 +316,10 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
     return MediaPipelineBackend::kBufferPending;
   }
 
-  DCHECK(decoder_);
+  if (!decoder_) {
+    return MediaPipelineBackend::kBufferFailed;
+  }
+
   // Decode the buffer.
   decoder_->Decode(std::move(buffer_base),
                    base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
@@ -345,17 +348,20 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     return false;
   }
 
-  bool changed_config =
-      (config.samples_per_second != config_.samples_per_second ||
-       config.channel_number != config_.channel_number);
-
-  if (mixer_input_ && changed_config) {
-    ResetMixerInputForNewConfig(config);
-  }
-
-  config_ = config;
+  input_config_ = config;
   decoder_.reset();
   CreateDecoder();
+
+  auto decoded_config =
+      (decoder_ ? decoder_->GetOutputConfig() : input_config_);
+  bool changed_config =
+      (decoded_config.samples_per_second !=
+           decoded_config_.samples_per_second ||
+       decoded_config.channel_number != decoded_config_.channel_number);
+  decoded_config_ = decoded_config;
+  if (mixer_input_ && changed_config) {
+    ResetMixerInputForNewConfig(decoded_config);
+  }
 
   if (pending_buffer_complete_ && changed_config) {
     pending_buffer_complete_ = false;
@@ -379,7 +385,7 @@ void AudioDecoderForMixer::ResetMixerInputForNewConfig(
 
 void AudioDecoderForMixer::CreateDecoder() {
   DCHECK(!decoder_);
-  DCHECK(IsValidConfig(config_));
+  DCHECK(IsValidConfig(input_config_));
 
   // No need to create a decoder if the samples are already decoded.
   if (BypassDecoder()) {
@@ -388,10 +394,12 @@ void AudioDecoderForMixer::CreateDecoder() {
   }
 
   // Create a decoder.
-  decoder_ = CastAudioDecoder::Create(
-      task_runner_, config_, kDecoderSampleFormat,
-      base::BindOnce(&AudioDecoderForMixer::OnDecoderInitialized,
-                     base::Unretained(this)));
+  decoder_ = CastAudioDecoder::Create(task_runner_, input_config_,
+                                      kDecoderSampleFormat);
+  if (!decoder_) {
+    LOG(ERROR) << "Failed to create audio decoder";
+    delegate_->OnDecoderError();
+  }
 }
 
 bool AudioDecoderForMixer::SetVolume(float multiplier) {
@@ -411,7 +419,7 @@ AudioDecoderForMixer::RenderingDelay AudioDecoderForMixer::GetRenderingDelay() {
 
   AudioDecoderForMixer::RenderingDelay delay = next_buffer_delay_;
   if (delay.timestamp_microseconds != INT64_MIN) {
-    double usec_per_sample = 1000000.0 / config_.samples_per_second;
+    double usec_per_sample = 1000000.0 / decoded_config_.samples_per_second;
     double queued_output_frames = 0.0;
 
     // Account for data that is in the process of being pushed to the mixer.
@@ -422,15 +430,6 @@ AudioDecoderForMixer::RenderingDelay AudioDecoderForMixer::GetRenderingDelay() {
   }
 
   return delay;
-}
-
-void AudioDecoderForMixer::OnDecoderInitialized(bool success) {
-  TRACE_FUNCTION_ENTRY0();
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  LOG(INFO) << "Decoder initialization was "
-            << (success ? "successful" : "unsuccessful");
-  if (!success)
-    delegate_->OnDecoderError();
 }
 
 void AudioDecoderForMixer::OnBufferDecoded(
@@ -463,29 +462,30 @@ void AudioDecoderForMixer::OnBufferDecoded(
 
   if (has_config) {
     bool changed_config = false;
-    if (config.samples_per_second != config_.samples_per_second) {
+    if (config.samples_per_second != decoded_config_.samples_per_second) {
       LOG(INFO) << "Input sample rate changed from "
-                << config_.samples_per_second << " to "
+                << decoded_config_.samples_per_second << " to "
                 << config.samples_per_second;
-      config_.samples_per_second = config.samples_per_second;
+      decoded_config_.samples_per_second = config.samples_per_second;
       changed_config = true;
     }
-    if (config.channel_number != config_.channel_number) {
-      LOG(INFO) << "Input channel count changed from " << config_.channel_number
-                << " to " << config.channel_number;
-      config_.channel_number = config.channel_number;
+    if (config.channel_number != decoded_config_.channel_number) {
+      LOG(INFO) << "Input channel count changed from "
+                << decoded_config_.channel_number << " to "
+                << config.channel_number;
+      decoded_config_.channel_number = config.channel_number;
       changed_config = true;
     }
     if (changed_config) {
       // Config from actual stream doesn't match supposed config from the
       // container. Update the mixer.
-      ResetMixerInputForNewConfig(config_);
+      ResetMixerInputForNewConfig(decoded_config_);
     }
   }
 
   if (!decoded->end_of_stream()) {
     pending_output_frames_ =
-        decoded->data_size() / (config_.channel_number * sizeof(float));
+        decoded->data_size() / (decoded_config_.channel_number * sizeof(float));
     last_push_pts_ = decoded->timestamp();
     last_push_playout_timestamp_ =
         (next_buffer_delay_.timestamp_microseconds == kInvalidTimestamp
@@ -508,8 +508,8 @@ void AudioDecoderForMixer::CheckBufferComplete() {
 bool AudioDecoderForMixer::BypassDecoder() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   // The mixer input requires planar float PCM data.
-  return (config_.codec == kCodecPCM &&
-          config_.sample_format == kSampleFormatPlanarF32);
+  return (input_config_.codec == kCodecPCM &&
+          input_config_.sample_format == kSampleFormatPlanarF32);
 }
 
 void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
@@ -523,7 +523,7 @@ void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
     return;
   }
 
-  const int frame_size = sizeof(float) * config_.channel_number;
+  const int frame_size = sizeof(float) * decoded_config_.channel_number;
   const int original_frame_count = buffer->data_size() / frame_size;
   if (original_frame_count == 0) {
     // Don't send empty buffers since it is interpreted as EOS.
@@ -535,7 +535,7 @@ void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
   DCHECK_GT(frame_count, 0);
 
   if (frame_count > buffer_pool_frames_) {
-    CreateBufferPool(config_, frame_count * 2);
+    CreateBufferPool(decoded_config_, frame_count * 2);
   }
 
   auto io_buffer = buffer_pool_->GetBuffer();

@@ -18,14 +18,12 @@ ResizeObservation::ResizeObservation(Element* target,
     : target_(target),
       observer_(observer),
       observation_size_(0, 0),
-      element_size_changed_(true),
       observed_box_(observed_box) {
   DCHECK(target_);
-  observer_->ElementSizeChanged();
 }
 
 bool ResizeObservation::ObservationSizeOutOfSync() {
-  if (!element_size_changed_ || observation_size_ == ComputeTargetSize())
+  if (observation_size_ == ComputeTargetSize())
     return false;
 
   // Skip resize observations on locked elements.
@@ -39,13 +37,6 @@ bool ResizeObservation::ObservationSizeOutOfSync() {
 
 void ResizeObservation::SetObservationSize(const LayoutSize& observation_size) {
   observation_size_ = observation_size;
-
-  // Don't clear the dirty bit while locked. This allows us to make sure to
-  // compare sizes when becoming unlocked.
-  if (UNLIKELY(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(*target_)))
-    return;
-
-  element_size_changed_ = false;
 }
 
 size_t ResizeObservation::TargetDepth() {
@@ -68,22 +59,21 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
       if (!layout_object->IsBox())
         return LayoutSize();
 
-      switch (observed_box_) {
-        case ResizeObserverBoxOptions::BorderBox:
-          return ToLayoutBox(layout_object)->BorderBoxRect().Size();
-        case ResizeObserverBoxOptions::ContentBox:
-          return ToLayoutBox(layout_object)->ContentSize();
-        default:
-          NOTREACHED();
+      if (LayoutBox* layout_box = ToLayoutBox(layout_object)) {
+        switch (observed_box_) {
+          case ResizeObserverBoxOptions::BorderBox:
+            return LayoutSize(layout_box->LogicalWidth(),
+                              layout_box->LogicalHeight());
+          case ResizeObserverBoxOptions::ContentBox:
+            return LayoutSize(layout_box->ContentLogicalWidth(),
+                              layout_box->ContentLogicalHeight());
+          default:
+            NOTREACHED();
+        }
       }
     }
   }
   return LayoutSize();
-}
-
-void ResizeObservation::ElementSizeChanged() {
-  element_size_changed_ = true;
-  observer_->ElementSizeChanged();
 }
 
 void ResizeObservation::Trace(Visitor* visitor) {

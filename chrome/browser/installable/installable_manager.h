@@ -95,7 +95,7 @@ class InstallableManager
 
   using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
-  enum class IconUsage { kPrimary, kBadge };
+  enum class IconUsage { kPrimary, kSplash };
 
   struct EligiblityProperty {
     EligiblityProperty();

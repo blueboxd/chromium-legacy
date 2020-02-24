@@ -149,7 +149,7 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
                                                    bool include_version) {
   InitializeHeader(num, include_version);
 
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     AddQuicPingFrame();
   } else if (perspective_ == quic::Perspective::IS_CLIENT) {
     AddQuicPathChallengeFrame();
@@ -245,13 +245,12 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_stop_sending_if_v99) {
   InitializeHeader(num, include_version);
 
-  if (version_.transport_version != quic::QUIC_VERSION_99 ||
+  if (!version_.HasIetfQuicFrames() ||
       quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
     AddQuicRstStreamFrame(stream_id, error_code);
   }
 
-  if (include_stop_sending_if_v99 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+  if (include_stop_sending_if_v99 && version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(stream_id, error_code);
   }
 
@@ -270,7 +269,7 @@ QuicTestPacketMaker::MakeRstAndDataPacket(
 
   AddQuicRstStreamFrame(rst_stream_id, rst_error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(rst_stream_id, rst_error_code);
   }
 
@@ -292,7 +291,7 @@ QuicTestPacketMaker::MakeDataAndRstPacket(
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   AddQuicRstStreamFrame(rst_stream_id, rst_error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(rst_stream_id, rst_error_code);
   }
 
@@ -330,13 +329,12 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
 
   AddQuicAckFrame(largest_received, smallest_received);
 
-  if (version_.transport_version != quic::QUIC_VERSION_99 ||
+  if (!version_.HasIetfQuicFrames() ||
       quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
     AddQuicRstStreamFrame(stream_id, error_code);
   }
 
-  if (version_.transport_version == quic::QUIC_VERSION_99 &&
-      include_stop_sending_if_v99) {
+  if (version_.HasIetfQuicFrames() && include_stop_sending_if_v99) {
     AddQuicStopSendingFrame(stream_id, error_code);
   }
 
@@ -358,7 +356,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
 
   AddQuicRstStreamFrame(stream_id, error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(stream_id, error_code);
   }
 
@@ -380,7 +378,7 @@ QuicTestPacketMaker::MakeRstAndConnectionClosePacket(
 
   AddQuicRstStreamFrame(stream_id, error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(stream_id, error_code);
   }
 
@@ -404,7 +402,7 @@ QuicTestPacketMaker::MakeDataRstAndConnectionClosePacket(
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   AddQuicRstStreamFrame(rst_stream_id, error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(rst_stream_id, error_code);
   }
 
@@ -431,7 +429,7 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   AddQuicRstStreamFrame(rst_stream_id, error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(rst_stream_id, error_code);
   }
 
@@ -656,7 +654,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
 
   AddQuicRstStreamFrame(stream_id, error_code);
 
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     AddQuicStopSendingFrame(stream_id, error_code);
   }
 

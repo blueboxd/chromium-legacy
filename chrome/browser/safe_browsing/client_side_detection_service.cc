@@ -126,6 +126,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
 void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     bool is_extended_reporting,
+    bool is_enhanced_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -133,7 +134,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
       base::BindOnce(
           &ClientSideDetectionService::StartClientReportPhishingRequest,
           weak_factory_.GetWeakPtr(), verdict, is_extended_reporting,
-          callback));
+          is_enhanced_reporting, callback));
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
@@ -182,7 +183,8 @@ void ClientSideDetectionService::SendModelToProcess(
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
   if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+        IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
       DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
                << " to RenderProcessHost @" << process;
       model = model_loader_extended_->model_str();
@@ -214,6 +216,7 @@ void ClientSideDetectionService::SendModelToRenderers() {
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     bool is_extended_reporting,
+    bool is_enhanced_reporting,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<ClientPhishingRequest> request(verdict);
@@ -225,10 +228,15 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   }
 
   // Fill in metadata about which model we used.
-  if (is_extended_reporting) {
+  if (is_extended_reporting || is_enhanced_reporting) {
     request->set_model_filename(model_loader_extended_->name());
-    request->mutable_population()->set_user_population(
-        ChromeUserPopulation::EXTENDED_REPORTING);
+    if (is_enhanced_reporting) {
+      request->mutable_population()->set_user_population(
+          ChromeUserPopulation::ENHANCED_PROTECTION);
+    } else {
+      request->mutable_population()->set_user_population(
+          ChromeUserPopulation::EXTENDED_REPORTING);
+    }
   } else {
     request->set_model_filename(model_loader_standard_->name());
     request->mutable_population()->set_user_population(
@@ -426,10 +434,9 @@ GURL ClientSideDetectionService::GetClientReportUrl(
 }
 
 ModelLoader::ClientModelStatus ClientSideDetectionService::GetLastModelStatus(
-    bool is_extended_reporting) {
-  ModelLoader* model_loader = is_extended_reporting
-                                  ? model_loader_extended_.get()
-                                  : model_loader_standard_.get();
+    bool use_extended_model) {
+  ModelLoader* model_loader = use_extended_model ? model_loader_extended_.get()
+                                                 : model_loader_standard_.get();
   return model_loader->last_client_model_status();
 }
 

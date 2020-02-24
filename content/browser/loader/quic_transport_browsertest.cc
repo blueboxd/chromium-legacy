@@ -103,8 +103,9 @@ class QuicTransportTest : public ContentBrowserTest {
         switches::kOriginToForceQuicOn,
         base::StringPrintf("localhost:%d", server_.server_address().port()));
     command_line->AppendSwitch(switches::kEnableQuic);
+    // TODO(crbug.com/1055027): Don't hardcode the ALPN string.
     command_line->AppendSwitchASCII(switches::kQuicVersion,
-                                    base::StringPrintf("h3-25"));
+                                    base::StringPrintf("h3-26"));
     // The value is calculated from net/data/ssl/certificates/quic-chain.pem.
     command_line->AppendSwitchASCII(
         network::switches::kIgnoreCertificateErrorsSPKIList,

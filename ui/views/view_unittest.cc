@@ -5403,6 +5403,27 @@ TEST_F(ViewTest, TestVisibleChangedCallback) {
   EXPECT_FALSE(test_view.GetVisible());
 }
 
+TEST_F(ViewTest, TooltipShowsForDisabledView) {
+  auto widget = std::make_unique<Widget>();
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(std::move(params));
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  View enabled_parent;
+  View* const disabled_child =
+      enabled_parent.AddChildView(std::make_unique<View>());
+  disabled_child->SetEnabled(false);
+
+  enabled_parent.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  disabled_child->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  widget->GetContentsView()->AddChildView(&enabled_parent);
+  widget->Show();
+
+  EXPECT_EQ(disabled_child,
+            enabled_parent.GetTooltipHandlerForPoint(gfx::Point(50, 50)));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////

@@ -143,6 +143,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabProvider.addObserver(new Callback<Tab>() {
             @Override
             public void onResult(Tab tab) {
+                if (tab == null) return;
                 TabImpl tabImpl = (TabImpl) tab;
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(tabImpl.getProfile());
                 final Runnable completeRunnable = () -> {

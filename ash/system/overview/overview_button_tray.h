@@ -68,7 +68,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnShelfConfigUpdated() override;
 
   // TrayBackgroundView:
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
+  void UpdateAfterLoginStatusChange() override;
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;

@@ -433,8 +433,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       return *min_max_size;
     };
 
-
-    MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
+    MinMaxSize min_max_sizes_in_main_axis_direction{main_axis_border_padding,
                                                     LayoutUnit::Max()};
     MinMaxSize min_max_sizes_in_cross_axis_direction{LayoutUnit(),
                                                      LayoutUnit::Max()};
@@ -682,6 +681,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           min, IntrinsicBlockSizeFunc, LengthResolvePhase::kLayout);
     }
     min_max_sizes_in_main_axis_direction -= main_axis_border_padding;
+    DCHECK_GE(min_max_sizes_in_main_axis_direction.min_size, 0);
+    DCHECK_GE(min_max_sizes_in_main_axis_direction.max_size, 0);
 
     // TODO(dgrogan): Should min_max_sizes_in_cross_axis_direction include
     // cross_axis_border_padding?

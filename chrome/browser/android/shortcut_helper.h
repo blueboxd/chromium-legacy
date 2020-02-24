@@ -60,9 +60,6 @@ class ShortcutHelper {
   // screen.
   static int GetMinimumSplashImageSizeInPx();
 
-  // Returns the ideal size for a badge icon of a WebAPK.
-  static int GetIdealBadgeIconSizeInPx();
-
   // Returns the ideal size for an adaptive launcher icon of a WebAPK
   static int GetIdealAdaptiveLauncherIconSizeInPx();
 

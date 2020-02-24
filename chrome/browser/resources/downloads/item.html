@@ -135,24 +135,31 @@
     opacity: .5;
   }
 
-  #file-icon-wrapper iron-icon[icon='cr:insert-drive-file'] {
+  #file-icon-wrapper iron-icon[icon-color='paper-grey'] {
     color: var(--paper-grey-400);
   }
 
-  #file-icon-wrapper iron-icon[icon='cr:warning'],
-  .dangerous #description {
+  #file-icon-wrapper iron-icon[icon-color='red'] {
     color: var(--google-red-700);
   }
 
-  #file-icon-wrapper iron-icon[icon='cr:error'],
-  .dangerous #description {
+  #file-icon-wrapper iron-icon[icon-color='yellow'] {
     color: var(--google-yellow-500);
   }
 
   @media (prefers-color-scheme: dark) {
-    #file-icon-wrapper iron-icon[icon='cr:warning'],
-    .dangerous #description {
+    #file-icon-wrapper iron-icon[icon-color='red'] {
       color: var(--google-red-refresh-300);
+    }
+  }
+
+  #file-icon-wrapper iron-icon[icon-color='grey'] {
+    color: var(--google-grey-700);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #file-icon-wrapper iron-icon[icon-color='grey'] {
+      color: var(--google-grey-500);
     }
   }
 
@@ -269,7 +276,8 @@
   }
 
   #pauseOrResume,
-  #dangerous .action-button {
+  #dangerous .action-button,
+  #openNow {
     margin-inline-end: 8px;
   }
 </style>
@@ -286,10 +294,13 @@
     attribute and remove aria-hidden="true" from #file-icon-wrapper
   -->
   <div id="file-icon-wrapper" class="icon-wrapper" aria-hidden="true">
-    <img class="icon" id="file-icon" alt="" hidden="[[!useFileIcon_]]">
+    <img class="icon" id="file-icon" alt="" hidden="[[!useFileIcon_]]"
+    icon-color$="[[computeIconColor_(isDangerous_, data.dangerType,
+    useFileIcon_)]]">
     <iron-icon class="icon" icon$="[[computeIcon_(
         isDangerous_, data.dangerType, useFileIcon_)]]"
-        hidden="[[useFileIcon_]]"></iron-icon>
+        hidden="[[useFileIcon_]]" icon-color$="[[computeIconColor_(isDangerous_,
+        data.dangerType, useFileIcon_)]]"></iron-icon>
   </div>
 
   <div id="details">
@@ -348,6 +359,14 @@
           <cr-button on-click="onPauseOrResumeTap_" id="pauseOrResume"
               focus-row-control focus-type="pauseOrResume">
             [[pauseOrResumeText_]]
+          </cr-button>
+        </div>
+      </template>
+      <template is="dom-if" if="[[showOpenNow_]]">
+        <div role="gridcell">
+          <cr-button on-click="onOpenNowTap_" id="openNow" class="action-button"
+                     focus-row-control focus-type="open">
+            $i18n{controlOpenNow}
           </cr-button>
         </div>
       </template>

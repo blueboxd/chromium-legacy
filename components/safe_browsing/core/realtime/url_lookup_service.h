@@ -37,6 +37,7 @@ using RTLookupResponseCallback =
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
+// TODO(crbug.com/1050859): Add RTLookupService check flow.
 class RealTimeUrlLookupService : public KeyedService {
  public:
   explicit RealTimeUrlLookupService(
@@ -61,10 +62,6 @@ class RealTimeUrlLookupService : public KeyedService {
                    RTLookupResponseCallback response_callback,
                    signin::IdentityManager* identity_manager_on_ui);
 
-  // Called by |database_manager| when any profile is destroyed. The current
-  // object will finish all pending requests and delete itself.
-  void WaitForPendingRequestsOrDelete();
-
   // KeyedService:
   // Called before the actual deletion of the object.
   void Shutdown() override;
@@ -73,6 +70,9 @@ class RealTimeUrlLookupService : public KeyedService {
   // RTLookupResponse::ThreatInfo::ThreatType
   static SBThreatType GetSBThreatTypeForRTThreatType(
       RTLookupResponse::ThreatInfo::ThreatType rt_threat_type);
+
+  // Helper function to return a weak pointer.
+  base::WeakPtr<RealTimeUrlLookupService> GetWeakPtr();
 
  private:
   using PendingRTLookupRequests =
@@ -105,9 +105,6 @@ class RealTimeUrlLookupService : public KeyedService {
 
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);
 
-  // Helper function to return a weak pointer.
-  base::WeakPtr<RealTimeUrlLookupService> GetWeakPtr();
-
   PendingRTLookupRequests pending_requests_;
 
   // Count of consecutive failures to complete URL lookup requests. When it
@@ -128,10 +125,6 @@ class RealTimeUrlLookupService : public KeyedService {
 
   // If this timer is running, backoff is in effect.
   base::OneShotTimer backoff_timer_;
-
-  // Indicates whether this object is self-owned or owned by |database_manager|.
-  // It is self-owned after any one of the profile is destroyed.
-  bool is_self_owned_ = false;
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

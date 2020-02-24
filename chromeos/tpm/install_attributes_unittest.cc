@@ -264,9 +264,8 @@ TEST_F(InstallAttributesTest, DeviceLockedFromOlderVersion) {
   install_attributes_->Init(GetTempPath());
   EXPECT_EQ(policy::DEVICE_MODE_PENDING, install_attributes_->GetMode());
   // Lock the attributes as if it was done from older Chrome version.
-  ASSERT_TRUE(
-      tpm_util::InstallAttributesSet(InstallAttributes::kAttrEnterpriseMode,
-                                     InstallAttributes::kEnterpriseDeviceMode));
+  ASSERT_TRUE(tpm_util::InstallAttributesSet(
+      InstallAttributes::kAttrEnterpriseOwned, "true"));
   ASSERT_TRUE(tpm_util::InstallAttributesSet(
       InstallAttributes::kAttrEnterpriseUser, kTestUserDeprecated));
   ASSERT_TRUE(tpm_util::InstallAttributesFinalize());
@@ -283,8 +282,8 @@ TEST_F(InstallAttributesTest, DeviceLockedFromOlderVersion) {
 
 TEST_F(InstallAttributesTest, Init) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
-  SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseMode,
-               InstallAttributes::kEnterpriseDeviceMode);
+  SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseOwned,
+               "true");
   SetAttribute(&install_attrs_proto, InstallAttributes::kAttrEnterpriseUser,
                kTestUserDeprecated);
   const std::string blob(install_attrs_proto.SerializeAsString());
@@ -321,9 +320,8 @@ TEST_F(InstallAttributesTest, VerifyFakeInstallAttributesCache) {
   EXPECT_EQ(policy::DEVICE_MODE_PENDING, install_attributes_->GetMode());
 
   // Write test values.
-  ASSERT_TRUE(
-      tpm_util::InstallAttributesSet(InstallAttributes::kAttrEnterpriseMode,
-                                     InstallAttributes::kEnterpriseDeviceMode));
+  ASSERT_TRUE(tpm_util::InstallAttributesSet(
+      InstallAttributes::kAttrEnterpriseOwned, "true"));
   ASSERT_TRUE(tpm_util::InstallAttributesSet(
       InstallAttributes::kAttrEnterpriseUser, kTestUserDeprecated));
   ASSERT_TRUE(tpm_util::InstallAttributesFinalize());

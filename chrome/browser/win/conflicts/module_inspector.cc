@@ -162,13 +162,6 @@ base::FilePath ModuleInspector::GetInspectionResultsCachePath() {
   return user_data_dir.Append(L"Module Info Cache");
 }
 
-void ModuleInspector::SetModuleInspectionResultForTesting(
-    const ModuleInfoKey& module_key,
-    ModuleInspectionResult inspection_result) {
-  AddInspectionResultToCache(module_key, inspection_result,
-                             &inspection_results_cache_);
-}
-
 void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 

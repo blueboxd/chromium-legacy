@@ -45,8 +45,6 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
       const IntSize& size,
       SkFilterQuality filter_quality,
       const CanvasColorParams& color_params,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-          context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kBitmap,
                                size,
@@ -54,7 +52,7 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
                                filter_quality,
                                color_params,
                                /*is_origin_top_left=*/true,
-                               std::move(context_provider_wrapper),
+                               /*context_provider_wrapper=*/nullptr,
                                std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderBitmap() override = default;
@@ -96,7 +94,6 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
       : CanvasResourceProviderBitmap(size,
                                      filter_quality,
                                      color_params,
-                                     nullptr,  // context_provider_wrapper
                                      std::move(resource_dispatcher)) {
     DCHECK(ResourceDispatcher());
     type_ = kSharedBitmap;
@@ -618,10 +615,6 @@ enum class CanvasResourceType {
 
 const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     CanvasResourceProvider::ResourceUsage usage) {
-  static const Vector<CanvasResourceType> kSoftwareFallbackList({
-      CanvasResourceType::kBitmap,
-  });
-
   static const Vector<CanvasResourceType> kAcceleratedFallbackList({
       CanvasResourceType::kSharedImage,
       // Fallback to software
@@ -664,9 +657,11 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
                     kCompositedFallbackList.begin(),
                     kCompositedFallbackList.end()));
 
+  static const Vector<CanvasResourceType> kEmptyList;
   switch (usage) {
     case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
-      return kSoftwareFallbackList;
+      NOTREACHED();
+      return kEmptyList;
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedResourceUsage:
       return kCompositedFallbackList;
@@ -684,66 +679,14 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
     case CanvasResourceProvider::ResourceUsage::
         kSoftwareCompositedDirect2DResourceUsage:
       NOTREACHED();
-      static const Vector<CanvasResourceType> kEmptyList;
       return kEmptyList;
   }
   NOTREACHED();
+  return kEmptyList;
 }
 
 }  // unnamed namespace
 
-std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
-    const IntSize& size,
-    ResourceUsage usage,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
-    unsigned msaa_sample_count,
-    SkFilterQuality filter_quality,
-    const CanvasColorParams& color_params,
-    uint8_t presentation_mode,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
-    bool is_origin_top_left) {
-  base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
-
-  std::unique_ptr<CanvasResourceProvider> provider = Create(
-      size, usage, context_provider_wrapper, msaa_sample_count, filter_quality,
-      color_params, presentation_mode, resource_dispatcher, is_origin_top_left);
-
-  if (provider && provider->IsValid()) {
-    base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
-                              provider->IsAccelerated());
-    base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
-                                  provider->type_);
-  }
-
-  return provider;
-}
-
-std::unique_ptr<CanvasResourceProvider>
-CanvasResourceProvider::CreateAccelerated(
-    const IntSize& size,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
-    const CanvasColorParams& color_params,
-    bool is_origin_top_left,
-    uint32_t shared_image_usage_flags) {
-  const auto& caps =
-      context_provider_wrapper->ContextProvider()->GetCapabilities();
-  if (size.Width() > caps.max_texture_size ||
-      size.Height() > caps.max_texture_size) {
-    return nullptr;
-  }
-
-  if (!IsGMBAllowed(size, color_params, caps))
-    shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
-
-  auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
-      size, 0 /* msaa_sample_count */, kLow_SkFilterQuality, color_params,
-      context_provider_wrapper, nullptr /* resource_dispatcher*/,
-      is_origin_top_left, true /* is_accelerated */, shared_image_usage_flags);
-  if (provider->IsValid())
-    return provider;
-
-  return nullptr;
-}
 
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const IntSize& size,
@@ -755,6 +698,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     uint8_t presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
+  DCHECK_EQ(msaa_sample_count, 0u);
+  DCHECK(usage != ResourceUsage::kSoftwareResourceUsage);
+
   std::unique_ptr<CanvasResourceProvider> provider;
 
   bool is_gpu_memory_buffer_image_allowed = false;
@@ -767,7 +713,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const int max_texture_size = context_capabilities.max_texture_size;
 
     if (size.Width() > max_texture_size || size.Height() > max_texture_size)
-      usage = ResourceUsage::kSoftwareResourceUsage;
+      return CreateBitmapProvider(size, filter_quality, color_params);
 
     is_gpu_memory_buffer_image_allowed =
         (presentation_mode & kAllowImageChromiumPresentationMode) &&
@@ -810,8 +756,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         break;
       case CanvasResourceType::kBitmap:
         provider = std::make_unique<CanvasResourceProviderBitmap>(
-            size, filter_quality, color_params, context_provider_wrapper,
-            resource_dispatcher);
+            size, filter_quality, color_params, resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
         if (!context_provider_wrapper)
@@ -868,6 +813,51 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       continue;
     return provider;
   }
+
+  return nullptr;
+}
+
+std::unique_ptr<CanvasResourceProvider>
+CanvasResourceProvider::CreateBitmapProvider(
+    const IntSize& size,
+    SkFilterQuality filter_quality,
+    const CanvasColorParams& color_params) {
+  auto provider = std::make_unique<CanvasResourceProviderBitmap>(
+      size, filter_quality, color_params,
+      /*resource_dispatcher=*/nullptr);
+  if (provider->IsValid())
+    return provider;
+
+  return nullptr;
+}
+
+std::unique_ptr<CanvasResourceProvider>
+CanvasResourceProvider::CreateSharedImageProvider(
+    const IntSize& size,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    SkFilterQuality filter_quality,
+    const CanvasColorParams& color_params,
+    bool is_origin_top_left,
+    uint32_t shared_image_usage_flags) {
+  if (!context_provider_wrapper)
+    return nullptr;
+
+  const auto& caps =
+      context_provider_wrapper->ContextProvider()->GetCapabilities();
+  if (size.Width() > caps.max_texture_size ||
+      size.Height() > caps.max_texture_size) {
+    return nullptr;
+  }
+
+  if (!IsGMBAllowed(size, color_params, caps))
+    shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
+      size, 0 /* msaa_sample_count */, filter_quality, color_params,
+      context_provider_wrapper, nullptr /*resource_dispatcher*/,
+      is_origin_top_left, true /* is_accelerated */, shared_image_usage_flags);
+  if (provider->IsValid())
+    return provider;
 
   return nullptr;
 }

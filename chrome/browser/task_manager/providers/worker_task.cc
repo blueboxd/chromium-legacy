@@ -4,11 +4,16 @@
 
 #include "chrome/browser/task_manager/providers/worker_task.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace task_manager {
+
+namespace {
 
 int GetTaskTitlePrefixMessageId(Task::Type task_type) {
   switch (task_type) {
@@ -24,14 +29,19 @@ int GetTaskTitlePrefixMessageId(Task::Type task_type) {
   }
 }
 
+base::string16 GetTaskTitle(const GURL& script_url, Task::Type task_type) {
+  return l10n_util::GetStringFUTF16(GetTaskTitlePrefixMessageId(task_type),
+                                    base::UTF8ToUTF16(script_url.spec()));
+}
+
+}  // namespace
+
 WorkerTask::WorkerTask(base::ProcessHandle handle,
-                       const GURL& script_url,
                        Task::Type task_type,
                        int render_process_id)
-    : Task(l10n_util::GetStringFUTF16(GetTaskTitlePrefixMessageId(task_type),
-                                      base::UTF8ToUTF16(script_url.spec())),
-           script_url.spec(),
-           nullptr /* icon */,
+    : Task(GetTaskTitle(/*script_url=*/GURL(), task_type),
+           /*rappor_sample=*/std::string(),
+           /*icon=*/nullptr,
            handle),
       task_type_(task_type),
       render_process_id_(render_process_id) {}
@@ -44,6 +54,11 @@ Task::Type WorkerTask::GetType() const {
 
 int WorkerTask::GetChildProcessUniqueID() const {
   return render_process_id_;
+}
+
+void WorkerTask::SetScriptUrl(const GURL& script_url) {
+  set_title(GetTaskTitle(script_url, task_type_));
+  set_rappor_sample_name(script_url.spec());
 }
 
 }  // namespace task_manager

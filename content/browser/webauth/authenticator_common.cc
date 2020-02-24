@@ -32,7 +32,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
@@ -372,9 +371,10 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
   return ret;
 }
 
-base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebAuthTestingAPI)) {
+base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags(
+    FrameTreeNode* frame_tree_node) {
+  if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
+          frame_tree_node)) {
     return device::GetAllTransportProtocols();
   }
   base::flat_set<device::FidoTransportProtocol> transports;
@@ -415,7 +415,9 @@ AuthenticatorCommon::AuthenticatorCommon(
     RenderFrameHost* render_frame_host,
     std::unique_ptr<base::OneShotTimer> timer)
     : render_frame_host_(render_frame_host),
-      transports_(GetTransportsEnabledByFlags()),
+      transports_(GetTransportsEnabledByFlags(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)
+              ->frame_tree_node())),
       security_checker_(static_cast<RenderFrameHostImpl*>(render_frame_host)
                             ->GetWebAuthRequestSecurityChecker()),
       timer_(std::move(timer)) {

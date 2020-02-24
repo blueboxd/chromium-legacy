@@ -165,10 +165,12 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_IncognitoMode) {
   ResetProfile();
 }
 
-TEST_F(AndroidTelemetryServiceTest, CantSendPing_SBERDisabled) {
+TEST_F(AndroidTelemetryServiceTest,
+       CantSendPing_SBEREnhancedProtectionDisabled) {
   // Disable Scout Reporting.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                     false);
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
 
   // Enable Safe Browsing.
   profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
@@ -182,7 +184,7 @@ TEST_F(AndroidTelemetryServiceTest, CantSendPing_SBERDisabled) {
   get_histograms()->ExpectTotalCount(kApkDownloadTelemetryOutcomeMetric, 1);
   get_histograms()->ExpectBucketCount(
       kApkDownloadTelemetryOutcomeMetric,
-      ApkDownloadTelemetryOutcome::NOT_SENT_EXTENDED_REPORTING_DISABLED, 1);
+      ApkDownloadTelemetryOutcome::NOT_SENT_UNCONSENTED, 1);
 }
 
 TEST_F(AndroidTelemetryServiceTest, CanSendPing_AllConditionsMet) {

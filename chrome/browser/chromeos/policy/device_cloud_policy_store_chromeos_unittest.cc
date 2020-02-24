@@ -121,6 +121,7 @@ class DeviceCloudPolicyStoreChromeOSTest
   void ResetToNonEnterprise() {
     store_->RemoveObserver(&observer_);
     store_.reset();
+    chromeos::tpm_util::InstallAttributesSet("enterprise.owned", std::string());
     install_attributes_.reset(
         new chromeos::InstallAttributes(chromeos::FakeCryptohomeClient::Get()));
     store_.reset(new DeviceCloudPolicyStoreChromeOS(

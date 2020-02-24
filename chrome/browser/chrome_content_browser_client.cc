@@ -122,6 +122,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
+#include "chrome/browser/safe_browsing/url_lookup_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sharing/sms/sms_remote_fetcher.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
@@ -243,6 +244,7 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -4233,15 +4235,23 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             ? IdentityManagerFactory::GetForProfile(profile)
             : nullptr;
 
-    // TODO(crbug.com/1050859): Get url_lookup_service from
-    // url_lookup_service_factory and pass it into the throttle.
+    // |url_lookup_service| is used when real time url check is enabled.
+    safe_browsing::RealTimeUrlLookupService* url_lookup_service =
+        // |safe_browsing_service_| may be unavailable in tests.
+        safe_browsing_service_ &&
+                safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+                    profile)
+            ? safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
+                  profile)
+            : nullptr;
 
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
             profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
-        wc_getter, frame_tree_node_id, cache_manager, identity_manager));
+        wc_getter, frame_tree_node_id, cache_manager, identity_manager,
+        url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
   }
 #endif
 

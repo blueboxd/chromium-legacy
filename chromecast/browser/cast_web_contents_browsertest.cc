@@ -676,6 +676,48 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, LoadCanceledByApp) {
   run_loop->Run();
 }
 
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, LocationRedirectLifecycle) {
+  auto run_loop = std::make_unique<base::RunLoop>();
+  auto quit_closure = [&run_loop]() {
+    if (run_loop->running()) {
+      run_loop->QuitWhenIdle();
+    }
+  };
+
+  // ===========================================================================
+  // Test: When the app redirects to another url via window.location. Another
+  // navigation will be committed. LOADING -> LOADED -> LOADING -> LOADED state
+  // trasition is expected.
+  // ===========================================================================
+  embedded_test_server()->ServeFilesFromSourceDirectory(GetTestDataPath());
+  StartTestServer();
+
+  {
+    InSequence seq;
+    EXPECT_CALL(
+        mock_cast_wc_observer_,
+        OnPageStateChanged(CheckPageState(
+            cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
+    EXPECT_CALL(
+        mock_cast_wc_observer_,
+        OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
+                                          CastWebContents::PageState::LOADED)));
+    EXPECT_CALL(
+        mock_cast_wc_observer_,
+        OnPageStateChanged(CheckPageState(
+            cast_web_contents_.get(), CastWebContents::PageState::LOADING)));
+    EXPECT_CALL(
+        mock_cast_wc_observer_,
+        OnPageStateChanged(CheckPageState(cast_web_contents_.get(),
+                                          CastWebContents::PageState::LOADED)))
+        .WillOnce(InvokeWithoutArgs(quit_closure));
+  }
+
+  cast_web_contents_->LoadUrl(
+      embedded_test_server()->GetURL("/location_redirect.html"));
+  run_loop->Run();
+}
+
 IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, NotifyMissingResource) {
   auto run_loop = std::make_unique<base::RunLoop>();
   auto quit_closure = [&run_loop]() {

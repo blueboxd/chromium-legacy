@@ -13,10 +13,6 @@
 #include "ui/views/animation/ink_drop_event_handler.h"
 #include "ui/views/view.h"
 
-namespace gfx {
-class PointF;
-}  // namespace gfx
-
 namespace ui {
 class Layer;
 class LocatedEvent;
@@ -166,17 +162,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Creates a SquareInkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateSquareInkDropRipple(
       const gfx::Point& center_point,
-      const gfx::Size& size) const;
-
-  // TODO(pbos): Migrate uses to CreateSquareInkDropHighlight which this calls
-  // directly.
-  std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
-      const gfx::PointF& center_point,
-      const gfx::Size& size = kDefaultInkDropSize) const;
-
-  // Creates a InkDropHighlight centered on |center_point|.
-  std::unique_ptr<InkDropHighlight> CreateSquareInkDropHighlight(
-      const gfx::PointF& center_point,
       const gfx::Size& size) const;
 
   // Returns true if an ink drop instance has been created.

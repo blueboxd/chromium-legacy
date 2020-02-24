@@ -121,8 +121,6 @@ class ServicesDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) = 0;
   virtual void StopOnIOThread(bool shutdown) = 0;
-  virtual void OnProfileWillBeDestroyedOnIOThread(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
 
   void CreatePasswordProtectionService(Profile* profile);
   void RemovePasswordProtectionService(Profile* profile);

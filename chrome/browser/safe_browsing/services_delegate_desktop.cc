@@ -204,11 +204,6 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-void ServicesDelegateDesktop::OnProfileWillBeDestroyedOnIOThread(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  database_manager_->OnProfileWillBeDestroyedOnIOThread(url_loader_factory);
-}
-
 void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);

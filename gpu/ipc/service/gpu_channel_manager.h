@@ -79,7 +79,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       SharedImageManager* shared_image_manager,
       GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       const GpuFeatureInfo& gpu_feature_info,
-      GpuProcessActivityFlags* const activity_flags,
+      GpuProcessActivityFlags activity_flags,
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
       ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
@@ -270,7 +270,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   // Flags which indicate GPU process activity. Read by the browser process
   // on GPU process crash.
-  GpuProcessActivityFlags* const activity_flags_;
+  GpuProcessActivityFlags activity_flags_;
 
   base::MemoryPressureListener memory_pressure_listener_;
 

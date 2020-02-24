@@ -313,10 +313,12 @@ void AudioDecoderAndroid::CreateDecoder() {
   }
 
   // Create a decoder.
-  decoder_ = CastAudioDecoder::Create(
-      task_runner_, config_, kDecoderSampleFormat,
-      base::BindOnce(&AudioDecoderAndroid::OnDecoderInitialized,
-                     base::Unretained(this)));
+  decoder_ =
+      CastAudioDecoder::Create(task_runner_, config_, kDecoderSampleFormat);
+  if (!decoder_) {
+    LOG(INFO) << __func__ << ": Decoder initialization was unsuccessful";
+    delegate_->OnDecoderError();
+  }
 }
 
 void AudioDecoderAndroid::CreateRateShifter(const AudioConfig& config) {
@@ -371,15 +373,6 @@ AudioDecoderAndroid::RenderingDelay AudioDecoderAndroid::GetRenderingDelay() {
            << " ts=" << delay.timestamp_microseconds;
 
   return delay;
-}
-
-void AudioDecoderAndroid::OnDecoderInitialized(bool success) {
-  TRACE_FUNCTION_ENTRY0();
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  LOG(INFO) << __func__ << ": Decoder initialization was "
-            << (success ? "successful" : "unsuccessful");
-  if (!success)
-    delegate_->OnDecoderError();
 }
 
 void AudioDecoderAndroid::OnBufferDecoded(

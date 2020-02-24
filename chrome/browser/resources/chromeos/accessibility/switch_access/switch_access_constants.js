@@ -69,6 +69,7 @@ const SAConstants = {
     NO_CHILDREN: 7,
     MALFORMED_DESKTOP: 8,
     MISSING_LOCATION: 9,
+    MISSING_KEYBOARD: 10,
   },
 
   /**

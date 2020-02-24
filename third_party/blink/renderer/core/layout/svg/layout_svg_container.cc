@@ -172,7 +172,6 @@ void LayoutSVGContainer::UpdateCachedBoundaries() {
   SVGLayoutSupport::ComputeContainerBoundingBoxes(
       this, object_bounding_box_, object_bounding_box_valid_,
       stroke_bounding_box_, local_visual_rect_);
-  GetElement()->SetNeedsResizeObserverUpdate();
 }
 
 bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,

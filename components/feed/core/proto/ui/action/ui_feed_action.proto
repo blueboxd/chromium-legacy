@@ -105,6 +105,10 @@ message OpenUrlData {
   // opening the url. Once this finishes, the client will attach to the url its
   //  latest frequency token as the value of this query param.
   optional string consistency_token_query_param_name = 2;
+  // The content ID that was interacted with to cause a URL open.
+  optional components.feed.core.proto.wire.ContentId content_id = 3;
+  // Roundtripped server data on a per-action level.
+  optional components.feed.core.proto.wire.ActionPayload payload = 4;
 }
 
 // Data needed by Stream to open a context menu.

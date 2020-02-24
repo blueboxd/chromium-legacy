@@ -137,6 +137,12 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   if (profile->IsGuestSession())
     return false;
 
+  // Do not show survey if this is a child profile, for now. See crbug/1055022.
+  // TODO(crbug/1050807): remove this check after enabling HaTS for supervised
+  // users.
+  if (profile->IsChild())
+    return false;
+
   const bool is_enterprise_enrolled = g_browser_process->platform_part()
                                           ->browser_policy_connector_chromeos()
                                           ->IsEnterpriseManaged();

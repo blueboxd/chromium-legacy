@@ -325,6 +325,36 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             base::DoNothing());
   }
 
+  void SetPlayerPlaybackStatus(const std::string& playback_status) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerPlaybackStatus);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(playback_status);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerIdentity(const std::string& identity) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerIdentity);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(identity);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerPosition(const int64_t& position) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerPosition);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt64(position);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override {
     cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));

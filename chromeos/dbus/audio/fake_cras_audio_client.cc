@@ -212,6 +212,14 @@ void FakeCrasAudioClient::SetGlobalOutputChannelRemix(
     int32_t channels,
     const std::vector<double>& mixer) {}
 
+void FakeCrasAudioClient::SetPlayerPlaybackStatus(
+    const std::string& playback_status) {}
+
+void FakeCrasAudioClient::SetPlayerIdentity(
+    const std::string& playback_identity) {}
+
+void FakeCrasAudioClient::SetPlayerPosition(const int64_t& position) {}
+
 void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)

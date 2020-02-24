@@ -617,7 +617,7 @@ class QuicNetworkTransactionTest
   }
 
   std::string ConstructDataHeader(size_t body_len) {
-    if (version_.transport_version != quic::QUIC_VERSION_99) {
+    if (!version_.HasIetfQuicFrames()) {
       return "";
     }
     std::unique_ptr<char[]> buffer;
@@ -2562,7 +2562,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
 }
 
 TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     // GoAway is not available under version 99
     return;
   }
@@ -7060,7 +7060,7 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   }
 
   std::string header = ConstructDataHeader(1);
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientRequestHeadersAndDataFramesPacket(
@@ -7533,7 +7533,7 @@ class QuicNetworkTransactionWithDestinationTest
       quic::QuicStreamId stream_id,
       QuicTestPacketMaker* maker) {
     std::string header = "";
-    if (version_.transport_version == quic::QUIC_VERSION_99) {
+    if (version_.HasIetfQuicFrames()) {
       std::unique_ptr<char[]> buffer;
       auto header_length =
           quic::HttpEncoder::SerializeDataFrameHeader(5, &buffer);
@@ -7977,7 +7977,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
                               quic::QUIC_STREAM_CANCELLED, 5, 5, 1));
   const char kBody[] = "1";
   std::string header3 = ConstructDataHeader(1);
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientRequestHeadersAndDataFramesPacket(
@@ -8143,7 +8143,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   std::string header = ConstructDataHeader(strlen(get_request));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
@@ -8255,7 +8255,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
   spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://mail.example.org/", 1, LOWEST);
   std::string header = ConstructDataHeader(get_frame.size());
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
@@ -8374,7 +8374,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   std::string header = ConstructDataHeader(strlen(get_request_1));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS, ConstructClientAckAndDataPacket(
                          write_packet_index++, false,
@@ -8413,7 +8413,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   std::string header4 = ConstructDataHeader(strlen(get_request_2));
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientDataPacket(
@@ -8546,7 +8546,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   std::string header = ConstructDataHeader(strlen(get_request));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
@@ -8605,7 +8605,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://different.example.org/", 1, LOWEST);
   std::string header4 = ConstructDataHeader(get_frame.size());
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
@@ -8906,7 +8906,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
   std::string header = ConstructDataHeader(strlen(get_request));
-  if (version_.transport_version != quic::QUIC_VERSION_99) {
+  if (!version_.HasIetfQuicFrames()) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
@@ -9952,7 +9952,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
                    false, GetResponseHeaders("200 OK"), nullptr));
 
     std::string header = ConstructDataHeader(strlen(kGetRequest));
-    if (version_.transport_version != quic::QUIC_VERSION_99) {
+    if (!version_.HasIetfQuicFrames()) {
       mock_quic_data[index]->AddWrite(
           SYNCHRONOUS, client_maker.MakeAckAndDataPacket(
                            packet_num++, false,

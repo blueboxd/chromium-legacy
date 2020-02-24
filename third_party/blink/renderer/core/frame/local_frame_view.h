@@ -683,10 +683,6 @@ class CORE_EXPORT LocalFrameView final
   void RegisterForLifecycleNotifications(LifecycleNotificationObserver*);
   void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
 
-  // Sets whether all ResizeObservers should check all their ResizeObservations
-  // for a resize. This is needed when exiting a display lock.
-  void SetNeedsForcedResizeObservations();
-
  protected:
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;

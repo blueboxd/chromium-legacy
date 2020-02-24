@@ -164,6 +164,23 @@ void ExpectUint64AndBoolArguments(uint64_t expected_uint64,
   EXPECT_FALSE(reader->HasMoreData());
 }
 
+// Expect the reader to have a string.
+void ExpectStringArgument(std::string expected_string,
+                          dbus::MessageReader* reader) {
+  std::string value;
+  ASSERT_TRUE(reader->PopString(&value));
+  EXPECT_EQ(expected_string, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// Expect the reader to have a int64_t.
+void ExpectInt64Argument(int64_t expected_int64, dbus::MessageReader* reader) {
+  int64_t value;
+  ASSERT_TRUE(reader->PopInt64(&value));
+  EXPECT_EQ(expected_int64, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
 void WriteNodesToResponse(const AudioNodeList& node_list,
                           dbus::MessageWriter* writer) {
   dbus::MessageWriter sub_writer(nullptr);
@@ -1106,6 +1123,54 @@ TEST_F(CrasAudioClientTest, SetGlobalOutputChannelRemix) {
 
   // Call method.
   client()->SetGlobalOutputChannelRemix(kChannels, kMixer);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetPlayerPlaybackStatus) {
+  const std::string kStatus = "paused";
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetPlayerPlaybackStatus,
+                       base::BindRepeating(&ExpectStringArgument, kStatus),
+                       response.get());
+
+  // Call method.
+  client()->SetPlayerPlaybackStatus(kStatus);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetPlayerIdentity) {
+  const std::string kIdentity = "Chrome Player";
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetPlayerIdentity,
+                       base::BindRepeating(&ExpectStringArgument, kIdentity),
+                       response.get());
+
+  // Call method.
+  client()->SetPlayerIdentity(kIdentity);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetPlayerPosition) {
+  const int64_t kPosition = 2020224;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetPlayerPosition,
+                       base::BindRepeating(&ExpectInt64Argument, kPosition),
+                       response.get());
+
+  // Call method.
+  client()->SetPlayerPosition(kPosition);
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

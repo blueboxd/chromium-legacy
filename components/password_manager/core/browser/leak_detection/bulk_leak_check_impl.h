@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 
 namespace network {
@@ -25,6 +26,7 @@ class IdentityManager;
 namespace password_manager {
 
 class BulkLeakCheckDelegateInterface;
+struct SingleLookupResponse;
 
 // Implementation of the bulk leak check.
 // Every credential in the list is processed consequitively:
@@ -48,6 +50,13 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   void CheckCredentials(std::vector<LeakCheckCredential> credentials) override;
   size_t GetPendingChecksCount() const override;
 
+#if defined(UNIT_TEST)
+  void set_network_factory(
+      std::unique_ptr<LeakDetectionRequestFactory> factory) {
+    network_request_factory_ = std::move(factory);
+  }
+#endif  // defined(UNIT_TEST)
+
  private:
   // Called when a payload for one credential is ready.
   void OnPayloadReady(CredentialHolder* weak_holder,
@@ -58,6 +67,10 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
                     GoogleServiceAuthError error,
                     signin::AccessTokenInfo access_token_info);
 
+  // Called when the server replied with something.
+  void OnLookupLeakResponse(CredentialHolder* weak_holder,
+                            std::unique_ptr<SingleLookupResponse> response);
+
   // Delegate for the instance. Should outlive |this|.
   BulkLeakCheckDelegateInterface* const delegate_;
 
@@ -67,6 +80,10 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   // URL loader factory required for the network request to the identity
   // endpoint.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // A factory for creating network requests.
+  std::unique_ptr<LeakDetectionRequestFactory> network_request_factory_ =
+      std::make_unique<LeakDetectionRequestFactory>();
 
   // The key used to encrypt/decrypt all the payloads for all the credentials.
   // Creating it once saves CPU time.
@@ -80,6 +97,9 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   // The queue of the requests waiting for the payload compilation happening on
   // the background thread.
   base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_token_;
+
+  // The queue of the requests waiting for the server reply.
+  base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_response_;
 
   // Task runner for preparing the payload. It takes a lot of memory. Therefore,
   // those tasks aren't parallelized.

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.night_mode.settings;
 
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.ANDROID_NIGHT_MODE;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
@@ -43,7 +42,6 @@ import java.util.List;
  * Tests for ThemeSettingsFragment.
  */
 // clang-format off
-@Features.EnableFeatures(ANDROID_NIGHT_MODE)
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 public class ThemeSettingsFragmentTest extends DummyUiActivityTestCase {

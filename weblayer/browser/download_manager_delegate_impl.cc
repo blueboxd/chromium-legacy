@@ -52,6 +52,11 @@ DownloadManagerDelegateImpl::DownloadManagerDelegateImpl(
 
 DownloadManagerDelegateImpl::~DownloadManagerDelegateImpl() {
   download_manager_->RemoveObserver(this);
+  // Match the AddObserver calls added in OnDownloadCreated to avoid UaF.
+  download::SimpleDownloadManager::DownloadVector downloads;
+  download_manager_->GetAllDownloads(&downloads);
+  for (auto* download : downloads)
+    download->RemoveObserver(this);
 }
 
 bool DownloadManagerDelegateImpl::DetermineDownloadTarget(

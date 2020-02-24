@@ -1041,15 +1041,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //      aborted pause is false, and
   //      animation does not have a pending playback rate,
   //    abort this procedure.
-  //
-  // TODO(crbug.com/916117): Remove temporary extra condition for
-  // scroll timelines. This is needed because hold_time_ can be set using
-  // timeline.currentTime, which currently can return null. This check is to
-  // make sure we don't abort in this case.
-  if ((!hold_time_ &&
-       (timeline_ &&
-        !timeline_->IsScrollTimeline() /* Temporary extra condition */)) &&
-      !aborted_pause && !pending_playback_rate_)
+  if (!hold_time_ && !aborted_pause && !pending_playback_rate_)
     return;
 
   // 6. If animation’s hold time is resolved, let its start time be unresolved.

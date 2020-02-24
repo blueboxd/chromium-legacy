@@ -313,10 +313,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #endif  // defined(OS_CHROMEOS)
 
   void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
-  void InitializeGpuChannelManager();
 
   void OnBackgroundedOnMainThread();
-  void OnForegroundedOnMainThread();
 
   // Ensure that all peak memory tracking occurs on the main thread as all
   // MemoryTracker are created on that thread. All requests made before
@@ -418,12 +416,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Display compositor contexts that don't have a corresponding GPU channel.
   base::ObserverList<gpu::DisplayContext>::Unchecked display_contexts_;
-
-  // Cached resources for recreating |gpu_channel_manager_|.
-  base::Optional<gpu::GpuProcessActivityFlags> activity_flags_;
-  scoped_refptr<gl::GLSurface> default_offscreen_surface_;
-  gpu::SyncPointManager* sync_point_manager_;
-  gpu::SharedImageManager* shared_image_manager_;
 
   base::WeakPtr<GpuServiceImpl> weak_ptr_;
   base::WeakPtrFactory<GpuServiceImpl> weak_ptr_factory_{this};

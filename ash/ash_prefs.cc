@@ -28,6 +28,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/desks/desks_restore_util.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
@@ -44,6 +45,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   contextual_tooltip::RegisterProfilePrefs(registry);
+  desks_restore_util::RegisterProfilePrefs(registry);
   DockedMagnifierControllerImpl::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);

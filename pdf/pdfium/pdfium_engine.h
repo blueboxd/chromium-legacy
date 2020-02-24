@@ -30,6 +30,7 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -205,6 +206,7 @@ class PDFiumEngine : public PDFEngine,
     DISALLOW_COPY_AND_ASSIGN(MouseDownState);
   };
 
+  friend class FormFillerTest;
   friend class PDFiumFormFiller;
   friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
@@ -563,6 +565,10 @@ class PDFiumEngine : public PDFEngine,
   // text range in |selection_|.
   void SetSelection(const PP_PdfPageCharacterIndex& selection_start_index,
                     const PP_PdfPageCharacterIndex& selection_end_index);
+
+  // Given |rect| in document coordinates, scroll the |rect| into view if not
+  // already in view.
+  void ScrollIntoView(const pp::Rect& rect);
 
   PDFEngine::Client* const client_;
 

@@ -88,23 +88,27 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey900;
 
       // MenuItem
-      case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
-      case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
       case NativeTheme::kColorId_MenuDropIndicator:
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_MenuBorderColor:
       case NativeTheme::kColorId_MenuSeparatorColor:
         return gfx::kGoogleGrey800;
-      case NativeTheme::kColorId_MenuBackgroundColor:
-        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
-                                       0.04f);
       case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
         return SkColorSetRGB(0x32, 0x36, 0x39);
       case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_MenuItemMinorTextColor:
         return gfx::kGoogleGrey500;
+
+      // Dropdown
+      case NativeTheme::kColorId_DropdownBackgroundColor:
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
+                                       0.04f);
+      case NativeTheme::kColorId_DropdownForegroundColor:
+        return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_DropdownSelectedForegroundColor:
+        return gfx::kGoogleGrey200;
 
       // Label
       case NativeTheme::kColorId_LabelEnabledColor:
@@ -266,21 +270,23 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // MenuItem
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_DropdownForegroundColor, color_scheme);
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_DropdownSelectedForegroundColor, color_scheme);
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
     case NativeTheme::kColorId_MenuDropIndicator:
       return kPrimaryTextColor;
-    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
-      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
-          .color;
-    }
+    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_DropdownSelectedBackgroundColor, color_scheme);
     case NativeTheme::kColorId_MenuBorderColor:
     case NativeTheme::kColorId_MenuSeparatorColor:
       return gfx::kGoogleGrey300;
     case NativeTheme::kColorId_MenuBackgroundColor:
-      return SK_ColorWHITE;
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_DropdownBackgroundColor, color_scheme);
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
@@ -295,6 +301,20 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey050;
     case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
       return gfx::kGoogleBlue600;
+
+    // Dropdown
+    case NativeTheme::kColorId_DropdownBackgroundColor:
+      return SK_ColorWHITE;
+    case NativeTheme::kColorId_DropdownForegroundColor:
+      return kPrimaryTextColor;
+    case NativeTheme::kColorId_DropdownSelectedBackgroundColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+          .color;
+    }
+    case NativeTheme::kColorId_DropdownSelectedForegroundColor:
+      return kPrimaryTextColor;
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:

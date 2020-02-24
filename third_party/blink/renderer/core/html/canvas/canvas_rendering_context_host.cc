@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -126,11 +127,20 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
               CanvasResourceProvider::kAllowSwapChainPresentationMode;
         }
 
-        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
+        base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage",
+                                      usage);
+        ReplaceResourceProvider(CanvasResourceProvider::Create(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
             presentation_mode, std::move(dispatcher),
             RenderingContext()->IsOriginTopLeft()));
+        if (ResourceProvider() && ResourceProvider()->IsValid()) {
+          base::UmaHistogramBoolean(
+              "Blink.Canvas.ResourceProviderIsAccelerated",
+              ResourceProvider()->IsAccelerated());
+          base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
+                                        ResourceProvider()->GetType());
+        }
       } else {
         DCHECK(Is2d());
         const bool want_acceleration =
@@ -177,12 +187,21 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         const bool is_origin_top_left =
             !want_acceleration || LowLatencyEnabled();
 
-        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
+        base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage",
+                                      usage);
+        ReplaceResourceProvider(CanvasResourceProvider::Create(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             GetMSAASampleCountFor2dContext(), FilterQuality(), ColorParams(),
             presentation_mode, std::move(dispatcher), is_origin_top_left));
 
         if (ResourceProvider()) {
+          if (ResourceProvider()->IsValid()) {
+            base::UmaHistogramBoolean(
+                "Blink.Canvas.ResourceProviderIsAccelerated",
+                ResourceProvider()->IsAccelerated());
+            base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
+                                          ResourceProvider()->GetType());
+          }
           ResourceProvider()->SetFilterQuality(FilterQuality());
           ResourceProvider()->SetResourceRecyclingEnabled(true);
         }

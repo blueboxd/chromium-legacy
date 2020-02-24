@@ -68,8 +68,6 @@ class VIEWS_EXPORT InkDropHighlight {
     observer_ = observer;
   }
 
-  void set_explode_size(const gfx::SizeF& size) { explode_size_ = size; }
-
   void set_visible_opacity(float visible_opacity) {
     visible_opacity_ = visible_opacity;
   }
@@ -81,10 +79,8 @@ class VIEWS_EXPORT InkDropHighlight {
   // Fades in the highlight visual over the given |duration|.
   void FadeIn(const base::TimeDelta& duration);
 
-  // Fades out the highlight visual over the given |duration|. If |explode| is
-  // true then the highlight will animate a size increase in addition to the
-  // fade out.
-  void FadeOut(const base::TimeDelta& duration, bool explode);
+  // Fades out the highlight visual over the given |duration|.
+  void FadeOut(const base::TimeDelta& duration);
 
   // The root Layer that can be added in to a Layer tree.
   ui::Layer* layer() { return layer_.get(); }
@@ -97,16 +93,13 @@ class VIEWS_EXPORT InkDropHighlight {
  private:
   friend class test::InkDropHighlightTestApi;
 
-  // Animates a fade in/out as specified by |animation_type| combined with a
-  // transformation from the |initial_size| to the |target_size| over the given
+  // Animates a fade in/out as specified by |animation_type| over the given
   // |duration|.
   void AnimateFade(AnimationType animation_type,
-                   const base::TimeDelta& duration,
-                   const gfx::SizeF& initial_size,
-                   const gfx::SizeF& target_size);
+                   const base::TimeDelta& duration);
 
-  // Calculates the Transform to apply to |layer_| for the given |size|.
-  gfx::Transform CalculateTransform(const gfx::SizeF& size) const;
+  // Calculates the Transform to apply to |layer_|.
+  gfx::Transform CalculateTransform() const;
 
   // The callback that will be invoked when a fade in/out animation is started.
   void AnimationStartedCallback(
@@ -121,20 +114,16 @@ class VIEWS_EXPORT InkDropHighlight {
   // The size of the highlight shape when fully faded in.
   gfx::SizeF size_;
 
-  // The target size of the highlight shape when it expands during a fade out
-  // animation.
-  gfx::SizeF explode_size_;
-
   // The center point of the highlight shape in the parent Layer's coordinate
   // space.
   gfx::PointF center_point_;
 
   // The opacity for the fully visible state of the highlight.
-  float visible_opacity_;
+  float visible_opacity_ = 0.128f;
 
   // True if the last animation to be initiated was a kFadeIn, and false
   // otherwise.
-  bool last_animation_initiated_was_fade_in_;
+  bool last_animation_initiated_was_fade_in_ = false;
 
   // The LayerDelegate that paints the highlight |layer_|. Null if |layer_| is a
   // solid color layer.
@@ -143,7 +132,7 @@ class VIEWS_EXPORT InkDropHighlight {
   // The visual highlight layer.
   std::unique_ptr<ui::Layer> layer_;
 
-  InkDropHighlightObserver* observer_;
+  InkDropHighlightObserver* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHighlight);
 };

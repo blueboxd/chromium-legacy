@@ -450,10 +450,6 @@ const char kEnableViewport[]                = "enable-viewport";
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
-// Enable the Web Authentication Testing API.
-// https://w3c.github.io/webauthn
-const char kEnableWebAuthTestingAPI[] = "enable-web-authentication-testing-api";
-
 // Enable WebGL2 Compute context.
 const char kEnableWebGL2ComputeContext[] = "enable-webgl2-compute-context";
 

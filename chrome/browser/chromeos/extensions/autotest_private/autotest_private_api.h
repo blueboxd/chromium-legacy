@@ -815,6 +815,22 @@ class AutotestPrivateSetShelfAlignmentFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Waits until overview has finished animating to a certain state.
+class AutotestPrivateWaitForOverviewStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForOverviewStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForOverviewState",
+                             AUTOTESTPRIVATE_WAITFOROVERVIEWSTATE)
+
+ private:
+  ~AutotestPrivateWaitForOverviewStateFunction() override;
+  ResponseAction Run() override;
+
+  // Invoked when the animation has completed. |animation_succeeded| is whether
+  // overview is in the target state.
+  void Done(bool success);
+};
+
 // Returns the overview mode state.
 class AutotestPrivateSetOverviewModeStateFunction : public ExtensionFunction {
  public:

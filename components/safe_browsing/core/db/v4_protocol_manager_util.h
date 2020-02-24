@@ -89,7 +89,8 @@ V4ProtocolConfig GetV4ProtocolConfig(const std::string& client_name,
 std::string GetReportUrl(
     const V4ProtocolConfig& config,
     const std::string& method,
-    const ExtendedReportingLevel* reporting_level = nullptr);
+    const ExtendedReportingLevel* reporting_level = nullptr,
+    const bool is_enhanced_protection = false);
 
 // Different types of threats that SafeBrowsing protects against. This is the
 // type that's returned to the clients of SafeBrowsing in Chromium.

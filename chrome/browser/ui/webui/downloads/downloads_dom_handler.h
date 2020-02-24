@@ -61,6 +61,7 @@ class DownloadsDOMHandler : public content::WebContentsObserver,
   void Cancel(const std::string& id) override;
   void ClearAll() override;
   void OpenDownloadsFolderRequiringGesture() override;
+  void OpenDuringScanningRequiringGesture(const std::string& id) override;
 
  protected:
   // These methods are for mocking so that most of this class does not actually

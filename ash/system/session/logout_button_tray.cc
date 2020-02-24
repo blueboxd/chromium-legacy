@@ -117,7 +117,7 @@ void LogoutButtonTray::UpdateLogoutDialogDuration() {
   dialog_duration_ = base::TimeDelta::FromMilliseconds(duration_ms);
 }
 
-void LogoutButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
+void LogoutButtonTray::UpdateAfterLoginStatusChange() {
   UpdateButtonTextAndImage();
 }
 

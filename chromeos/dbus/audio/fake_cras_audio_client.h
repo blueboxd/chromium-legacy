@@ -51,6 +51,9 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SwapLeftRight(uint64_t node_id, bool swap) override;
   void SetGlobalOutputChannelRemix(int32_t channels,
                                    const std::vector<double>& mixer) override;
+  void SetPlayerPlaybackStatus(const std::string& playback_status) override;
+  void SetPlayerIdentity(const std::string& playback_identity) override;
+  void SetPlayerPosition(const int64_t& position) override;
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
 

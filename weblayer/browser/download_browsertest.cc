@@ -328,4 +328,16 @@ IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, NetworkError) {
   EXPECT_EQ(download_state(), DownloadError::kConnectivityError);
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, PendingOnExist) {
+  // Create a request that doesn't complete right away.
+  GURL url(embedded_test_server()->GetURL(
+      content::SlowDownloadHttpResponse::kKnownSizeUrl));
+
+  shell()->tab()->GetNavigationController()->Navigate(url);
+
+  WaitForStarted();
+
+  // If this test crashes later then there'd be a regression.
+}
+
 }  // namespace weblayer

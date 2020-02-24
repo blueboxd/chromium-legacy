@@ -444,7 +444,8 @@ void ClientSideDetectionHost::PhishingDetectionDone(
     UMA_HISTOGRAM_ENUMERATION(
         "SBClientPhishing.ClassifierNotReadyReason",
         csd_service_->GetLastModelStatus(
-            IsExtendedReportingEnabled(*profile->GetPrefs())));
+            IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+            IsEnhancedProtectionEnabled(*profile->GetPrefs())));
   }
   if (result != mojom::PhishingDetectorResult::SUCCESS)
     return;
@@ -520,7 +521,8 @@ void ClientSideDetectionHost::FeatureExtractionDone(
   // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
       request.release(),  // The service takes ownership of the request object.
-      IsExtendedReportingEnabled(*profile->GetPrefs()), callback);
+      IsExtendedReportingEnabled(*profile->GetPrefs()),
+      IsEnhancedProtectionEnabled(*profile->GetPrefs()), callback);
 }
 
 bool ClientSideDetectionHost::DidShowSBInterstitial() const {

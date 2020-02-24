@@ -18907,6 +18907,48 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingHubAndroid.CopyURLSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Copy URL&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.MoreSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;More...&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.QRCodeSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;QR Code&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.ScreenshotSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Screenshot&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.SendTabToSelfSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Send to your devices&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.ThirdPartyAppSelected">
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    A third party option was selected in the sharing hub.
+  </description>
+</action>
+
 <action name="Shelf_AlignmentSetBottom">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

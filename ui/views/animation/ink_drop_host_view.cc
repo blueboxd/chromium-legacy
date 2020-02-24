@@ -161,21 +161,6 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateSquareInkDropRipple(
   return ripple;
 }
 
-std::unique_ptr<InkDropHighlight>
-InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
-                                               const gfx::Size& size) const {
-  return CreateSquareInkDropHighlight(center_point, size);
-}
-
-std::unique_ptr<InkDropHighlight> InkDropHostView::CreateSquareInkDropHighlight(
-    const gfx::PointF& center_point,
-    const gfx::Size& size) const {
-  auto highlight = std::make_unique<InkDropHighlight>(
-      size, ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor());
-  highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));
-  return highlight;
-}
-
 bool InkDropHostView::HasInkDrop() const {
   return !!ink_drop_;
 }

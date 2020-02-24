@@ -8,11 +8,14 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -50,6 +53,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -1463,6 +1469,27 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
             new_desk_button->GetBackgroundColorForTesting());
 }
 
+namespace {
+
+PrefService* GetPrimaryUserPrefService() {
+  return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+}
+
+// Verifies that the desks restore prefs in the given |user_prefs| matches the
+// given list of |desks_names|.
+void VerifyDesksRestoreData(PrefService* user_prefs,
+                            const std::vector<std::string>& desks_names) {
+  const base::ListValue* desks_restore_names =
+      user_prefs->GetList(prefs::kDesksNamesList);
+  ASSERT_EQ(desks_names.size(), desks_restore_names->GetSize());
+
+  size_t index = 0;
+  for (const auto& value : desks_restore_names->GetList())
+    EXPECT_EQ(desks_names[index++], value.GetString());
+}
+
+}  // namespace
+
 class DesksEditableNamesTest : public AshTestBase {
  public:
   DesksEditableNamesTest() = default;
@@ -1489,7 +1516,10 @@ class DesksEditableNamesTest : public AshTestBase {
     ASSERT_TRUE(desks_bar_view_);
   }
 
-  void ClickOnDeskNameViewAtIndex(int index) {
+  void ClickOnDeskNameViewAtIndex(size_t index) {
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+    ASSERT_LT(index, desks_bar_view_->mini_views().size());
+
     auto* desk_name_view =
         desks_bar_view_->mini_views()[index]->desk_name_view();
     auto* generator = GetEventGenerator();
@@ -1527,6 +1557,10 @@ TEST_F(DesksEditableNamesTest, DefaultNameChangeAborted) {
   EXPECT_FALSE(desk_name_view_2->HasFocus());
   auto* desk_2 = controller()->desks()[1].get();
   EXPECT_FALSE(desk_2->is_name_set_by_user());
+
+  // Desks restore data should reflect two default-named desks.
+  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
+                         {std::string(), std::string()});
 }
 
 TEST_F(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
@@ -1560,6 +1594,11 @@ TEST_F(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
   EXPECT_TRUE(desk_1->is_name_set_by_user());
   EXPECT_FALSE(desk_2->is_name_set_by_user());
 
+  // Renaming desks via the mini views trigger an update to the desks restore
+  // prefs.
+  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
+                         {std::string("code"), std::string()});
+
   // Add a third desk and remove the second. Both operations should not affect
   // the user-modified desk names.
   NewDesk();
@@ -1568,11 +1607,18 @@ TEST_F(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
   EXPECT_TRUE(desk_1->is_name_set_by_user());
   EXPECT_FALSE(desk_2->is_name_set_by_user());
   EXPECT_FALSE(desk_3->is_name_set_by_user());
+
+  // Adding a desk triggers an update to the restore prefs.
+  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
+                         {std::string("code"), std::string(), std::string()});
+
   RemoveDesk(desk_2);
   EXPECT_TRUE(desk_1->is_name_set_by_user());
   EXPECT_FALSE(desk_3->is_name_set_by_user());
   // Desk 3 will now be renamed to "Desk 2".
   EXPECT_EQ(base::UTF8ToUTF16("Desk 2"), desk_3->name());
+  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
+                         {std::string("code"), std::string()});
 
   overview_controller->EndOverview();
   overview_controller->StartOverview();
@@ -1601,6 +1647,8 @@ TEST_F(DesksEditableNamesTest, DontAllowEmptyNames) {
   EXPECT_FALSE(desk_1->name().empty());
   EXPECT_FALSE(desk_1->is_name_set_by_user());
   EXPECT_EQ(base::UTF8ToUTF16("Desk 1"), desk_1->name());
+  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
+                         {std::string(), std::string()});
 }
 
 class TabletModeDesksTest : public DesksTest {
@@ -2359,6 +2407,8 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
   MultiUserWindowManager* multi_user_window_manager() {
     return multi_user_window_manager_.get();
   }
+  TestingPrefServiceSimple* user_1_prefs() { return user_1_prefs_; }
+  TestingPrefServiceSimple* user_2_prefs() { return user_2_prefs_; }
 
   // AshTestBase:
   void SetUp() override {
@@ -2366,16 +2416,27 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
     TestSessionControllerClient* session_controller =
         GetSessionControllerClient();
     session_controller->Reset();
-    session_controller->AddUserSession(kUser1Email);
-    session_controller->AddUserSession(kUser2Email);
 
-    // Simulate user 1 login.
-    SwitchActiveUser(GetUser1AccountId());
-    multi_user_window_manager_ =
-        MultiUserWindowManager::Create(this, GetUser1AccountId());
-    MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
-        MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
-    session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
+    // Inject our own PrefServices for each user which enables us to setup the
+    // desks restore data before the user signs in.
+    auto user_1_prefs = std::make_unique<TestingPrefServiceSimple>();
+    user_1_prefs_ = user_1_prefs.get();
+    RegisterUserProfilePrefs(user_1_prefs_->registry(), /*for_test=*/true);
+    auto user_2_prefs = std::make_unique<TestingPrefServiceSimple>();
+    user_2_prefs_ = user_2_prefs.get();
+    RegisterUserProfilePrefs(user_2_prefs_->registry(), /*for_test=*/true);
+    session_controller->AddUserSession(kUser1Email,
+                                       user_manager::USER_TYPE_REGULAR,
+                                       /*enable_settings=*/true,
+                                       /*provide_pref_service=*/false);
+    session_controller->SetUserPrefService(GetUser1AccountId(),
+                                           std::move(user_1_prefs));
+    session_controller->AddUserSession(kUser2Email,
+                                       user_manager::USER_TYPE_REGULAR,
+                                       /*enable_settings=*/true,
+                                       /*provide_pref_service=*/false);
+    session_controller->SetUserPrefService(GetUser2AccountId(),
+                                           std::move(user_2_prefs));
   }
 
   void TearDown() override {
@@ -2402,13 +2463,39 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
     GetSessionControllerClient()->SwitchActiveUser(account_id);
   }
 
+  // Initializes the given |prefs| with a desks restore data of 3 desks, with
+  // the third desk named "code", and the rest are default-named.
+  void InitPrefsWithDesksRestoreData(PrefService* prefs) {
+    DCHECK(prefs);
+    ListPrefUpdate update(prefs, prefs::kDesksNamesList);
+    base::ListValue* pref_data = update.Get();
+    ASSERT_TRUE(pref_data->empty());
+    pref_data->Append(std::string());
+    pref_data->Append(std::string());
+    pref_data->Append(std::string("code"));
+  }
+
+  void SimulateUserLogin(const AccountId& account_id) {
+    SwitchActiveUser(account_id);
+    multi_user_window_manager_ =
+        MultiUserWindowManager::Create(this, account_id);
+    MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
+        MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
+    GetSessionControllerClient()->SetSessionState(
+        session_manager::SessionState::ACTIVE);
+  }
+
  private:
   std::unique_ptr<MultiUserWindowManager> multi_user_window_manager_;
+
+  TestingPrefServiceSimple* user_1_prefs_ = nullptr;
+  TestingPrefServiceSimple* user_2_prefs_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DesksMultiUserTest);
 };
 
 TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
+  SimulateUserLogin(GetUser1AccountId());
   auto* controller = DesksController::Get();
   NewDesk();
   NewDesk();
@@ -2465,6 +2552,7 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
 }
 
 TEST_F(DesksMultiUserTest, RemoveDesks) {
+  SimulateUserLogin(GetUser1AccountId());
   // Create two desks with several windows with different app types that
   // belong to different users.
   auto* controller = DesksController::Get();
@@ -2561,11 +2649,67 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
 }
 
 TEST_F(DesksMultiUserTest, SwitchingUsersEndsOverview) {
+  SimulateUserLogin(GetUser1AccountId());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->StartOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   SwitchActiveUser(GetUser2AccountId());
   EXPECT_FALSE(overview_controller->InOverviewSession());
+}
+
+using DesksRestoreMultiUserTest = DesksMultiUserTest;
+
+TEST_F(DesksRestoreMultiUserTest, DesksRestoredFromPrimaryUserPrefsOnly) {
+  InitPrefsWithDesksRestoreData(user_1_prefs());
+  SimulateUserLogin(GetUser1AccountId());
+  // User 1 is the first to login, hence the primary user.
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+
+  auto verify_desks = [&](const std::string& trace_name) {
+    SCOPED_TRACE(trace_name);
+    EXPECT_EQ(3u, desks.size());
+    EXPECT_EQ(base::UTF8ToUTF16("Desk 1"), desks[0]->name());
+    EXPECT_EQ(base::UTF8ToUTF16("Desk 2"), desks[1]->name());
+    EXPECT_EQ(base::UTF8ToUTF16("code"), desks[2]->name());
+    // Restored non-default names should be marked as `set_by_user`.
+    EXPECT_FALSE(desks[0]->is_name_set_by_user());
+    EXPECT_FALSE(desks[1]->is_name_set_by_user());
+    EXPECT_TRUE(desks[2]->is_name_set_by_user());
+  };
+
+  verify_desks("Before switching users");
+
+  // Switching users should not change anything as restoring happens only at
+  // the time when the first user signs in.
+  SwitchActiveUser(GetUser2AccountId());
+  verify_desks("After switching users");
+}
+
+TEST_F(DesksRestoreMultiUserTest,
+       ChangesMadeBySecondaryUserAffectsOnlyPrimaryUserPrefs) {
+  InitPrefsWithDesksRestoreData(user_1_prefs());
+  SimulateUserLogin(GetUser1AccountId());
+  // Switch to user 2 (secondary) and make some desks changes. Those changes
+  // should be persisted to user 1's prefs only.
+  SwitchActiveUser(GetUser2AccountId());
+
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+  ASSERT_EQ(3u, desks.size());
+
+  // Create a fourth desk.
+  NewDesk();
+  VerifyDesksRestoreData(user_1_prefs(), {std::string(), std::string(),
+                                          std::string("code"), std::string()});
+  // User 2's prefs are unaffected (empty list of desks).
+  VerifyDesksRestoreData(user_2_prefs(), {});
+
+  // Delete the second desk.
+  RemoveDesk(desks[1].get());
+  VerifyDesksRestoreData(user_1_prefs(),
+                         {std::string(), std::string("code"), std::string()});
+  VerifyDesksRestoreData(user_2_prefs(), {});
 }
 
 }  // namespace

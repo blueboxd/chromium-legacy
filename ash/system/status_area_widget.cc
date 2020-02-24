@@ -112,7 +112,7 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   login_status_ = login_status;
 
   for (TrayBackgroundView* tray_button : tray_buttons_)
-    tray_button->UpdateAfterLoginStatusChange(login_status);
+    tray_button->UpdateAfterLoginStatusChange();
 }
 
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {

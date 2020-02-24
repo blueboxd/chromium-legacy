@@ -86,15 +86,17 @@ class ClientSideDetectionService : public content::NotificationObserver {
   // The URL scheme of the |url()| in the request should be HTTP.  This method
   // takes ownership of the |verdict| as well as the |callback| and calls the
   // the callback once the result has come back from the server or if an error
-  // occurs during the fetch.  |is_extended_reporting| should be set based on
-  // the active profile setting. If the service is disabled or an error occurs
-  // the phishing verdict will always be false.  The callback is always called
-  // after SendClientReportPhishingRequest() returns and on the same thread as
+  // occurs during the fetch.  |is_extended_reporting| and
+  // |is_enhanced_protection| should be set based on the active profile setting.
+  // If the service is disabled or an error occurs the phishing verdict will
+  // always be false.  The callback is always called after
+  // SendClientReportPhishingRequest() returns and on the same thread as
   // SendClientReportPhishingRequest() was called.  You may set |callback| to
   // NULL if you don't care about the server verdict.
   virtual void SendClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
       bool is_extended_reporting,
+      bool is_enhanced_protection,
       const ClientReportPhishingRequestCallback& callback);
 
   // Returns true if the given IP address string falls within a private
@@ -124,7 +126,7 @@ class ClientSideDetectionService : public content::NotificationObserver {
 
   // Get the model status for the given client-side model (extended reporting or
   // regular).
-  ModelLoader::ClientModelStatus GetLastModelStatus(bool is_extended_reporting);
+  ModelLoader::ClientModelStatus GetLastModelStatus(bool use_extended_model);
 
  protected:
   // Use Create() method to create an instance of this object.
@@ -157,6 +159,7 @@ class ClientSideDetectionService : public content::NotificationObserver {
   void StartClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
       bool is_extended_reporting,
+      bool is_enhanced_protection,
       const ClientReportPhishingRequestCallback& callback);
 
   // Called by OnURLFetchComplete to handle the server response from

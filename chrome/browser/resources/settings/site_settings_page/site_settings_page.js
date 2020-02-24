@@ -10,23 +10,6 @@
 
 cr.define('settings', function() {
   /**
-   * @param {string} setting Value from settings.ContentSetting.
-   * @param {string} enabled Non-block label ('feature X not allowed').
-   * @param {string} disabled Block label (likely just, 'Blocked').
-   * @param {?string} other Tristate value (maybe, 'session only').
-   * @private
-   */
-  function defaultSettingLabel(setting, enabled, disabled, other) {
-    if (setting == settings.ContentSetting.BLOCK) {
-      return disabled;
-    }
-    if (setting == settings.ContentSetting.ALLOW) {
-      return enabled;
-    }
-    return other || enabled;
-  }
-
-  /**
    * @typedef{{
    *   route: string,
    *   id: settings.ContentSettingsTypes,
@@ -40,11 +23,20 @@ cr.define('settings', function() {
    */
   let CategoryListItem;
 
+  const Id = settings.ContentSettingsTypes;
+
+  /**
+   * @type {?Map<!settings.ContentSettingsTypes, !settings.CategoryListItem>}
+   */
+  let categoryItemMap = null;
+
   /**
    * @return {!Map<!settings.ContentSettingsTypes, !settings.CategoryListItem>}
    */
-  function buildCategoryItemMap() {
-    const Id = settings.ContentSettingsTypes;
+  function getCategoryItemMap() {
+    if (categoryItemMap !== null) {
+      return categoryItemMap;
+    }
 
     // The following list is ordered alphabetically by |id|. The order in which
     // these appear in the UI is determined elsewhere in this file.
@@ -302,69 +294,126 @@ cr.define('settings', function() {
       },
     ];
 
-    return new Map(categoryList.map(item => [item.id, item]));
+    categoryItemMap = new Map(categoryList.map(item => [item.id, item]));
+    return categoryItemMap;
+  }
+
+  /**
+   * @param {!Array<!settings.ContentSettingsTypes>} orderedIdList
+   * @return {!Array<!settings.CategoryListItem>}
+   */
+  function buildItemListFromIds(orderedIdList) {
+    const map = getCategoryItemMap();
+    const orderedList = [];
+    for (const id of orderedIdList) {
+      const item = map.get(id);
+      if (item.shouldShow === undefined || item.shouldShow()) {
+        orderedList.push(item);
+      }
+    }
+    return orderedList;
   }
 
   Polymer({
     is: 'settings-site-settings-page',
 
-    behaviors: [
-      SiteSettingsBehavior, WebUIListenerBehavior, I18nBehavior,
-      settings.RouteObserverBehavior
-    ],
+    behaviors: [settings.RouteObserverBehavior],
 
     properties: {
-      /** @private {!Array<!settings.CategoryListItem>} */
-      categoryList_: {
-        type: Array,
+      /**
+       * @private {{
+       *   all: (!Array<!settings.CategoryListItem>|undefined),
+       *   permissionsBasic: (!Array<!settings.CategoryListItem>|undefined),
+       *   permissionsAdvanced: (!Array<!settings.CategoryListItem>|undefined),
+       *   contentBasic: (!Array<!settings.CategoryListItem>|undefined),
+       *   contentAdvanced: (!Array<!settings.CategoryListItem>|undefined)
+       * }}
+       */
+      lists_: {
+        type: Object,
         value: function() {
-          const Id = settings.ContentSettingsTypes;
-          // Ordered according to how these should appear in the UI.
-          const orderedIdList = [
-            Id.COOKIES,
-            Id.GEOLOCATION,
-            Id.CAMERA,
-            Id.MIC,
-            Id.SENSORS,
-            Id.NOTIFICATIONS,
-            Id.JAVASCRIPT,
-            Id.PLUGINS,
-            Id.IMAGES,
-            Id.POPUPS,
-            Id.ADS,
-            Id.BACKGROUND_SYNC,
-            Id.SOUND,
-            Id.AUTOMATIC_DOWNLOADS,
-            Id.UNSANDBOXED_PLUGINS,
-            Id.PROTOCOL_HANDLERS,
-            Id.MIDI_DEVICES,
-            Id.ZOOM_LEVELS,
-            Id.USB_DEVICES,
-            Id.SERIAL_PORTS,
-            Id.NATIVE_FILE_SYSTEM_WRITE,
-            Id.HID_DEVICES,
-            'pdfDocuments',
-            // <if expr="chromeos">
-            Id.PROTECTED_CONTENT,
-            // </if>
-            Id.CLIPBOARD,
-            Id.PAYMENT_HANDLER,
-            Id.MIXEDSCRIPT,
-            Id.BLUETOOTH_SCANNING,
-            Id.AR,
-            Id.VR,
-          ];
-
-          const map = buildCategoryItemMap();
-          const orderedList = [];
-          for (const id of orderedIdList) {
-            const item = map.get(id);
-            if (item.shouldShow === undefined || item.shouldShow()) {
-              orderedList.push(item);
-            }
+          if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
+            return {
+              all: buildItemListFromIds([
+                Id.COOKIES,
+                Id.GEOLOCATION,
+                Id.CAMERA,
+                Id.MIC,
+                Id.SENSORS,
+                Id.NOTIFICATIONS,
+                Id.JAVASCRIPT,
+                Id.PLUGINS,
+                Id.IMAGES,
+                Id.POPUPS,
+                Id.ADS,
+                Id.BACKGROUND_SYNC,
+                Id.SOUND,
+                Id.AUTOMATIC_DOWNLOADS,
+                Id.UNSANDBOXED_PLUGINS,
+                Id.PROTOCOL_HANDLERS,
+                Id.MIDI_DEVICES,
+                Id.ZOOM_LEVELS,
+                Id.USB_DEVICES,
+                Id.SERIAL_PORTS,
+                Id.NATIVE_FILE_SYSTEM_WRITE,
+                Id.HID_DEVICES,
+                'pdfDocuments',
+                // <if expr="chromeos">
+                Id.PROTECTED_CONTENT,
+                // </if>
+                Id.CLIPBOARD,
+                Id.PAYMENT_HANDLER,
+                Id.MIXEDSCRIPT,
+                Id.BLUETOOTH_SCANNING,
+                Id.AR,
+                Id.VR,
+              ]),
+            };
           }
-          return orderedList;
-        },
+
+          return {
+            permissionsBasic: buildItemListFromIds([
+              Id.GEOLOCATION,
+              Id.CAMERA,
+              Id.MIC,
+              Id.NOTIFICATIONS,
+              Id.BACKGROUND_SYNC,
+            ]),
+            permissionsAdvanced: buildItemListFromIds([
+              Id.SENSORS,
+              Id.AUTOMATIC_DOWNLOADS,
+              Id.UNSANDBOXED_PLUGINS,
+              Id.PROTOCOL_HANDLERS,
+              Id.MIDI_DEVICES,
+              Id.USB_DEVICES,
+              Id.SERIAL_PORTS,
+              Id.NATIVE_FILE_SYSTEM_WRITE,
+              Id.HID_DEVICES,
+              Id.CLIPBOARD,
+              Id.PAYMENT_HANDLER,
+              Id.BLUETOOTH_SCANNING,
+              Id.AR,
+              Id.VR,
+            ]),
+            contentBasic: buildItemListFromIds([
+              Id.COOKIES,
+              Id.JAVASCRIPT,
+              Id.PLUGINS,
+              Id.IMAGES,
+              Id.POPUPS,
+            ]),
+            contentAdvanced: buildItemListFromIds([
+              Id.SOUND,
+              Id.ADS,
+              Id.ZOOM_LEVELS,
+              'pdfDocuments',
+              // <if expr="chromeos">
+              Id.PROTECTED_CONTENT,
+              // </if>
+              Id.MIXEDSCRIPT,
+            ]),
+          };
+        }
       },
 
       /** @type {!Map<string, (string|Function)>} */
@@ -376,13 +425,19 @@ cr.define('settings', function() {
       /** @private */
       privacySettingsRedesignEnabled_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('privacySettingsRedesignEnabled'),
+        value: function() {
+          return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+        },
       },
 
+      /** @private */
+      permissionsExpanded_: Boolean,
+
+      /** @private */
+      contentExpanded_: Boolean,
+
       /* @private */
-      noRecentSitePermissions_: {
-        type: Boolean,
-      },
+      noRecentSitePermissions_: Boolean,
     },
 
     /**
@@ -394,89 +449,22 @@ cr.define('settings', function() {
       // focusConfig is set only once on the parent, so this observer should
       // only fire once.
       assert(!oldConfig);
-
-      // Populate the |focusConfig| map of the parent <settings-animated-pages>
-      // element, with additional entries that correspond to subpage trigger
-      // elements residing in this element's Shadow DOM.
-
-      // Register the allSites route manually, since it is not part of the
-      // |categoryList_|.
-      /** @type {!Array<{id: string, route: string}>} */ const list =
-          this.categoryList_.slice();
-      list.push({id: 'allSites', route: 'SITE_SETTINGS_ALL'});
-
-      for (const item of list) {
-        const route = settings.routes[item.route];
-        this.focusConfig.set(route.path, () => this.async(() => {
-          cr.ui.focusWithoutInk(assert(this.$$(`#${item.id}`)));
-        }));
-      }
-    },
-
-    /** @override */
-    ready() {
-      this.metricsBrowserProxy_ =
-          settings.MetricsBrowserProxyImpl.getInstance();
-
-      for (const item of this.categoryList_) {
-        // Default labels are not applicable to ZOOM_LEVELS or PDF.
-        if (item.id === settings.ContentSettingsTypes.ZOOM_LEVELS ||
-            item.id === 'pdfDocuments') {
-          continue;
-        }
-
-        this.refreshDefaultValueLabel_(item.id);
-      }
-
-      this.addWebUIListener(
-          'contentSettingCategoryChanged',
-          this.refreshDefaultValueLabel_.bind(this));
-
-      // The protocol handlers have a separate enabled/disabled notifier.
-      this.addWebUIListener('setHandlersEnabled', enabled => {
-        this.updateDefaultValueLabel_(
-            settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
-            enabled ? settings.ContentSetting.ALLOW :
-                      settings.ContentSetting.BLOCK);
+      this.focusConfig.set(settings.routes.SITE_SETTINGS_ALL.path, () => {
+        cr.ui.focusWithoutInk(assert(this.$$('#allSites')));
       });
-      this.browserProxy.observeProtocolHandlersEnabledState();
+    },
+
+    /** @private */
+    onSiteSettingsAllClick_(event) {
+      this.navigateToRoute_('SITE_SETTINGS_ALL');
     },
 
     /**
-     * @param {!settings.ContentSettingsTypes} category The category to refresh
-     *     (fetch current value + update UI)
+     * @param {!CustomEvent<string>} event
      * @private
      */
-    refreshDefaultValueLabel_(category) {
-      this.browserProxy.getDefaultValueForContentType(category).then(
-          defaultValue => {
-            this.updateDefaultValueLabel_(category, defaultValue.setting);
-          });
-    },
-
-    /**
-     * Updates the DOM for the given |category| to display a label that
-     * corresponds to the given |setting|.
-     * @param {!settings.ContentSettingsTypes} category
-     * @param {!settings.ContentSetting} setting
-     * @private
-     */
-    updateDefaultValueLabel_(category, setting) {
-      if (!this.isConnected) {
-        // Do nothing if the element has been detached from the DOM (happens in
-        // tests).
-        return;
-      }
-
-      const element = this.$$(`#${category}`);
-      const index = this.$$('dom-repeat').indexForElement(element);
-      const dataItem = this.categoryList_[index];
-      const subLabel = defaultSettingLabel(
-          setting,
-          dataItem.enabledLabel ? this.i18n(dataItem.enabledLabel) : '',
-          dataItem.disabledLabel ? this.i18n(dataItem.disabledLabel) : '',
-          dataItem.otherLabel ? this.i18n(dataItem.otherLabel) : null);
-      this.set(`categoryList_.${index}.subLabel`, subLabel);
+    onSiteSettingsItemClick_(event) {
+      this.navigateToRoute_(event.detail);
     },
 
     /**
@@ -510,18 +498,17 @@ cr.define('settings', function() {
 
     /**
      * Navigate to the route specified in the event dataset.
-     * @param {!Event} event The tap event.
+     * @param {string} routeName The name of the route to navigate to.
      * @private
      */
-    onTapNavigate_(event) {
-      const dataSet =
-          /** @type {{route: string}} */ (event.currentTarget.dataset);
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.SettingsPageInteractions['PRIVACY_' + dataSet.route]);
-      settings.Router.getInstance().navigateTo(settings.routes[dataSet.route]);
+    navigateToRoute_(routeName) {
+      settings.MetricsBrowserProxyImpl.getInstance()
+          .recordSettingsPageHistogram(
+              settings.SettingsPageInteractions['PRIVACY_' + routeName]);
+      settings.Router.getInstance().navigateTo(settings.routes[routeName]);
     },
   });
 
   // #cr_define_end
-  return {CategoryListItem, defaultSettingLabel};
+  return {CategoryListItem};
 });

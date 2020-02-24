@@ -29,7 +29,6 @@ class CORE_EXPORT ResizeObservation final
   // True if observationSize differs from target's current size.
   bool ObservationSizeOutOfSync();
   void SetObservationSize(const LayoutSize&);
-  void ElementSizeChanged();
   ResizeObserverBoxOptions observedBox() const { return observed_box_; }
 
   LayoutSize ComputeTargetSize() const;
@@ -41,7 +40,6 @@ class CORE_EXPORT ResizeObservation final
   Member<ResizeObserver> observer_;
   // Target size sent in last observation notification.
   LayoutSize observation_size_;
-  bool element_size_changed_;
   ResizeObserverBoxOptions observed_box_;
 };
 

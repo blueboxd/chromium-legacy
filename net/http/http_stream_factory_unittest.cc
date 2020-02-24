@@ -3524,16 +3524,21 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       base::MakeRefCounted<HttpResponseHeaders>(""));
   headers->AddHeader(
       "alt-svc: "
-      "h3-25=\":443\",h3-Q050=\":443\",h3-Q049=\":443\",h3-Q048=\":443\",h3-"
-      "Q047=\":443\",h3-"
-      "Q043=\":443\",h3-"
-      "Q039=\":443\"");
+      "h3-26=\":443\","
+      "h3-25=\":443\","
+      "h3-Q050=\":443\","
+      "h3-Q049=\":443\","
+      "h3-Q048=\":443\","
+      "h3-Q047=\":443\","
+      "h3-Q043=\":443\","
+      "h3-Q039=\":443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_.get(), network_isolation_key, headers.get(), origin);
 
   quic::ParsedQuicVersionVector versions = {
       {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99},
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_25},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_50},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_49},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_48},

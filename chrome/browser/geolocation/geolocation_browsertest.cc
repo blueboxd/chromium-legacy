@@ -31,6 +31,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/permission_request_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -133,44 +134,6 @@ void IFrameLoader::Observe(int type,
   if (javascript_completed_ && navigation_completed_)
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
-
-// PermissionRequestObserver ---------------------------------------------------
-
-// Used to observe the creation of a single permission request without
-// responding.
-class PermissionRequestObserver
-    : public permissions::PermissionRequestManager::Observer {
- public:
-  explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
-            web_contents)),
-        request_shown_(false),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    request_manager_->AddObserver(this);
-  }
-  ~PermissionRequestObserver() override {
-    // Safe to remove twice if it happens.
-    request_manager_->RemoveObserver(this);
-  }
-
-  void Wait() { message_loop_runner_->Run(); }
-
-  bool request_shown() { return request_shown_; }
-
- private:
-  // PermissionRequestManager::Observer
-  void OnBubbleAdded() override {
-    request_shown_ = true;
-    request_manager_->RemoveObserver(this);
-    message_loop_runner_->Quit();
-  }
-
-  permissions::PermissionRequestManager* request_manager_;
-  bool request_shown_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
-};
 
 }  // namespace
 
@@ -377,7 +340,7 @@ std::string GeolocationBrowserTest::WatchPositionAndRespondToPermissionRequest(
 
 void GeolocationBrowserTest::WatchPositionAndObservePermissionRequest(
     bool request_should_display) {
-  PermissionRequestObserver observer(
+  permissions::PermissionRequestObserver observer(
       current_browser_->tab_strip_model()->GetActiveWebContents());
   if (request_should_display) {
     // Control will return as soon as the API call is made, and then the

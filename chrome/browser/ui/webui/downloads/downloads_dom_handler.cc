@@ -71,6 +71,7 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_OPEN_FOLDER = 10,
   DOWNLOADS_DOM_EVENT_RESUME = 11,
   DOWNLOADS_DOM_EVENT_RETRY_DOWNLOAD = 12,
+  DOWNLOADS_DOM_EVENT_OPEN_DURING_SCANNING = 13,
   DOWNLOADS_DOM_EVENT_MAX
 };
 
@@ -352,6 +353,23 @@ void DownloadsDOMHandler::OpenDownloadsFolderRequiringGesture() {
         Profile::FromBrowserContext(manager->GetBrowserContext()),
         DownloadPrefs::FromDownloadManager(manager)->DownloadPath(),
         platform_util::OPEN_FOLDER, platform_util::OpenOperationCallback());
+  }
+}
+
+void DownloadsDOMHandler::OpenDuringScanningRequiringGesture(
+    const std::string& id) {
+  if (!GetWebUIWebContents()->HasRecentInteractiveInputEvent()) {
+    LOG(ERROR) << "OpenDownloadsFolderRequiringGesture received without recent "
+                  "user interaction";
+    return;
+  }
+
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_DURING_SCANNING);
+  download::DownloadItem* download = GetDownloadByStringId(id);
+  if (download) {
+    DownloadItemModel model(download);
+    model.SetOpenWhenComplete(true);
+    model.CompleteSafeBrowsingScan();
   }
 }
 

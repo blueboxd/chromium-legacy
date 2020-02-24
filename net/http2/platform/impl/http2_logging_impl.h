@@ -17,6 +17,7 @@
 #define HTTP2_DVLOG_IMPL(verbose_level) DVLOG(verbose_level)
 #define HTTP2_DVLOG_IF_IMPL(verbose_level, condition) \
   DVLOG_IF(verbose_level, condition)
+#define HTTP2_LOG_FIRST_N_IMPL(severity, n) HTTP2_LOG_IMPL(severity)
 
 #define HTTP2_CHROMIUM_LOG_INFO VLOG(1)
 #define HTTP2_CHROMIUM_LOG_WARNING DLOG(WARNING)

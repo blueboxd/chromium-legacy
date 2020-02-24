@@ -119,7 +119,9 @@ id<GREYMatcher> SkipSigninButton() {
 }
 
 // Dismisses the first run screens.
-- (void)testDismissFirstRun {
+// TODO(crbug.com/1055457): Re-enable after updating tests. Button has
+// unexpected text.
+- (void)DISABLED_testDismissFirstRun {
   [FirstRunAppInterface showFirstRunUI];
 
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]

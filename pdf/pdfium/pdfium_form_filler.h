@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
+#include "third_party/pdfium/public/fpdfview.h"
 
 namespace chrome_pdf {
 
@@ -23,6 +24,8 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
   ~PDFiumFormFiller();
 
  private:
+  friend class FormFillerTest;
+
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
                               FPDF_PAGE page,
@@ -55,6 +58,9 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
                                      FPDF_WIDESTRING value,
                                      FPDF_DWORD valueLen,
                                      FPDF_BOOL is_focus);
+  static void Form_OnFocusChange(FPDF_FORMFILLINFO* param,
+                                 FPDF_ANNOTATION annot,
+                                 int page_index);
   static void Form_DoURIAction(FPDF_FORMFILLINFO* param, FPDF_BYTESTRING uri);
   static void Form_DoGoToAction(FPDF_FORMFILLINFO* param,
                                 int page_index,

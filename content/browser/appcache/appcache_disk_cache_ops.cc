@@ -46,13 +46,16 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 
 // HttpResponseInfoIOBuffer ------------------------------------------
 
+// static
+constexpr int HttpResponseInfoIOBuffer::kUnknownResponseDataSize;
+
 HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer()
-    : response_data_size(kUnknownResponseDataSize) {}
+    : response_data_size(HttpResponseInfoIOBuffer::kUnknownResponseDataSize) {}
 
 HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer(
     std::unique_ptr<net::HttpResponseInfo> info)
     : http_info(std::move(info)),
-      response_data_size(kUnknownResponseDataSize) {}
+      response_data_size(HttpResponseInfoIOBuffer::kUnknownResponseDataSize) {}
 
 HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() = default;
 

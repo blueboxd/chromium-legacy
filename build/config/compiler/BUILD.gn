@@ -2317,10 +2317,7 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
-    # TODO: Remove cros specific logic once cros clang supports
-    # "-debug-info-kind=constructor" option.
-    if (is_clang && !is_nacl &&
-        default_toolchain != "//build/toolchain/cros:target") {
+    if (is_clang && !is_nacl) {
       cflags += [
         "-Xclang",
         "-debug-info-kind=constructor",

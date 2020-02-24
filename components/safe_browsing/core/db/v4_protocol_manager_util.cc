@@ -89,7 +89,8 @@ void SetSbV4UrlPrefixForTesting(const char* url_prefix) {
 
 std::string GetReportUrl(const V4ProtocolConfig& config,
                          const std::string& method,
-                         const ExtendedReportingLevel* reporting_level) {
+                         const ExtendedReportingLevel* reporting_level,
+                         const bool is_enhanced_protection) {
   std::string url = base::StringPrintf(
       "%s/%s?client=%s&appver=%s&pver=4.0", kSbReportsURLPrefix, method.c_str(),
       config.client_name.c_str(), config.version.c_str());
@@ -100,6 +101,8 @@ std::string GetReportUrl(const V4ProtocolConfig& config,
   }
   if (reporting_level)
     url.append(base::StringPrintf("&ext=%d", *reporting_level));
+  if (is_enhanced_protection)
+    url.append(base::StringPrintf("&enh=%d", is_enhanced_protection));
   return url;
 }
 

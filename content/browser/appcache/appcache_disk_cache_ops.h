@@ -22,12 +22,12 @@ namespace content {
 class AppCacheDiskCache;
 class AppCacheDiskCacheEntry;
 
-static const int kUnknownResponseDataSize = -1;
-
 // A refcounted wrapper for HttpResponseInfo so we can apply the
 // refcounting semantics used with IOBuffer with these structures too.
 struct CONTENT_EXPORT HttpResponseInfoIOBuffer
     : public base::RefCountedThreadSafe<HttpResponseInfoIOBuffer> {
+  static constexpr int kUnknownResponseDataSize = -1;
+
   std::unique_ptr<net::HttpResponseInfo> http_info;
   int response_data_size;
 

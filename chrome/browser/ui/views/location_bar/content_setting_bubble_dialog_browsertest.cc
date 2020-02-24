@@ -102,7 +102,7 @@ void ContentSettingBubbleDialogTest::ApplyMediastreamSettings(
       TabSpecificContentSettings::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
   content_settings->OnMediaStreamPermissionSet(
-      GURL::EmptyGURL(), mic_setting | camera_setting, std::string(),
+      GURL("https://example.com/"), mic_setting | camera_setting, std::string(),
       std::string(), std::string(), std::string());
 }
 
@@ -113,9 +113,6 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   switch (content_type) {
-    case ContentSettingsType::GEOLOCATION:
-      content_settings->OnGeolocationPermissionSet(GURL::EmptyGURL(), false);
-      break;
     case ContentSettingsType::AUTOMATIC_DOWNLOADS: {
       // Automatic downloads are handled by DownloadRequestLimiter.
       DownloadRequestLimiter::TabDownloadState* tab_download_state =
@@ -127,20 +124,28 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }
+    case ContentSettingsType::GEOLOCATION:
+      content_settings->OnGeolocationPermissionSet(GURL("https://example.com/"),
+                                                   false);
+      break;
+    case ContentSettingsType::MIDI_SYSEX:
+      content_settings->OnMidiSysExAccessBlocked(GURL("https://example.com/"));
+      break;
     case ContentSettingsType::POPUPS: {
-      GURL url(
+      ui_test_utils::NavigateToURL(
+          browser(),
           embedded_test_server()->GetURL("/popup_blocker/popup-many-10.html"));
-      ui_test_utils::NavigateToURL(browser(), url);
       EXPECT_TRUE(content::ExecuteScript(web_contents, std::string()));
       auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
       // popup-many-10.html should generate 10 blocked popups.
       EXPECT_EQ(10u, helper->GetBlockedPopupsCount());
       break;
     }
-    case ContentSettingsType::PLUGINS: {
-      content_settings->OnContentBlocked(content_type);
+    case ContentSettingsType::PROTOCOL_HANDLERS:
+      content_settings->set_pending_protocol_handler(
+          ProtocolHandler::CreateProtocolHandler("mailto",
+                                                 GURL("https://example.com/")));
       break;
-    }
 
     default:
       // For all other content_types passed in, mark them as blocked.

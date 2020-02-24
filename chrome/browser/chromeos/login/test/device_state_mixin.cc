@@ -44,6 +44,8 @@ cryptohome::SerializedInstallAttributes BuildInstallAttributes(
   install_attrs_["enterprise.domain"] = domain;
   install_attrs_["enterprise.realm"] = realm;
   install_attrs_["enterprise.device_id"] = device_id;
+  if (!mode.empty())
+    install_attrs_["enterprise.owned"] = "true";
 
   cryptohome::SerializedInstallAttributes install_attrs;
   install_attrs.set_version(1);

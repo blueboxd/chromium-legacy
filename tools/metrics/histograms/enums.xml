@@ -14566,6 +14566,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="DesksCreationRemovalSource">
   <int value="0" label="Button pressed"/>
   <int value="1" label="Keyboard shortcut"/>
+  <int value="2" label="Desks restore on first signin"/>
 </enum>
 
 <enum name="DesksMoveWindowFromActiveDeskSource">
@@ -16197,6 +16198,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="10" label="OpenFolder"/>
   <int value="11" label="Resume"/>
   <int value="12" label="RetryDownload"/>
+  <int value="13" label="OpenDuringScanning"/>
 </enum>
 
 <enum name="DownloadedFileAction">
@@ -22297,6 +22299,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1442" label="AUTOFILLASSISTANTPRIVATE_PROVIDEUSERDATA"/>
   <int value="1443" label="PASSWORDSPRIVATE_ISOPTEDINFORACCOUNTSTORAGE"/>
   <int value="1444" label="AUTOTESTPRIVATE_PINSHELFICON"/>
+  <int value="1445" label="AUTOTESTPRIVATE_WAITFOROVERVIEWSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -49291,6 +49294,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8"
       label="HTTP method or url scheme does not meet the requirement."/>
   <int value="9" label="Unknown range support from the response header."/>
+  <int value="10" label="Download is resumed without slices."/>
 </enum>
 
 <enum name="ParentAccessCodeAction">

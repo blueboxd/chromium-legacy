@@ -123,6 +123,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       {"controlRemoveFromListAriaLabel", IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL},
       {"controlRetry", IDS_DOWNLOAD_LINK_RETRY},
       {"controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL},
+      {"controlOpenNow", IDS_OPEN_DOWNLOAD_NOW},
       {"toastClearedAll", IDS_DOWNLOAD_TOAST_CLEARED_ALL},
       {"toastRemovedFromList", IDS_DOWNLOAD_TOAST_REMOVED_FROM_LIST},
       {"undo", IDS_DOWNLOAD_UNDO},
@@ -140,6 +141,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                              IDS_BLOCK_REASON_UNWANTED_DOWNLOAD);
   source->AddLocalizedString("mixedContentDownloadDesc",
                              IDS_BLOCK_REASON_MIXED_CONTENT);
+  source->AddLocalizedString("asyncScanningDownloadDesc",
+                             IDS_BLOCK_REASON_DEEP_SCANNING);
   if (browser_defaults::kDownloadPageHasShowInFolder)
     source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
 

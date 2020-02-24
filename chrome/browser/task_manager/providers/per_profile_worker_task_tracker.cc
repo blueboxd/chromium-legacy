@@ -53,10 +53,8 @@ void PerProfileWorkerTaskTracker::OnWorkerStarted(
     content::DedicatedWorkerId dedicated_worker_id,
     int worker_process_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
-  // TODO(https://crbug.com/1047787): Make use of the worker's URL when it is
-  //                                  available.
   CreateWorkerTask(dedicated_worker_id, Task::Type::DEDICATED_WORKER,
-                   worker_process_id, GURL(), &dedicated_worker_tasks_);
+                   worker_process_id, &dedicated_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
@@ -65,14 +63,18 @@ void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
   DeleteWorkerTask(dedicated_worker_id, &dedicated_worker_tasks_);
 }
 
+void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
+    content::DedicatedWorkerId dedicated_worker_id,
+    const GURL& url) {
+  SetWorkerTaskScriptUrl(dedicated_worker_id, url, &dedicated_worker_tasks_);
+}
+
 void PerProfileWorkerTaskTracker::OnWorkerStarted(
     content::SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  // TODO(https://crbug.com/1047787): Make use of the worker's URL when it is
-  //                                  available.
   CreateWorkerTask(shared_worker_id, Task::Type::SHARED_WORKER,
-                   worker_process_id, GURL(), &shared_worker_tasks_);
+                   worker_process_id, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
@@ -80,12 +82,19 @@ void PerProfileWorkerTaskTracker::OnBeforeWorkerTerminated(
   DeleteWorkerTask(shared_worker_id, &shared_worker_tasks_);
 }
 
+void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
+    content::SharedWorkerId shared_worker_id,
+    const GURL& url) {
+  SetWorkerTaskScriptUrl(shared_worker_id, url, &shared_worker_tasks_);
+}
+
 void PerProfileWorkerTaskTracker::OnVersionStartedRunning(
     int64_t version_id,
     const content::ServiceWorkerRunningInfo& running_info) {
   CreateWorkerTask(version_id, Task::Type::SERVICE_WORKER,
-                   running_info.render_process_id, running_info.script_url,
-                   &service_worker_tasks_);
+                   running_info.render_process_id, &service_worker_tasks_);
+  SetWorkerTaskScriptUrl(version_id, running_info.script_url,
+                         &service_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnVersionStoppedRunning(int64_t version_id) {
@@ -97,14 +106,13 @@ void PerProfileWorkerTaskTracker::CreateWorkerTask(
     const WorkerId& worker_id,
     Task::Type task_type,
     int worker_process_id,
-    const GURL& script_url,
     base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks) {
   auto* worker_process_host =
       content::RenderProcessHost::FromID(worker_process_id);
   auto insertion_result = out_worker_tasks->emplace(
       worker_id,
       std::make_unique<WorkerTask>(worker_process_host->GetProcess().Handle(),
-                                   script_url, task_type, worker_process_id));
+                                   task_type, worker_process_id));
   DCHECK(insertion_result.second);
   worker_task_provider_->OnWorkerTaskAdded(
       insertion_result.first->second.get());
@@ -118,6 +126,16 @@ void PerProfileWorkerTaskTracker::DeleteWorkerTask(
   DCHECK(it != out_worker_tasks->end());
   worker_task_provider_->OnWorkerTaskRemoved(it->second.get());
   out_worker_tasks->erase(it);
+}
+
+template <typename WorkerId>
+void PerProfileWorkerTaskTracker::SetWorkerTaskScriptUrl(
+    const WorkerId& worker_id,
+    const GURL& script_url,
+    base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks) {
+  auto it = out_worker_tasks->find(worker_id);
+  DCHECK(it != out_worker_tasks->end());
+  it->second->SetScriptUrl(script_url);
 }
 
 }  // namespace task_manager

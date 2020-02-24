@@ -116,6 +116,13 @@ Polymer({
         value: false,
       },
 
+      /** @private */
+      showOpenNow_: {
+        computed: 'computeShowOpenNow_(data.state)',
+        type: Boolean,
+        value: false,
+      },
+
       useFileIcon_: Boolean,
     },
 
@@ -289,6 +296,9 @@ Polymer({
           }
           break;
 
+        case States.ASYNC_SCANNING:
+          return loadTimeData.getString('asyncScanningDownloadDesc');
+
         case States.IN_PROGRESS:
         case States.PAUSED:  // Fallthrough.
           return data.progressStatusText;
@@ -314,7 +324,6 @@ Polymer({
     computeIcon_() {
       if (this.data) {
         const dangerType = this.data.dangerType;
-
         if ((loadTimeData.getBoolean('requestsApVerdicts') &&
              dangerType === DangerType.UNCOMMON_CONTENT) ||
             dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
@@ -329,12 +338,51 @@ Polymer({
         if (WARNING_TYPES.includes(dangerType)) {
           return 'cr:warning';
         }
+
+        if (this.data.state === States.ASYNC_SCANNING) {
+          return 'cr:error';
+        }
       }
       if (this.isDangerous_) {
         return 'cr:warning';
       }
       if (!this.useFileIcon_) {
         return 'cr:insert-drive-file';
+      }
+      return '';
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeIconColor_() {
+      if (this.data) {
+        const dangerType = this.data.dangerType;
+        if ((loadTimeData.getBoolean('requestsApVerdicts') &&
+             dangerType === DangerType.UNCOMMON_CONTENT) ||
+            dangerType === DangerType.SENSITIVE_CONTENT_WARNING) {
+          return 'yellow';
+        }
+
+        const WARNING_TYPES = [
+          DangerType.SENSITIVE_CONTENT_BLOCK,
+          DangerType.BLOCKED_TOO_LARGE,
+          DangerType.BLOCKED_PASSWORD_PROTECTED,
+        ];
+        if (WARNING_TYPES.includes(dangerType)) {
+          return 'red';
+        }
+
+        if (this.data.state === States.ASYNC_SCANNING) {
+          return 'grey';
+        }
+      }
+      if (this.isDangerous_) {
+        return 'red';
+      }
+      if (!this.useFileIcon_) {
+        return 'paper-grey';
       }
       return '';
     },
@@ -432,7 +480,8 @@ Polymer({
      */
     computeShowCancel_() {
       return this.data.state === States.IN_PROGRESS ||
-          this.data.state === States.PAUSED;
+          this.data.state === States.PAUSED ||
+          this.data.state === States.ASYNC_SCANNING;
     },
 
     /**
@@ -440,7 +489,16 @@ Polymer({
      * @private
      */
     computeShowProgress_() {
-      return this.showCancel_ && this.data.percent >= -1;
+      return this.showCancel_ && this.data.percent >= -1 &&
+          this.data.state !== States.ASYNC_SCANNING;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    computeShowOpenNow_() {
+      return this.data.state === States.ASYNC_SCANNING;
     },
 
     /**
@@ -499,13 +557,16 @@ Polymer({
         this.useFileIcon_ = false;
       } else if (OVERRIDDEN_ICON_TYPES.includes(this.data.dangerType)) {
         this.useFileIcon_ = false;
+      } else if (this.data.state === States.ASYNC_SCANNING) {
+        this.useFileIcon_ = false;
       } else {
         this.$.url.href = assert(this.data.url);
         const path = this.data.filePath;
         IconLoader.getInstance()
             .loadIcon(this.$['file-icon'], path)
             .then(success => {
-              if (path === this.data.filePath) {
+              if (path === this.data.filePath && this.data.state !==
+                  States.ASYNC_SCANNING) {
                 this.useFileIcon_ = success;
               }
             });
@@ -521,6 +582,11 @@ Polymer({
     /** @private */
     onDiscardDangerousTap_() {
       this.mojoHandler_.discardDangerous(this.data.id);
+    },
+
+    /** @private */
+    onOpenNowTap_() {
+      this.mojoHandler_.openDuringScanningRequiringGesture(this.data.id);
     },
 
     /**

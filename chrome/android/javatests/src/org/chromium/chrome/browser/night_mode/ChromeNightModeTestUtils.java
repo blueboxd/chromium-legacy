@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
@@ -18,7 +17,6 @@ public class ChromeNightModeTestUtils {
      * {@link org.chromium.chrome.browser.ChromeActivity} is launched.
      */
     public static void setUpNightModeBeforeChromeActivityLaunched() {
-        CachedFeatureFlags.setNightModeAvailableForTesting(true);
         NightModeUtils.setNightModeSupportedForTesting(true);
     }
 
@@ -36,7 +34,6 @@ public class ChromeNightModeTestUtils {
      * destroyed.
      */
     public static void tearDownNightModeAfterChromeActivityDestroyed() {
-        CachedFeatureFlags.setNightModeAvailableForTesting(null);
         NightModeUtils.setNightModeSupportedForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
         SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.UI_THEME_SETTING);

@@ -173,6 +173,8 @@ class TestDedicatedWorkerServiceObserver
     if (on_worker_event_callback_)
       std::move(on_worker_event_callback_).Run();
   }
+  void OnFinalResponseURLDetermined(DedicatedWorkerId dedicated_worker_id,
+                                    const GURL& url) override {}
 
   void RunUntilWorkerEvent() {
     base::RunLoop run_loop;

@@ -13,7 +13,6 @@
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -139,24 +138,6 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   v4_get_hash_protocol_manager_.reset();
 }
 
-RealTimeUrlLookupService*
-SafeBrowsingDatabaseManager::GetRealTimeUrlLookupService() {
-  return rt_url_lookup_service_.get();
-}
-
-void SafeBrowsingDatabaseManager::SetupRealTimeUrlLookupService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-
-  rt_url_lookup_service_ =
-      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
-}
-
-void SafeBrowsingDatabaseManager::ResetRealTimeUrlLookupService() {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-  rt_url_lookup_service_.reset();
-}
-
 std::unique_ptr<base::CallbackList<void()>::Subscription>
 SafeBrowsingDatabaseManager::RegisterDatabaseUpdatedCallback(
     const OnDatabaseUpdated& cb) {
@@ -173,29 +154,9 @@ std::string SafeBrowsingDatabaseManager::GetSafetyNetId() const {
   return "";
 }
 
-void SafeBrowsingDatabaseManager::OnProfileWillBeDestroyedOnIOThread(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-  // |rt_url_lookup_service_| can be null in tests.
-  if (!rt_url_lookup_service_)
-    return;
-  // Reset |rt_url_lookup_service| if any one of the profiles will be destroyed.
-  // This is to make sure that all profile related operations are safe in
-  // |rt_url_lookup_service|. The old lookup service will finish all pending
-  // requests and delete itself.
-  RealTimeUrlLookupService* rt_url_lookup_service_raw =
-      rt_url_lookup_service_.release();
-  // Will delete |rt_url_lookup_service_raw|
-  rt_url_lookup_service_raw->WaitForPendingRequestsOrDelete();
-  rt_url_lookup_service_.reset(
-      new RealTimeUrlLookupService(url_loader_factory));
-}
-
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
     const GURL& url,
     Client* client)
     : url_(url), client_(client) {}
-
-SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::~SafeBrowsingApiCheck() {}
 
 }  // namespace safe_browsing

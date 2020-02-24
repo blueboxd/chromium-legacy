@@ -8,45 +8,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/permission_request_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
-
-namespace {
-
-// Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver
-    : public permissions::PermissionRequestManager::Observer {
- public:
-  explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
-            web_contents)),
-        request_shown_(false) {
-    request_manager_->AddObserver(this);
-  }
-  ~PermissionRequestObserver() override {
-    // Safe to remove twice if it happens.
-    request_manager_->RemoveObserver(this);
-  }
-
-  bool request_shown() const { return request_shown_; }
-
- private:
-  // PermissionRequestManager::Observer
-  void OnBubbleAdded() override {
-    request_shown_ = true;
-    request_manager_->RemoveObserver(this);
-  }
-
-  permissions::PermissionRequestManager* request_manager_;
-  bool request_shown_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
-};
-
-}  // namespace
 
 class WebRtcFromWebAccessibleResourceTest : public ExtensionApiTest {
  public:
@@ -94,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
       permissions::PermissionRequestManager::FromWebContents(web_contents);
   request_manager->set_auto_response_for_test(
       permissions::PermissionRequestManager::ACCEPT_ALL);
-  PermissionRequestObserver permission_request_observer(web_contents);
+  permissions::PermissionRequestObserver permission_request_observer(
+      web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -117,7 +85,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
       permissions::PermissionRequestManager::FromWebContents(web_contents);
   request_manager->set_auto_response_for_test(
       permissions::PermissionRequestManager::DENY_ALL);
-  PermissionRequestObserver permission_request_observer(web_contents);
+  permissions::PermissionRequestObserver permission_request_observer(
+      web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);
 

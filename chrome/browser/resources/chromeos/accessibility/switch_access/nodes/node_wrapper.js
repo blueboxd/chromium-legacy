@@ -138,6 +138,7 @@ class NodeWrapper extends SAChildNode {
     switch (action) {
       case SAConstants.MenuAction.SELECT:
         this.baseNode_.doDefault();
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
@@ -301,7 +302,7 @@ class RootNodeWrapper extends SARootNode {
 
   /**
    * Refreshes the children of this root node.
-   * @private
+   * @protected
    */
   refresh_() {
     // Find the currently focused child.
@@ -338,26 +339,6 @@ class RootNodeWrapper extends SARootNode {
   }
 
   // ================= Static methods =================
-
-  /**
-   * @param {!AutomationNode} desktop
-   * @return {!RootNodeWrapper}
-   */
-  static buildDesktopTree(desktop) {
-    const root = new RootNodeWrapper(desktop);
-    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
-
-    if (interestingChildren.length < 1) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.MALFORMED_DESKTOP,
-          'Desktop node must have at least 1 interesting child.');
-    }
-
-    const childConstructor = (autoNode) => NodeWrapper.create(autoNode, root);
-    root.children = interestingChildren.map(childConstructor);
-
-    return root;
-  }
 
   /**
    * @param {!AutomationNode} rootNode

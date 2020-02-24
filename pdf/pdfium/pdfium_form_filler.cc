@@ -12,6 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "ppapi/cpp/point.h"
+#include "ppapi/cpp/rect.h"
+#include "third_party/pdfium/public/fpdf_annot.h"
 
 namespace chrome_pdf {
 
@@ -29,7 +32,7 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   // allows the static callbacks to be able to cast the FPDF_FORMFILLINFO in
   // callbacks to ourself instead of maintaining a map of them to
   // PDFiumEngine.
-  FPDF_FORMFILLINFO::version = 1;
+  FPDF_FORMFILLINFO::version = 2;
   FPDF_FORMFILLINFO::Release = nullptr;
   FPDF_FORMFILLINFO::FFI_Invalidate = Form_Invalidate;
   FPDF_FORMFILLINFO::FFI_OutputSelectedRect = Form_OutputSelectedRect;
@@ -45,8 +48,8 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_SetTextFieldFocus = Form_SetTextFieldFocus;
   FPDF_FORMFILLINFO::FFI_DoURIAction = Form_DoURIAction;
   FPDF_FORMFILLINFO::FFI_DoGoToAction = Form_DoGoToAction;
+  FPDF_FORMFILLINFO::FFI_OnFocusChange = Form_OnFocusChange;
 #if defined(PDF_ENABLE_XFA)
-  FPDF_FORMFILLINFO::version = 2;
   FPDF_FORMFILLINFO::xfa_disabled = false;
   FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
   FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
@@ -63,6 +66,23 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
   FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
   FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
+#else
+  FPDF_FORMFILLINFO::xfa_disabled = true;
+  FPDF_FORMFILLINFO::FFI_EmailTo = nullptr;
+  FPDF_FORMFILLINFO::FFI_DisplayCaret = nullptr;
+  FPDF_FORMFILLINFO::FFI_SetCurrentPage = nullptr;
+  FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = nullptr;
+  FPDF_FORMFILLINFO::FFI_GetPageViewRect = nullptr;
+  FPDF_FORMFILLINFO::FFI_GetPlatform = nullptr;
+  FPDF_FORMFILLINFO::FFI_PageEvent = nullptr;
+  FPDF_FORMFILLINFO::FFI_PopupMenu = nullptr;
+  FPDF_FORMFILLINFO::FFI_PostRequestURL = nullptr;
+  FPDF_FORMFILLINFO::FFI_PutRequestURL = nullptr;
+  FPDF_FORMFILLINFO::FFI_UploadTo = nullptr;
+  FPDF_FORMFILLINFO::FFI_DownloadFromURL = nullptr;
+  FPDF_FORMFILLINFO::FFI_OpenFile = nullptr;
+  FPDF_FORMFILLINFO::FFI_GotoURL = nullptr;
+  FPDF_FORMFILLINFO::FFI_GetLanguage = nullptr;
 #endif  // defined(PDF_ENABLE_XFA)
 
   if (enable_javascript) {
@@ -249,6 +269,26 @@ void PDFiumFormFiller::Form_SetTextFieldFocus(FPDF_FORMFILLINFO* param,
                                               FPDF_BOOL is_focus) {
   // Do nothing for now.
   // TODO(gene): use this signal to trigger OSK.
+}
+
+// static
+void PDFiumFormFiller::Form_OnFocusChange(FPDF_FORMFILLINFO* param,
+                                          FPDF_ANNOTATION annot,
+                                          int page_index) {
+  PDFiumEngine* engine = GetEngine(param);
+  if (!engine->PageIndexInBounds(page_index))
+    return;
+
+  FS_RECTF annot_rect;
+  if (!FPDFAnnot_GetRect(annot, &annot_rect))
+    return;
+
+  pp::Rect screen_rect = engine->pages_[page_index]->PageToScreen(
+      pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
+      annot_rect.right, annot_rect.bottom,
+      engine->layout_.options().default_page_orientation());
+
+  engine->ScrollIntoView(screen_rect);
 }
 
 // static

@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
+#include "components/password_manager/core/browser/leak_detection/mock_leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "crypto/sha2.h"
@@ -39,16 +40,6 @@ constexpr char kExampleCom[] = "https://example.com";
 const int64_t kMockElapsedTime =
     base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
 
-class MockLeakDetectionRequest : public LeakDetectionRequestInterface {
- public:
-  // LeakDetectionRequestInterface:
-  MOCK_METHOD(void, LookupSingleLeak,
-              (network::mojom::URLLoaderFactory*,
-               const std::string&,
-               LookupSingleLeakPayload,
-               LookupSingleLeakCallback), (override));
-};
-
 struct TestLeakDetectionRequest : public LeakDetectionRequestInterface {
   ~TestLeakDetectionRequest() override = default;
   // LeakDetectionRequestInterface:
@@ -62,13 +53,6 @@ struct TestLeakDetectionRequest : public LeakDetectionRequestInterface {
 
   std::string encrypted_payload_;
   LookupSingleLeakCallback callback_;
-};
-
-class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
- public:
-  // LeakDetectionRequestFactory:
-  MOCK_CONST_METHOD0(CreateNetworkRequest,
-                     std::unique_ptr<LeakDetectionRequestInterface>());
 };
 
 // Helper struct for making a fake network request.

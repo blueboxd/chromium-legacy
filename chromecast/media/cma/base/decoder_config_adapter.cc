@@ -220,8 +220,7 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
   audio_config.sample_format = ToSampleFormat(config.sample_format());
   audio_config.bytes_per_channel = config.bytes_per_channel();
   audio_config.channel_layout = ToChannelLayout(config.channel_layout());
-  audio_config.channel_number =
-      ::media::ChannelLayoutToChannelCount(config.channel_layout()),
+  audio_config.channel_number = config.channels();
   audio_config.samples_per_second = config.samples_per_second();
   audio_config.extra_data = config.extra_data();
   audio_config.encryption_scheme =
@@ -240,11 +239,15 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
 // static
 ::media::AudioDecoderConfig DecoderConfigAdapter::ToMediaAudioDecoderConfig(
     const AudioConfig& config) {
-  return ::media::AudioDecoderConfig(
+  ::media::AudioDecoderConfig audio_decoder_config(
       ToMediaAudioCodec(config.codec),
       ToMediaSampleFormat(config.sample_format),
       ToMediaChannelLayout(config.channel_layout), config.samples_per_second,
       config.extra_data, ToMediaEncryptionScheme(config.encryption_scheme));
+  if (config.channel_layout == ChannelLayout::DISCRETE) {
+    audio_decoder_config.SetChannelsForDiscrete(config.channel_number);
+  }
+  return audio_decoder_config;
 }
 
 // static

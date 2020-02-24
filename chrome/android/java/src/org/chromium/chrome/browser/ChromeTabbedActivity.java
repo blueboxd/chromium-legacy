@@ -800,9 +800,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
     public void startNativeInitialization() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.startNativeInitialization")) {
             // This is on the critical path so don't delay.
-            if (CachedFeatureFlags.isNightModeAvailable()
-                    && ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
+            if (ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
                 WebContentsDarkModeController.createInstance();
             }
             setupCompositorContent();

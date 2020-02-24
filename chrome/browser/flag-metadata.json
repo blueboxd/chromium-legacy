@@ -1991,7 +1991,7 @@
   {
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "enable-usbguard",
@@ -2043,12 +2043,6 @@
     "name": "enable-web-authentication-cable-v2-support",
     "owners": [ "webauthn-team@google.com" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "enable-web-authentication-testing-api",
-    "owners": [ "webauthn-team@google.com" ],
-    // This is required for testing.
-    "expiry_milestone": -1
   },
   {
     "name": "enable-web-bluetooth-new-permissions-backend",

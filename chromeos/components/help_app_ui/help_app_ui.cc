@@ -6,13 +6,14 @@
 
 #include <utility>
 
-#include "chromeos/components/help_app_ui/help_app_guest_ui.h"
 #include "chromeos/components/help_app_ui/help_app_page_handler.h"
+#include "chromeos/components/help_app_ui/help_app_untrusted_ui.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/url_constants.h"
 
 namespace chromeos {
 
@@ -41,12 +42,17 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource* host_source = CreateHostDataSource();
   content::WebUIDataSource::Add(browser_context, host_source);
-  // We need a CSP override to use the guest origin in the host.
-  std::string csp = std::string("frame-src ") + kChromeUIHelpAppGuestURL + ";";
+  // We need a CSP override to use the chrome-untrusted:// scheme in the host.
+  std::string csp =
+      std::string("frame-src ") + kChromeUIHelpAppUntrustedURL + ";";
   host_source->OverrideContentSecurityPolicyChildSrc(csp);
 
-  content::WebUIDataSource* guest_source = CreateHelpAppGuestDataSource();
-  content::WebUIDataSource::Add(browser_context, guest_source);
+  content::WebUIDataSource* untrusted_source =
+      CreateHelpAppUntrustedDataSource();
+  content::WebUIDataSource::Add(browser_context, untrusted_source);
+
+  // Add ability to request chrome-untrusted: URLs.
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 }
 
 HelpAppUI::~HelpAppUI() = default;

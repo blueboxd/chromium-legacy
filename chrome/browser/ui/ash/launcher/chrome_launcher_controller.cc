@@ -79,6 +79,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -137,6 +138,19 @@ const extensions::Extension* GetExtension(Profile* profile,
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   return registry->GetInstalledExtension(extension_id);
+}
+
+apps::mojom::LaunchSource ConvertLaunchSource(ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_UNKNOWN:
+      return apps::mojom::LaunchSource::kUnknown;
+    case ash::LAUNCH_FROM_APP_LIST:
+      return apps::mojom::LaunchSource::kFromAppListGrid;
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return apps::mojom::LaunchSource::kFromAppListQuery;
+    case ash::LAUNCH_FROM_SHELF:
+      return apps::mojom::LaunchSource::kFromShelf;
+  }
 }
 
 }  // namespace
@@ -481,8 +495,7 @@ void ChromeLauncherController::LaunchApp(const ash::ShelfID& id,
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
-  proxy->Launch(app_id, event_flags, apps::mojom::LaunchSource::kFromShelf,
-                display_id);
+  proxy->Launch(app_id, event_flags, ConvertLaunchSource(source), display_id);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,

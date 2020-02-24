@@ -3612,6 +3612,25 @@ void PDFiumEngine::SetSelection(
   }
 }
 
+void PDFiumEngine::ScrollIntoView(const pp::Rect& rect) {
+  pp::Rect visible_rect = GetVisibleRect();
+  if (visible_rect.Contains(rect))
+    return;
+  // Since the focus rect is not already in the visible area, scrolling
+  // horizontally and/or vertically is required.
+  if (rect.y() < visible_rect.y() || rect.bottom() > visible_rect.bottom()) {
+    // Scroll the viewport vertically to align the top of focus rect to
+    // centre.
+    client_->ScrollToY(rect.y() * current_zoom_ - plugin_size_.height() / 2,
+                       /*compensate_for_toolbar=*/false);
+  }
+  if (rect.x() < visible_rect.x() || rect.right() > visible_rect.right()) {
+    // Scroll the viewport horizontally to align the left of focus rect to
+    // centre.
+    client_->ScrollToX(rect.x() * current_zoom_ - plugin_size_.width() / 2);
+  }
+}
+
 void PDFiumEngine::SetCaretPosition(const pp::Point& position) {
   // TODO(dsinclair): Handle caret position ...
 }

@@ -7,6 +7,7 @@
 #include "base/base64url.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
@@ -55,7 +56,7 @@ void RealTimeUrlLookupService::StartLookup(
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback,
     signin::IdentityManager* identity_manager) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   DCHECK(url.is_valid());
 
   std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
@@ -114,7 +115,9 @@ void RealTimeUrlLookupService::StartLookup(
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
-  std::move(request_callback).Run(std::move(request));
+  base::PostTask(
+      FROM_HERE, CreateTaskTraits(ThreadID::IO),
+      base::BindOnce(std::move(request_callback), std::move(request)));
 }
 
 void RealTimeUrlLookupService::Shutdown() {
@@ -133,7 +136,7 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
     base::TimeTicks request_start_time,
     std::unique_ptr<std::string> response_body) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   auto it = pending_requests_.find(url_loader);
   DCHECK(it != pending_requests_.end()) << "Request not found";
@@ -153,15 +156,11 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
                  response->ParseFromString(*response_body);
   success ? HandleLookupSuccess() : HandleLookupError();
 
-  std::move(it->second).Run(std::move(response));
+  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                 base::BindOnce(std::move(it->second), std::move(response)));
+
   delete it->first;
   pending_requests_.erase(it);
-
-  // If |database_manager| already released current object and there is no
-  // pending request left, delete itself.
-  if (pending_requests_.empty() && is_self_owned_) {
-    delete this;
-  }
 }
 
 bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
@@ -202,7 +201,7 @@ size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
 }
 
 void RealTimeUrlLookupService::HandleLookupError() {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   consecutive_failures_++;
 
   // Any successful lookup clears both |consecutive_failures_| as well as
@@ -236,7 +235,7 @@ void RealTimeUrlLookupService::HandleLookupError() {
 }
 
 void RealTimeUrlLookupService::HandleLookupSuccess() {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   ResetFailures();
 
   // |did_successful_lookup_since_last_backoff_| is set to true only when we
@@ -245,22 +244,16 @@ void RealTimeUrlLookupService::HandleLookupSuccess() {
 }
 
 bool RealTimeUrlLookupService::IsInBackoffMode() const {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-  return backoff_timer_.IsRunning();
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  bool in_backoff = backoff_timer_.IsRunning();
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.Backoff.State", in_backoff);
+  return in_backoff;
 }
 
 void RealTimeUrlLookupService::ResetFailures() {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   consecutive_failures_ = 0;
   backoff_timer_.Stop();
-}
-
-void RealTimeUrlLookupService::WaitForPendingRequestsOrDelete() {
-  if (pending_requests_.empty()) {
-    delete this;
-    return;
-  }
-  is_self_owned_ = true;
 }
 
 // static

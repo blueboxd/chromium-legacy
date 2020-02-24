@@ -27,7 +27,10 @@ using SurfaceReadyCallback =
                                  display::Display::Rotation rotation,
                                  const gfx::Size& size)>;
 using SurfaceTouchCallback =
-    base::RepeatingCallback<void(bool touching, const gfx::PointF& location)>;
+    base::RepeatingCallback<void(bool is_primary,
+                                 bool touching,
+                                 int32_t pointer_id,
+                                 const gfx::PointF& location)>;
 using SurfaceDestroyedCallback = base::OnceClosure;
 
 class ArCoreSessionUtils {

@@ -235,15 +235,15 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
     bool fallback_to_software) {
   IntSize size(info.width(), info.height());
   CanvasColorParams color_params(info);
-  bool is_origin_top_left = source_image->IsOriginTopLeft();
 
   if (context_provider) {
     uint32_t usage_flags =
         context_provider->ContextProvider()
             ->SharedImageInterface()
             ->UsageForMailbox(source_image->GetMailboxHolder().mailbox);
-    auto resource_provider = CanvasResourceProvider::CreateAccelerated(
-        size, context_provider, color_params, is_origin_top_left, usage_flags);
+    auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
+        size, context_provider, kLow_SkFilterQuality, color_params,
+        source_image->IsOriginTopLeft(), usage_flags);
     if (resource_provider)
       return resource_provider;
 
@@ -251,14 +251,8 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
       return nullptr;
   }
 
-  unsigned msaa_sample_count = 0;
-  SkFilterQuality filter_quality = kLow_SkFilterQuality;
-  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
-  base::WeakPtr<CanvasResourceDispatcher> dispatcher = nullptr;
-  return CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      context_provider, msaa_sample_count, filter_quality, color_params,
-      presentation_mode, dispatcher);
+  return CanvasResourceProvider::CreateBitmapProvider(
+      size, kLow_SkFilterQuality, color_params);
 }
 
 scoped_refptr<StaticBitmapImage> FlipImageVertically(
@@ -661,16 +655,11 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 
   // TODO(fserb): this shouldn't be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider =
-      CanvasResourceProvider::Create(
+      CanvasResourceProvider::CreateBitmapProvider(
           IntSize(video->videoWidth(), video->videoHeight()),
-          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-          nullptr,  // context_provider_wrapper
-          0,        // msaa_sample_count
           kLow_SkFilterQuality,
-          CanvasColorParams(),  // TODO: set color space here to avoid clamping
-          CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr,           // canvas_resource_dispatcher
-          IsAccelerated());  // is_origin_top_left
+          CanvasColorParams());  // TODO: set color space here to avoid clamping
+
   if (!resource_provider)
     return;
 

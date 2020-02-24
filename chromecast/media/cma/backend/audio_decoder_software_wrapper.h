@@ -41,7 +41,6 @@ class AudioDecoderSoftwareWrapper
 
  private:
   bool CreateSoftwareDecoder(const AudioConfig& config);
-  void OnDecoderInitialized(bool success);
   void OnDecodedBuffer(CastAudioDecoder::Status status,
                        const media::AudioConfig& config,
                        scoped_refptr<DecoderBufferBase> decoded);

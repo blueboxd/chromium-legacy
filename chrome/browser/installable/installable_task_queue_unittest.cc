@@ -13,7 +13,7 @@ struct TaskParams {
   bool valid_manifest = false;
   bool has_worker = false;
   bool valid_primary_icon = false;
-  bool valid_badge_icon = false;
+  bool valid_splash_icon = false;
 };
 
 // Constructs an InstallableTask, with the supplied bools stored in it.
@@ -22,7 +22,7 @@ InstallableTask CreateTask(const TaskParams& params) {
   task.params.valid_manifest = params.valid_manifest;
   task.params.has_worker = params.has_worker;
   task.params.valid_primary_icon = params.valid_primary_icon;
-  task.params.valid_badge_icon = params.valid_badge_icon;
+  task.params.valid_splash_icon = params.valid_splash_icon;
   return task;
 }
 
@@ -30,7 +30,7 @@ bool IsEqual(const TaskParams& params, const InstallableTask& task) {
   return task.params.valid_manifest == params.valid_manifest &&
          task.params.has_worker == params.has_worker &&
          task.params.valid_primary_icon == params.valid_primary_icon &&
-         task.params.valid_badge_icon == params.valid_badge_icon;
+         task.params.valid_splash_icon == params.valid_splash_icon;
 }
 
 class InstallableTaskQueueUnitTest : public testing::Test {};

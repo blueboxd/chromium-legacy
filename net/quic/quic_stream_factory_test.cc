@@ -828,7 +828,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   }
 
   std::string ConstructDataHeader(size_t body_len) {
-    if (version_.transport_version != quic::QUIC_VERSION_99) {
+    if (!version_.HasIetfQuicFrames()) {
       return "";
     }
     std::unique_ptr<char[]> buffer;
@@ -998,7 +998,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -1093,7 +1093,7 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
 
 TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -1140,7 +1140,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
 
 TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -1975,7 +1975,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
   quic::QuicStreamId stream_id = GetNthClientInitiatedBidirectionalStreamId(0);
   MockQuicData socket_data(version_);
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
+  if (version_.HasIetfQuicFrames()) {
     int packet_num = 1;
     socket_data.AddWrite(SYNCHRONOUS,
                          ConstructInitialSettingsPacket(packet_num++));
@@ -10434,7 +10434,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -10584,7 +10584,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 // Verifies that the QUIC stream factory is initialized correctly.
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -10593,7 +10593,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 
 TEST_P(QuicStreamFactoryTest, MaybeInitializeWithNetworkIsolationKey) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -10825,7 +10825,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCacheMRUWithNetworkIsolationKey) {
 TEST_P(QuicStreamFactoryTest,
        CryptoConfigCacheMRUWithRealRequestsAndWithNetworkIsolationKey) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -11043,7 +11043,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -11100,7 +11100,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -12381,7 +12381,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncConnectAsyncStaleMatch) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -12457,7 +12457,7 @@ TEST_P(QuicStreamFactoryTest,
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncStaleMatchConnectAsync) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -13238,7 +13238,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
 // after handshake confirmed, and then fresh resolve returns.
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -13318,7 +13318,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 // handshake
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
   if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
+      version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }

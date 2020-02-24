@@ -13,6 +13,7 @@
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_restore_util.h"
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -325,12 +326,21 @@ void DeskMiniView::OnViewBlurred(views::View* observed_view) {
 
   // When committing the name, do not allow an empty desk name. Revert back to
   // the default name.
+  // TODO(afakhry): Make this more robust. What if user renames a previously
+  // user-modified desk name, say from "code" to "Desk 2", and that desk
+  // happened to be in the second position. Since the new name matches the
+  // default one for this position, should we revert it (i.e. consider it
+  // `set_by_user = false`?
   if (desk_->name().empty()) {
     DesksController::Get()->RevertDeskNameToDefault(desk_);
     return;
   }
 
   OnDeskNameChanged(desk_->name());
+
+  // Only when the new desk name has been committed is when we can update the
+  // desks restore prefs.
+  desks_restore_util::UpdatePrimaryUserDesksPrefs();
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {

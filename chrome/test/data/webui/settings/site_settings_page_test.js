@@ -9,14 +9,22 @@ suite('SiteSettingsPage', function() {
   /** @type {SettingsSiteSettingsPageElement} */
   let page;
 
-  setup(function() {
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: false,
+    });
+  });
+
+  function setupPage() {
     testBrowserProxy = new TestMetricsBrowserProxy();
     settings.MetricsBrowserProxyImpl.instance_ = testBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-site-settings-page');
     document.body.appendChild(page);
     Polymer.dom.flush();
-  });
+  }
+
+  setup(setupPage);
 
   teardown(function() {
     page.remove();
@@ -55,288 +63,62 @@ suite('SiteSettingsPage', function() {
             settings.ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
   });
 
+  async function testClicks(listElement) {
+    const triggers = listElement.shadowRoot.querySelectorAll('cr-link-row');
+    assertTrue(triggers.length > 0);
+    const domRepeat = listElement.$$('dom-repeat').template;
+    for (const trigger of triggers) {
+      const data = Polymer.Templatize.modelForElement(domRepeat, trigger);
+      assertTrue(!!data);
+      trigger.click();
+      const result =
+          await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+      assertEquals(
+          settings.SettingsPageInteractions[`PRIVACY_${data.item.route}`],
+          result);
+      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+      testBrowserProxy.reset();
+    }
+  }
+
   test('LogAllSiteSettingsPageClicks', async function() {
+    // Test the allSites case.
     page.$$('#allSites').click();
-    let result =
+    const result =
         await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(
         settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ALL, result);
-
     settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     testBrowserProxy.reset();
 
-    page.$$(`#${settings.ContentSettingsTypes.COOKIES}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    // Test all remaining items.
+    const lists =
+        page.shadowRoot.querySelectorAll('settings-site-settings-list');
+    assertEquals(1, lists.length);
+    await testClicks(lists[0]);
+  });
+
+  test('LogAllSiteSettingsPageClicks_Redesign', async function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: true,
+    });
+    setupPage();
+
+    // Test the allSites case.
+    page.$$('#allSites').click();
+    const result =
+        await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_COOKIES,
-        result);
-
+        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ALL, result);
     settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     testBrowserProxy.reset();
 
-    page.$$(`#${settings.ContentSettingsTypes.GEOLOCATION}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_LOCATION,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.CAMERA}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_CAMERA, result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.MIC}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_MICROPHONE,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.SENSORS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SENSORS,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.NOTIFICATIONS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_NOTIFICATIONS,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.JAVASCRIPT}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_JAVASCRIPT,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.PLUGINS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_FLASH, result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.IMAGES}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_IMAGES, result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.POPUPS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_POPUPS, result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.BACKGROUND_SYNC}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.SOUND}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SOUND, result);
-
-    if (loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.ADS}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ADS, result);
-    }
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions
-            .PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions
-            .PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS,
-        result);
-
-    if (!loadTimeData.getBoolean('isGuest')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.PROTOCOL_HANDLERS}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_HANDLERS,
-          result);
-    }
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.MIDI_DEVICES}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_MIDI_DEVICES,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.ZOOM_LEVELS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_ZOOM_LEVELS,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.USB_DEVICES}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_USB_DEVICES,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.SERIAL_PORTS}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_SERIAL_PORTS,
-        result);
-
-    if (loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}`)
-          .click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions
-              .PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
-          result);
-    }
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$('#pdfDocuments').click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS,
-        result);
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    if (cr.isChromeOS) {
-      page.$$(`#${settings.ContentSettingsTypes.PROTECTED_CONTENT}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions
-              .PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT,
-          result);
-    }
-
-    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-    testBrowserProxy.reset();
-
-    page.$$(`#${settings.ContentSettingsTypes.CLIPBOARD}`).click();
-    result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_CLIPBOARD,
-        result);
-
-    if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.PAYMENT_HANDLER}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions
-              .PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER,
-          result);
-    }
-
-    if (loadTimeData.getBoolean('enableInsecureContentContentSetting')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.MIXEDSCRIPT}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_MIXEDSCRIPT,
-          result);
-    }
-
-    if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.BLUETOOTH_SCANNING}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions
-              .PRIVACY_SITE_SETTINGS_BLUETOOTH_SCANNING,
-          result);
-    }
-
-    if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.AR}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_AR, result);
-
-
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
-      testBrowserProxy.reset();
-
-      page.$$(`#${settings.ContentSettingsTypes.VR}`).click();
-      result = await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-      assertEquals(
-          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_VR, result);
+    // Test all remaining items (which are spread over four separate lists).
+    const lists =
+        page.shadowRoot.querySelectorAll('settings-site-settings-list');
+    assertEquals(4, lists.length);
+    for (const list of lists) {
+      await testClicks(list);
     }
   });
 });

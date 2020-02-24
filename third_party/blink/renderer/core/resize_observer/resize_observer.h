@@ -59,8 +59,6 @@ class CORE_EXPORT ResizeObserver final
   bool SkippedObservations() { return skipped_observations_; }
   void DeliverObservations();
   void ClearObservations();
-  void ElementSizeChanged();
-  bool HasElementSizeChanged() { return element_size_changed_; }
 
   ResizeObserverBoxOptions ParseBoxOptions(const String& box_options);
 
@@ -86,8 +84,7 @@ class CORE_EXPORT ResizeObserver final
   HeapVector<Member<ResizeObservation>> active_observations_;
   // True if observations were skipped gatherObservations
   bool skipped_observations_;
-  // True if any ResizeObservation reported size change
-  bool element_size_changed_;
+
   WeakMember<ResizeObserverController> controller_;
 };
 

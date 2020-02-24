@@ -32,13 +32,8 @@ class CastAudioDecoder {
     kOutputPlanarFloat,  // Output planar float samples.
   };
 
-  // The callback that is called when the decoder initialization is complete.
-  // |success| is true if initialization was successful; if |success| is false
-  // then the CastAudioDecoder instance is unusable and should be destroyed.
-  typedef base::OnceCallback<void(bool success)> InitializedCallback;
-
   // Callback called when a buffer has been decoded. |config| is the actual
-  // config of the buffer, which may differ from the config indicated the the
+  // config of the buffer, which may differ from the config indicated by the
   // wrapper format.
   typedef base::OnceCallback<void(
       Status status,
@@ -48,21 +43,21 @@ class CastAudioDecoder {
 
   // Creates a CastAudioDecoder instance for the given |config|. Decoding must
   // occur on the same thread as |task_runner|. Returns an empty unique_ptr if
-  // the decoder could not be created. |initialized_callback| will be called
-  // once initialization completes (either successfully, or if it failed).
-  // The callback will not be called after the CastAudioDecoder instance is
-  // destroyed.
+  // the decoder could not be created.
   static std::unique_ptr<CastAudioDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const media::AudioConfig& config,
-      OutputFormat output_format,
-      InitializedCallback initialized_callback);
+      OutputFormat output_format);
 
   // Given a CastAudioDecoder::OutputFormat, return the size of each sample in
   // that OutputFormat in bytes.
   static int OutputFormatSizeInBytes(CastAudioDecoder::OutputFormat format);
 
   virtual ~CastAudioDecoder() = default;
+
+  // Returns the expected config of the next decoded audio. Note that the config
+  // may change as more audio is decoded.
+  virtual const AudioConfig& GetOutputConfig() const = 0;
 
   // Converts encoded data to the |output_format|. Must be called on the same
   // thread as |task_runner|. Decoded data will be passed to |decode_callback|.

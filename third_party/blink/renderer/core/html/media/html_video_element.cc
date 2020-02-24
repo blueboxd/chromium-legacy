@@ -610,14 +610,8 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   // FIXME: Not sure if we should we be doing anything with the AccelerationHint
   // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
-      CanvasResourceProvider::Create(
-          intrinsic_size,
-          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-          nullptr,  // context_provider_wrapper
-          0,        // msaa_sample_count
-          kLow_SkFilterQuality, CanvasColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr);  // canvas_resource_dispatcher
+      CanvasResourceProvider::CreateBitmapProvider(
+          intrinsic_size, kLow_SkFilterQuality, CanvasColorParams());
   if (!resource_provider) {
     *status = kInvalidSourceImageStatus;
     return nullptr;

@@ -25,6 +25,9 @@ const char kRealTimeUrlLookupMemoryThresholdMb[] =
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
+// TODO(crbug.com/1050859): To make this class build in IOS, remove
+// browser_context dependency in this class, and replace it with pref_service
+// and simple_factory_key.
 class RealTimePolicyEngine {
  public:
   RealTimePolicyEngine() = delete;

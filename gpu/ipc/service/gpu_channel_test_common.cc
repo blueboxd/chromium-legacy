@@ -90,7 +90,7 @@ GpuChannelTestCommon::GpuChannelTestCommon(
       task_runner_.get(), io_task_runner_.get(), scheduler_.get(),
       sync_point_manager_.get(), shared_image_manager_.get(),
       nullptr, /* gpu_memory_buffer_factory */
-      std::move(feature_info), &activity_flags_,
+      std::move(feature_info), GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* image_decode_accelerator_worker */));
 }

@@ -104,7 +104,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
     base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
-    signin::IdentityManager* identity_manager_on_ui)
+    signin::IdentityManager* identity_manager_on_ui,
+    base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
       resource_type_(static_cast<ResourceType>(resource_type)),
@@ -114,7 +115,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
       cache_manager_on_ui_(cache_manager_on_ui),
-      identity_manager_on_ui_(identity_manager_on_ui) {}
+      identity_manager_on_ui_(identity_manager_on_ui),
+      url_lookup_service_on_ui_(url_lookup_service_on_ui) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
@@ -492,22 +494,44 @@ void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
     return;
   }
 
-  RTLookupRequestCallback request_callback =
-      base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnRTLookupRequest,
-                     weak_factory_.GetWeakPtr());
-
-  RTLookupResponseCallback response_callback =
-      base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnRTLookupResponse,
-                     weak_factory_.GetWeakPtr());
-
-  auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-  rt_lookup_service->StartLookup(url, std::move(request_callback),
-                                 std::move(response_callback),
-                                 identity_manager_on_ui_);
+  base::PostTask(
+      FROM_HERE, CreateTaskTraits(ThreadID::UI),
+      base::BindOnce(&SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread,
+                     weak_factory_.GetWeakPtr(), url, url_lookup_service_on_ui_,
+                     database_manager_, identity_manager_on_ui_));
 }
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
   url_web_ui_token_ = token;
+}
+
+// static
+void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
+    base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
+    const GURL& url,
+    base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui,
+    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
+    signin::IdentityManager* identity_manager) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  if (!url_lookup_service_on_ui ||
+      !url_lookup_service_on_ui->CanCheckUrl(url) ||
+      url_lookup_service_on_ui->IsInBackoffMode()) {
+    base::PostTask(
+        FROM_HERE, CreateTaskTraits(ThreadID::IO),
+        base::BindOnce(&SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck,
+                       weak_checker_on_io, url));
+    return;
+  }
+
+  RTLookupRequestCallback request_callback = base::BindOnce(
+      &SafeBrowsingUrlCheckerImpl::OnRTLookupRequest, weak_checker_on_io);
+
+  RTLookupResponseCallback response_callback = base::BindOnce(
+      &SafeBrowsingUrlCheckerImpl::OnRTLookupResponse, weak_checker_on_io);
+
+  url_lookup_service_on_ui->StartLookup(url, std::move(request_callback),
+                                        std::move(response_callback),
+                                        identity_manager);
 }
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {

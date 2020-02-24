@@ -25,7 +25,6 @@ class LayerTreeOwner;
 namespace ash {
 
 class AssistantController;
-class AssistantScreenContextModelObserver;
 
 class ASH_EXPORT AssistantScreenContextController
     : public mojom::AssistantScreenContextController,
@@ -45,10 +44,6 @@ class ASH_EXPORT AssistantScreenContextController
   // Returns a reference to the underlying model.
   const AssistantScreenContextModel* model() const { return &model_; }
 
-  // Adds/removes the specified screen context model |observer|.
-  void AddModelObserver(AssistantScreenContextModelObserver* observer);
-  void RemoveModelObserver(AssistantScreenContextModelObserver* observer);
-
   // ash::mojom::AssistantScreenContextController:
   void RequestScreenshot(
       const gfx::Rect& rect,
@@ -65,9 +60,6 @@ class ASH_EXPORT AssistantScreenContextController
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
-
-  // Invoked on screen context request finished event.
-  void OnScreenContextRequestFinished();
 
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 

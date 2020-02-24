@@ -12,7 +12,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"

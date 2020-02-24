@@ -939,47 +939,44 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGImage) {
   }
 }
 
-// Ensure that a specified 'toolbar' color is propagated to other 'bar' and
-// 'shelf' colors (before a new color is computed from the toolbar image).
-TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
-  scoped_refptr<BrowserThemePack> pack(
-      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
-  BuildTestExtensionTheme("theme_test_toolbar_frame_images_and_colors",
-                          pack.get());
-
-  SkColor infobar_color;
-  SkColor download_shelf_color;
-  SkColor status_bubble_color;
-
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
-
-  constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
-  EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, download_shelf_color);
-  EXPECT_EQ(infobar_color, status_bubble_color);
-}
-
-// Ensure that a specified 'toolbar' color is propagated to other 'bar' and
-// 'shelf' colors (before a new color is computed from the toolbar image).
-TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
+// Ensure that specified 'frame' and 'toolbar' colors are propagated to other
+// 'bar' and 'shelf' colors.
+TEST_F(BrowserThemePackTest, TestFrameAndToolbarColorPropagation) {
   scoped_refptr<BrowserThemePack> pack(
       new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
   BuildTestExtensionTheme("theme_test_toolbar_color_no_image", pack.get());
 
+  // Frame colors.
+  SkColor status_bubble_color;
+
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
+
+  constexpr SkColor kExpectedFrameColor = SkColorSetRGB(255, 0, 255);
+  EXPECT_EQ(status_bubble_color, kExpectedFrameColor);
+
+  // Toolbar colors.
   SkColor infobar_color;
   SkColor download_shelf_color;
-  SkColor status_bubble_color;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
 
-  constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
-  EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, download_shelf_color);
-  EXPECT_EQ(infobar_color, status_bubble_color);
+  constexpr SkColor kExpectedToolbarColor = SkColorSetRGB(0, 255, 0);
+  EXPECT_EQ(infobar_color, kExpectedToolbarColor);
+  EXPECT_EQ(download_shelf_color, kExpectedToolbarColor);
+
+  // Toolbar button icon colors.
+  SkColor toolbar_button_icon_hovered_color;
+  SkColor toolbar_button_icon_pressed_color;
+
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
+                             &toolbar_button_icon_hovered_color));
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED,
+                             &toolbar_button_icon_pressed_color));
+
+  constexpr SkColor kExpectedToolbarButtonIconColor = SkColorSetRGB(0, 0, 255);
+  EXPECT_EQ(toolbar_button_icon_hovered_color, kExpectedToolbarButtonIconColor);
+  EXPECT_EQ(toolbar_button_icon_pressed_color, kExpectedToolbarButtonIconColor);
 }
 
 // Ensure that, given an explicit toolbar color and a toolbar image, the output

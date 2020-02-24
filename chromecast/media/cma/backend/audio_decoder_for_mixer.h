@@ -82,7 +82,6 @@ class AudioDecoderForMixer
   void ResetMixerInputForNewConfig(const AudioConfig& config);
   void CreateDecoder();
 
-  void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        bool has_config,
                        CastAudioDecoder::Status status,
@@ -106,7 +105,8 @@ class AudioDecoderForMixer
   bool reported_ready_for_playback_ = false;
   RenderingDelay mixer_delay_;
 
-  AudioConfig config_;
+  AudioConfig input_config_;
+  AudioConfig decoded_config_;
   std::unique_ptr<CastAudioDecoder> decoder_;
 
   double av_sync_clock_rate_ = 1.0;

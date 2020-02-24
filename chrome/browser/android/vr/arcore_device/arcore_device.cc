@@ -184,9 +184,12 @@ void ArCoreDevice::OnDrawingSurfaceReady(gfx::AcceleratedWidget window,
   RequestArCoreGlInitialization(window, rotation, frame_size);
 }
 
-void ArCoreDevice::OnDrawingSurfaceTouch(bool touching,
+void ArCoreDevice::OnDrawingSurfaceTouch(bool is_primary,
+                                         bool touching,
+                                         int32_t pointer_id,
                                          const gfx::PointF& location) {
-  DVLOG(2) << __func__ << ": touching=" << touching;
+  DVLOG(2) << __func__ << ": pointer_id=" << pointer_id
+           << " is_primary=" << is_primary << " touching=" << touching;
 
   if (!session_state_->is_arcore_gl_initialized_ ||
       !session_state_->arcore_gl_thread_)
@@ -194,8 +197,8 @@ void ArCoreDevice::OnDrawingSurfaceTouch(bool touching,
 
   PostTaskToGlThread(base::BindOnce(
       &ArCoreGl::OnScreenTouch,
-      session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(), touching,
-      location));
+      session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
+      is_primary, touching, pointer_id, location));
 }
 
 void ArCoreDevice::OnDrawingSurfaceDestroyed() {

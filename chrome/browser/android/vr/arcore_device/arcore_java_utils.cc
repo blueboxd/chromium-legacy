@@ -78,11 +78,14 @@ void ArCoreJavaUtils::OnDrawingSurfaceReady(
 void ArCoreJavaUtils::OnDrawingSurfaceTouch(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    bool primary,
     bool touching,
+    int32_t pointer_id,
     float x,
     float y) {
-  DVLOG(3) << __func__ << ": touching=" << touching;
-  surface_touch_callback_.Run(touching, {x, y});
+  DVLOG(3) << __func__ << ": pointer_id=" << pointer_id
+           << " primary=" << primary << " touching=" << touching;
+  surface_touch_callback_.Run(primary, touching, pointer_id, {x, y});
 }
 
 void ArCoreJavaUtils::OnDrawingSurfaceDestroyed(

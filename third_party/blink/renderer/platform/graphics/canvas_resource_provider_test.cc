@@ -103,6 +103,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderAcceleratedOverlay) {
   EXPECT_TRUE(provider->IsSingleBuffered());
 }
 
+// TODO(juanmihd): Fix this test. See crbug.com/1035589.
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(
@@ -293,12 +294,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kLow_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  auto provider = CanvasResourceProvider::CreateBitmapProvider(
+      kSize, kLow_SkFilterQuality, kColorParams);
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -475,6 +472,7 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
     SCOPED_TRACE(i);
     auto usage = static_cast<CanvasResourceProvider::ResourceUsage>(i);
     bool should_support_compositing = false;
+    std::unique_ptr<CanvasResourceProvider> provider;
     switch (usage) {
       case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
         should_support_compositing = false;
@@ -499,30 +497,51 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
         break;
     }
 
-    auto provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize - 1, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    if (usage ==
+        CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          IntSize(kMaxTextureSize - 1, kMaxTextureSize), kLow_SkFilterQuality,
+          kColorParams);
+    } else {
+      provider = CanvasResourceProvider::Create(
+          IntSize(kMaxTextureSize - 1, kMaxTextureSize), usage,
+          context_provider_wrapper_, 0 /* msaa_sample_count */,
+          kLow_SkFilterQuality, kColorParams,
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+          nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    }
     EXPECT_EQ(provider->SupportsDirectCompositing(),
               should_support_compositing);
 
-    provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    if (usage ==
+        CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          IntSize(kMaxTextureSize, kMaxTextureSize), kLow_SkFilterQuality,
+          kColorParams);
+    } else {
+      provider = CanvasResourceProvider::Create(
+          IntSize(kMaxTextureSize, kMaxTextureSize), usage,
+          context_provider_wrapper_, 0 /* msaa_sample_count */,
+          kLow_SkFilterQuality, kColorParams,
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+          nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    }
     EXPECT_EQ(provider->SupportsDirectCompositing(),
               should_support_compositing);
 
-    provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize + 1, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    if (usage ==
+        CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          IntSize(kMaxTextureSize + 1, kMaxTextureSize), kLow_SkFilterQuality,
+          kColorParams);
+    } else {
+      provider = CanvasResourceProvider::Create(
+          IntSize(kMaxTextureSize + 1, kMaxTextureSize), usage,
+          context_provider_wrapper_, 0 /* msaa_sample_count */,
+          kLow_SkFilterQuality, kColorParams,
+          CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+          nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+    }
     EXPECT_FALSE(provider->SupportsDirectCompositing());
   }
 }

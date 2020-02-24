@@ -35,6 +35,7 @@ enum class ApkDownloadTelemetryOutcome {
   // No ping sent because the user is in Incognito mode.
   NOT_SENT_INCOGNITO = 2,
   // No ping sent because the user hasn't enabled extended reporting.
+  // Deprecated for NOT_SENT_UNCONSENTED.
   NOT_SENT_EXTENDED_REPORTING_DISABLED = 3,
   // Download was cancelled.
   NOT_SENT_DOWNLOAD_CANCELLED = 4,
@@ -44,8 +45,10 @@ enum class ApkDownloadTelemetryOutcome {
   NOT_SENT_FEATURE_NOT_ENABLED = 6,
   // Download completed. Ping sent.
   SENT = 7,
-
-  kMaxValue = SENT
+  // No ping sent because the user hasn't enabled enhanced protection and
+  // extended reporting.
+  NOT_SENT_UNCONSENTED = 8,
+  kMaxValue = NOT_SENT_UNCONSENTED
 };
 
 // This class is used to send telemetry information to Safe Browsing for

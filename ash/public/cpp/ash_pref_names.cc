@@ -133,6 +133,15 @@ const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 // tooltips have been shown.
 const char kContextualTooltips[] = "settings.contextual_tooltip.shown_info";
 
+// A list containing the stored virtual desks names in the same order of the
+// desks in the overview desks bar. This list will be used to restore the desks,
+// their order, and their names for the primary user on first signin. If a desk
+// hasn't been renamed by the user (i.e. it uses one of the default
+// automatically-assigned desk names such as "Desk 1", "Desk 2", ... etc.), its
+// name will appear in this list as an empty string. The desk names are stored
+// as UTF8 strings.
+const char kDesksNamesList[] = "ash.desks.desks_names_list";
+
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
 // A double pref storing the scale value of the Docked Magnifier feature by

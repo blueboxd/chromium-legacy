@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
@@ -397,13 +398,24 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
         HasPlaceholderCanvas() ? GetOrCreateResourceDispatcher()->GetWeakPtr()
                                : nullptr;
+    base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
 
-    ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
-        surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-        FilterQuality(), context_->ColorParams(), presentation_mode,
-        std::move(dispatcher_weakptr), false /* is_origin_top_left */));
+    if (usage ==
+        CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage) {
+      ReplaceResourceProvider(CanvasResourceProvider::CreateBitmapProvider(
+          surface_size, FilterQuality(), context_->ColorParams()));
+    } else {
+      ReplaceResourceProvider(CanvasResourceProvider::Create(
+          surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
+          FilterQuality(), context_->ColorParams(), presentation_mode,
+          std::move(dispatcher_weakptr), false /* is_origin_top_left */));
+    }
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
+      base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
+                                ResourceProvider()->IsAccelerated());
+      base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
+                                    ResourceProvider()->GetType());
       ResourceProvider()->Clear();
 
       if (needs_matrix_clip_restore_) {

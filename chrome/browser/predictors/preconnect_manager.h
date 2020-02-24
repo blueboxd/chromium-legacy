@@ -211,7 +211,7 @@ class PreconnectManager {
   Profile* const profile_;
   std::list<PreresolveJobId> queued_jobs_;
   PreresolveJobMap preresolve_jobs_;
-  std::map<std::string, std::unique_ptr<PreresolveInfo>> preresolve_info_;
+  std::map<GURL, std::unique_ptr<PreresolveInfo>> preresolve_info_;
   size_t inflight_preresolves_count_ = 0;
 
   // Only used in tests.

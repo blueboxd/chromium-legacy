@@ -56,10 +56,6 @@ const int kMinimumPrimaryIconSizeInPx = 144;
 // resized).
 const int kMinimumPrimaryAdaptiveLauncherIconSizeInPx = 83;
 
-#if !defined(OS_ANDROID)
-const int kMinimumBadgeIconSizeInPx = 72;
-#endif
-
 int GetIdealPrimaryIconSizeInPx() {
 #if defined(OS_ANDROID)
   return ShortcutHelper::GetIdealHomescreenIconSizeInPx();
@@ -76,19 +72,27 @@ int GetMinimumPrimaryIconSizeInPx() {
 #endif
 }
 
-int GetIdealBadgeIconSizeInPx() {
-#if defined(OS_ANDROID)
-  return ShortcutHelper::GetIdealBadgeIconSizeInPx();
-#else
-  return kMinimumBadgeIconSizeInPx;
-#endif
-}
-
 int GetIdealPrimaryAdaptiveLauncherIconSizeInPx() {
 #if defined(OS_ANDROID)
   return ShortcutHelper::GetIdealAdaptiveLauncherIconSizeInPx();
 #else
   return kMinimumPrimaryAdaptiveLauncherIconSizeInPx;
+#endif
+}
+
+int GetIdealSplashIconSizeInPx() {
+#if defined(OS_ANDROID)
+  return ShortcutHelper::GetIdealSplashImageSizeInPx();
+#else
+  return kMinimumPrimaryIconSizeInPx;
+#endif
+}
+
+int GetMinimumSplashIconSizeInPx() {
+#if defined(OS_ANDROID)
+  return ShortcutHelper::GetMinimumSplashImageSizeInPx();
+#else
+  return kMinimumPrimaryIconSizeInPx;
 #endif
 }
 
@@ -373,17 +377,17 @@ std::vector<InstallableStatusCode> InstallableManager::GetErrors(
     // If the icon is MASKABLE, ignore any error since we want to fallback to
     // fetch IconPurpose::ANY.
     if (icon.error != NO_ERROR_DETECTED &&
-        icon.purpose != IconPurpose::MASKABLE) {
+        icon.purpose != IconPurpose::MASKABLE)
       errors.push_back(icon.error);
-    }
   }
 
-  if (params.valid_badge_icon) {
-    IconProperty& icon = icons_[IconUsage::kBadge];
+  if (params.valid_splash_icon) {
+    IconProperty& icon = icons_[IconUsage::kSplash];
 
-    // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a badge
-    // in the manifest. Ignore this case since we only want to fail the check if
-    // there was a suitable badge icon specified and we couldn't fetch it.
+    // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a splash
+    // icon in the manifest. Ignore this case since we only want to fail the
+    // check if there was a suitable splash icon specified and we couldn't fetch
+    // it.
     if (icon.error != NO_ERROR_DETECTED && icon.error != NO_ACCEPTABLE_ICON)
       errors.push_back(icon.error);
   }
@@ -445,7 +449,7 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          (!params.has_worker || worker_->fetched) &&
          (!params.valid_primary_icon ||
           IsIconFetchComplete(IconUsage::kPrimary)) &&
-         (!params.valid_badge_icon || IsIconFetchComplete(IconUsage::kBadge));
+         (!params.valid_splash_icon || IsIconFetchComplete(IconUsage::kSplash));
 }
 
 void InstallableManager::Reset() {
@@ -469,7 +473,7 @@ void InstallableManager::SetManifestDependentTasksComplete() {
   valid_manifest_->fetched = true;
   worker_->fetched = true;
   SetIconFetched(IconUsage::kPrimary);
-  SetIconFetched(IconUsage::kBadge);
+  SetIconFetched(IconUsage::kSplash);
 }
 
 void InstallableManager::CleanupAndStartNextTask() {
@@ -490,20 +494,20 @@ void InstallableManager::RunCallback(
   IconProperty null_icon;
   IconProperty* primary_icon = &null_icon;
   bool has_maskable_primary_icon = false;
-  IconProperty* badge_icon = &null_icon;
+  IconProperty* splash_icon = &null_icon;
 
   if (params.valid_primary_icon && IsIconFetchComplete(IconUsage::kPrimary)) {
     primary_icon = &icons_[IconUsage::kPrimary];
     has_maskable_primary_icon =
         (primary_icon->purpose == IconPurpose::MASKABLE);
   }
-  if (params.valid_badge_icon && IsIconFetchComplete(IconUsage::kBadge))
-    badge_icon = &icons_[IconUsage::kBadge];
+  if (params.valid_splash_icon && IsIconFetchComplete(IconUsage::kSplash))
+    splash_icon = &icons_[IconUsage::kSplash];
 
   InstallableData data = {
       std::move(errors),   manifest_url(),           &manifest(),
       primary_icon->url,   primary_icon->icon.get(), has_maskable_primary_icon,
-      badge_icon->url,     badge_icon->icon.get(),   valid_manifest_->is_valid,
+      splash_icon->url,    splash_icon->icon.get(),  valid_manifest_->is_valid,
       worker_->has_worker,
   };
 
@@ -549,11 +553,11 @@ void InstallableManager::WorkOnTask() {
                        params.prefer_maskable_icon);
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
-  } else if (params.valid_badge_icon &&
-             !IsIconFetchComplete(IconUsage::kBadge)) {
-    CheckAndFetchBestIcon(GetIdealBadgeIconSizeInPx(),
-                          GetIdealBadgeIconSizeInPx(), IconPurpose::BADGE,
-                          IconUsage::kBadge);
+  } else if (params.valid_splash_icon &&
+             !IsIconFetchComplete(IconUsage::kSplash)) {
+    CheckAndFetchBestIcon(GetIdealSplashIconSizeInPx(),
+                          GetMinimumSplashIconSizeInPx(), IconPurpose::ANY,
+                          IconUsage::kSplash);
   } else {
     NOTREACHED();
   }

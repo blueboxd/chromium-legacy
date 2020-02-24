@@ -43,6 +43,9 @@ def _RunTests(input_api, output_api):
     }, {
         'file_name': 'make_runtime_features_utilities_unittest.py',
         'affected_list': [r'.*make_runtime_features_utilities.*']
+    }, {
+        'file_name': 'make_document_policy_features_unittest.py',
+        'affected_list': [r'.*make_document_policy_features.*']
     }]
     test_commands = []
     for test in tests:

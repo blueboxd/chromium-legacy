@@ -89,7 +89,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
     request->set_is_phishing(true);  // client thinks the URL is phishing.
     base::RunLoop run_loop;
     csd_service_->SendClientReportPhishingRequest(
-        request, false,
+        request, false, false,
         base::Bind(&ClientSideDetectionServiceTest::SendRequestDone,
                    base::Unretained(this), run_loop.QuitWhenIdleClosure()));
     phishing_url_ = phishing_url;

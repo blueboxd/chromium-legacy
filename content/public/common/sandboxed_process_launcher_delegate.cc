@@ -34,7 +34,9 @@ bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 service_manager::ZygoteHandle SandboxedProcessLauncherDelegate::GetZygote() {
-  return nullptr;
+  // Default to the sandboxed zygote. If a more lax sandbox is needed, then the
+  // child class should override this method and use the unsandboxed zygote.
+  return service_manager::GetGenericZygote();
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 

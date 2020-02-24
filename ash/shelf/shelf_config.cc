@@ -322,10 +322,7 @@ SkColor ShelfConfig::GetShelfWithAppListColor() const {
 }
 
 SkColor ShelfConfig::GetMaximizedShelfColor() const {
-  // Using 0xFF causes clipping on the overlay candidate content, which prevent
-  // HW overlay, probably due to a bug in compositor. Fix it and use 0xFF.
-  // crbug.com/901538
-  return SkColorSetA(GetDefaultShelfColor(), 254);  // ~100% opacity
+  return SkColorSetA(GetDefaultShelfColor(), 0xFF);  // 100% opacity
 }
 
 SkColor ShelfConfig::GetThemedColorFromWallpaper(SkColor base_color) const {

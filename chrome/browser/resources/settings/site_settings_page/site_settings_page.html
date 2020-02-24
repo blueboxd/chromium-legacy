@@ -1,37 +1,20 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="../icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../router.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/constants.html">
-<link rel="import" href="../site_settings/site_settings_behavior.html">
-<link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
-<link rel="import" href="recent_site_permissions.html">
 <link rel="import" href="../metrics_browser_proxy.html">
+<link rel="import" href="recent_site_permissions.html">
+<link rel="import" href="site_settings_list.html">
 
 <dom-module id="settings-site-settings-page">
   <template>
-    <style include="settings-shared">
-      cr-link-row {
-        --cr-icon-button-margin-start: 20px;
-      }
-
-      /* Add min-height to prevent shifting as sublabels load. */
-      .two-line {
-        --cr-section-min-height: var(--cr-section-two-line-min-height);
-      }
-
-      /* Remove border-top added by .hr for the 1st cr-link-row. */
-      .settings-box + cr-link-row {
-        border-top: none;
-      }
-    </style>
+    <style include="settings-shared"></style>
     <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
       <div class="settings-box first line-only">
         <h2 class="first">$i18n{siteSettingsAllSites}</h2>
@@ -50,18 +33,57 @@
     <cr-link-row data-route="SITE_SETTINGS_ALL" id="allSites"
         class$="[[getClassForSiteSettingsAllLink_(noRecentSitePermissions_)]]"
         label="$i18n{siteSettingsAllSitesDescription}"
-        on-click="onTapNavigate_"
+        on-click="onSiteSettingsAllClick_"
         role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
     <div class="settings-box first line-only">
       <h2>$i18n{siteSettingsPermissions}</h2>
     </div>
 
-    <template is="dom-repeat" items="[[categoryList_]]">
-      <cr-link-row class="hr two-line" data-route$="[[item.route]]"
-          id="[[item.id]]" label="[[i18n(item.label)]]"
-          on-click="onTapNavigate_" start-icon="[[item.icon]]"
-          sub-label="[[item.subLabel]]"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+      <settings-site-settings-list
+          category-list="[[lists_.all]]"
+          focus-config="[[focusConfig]]"
+          on-site-settings-item-click="onSiteSettingsItemClick_">
+      </settings-site-settings-list>
+    </template>
+
+    <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]">
+      <settings-site-settings-list
+          category-list="[[lists_.permissionsBasic]]"
+          focus-config="[[focusConfig]]"
+          on-site-settings-item-click="onSiteSettingsItemClick_">
+      </settings-site-settings-list>
+      <cr-expand-button class="settings-box"
+          expanded="{{permissionsExpanded_}}">
+        <div>$i18n{siteSettingsPermissionsMore}</div>
+      </cr-expand-button>
+      <iron-collapse opened="[[permissionsExpanded_]]">
+        <settings-site-settings-list
+            category-list="[[lists_.permissionsAdvanced]]"
+            focus-config="[[focusConfig]]"
+            on-site-settings-item-click="onSiteSettingsItemClick_">
+        </settings-site-settings-list>
+      </iron-collapse>
+
+      <div class="settings-box first line-only">
+        <h2>$i18n{siteSettingsContent}</h2>
+      </div>
+      <settings-site-settings-list
+          category-list="[[lists_.contentBasic]]"
+          focus-config="[[focusConfig]]"
+          on-site-settings-item-click="onSiteSettingsItemClick_">
+      </settings-site-settings-list>
+      <cr-expand-button class="settings-box"
+          expanded="{{contentExpanded_}}">
+        <div>$i18n{siteSettingsContentMore}</div>
+      </cr-expand-button>
+      <iron-collapse opened="[[contentExpanded_]]">
+        <settings-site-settings-list
+            category-list="[[lists_.contentAdvanced]]"
+            focus-config="[[focusConfig]]"
+            on-site-settings-item-click="onSiteSettingsItemClick_">
+        </settings-site-settings-list>
+      </iron-collapse>
     </template>
   </template>
   <script src="site_settings_page.js"></script>

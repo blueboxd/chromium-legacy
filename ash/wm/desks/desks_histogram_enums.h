@@ -13,7 +13,8 @@ namespace ash {
 enum class DesksCreationRemovalSource {
   kButton = 0,
   kKeyboard = 1,
-  kMaxValue = kKeyboard,
+  kDesksRestore = 2,
+  kMaxValue = kDesksRestore,
 };
 
 // These values are logged to UMA. Entries should not be renumbered and

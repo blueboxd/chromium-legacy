@@ -28,14 +28,14 @@
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
-#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +45,8 @@ namespace {
 
 using testing::_;
 using MountFailure = DriveFsHost::MountObserver::MountFailure;
+
+constexpr base::TimeDelta kTokenLifetime = base::TimeDelta::FromHours(1);
 
 class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
                     public mojom::SearchQuery {
@@ -95,9 +97,9 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
 class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
                                    public DriveFsHost::MountObserver {
  public:
-  TestingDriveFsHostDelegate(identity::mojom::IdentityService* identity_service,
+  TestingDriveFsHostDelegate(signin::IdentityManager* identity_manager,
                              const AccountId& account_id)
-      : identity_service_(identity_service),
+      : identity_manager_(identity_manager),
         account_id_(account_id),
         drive_notification_manager_(&invalidation_service_) {}
 
@@ -126,10 +128,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
       override {
     return nullptr;
   }
-  void BindIdentityAccessor(
-      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
-      override {
-    identity_service_->BindIdentityAccessor(std::move(receiver));
+  signin::IdentityManager* GetIdentityManager() override {
+    return identity_manager_;
   }
   const AccountId& GetAccountId() override { return account_id_; }
   std::string GetObfuscatedAccountId() override {
@@ -151,98 +151,13 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     return base::FilePath("/MyFiles");
   }
 
-  identity::mojom::IdentityService* const identity_service_;
+  signin::IdentityManager* const identity_manager_;
   const AccountId account_id_;
   mojo::PendingRemote<mojom::DriveFsBootstrap> pending_bootstrap_;
   invalidation::FakeInvalidationService invalidation_service_;
   drive::DriveNotificationManager drive_notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingDriveFsHostDelegate);
-};
-
-class MockIdentityAccessor {
- public:
-  explicit MockIdentityAccessor(const base::Clock* clock) : clock_(clock) {}
-  MOCK_METHOD3(
-      GetAccessToken,
-      std::pair<base::Optional<std::string>, GoogleServiceAuthError::State>(
-          const CoreAccountId& account_id,
-          const ::identity::ScopeSet& scopes,
-          const std::string& consumer_id));
-
-  void OnGetAccessToken(
-      const CoreAccountId& account_id,
-      const ::identity::ScopeSet& scopes,
-      const std::string& consumer_id,
-      identity::mojom::IdentityAccessor::GetAccessTokenCallback callback) {
-    if (pause_requests_) {
-      callbacks_.push_back(std::move(callback));
-      return;
-    }
-    auto result = GetAccessToken(account_id, scopes, consumer_id);
-    std::move(callback).Run(std::move(result.first),
-                            clock_->Now() + base::TimeDelta::FromHours(1),
-                            GoogleServiceAuthError(result.second));
-  }
-
-  std::vector<identity::mojom::IdentityAccessor::GetAccessTokenCallback>&
-  callbacks() {
-    return callbacks_;
-  }
-
-  void set_pause_requests(bool pause) { pause_requests_ = pause; }
-
-  const base::Clock* const clock_;
-  bool pause_requests_ = false;
-  std::vector<identity::mojom::IdentityAccessor::GetAccessTokenCallback>
-      callbacks_;
-  mojo::ReceiverSet<identity::mojom::IdentityAccessor>* receivers_ = nullptr;
-};
-
-class FakeIdentityService
-    : public identity::mojom::IdentityAccessorInterceptorForTesting,
-      public identity::mojom::IdentityService {
- public:
-  explicit FakeIdentityService(MockIdentityAccessor* mock) : mock_(mock) {
-    mock_->receivers_ = &receivers_;
-  }
-
-  ~FakeIdentityService() override { mock_->receivers_ = nullptr; }
-
- private:
-  // identity::mojom::IdentityService:
-  void BindIdentityAccessor(
-      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
-      override {
-    receivers_.Add(this, std::move(receiver));
-  }
-
-  // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
-  void GetUnconsentedPrimaryAccountWhenAvailable(
-      GetUnconsentedPrimaryAccountWhenAvailableCallback callback) override {
-    auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
-    std::move(callback).Run(CoreAccountId(account_id.GetUserEmail()),
-                            account_id.GetGaiaId(), account_id.GetUserEmail(),
-                            {});
-  }
-
-  void GetAccessToken(const CoreAccountId& account_id,
-                      const ::identity::ScopeSet& scopes,
-                      const std::string& consumer_id,
-                      GetAccessTokenCallback callback) override {
-    mock_->OnGetAccessToken(account_id, scopes, consumer_id,
-                            std::move(callback));
-  }
-
-  IdentityAccessor* GetForwardingInterface() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  MockIdentityAccessor* const mock_;
-  mojo::ReceiverSet<identity::mojom::IdentityAccessor> receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
 };
 
 class MockDriveFsHostObserver : public DriveFsHostObserver {
@@ -262,8 +177,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
   DriveFsHostTest()
       : network_connection_tracker_(
-            network::TestNetworkConnectionTracker::CreateInstance()),
-        mock_identity_accessor_(&clock_) {
+            network::TestNetworkConnectionTracker::CreateInstance()) {
     clock_.SetNow(base::Time::Now());
   }
 
@@ -274,10 +188,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
 
     disk_manager_ = std::make_unique<chromeos::disks::MockDiskMountManager>();
-    identity_service_ =
-        std::make_unique<FakeIdentityService>(&mock_identity_accessor_);
+    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+        "test@example.com");
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        identity_service_.get(), account_id_);
+        identity_test_env_.identity_manager(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     host_ = std::make_unique<DriveFsHost>(
@@ -377,21 +291,6 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     testing::Mock::VerifyAndClearExpectations(host_delegate_.get());
   }
 
-  void ExpectAccessToken(mojom::AccessTokenStatus expected_status,
-                         const std::string& expected_token) {
-    base::RunLoop run_loop;
-    auto quit_closure = run_loop.QuitClosure();
-    delegate_->GetAccessToken(
-        "client ID", "app ID", {"scope1", "scope2"},
-        base::BindLambdaForTesting(
-            [&](mojom::AccessTokenStatus status, const std::string& token) {
-              EXPECT_EQ(expected_status, status);
-              EXPECT_EQ(expected_token, token);
-              std::move(quit_closure).Run();
-            }));
-    run_loop.Run();
-  }
-
   void Init(mojom::DriveFsConfigurationPtr config,
             mojo::PendingReceiver<mojom::DriveFs> drive_fs_receiver,
             mojo::PendingRemote<mojom::DriveFsDelegate> delegate) override {
@@ -410,8 +309,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   base::SimpleTestClock clock_;
-  MockIdentityAccessor mock_identity_accessor_;
-  std::unique_ptr<FakeIdentityService> identity_service_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
@@ -522,7 +420,7 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   };
   for (auto& account : unsupported_accounts) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        identity_service_.get(), account);
+        identity_test_env_.identity_manager(), account);
     host_ = std::make_unique<DriveFsHost>(
         profile_path_, host_delegate_.get(), host_delegate_.get(),
         network_connection_tracker_.get(), &clock_, disk_manager_.get(),
@@ -535,25 +433,17 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
 TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
-  EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken(CoreAccountId("test@example.com"), _, "drivefs"))
-      .WillOnce(testing::DoAll(
-          testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
-          testing::Return(std::make_pair(
-              base::nullopt,
-              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS))));
-
   base::RunLoop run_loop;
   delegate_.set_disconnect_handler(run_loop.QuitClosure());
   delegate_->GetAccessToken(
       "client ID", "app ID", {"scope1", "scope2"},
       base::BindLambdaForTesting([](mojom::AccessTokenStatus status,
                                     const std::string& token) { FAIL(); }));
+  host_->Unmount();
   run_loop.Run();
   EXPECT_FALSE(host_->IsMounted());
 
-  // Wait for the response to reach the remote if it's still open.
-  mock_identity_accessor_.receivers_->FlushForTesting();
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 }
 
 ACTION_P(CloneStruct, output) {
@@ -713,14 +603,21 @@ TEST_F(DriveFsHostTest, RemoveDriveNotificationObserver) {
 TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
-  EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken(CoreAccountId("test@example.com"), _, "drivefs"))
-      .WillOnce(testing::Return(
-          std::make_pair("auth token", GoogleServiceAuthError::NONE)))
-      .WillOnce(testing::Return(
-          std::make_pair("auth token 2", GoogleServiceAuthError::NONE)));
+  // Request an access token.
+  delegate_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting(
+          [&](mojom::AccessTokenStatus status, const std::string& token) {
+            EXPECT_EQ(mojom::AccessTokenStatus::kSuccess, status);
+            EXPECT_EQ("auth token", token);
+          }));
+  delegate_.FlushForTesting();
+  EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
 
-  ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
+  // Fulfill the request.
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "auth token", clock_.Now() + kTokenLifetime);
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 
   base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
@@ -730,15 +627,28 @@ TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
 
   // Second mount attempt should reuse already available token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
   EXPECT_EQ("auth token", init_access_token_.value_or(""));
 
-  // But if it asks for token it goes straight to identity.
-  ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token 2");
+  // But if it asks for token again it goes to identity manager.
+  delegate_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting(
+          [&](mojom::AccessTokenStatus status, const std::string& token) {
+            EXPECT_EQ(mojom::AccessTokenStatus::kSuccess, status);
+            EXPECT_EQ("auth token 2", token);
+          }));
+  delegate_.FlushForTesting();
+  EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
+
+  // Fulfill the request with a different token.
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "auth token 2", clock_.Now() + kTokenLifetime);
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 }
 
 TEST_F(DriveFsHostTest, Remount_RequestInflight) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
-  mock_identity_accessor_.set_pause_requests(true);
 
   delegate_->GetAccessToken(
       "client ID", "app ID", {"scope1", "scope2"},
@@ -750,22 +660,20 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
   ASSERT_NO_FATAL_FAILURE(DoUnmount());
+  EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
 
   // Now the response is ready.
-  ASSERT_EQ(1u, mock_identity_accessor_.callbacks().size());
-  std::move(mock_identity_accessor_.callbacks().front())
-      .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
-           GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  mock_identity_accessor_.receivers_->FlushForTesting();
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "auth token", clock_.Now() + kTokenLifetime);
 
   // Second mount will reuse previous token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
   EXPECT_EQ("auth token", init_access_token_.value_or(""));
 }
 
 TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
-  mock_identity_accessor_.set_pause_requests(true);
 
   delegate_->GetAccessToken(
       "client ID", "app ID", {"scope1", "scope2"},
@@ -777,20 +685,28 @@ TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
   ASSERT_NO_FATAL_FAILURE(DoUnmount());
+  EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
 
   // Second mount will reuse previous token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
   EXPECT_FALSE(init_access_token_);
+  EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
 
   // Now the response is ready.
-  ASSERT_EQ(1u, mock_identity_accessor_.callbacks().size());
-  std::move(mock_identity_accessor_.callbacks().front())
-      .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
-           GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  mock_identity_accessor_.receivers_->FlushForTesting();
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "auth token", clock_.Now() + kTokenLifetime);
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 
   // A new request will reuse the cached token.
-  ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");
+  delegate_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting(
+          [&](mojom::AccessTokenStatus status, const std::string& token) {
+            EXPECT_EQ(mojom::AccessTokenStatus::kSuccess, status);
+            EXPECT_EQ("auth token", token);
+          }));
+  delegate_.FlushForTesting();
+  EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 }
 
 }  // namespace

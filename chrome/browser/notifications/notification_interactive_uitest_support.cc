@@ -17,49 +17,11 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/permission_request_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-
-namespace {
-
-// Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver
-    : public permissions::PermissionRequestManager::Observer {
- public:
-  explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
-            web_contents)),
-        request_shown_(false),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    request_manager_->AddObserver(this);
-  }
-  ~PermissionRequestObserver() override {
-    // Safe to remove twice if it happens.
-    request_manager_->RemoveObserver(this);
-  }
-
-  void Wait() { message_loop_runner_->Run(); }
-
-  bool request_shown() { return request_shown_; }
-
- private:
-  // PermissionRequestManager::Observer
-  void OnBubbleAdded() override {
-    request_shown_ = true;
-    request_manager_->RemoveObserver(this);
-    message_loop_runner_->Quit();
-  }
-
-  permissions::PermissionRequestManager* request_manager_;
-  bool request_shown_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
-};
-
-}  // namespace
 
 class MessageCenterChangeObserver::Impl
     : public message_center::MessageCenterObserver {
@@ -236,7 +198,7 @@ bool NotificationsTest::RequestAndDismissPermission(Browser* browser) {
 bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
   content::WebContents* web_contents = GetActiveWebContents(browser);
   ui_test_utils::NavigateToURL(browser, GetTestPageURL());
-  PermissionRequestObserver observer(web_contents);
+  permissions::PermissionRequestObserver observer(web_contents);
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents, "requestPermissionAndRespond();", &result));

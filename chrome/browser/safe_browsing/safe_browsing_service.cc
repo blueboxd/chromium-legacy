@@ -381,25 +381,6 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveBinaryUploadService(profile);
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &SafeBrowsingService::OnProfileWillBeDestroyedOnIOThread, this,
-          std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
-              GetURLLoaderFactory())));
-}
-
-void SafeBrowsingService::OnProfileWillBeDestroyedOnIOThread(
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        url_loader_factory) {
-  // If safe browsing is already turned off, there is no work to do on IO
-  // thread.
-  if (!enabled_) {
-    return;
-  }
-  services_delegate_->OnProfileWillBeDestroyedOnIOThread(
-      network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)));
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {

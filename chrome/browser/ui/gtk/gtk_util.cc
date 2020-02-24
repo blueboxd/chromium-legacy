@@ -309,8 +309,10 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   enum {
     CSS_TYPE,
     CSS_NAME,
+    CSS_OBJECT_NAME,
     CSS_CLASS,
     CSS_PSEUDOCLASS,
+    CSS_NONE,
   } part_type = CSS_TYPE;
   static const struct {
     const char* name;
@@ -328,7 +330,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
       {"checked", GTK_STATE_FLAG_CHECKED},
   };
   GtkStateFlags state = GTK_STATE_FLAG_NORMAL;
-  base::StringTokenizer t(css_node, ".:#");
+  base::StringTokenizer t(css_node, ".:#()");
   t.set_options(base::StringTokenizer::RETURN_DELIMS);
   while (t.GetNext()) {
     if (t.token_is_delim()) {
@@ -337,8 +339,14 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
         gtk_widget_path_append_type(path, G_TYPE_NONE);
       }
       switch (*t.token_begin()) {
-        case '#':
+        case '(':
           part_type = CSS_NAME;
+          break;
+        case ')':
+          part_type = CSS_NONE;
+          break;
+        case '#':
+          part_type = CSS_OBJECT_NAME;
           break;
         case '.':
           part_type = CSS_CLASS;
@@ -355,14 +363,15 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           reinterpret_cast<GtkSetObjectName>(dlsym(
               GetGtkSharedLibrary(), "gtk_widget_path_iter_set_object_name"));
       switch (part_type) {
-        case CSS_NAME: {
-          if (GtkVersionCheck(3, 20)) {
-            _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
-          } else {
-            gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
-          }
+        case CSS_NAME:
+          gtk_widget_path_iter_set_name(path, -1, t.token().c_str());
           break;
-        }
+        case CSS_OBJECT_NAME:
+          if (GtkVersionCheck(3, 20))
+            _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
+          else
+            gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
+          break;
         case CSS_TYPE: {
           GType type = g_type_from_name(t.token().c_str());
           DCHECK(type);
@@ -373,10 +382,9 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           }
           break;
         }
-        case CSS_CLASS: {
+        case CSS_CLASS:
           gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
           break;
-        }
         case CSS_PSEUDOCLASS: {
           GtkStateFlags state_flag = GTK_STATE_FLAG_NORMAL;
           for (const auto& pseudo_class_entry : pseudo_classes) {
@@ -388,6 +396,8 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
           state = static_cast<GtkStateFlags>(state | state_flag);
           break;
         }
+        case CSS_NONE:
+          NOTREACHED();
       }
     }
   }

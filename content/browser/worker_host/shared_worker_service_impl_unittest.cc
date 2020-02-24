@@ -1280,6 +1280,8 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) override {
     EXPECT_EQ(1u, running_workers_.erase(shared_worker_id));
   }
+  void OnFinalResponseURLDetermined(SharedWorkerId shared_worker_id,
+                                    const GURL& url) override {}
   void OnClientAdded(
       SharedWorkerId shared_worker_id,
       GlobalFrameRoutingId client_render_frame_host_id) override {

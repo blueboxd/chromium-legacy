@@ -20,20 +20,9 @@
 namespace safe_browsing {
 
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
-  if (!real_time_lookup_enabled_)
-    return false;
-
-  if (!RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-          resource_type_))
-    return false;
-
-  auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-  if (!rt_lookup_service || !rt_lookup_service->CanCheckUrl(url))
-    return false;
-
-  bool in_backoff = rt_lookup_service->IsInBackoffMode();
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.Backoff.State", in_backoff);
-  return !in_backoff;
+  return real_time_lookup_enabled_ &&
+         RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+             resource_type_);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(

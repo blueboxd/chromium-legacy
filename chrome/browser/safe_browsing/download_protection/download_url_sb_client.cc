@@ -45,6 +45,8 @@ DownloadUrlSBClient::DownloadUrlSBClient(
   extended_reporting_level_ =
       profile ? GetExtendedReportingLevel(*profile->GetPrefs())
               : SBER_LEVEL_OFF;
+  is_enhanced_protection_ =
+      profile ? IsEnhancedProtectionEnabled(*profile->GetPrefs()) : false;
 }
 
 // Implements DownloadItem::Observer.
@@ -124,6 +126,7 @@ void DownloadUrlSBClient::ReportMalware(SBThreatType threat_type) {
   hit_report.threat_source = database_manager_->GetThreatSource();
   hit_report.post_data = post_data;
   hit_report.extended_reporting_level = extended_reporting_level_;
+  hit_report.is_enhanced_protection = is_enhanced_protection_;
   hit_report.is_metrics_reporting_active =
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 

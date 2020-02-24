@@ -87,6 +87,11 @@ namespace autotestPrivate {
     FullscreenSearch
   };
 
+  enum OverviewStateType {
+   Shown,
+   Hidden
+  };
+
   enum MouseButton {
     Left,
     Middle,
@@ -839,6 +844,13 @@ namespace autotestPrivate {
     // |launcherState|: the target launcher state.
     // |callback|: called when the operation has completed.
     static void waitForLauncherState(LauncherStateType launcherState,
+                                     VoidCallback callback);
+
+    // Wait until overview has transitioned to |overviewState|, if it is not in
+    // that state.
+    // |overviewState|: the target overview state.
+    // |callback|: called when overview has reached |overviewState|.
+    static void waitForOverviewState(OverviewStateType overviewState,
                                      VoidCallback callback);
 
     // Creates a new desk if the maximum number of desks has not been reached.

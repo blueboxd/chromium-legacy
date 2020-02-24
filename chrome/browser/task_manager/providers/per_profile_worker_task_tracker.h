@@ -47,6 +47,9 @@ class PerProfileWorkerTaskTracker
   void OnBeforeWorkerTerminated(
       content::DedicatedWorkerId dedicated_worker_id,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
+  void OnFinalResponseURLDetermined(
+      content::DedicatedWorkerId dedicated_worker_id,
+      const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
   void OnWorkerStarted(content::SharedWorkerId shared_worker_id,
@@ -54,6 +57,8 @@ class PerProfileWorkerTaskTracker
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerTerminated(
       content::SharedWorkerId shared_worker_id) override;
+  void OnFinalResponseURLDetermined(content::SharedWorkerId shared_worker_id,
+                                    const GURL& url) override;
   void OnClientAdded(
       content::SharedWorkerId shared_worker_id,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
@@ -78,14 +83,26 @@ class PerProfileWorkerTaskTracker
       const WorkerId& worker_id,
       Task::Type task_type,
       int worker_process_id,
-      const GURL& script_url,
       base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks);
 
   // Deletes an existing WorkerTask from |out_worker_tasks| and notifies
   // |worker_task_provider_| about the deletion of the task.
+  //
+  // Note that this function is templated because each worker type uses a
+  // different type as its ID.
   template <typename WorkerId>
   void DeleteWorkerTask(
       const WorkerId& worker_id,
+      base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks);
+
+  // Sets the script URL of an existing WorkerTask.
+  //
+  // Note that this function is templated because each worker type uses a
+  // different type as its ID.
+  template <typename WorkerId>
+  void SetWorkerTaskScriptUrl(
+      const WorkerId& worker_id,
+      const GURL& script_url,
       base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks);
 
   // The provider that gets notified when a WorkerTask is created/deleted.

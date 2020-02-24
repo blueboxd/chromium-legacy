@@ -46,13 +46,19 @@ class ASH_EXPORT OverviewTestApi {
   OverviewTestApi();
   ~OverviewTestApi();
 
-  using DoneCallback = base::OnceCallback<void(bool)>;
+  using DoneCallback = base::OnceCallback<void(bool animation_succeeded)>;
 
-  // Set the overview mode state to |start|. Calls |done_callback| when it is
-  // done. |done_callback| will be called with a boolean if the animation
-  // is completed or canceled. If the overview mode state is already same to
-  // |start|, it does nothing but invokes |done_callback| with true.
+  // Set the overview mode state to |start|. |done_callback| will be invoked
+  // synchronously if the animation is already complete, and asynchronously if
+  // the overview state does not match |start|.
   void SetOverviewMode(bool start, DoneCallback done_callback);
+
+  // Runs the callback when overview is finished animating to |expected_state|.
+  // Passes true synchronously through |callback| if |expected_state| was
+  // already set. Otherwise |callback| is passed whether the animation succeeded
+  // asynchronously when the animation completes.
+  void WaitForOverviewState(OverviewAnimationState expected_state,
+                            DoneCallback callback);
 
   // Returns overview info for the current overview items if overview is
   // started. Otherwise, returns base::nullopt;

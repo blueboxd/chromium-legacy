@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -134,22 +135,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
 }
 
 #if defined(OS_CHROMEOS)
-// Test that we don't crash when uninstalling an extension from a bookmark app
+// Test that we don't crash when uninstalling an extension from a web app
 // window in Ash. Context: crbug.com/825554
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
-                       BookmarkAppWindowAshCrash) {
+                       WebAppWindowAshCrash) {
   scoped_refptr<const extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()
       ->AddExtension(extension.get());
 
-  WebApplicationInfo info;
-  info.app_url = GURL("https://test.com/");
-  const extensions::Extension* bookmark_app =
-      extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                       info);
-  Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
-      browser()->profile(), bookmark_app);
+  const GURL app_url = GURL("https://test.com/");
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url;
+  web_app_info->open_as_window = true;
+  web_app::AppId app_id =
+      web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
+  Browser* app_browser =
+      web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
 
   std::unique_ptr<extensions::ExtensionUninstallDialog> dialog;
   {

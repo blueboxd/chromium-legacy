@@ -104,6 +104,14 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   // Completes the two-phase initialization of IOSChromeMetricsServiceClient.
   void Initialize();
 
+  // Registers providers to the MetricsService. These provide data from
+  // alternate sources.
+  void RegisterMetricsServiceProviders();
+
+  // Registers providers to the UkmService. These provide data from alternate
+  // sources.
+  void RegisterUKMProviders();
+
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
   void CollectFinalHistograms();

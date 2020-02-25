@@ -292,8 +292,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
       ax::mojom::MoveDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;
 
-  // Return a vector of all the descendants of this delegate's node.
-  virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
+  // Return a vector of all the descendants of this delegate's node. This method
+  // is only meaningful for Windows UIA.
+  virtual const std::vector<gfx::NativeViewAccessible> GetUIADescendants()
       const = 0;
 
   // Return a string representing the language code.

@@ -16,7 +16,6 @@ extern const base::Feature kAdjustWebApkInstallationSpace;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
 extern const base::Feature kAndroidBlockIntentNonSafelistedHeaders;
-extern const base::Feature kAndroidNightModeCCT;
 extern const base::Feature kAndroidNightModeTabReparenting;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kAndroidPayIntegrationV2;

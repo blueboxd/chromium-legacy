@@ -310,11 +310,14 @@ const base::UnguessableToken& HTMLPortalElement::GetToken() const {
   return portal_->GetToken();
 }
 
-HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
+Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
 
   if (!CheckPortalsEnabledOrWarn())
+    return result;
+
+  if (!SubframeLoadingDisabler::CanLoadFrame(*this))
     return result;
 
   switch (GetGuestContentsEligibility()) {

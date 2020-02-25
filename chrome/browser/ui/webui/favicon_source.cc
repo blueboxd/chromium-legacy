@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -21,7 +21,11 @@
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/manifest.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
@@ -81,6 +85,7 @@ void FaviconSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,
@@ -102,6 +107,18 @@ void FaviconSource::StartDataRequest(
   if (!page_url.is_valid() && !icon_url.is_valid()) {
     SendDefaultResponse(std::move(callback));
     return;
+  }
+
+  if (url_format_ == chrome::FaviconUrlFormat::kFaviconLegacy) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile_)
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(GetUnsafeRequestOrigin(wc_getter));
+    if (extension) {
+      base::UmaHistogramEnumeration("Extensions.FaviconResourceRequested",
+                                    extension->GetType(),
+                                    extensions::Manifest::NUM_LOAD_TYPES);
+    }
   }
 
   int desired_size_in_pixel =

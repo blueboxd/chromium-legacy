@@ -172,7 +172,7 @@ class FilterGroupTest : public testing::Test {
     EXPECT_CALL(*post_processor_, SetContentType(kDefaultContentType));
     EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(kDefaultPlayoutChannel));
     filter_group_ = std::make_unique<FilterGroup>(
-        kNumInputChannels, "test_filter", std::move(post_processor));
+        kNumInputChannels, "test_filter", std::move(post_processor), nullptr);
     input_ = std::make_unique<MixerInput>(&source_, filter_group_.get());
     AudioPostProcessor2::Config config;
     config.output_sample_rate = kInputSampleRate;

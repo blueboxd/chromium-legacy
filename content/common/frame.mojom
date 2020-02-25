@@ -336,6 +336,11 @@ struct CreateNewWindowReply {
   // |devtools_frame_token| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
   mojo_base.mojom.UnguessableToken devtools_main_frame_token;
+
+  // Used by devtools instrumentation to tell devtools agent in the renderer
+  // that it should pause created window and wait for an explicit resume command
+  // from the client.
+  bool wait_for_debugger;
 };
 
 // An opaque handle that keeps alive the associated render process even after

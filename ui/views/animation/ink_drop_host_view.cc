@@ -186,7 +186,7 @@ bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
       HighlightPathGenerator::GetRoundRectForView(this);
   if (!clipping_data)
     return false;
-  ink_drop_layer->SetClipRect(gfx::ToNearestRect(clipping_data->bounds));
+  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->bounds));
   ink_drop_layer->SetRoundedCornerRadius(
       gfx::RoundedCornersF(clipping_data->corner_radius));
   ink_drop_layer->SetIsFastRoundedCorner(true);

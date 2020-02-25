@@ -9,8 +9,10 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -43,7 +45,8 @@ class FilterGroup {
   // |pipeline| - processing pipeline.
   FilterGroup(int num_channels,
               const std::string& name,
-              std::unique_ptr<PostProcessingPipeline> pipeline);
+              std::unique_ptr<PostProcessingPipeline> pipeline,
+              const base::Value* volume_limits);
 
   ~FilterGroup();
 
@@ -118,6 +121,8 @@ class FilterGroup {
   void AddStreamType(const std::string& stream_type);
 
  private:
+  using VolumeLimitsMap = base::flat_map<std::string, std::pair<float, float>>;
+
   struct GroupInput {
     GroupInput(FilterGroup* group,
                std::unique_ptr<InterleavedChannelMixer> channel_mixer);
@@ -128,10 +133,16 @@ class FilterGroup {
     std::unique_ptr<InterleavedChannelMixer> channel_mixer;
   };
 
+  void ParseVolumeLimits(const base::Value* volume_limits);
   void ResizeBuffers();
 
   const int num_channels_;
   const std::string name_;
+
+  VolumeLimitsMap volume_limits_;
+  float default_volume_min_ = 0.0f;
+  float default_volume_max_ = 1.0f;
+
   std::vector<GroupInput> mixed_inputs_;
   std::vector<std::string> stream_types_;
   base::flat_set<MixerInput*> active_inputs_;

@@ -44,7 +44,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -119,6 +118,14 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   void SetParentLayer(ui::Layer* layer);
 
+  // Adds the login shelf view as a child of this view.
+  // Returns a pointer to the login shelf view passed in as an argument.
+  LoginShelfView* AddLoginShelfView(
+      std::unique_ptr<LoginShelfView> login_shelf_view) {
+    login_shelf_view_ = AddChildView(std::move(login_shelf_view));
+    return login_shelf_view_;
+  }
+
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
   }
@@ -147,6 +154,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // views::AccessiblePaneView:
   views::View* GetDefaultFocusableChild() override;
+  void Layout() override;
 
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
@@ -174,6 +182,11 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   bool hide_background_for_transitions_ = false;
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
+
+  // Pointer to the login shelf view - visible only when the session is
+  // inactive. The view is owned by this view's hierarchy.
+  LoginShelfView* login_shelf_view_ = nullptr;
+
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::LayerOwner opaque_background_;
@@ -211,7 +224,6 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
 
   // |animating_background_| will be made visible during hotseat animations.
@@ -281,7 +293,7 @@ bool ShelfWidget::DelegateView::CanActivate() const {
   // This widget only contains anything interesting to activate in login/lock
   // screen mode. Only allow activation from the focus cycler, not from mouse
   // events, etc.
-  return shelf_widget_->login_shelf_view_->GetVisible() && focus_cycler_ &&
+  return login_shelf_view_->GetVisible() && focus_cycler_ &&
          focus_cycler_->widget_activating() == GetWidget();
 }
 
@@ -375,15 +387,8 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
     drag_handle_->SetVisible(false);
     return;
   }
-  drag_handle_->SetVisible(true);
 
-  const int x = (shelf_widget_->GetClientAreaBoundsInScreen().width() -
-                 kDragHandleSize.width()) /
-                2;
-  const int y =
-      (ShelfConfig::Get()->in_app_shelf_size() - kDragHandleSize.height()) / 2;
-  drag_handle_->SetBounds(x, y, kDragHandleSize.width(),
-                          kDragHandleSize.height());
+  drag_handle_->SetVisible(true);
 }
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
@@ -407,13 +412,21 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
   if (!IsUsingViewsShelf())
     return GetFirstFocusableChild();
 
-  if (shelf_widget_->login_shelf_view_->GetVisible()) {
-    return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
+  if (login_shelf_view_->GetVisible()) {
+    return FindFirstOrLastFocusableChild(login_shelf_view_,
                                          default_last_focusable_child_);
   }
   // If the login shelf view is not visible, there is nothing else to focus
   // in this view.
   return nullptr;
+}
+
+void ShelfWidget::DelegateView::Layout() {
+  login_shelf_view_->SetBoundsRect(GetLocalBounds());
+
+  gfx::Rect drag_handle_bounds = GetLocalBounds();
+  drag_handle_bounds.ClampToCenteredSize(kDragHandleSize);
+  drag_handle_->SetBoundsRect(drag_handle_bounds);
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
@@ -457,8 +470,8 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   // This should only get called when the login shelf is visible, i.e. not
   // during an active session. In an active session, hit test rects should be
   // calculated higher up in the class hierarchy by |EasyResizeWindowTargeter|.
-  // When in OOBE or locked/login screen, let events pass through empty parts
-  // of the shelf.
+  // When in OOBE or locked/login screen, let events pass through empty parts of
+  // the shelf.
   DCHECK(login_shelf_view_->GetVisible());
   gfx::Rect login_view_button_bounds =
       login_shelf_view_->ConvertRectToWidget(login_shelf_view_->GetMirroredRect(
@@ -528,8 +541,9 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
   DCHECK(shelf_container);
 
   login_shelf_view_ =
-      new LoginShelfView(RootWindowController::ForWindow(shelf_container)
-                             ->lock_screen_action_background_controller());
+      delegate_view_->AddLoginShelfView(std::make_unique<LoginShelfView>(
+          RootWindowController::ForWindow(shelf_container)
+              ->lock_screen_action_background_controller()));
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -543,10 +557,8 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 
   // The shelf should not take focus when initially shown.
   set_focus_on_creation(false);
-  SetContentsView(delegate_view_);
   delegate_view_->SetParentLayer(GetLayer());
-
-  GetContentsView()->AddChildView(login_shelf_view_);
+  SetContentsView(delegate_view_);
 
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
@@ -854,14 +866,7 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     hotseat_transition_animator_->SetAnimationsEnabledInSessionState(
         show_hotseat);
     login_shelf_view()->SetVisible(!show_hotseat);
-    delegate_view_->SetLayoutManager(
-        show_hotseat ? nullptr : std::make_unique<views::FillLayout>());
-
-    // When FillLayout is no longer the layout manager, ensure the correct size
-    // for the drag handle is set.
-    if (show_hotseat)
-      delegate_view_->UpdateDragHandle();
-
+    delegate_view_->UpdateDragHandle();
     ShowIfHidden();
   }
   shelf_layout_manager_->SetDimmed(false);

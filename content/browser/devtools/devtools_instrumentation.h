@@ -123,6 +123,8 @@ void OnResponseReceivedExtraInfo(
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandle* navigation_handle);
 
+bool ShouldWaitForDebuggerInWindowOpen();
+
 // Asks any interested agents to handle the given certificate error. Returns
 // |true| if the error was handled, |false| otherwise.
 using CertErrorCallback =

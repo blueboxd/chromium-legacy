@@ -320,11 +320,12 @@ void TestAssistantService::NotifyEntryIntoAssistantUi(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void TestAssistantService::StopAlarmTimerRinging() {
+void TestAssistantService::AddTimeToTimer(const std::string& id,
+                                          base::TimeDelta duration) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void TestAssistantService::CreateTimer(base::TimeDelta duration) {
+void TestAssistantService::StopAlarmTimerRinging() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

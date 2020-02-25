@@ -58,6 +58,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   void UpdatePortals();
+  bool ShouldThrottlePopups() const;
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;

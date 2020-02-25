@@ -1,6 +1,6 @@
 {
-  "name": "Help App",
-  "short_name": "Help App",
+  "name": "$i18nRaw{name}",
+  "short_name": "$i18nRaw{name}",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#ffffff",

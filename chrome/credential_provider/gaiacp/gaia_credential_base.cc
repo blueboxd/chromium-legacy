@@ -254,8 +254,11 @@ HRESULT GetUserAndDomainInfo(
   // Login via existing AD account mapping when the device is domain joined if
   // the AD account mapping is available.
   if (is_ad_user) {
-    // The format for ad_upn custom attribute is domainName/userName.
-    const base::char16 kSlashDelimiter[] = STRING16_LITERAL("/");
+    // The format for ad_upn custom attribute is domainName\\userName.
+    // Note that admin configures it as "domainName\userName" but admin
+    // sdk stores it with another escape backslash character in it leading
+    // multiple backslashes.
+    const base::char16 kSlashDelimiter[] = STRING16_LITERAL("\\");
     std::vector<base::string16> tokens =
         base::SplitString(base::UTF8ToUTF16(sam_account_name), kSlashDelimiter,
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

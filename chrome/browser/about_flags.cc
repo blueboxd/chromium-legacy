@@ -1764,10 +1764,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webassembly-baseline", flag_descriptions::kEnableWasmBaselineName,
      flag_descriptions::kEnableWasmBaselineDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyBaseline)},
-    {"enable-webassembly-code-cache",
-     flag_descriptions::kEnableWasmCodeCacheName,
-     flag_descriptions::kEnableWasmCodeCacheDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kWasmCodeCache)},
     {"enable-webassembly-code-gc", flag_descriptions::kEnableWasmCodeGCName,
      flag_descriptions::kEnableWasmCodeGCDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyCodeGC)},
@@ -4947,6 +4943,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"password-change-support", flag_descriptions::kPasswordChangeName,
      flag_descriptions::kPasswordChangeDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordChange)},
+
+#if defined(OS_ANDROID)
+    {"context-menu-performance-info",
+     flag_descriptions::kContextMenuPerformanceInfoName,
+     flag_descriptions::kContextMenuPerformanceInfoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuPerformanceInfo)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

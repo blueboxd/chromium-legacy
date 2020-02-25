@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;

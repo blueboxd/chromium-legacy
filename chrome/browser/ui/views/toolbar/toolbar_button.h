@@ -124,8 +124,10 @@ class ToolbarButton : public views::LabelButton,
       SkColor dark_extreme,
       SkColor light_extreme);
 
-  // Returns the default border color used for toolbar buttons (when having a
-  // highlight text, see SetHighlight()).
+  // Returns the default background and border color used for toolbar buttons
+  // (when having a highlight text, see SetHighlight()).
+  static SkColor GetDefaultBackgroundColor(
+      const ui::ThemeProvider* theme_provider);
   static SkColor GetDefaultBorderColor(views::View* host_view);
 
  protected:

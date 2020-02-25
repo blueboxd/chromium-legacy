@@ -355,8 +355,7 @@ String OffscreenCanvasRenderingContext2D::font() const {
     return kDefaultFont;
 
   StringBuilder serialized_font;
-  const FontDescription& font_description =
-      GetState().GetFont().GetFontDescription();
+  const FontDescription& font_description = GetState().GetFontDescription();
 
   if (font_description.Style() == ItalicSlopeValue())
     serialized_font.Append("italic ");
@@ -606,7 +605,7 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {
   if (!GetState().HasRealizedFont())
     setFont(GetState().UnparsedFont());
-  return GetState().GetFont();
+  return ModifiableState().GetFont();
 }
 
 bool OffscreenCanvasRenderingContext2D::IsCanvas2DBufferValid() const {

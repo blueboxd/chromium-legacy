@@ -805,7 +805,9 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
 
 // crbug.com/997987. Disabled on MSAN since they time out. crbug.com/1004327
 // crbug.com/1054935: EndToEnd is flaky on ChromeOS.
-#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+// crbug.com/1055853: EndToEnd is flaky on Linux Chromium OS ASan LSan
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS) || \
+    defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd

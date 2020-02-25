@@ -368,7 +368,7 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
     ASSERT_TRUE(gcpw_path.empty());
   } else if (is_gem_features_enabled) {
     ASSERT_EQ(gcpw_path,
-              base::StringPrintf("embedded/setup/windows?device_id=%s",
+              base::StringPrintf("embedded/reauth/windows?device_id=%s",
                                  device_id.c_str()));
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
   } else {

@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.autofill.prefeditor;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;

@@ -25,16 +25,19 @@ const char kLinearizePipelineKey[] = "linearize";
 const char kProcessorsKey[] = "processors";
 const char kStreamsKey[] = "streams";
 const char kNumInputChannelsKey[] = "num_input_channels";
+const char kVolumeLimitsKey[] = "volume_limits";
 
 }  // namespace
 
 StreamPipelineDescriptor::StreamPipelineDescriptor(
     const base::Value* pipeline_in,
     const base::Value* stream_types_in,
-    const base::Optional<int> num_input_channels_in)
+    const base::Optional<int> num_input_channels_in,
+    const base::Value* volume_limits_in)
     : pipeline(pipeline_in),
       stream_types(stream_types_in),
-      num_input_channels(std::move(num_input_channels_in)) {}
+      num_input_channels(std::move(num_input_channels_in)),
+      volume_limits(volume_limits_in) {}
 
 StreamPipelineDescriptor::~StreamPipelineDescriptor() = default;
 
@@ -42,7 +45,8 @@ StreamPipelineDescriptor::StreamPipelineDescriptor(
     const StreamPipelineDescriptor& other)
     : StreamPipelineDescriptor(other.pipeline,
                                other.stream_types,
-                               other.num_input_channels) {}
+                               other.num_input_channels,
+                               other.volume_limits) {}
 
 PostProcessingPipelineParser::PostProcessingPipelineParser(
     std::unique_ptr<base::DictionaryValue> config_dict)
@@ -104,8 +108,11 @@ PostProcessingPipelineParser::GetStreamPipelines() {
     auto num_input_channels =
         pipeline_description_dict.FindIntKey(kNumInputChannelsKey);
 
+    const base::Value* volume_limits = pipeline_description_dict.FindKeyOfType(
+        kVolumeLimitsKey, base::Value::Type::DICTIONARY);
+
     descriptors.emplace_back(processors_list, streams_list,
-                             std::move(num_input_channels));
+                             std::move(num_input_channels), volume_limits);
   }
   return descriptors;
 }
@@ -125,7 +132,7 @@ StreamPipelineDescriptor PostProcessingPipelineParser::GetPipelineByKey(
       !postprocessor_config_->GetDictionary(key, &stream_dict)) {
     LOG(WARNING) << "No post-processor description found for \"" << key
                  << "\" in " << file_path_ << ". Using passthrough.";
-    return StreamPipelineDescriptor(nullptr, nullptr, base::nullopt);
+    return StreamPipelineDescriptor(nullptr, nullptr, base::nullopt, nullptr);
   }
   const base::Value* processors_list =
       stream_dict->FindKeyOfType(kProcessorsKey, base::Value::Type::LIST);
@@ -134,9 +141,12 @@ StreamPipelineDescriptor PostProcessingPipelineParser::GetPipelineByKey(
   const base::Value* streams_list =
       stream_dict->FindKeyOfType(kStreamsKey, base::Value::Type::LIST);
 
-  return StreamPipelineDescriptor(
-      processors_list, streams_list,
-      stream_dict->FindIntKey(kNumInputChannelsKey));
+  const base::Value* volume_limits = stream_dict->FindKeyOfType(
+      kVolumeLimitsKey, base::Value::Type::DICTIONARY);
+
+  return StreamPipelineDescriptor(processors_list, streams_list,
+                                  stream_dict->FindIntKey(kNumInputChannelsKey),
+                                  volume_limits);
 }
 
 base::FilePath PostProcessingPipelineParser::GetFilePath() const {

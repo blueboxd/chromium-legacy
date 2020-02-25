@@ -411,9 +411,6 @@ void ResourceLoader::Trace(Visitor* visitor) {
 bool ResourceLoader::ShouldFetchCodeCache() {
   if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
     return false;
-  if (resource_->GetType() == ResourceType::kRaw &&
-      !RuntimeEnabledFeatures::WasmCodeCacheEnabled())
-    return false;
 
   const ResourceRequest& request = resource_->GetResourceRequest();
   if (!request.Url().ProtocolIsInHTTPFamily())

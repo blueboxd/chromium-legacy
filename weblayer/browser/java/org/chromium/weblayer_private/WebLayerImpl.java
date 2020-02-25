@@ -12,12 +12,13 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.FileProvider;
 import android.util.AndroidRuntimeException;
 import android.util.SparseArray;
 import android.webkit.ValueCallback;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
+
+import androidx.core.content.FileProvider;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.BundleUtils;

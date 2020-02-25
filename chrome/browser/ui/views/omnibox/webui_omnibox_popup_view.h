@@ -8,11 +8,15 @@
 #include "base/macros.h"
 #include "ui/views/controls/webview/webview.h"
 
+class OmniboxPopupHandler;
+
 // A WebView to display suggestions in the Views autocomplete popup.
 class WebUIOmniboxPopupView : public views::WebView {
  public:
   explicit WebUIOmniboxPopupView(content::BrowserContext* browser_context);
   ~WebUIOmniboxPopupView() override = default;
+
+  OmniboxPopupHandler* GetWebUIHandler();
 
   DISALLOW_COPY_AND_ASSIGN(WebUIOmniboxPopupView);
 };

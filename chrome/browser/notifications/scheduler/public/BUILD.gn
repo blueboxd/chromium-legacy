@@ -34,6 +34,8 @@ source_set("public") {
     "schedule_params.h",
     "schedule_service_utils.cc",
     "schedule_service_utils.h",
+    "throttle_config.cc",
+    "throttle_config.h",
     "user_action_handler.h",
   ]
 

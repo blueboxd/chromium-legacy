@@ -234,6 +234,17 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
   return result;
 }
 
+bool ShouldWaitForDebuggerInWindowOpen() {
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    for (auto* target_handler :
+         protocol::TargetHandler::ForAgentHost(browser_agent_host)) {
+      if (target_handler->ShouldThrottlePopups())
+        return true;
+    }
+  }
+  return false;
+}
+
 void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
                                   mojom::BeginNavigationParams* begin_params,
                                   bool* report_raw_headers) {

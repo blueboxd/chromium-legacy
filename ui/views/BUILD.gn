@@ -773,13 +773,6 @@ jumbo_component("views") {
           "widget/desktop_aura/x11_topmost_window_finder.cc",
           "widget/desktop_aura/x11_whole_screen_move_loop.cc",
         ]
-        if (use_atk) {
-          sources += [
-            "accessibility/view_ax_platform_node_delegate_auralinux.cc",
-            "accessibility/view_ax_platform_node_delegate_auralinux.h",
-          ]
-          configs += [ "//build/config/linux/atk" ]
-        }
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
@@ -816,6 +809,13 @@ jumbo_component("views") {
         sources +=
             [ "widget/desktop_aura/desktop_window_tree_host_platform.cc" ]
         deps += [ "//ui/platform_window/extensions" ]
+      }
+      if (use_atk) {
+        sources += [
+          "accessibility/view_ax_platform_node_delegate_auralinux.cc",
+          "accessibility/view_ax_platform_node_delegate_auralinux.h",
+        ]
+        configs += [ "//build/config/linux/atk" ]
       }
     }
   }

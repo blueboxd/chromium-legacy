@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
-import android.support.v4.text.TextUtilsCompat;
-import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -27,6 +25,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.text.TextUtilsCompat;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;

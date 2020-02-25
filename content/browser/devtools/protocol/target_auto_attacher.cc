@@ -200,7 +200,7 @@ void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
   auto_attached_hosts_.erase(base::WrapRefCounted(host));
 }
 
-bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
+bool TargetAutoAttacher::ShouldThrottleFramesNavigation() const {
   return auto_attach_;
 }
 

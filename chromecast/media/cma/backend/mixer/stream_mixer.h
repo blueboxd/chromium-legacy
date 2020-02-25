@@ -146,8 +146,6 @@ class StreamMixer {
 
   // Contains volume control information for an audio content type.
   struct VolumeInfo {
-    float GetEffectiveVolume();
-
     float volume = 0.0f;
     float limit = 1.0f;
     bool muted = false;

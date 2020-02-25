@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/noise.h"
+#include "device/fido/cable/v2_handshake.h"
 #include "device/fido/fido_device.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
@@ -97,14 +98,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableV2HandshakeHandler
 
  private:
   FidoCableDevice* const cable_device_;
-  Noise noise_;
-  std::array<uint8_t, 16> eid_;
-  std::array<uint8_t, 32> psk_;
-
-  base::Optional<std::array<uint8_t, 65>> peer_identity_;
-  bssl::UniquePtr<EC_KEY> ephemeral_key_;
   base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
       pairing_callback_;
+  cablev2::HandshakeInitiator handshake_;
 };
 
 }  // namespace device

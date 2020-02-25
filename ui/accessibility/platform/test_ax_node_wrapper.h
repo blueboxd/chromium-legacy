@@ -134,7 +134,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool IsOrderedSet() const override;
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
-  const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+  const std::vector<gfx::NativeViewAccessible> GetUIADescendants()
+      const override;
   gfx::RectF GetLocation() const;
   int InternalChildCount() const;
   TestAXNodeWrapper* InternalGetChild(int index) const;
@@ -154,8 +155,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
                                     int32_t focus_offset);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
-  void Descendants(const AXNode* node,
-                   std::vector<gfx::NativeViewAccessible>* descendants) const;
+  void UIADescendants(
+      const AXNode* node,
+      std::vector<gfx::NativeViewAccessible>* descendants) const;
+  static bool ShouldHideChildrenForUIA(const AXNode* node);
 
   // Return the bounds of inline text in this node's coordinate system (which is
   // relative to its container node specified in AXRelativeBounds).

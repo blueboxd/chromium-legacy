@@ -152,8 +152,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       mojom::AssistantFeedbackPtr assistant_feedback) override;
   void NotifyEntryIntoAssistantUi(
       mojom::AssistantEntryPoint entry_point) override;
+  void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
   void StopAlarmTimerRinging() override;
-  void CreateTimer(base::TimeDelta duration) override;
 
   // AssistantActionObserver overrides:
   void OnScheduleWait(int id, int time_ms) override;

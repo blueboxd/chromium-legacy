@@ -59,6 +59,8 @@ component("fido") {
     "cable/fido_cable_handshake_handler.h",
     "cable/noise.cc",
     "cable/noise.h",
+    "cable/v2_handshake.cc",
+    "cable/v2_handshake.h",
     "credential_management.cc",
     "credential_management.h",
     "credential_management_handler.cc",

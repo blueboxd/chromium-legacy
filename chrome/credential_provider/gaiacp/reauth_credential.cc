@@ -18,7 +18,7 @@ namespace credential_provider {
 
 // TODO(rakeshsoma): Change the path from "setup" to "reauth" once
 // identity team has the URL ready for consumption.
-constexpr char kGaiaReauthPath[] = "embedded/setup/windows";
+constexpr char kGaiaReauthPath[] = "embedded/reauth/windows";
 
 CReauthCredential::CReauthCredential() = default;
 

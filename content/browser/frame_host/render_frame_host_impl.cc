@@ -4696,6 +4696,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->GetLocalRenderWidgetHost()->GetScreenInfo(
       &visual_properties.screen_info);
 
+  bool wait_for_debugger =
+      devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       main_frame->GetRenderViewHost()->GetRoutingID(),
       main_frame->GetRoutingID(),
@@ -4703,7 +4705,8 @@ void RenderFrameHostImpl::CreateNewWindow(
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(browser_interface_broker)),
-      cloned_namespace->id(), main_frame->GetDevToolsFrameToken());
+      cloned_namespace->id(), main_frame->GetDevToolsFrameToken(),
+      wait_for_debugger);
 
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));

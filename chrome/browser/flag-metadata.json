@@ -516,6 +516,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "context-menu-performance-info",
+    "owners": [ "jds" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold", "lens-chrome" ],
     "expiry_milestone": 88

@@ -289,12 +289,16 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ANGLE_framebuffer_multisample");
   ext.b_GL_ANGLE_instanced_arrays =
       gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays");
+  ext.b_GL_ANGLE_memory_object_fuchsia =
+      gfx::HasExtension(extensions, "GL_ANGLE_memory_object_fuchsia");
   ext.b_GL_ANGLE_multi_draw =
       gfx::HasExtension(extensions, "GL_ANGLE_multi_draw");
   ext.b_GL_ANGLE_request_extension =
       gfx::HasExtension(extensions, "GL_ANGLE_request_extension");
   ext.b_GL_ANGLE_robust_client_memory =
       gfx::HasExtension(extensions, "GL_ANGLE_robust_client_memory");
+  ext.b_GL_ANGLE_semaphore_fuchsia =
+      gfx::HasExtension(extensions, "GL_ANGLE_semaphore_fuchsia");
   ext.b_GL_ANGLE_texture_external_update =
       gfx::HasExtension(extensions, "GL_ANGLE_texture_external_update");
   ext.b_GL_ANGLE_translated_shader_source =
@@ -1829,9 +1833,21 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glImportMemoryFdEXT"));
   }
 
+  if (ext.b_GL_ANGLE_memory_object_fuchsia) {
+    fn.glImportMemoryZirconHandleANGLEFn =
+        reinterpret_cast<glImportMemoryZirconHandleANGLEProc>(
+            GetGLProcAddress("glImportMemoryZirconHandleANGLE"));
+  }
+
   if (ext.b_GL_EXT_semaphore_fd) {
     fn.glImportSemaphoreFdEXTFn = reinterpret_cast<glImportSemaphoreFdEXTProc>(
         GetGLProcAddress("glImportSemaphoreFdEXT"));
+  }
+
+  if (ext.b_GL_ANGLE_semaphore_fuchsia) {
+    fn.glImportSemaphoreZirconHandleANGLEFn =
+        reinterpret_cast<glImportSemaphoreZirconHandleANGLEProc>(
+            GetGLProcAddress("glImportSemaphoreZirconHandleANGLE"));
   }
 
   if (ext.b_GL_EXT_debug_marker) {
@@ -4683,10 +4699,25 @@ void GLApiBase::glImportMemoryFdEXTFn(GLuint memory,
   driver_->fn.glImportMemoryFdEXTFn(memory, size, handleType, fd);
 }
 
+void GLApiBase::glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                                  GLuint64 size,
+                                                  GLenum handleType,
+                                                  GLuint handle) {
+  driver_->fn.glImportMemoryZirconHandleANGLEFn(memory, size, handleType,
+                                                handle);
+}
+
 void GLApiBase::glImportSemaphoreFdEXTFn(GLuint semaphore,
                                          GLenum handleType,
                                          GLint fd) {
   driver_->fn.glImportSemaphoreFdEXTFn(semaphore, handleType, fd);
+}
+
+void GLApiBase::glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                                     GLenum handleType,
+                                                     GLuint handle) {
+  driver_->fn.glImportSemaphoreZirconHandleANGLEFn(semaphore, handleType,
+                                                   handle);
 }
 
 void GLApiBase::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
@@ -8273,11 +8304,28 @@ void TraceGLApi::glImportMemoryFdEXTFn(GLuint memory,
   gl_api_->glImportMemoryFdEXTFn(memory, size, handleType, fd);
 }
 
+void TraceGLApi::glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                                   GLuint64 size,
+                                                   GLenum handleType,
+                                                   GLuint handle) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glImportMemoryZirconHandleANGLE")
+  gl_api_->glImportMemoryZirconHandleANGLEFn(memory, size, handleType, handle);
+}
+
 void TraceGLApi::glImportSemaphoreFdEXTFn(GLuint semaphore,
                                           GLenum handleType,
                                           GLint fd) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glImportSemaphoreFdEXT")
   gl_api_->glImportSemaphoreFdEXTFn(semaphore, handleType, fd);
+}
+
+void TraceGLApi::glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                                      GLenum handleType,
+                                                      GLuint handle) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glImportSemaphoreZirconHandleANGLE")
+  gl_api_->glImportSemaphoreZirconHandleANGLEFn(semaphore, handleType, handle);
 }
 
 void TraceGLApi::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
@@ -12769,6 +12817,17 @@ void LogGLApi::glImportMemoryFdEXTFn(GLuint memory,
   gl_api_->glImportMemoryFdEXTFn(memory, size, handleType, fd);
 }
 
+void LogGLApi::glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                                 GLuint64 size,
+                                                 GLenum handleType,
+                                                 GLuint handle) {
+  GL_SERVICE_LOG("glImportMemoryZirconHandleANGLE"
+                 << "(" << memory << ", " << size << ", "
+                 << GLEnums::GetStringEnum(handleType) << ", " << handle
+                 << ")");
+  gl_api_->glImportMemoryZirconHandleANGLEFn(memory, size, handleType, handle);
+}
+
 void LogGLApi::glImportSemaphoreFdEXTFn(GLuint semaphore,
                                         GLenum handleType,
                                         GLint fd) {
@@ -12776,6 +12835,16 @@ void LogGLApi::glImportSemaphoreFdEXTFn(GLuint semaphore,
                  << "(" << semaphore << ", "
                  << GLEnums::GetStringEnum(handleType) << ", " << fd << ")");
   gl_api_->glImportSemaphoreFdEXTFn(semaphore, handleType, fd);
+}
+
+void LogGLApi::glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                                    GLenum handleType,
+                                                    GLuint handle) {
+  GL_SERVICE_LOG("glImportSemaphoreZirconHandleANGLE"
+                 << "(" << semaphore << ", "
+                 << GLEnums::GetStringEnum(handleType) << ", " << handle
+                 << ")");
+  gl_api_->glImportSemaphoreZirconHandleANGLEFn(semaphore, handleType, handle);
 }
 
 void LogGLApi::glInsertEventMarkerEXTFn(GLsizei length, const char* marker) {
@@ -16791,10 +16860,23 @@ void NoContextGLApi::glImportMemoryFdEXTFn(GLuint memory,
   NoContextHelper("glImportMemoryFdEXT");
 }
 
+void NoContextGLApi::glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                                       GLuint64 size,
+                                                       GLenum handleType,
+                                                       GLuint handle) {
+  NoContextHelper("glImportMemoryZirconHandleANGLE");
+}
+
 void NoContextGLApi::glImportSemaphoreFdEXTFn(GLuint semaphore,
                                               GLenum handleType,
                                               GLint fd) {
   NoContextHelper("glImportSemaphoreFdEXT");
+}
+
+void NoContextGLApi::glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                                          GLenum handleType,
+                                                          GLuint handle) {
+  NoContextHelper("glImportSemaphoreZirconHandleANGLE");
 }
 
 void NoContextGLApi::glInsertEventMarkerEXTFn(GLsizei length,

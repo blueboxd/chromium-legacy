@@ -865,26 +865,49 @@ TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
   return GetOrCreate(tree_, node_->children()[size_t{index}]);
 }
 
-// Recursive helper function for GetDescendants. Aggregates all of the
+// Recursive helper function for GetUIADescendants. Aggregates all of the
 // descendants for a given node within the descendants vector.
-void TestAXNodeWrapper::Descendants(
+void TestAXNodeWrapper::UIADescendants(
     const AXNode* node,
     std::vector<gfx::NativeViewAccessible>* descendants) const {
+  if (ShouldHideChildrenForUIA(node))
+    return;
+
   for (auto it = node->UnignoredChildrenBegin();
        it != node->UnignoredChildrenEnd(); ++it) {
     descendants->emplace_back(ax_platform_node()
                                   ->GetDelegate()
                                   ->GetFromNodeID(it->id())
                                   ->GetNativeViewAccessible());
-    Descendants(it.get(), descendants);
+    UIADescendants(it.get(), descendants);
   }
 }
 
-const std::vector<gfx::NativeViewAccessible> TestAXNodeWrapper::GetDescendants()
-    const {
+const std::vector<gfx::NativeViewAccessible>
+TestAXNodeWrapper::GetUIADescendants() const {
   std::vector<gfx::NativeViewAccessible> descendants;
-  Descendants(node_, &descendants);
+  UIADescendants(node_, &descendants);
   return descendants;
+}
+
+// static
+// Needs to stay in sync with AXPlatformNodeWin::ShouldHideChildrenForUIA.
+bool TestAXNodeWrapper::ShouldHideChildrenForUIA(const AXNode* node) {
+  if (!node)
+    return false;
+
+  auto role = node->data().role;
+
+  if (ui::HasPresentationalChildren(role))
+    return true;
+
+  switch (role) {
+    case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kTextField:
+      return true;
+    default:
+      return false;
+  }
 }
 
 gfx::RectF TestAXNodeWrapper::GetInlineTextRect(const int start_offset,

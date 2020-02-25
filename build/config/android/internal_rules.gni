@@ -2783,11 +2783,13 @@ if (enable_java_templates) {
         "--generated-dir=$_rebased_generated_dir",
         "--jar-path=$_rebased_javac_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
-        "--java-version=1.8",
         "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
         "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
       ]
+      if (invoker.supports_android) {
+        args += [ "--java-version=1.8" ]
+      }
       if (use_java_goma) {
         args += [ "--gomacc-path=$goma_dir/gomacc" ]
       }
@@ -3333,6 +3335,7 @@ if (enable_java_templates) {
           }
           srcjar_deps = _srcjar_deps
           chromium_code = _chromium_code
+          supports_android = _supports_android
           requires_android = _requires_android
           deps = _accumulated_deps + _accumulated_public_deps
 

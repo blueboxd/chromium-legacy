@@ -1414,19 +1414,11 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
 }
 
 const std::vector<gfx::NativeViewAccessible>
-BrowserAccessibility::GetDescendants() const {
-  std::vector<gfx::NativeViewAccessible> descendants;
-  if (!IsIgnored() && PlatformChildCount() > 0) {
-    BrowserAccessibility* next_sibling_node = PlatformGetNextSibling();
-    BrowserAccessibility* next_descendant_node =
-        BrowserAccessibilityManager::NextInTreeOrder(this);
-    while (next_descendant_node && next_descendant_node != next_sibling_node) {
-      descendants.emplace_back(next_descendant_node->GetNativeViewAccessible());
-      next_descendant_node =
-          BrowserAccessibilityManager::NextInTreeOrder(next_descendant_node);
-    }
-  }
-  return descendants;
+BrowserAccessibility::GetUIADescendants() const {
+  // This method is only called on Windows. Other platforms should not call it.
+  // The BrowserAccessibilityWin subclass overrides this method.
+  NOTREACHED();
+  return {};
 }
 
 std::string BrowserAccessibility::GetLanguage() const {

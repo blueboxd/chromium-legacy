@@ -6,7 +6,6 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageButton;
@@ -14,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.annotations.JNINamespace;

@@ -23,6 +23,7 @@
 #include "crypto/sha2.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/noise.h"
+#include "device/fido/cable/v2_handshake.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -189,170 +190,31 @@ FidoCableV2HandshakeHandler::FidoCableV2HandshakeHandler(
     base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
         pairing_callback)
     : cable_device_(cable_device),
-      eid_(fido_parsing_utils::Materialize(eid)),
-      pairing_callback_(std::move(pairing_callback)) {
-  HKDF(psk_.data(), psk_.size(), EVP_sha256(), psk_gen_key.data(),
-       psk_gen_key.size(), /*salt=*/nonce.data(), nonce.size(),
-       /*info=*/nullptr, 0);
-  if (peer_identity) {
-    peer_identity_ = fido_parsing_utils::Materialize(*peer_identity);
-  }
-}
+      pairing_callback_(std::move(pairing_callback)),
+      handshake_(psk_gen_key, nonce, eid, peer_identity) {}
 
-FidoCableV2HandshakeHandler::~FidoCableV2HandshakeHandler() {}
-
-namespace {
-
-template <size_t N>
-bool CopyBytestring(std::array<uint8_t, N>* out,
-                    const cbor::Value::MapValue& map,
-                    int key) {
-  const auto it = map.find(cbor::Value(key));
-  if (it == map.end() || !it->second.is_bytestring()) {
-    return false;
-  }
-  const std::vector<uint8_t> bytestring = it->second.GetBytestring();
-  return fido_parsing_utils::ExtractArray(bytestring, /*pos=*/0, out);
-}
-
-}  // namespace
+FidoCableV2HandshakeHandler::~FidoCableV2HandshakeHandler() = default;
 
 void FidoCableV2HandshakeHandler::InitiateCableHandshake(
     FidoDevice::DeviceCallback callback) {
-  noise_.Init(peer_identity_ ? Noise::HandshakeType::kNKpsk0
-                             : Noise::HandshakeType::kNNpsk0);
-
-  if (peer_identity_) {
-    static const uint8_t kPrologue[] = "caBLE handshake";
-    noise_.MixHash(kPrologue);
-  } else {
-    static const uint8_t kPrologue[] = "caBLE QR code handshake";
-    noise_.MixHash(kPrologue);
-  }
-
-  noise_.MixKeyAndHash(psk_);
-  ephemeral_key_.reset(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
-  const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
-  CHECK(EC_KEY_generate_key(ephemeral_key_.get()));
-  uint8_t ephemeral_key_public_bytes[kP256PointSize];
-  CHECK_EQ(sizeof(ephemeral_key_public_bytes),
-           EC_POINT_point2oct(
-               group, EC_KEY_get0_public_key(ephemeral_key_.get()),
-               POINT_CONVERSION_UNCOMPRESSED, ephemeral_key_public_bytes,
-               sizeof(ephemeral_key_public_bytes), /*ctx=*/nullptr));
-  noise_.MixHash(ephemeral_key_public_bytes);
-  noise_.MixKey(ephemeral_key_public_bytes);
-
-  if (peer_identity_) {
-    // If we know the identity of the peer from a previous interaction, NKpsk0
-    // is performed to ensure that other browsers, which may also know the PSK,
-    // cannot impersonate the authenticator.
-    bssl::UniquePtr<EC_POINT> peer_identity_point(EC_POINT_new(group));
-    uint8_t es_key[32];
-    if (!EC_POINT_oct2point(group, peer_identity_point.get(),
-                            peer_identity_->data(), peer_identity_->size(),
-                            /*ctx=*/nullptr) ||
-        !ECDH_compute_key(es_key, sizeof(es_key), peer_identity_point.get(),
-                          ephemeral_key_.get(), /*kdf=*/nullptr)) {
-      FIDO_LOG(DEBUG) << "Dropping handshake because peer identity is invalid";
-      return;
-    }
-    noise_.MixKey(es_key);
-  }
-
-  std::vector<uint8_t> ciphertext =
-      noise_.EncryptAndHash(base::span<const uint8_t>());
-
-  std::vector<uint8_t> handshake_message;
-  handshake_message.reserve(eid_.size() + sizeof(ephemeral_key_public_bytes) +
-                            ciphertext.size());
-  handshake_message.insert(handshake_message.end(), eid_.begin(), eid_.end());
-  handshake_message.insert(
-      handshake_message.end(), ephemeral_key_public_bytes,
-      ephemeral_key_public_bytes + sizeof(ephemeral_key_public_bytes));
-  handshake_message.insert(handshake_message.end(), ciphertext.begin(),
-                           ciphertext.end());
-
-  cable_device_->SendHandshakeMessage(std::move(handshake_message),
-                                      std::move(callback));
+  std::vector<uint8_t> message = handshake_.BuildInitialMessage();
+  cable_device_->SendHandshakeMessage(std::move(message), std::move(callback));
 }
 
 bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
     base::span<const uint8_t> response) {
-  if (response.size() < kP256PointSize) {
-    return false;
-  }
-  auto peer_point_bytes = response.subspan(0, kP256PointSize);
-  auto ciphertext = response.subspan(kP256PointSize);
-
-  bssl::UniquePtr<EC_POINT> peer_point(
-      EC_POINT_new(EC_KEY_get0_group(ephemeral_key_.get())));
-  uint8_t shared_key[32];
-  const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
-  if (!EC_POINT_oct2point(group, peer_point.get(), peer_point_bytes.data(),
-                          peer_point_bytes.size(), /*ctx=*/nullptr) ||
-      !ECDH_compute_key(shared_key, sizeof(shared_key), peer_point.get(),
-                        ephemeral_key_.get(), /*kdf=*/nullptr)) {
+  base::Optional<std::pair<std::unique_ptr<cablev2::Crypter>,
+                           base::Optional<std::unique_ptr<CableDiscoveryData>>>>
+      result = handshake_.ProcessResponse(response);
+  if (!result) {
     return false;
   }
 
-  noise_.MixHash(peer_point_bytes);
-  noise_.MixKey(peer_point_bytes);
-  noise_.MixKey(shared_key);
-
-  auto plaintext = noise_.DecryptAndHash(ciphertext);
-  if (!plaintext || plaintext->empty() != peer_identity_.has_value()) {
-    FIDO_LOG(DEBUG) << "Invalid caBLE handshake message";
-    return false;
+  if (result->second.has_value()) {
+    pairing_callback_.Run(std::move(result->second.value()));
   }
 
-  if (!peer_identity_) {
-    // Handshakes without a peer identity (i.e. NNpsk0 handshakes setup from a
-    // QR code) send a padded message in the reply. This message can,
-    // optionally, contain CBOR-encoded, long-term pairing information.
-    const size_t padding_length = (*plaintext)[plaintext->size() - 1];
-    if (padding_length + 1 > plaintext->size()) {
-      FIDO_LOG(DEBUG) << "Invalid padding in caBLE handshake message";
-      return false;
-    }
-    plaintext->resize(plaintext->size() - padding_length - 1);
-
-    if (!plaintext->empty()) {
-      base::Optional<cbor::Value> pairing = cbor::Reader::Read(*plaintext);
-      if (!pairing || !pairing->is_map()) {
-        FIDO_LOG(DEBUG) << "CBOR parse failure in caBLE handshake message";
-        return false;
-      }
-
-      auto future_discovery = std::make_unique<CableDiscoveryData>();
-      future_discovery->version = CableDiscoveryData::Version::V2;
-      future_discovery->v2.emplace();
-      future_discovery->v2->peer_identity.emplace();
-
-      const cbor::Value::MapValue& pairing_map(pairing->GetMap());
-      const auto name_it = pairing_map.find(cbor::Value(4));
-      if (!CopyBytestring(&future_discovery->v2->eid_gen_key, pairing_map, 1) ||
-          !CopyBytestring(&future_discovery->v2->psk_gen_key, pairing_map, 2) ||
-          !CopyBytestring(&future_discovery->v2->peer_identity.value(),
-                          pairing_map, 3) ||
-          name_it == pairing_map.end() || !name_it->second.is_string() ||
-          !EC_POINT_oct2point(group, peer_point.get(),
-                              future_discovery->v2->peer_identity->data(),
-                              future_discovery->v2->peer_identity->size(),
-                              /*ctx=*/nullptr)) {
-        FIDO_LOG(DEBUG) << "CBOR structure error in caBLE handshake message";
-        return false;
-      }
-
-      future_discovery->v2->peer_name = name_it->second.GetString();
-      pairing_callback_.Run(std::move(future_discovery));
-    }
-  }
-
-  std::array<uint8_t, 32> read_key, write_key;
-  std::tie(write_key, read_key) = noise_.traffic_keys();
-  cable_device_->SetV2EncryptionData(read_key, write_key);
-
+  cable_device_->SetV2EncryptionData(std::move(result->first));
   return true;
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -39,7 +40,7 @@ Scheduler::Scheduler(
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
       compositor_timing_history_(std::move(compositor_timing_history)),
-      begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
+      begin_impl_frame_tracker_(FROM_HERE),
       state_machine_(settings) {
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);

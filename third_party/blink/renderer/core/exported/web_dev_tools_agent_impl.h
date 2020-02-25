@@ -90,6 +90,9 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool ScreencastEnabled();
   String NavigationInitiatorInfo(LocalFrame*);
   String EvaluateInOverlayForTesting(const String& script);
+  void DidShowNewWindow();
+
+  void WaitForDebuggerWhenShown();
 
  private:
   friend class ClientMessageLoopAdapter;
@@ -125,6 +128,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   Member<InspectorResourceContainer> resource_container_;
   Member<Node> node_to_inspect_;
   bool include_view_agents_;
+  bool wait_for_debugger_when_shown_ = false;
 };
 
 }  // namespace blink

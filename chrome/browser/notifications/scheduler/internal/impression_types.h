@@ -66,10 +66,6 @@ struct Impression {
   // Custom data associated with a notification. Send back to the client when
   // the user interacts with the notification.
   CustomData custom_data;
-
-  // Custom suppresion duration in days. It will override |suppression_duration|
-  // in config.
-  base::Optional<base::TimeDelta> custom_suppression_duration;
 };
 
 // Contains details about supression and recovery after suppression expired.

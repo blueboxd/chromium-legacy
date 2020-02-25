@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -69,7 +70,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, ExperimentalPermissionsFail) {
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FaviconPermission) {
+  base::HistogramTester tester;
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
+  tester.ExpectBucketCount("Extensions.FaviconResourceRequested",
+                           Manifest::TYPE_EXTENSION, 1);
 }
 
 // Test functions and APIs that are always allowed (even if you ask for no

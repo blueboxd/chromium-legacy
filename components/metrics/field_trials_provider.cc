@@ -4,6 +4,9 @@
 
 #include "components/metrics/field_trials_provider.h"
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/synthetic_trial_registry.h"

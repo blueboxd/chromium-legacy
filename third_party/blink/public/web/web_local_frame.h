@@ -719,6 +719,12 @@ class WebLocalFrame : public WebFrame {
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer) = 0;
 
+  // DevTools -----------------------------------------------------------------
+
+  // Instructs devtools to pause loading of the frame as soon as it's shown
+  // until explicit command from the devtools client.
+  virtual void WaitForDebuggerWhenShown() = 0;
+
   // Testing ------------------------------------------------------------------
 
   // Prints the frame into the canvas, with page boundaries drawn as one pixel

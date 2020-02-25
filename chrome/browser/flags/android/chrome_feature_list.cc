@@ -97,7 +97,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidBlockIntentNonSafelistedHeaders,
-    &kAndroidNightModeCCT,
     &kAndroidNightModeTabReparenting,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
@@ -270,9 +269,6 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 const base::Feature kAndroidBlockIntentNonSafelistedHeaders{
     "AndroidBlockIntentNonSafelistedHeaders",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAndroidNightModeCCT{"AndroidNightModeCCT",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightModeTabReparenting{
     "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};

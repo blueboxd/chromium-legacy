@@ -72,6 +72,24 @@ namespace content {
     EXPECT_STREQ(text, actual_text.Get());                           \
   }
 
+#define EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants,                 \
+                                                expected_descendants)        \
+  {                                                                          \
+    size_t count = descendants.size();                                       \
+    EXPECT_EQ(count, expected_descendants.size());                           \
+    for (size_t i = 0; i < count; ++i) {                                     \
+      EXPECT_EQ(ui::AXPlatformNode::FromNativeViewAccessible(descendants[i]) \
+                    ->GetDelegate()                                          \
+                    ->GetData()                                              \
+                    .ToString(),                                             \
+                ui::AXPlatformNode::FromNativeViewAccessible(                \
+                    expected_descendants[i])                                 \
+                    ->GetDelegate()                                          \
+                    ->GetData()                                              \
+                    .ToString());                                            \
+    }                                                                        \
+  }
+
 // BrowserAccessibilityWinTest ------------------------------------------------
 
 class BrowserAccessibilityWinTest : public testing::Test {
@@ -803,6 +821,141 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   EXPECT_EQ(2, hyperlink_index);
   EXPECT_EQ(S_OK, root_obj->get_hyperlinkIndex(32, &hyperlink_index));
   EXPECT_EQ(3, hyperlink_index);
+
+  manager.reset();
+}
+
+TEST_F(BrowserAccessibilityWinTest, TestGetUIADescendants) {
+  // Set up ax tree with the following structure:
+  //
+  // root___________________________________________________
+  // |               |       |                              |
+  // para1____       text3   para2____ (hidden)             button
+  // |       |               |       |                      |
+  // text1   text2           text4   text5 (visible)        image
+  ui::AXNodeData text1;
+  text1.id = 111;
+  text1.role = ax::mojom::Role::kStaticText;
+  text1.SetName("One two three.");
+
+  ui::AXNodeData text2;
+  text2.id = 112;
+  text2.role = ax::mojom::Role::kStaticText;
+  text2.SetName("Two three four.");
+
+  ui::AXNodeData text3;
+  text3.id = 113;
+  text3.role = ax::mojom::Role::kStaticText;
+  text3.SetName("Three four five.");
+
+  ui::AXNodeData text4;
+  text4.id = 114;
+  text4.role = ax::mojom::Role::kStaticText;
+  text4.SetName("four five six.");
+  text4.AddState(ax::mojom::State::kIgnored);
+
+  ui::AXNodeData text5;
+  text5.id = 115;
+  text5.role = ax::mojom::Role::kStaticText;
+  text5.SetName("five six seven.");
+
+  ui::AXNodeData image;
+  image.id = 116;
+  image.role = ax::mojom::Role::kImage;
+
+  ui::AXNodeData para1;
+  para1.id = 11;
+  para1.role = ax::mojom::Role::kParagraph;
+  para1.child_ids.push_back(text1.id);
+  para1.child_ids.push_back(text2.id);
+
+  ui::AXNodeData para2;
+  para2.id = 12;
+  para2.role = ax::mojom::Role::kParagraph;
+  para2.child_ids.push_back(text4.id);
+  para2.child_ids.push_back(text5.id);
+  para2.AddState(ax::mojom::State::kIgnored);
+
+  ui::AXNodeData button;
+  button.id = 13;
+  button.role = ax::mojom::Role::kButton;
+  button.child_ids.push_back(image.id);
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids.push_back(para1.id);
+  root.child_ids.push_back(text3.id);
+  root.child_ids.push_back(para2.id);
+  root.child_ids.push_back(button.id);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, para1, text1, text2, text3, para2, text4,
+                           text5, button, image),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_obj = manager->GetRoot();
+  BrowserAccessibility* para_obj = root_obj->PlatformGetChild(0);
+  BrowserAccessibility* text1_obj = manager->GetFromID(111);
+  BrowserAccessibility* text2_obj = manager->GetFromID(112);
+  BrowserAccessibility* text3_obj = manager->GetFromID(113);
+  BrowserAccessibility* para2_obj = manager->GetFromID(12);
+  BrowserAccessibility* text4_obj = manager->GetFromID(114);
+  BrowserAccessibility* text5_obj = root_obj->PlatformGetChild(2);
+  BrowserAccessibility* button_obj = manager->GetFromID(13);
+  BrowserAccessibility* image_obj = manager->GetFromID(116);
+
+  // Leaf nodes should have no children.
+  std::vector<gfx::NativeViewAccessible> descendants =
+      text1_obj->GetUIADescendants();
+  std::vector<gfx::NativeViewAccessible> expected_descendants = {};
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = text2_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = text3_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = text4_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = text5_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = para2_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  descendants = image_obj->GetUIADescendants();
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  // Verify that para1 has two children (text1 and tex2).
+  descendants = para_obj->GetUIADescendants();
+  expected_descendants = {text1_obj->GetNativeViewAccessible(),
+                          text2_obj->GetNativeViewAccessible()};
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  // Verify that the button hides its child.
+  descendants = button_obj->GetUIADescendants();
+  expected_descendants = {};
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
+
+  // Calling GetChildNodeIds on the root should encompass the entire
+  // right and left subtrees (para1, text1, text2, and text3).
+  // para2 and its subtree should be ignored, except for text5. The image should
+  // be ignored, but not the button.
+  LOG(INFO) << "HERE";
+
+  descendants = root_obj->GetUIADescendants();
+  expected_descendants = {para_obj->GetNativeViewAccessible(),
+                          text1_obj->GetNativeViewAccessible(),
+                          text2_obj->GetNativeViewAccessible(),
+                          text3_obj->GetNativeViewAccessible(),
+                          text5_obj->GetNativeViewAccessible(),
+                          button_obj->GetNativeViewAccessible()};
+  EXPECT_NATIVE_VIEW_ACCESSIBLE_VECTOR_EQ(descendants, expected_descendants);
 
   manager.reset();
 }

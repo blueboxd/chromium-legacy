@@ -768,7 +768,7 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
-  // TODO(rkaplow): Support synthetic trials for UKM.
+  // TODO(crbug.com/754877): Support synthetic trials for UKM.
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<variations::FieldTrialsProvider>(nullptr,
                                                         kUKMFieldTrialSuffix));

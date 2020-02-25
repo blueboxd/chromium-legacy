@@ -33,6 +33,7 @@
 #include <limits>
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -65,6 +66,18 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
 }
 
 LayoutFlexibleBox::~LayoutFlexibleBox() = default;
+
+bool LayoutFlexibleBox::IsChildAllowed(LayoutObject* object,
+                                       const ComputedStyle& style) const {
+  const auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (UNLIKELY(select && select->UsesMenuList())) {
+    // For a size=1 <select>, we only render the active option label through the
+    // InnerElement. We do not allow adding layout objects for options and
+    // optgroups.
+    return object->GetNode() == &select->InnerElement();
+  }
+  return LayoutBlock::IsChildAllowed(object, style);
+}
 
 void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,

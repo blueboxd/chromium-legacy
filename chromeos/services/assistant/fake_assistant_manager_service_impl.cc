@@ -116,8 +116,11 @@ void FakeAssistantManagerServiceImpl::SendAssistantFeedback(
 void FakeAssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
     mojom::AssistantEntryPoint entry_point) {}
 
+void FakeAssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
+                                                     base::TimeDelta duration) {
+}
+
 void FakeAssistantManagerServiceImpl::StopAlarmTimerRinging() {}
-void FakeAssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {}
 
 void FakeAssistantManagerServiceImpl::SetStateAndInformObservers(
     State new_state) {

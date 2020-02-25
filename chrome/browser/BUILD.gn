@@ -5826,6 +5826,8 @@ static_library("test_support") {
       "sessions/session_service_test_helper.h",
       "sessions/tab_loader_tester.cc",
       "sessions/tab_loader_tester.h",
+      "sessions/tab_restore_service_load_waiter.cc",
+      "sessions/tab_restore_service_load_waiter.h",
       "ui/tabs/tab_activity_simulator.cc",
       "ui/tabs/tab_activity_simulator.h",
     ]

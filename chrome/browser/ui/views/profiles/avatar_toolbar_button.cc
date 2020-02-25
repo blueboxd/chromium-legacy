@@ -75,11 +75,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser,
   // the left and the (potential) user name on the right.
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // Set initial text and tooltip. UpdateIcon() needs to be called from the
-  // outside as GetThemeProvider() is not available until the button is added to
-  // ToolbarView's hierarchy.
-  UpdateText();
-
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
 
   // TODO(crbug.com/922525): DCHECK(parent_) instead of the if, once we always

@@ -881,7 +881,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetChildren(SAFEARRAY** children) {
     delegate = node->GetDelegate();
   }
   if (delegate->GetChildCount())
-    descendants = delegate->GetDescendants();
+    descendants = delegate->GetUIADescendants();
 
   SAFEARRAY* safe_array =
       SafeArrayCreateVector(VT_UNKNOWN, 0, descendants.size());

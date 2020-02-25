@@ -59,7 +59,8 @@ class ModuleWatcherTest : public testing::Test {
 
   std::unique_ptr<ModuleWatcher> Create() {
     return ModuleWatcher::Create(
-        base::Bind(&ModuleWatcherTest::OnModuleEvent, base::Unretained(this)));
+        base::Bind(&ModuleWatcherTest::OnModuleEvent, base::Unretained(this)),
+        /* report_background_loaded_modules = */ false);
   }
 
   base::test::TaskEnvironment task_environment_;

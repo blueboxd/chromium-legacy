@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 
 class ModuleWatcherTest;
 
@@ -89,7 +90,9 @@ class ModuleWatcher {
   //
   // Only a single instance of a watcher may exist at any moment. This will
   // return nullptr when trying to create a second watcher.
-  static std::unique_ptr<ModuleWatcher> Create(OnModuleEventCallback callback);
+  static std::unique_ptr<ModuleWatcher> Create(
+      OnModuleEventCallback callback,
+      bool report_background_loaded_modules);
 
   // This can be called on any thread. After destruction the |callback|
   // provided to the constructor will no longer be invoked with module events.
@@ -100,7 +103,7 @@ class ModuleWatcher {
   friend class ModuleWatcherTest;
 
   // Private to enforce Singleton semantics. See Create above.
-  ModuleWatcher();
+  explicit ModuleWatcher(bool report_background_loaded_modules);
 
   // Initializes the ModuleWatcher instance.
   void Initialize(OnModuleEventCallback callback);
@@ -119,9 +122,9 @@ class ModuleWatcher {
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       OnModuleEventCallback callback);
 
-  // Helper function for retrieving the callback associated with a given
-  // LdrNotification context.
-  static OnModuleEventCallback GetCallbackForContext(void* context);
+  // Dumps the process if executed in a background sequence and
+  // |report_background_loaded_modules_| is true.
+  void DumpOnBackgroundLoadedModule();
 
   // The loader notification callback. This is actually
   // void CALLBACK LoaderNotificationCallback(
@@ -140,6 +143,17 @@ class ModuleWatcher {
   OnModuleEventCallback callback_;
   // Used by the DllNotification mechanism.
   void* dll_notification_cookie_ = nullptr;
+
+  // Indicates if modules loaded in a background sequence should be reported.
+  const bool report_background_loaded_modules_;
+
+  // The count of DLL that were loaded in a background sequence.
+  int background_loaded_dll_count_;
+
+  // The number of background loaded DLL that will cause a process dump.
+  const int num_background_loaded_dll_report_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ModuleWatcher> weak_ptr_factory_{this};
 

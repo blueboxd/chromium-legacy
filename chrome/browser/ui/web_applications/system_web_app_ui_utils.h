@@ -16,10 +16,6 @@
 class Browser;
 class Profile;
 
-namespace content {
-class WebUIDataSource;
-}
-
 namespace web_app {
 
 // Returns the system app type for the given App ID.
@@ -60,13 +56,6 @@ bool IsSystemWebApp(Browser* browser);
 // Returns the minimum window size for a system web app, or an empty size if
 // the app does not specify a minimum size.
 gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser);
-
-// Calls |source->SetRequestFilter()| to set up respones to requests for
-// "manifest.json" while replacing $i18nRaw{name} in the contents indiciated by
-// |manifest_idr| with the name from |name_ids|.
-void SetManifestRequestFilter(content::WebUIDataSource* source,
-                              int manifest_idr,
-                              int name_ids);
 
 }  // namespace web_app
 

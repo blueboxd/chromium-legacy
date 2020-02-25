@@ -2513,20 +2513,6 @@
                     "disable_features": [
                         "HappinessTrackingSurveysForDesktopSettingsPrivacy"
                     ]
-                },
-                {
-                    "name": "Settings_Privacy",
-                    "params": {
-                        "en_site_id": "gjhdonsbcw64p5i2sfhrdetucq",
-                        "probability": "0.5",
-                        "survey": "settings-privacy"
-                    },
-                    "enable_features": [
-                        "HappinessTrackingSurveysForDesktopSettingsPrivacy"
-                    ],
-                    "disable_features": [
-                        "HappinessTrackingSurveysForDesktopSettings"
-                    ]
                 }
             ]
         }
@@ -6002,25 +5988,6 @@
             ]
         }
     ],
-    "V8WasmCodeCache": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WasmCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8WasmLiftoffMobile": [
         {
             "platforms": [
@@ -6537,6 +6504,23 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebUITabStrip": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebUITabStrip"
                     ]
                 }
             ]

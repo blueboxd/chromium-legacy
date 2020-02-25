@@ -1039,9 +1039,18 @@ typedef void(GL_BINDING_CALL* glImportMemoryFdEXTProc)(GLuint memory,
                                                        GLuint64 size,
                                                        GLenum handleType,
                                                        GLint fd);
+typedef void(GL_BINDING_CALL* glImportMemoryZirconHandleANGLEProc)(
+    GLuint memory,
+    GLuint64 size,
+    GLenum handleType,
+    GLuint handle);
 typedef void(GL_BINDING_CALL* glImportSemaphoreFdEXTProc)(GLuint semaphore,
                                                           GLenum handleType,
                                                           GLint fd);
+typedef void(GL_BINDING_CALL* glImportSemaphoreZirconHandleANGLEProc)(
+    GLuint semaphore,
+    GLenum handleType,
+    GLuint handle);
 typedef void(GL_BINDING_CALL* glInsertEventMarkerEXTProc)(GLsizei length,
                                                           const char* marker);
 typedef void(GL_BINDING_CALL* glInvalidateFramebufferProc)(
@@ -1905,9 +1914,11 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_blit;
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
+  bool b_GL_ANGLE_memory_object_fuchsia;
   bool b_GL_ANGLE_multi_draw;
   bool b_GL_ANGLE_request_extension;
   bool b_GL_ANGLE_robust_client_memory;
+  bool b_GL_ANGLE_semaphore_fuchsia;
   bool b_GL_ANGLE_texture_external_update;
   bool b_GL_ANGLE_translated_shader_source;
   bool b_GL_APPLE_fence;
@@ -2270,7 +2281,9 @@ struct ProcsGL {
       glGetVertexAttribPointervRobustANGLEFn;
   glHintProc glHintFn;
   glImportMemoryFdEXTProc glImportMemoryFdEXTFn;
+  glImportMemoryZirconHandleANGLEProc glImportMemoryZirconHandleANGLEFn;
   glImportSemaphoreFdEXTProc glImportSemaphoreFdEXTFn;
+  glImportSemaphoreZirconHandleANGLEProc glImportSemaphoreZirconHandleANGLEFn;
   glInsertEventMarkerEXTProc glInsertEventMarkerEXTFn;
   glInvalidateFramebufferProc glInvalidateFramebufferFn;
   glInvalidateSubFramebufferProc glInvalidateSubFramebufferFn;
@@ -3406,9 +3419,16 @@ class GL_EXPORT GLApi {
                                      GLuint64 size,
                                      GLenum handleType,
                                      GLint fd) = 0;
+  virtual void glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                                 GLuint64 size,
+                                                 GLenum handleType,
+                                                 GLuint handle) = 0;
   virtual void glImportSemaphoreFdEXTFn(GLuint semaphore,
                                         GLenum handleType,
                                         GLint fd) = 0;
+  virtual void glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                                    GLenum handleType,
+                                                    GLuint handle) = 0;
   virtual void glInsertEventMarkerEXTFn(GLsizei length, const char* marker) = 0;
   virtual void glInvalidateFramebufferFn(GLenum target,
                                          GLsizei numAttachments,
@@ -4595,8 +4615,12 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetVertexAttribPointervRobustANGLEFn
 #define glHint ::gl::g_current_gl_context->glHintFn
 #define glImportMemoryFdEXT ::gl::g_current_gl_context->glImportMemoryFdEXTFn
+#define glImportMemoryZirconHandleANGLE \
+  ::gl::g_current_gl_context->glImportMemoryZirconHandleANGLEFn
 #define glImportSemaphoreFdEXT \
   ::gl::g_current_gl_context->glImportSemaphoreFdEXTFn
+#define glImportSemaphoreZirconHandleANGLE \
+  ::gl::g_current_gl_context->glImportSemaphoreZirconHandleANGLEFn
 #define glInsertEventMarkerEXT \
   ::gl::g_current_gl_context->glInsertEventMarkerEXTFn
 #define glInvalidateFramebuffer \

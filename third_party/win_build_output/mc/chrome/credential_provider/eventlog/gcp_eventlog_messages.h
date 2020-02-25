@@ -53,7 +53,7 @@
 //
 // GCPW Events
 //
-#define GCPW_CATEGORY                     ((WORD)0x00000001L)
+#define GCPW_CATEGORY                    ((WORD)0x00000001L)
 
 //
 // MessageId: MSG_LOG_MESSAGE

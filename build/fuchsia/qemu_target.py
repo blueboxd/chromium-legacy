@@ -20,6 +20,7 @@ import tempfile
 from common import GetHostArchFromPlatform, GetEmuRootForPlatform
 from common import EnsurePathExists
 from qemu_image import ExecQemuImgWithRetry
+from target import FuchsiaTargetException
 
 
 # Virtual networking configuration data for QEMU.
@@ -46,14 +47,17 @@ class QemuTarget(emu_target.EmuTarget):
     return self._emu_type
 
   def _IsKvmEnabled(self):
-    if self._require_kvm:
-      if (sys.platform.startswith('linux') and
-          os.access('/dev/kvm', os.R_OK | os.W_OK)):
-        if self._target_cpu == 'arm64' and platform.machine() == 'aarch64':
-          return True
-        if self._target_cpu == 'x64' and platform.machine() == 'x86_64':
-          return True
-    return False
+    kvm_supported = sys.platform.startswith('linux') and \
+                    os.access('/dev/kvm', os.R_OK | os.W_OK)
+    same_arch = \
+        (self._target_cpu == 'arm64' and platform.machine() == 'aarch64') or \
+        (self._target_cpu == 'x64' and platform.machine() == 'x86_64')
+    if kvm_supported and same_arch:
+      return True
+    elif self._require_kvm:
+      raise FuchsiaTargetException('KVM required but unavailable.')
+    else:
+      return False
 
   def _BuildQemuConfig(self):
     boot_data.AssertBootImagesExist(self._GetTargetSdkArch(), 'qemu')
@@ -210,5 +214,3 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
     blobstore_hash_file.write(current_blobstore_hash)
 
   return qcow_path
-
-

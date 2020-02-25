@@ -179,14 +179,12 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     }
   }
 
-  bool QuitForPageWait() {
-    if (running_for_page_wait_) {
-      running_for_page_wait_ = false;
-      if (!running_for_debug_break_)
-        DoQuit();
-      return true;
-    }
-    return false;
+  void RunIfWaitingForDebugger(LocalFrame* frame) override {
+    if (!running_for_page_wait_)
+      return;
+    running_for_page_wait_ = false;
+    if (!running_for_debug_break_)
+      DoQuit();
   }
 
   void DoQuit() {
@@ -196,12 +194,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     message_loop_->QuitNow();
     page_pauser_.reset();
     WebFrameWidgetBase::SetIgnoreInputEvents(false);
-  }
-
-  void RunIfWaitingForDebugger(LocalFrame* frame) override {
-    // If we've paused for Page.waitForDebugger, handle it ourselves.
-    if (QuitForPageWait())
-      return;
   }
 
   bool running_for_debug_break_;
@@ -438,6 +430,17 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
   for (auto& it : overlay_agents_)
     it.value->PageLayoutInvalidated(resized);
+}
+
+void WebDevToolsAgentImpl::DidShowNewWindow() {
+  if (!wait_for_debugger_when_shown_)
+    return;
+  wait_for_debugger_when_shown_ = false;
+  WaitForDebugger();
+}
+
+void WebDevToolsAgentImpl::WaitForDebuggerWhenShown() {
+  wait_for_debugger_when_shown_ = true;
 }
 
 void WebDevToolsAgentImpl::WaitForDebugger() {

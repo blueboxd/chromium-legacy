@@ -9,6 +9,8 @@
 #include <lib/fdio/directory.h>
 #include <lib/fdio/fd.h>
 #include <lib/fdio/io.h>
+#include <lib/sys/cpp/component_context.h>
+#include <lib/vfs/cpp/pseudo_file.h>
 #include <lib/zx/job.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -27,9 +29,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -43,6 +47,7 @@
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/base/config_reader.h"
+#include "fuchsia/base/string_util.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -116,17 +121,6 @@ bool SetContentDirectoriesInCommandLine(
   return true;
 }
 
-base::Value LoadConfig() {
-  base::Optional<base::Value> config = cr_fuchsia::LoadPackageConfig();
-  if (!config) {
-    DLOG(WARNING) << "Configuration data not found. Using default "
-                     "WebEngine configuration.";
-    return base::Value(base::Value::Type::DICTIONARY);
-  }
-
-  return std::move(*config);
-}
-
 void AppendFeature(base::StringPiece features_flag,
                    base::StringPiece feature_string,
                    base::CommandLine* command_line) {
@@ -153,6 +147,8 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
 
   static const base::StringPiece kAllowedArgs[] = {
       switches::kAcceleratedCanvas2dMSAASampleCount,
+      // TODO(crbug.com/1054589): Remove the "blink-settings" argument.
+      switches::kBlinkSettings,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       switches::kEnableFeatures,
@@ -206,12 +202,82 @@ bool IsFuchsiaCdmSupported() {
 #endif
 }
 
+// Callback for vfs::PseudoFile read.
+zx_status_t OnReadConfig(const base::Value& config,
+                         std::vector<uint8_t>* output,
+                         size_t max_bytes) {
+  base::Value empty_config(base::Value::Type::DICTIONARY);
+  std::string json;
+
+  // This CHECK can be triggered if |config| has a depth higher than 200.
+  // However, for this use case, it should not happen.
+  CHECK(
+      base::JSONWriter::Write(config.is_none() ? empty_config : config, &json));
+
+  output->assign(json.begin(), json.end());
+  return ZX_OK;
+}
+
+// Callback for vfs::PseudoFile write.
+zx_status_t OnWriteConfig(base::Value* config, std::vector<uint8_t> input) {
+  base::Optional<base::Value> parsed =
+      base::JSONReader::Read(cr_fuchsia::BytesAsString(input));
+  if (!parsed || !parsed->is_dict())
+    return ZX_ERR_IO_REFUSED;
+
+  *config = std::move(parsed.value());
+  return ZX_OK;
+}
+
+cr_fuchsia::ScopedPseudoFilePublisher CreateAndPublishDebugFile(
+    base::StringPiece filename,
+    vfs::PseudoFile::ReadHandler read_fn,
+    vfs::PseudoFile::WriteHandler write_fn) {
+  // 32k configuration size ought to be enough for anyone.
+  constexpr size_t kMaxConfigSize = 32768;
+
+  vfs::PseudoDir* debug_dir = base::fuchsia::ComponentContextForCurrentProcess()
+                                  ->outgoing()
+                                  ->debug_dir();
+  std::unique_ptr<vfs::PseudoFile> pseudo_file =
+      std::make_unique<vfs::PseudoFile>(kMaxConfigSize, std::move(read_fn),
+                                        std::move(write_fn));
+  return cr_fuchsia::ScopedPseudoFilePublisher(debug_dir, filename,
+                                               std::move(pseudo_file));
+}
+
+constexpr char kConfigDefaultFileName[] = "config-default.json";
+constexpr char kConfigOverrideFileName[] = "config-override.json";
+
 }  // namespace
 
 const uint32_t ContextProviderImpl::kContextRequestHandleId =
     PA_HND(PA_USER0, 0);
 
-ContextProviderImpl::ContextProviderImpl() = default;
+ContextProviderImpl::ContextProviderImpl() {
+  base::Optional<base::Value> default_config = cr_fuchsia::LoadPackageConfig();
+  if (default_config) {
+    config_default_ = std::move(default_config.value());
+  } else {
+    config_default_ = base::Value(base::Value::Type::DICTIONARY);
+  }
+
+  config_default_file_ = CreateAndPublishDebugFile(
+      kConfigDefaultFileName,
+      [this](std::vector<uint8_t>* output, size_t max_bytes) {
+        return OnReadConfig(config_default_, output, max_bytes);
+      },
+      nullptr /* write_handler */);
+
+  config_override_file_ = CreateAndPublishDebugFile(
+      kConfigOverrideFileName,
+      [this](std::vector<uint8_t>* output, size_t max_bytes) {
+        return OnReadConfig(config_override_, output, max_bytes);
+      },
+      [this](std::vector<uint8_t> input) {
+        return OnWriteConfig(&config_override_, input);
+      });
+}
 
 ContextProviderImpl::~ContextProviderImpl() = default;
 
@@ -283,8 +349,7 @@ void ContextProviderImpl::Create(
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
   std::vector<zx::channel> devtools_listener_channels;
 
-  base::Value web_engine_config =
-      config_for_test_.is_none() ? LoadConfig() : std::move(config_for_test_);
+  base::Value web_engine_config = LoadConfig();
   if (!MaybeAddCommandLineArgsFromConfig(web_engine_config, &launch_command)) {
     context_request.Close(ZX_ERR_INTERNAL);
     return;
@@ -503,6 +568,20 @@ void ContextProviderImpl::Create(
 void ContextProviderImpl::SetLaunchCallbackForTest(
     LaunchCallbackForTest launch) {
   launch_for_test_ = std::move(launch);
+}
+
+base::Value ContextProviderImpl::LoadConfig() {
+  if (!config_override_.is_none())
+    return config_override_.Clone();
+
+  base::Optional<base::Value> config = cr_fuchsia::LoadPackageConfig();
+  if (!config) {
+    DLOG(WARNING) << "Configuration data not found. Using default "
+                     "WebEngine configuration.";
+    return base::Value(base::Value::Type::DICTIONARY);
+  }
+
+  return std::move(*config);
 }
 
 void ContextProviderImpl::EnableDevTools(

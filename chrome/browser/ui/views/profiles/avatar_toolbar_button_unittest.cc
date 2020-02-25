@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -26,7 +24,7 @@ TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
   browser_view()->GetWidget()->GetContentsView()->AddChildView(button.get());
 
   SkColor toolbar_color =
-      button->GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
+      ToolbarButton::GetDefaultBackgroundColor(button->GetThemeProvider());
   SkColor highlight_color = SkColorSetRGB(0xFE, 0x00, 0x00);
 
   DCHECK_LT(color_utils::GetContrastRatio(highlight_color, toolbar_color),

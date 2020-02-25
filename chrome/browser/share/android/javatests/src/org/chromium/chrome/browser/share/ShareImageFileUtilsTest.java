@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.share;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.test.filters.SmallTest;
 import android.support.v4.content.FileProvider;
 
@@ -82,6 +86,7 @@ public class ShareImageFileUtilsTest {
     public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+        clearExternalStorageDir();
     }
 
     @After
@@ -135,12 +140,34 @@ public class ShareImageFileUtilsTest {
         runnableHelper.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
+    public void clearExternalStorageDir() {
+        AsyncTask.SERIAL_EXECUTOR.execute(() -> {
+            File externalStorageDir = mActivityTestRule.getActivity().getExternalFilesDir(
+                    Environment.DIRECTORY_DOWNLOADS);
+            String[] children = externalStorageDir.list();
+            for (int i = 0; i < children.length; i++) {
+                new File(externalStorageDir, children[i]).delete();
+            }
+        });
+    }
+
     private int fileCountInShareDirectory() throws IOException {
         return fileCount(ShareImageFileUtils.getSharedFilesDirectory());
     }
 
     private boolean fileExistsInShareDirectory(Uri fileUri) throws IOException {
         return filepathExists(ShareImageFileUtils.getSharedFilesDirectory(), fileUri.getPath());
+    }
+
+    private Bitmap getTestBitmap() {
+        int size = 10;
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(android.graphics.Color.GREEN);
+        canvas.drawRect(0F, 0F, (float) size, (float) size, paint);
+        return bitmap;
     }
 
     @Test
@@ -167,5 +194,47 @@ public class ShareImageFileUtilsTest {
         Clipboard.getInstance().setText("");
         clearSharedImages();
         Assert.assertEquals(0, fileCountInShareDirectory());
+    }
+
+    @Test
+    @SmallTest
+    public void testSaveBitmap() throws IOException {
+        String fileName = "chrome-test-bitmap";
+        ShareImageFileUtils.OnImageSaveListener listener =
+                new ShareImageFileUtils.OnImageSaveListener() {
+                    @Override
+                    public void onImageSaved(File imageFile) {
+                        AsyncTask.SERIAL_EXECUTOR.execute(() -> {
+                            Assert.assertTrue(imageFile.exists());
+                            Assert.assertTrue(imageFile.isFile());
+                            Assert.assertTrue(imageFile.getPath().contains(fileName));
+                        });
+                    }
+
+                    @Override
+                    public void onImageSaveError() {
+                        Assert.fail();
+                    }
+                };
+        ShareImageFileUtils.saveBitmapToExternalStorage(
+                mActivityTestRule.getActivity(), fileName, getTestBitmap(), listener);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetNextAvailableFile() throws IOException {
+        String filename = "chrome-test-bitmap";
+        String extension = ".jpg";
+
+        File externalStorageDir = mActivityTestRule.getActivity().getExternalFilesDir(
+                Environment.DIRECTORY_DOWNLOADS);
+        File imageFile = ShareImageFileUtils.getNextAvailableFile(
+                externalStorageDir.getPath(), filename, extension);
+        Assert.assertTrue(imageFile.exists());
+
+        File imageFile2 = ShareImageFileUtils.getNextAvailableFile(
+                externalStorageDir.getPath(), filename, extension);
+        Assert.assertTrue(imageFile2.exists());
+        Assert.assertNotEquals(imageFile.getPath(), imageFile2.getPath());
     }
 }

@@ -55,6 +55,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool IsFlexibleBoxIncludingDeprecatedAndNG() const final { return true; }
   void UpdateBlockLayout(bool relayout_children) final;
 
+  bool IsChildAllowed(LayoutObject* object,
+                      const ComputedStyle& style) const override;
   LayoutUnit BaselinePosition(
       FontBaseline,
       bool first_line,

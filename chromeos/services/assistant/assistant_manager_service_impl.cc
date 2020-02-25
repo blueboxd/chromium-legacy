@@ -1526,12 +1526,13 @@ void AssistantManagerServiceImpl::StopAlarmTimerRinging() {
   assistant_manager_internal_->GetAlarmTimerManager()->StopRinging();
 }
 
-void AssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {
+void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,
+                                                 base::TimeDelta duration) {
   if (!assistant_manager_internal_)
     return;
 
-  assistant_manager_internal_->GetAlarmTimerManager()->CreateTimer(
-      duration.InSeconds(), /*label=*/std::string());
+  assistant_manager_internal_->GetAlarmTimerManager()->AddTimeToTimer(
+      id, duration.InSeconds());
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(

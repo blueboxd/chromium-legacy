@@ -173,7 +173,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
+  TabRestoreServiceLoadWaiter waiter(
+      TabRestoreServiceFactory::GetForProfile(browser()->profile()));
   waiter.Wait();
 
   // After initialization, the command should become disabled because there's
@@ -203,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
+  TabRestoreServiceLoadWaiter waiter(
+      TabRestoreServiceFactory::GetForProfile(browser()->profile()));
   waiter.Wait();
 
   // After initialization, the command should remain enabled because there's

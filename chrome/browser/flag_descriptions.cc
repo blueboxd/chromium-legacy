@@ -846,10 +846,6 @@ const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
 
-const char kEnableWasmCodeCacheName[] = "WebAssembly compiled module cache";
-const char kEnableWasmCodeCacheDescription[] =
-    "Enables caching of compiled WebAssembly modules.";
-
 const char kEnableWasmCodeGCName[] = "WebAssembly code garbage collection";
 const char kEnableWasmCodeGCDescription[] =
     "Enables garbage collection of WebAssembly code.";
@@ -2301,6 +2297,10 @@ const char kContentIndexingNTPDescription[] =
 const char kContextMenuCopyImageName[] = "Copy Image";
 const char kContextMenuCopyImageDescription[] =
     "Enable copying image to system clipboard via context menu.";
+
+const char kContextMenuPerformanceInfoName[] = "Context menu performance hints";
+const char kContextMenuPerformanceInfoDescription[] =
+    "Show link performance information in the context menu.";
 
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =

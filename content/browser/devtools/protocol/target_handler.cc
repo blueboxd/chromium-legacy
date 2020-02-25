@@ -638,6 +638,10 @@ void TargetHandler::AutoDetach(DevToolsAgentHost* host) {
   it->second->Detach(false);
 }
 
+bool TargetHandler::ShouldThrottlePopups() const {
+  return auto_attacher_.ShouldThrottleFramesNavigation();
+}
+
 Response TargetHandler::FindSession(Maybe<std::string> session_id,
                                     Maybe<std::string> target_id,
                                     Session** session) {

@@ -3284,141 +3284,197 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   // Set up ax tree with the following structure:
   //
-  // root
-  // |
-  // document(ignored)_________________________
-  // |                         |              |
-  // text_node1___             text_node2     ignored_text
-  // |            |
-  // text_node3   text_node4
-  ui::AXNodeData root_data;
-  root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
+  // ++1 kRootWebArea
+  // ++++2 kDocument ignored
+  // ++++++3 kStaticText
+  // ++++++++4 kInlineTextBox
+  // ++++++++5 kInlineTextBox
+  // ++++++6 kStaticText
+  // ++++++7 kStaticText ignored
+  // ++++++8 kButton
+  // ++++++++9  kImage
+  // ++++++++10 kStaticText
 
-  ui::AXNodeData document_data;
-  document_data.id = 2;
-  document_data.role = ax::mojom::Role::kDocument;
-  document_data.AddState(ax::mojom::State::kIgnored);
-  root_data.child_ids.push_back(document_data.id);
+  AXNodeData root_1;
+  AXNodeData document_2;
+  AXNodeData static_text_3;
+  AXNodeData inline_box_4;
+  AXNodeData inline_box_5;
+  AXNodeData static_text_6;
+  AXNodeData static_text_7;
+  AXNodeData button_8;
+  AXNodeData image_9;
+  AXNodeData static_text_10;
 
-  ui::AXNodeData text_node1;
-  text_node1.id = 3;
-  text_node1.role = ax::mojom::Role::kStaticText;
-  document_data.child_ids.push_back(text_node1.id);
+  root_1.id = 1;
+  document_2.id = 2;
+  static_text_3.id = 3;
+  inline_box_4.id = 4;
+  inline_box_5.id = 5;
+  static_text_6.id = 6;
+  static_text_7.id = 7;
+  button_8.id = 8;
+  image_9.id = 9;
+  static_text_10.id = 10;
 
-  ui::AXNodeData text_node2;
-  text_node2.id = 4;
-  text_node2.role = ax::mojom::Role::kStaticText;
-  document_data.child_ids.push_back(text_node2.id);
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {document_2.id};
 
-  ui::AXNodeData ignored_text;
-  ignored_text.id = 5;
-  ignored_text.role = ax::mojom::Role::kStaticText;
-  ignored_text.AddState(ax::mojom::State::kIgnored);
-  document_data.child_ids.push_back(ignored_text.id);
+  document_2.role = ax::mojom::Role::kDocument;
+  document_2.AddState(ax::mojom::State::kIgnored);
+  document_2.child_ids = {static_text_3.id, static_text_6.id, static_text_7.id,
+                          button_8.id};
 
-  ui::AXNodeData text_node3;
-  text_node3.id = 6;
-  text_node3.role = ax::mojom::Role::kStaticText;
-  text_node1.child_ids.push_back(text_node3.id);
+  static_text_3.role = ax::mojom::Role::kStaticText;
+  static_text_3.child_ids = {inline_box_4.id, inline_box_5.id};
 
-  ui::AXNodeData text_node4;
-  text_node4.id = 7;
-  text_node4.role = ax::mojom::Role::kStaticText;
-  text_node1.child_ids.push_back(text_node4.id);
+  inline_box_4.role = ax::mojom::Role::kInlineTextBox;
+
+  inline_box_5.role = ax::mojom::Role::kInlineTextBox;
+
+  static_text_6.role = ax::mojom::Role::kStaticText;
+
+  static_text_7.role = ax::mojom::Role::kStaticText;
+  static_text_7.AddState(ax::mojom::State::kIgnored);
+
+  button_8.role = ax::mojom::Role::kButton;
+  // Hack: This attribute is needed to be able to get a text range provider
+  // located on this element (see AXPlatformNodeWin::GetPatternProvider).
+  button_8.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
+  button_8.child_ids = {image_9.id, static_text_10.id};
+
+  image_9.role = ax::mojom::Role::kImage;
+
+  static_text_10.role = ax::mojom::Role::kStaticText;
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
   tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
   update.tree_data = tree_data;
   update.has_tree_data = true;
-  update.root_id = root_data.id;
-  update.nodes.push_back(root_data);
-  update.nodes.push_back(document_data);
-  update.nodes.push_back(text_node1);
-  update.nodes.push_back(text_node2);
-  update.nodes.push_back(ignored_text);
-  update.nodes.push_back(text_node3);
-  update.nodes.push_back(text_node4);
+  update.root_id = root_1.id;
+  update.nodes.push_back(root_1);
+  update.nodes.push_back(document_2);
+  update.nodes.push_back(static_text_3);
+  update.nodes.push_back(inline_box_4);
+  update.nodes.push_back(inline_box_5);
+  update.nodes.push_back(static_text_6);
+  update.nodes.push_back(static_text_7);
+  update.nodes.push_back(button_8);
+  update.nodes.push_back(image_9);
+  update.nodes.push_back(static_text_10);
 
   Init(update);
 
   // Set up variables from the tree for testing.
-  AXNode* document_node = GetRootAsAXNode()->children()[0];
-  AXNode* node1 = document_node->children()[0];
-  AXNode* node2 = document_node->children()[1];
-  AXNode* node3 = node1->children()[0];
-  AXNode* node4 = node1->children()[1];
+  AXNode* document_2_node = GetRootAsAXNode()->children()[0];
+  AXNode* static_text_3_node = document_2_node->children()[0];
+  AXNode* inline_box_4_node = static_text_3_node->children()[0];
+  AXNode* inline_box_5_node = static_text_3_node->children()[1];
+  AXNode* static_text_6_node = document_2_node->children()[1];
+  AXNode* button_8_node = document_2_node->children()[3];
 
-  ComPtr<IRawElementProviderSimple> document_node_raw =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(document_node);
-  ComPtr<IRawElementProviderSimple> text_node_raw1 =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(node1);
-  ComPtr<IRawElementProviderSimple> text_node_raw2 =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(node2);
-  ComPtr<IRawElementProviderSimple> text_node_raw3 =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(node3);
-  ComPtr<IRawElementProviderSimple> text_node_raw4 =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(node4);
+  ComPtr<IRawElementProviderSimple> document_2_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(document_2_node);
+  ComPtr<IRawElementProviderSimple> static_text_3_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_3_node);
+  ComPtr<IRawElementProviderSimple> inline_box_4_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_box_4_node);
+  ComPtr<IRawElementProviderSimple> inline_box_5_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_box_5_node);
+  ComPtr<IRawElementProviderSimple> static_text_6_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(static_text_6_node);
+  ComPtr<IRawElementProviderSimple> button_8_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(button_8_node);
 
-  // Test text_node3 - leaf nodes should have no children.
   ComPtr<ITextProvider> text_provider;
-  EXPECT_HRESULT_SUCCEEDED(
-      text_node_raw3->GetPatternProvider(UIA_TextPatternId, &text_provider));
-
   ComPtr<ITextRangeProvider> text_range_provider;
-  EXPECT_HRESULT_SUCCEEDED(
-      text_provider->get_DocumentRange(&text_range_provider));
-
   base::win::ScopedSafearray children;
-  EXPECT_HRESULT_SUCCEEDED(
-      text_range_provider->GetChildren(children.Receive()));
-
   std::vector<ComPtr<IRawElementProviderSimple>> expected_values = {};
 
-  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  // Test inline_box_4 - a leaf node should have no children.
+  {
+    EXPECT_HRESULT_SUCCEEDED(inline_box_4_raw->GetPatternProvider(
+        UIA_TextPatternId, &text_provider));
 
-  // Test text_node2 - leaf nodes should have no children.
-  EXPECT_HRESULT_SUCCEEDED(
-      text_node_raw2->GetPatternProvider(UIA_TextPatternId, &text_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_provider->get_DocumentRange(&text_range_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_range_provider->GetChildren(children.Receive()));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_range_provider->GetChildren(children.Receive()));
+    expected_values = {};
 
-  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  }
 
-  // Test text_node1 - children should include text_node3 and text_node4.
-  EXPECT_HRESULT_SUCCEEDED(
-      text_node_raw1->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  // Test static_text_6 - a leaf node should have no children.
+  {
+    EXPECT_HRESULT_SUCCEEDED(static_text_6_raw->GetPatternProvider(
+        UIA_TextPatternId, &text_provider));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_provider->get_DocumentRange(&text_range_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_range_provider->GetChildren(children.Receive()));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_range_provider->GetChildren(children.Receive()));
 
-  expected_values = {text_node_raw3, text_node_raw4};
+    expected_values = {};
 
-  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  }
 
-  // Test root_node - children should include the entire left subtree and
-  // the entire right subtree.
-  EXPECT_HRESULT_SUCCEEDED(
-      document_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  // Test static_text_3 - children should include inline_box_4 and inline_box_5.
+  {
+    EXPECT_HRESULT_SUCCEEDED(static_text_3_raw->GetPatternProvider(
+        UIA_TextPatternId, &text_provider));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_provider->get_DocumentRange(&text_range_provider));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
 
-  EXPECT_HRESULT_SUCCEEDED(
-      text_range_provider->GetChildren(children.Receive()));
+    EXPECT_HRESULT_SUCCEEDED(
+        text_range_provider->GetChildren(children.Receive()));
 
-  expected_values = {text_node_raw1, text_node_raw3, text_node_raw4,
-                     text_node_raw2};
+    expected_values = {inline_box_4_raw, inline_box_5_raw};
 
-  EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  }
+
+  // Test button_8 - a button should never expose its children.
+  {
+    EXPECT_HRESULT_SUCCEEDED(
+        button_8_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_range_provider->GetChildren(children.Receive()));
+
+    expected_values = {};
+
+    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  }
+
+  // Test document_2 - children should not include ignored nodes and nodes under
+  // a node that should hide its children.
+  {
+    EXPECT_HRESULT_SUCCEEDED(
+        document_2_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+
+    EXPECT_HRESULT_SUCCEEDED(
+        text_range_provider->GetChildren(children.Receive()));
+
+    expected_values = {
+        static_text_3_raw, inline_box_4_raw, inline_box_5_raw,
+        static_text_6_raw, button_8_raw,
+    };
+
+    EXPECT_UIA_VT_UNKNOWN_SAFEARRAY_EQ(children.Get(), expected_values);
+  }
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

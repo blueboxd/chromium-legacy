@@ -24,5 +24,5 @@ class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
 IN_PROC_BROWSER_TEST_F(HelpAppIntegrationTest, HelpAppV2) {
   const GURL url(chromeos::kChromeUIHelpAppURL);
   EXPECT_NO_FATAL_FAILURE(
-      ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Help App"));
+      ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Discover"));
 }

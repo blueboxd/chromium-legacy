@@ -33,10 +33,12 @@ struct StreamPipelineDescriptor {
   const base::Value* pipeline;
   const base::Value* stream_types;
   const base::Optional<int> num_input_channels;
+  const base::Value* volume_limits;
 
   StreamPipelineDescriptor(const base::Value* pipeline_in,
                            const base::Value* stream_types_in,
-                           const base::Optional<int> num_input_channels_in);
+                           const base::Optional<int> num_input_channels_in,
+                           const base::Value* volume_limits_in);
   ~StreamPipelineDescriptor();
   StreamPipelineDescriptor(const StreamPipelineDescriptor& other);
   StreamPipelineDescriptor operator=(const StreamPipelineDescriptor& other) =

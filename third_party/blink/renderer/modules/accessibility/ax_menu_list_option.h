@@ -28,13 +28,13 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXMenuListOption final : public AXMockObject {
+class AXMenuListOption final : public AXNodeObject {
  public:
   AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
   ~AXMenuListOption() override;

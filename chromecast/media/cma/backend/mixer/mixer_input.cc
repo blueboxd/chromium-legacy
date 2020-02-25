@@ -47,9 +47,6 @@ MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
-      stream_volume_multiplier_(1.0f),
-      type_volume_multiplier_(1.0f),
-      mute_volume_multiplier_(1.0f),
       slew_volume_(kDefaultSlewTimeMs),
       volume_applied_(false),
       previous_ended_in_silence_(false),
@@ -297,54 +294,94 @@ void MixerInput::VolumeScaleAccumulate(const float* src,
 
 void MixerInput::SetVolumeMultiplier(float multiplier) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  float old_target_volume = TargetVolume();
   stream_volume_multiplier_ = std::max(0.0f, multiplier);
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_
             << "): stream volume = " << stream_volume_multiplier_
             << ", effective multiplier = " << target_volume;
-  slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
-  slew_volume_.SetVolume(target_volume);
+  if (target_volume != old_target_volume) {
+    slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
+    slew_volume_.SetVolume(target_volume);
+  }
 }
 
-void MixerInput::SetContentTypeVolume(float volume, int fade_ms) {
+void MixerInput::SetContentTypeVolume(float volume) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(content_type_ != AudioContentType::kOther);
 
-  type_volume_multiplier_ = base::ClampToRange(volume, 0.0f, 1.0f);
+  float old_target_volume = TargetVolume();
+  type_volume_multiplier_ = volume;
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_
             << "): type volume = " << type_volume_multiplier_
+            << ", effective multiplier = " << target_volume;
+  if (target_volume != old_target_volume) {
+    slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
+    slew_volume_.SetVolume(target_volume);
+  }
+}
+
+void MixerInput::SetVolumeLimits(float volume_min, float volume_max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  float old_target_volume = TargetVolume();
+  volume_min_ = volume_min;
+  volume_max_ = volume_max;
+  float target_volume = TargetVolume();
+  LOG(INFO) << device_id_ << "(" << source_ << "): set volume limits to ["
+            << volume_min_ << ", " << volume_max_ << "]";
+  if (target_volume != old_target_volume) {
+    slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
+    slew_volume_.SetVolume(target_volume);
+  }
+}
+
+void MixerInput::SetOutputLimit(float limit, int fade_ms) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  float old_target_volume = TargetVolume();
+  output_volume_limit_ = limit;
+  float target_volume = TargetVolume();
+  LOG(INFO) << device_id_ << "(" << source_
+            << "): output limit = " << output_volume_limit_
             << ", effective multiplier = " << target_volume;
   if (fade_ms < 0) {
     fade_ms = kDefaultSlewTimeMs;
   } else {
     LOG(INFO) << "Fade over " << fade_ms << " ms";
   }
-  slew_volume_.SetMaxSlewTimeMs(fade_ms);
-  slew_volume_.SetVolume(target_volume);
+  if (target_volume != old_target_volume) {
+    slew_volume_.SetMaxSlewTimeMs(fade_ms);
+    slew_volume_.SetVolume(target_volume);
+  }
 }
 
 void MixerInput::SetMuted(bool muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(content_type_ != AudioContentType::kOther);
 
+  float old_target_volume = TargetVolume();
   mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_
             << "): mute volume = " << mute_volume_multiplier_
             << ", effective multiplier = " << target_volume;
-  slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
-  slew_volume_.SetVolume(target_volume);
+  if (target_volume != old_target_volume) {
+    slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
+    slew_volume_.SetVolume(target_volume);
+  }
 }
 
 float MixerInput::TargetVolume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  float volume = stream_volume_multiplier_ * type_volume_multiplier_ *
-                 mute_volume_multiplier_;
+  float output_volume = stream_volume_multiplier_ * type_volume_multiplier_;
+  float clamped_volume =
+      base::ClampToRange(output_volume, volume_min_, volume_max_);
+  float limited_volume = std::min(clamped_volume, output_volume_limit_);
+  float muted_volume = limited_volume * mute_volume_multiplier_;
   // Volume is clamped after all gains have been multiplied, to avoid clipping.
   // TODO(kmackay): Consider removing this clamp and use a postprocessor filter
   // to avoid clipping instead.
-  return base::ClampToRange(volume, 0.0f, 1.0f);
+  return base::ClampToRange(muted_volume, 0.0f, 1.0f);
 }
 
 float MixerInput::InstantaneousVolume() {

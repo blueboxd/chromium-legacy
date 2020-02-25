@@ -153,10 +153,6 @@ class StreamMixer::ExternalMediaVolumeChangeRequestObserver
   StreamMixer* const mixer_;
 };
 
-float StreamMixer::VolumeInfo::GetEffectiveVolume() {
-  return std::min(volume, limit);
-}
-
 StreamMixer::StreamMixer(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : StreamMixer(nullptr,
@@ -651,11 +647,9 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
 
   auto type = input->content_type();
   if (type != AudioContentType::kOther) {
+    input->SetContentTypeVolume(volume_info_[type].volume);
     if (input->primary()) {
-      input->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume(),
-                                  kUseDefaultFade);
-    } else {
-      input->SetContentTypeVolume(volume_info_[type].volume, kUseDefaultFade);
+      input->SetOutputLimit(volume_info_[type].limit, kUseDefaultFade);
     }
     input->SetMuted(volume_info_[type].muted);
   }
@@ -881,19 +875,14 @@ void StreamMixer::SetVolume(AudioContentType type, float level) {
   DCHECK(type != AudioContentType::kOther);
 
   volume_info_[type].volume = level;
-  float effective_volume = volume_info_[type].GetEffectiveVolume();
   for (const auto& input : inputs_) {
     if (input.second->content_type() == type) {
-      if (input.second->primary()) {
-        input.second->SetContentTypeVolume(effective_volume, kUseDefaultFade);
-      } else {
-        // Volume limits don't apply to effects streams.
-        input.second->SetContentTypeVolume(level, kUseDefaultFade);
-      }
+      input.second->SetContentTypeVolume(level);
     }
   }
   if (external_audio_pipeline_supported_ && type == AudioContentType::kMedia) {
-    ExternalAudioPipelineShlib::SetExternalMediaVolume(effective_volume);
+    ExternalAudioPipelineShlib::SetExternalMediaVolume(
+        std::min(level, volume_info_[type].limit));
   }
   UpdateStreamCounts();
 }
@@ -921,7 +910,6 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   LOG(INFO) << "Set volume limit for " << static_cast<int>(type) << " to "
             << limit;
   volume_info_[type].limit = limit;
-  float effective_volume = volume_info_[type].GetEffectiveVolume();
   int fade_ms = kUseDefaultFade;
   if (type == AudioContentType::kMedia) {
     if (limit >= 1.0f) {  // Unducking.
@@ -933,11 +921,12 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   for (const auto& input : inputs_) {
     // Volume limits don't apply to effects streams.
     if (input.second->primary() && input.second->content_type() == type) {
-      input.second->SetContentTypeVolume(effective_volume, fade_ms);
+      input.second->SetOutputLimit(limit, fade_ms);
     }
   }
   if (external_audio_pipeline_supported_ && type == AudioContentType::kMedia) {
-    ExternalAudioPipelineShlib::SetExternalMediaVolume(effective_volume);
+    ExternalAudioPipelineShlib::SetExternalMediaVolume(
+        std::min(volume_info_[type].volume, limit));
   }
   UpdateStreamCounts();
 }

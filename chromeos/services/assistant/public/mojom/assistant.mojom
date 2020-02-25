@@ -145,12 +145,14 @@ interface Assistant {
   // Invoked on entry to Assistant UI.
   NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point);
 
-  // ===== Alarm/Timer management methods =====
+  // Alarm/Timer methods -------------------------------------------------------
+
+  // Adds the specified |duration| to the timer identified by |id|.  Note that
+  // this method is a no-op if there is no existing timer identified by |id|.
+  AddTimeToTimer(string id, mojo_base.mojom.TimeDelta duration);
+
   // Stops timer or alarm ringing.
   StopAlarmTimerRinging();
-
-  // Create timer with |duration|.
-  CreateTimer(mojo_base.mojom.TimeDelta duration);
 };
 
 // Enumeration of Assistant entry points. These values are persisted to logs.

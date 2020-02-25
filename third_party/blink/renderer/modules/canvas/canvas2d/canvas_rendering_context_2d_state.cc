@@ -262,9 +262,17 @@ void CanvasRenderingContext2DState::SetFont(const Font& font,
     selector->RegisterForInvalidationCallbacks(this);
 }
 
-const Font& CanvasRenderingContext2DState::GetFont() const {
+const Font& CanvasRenderingContext2DState::GetFont() {
   DCHECK(realized_font_);
+  if (!font_.IsFallbackValid())
+    FontsNeedUpdate(font_.GetFontSelector());
   return font_;
+}
+
+const FontDescription& CanvasRenderingContext2DState::GetFontDescription()
+    const {
+  DCHECK(realized_font_);
+  return font_.GetFontDescription();
 }
 
 void CanvasRenderingContext2DState::SetTransform(

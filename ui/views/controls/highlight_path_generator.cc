@@ -42,8 +42,8 @@ SkPath HighlightPathGenerator::GetHighlightPath(const View* view) {
 
   const float corner_radius = round_rect->corner_radius;
   return SkPath().addRoundRect(
-      gfx::RectToSkRect(gfx::ToNearestRect(round_rect->bounds)), corner_radius,
-      corner_radius);
+      gfx::RectToSkRect(gfx::ToEnclosingRect(round_rect->bounds)),
+      corner_radius, corner_radius);
 }
 
 base::Optional<HighlightPathGenerator::RoundRect>

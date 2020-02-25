@@ -80,6 +80,10 @@ CredentialLeakDialogView::CredentialLeakDialogView(
   DCHECK(controller);
   DCHECK(web_contents);
 
+  DialogDelegate::set_buttons(controller->ShouldShowCancelButton()
+                                  ? ui::DIALOG_BUTTON_OK |
+                                        ui::DIALOG_BUTTON_CANCEL
+                                  : ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    controller_->GetAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
@@ -135,14 +139,6 @@ gfx::Size CredentialLeakDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-int CredentialLeakDialogView::GetDialogButtons() const {
-  // |controller_| can be nullptr when the framework calls this method after a
-  // button click.
-  return controller_ && controller_->ShouldShowCancelButton()
-             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
-             : ui::DIALOG_BUTTON_OK;
 }
 
 bool CredentialLeakDialogView::ShouldShowCloseButton() const {

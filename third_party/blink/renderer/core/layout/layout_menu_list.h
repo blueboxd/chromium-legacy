@@ -30,14 +30,10 @@
 
 namespace blink {
 
-class HTMLSelectElement;
-
 class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
  public:
   explicit LayoutMenuList(Element*);
   ~LayoutMenuList() override;
-
-  HTMLSelectElement* SelectElement() const;
 
   const char* GetName() const override { return "LayoutMenuList"; }
 
@@ -45,7 +41,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectMenuList || LayoutFlexibleBox::IsOfType(type);
   }
-  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
   PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
   bool HasControlClip() const override { return true; }

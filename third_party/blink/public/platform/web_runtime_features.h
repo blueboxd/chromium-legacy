@@ -94,7 +94,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableCookieDeprecationMessages(bool);
   BLINK_PLATFORM_EXPORT static void EnableCookiesWithoutSameSiteMustBeSecure(
       bool);
-  BLINK_PLATFORM_EXPORT static void EnableWasmCodeCache(bool);
   BLINK_PLATFORM_EXPORT static void EnableCanvas2dImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableCooperativeScheduling(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSHexAlphaColor(bool);

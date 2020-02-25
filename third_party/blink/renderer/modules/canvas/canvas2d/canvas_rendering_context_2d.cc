@@ -459,8 +459,7 @@ String CanvasRenderingContext2D::font() const {
 
   canvas()->GetDocument().GetCanvasFontCache()->WillUseCurrentFont();
   StringBuilder serialized_font;
-  const FontDescription& font_description =
-      GetState().GetFont().GetFontDescription();
+  const FontDescription& font_description = GetState().GetFontDescription();
 
   if (font_description.Style() == ItalicSlopeValue())
     serialized_font.Append("italic ");
@@ -933,7 +932,7 @@ const Font& CanvasRenderingContext2D::AccessFont() {
   if (!GetState().HasRealizedFont())
     setFont(GetState().UnparsedFont());
   canvas()->GetDocument().GetCanvasFontCache()->WillUseCurrentFont();
-  return GetState().GetFont();
+  return ModifiableState().GetFont();
 }
 
 void CanvasRenderingContext2D::SetIsInHiddenPage(bool hidden) {

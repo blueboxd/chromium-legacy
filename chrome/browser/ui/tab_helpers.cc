@@ -260,9 +260,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(kPerformanceHintsObserver)) {
-    PerformanceHintsObserver::CreateForWebContents(web_contents);
-  }
   permissions::PermissionRequestManager::CreateForWebContents(web_contents);
   // The PopupBlockerTabHelper has an implicit dependency on
   // ChromeSubresourceFilterClient being available in its constructor.
@@ -317,7 +314,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (OomInterventionTabHelper::IsEnabled()) {
     OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
-
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextMenuPerformanceInfo) ||
+      base::FeatureList::IsEnabled(kPerformanceHintsObserver)) {
+    PerformanceHintsObserver::CreateForWebContents(web_contents);
+  }
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
 #else

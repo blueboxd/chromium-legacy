@@ -1429,15 +1429,13 @@ void BlinkTestController::OnResetDone() {
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&Shell::QuitMainMessageLoopForTesting));
+  Shell::QuitMainMessageLoopForTesting();
 }
 
 void BlinkTestController::OnLeakDetectionDone(
     const LeakDetector::LeakDetectionReport& report) {
   if (!report.leaked) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&Shell::QuitMainMessageLoopForTesting));
+    Shell::QuitMainMessageLoopForTesting();
     return;
   }
 

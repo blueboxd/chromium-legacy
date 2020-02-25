@@ -373,7 +373,7 @@ TEST(ContextProviderImplConfigTest, WithConfigWithCommandLineArgs) {
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
-  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.set_config_override_for_test(std::move(config_dict));
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&loop](const base::CommandLine& command,
                                          const base::LaunchOptions& options) {
@@ -406,7 +406,7 @@ TEST(ContextProviderImplConfigTest, WithConfigWithDisallowedCommandLineArgs) {
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
-  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.set_config_override_for_test(std::move(config_dict));
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&loop](const base::CommandLine& command,
                                          const base::LaunchOptions& options) {
@@ -439,7 +439,7 @@ TEST(ContextProviderImplConfigTest, WithConfigWithWronglyTypedCommandLineArgs) {
 
   base::RunLoop loop;
   ContextProviderImpl context_provider;
-  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.set_config_override_for_test(std::move(config_dict));
   context_provider.SetLaunchCallbackForTest(
       base::BindLambdaForTesting([&](const base::CommandLine& command,
                                      const base::LaunchOptions& options) {

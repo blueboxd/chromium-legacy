@@ -36,18 +36,6 @@ LayoutMenuList::LayoutMenuList(Element* element) : LayoutFlexibleBox(element) {
 
 LayoutMenuList::~LayoutMenuList() = default;
 
-bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
-                                    const ComputedStyle&) const {
-  // For a size=1 <select>, we only render the active option label through the
-  // InnerElement. We do not allow adding layout objects for options,
-  // optgroups, ::before, or ::after.
-  return object->GetNode() == &SelectElement()->InnerElement();
-}
-
-HTMLSelectElement* LayoutMenuList::SelectElement() const {
-  return To<HTMLSelectElement>(GetNode());
-}
-
 PhysicalRect LayoutMenuList::ControlClipRect(
     const PhysicalOffset& additional_offset) const {
   PhysicalRect outer_box = PhysicalContentBoxRect();

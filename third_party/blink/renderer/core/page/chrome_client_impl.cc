@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
+#include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/exported/web_settings_impl.h"
@@ -329,9 +330,11 @@ void ChromeClientImpl::SetOverscrollBehavior(
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
   // TODO(darin): Change caller to pass LocalFrame.
-  DCHECK(web_view_->MainFrameImpl());
-  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->Show(
+  WebLocalFrameImpl* main_frame = web_view_->MainFrameImpl();
+  DCHECK(main_frame);
+  main_frame->FrameWidgetImpl()->Client()->Show(
       static_cast<WebNavigationPolicy>(navigation_policy));
+  main_frame->DevToolsAgentImpl()->DidShowNewWindow();
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSource(

@@ -202,12 +202,17 @@ java_annotation_processor("robolectric_processor") {
   deps = [
     ":robolectric_annotations_java",
     ":sdk_list_txt",
-    "//build/android:sun_tools_java",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/android_deps:org_ow2_asm_asm_commons_java",
     "//third_party/android_deps:org_ow2_asm_asm_java",
     "//third_party/android_deps:org_ow2_asm_asm_tree_java",
+  ]
+  javac_args = [
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
   ]
   provider_configurations = [ "local/processor/src/main/resources/META-INF/services/javax.annotation.processing.Processor" ]
   main_class = "org.robolectric.annotation.processing.RobolectricProcessor"
@@ -398,12 +403,12 @@ java_library("robolectric_utils_java") {
     "//third_party/junit:junit",
   ]
   sources = [
+    "local/robolectric/src/main/java/org/robolectric/util/reflector/UnsafeAccess.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Accessor.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/ForType.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Reflector.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/ReflectorClassWriter.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Static.java",
-    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/UnsafeAccess.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WeakerHashMap.java",
     "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WithType.java",
     "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
@@ -1092,10 +1097,16 @@ java_library("shadows_multidex_java") {
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
     ":shadows_core_java",
-    "//build/android:sun_tools_java",
     "//third_party/android_deps:com_android_support_multidex_java_orig",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
+  ]
+
+  javac_args = [
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
   ]
 
   # Work-around for gradle generator not yet supporting annotation processors.

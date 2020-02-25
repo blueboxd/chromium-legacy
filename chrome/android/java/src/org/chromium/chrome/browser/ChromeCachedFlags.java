@@ -41,7 +41,6 @@ public class ChromeCachedFlags {
         List<String> featuresToCache = Arrays.asList(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED, ChromeFeatureList.CHROME_DUET,
                 ChromeFeatureList.CHROME_DUET_ADAPTIVE, ChromeFeatureList.CHROME_DUET_LABELED,
-                ChromeFeatureList.ANDROID_NIGHT_MODE_CCT,
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,

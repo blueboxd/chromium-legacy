@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.autofill.prefeditor;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -26,6 +24,8 @@ import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.widget.TintedDrawable;

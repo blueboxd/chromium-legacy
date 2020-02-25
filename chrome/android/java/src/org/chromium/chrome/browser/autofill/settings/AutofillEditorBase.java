@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill.settings;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -24,6 +23,8 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+
+import androidx.fragment.app.Fragment;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
 
+#include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/common/webui_url_constants.h"
 
 WebUIOmniboxPopupView::WebUIOmniboxPopupView(
@@ -16,4 +17,13 @@ WebUIOmniboxPopupView::WebUIOmniboxPopupView(
   // It's not implemented yet.
   constexpr char kOmniboxPopupUrl[] = "chrome://omnibox/omnibox_popup.html";
   LoadInitialURL(GURL(kOmniboxPopupUrl));
+}
+
+OmniboxPopupHandler* WebUIOmniboxPopupView::GetWebUIHandler() {
+  OmniboxUI* const omnibox_ui =
+      static_cast<OmniboxUI*>(GetWebContents()->GetWebUI()->GetController());
+  OmniboxPopupHandler* handler = omnibox_ui->popup_handler();
+
+  DCHECK(handler);
+  return handler;
 }

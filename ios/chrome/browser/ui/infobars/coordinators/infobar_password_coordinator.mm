@@ -177,7 +177,10 @@
   if (presentedFromBanner)
     return;
 
-  self.passwordInfoBarDelegate->InfobarPresenting(NO /*automatic*/);
+  // There's a chance the Delegate was destroyed while the presentation was
+  // taking place. Check if the delegate still exists.
+  if (self.passwordInfoBarDelegate)
+    self.passwordInfoBarDelegate->InfobarPresenting(NO /*automatic*/);
 }
 
 - (void)dismissBannerIfReady {

@@ -28,8 +28,10 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -123,6 +125,9 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
 }
 
 }  // namespace
+
+// UKM suffix for field trial recording.
+const char kUKMFieldTrialSuffix[] = "UKM";
 
 IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
@@ -236,6 +241,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
   PrefService* local_state = GetApplicationContext()->GetLocalState();
   metrics_service_ = std::make_unique<metrics::MetricsService>(
       metrics_state_manager_, this, local_state);
+  RegisterMetricsServiceProviders();
 
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
@@ -246,9 +252,11 @@ void IOSChromeMetricsServiceClient::Initialize() {
         std::make_unique<metrics::DemographicMetricsProvider>(
             std::make_unique<metrics::ChromeBrowserStateClient>(),
             metrics::MetricsLogUploader::MetricServiceType::UKM));
+    RegisterUKMProviders();
   }
+}
 
-  // Register metrics providers.
+void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
           base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
@@ -256,14 +264,12 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<OmniboxMetricsProvider>());
 
-  {
-    auto stability_metrics_provider =
-        std::make_unique<IOSChromeStabilityMetricsProvider>(
-            GetApplicationContext()->GetLocalState());
-    stability_metrics_provider_ = stability_metrics_provider.get();
-    metrics_service_->RegisterMetricsProvider(
-        std::move(stability_metrics_provider));
-  }
+  auto stability_metrics_provider =
+      std::make_unique<IOSChromeStabilityMetricsProvider>(
+          GetApplicationContext()->GetLocalState());
+  stability_metrics_provider_ = stability_metrics_provider.get();
+  metrics_service_->RegisterMetricsProvider(
+      std::move(stability_metrics_provider));
 
   // NOTE: metrics_state_manager_->IsMetricsReportingEnabled() returns false
   // during local testing. To test locally, modify
@@ -299,6 +305,19 @@ void IOSChromeMetricsServiceClient::Initialize() {
       std::make_unique<metrics::DemographicMetricsProvider>(
           std::make_unique<metrics::ChromeBrowserStateClient>(),
           metrics::MetricsLogUploader::MetricServiceType::UMA));
+}
+
+void IOSChromeMetricsServiceClient::RegisterUKMProviders() {
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::CPUMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::ScreenInfoMetricsProvider>());
+
+  // TODO(crbug.com/754877): Support synthetic trials for UKM.
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<variations::FieldTrialsProvider>(nullptr,
+                                                        kUKMFieldTrialSuffix));
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {

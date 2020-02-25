@@ -23,6 +23,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_utils.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_load_waiter.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/chrome_render_view_test.h"
@@ -179,8 +180,9 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
 
   void SynchronousLoadTabsFromLastSession() {
     // Ensures that the load is complete before continuing.
+    TabRestoreServiceLoadWaiter waiter(service_.get());
     service_->LoadTabsFromLastSession();
-    content::RunAllTasksUntilIdle();
+    waiter.Wait();
   }
 
   sessions::LiveTab* live_tab() { return live_tab_.get(); }
@@ -195,32 +197,6 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
   SessionID window_id_;
   SessionID tab_id_;
 };
-
-namespace {
-
-class TestTabRestoreServiceObserver
-    : public sessions::TabRestoreServiceObserver {
- public:
-  TestTabRestoreServiceObserver() : got_loaded_(false) {}
-
-  void clear_got_loaded() { got_loaded_ = false; }
-  bool got_loaded() const { return got_loaded_; }
-
-  // TabRestoreServiceObserver:
-  void TabRestoreServiceDestroyed(
-      sessions::TabRestoreService* service) override {}
-  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
-    got_loaded_ = true;
-  }
-
- private:
-  // Was TabRestoreServiceLoaded() invoked?
-  bool got_loaded_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTabRestoreServiceObserver);
-};
-
-}  // namespace
 
 TEST_F(TabRestoreServiceImplTest, Basic) {
   AddThreeNavigations();
@@ -285,6 +261,7 @@ TEST_F(TabRestoreServiceImplTest, Restore) {
 
   // Have the service record the tab.
   service_->CreateHistoricalTab(live_tab(), -1);
+  EXPECT_EQ(1U, service_->entries().size());
 
   // Recreate the service and have it load the tabs.
   RecreateService();
@@ -513,11 +490,7 @@ TEST_F(TabRestoreServiceImplTest, LoadPreviousSession) {
 
   EXPECT_FALSE(service_->IsLoaded());
 
-  TestTabRestoreServiceObserver observer;
-  service_->AddObserver(&observer);
   SynchronousLoadTabsFromLastSession();
-  EXPECT_TRUE(observer.got_loaded());
-  service_->RemoveObserver(&observer);
 
   // Make sure we get back one entry with one tab whose url is url1.
   ASSERT_EQ(1U, service_->entries().size());
@@ -984,11 +957,7 @@ TEST_F(TabRestoreServiceImplTest, GoToLoadedWhenHaveMaxEntries) {
   }
 
   EXPECT_FALSE(service_->IsLoaded());
-  TestTabRestoreServiceObserver observer;
-  service_->AddObserver(&observer);
   EXPECT_EQ(max_entries, service_->entries().size());
   SynchronousLoadTabsFromLastSession();
-  EXPECT_TRUE(observer.got_loaded());
   EXPECT_TRUE(service_->IsLoaded());
-  service_->RemoveObserver(&observer);
 }

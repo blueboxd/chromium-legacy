@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.share;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Environment;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -26,6 +29,7 @@ import org.chromium.ui.base.Clipboard;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Utility class for file operations for image data.
@@ -37,9 +41,11 @@ public class ShareImageFileUtils {
      * Directory name for shared images.
      *
      * Named "screenshot" for historical reasons as we only initially shared screenshot images.
+     * TODO(crbug.com/1055886): consider changing the directory name.
      */
     private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
     private static final String JPEG_EXTENSION = ".jpg";
+    private static final String FILE_NUMBER_FORMAT = " (%d)";
 
     /**
      * Delete the |file|, if the |file| is a directory, delete the files and directories in the
@@ -130,6 +136,7 @@ public class ShareImageFileUtils {
     /**
      * Temporarily saves the given set of JPEG bytes and provides that URI to a callback for
      * sharing.
+     *
      * @param context The context used to trigger the share action.
      * @param jpegImageData The image data to be shared in jpeg format.
      * @param callback A provided callback function which will act on the generated URI.
@@ -140,47 +147,176 @@ public class ShareImageFileUtils {
             Log.w(TAG, "Share failed -- Received image contains no data.");
             return;
         }
-
-        new AsyncTask<Uri>() {
+        OnImageSaveListener listener = new OnImageSaveListener() {
             @Override
-            protected Uri doInBackground() {
-                FileOutputStream fOut = null;
-                try {
-                    File path = new File(UiUtils.getDirectoryForImageCapture(context),
-                            SHARE_IMAGES_DIRECTORY_NAME);
-                    if (path.exists() || path.mkdir()) {
-                        File saveFile = File.createTempFile(
-                                String.valueOf(System.currentTimeMillis()), JPEG_EXTENSION, path);
-                        fOut = new FileOutputStream(saveFile);
-                        fOut.write(jpegImageData);
-                        fOut.flush();
+            public void onImageSaved(File imageFile) {
+                callback.onResult(ContentUriUtils.getContentUriFromFile(imageFile));
+            }
+            @Override
+            public void onImageSaveError() {}
+        };
 
-                        return ContentUriUtils.getContentUriFromFile(saveFile);
+        String fileName = String.valueOf(System.currentTimeMillis());
+        saveImage(fileName, "", listener, (fos) -> { writeImageData(fos, jpegImageData); }, true);
+    }
+
+    /**
+     * Saves bitmap to external storage directory.
+     *
+     * @param context The Context to use for determining download location.
+     * @param filename The filename without extension.
+     * @param bitmap The Bitmap to download.
+     * @param listener The OnImageSaveListener to notify the download results.
+     */
+    public static void saveBitmapToExternalStorage(
+            final Context context, String fileName, Bitmap bitmap, OnImageSaveListener listener) {
+        String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath();
+        saveImage(fileName, filePath, listener, (fos) -> { writeBitmap(fos, bitmap); }, false);
+    }
+
+    /**
+     * Interface for notifying bitmap download result.
+     */
+    public interface OnImageSaveListener {
+        void onImageSaved(File imageFile);
+        void onImageSaveError();
+    }
+
+    /**
+     * Interface for writing image information to a output stream.
+     */
+    private interface FileOutputStreamWriter {
+        void write(FileOutputStream fos) throws IOException;
+    }
+
+    /**
+     * Saves image to the given file.
+     *
+     * @param fileName The File instance of a destination file.
+     * @param filePath The File instance of a destination file.
+     * @param listener The OnImageSaveListener to notify the download results.
+     * @param writer The FileOutputStreamWriter that writes to given stream.
+     * @param isTemporary Indicates whether image should be save to a temporary file.
+     */
+    private static void saveImage(String fileName, String filePath, OnImageSaveListener listener,
+            FileOutputStreamWriter writer, boolean isTemporary) {
+        new AsyncTask<File>() {
+            @Override
+            protected File doInBackground() {
+                FileOutputStream fOut = null;
+                File destFile = null;
+                try {
+                    destFile = createFile(fileName, filePath, isTemporary);
+                    if (destFile != null && destFile.exists()) {
+                        fOut = new FileOutputStream(destFile);
+                        writer.write(fOut);
                     } else {
-                        Log.w(TAG, "Share failed -- Unable to create share image directory.");
+                        Log.w(TAG,
+                                "Share failed -- Unable to create or write to destination file.");
                     }
                 } catch (IOException ie) {
-                    // Ignore exception.
+                    cancel(true);
                 } finally {
                     StreamUtil.closeQuietly(fOut);
                 }
 
-                return null;
+                return destFile;
             }
 
             @Override
-            protected void onPostExecute(Uri imageUri) {
-                if (imageUri == null) {
+            protected void onCancelled() {
+                listener.onImageSaveError();
+            }
+
+            @Override
+            protected void onPostExecute(File imageFile) {
+                if (imageFile == null) {
+                    listener.onImageSaveError();
                     return;
                 }
+
                 if (ApplicationStatus.getStateForApplication()
                         == ApplicationState.HAS_DESTROYED_ACTIVITIES) {
                     return;
                 }
 
-                callback.onResult(imageUri);
+                listener.onImageSaved(imageFile);
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Creates file with specified path, name and extension.
+     *
+     * @param filePath The file path a destination file.
+     * @param fileName The file name a destination file.
+     * @param isTemporary Indicates whether image should be save to a temporary file.
+     *
+     * @return The new File object.
+     */
+    private static File createFile(String fileName, String filePath, boolean isTemporary)
+            throws IOException {
+        File path;
+        if (filePath.isEmpty()) {
+            path = getSharedFilesDirectory();
+        } else {
+            path = new File(filePath);
+        }
+
+        File newFile = null;
+        if (path.exists() || path.mkdir()) {
+            if (isTemporary) {
+                newFile = File.createTempFile(fileName, JPEG_EXTENSION, path);
+            } else {
+                newFile = getNextAvailableFile(filePath, fileName, JPEG_EXTENSION);
+            }
+        }
+
+        return newFile;
+    }
+
+    /**
+     * Returns next available file for the given fileName.
+     *
+     * @param filePath The file path a destination file.
+     * @param fileName The file name a destination file.
+     * @param extension The extension a destination file.
+     *
+     * @return The new File object.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static File getNextAvailableFile(String filePath, String fileName, String extension)
+            throws IOException {
+        File destFile = new File(filePath, fileName + extension);
+        int num = 0;
+        while (destFile.exists()) {
+            destFile = new File(filePath,
+                    fileName + String.format(Locale.getDefault(), FILE_NUMBER_FORMAT, ++num)
+                            + extension);
+        }
+        destFile.createNewFile();
+
+        return destFile;
+    }
+
+    /**
+     * Writes given bitmap to into the given fos.
+     *
+     * @param fos The FileOutputStream to write to.
+     * @param bitmap The Bitmap to write.
+     */
+    private static void writeBitmap(FileOutputStream fos, Bitmap bitmap) throws IOException {
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+    }
+
+    /**
+     * Writes given data to into the given fos.
+     *
+     * @param fos The FileOutputStream to write to.
+     * @param byte[] The byte[] to write.
+     */
+    private static void writeImageData(FileOutputStream fos, final byte[] data) throws IOException {
+        fos.write(data);
     }
 
     /**

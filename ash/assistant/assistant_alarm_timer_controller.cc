@@ -346,18 +346,12 @@ void AssistantAlarmTimerController::PerformAlarmTimerAction(
                    << "duration.";
         return;
       }
-      // Verify the timer is ringing.
-      DCHECK(model_.GetAlarmTimerById(alarm_timer_id.value()));
-      // LibAssistant doesn't currently support adding time to an ringing timer.
-      // We'll create a new one with the duration specified. Note that we
-      // currently only support this deep link for an alarm/timer that is
-      // ringing.
-      assistant_->StopAlarmTimerRinging();
-      assistant_->CreateTimer(duration.value());
+      assistant_->AddTimeToTimer(alarm_timer_id.value(), duration.value());
       break;
     case assistant::util::AlarmTimerAction::kStopRinging:
       assistant_->StopAlarmTimerRinging();
       break;
   }
 }
+
 }  // namespace ash

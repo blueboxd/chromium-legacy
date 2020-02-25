@@ -47,7 +47,6 @@ class MixerInput {
       kInternalError,
     };
 
-    // TODO(b/139311908) Track channel layout.
     virtual size_t num_channels() const = 0;
     virtual ::media::ChannelLayout channel_layout() const = 0;
     virtual int sample_rate() const = 0;
@@ -134,9 +133,19 @@ class MixerInput {
 
   // Sets the multiplier based on this stream's content type. The resulting
   // output volume should be the content type volume * the per-stream volume
-  // multiplier. If |fade_ms| is >= 0, the volume change should be faded over
-  // that many milliseconds; otherwise, the default fade time should be used.
-  void SetContentTypeVolume(float volume, int fade_ms);
+  // multiplier.
+  void SetContentTypeVolume(float volume);
+
+  // Sets min/max output volume for this stream (ie, limits the product of
+  // content type volume and per-stream volume multiplier). Note that mute
+  // and runtime output limits (for ducking) are applied after these limits.
+  void SetVolumeLimits(float volume_min, float volume_max);
+
+  // Limits the output volume for this stream to below |limit|. Used for
+  // ducking. If |fade_ms| is >= 0, the resulting volume change should be
+  // faded over that many milliseconds; otherwise, the default fade time should
+  // be used.
+  void SetOutputLimit(float limit, int fade_ms);
 
   // Sets whether or not this stream should be muted.
   void SetMuted(bool muted);
@@ -170,9 +179,12 @@ class MixerInput {
   std::unique_ptr<::media::AudioBus> fill_buffer_;
   std::unique_ptr<::media::ChannelMixer> channel_mixer_;
 
-  float stream_volume_multiplier_;
-  float type_volume_multiplier_;
-  float mute_volume_multiplier_;
+  float stream_volume_multiplier_ = 1.0f;
+  float type_volume_multiplier_ = 1.0f;
+  float volume_min_ = 0.0f;
+  float volume_max_ = 1.0f;
+  float output_volume_limit_ = 1.0f;
+  float mute_volume_multiplier_ = 1.0f;
   SlewVolume slew_volume_;
   // True if volume scale-accumulate has already been applied for at least
   // one channel of the current buffer.

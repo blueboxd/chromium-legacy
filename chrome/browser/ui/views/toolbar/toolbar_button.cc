@@ -53,11 +53,6 @@ SkColor GetDefaultTextColor(const ui::ThemeProvider* theme_provider) {
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 }
 
-SkColor GetDefaultBackgroundColor(const ui::ThemeProvider* theme_provider) {
-  return color_utils::GetColorWithMaxContrast(
-      GetDefaultTextColor(theme_provider));
-}
-
 }  // namespace
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -417,8 +412,6 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
     SkColor desired_light_color,
     SkColor dark_extreme,
     SkColor light_extreme) {
-  if (!theme_provider)
-    return desired_light_color;
   const SkColor background_color = GetDefaultBackgroundColor(theme_provider);
   const SkColor contrasting_color = color_utils::PickContrastingColor(
       desired_dark_color, desired_light_color, background_color);
@@ -437,6 +430,13 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
              contrasting_color, base_color, limit,
              color_utils::kMinimumReadableContrastRatio * 1.05)
       .color;
+}
+
+// static
+SkColor ToolbarButton::GetDefaultBackgroundColor(
+    const ui::ThemeProvider* theme_provider) {
+  return color_utils::GetColorWithMaxContrast(
+      GetDefaultTextColor(theme_provider));
 }
 
 // static

@@ -1161,6 +1161,56 @@ TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
                                                       *root_accessible));
 }
 
+TEST_F(BrowserAccessibilityManagerTest, TestNextNonDescendantInTreeOrder) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData node2;
+  node2.id = 2;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData node3;
+  node3.id = 3;
+  root.child_ids.push_back(3);
+
+  ui::AXNodeData node4;
+  node4.id = 4;
+  node3.child_ids.push_back(4);
+
+  ui::AXNodeData node5;
+  node5.id = 5;
+  root.child_ids.push_back(5);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, node2, node3, node4, node5),
+          test_browser_accessibility_delegate_.get(),
+          new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(3U, root_accessible->PlatformChildCount());
+  BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, node2_accessible);
+  BrowserAccessibility* node3_accessible = root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, node3_accessible);
+  ASSERT_EQ(1U, node3_accessible->PlatformChildCount());
+  BrowserAccessibility* node4_accessible =
+      node3_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, node4_accessible);
+  BrowserAccessibility* node5_accessible = root_accessible->PlatformGetChild(2);
+  ASSERT_NE(nullptr, node5_accessible);
+
+  EXPECT_EQ(nullptr, manager->NextNonDescendantInTreeOrder(nullptr));
+  EXPECT_EQ(node2_accessible, manager->NextInTreeOrder(root_accessible));
+  EXPECT_EQ(node3_accessible,
+            manager->NextNonDescendantInTreeOrder(node2_accessible));
+  EXPECT_EQ(node5_accessible,
+            manager->NextNonDescendantInTreeOrder(node3_accessible));
+  EXPECT_EQ(nullptr, manager->NextNonDescendantInTreeOrder(node5_accessible));
+}
+
 TEST_F(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
   ui::AXNodeData root;
   root.id = 1;

@@ -9,7 +9,9 @@
 #include "chromeos/components/help_app_ui/help_app_page_handler.h"
 #include "chromeos/components/help_app_ui/help_app_untrusted_ui.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
+#include "chromeos/components/web_applications/manifest_request_filter.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -25,12 +27,13 @@ content::WebUIDataSource* CreateHostDataSource() {
   // actual app content.
   source->SetDefaultResource(IDR_HELP_APP_HOST_INDEX_HTML);
   source->AddResourcePath("pwa.html", IDR_HELP_APP_PWA_HTML);
-  source->AddResourcePath("manifest.json", IDR_HELP_APP_MANIFEST);
   source->AddResourcePath("app_icon_192.png", IDR_HELP_APP_ICON_192);
   source->AddResourcePath("app_icon_512.png", IDR_HELP_APP_ICON_512);
   source->AddResourcePath("browser_proxy.js", IDR_HELP_APP_BROWSER_PROXY_JS);
   source->AddResourcePath("help_app.mojom-lite.js",
                           IDR_HELP_APP_HELP_APP_MOJOM_JS);
+  web_app::SetManifestRequestFilter(source, IDR_HELP_APP_MANIFEST,
+                                    IDS_HELP_APP_DISCOVER);
   return source;
 }
 }  // namespace

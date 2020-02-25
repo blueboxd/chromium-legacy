@@ -78,10 +78,11 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--memory', type=int, default=2048,
                            help='Sets the RAM size (MB) if launching in a VM'),
   common_args.add_argument(
-      '--no-kvm',
-      action='store_true',
-      default=False,
-      help='Disable KVM virtualization.')
+      '--allow-no-kvm',
+      action='store_false',
+      dest='require_kvm',
+      default=True,
+      help='Do not require KVM acceleration for emulators.')
   common_args.add_argument(
       '--os_check', choices=['check', 'update', 'ignore'],
       default='update',
@@ -120,7 +121,7 @@ def ConfigureLogging(args):
       logging.DEBUG if args.verbose else logging.WARN)
 
 
-def GetDeploymentTargetForArgs(args, require_kvm=False):
+def GetDeploymentTargetForArgs(args):
   """Constructs a deployment target object using parameters taken from
   command line arguments."""
   if args.system_log_file == '-':
@@ -150,10 +151,12 @@ def GetDeploymentTargetForArgs(args, require_kvm=False):
                          'os_check':args.os_check })
     return DeviceTarget(**target_args)
   else:
-    target_args.update({ 'cpu_cores':args.qemu_cpu_cores,
-                         'require_kvm':not args.no_kvm,
-                         'emu_type':args.device,
-                         'ram_size_mb':args.memory })
+    target_args.update({
+        'cpu_cores': args.qemu_cpu_cores,
+        'require_kvm': args.require_kvm,
+        'emu_type': args.device,
+        'ram_size_mb': args.memory
+    })
     if args.device == 'qemu':
       return QemuTarget(**target_args)
     else:

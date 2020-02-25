@@ -38024,6 +38024,7 @@ from previous Chrome versions.
   <int value="-868138290" label="CrostiniPortForwarding:disabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
+  <int value="-865414778" label="ContextMenuPerformanceInfo:enabled"/>
   <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864234985" label="UseDdljsonApi:enabled"/>
   <int value="-864232986" label="StartSurfaceAndroid:disabled"/>
@@ -40187,6 +40188,7 @@ from previous Chrome versions.
   <int value="1810258949" label="DisplayLocking:enabled"/>
   <int value="1810311887" label="WebAssemblyThreads:enabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
+  <int value="1812978232" label="ContextMenuPerformanceInfo:disabled"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816843861" label="ServiceWorkerServicification:enabled"/>

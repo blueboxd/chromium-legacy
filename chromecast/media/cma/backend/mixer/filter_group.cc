@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
@@ -20,6 +21,32 @@
 namespace chromecast {
 namespace media {
 
+namespace {
+
+bool ParseVolumeLimit(const base::Value* dict, float* min, float* max) {
+  if (!dict->is_dict()) {
+    return false;
+  }
+  auto min_value = dict->FindDoubleKey("min");
+  auto max_value = dict->FindDoubleKey("max");
+  if (!min_value && !max_value) {
+    return false;
+  }
+  *min = 0.0f;
+  *max = 1.0f;
+  if (min_value) {
+    *min =
+        base::ClampToRange(static_cast<float>(min_value.value()), 0.0f, 1.0f);
+  }
+  if (max_value) {
+    *max =
+        base::ClampToRange(static_cast<float>(max_value.value()), *min, 1.0f);
+  }
+  return true;
+}
+
+}  // namespace
+
 FilterGroup::GroupInput::GroupInput(
     FilterGroup* group,
     std::unique_ptr<InterleavedChannelMixer> channel_mixer)
@@ -30,10 +57,13 @@ FilterGroup::GroupInput::~GroupInput() = default;
 
 FilterGroup::FilterGroup(int num_channels,
                          const std::string& name,
-                         std::unique_ptr<PostProcessingPipeline> pipeline)
+                         std::unique_ptr<PostProcessingPipeline> pipeline,
+                         const base::Value* volume_limits)
     : num_channels_(num_channels),
       name_(name),
-      post_processing_pipeline_(std::move(pipeline)) {}
+      post_processing_pipeline_(std::move(pipeline)) {
+  ParseVolumeLimits(volume_limits);
+}
 
 FilterGroup::~FilterGroup() = default;
 
@@ -84,8 +114,39 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
       true /* is_silence */);
 }
 
+void FilterGroup::ParseVolumeLimits(const base::Value* volume_limits) {
+  if (!volume_limits) {
+    return;
+  }
+
+  DCHECK(volume_limits->is_dict());
+  // Get default limits.
+  if (ParseVolumeLimit(volume_limits, &default_volume_min_,
+                       &default_volume_max_)) {
+    LOG(INFO) << "Default volume limits for '" << name_ << "' group: ["
+              << default_volume_min_ << ", " << default_volume_max_ << "]";
+  }
+
+  float min, max;
+  for (const auto& item : volume_limits->DictItems()) {
+    if (ParseVolumeLimit(&item.second, &min, &max)) {
+      LOG(INFO) << "Volume limits for device ID '" << item.first << "' = ["
+                << min << ", " << max << "]";
+      volume_limits_.insert({item.first, {min, max}});
+    }
+  }
+}
+
 void FilterGroup::AddInput(MixerInput* input) {
   active_inputs_.insert(input);
+
+  auto it = volume_limits_.find(input->device_id());
+  if (it != volume_limits_.end()) {
+    input->SetVolumeLimits(it->second.first, it->second.second);
+    return;
+  }
+
+  input->SetVolumeLimits(default_volume_min_, default_volume_max_);
 }
 
 void FilterGroup::RemoveInput(MixerInput* input) {

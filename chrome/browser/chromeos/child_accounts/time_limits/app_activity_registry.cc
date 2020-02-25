@@ -379,7 +379,8 @@ void AppActivityRegistry::UpdateAppLimits(
     if (is_web && base::Contains(app_limits, GetChromeAppId()))
       new_limit = app_limits.at(GetChromeAppId());
 
-    // TODO(yilkal): Clean up the following if statement after bug bash.
+    // In Family Link app Chrome on Chrome OS is combined together with Android
+    // Chrome. Therefore, use Android Chrome's time limit.
     if (is_web && !base::Contains(app_limits, GetChromeAppId()) &&
         base::Contains(app_limits, GetAndroidChromeAppId())) {
       new_limit = app_limits.at(GetAndroidChromeAppId());

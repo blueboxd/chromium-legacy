@@ -1338,6 +1338,12 @@ WebView* RenderViewImpl::CreateView(
       compositor_deps_, std::move(view_params), std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
+  if (reply->wait_for_debugger) {
+    blink::WebLocalFrame* main_frame =
+        view->GetWebView()->MainFrame()->ToWebLocalFrame();
+    main_frame->WaitForDebuggerWhenShown();
+  }
+
   return view->GetWebView();
 }
 

@@ -11,11 +11,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,12 +31,7 @@
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "third_party/blink/public/common/features.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/template_expressions.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
 
@@ -232,35 +223,6 @@ gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
 
   return provider->system_web_app_manager().GetMinimumWindowSize(
       app_controller->GetAppId());
-}
-
-void SetManifestRequestFilter(content::WebUIDataSource* source,
-                              int manifest_idr,
-                              int name_ids) {
-  ui::TemplateReplacements replacements;
-  base::string16 name = l10n_util::GetStringUTF16(name_ids);
-  base::ReplaceChars(name, base::ASCIIToUTF16("\""), base::ASCIIToUTF16("\\\""),
-                     &name);
-  replacements["name"] = base::UTF16ToUTF8(name);
-
-  scoped_refptr<base::RefCountedMemory> bytes =
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          manifest_idr);
-  base::StringPiece content(reinterpret_cast<const char*>(bytes->front()),
-                            bytes->size());
-  std::string response = ui::ReplaceTemplateExpressions(content, replacements);
-
-  source->SetRequestFilter(
-      base::BindRepeating(
-          [](const std::string& path) { return path == "manifest.json"; }),
-      base::BindRepeating(
-          [](const std::string& response, const std::string& path,
-             content::WebUIDataSource::GotDataCallback callback) {
-            std::string response_copy = response;
-            std::move(callback).Run(
-                base::RefCountedString::TakeString(&response_copy));
-          },
-          std::move(response)));
 }
 
 }  // namespace web_app

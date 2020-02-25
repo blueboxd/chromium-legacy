@@ -696,4 +696,27 @@ bool ShouldHaveReadonlyStateByDefault(const ax::mojom::Role role) {
   return false;
 }
 
+bool HasPresentationalChildren(const ax::mojom::Role role) {
+  // See http://www.w3.org/TR/core-aam-1.1/#exclude_elements2.
+  if (IsImage(role))
+    return true;
+
+  switch (role) {
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kProgressIndicator:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTab:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace ui

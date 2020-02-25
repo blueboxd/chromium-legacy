@@ -145,6 +145,10 @@ AX_EXPORT bool SupportsToggle(const ax::mojom::Role role);
 // Returns true if the node should be read only by default
 AX_EXPORT bool ShouldHaveReadonlyStateByDefault(const ax::mojom::Role role);
 
+// Returns true for objects which have the characteristic "Children
+// Presentational: True".
+AX_EXPORT bool HasPresentationalChildren(const ax::mojom::Role role);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_

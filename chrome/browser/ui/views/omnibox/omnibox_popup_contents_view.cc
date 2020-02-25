@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox_popup_handler.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -210,8 +211,10 @@ bool OmniboxPopupContentsView::IsOpen() const {
 }
 
 void OmniboxPopupContentsView::InvalidateLine(size_t line) {
-  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
-    return;  // TODO(tommycli): Not implemented yet for WebUI.
+  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
+    webui_view_->GetWebUIHandler()->InvalidateLine(line);
+    return;
+  }
 
   OmniboxResultView* result = result_view_at(line);
   result->Invalidate();
@@ -224,8 +227,10 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
 }
 
 void OmniboxPopupContentsView::OnSelectionStateChanged(size_t line) {
-  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
-    return;  // TODO(tommycli): Not implemented yet for WebUI.
+  if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
+    webui_view_->GetWebUIHandler()->OnSelectionStateChanged(line);
+    return;
+  }
 
   result_view_at(line)->OnSelectionStateChanged();
   InvalidateLine(line);

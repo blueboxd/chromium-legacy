@@ -872,8 +872,13 @@ MOCK_METHOD5(GetVertexAttribPointervRobustANGLE,
 MOCK_METHOD2(Hint, void(GLenum target, GLenum mode));
 MOCK_METHOD4(ImportMemoryFdEXT,
              void(GLuint memory, GLuint64 size, GLenum handleType, GLint fd));
+MOCK_METHOD4(
+    ImportMemoryZirconHandleANGLE,
+    void(GLuint memory, GLuint64 size, GLenum handleType, GLuint handle));
 MOCK_METHOD3(ImportSemaphoreFdEXT,
              void(GLuint semaphore, GLenum handleType, GLint fd));
+MOCK_METHOD3(ImportSemaphoreZirconHandleANGLE,
+             void(GLuint semaphore, GLenum handleType, GLuint handle));
 MOCK_METHOD2(InsertEventMarkerEXT, void(GLsizei length, const char* marker));
 MOCK_METHOD3(InvalidateFramebuffer,
              void(GLenum target,

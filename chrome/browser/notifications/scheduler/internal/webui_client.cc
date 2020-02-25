@@ -29,4 +29,8 @@ void WebUIClient::OnUserAction(const UserActionData& action_data) {
   NOTIMPLEMENTED();
 }
 
+std::unique_ptr<ThrottleConfig> WebUIClient::GetThrottleConfig() {
+  return nullptr;
+}
+
 }  // namespace notifications

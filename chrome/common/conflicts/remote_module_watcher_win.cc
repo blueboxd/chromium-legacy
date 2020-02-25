@@ -58,10 +58,12 @@ void RemoteModuleWatcher::InitializeOnTaskRunner(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   module_event_sink_.Bind(std::move(remote_sink));
-  module_watcher_ = ModuleWatcher::Create(base::BindRepeating(
-      &OnModuleEvent, task_runner_,
-      base::BindRepeating(&RemoteModuleWatcher::HandleModuleEvent,
-                          weak_ptr_factory_.GetWeakPtr())));
+  module_watcher_ = ModuleWatcher::Create(
+      base::BindRepeating(
+          &OnModuleEvent, task_runner_,
+          base::BindRepeating(&RemoteModuleWatcher::HandleModuleEvent,
+                              weak_ptr_factory_.GetWeakPtr())),
+      /*report_background_loaded_modules=*/false);
 }
 
 void RemoteModuleWatcher::HandleModuleEvent(

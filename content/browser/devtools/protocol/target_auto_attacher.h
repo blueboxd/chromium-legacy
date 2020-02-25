@@ -43,7 +43,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   void UpdateServiceWorkers();
   void AgentHostClosed(DevToolsAgentHost* host);
 
-  bool ShouldThrottleFramesNavigation();
+  bool ShouldThrottleFramesNavigation() const;
   void AttachToAgentHost(DevToolsAgentHost* host);
   DevToolsAgentHost* AutoAttachToFrame(NavigationRequest* navigation_request);
   void ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,

@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.autofill.prefeditor;
 
 import android.content.Context;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import androidx.appcompat.widget.Toolbar;
 
 import org.chromium.chrome.R;
 

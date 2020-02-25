@@ -914,6 +914,24 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
 }
 
 // static
+// Next non-descendant object in tree using depth-first pre-order traversal.
+BrowserAccessibility* BrowserAccessibilityManager::NextNonDescendantInTreeOrder(
+    const BrowserAccessibility* object) {
+  if (!object)
+    return nullptr;
+
+  while (object) {
+    BrowserAccessibility* sibling = object->PlatformGetNextSibling();
+    if (sibling)
+      return sibling;
+
+    object = object->PlatformGetParent();
+  }
+
+  return nullptr;
+}
+
+// static
 // Previous object in tree using depth-first pre-order traversal.
 BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
     const BrowserAccessibility* object,

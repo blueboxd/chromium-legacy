@@ -11,9 +11,6 @@ declare_args() {
   # https://research.fb.com/wp-content/uploads/2017/01/cgo2017-hfsort-final1.pdf?
   # to a file, used for generating orderfiles in Chrome OS
   dump_call_chain_clustering_order = ""
-
-  # Enable pattern initialization. Disabled by default. http://crbug.com/966551
-  enable_pattern_initialization = false
 }
 
 declare_args() {
@@ -33,9 +30,5 @@ config("compiler") {
   if (use_new_pass_manager) {
     cflags = [ "-fexperimental-new-pass-manager" ]
     ldflags = [ "-fexperimental-new-pass-manager" ]
-  }
-
-  if (enable_pattern_initialization) {
-    cflags = [ "-ftrivial-auto-var-init=pattern" ]
   }
 }

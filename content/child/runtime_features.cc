@@ -241,8 +241,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kUseFeatureState},
           {wf::EnableCacheInlineScriptCode, features::kCacheInlineScriptCode,
            kUseFeatureState},
-          {wf::EnableWasmCodeCache, blink::features::kWasmCodeCache,
-           kUseFeatureState},
           {wf::EnableExperimentalProductivityFeatures,
            features::kExperimentalProductivityFeatures, kEnableOnly},
           {wf::EnableFeaturePolicyForSandbox,

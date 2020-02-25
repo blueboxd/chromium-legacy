@@ -354,6 +354,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Walk the tree using depth-first pre-order traversal.
   static BrowserAccessibility* NextInTreeOrder(
       const BrowserAccessibility* object);
+  static BrowserAccessibility* NextNonDescendantInTreeOrder(
+      const BrowserAccessibility* object);
   static BrowserAccessibility* PreviousInTreeOrder(
       const BrowserAccessibility* object,
       bool can_wrap_to_last_element);

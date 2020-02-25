@@ -36,7 +36,7 @@ namespace blink {
 
 AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
                                    AXObjectCacheImpl& ax_object_cache)
-    : AXMockObject(ax_object_cache), element_(element) {}
+    : AXNodeObject(element, ax_object_cache), element_(element) {}
 
 AXMenuListOption::~AXMenuListOption() {
   DCHECK(!element_);
@@ -44,7 +44,7 @@ AXMenuListOption::~AXMenuListOption() {
 
 void AXMenuListOption::Detach() {
   element_ = nullptr;
-  AXMockObject::Detach();
+  AXNodeObject::Detach();
 }
 
 LocalFrameView* AXMenuListOption::DocumentFrameView() const {
@@ -154,7 +154,7 @@ bool AXMenuListOption::OnNativeClickAction() {
   if (IsA<AXMenuListPopup>(ParentObject()))
     return ParentObject()->OnNativeClickAction();
 
-  return AXMockObject::OnNativeClickAction();
+  return AXNodeObject::OnNativeClickAction();
 }
 
 bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
@@ -236,7 +236,7 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
 
 void AXMenuListOption::Trace(Visitor* visitor) {
   visitor->Trace(element_);
-  AXMockObject::Trace(visitor);
+  AXNodeObject::Trace(visitor);
 }
 
 }  // namespace blink

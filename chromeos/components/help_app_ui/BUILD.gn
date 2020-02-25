@@ -24,9 +24,11 @@ static_library("help_app_ui") {
   deps = [
     ":mojo_bindings",
     ":mojo_bindings_js",
+    "//chromeos/components/web_applications",
     "//chromeos/constants",
     "//chromeos/resources:help_app_bundle_resources",
     "//chromeos/resources:help_app_resources",
+    "//chromeos/strings",
     "//chromeos/system",
     "//content/public/browser",
     "//content/public/common",

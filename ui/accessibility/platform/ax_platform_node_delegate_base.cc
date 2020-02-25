@@ -551,7 +551,7 @@ base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
 }
 
 const std::vector<gfx::NativeViewAccessible>
-AXPlatformNodeDelegateBase::GetDescendants() const {
+AXPlatformNodeDelegateBase::GetUIADescendants() const {
   return {};
 }
 

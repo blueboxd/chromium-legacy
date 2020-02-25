@@ -214,10 +214,6 @@ config("runtime_library") {
     "_SECURE_ATL",
   ]
 
-  # This is required for ATL to use XP-safe versions of its functions.
-  # TODO(thakis): We no longer support XP; try removing this.
-  defines += [ "_USING_V110_SDK71_" ]
-
   if (current_os == "winuwp") {
     # When targeting Windows Runtime, certain compiler/linker flags are
     # necessary.

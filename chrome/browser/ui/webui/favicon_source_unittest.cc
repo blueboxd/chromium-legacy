@@ -9,6 +9,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/native_theme/test_native_theme.h"
@@ -188,6 +192,44 @@ TEST_F(FaviconSourceTestWithLegacyFormat,
   source()->StartDataRequest(
       GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
       test_web_contents_getter_, base::BindRepeating(&Noop));
+}
+
+TEST_F(FaviconSourceTestWithLegacyFormat,
+       ShouldRecordFaviconResourceHistogram_NonExtensionOrigin) {
+  base::HistogramTester tester;
+  source()->StartDataRequest(
+      GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
+      test_web_contents_getter_, base::DoNothing());
+  tester.ExpectBucketCount("Extensions.FaviconResourceRequested",
+                           extensions::Manifest::TYPE_EXTENSION, 0);
+}
+
+TEST_F(FaviconSourceTestWithLegacyFormat,
+       ShouldRecordFaviconResourceHistogram_ExtensionOrigin) {
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("one").Build();
+  extensions::ExtensionRegistry::Get(&profile_)->AddEnabled(extension);
+  content::WebContentsTester::For(test_web_contents_.get())
+      ->SetLastCommittedURL(extension->url());
+  base::HistogramTester tester;
+  source()->StartDataRequest(
+      GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
+      test_web_contents_getter_, base::DoNothing());
+  tester.ExpectBucketCount("Extensions.FaviconResourceRequested",
+                           extensions::Manifest::TYPE_EXTENSION, 1);
+}
+
+TEST_F(FaviconSourceTestWithFavicon2Format,
+       ShouldNotRecordFaviconResourceHistogram) {
+  base::HistogramTester tester;
+  source()->StartDataRequest(
+      GURL(base::StrCat({kDummyPrefix, "size/16@1x/https://www.google.com"})),
+      test_web_contents_getter_, base::BindRepeating(&Noop));
+  std::unique_ptr<base::HistogramSamples> samples(
+      tester.GetHistogramSamplesSinceCreation(
+          "Extensions.FaviconResourceUsed"));
+  EXPECT_TRUE(samples);
+  EXPECT_EQ(0, samples->TotalCount());
 }
 
 TEST_F(FaviconSourceTestWithFavicon2Format, DarkDefault) {

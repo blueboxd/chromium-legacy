@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
@@ -57,8 +56,7 @@ public class CustomTabNightModeStateController implements Destroyable, NightMode
      * @param intent  The {@link Intent} to retrieve information about the initial state.
      */
     void initialize(AppCompatDelegate delegate, Intent intent) {
-        if (!NightModeUtils.isNightModeSupported()
-                || !CachedFeatureFlags.isNightModeForCustomTabsAvailable()) {
+        if (!NightModeUtils.isNightModeSupported()) {
             // Always stay in light mode if night mode is not available.
             mRequestedColorScheme = CustomTabsIntent.COLOR_SCHEME_LIGHT;
             return;

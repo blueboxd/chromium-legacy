@@ -427,7 +427,9 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
       FROM_HERE, base::BindOnce(&InitializeModuleDatabase,
                                 third_party_blocking_policy_enabled));
 
-  *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
+  *module_watcher =
+      ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent),
+                            /* report_background_loaded_modules = */ true);
 }
 
 void ShowCloseBrowserFirstMessageBox() {

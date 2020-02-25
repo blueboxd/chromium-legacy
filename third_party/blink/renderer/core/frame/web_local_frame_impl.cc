@@ -2527,6 +2527,11 @@ Node* WebLocalFrameImpl::ContextMenuNodeInner() const {
       .ContextMenuNodeForFrame(GetFrame());
 }
 
+void WebLocalFrameImpl::WaitForDebuggerWhenShown() {
+  DCHECK(frame_->IsLocalRoot());
+  DevToolsAgentImpl()->WaitForDebuggerWhenShown();
+}
+
 void WebLocalFrameImpl::SetDevToolsAgentImpl(WebDevToolsAgentImpl* agent) {
   DCHECK(!dev_tools_agent_);
   dev_tools_agent_ = agent;

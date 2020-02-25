@@ -136,11 +136,7 @@ def parse_csv_results(csv_obj, upper_limit_data):
     if (row['avg'] == '' or row['count'] == 0):
       continue
     values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
-
-    upper_limit_ci = upper_limit_data[story_name]['ci_095']
-    # Only average values which are not noisy will be used
-    if (float(row['ci_095']) <= upper_limit_ci * CI_ERROR_MARGIN):
-      values_per_story[story_name]['averages'].append(float(row['avg']))
+    values_per_story[story_name]['averages'].append(float(row['avg']))
 
   return values_per_story
 

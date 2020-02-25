@@ -98,16 +98,14 @@ class TestRepresentativePerfScript(unittest.TestCase):
     self.assertEquals(values_per_story['story_1']['ci_095'], [1.5])
 
     # Record with avg 12 has high noise.
-    self.assertEquals(values_per_story['story_3']['averages'], [8.0, 7.0])
+    self.assertEquals(values_per_story['story_3']['averages'], [8.0, 7.0, 12.0])
     self.assertEquals(values_per_story['story_3']['ci_095'], [2.0, 15.0, 16.0])
 
     self.assertEquals(len(values_per_story['story_4']['averages']), 0)
     self.assertEquals(len(values_per_story['story_4']['ci_095']), 0)
     self.assertEquals(len(values_per_story['story_5']['averages']), 0)
     self.assertEquals(len(values_per_story['story_5']['ci_095']), 0)
-
-    # High noise record will be filtered.
-    self.assertEquals(len(values_per_story['story_6']['averages']), 0)
+    self.assertEquals(values_per_story['story_6']['averages'], [12.0])
     self.assertEquals(values_per_story['story_6']['ci_095'], [40.0])
 
   def test_compare_values_1(self):

@@ -496,9 +496,6 @@ extern const char kEnableWasmBaselineDescription[];
 extern const char kEnableWasmCodeGCName[];
 extern const char kEnableWasmCodeGCDescription[];
 
-extern const char kEnableWasmCodeCacheName[];
-extern const char kEnableWasmCodeCacheDescription[];
-
 extern const char kEnableWasmLazyCompilationName[];
 extern const char kEnableWasmLazyCompilationDescription[];
 
@@ -1341,6 +1338,9 @@ extern const char kContentIndexingNTPDescription[];
 
 extern const char kContextMenuCopyImageName[];
 extern const char kContextMenuCopyImageDescription[];
+
+extern const char kContextMenuPerformanceInfoName[];
+extern const char kContextMenuPerformanceInfoDescription[];
 
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];

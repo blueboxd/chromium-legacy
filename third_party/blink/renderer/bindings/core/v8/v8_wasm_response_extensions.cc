@@ -211,8 +211,6 @@ class ExceptionToAbortStreamingScope {
 
 RawResource* GetRawResource(ScriptState* script_state,
                             const String& url_string) {
-  if (!RuntimeEnabledFeatures::WasmCodeCacheEnabled())
-    return nullptr;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context)
     return nullptr;

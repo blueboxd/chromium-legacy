@@ -145,11 +145,4 @@ DiscardAtkKeyEvent AtkUtilAuraLinux::HandleAtkKeyEvent(
   return discard ? DiscardAtkKeyEvent::Discard : DiscardAtkKeyEvent::Retain;
 }
 
-#if !defined(USE_X11)
-DiscardAtkKeyEvent AtkUtilAuraLinux::HandleKeyEvent(
-    const ui::KeyEvent& ui_key_event) {
-  NOTREACHED();
-}
-#endif
-
 }  // namespace ui

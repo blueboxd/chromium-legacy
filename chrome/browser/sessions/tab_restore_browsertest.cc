@@ -136,7 +136,8 @@ class TabRestoreTest : public InProcessBrowserTest {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     {
-      TabRestoreServiceLoadWaiter waiter(browser);
+      TabRestoreServiceLoadWaiter waiter(
+          TabRestoreServiceFactory::GetForProfile(browser->profile()));
       chrome::RestoreTab(browser);
       waiter.Wait();
     }
@@ -858,13 +859,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_GetRestoreTabType) {
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
-  waiter.Wait();
-
-  // When we start, we should get nothing.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(service);
+  TabRestoreServiceLoadWaiter waiter(service);
+  waiter.Wait();
+
+  // When we start, we should get nothing.
   EXPECT_TRUE(service->entries().empty());
 
   // Add a tab and close it
@@ -887,13 +888,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
-  waiter.Wait();
-
-  // When we start this time we should get a Tab.
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(service);
+  TabRestoreServiceLoadWaiter waiter(service);
+  waiter.Wait();
+
+  // When we start this time we should get a Tab.
   ASSERT_GE(service->entries().size(), 1u);
   EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }

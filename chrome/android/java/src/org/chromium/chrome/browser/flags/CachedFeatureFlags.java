@@ -64,7 +64,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS, true);
             put(ChromeFeatureList.IMMERSIVE_UI_MODE, false);
             put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
-            put(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT, true);
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
             put(ChromeFeatureList.PAINT_PREVIEW_TEST, false);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
@@ -104,8 +103,6 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                     ChromePreferenceKeys
                             .FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT);
-            put(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT,
-                    ChromePreferenceKeys.FLAGS_CACHED_NIGHT_MODE_CCT_AVAILABLE);
             put(ChromeFeatureList.START_SURFACE_ANDROID,
                     ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED);
             put(ChromeFeatureList.PAINT_PREVIEW_TEST,
@@ -282,22 +279,6 @@ public class CachedFeatureFlags {
      */
     public static boolean isLabeledBottomToolbarEnabled() {
         return isEnabled(ChromeFeatureList.CHROME_DUET_LABELED) && isBottomToolbarEnabled();
-    }
-
-    /**
-     * @return Whether or not night mode experiment is enabled (i.e. night mode experiment is
-     *         enabled) for custom tabs.
-     */
-    public static boolean isNightModeForCustomTabsAvailable() {
-        return isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT);
-    }
-
-    /**
-     * Toggles whether the night mode for custom tabs experiment is enabled. Must only be used for
-     * testing. Should be reset back to NULL after the test has finished.
-     */
-    public static void setNightModeForCustomTabsAvailableForTesting(Boolean available) {
-        setForTesting(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT, available);
     }
 
     public static boolean isCommandLineOnNonRootedEnabled() {

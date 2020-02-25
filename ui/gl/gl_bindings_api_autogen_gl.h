@@ -881,9 +881,16 @@ void glImportMemoryFdEXTFn(GLuint memory,
                            GLuint64 size,
                            GLenum handleType,
                            GLint fd) override;
+void glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                       GLuint64 size,
+                                       GLenum handleType,
+                                       GLuint handle) override;
 void glImportSemaphoreFdEXTFn(GLuint semaphore,
                               GLenum handleType,
                               GLint fd) override;
+void glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                          GLenum handleType,
+                                          GLuint handle) override;
 void glInsertEventMarkerEXTFn(GLsizei length, const char* marker) override;
 void glInvalidateFramebufferFn(GLenum target,
                                GLsizei numAttachments,

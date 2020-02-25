@@ -4,6 +4,8 @@
 
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 
+#include <algorithm>
+
 #include "build/build_config.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/display/display.h"

@@ -8,31 +8,12 @@ import("//build/config/python.gni")
 import("//build_overrides/build.gni")
 
 if (enable_java_templates) {
-  sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"
-
   # Create or update the API versions cache if necessary by running a
   # functionally empty lint task. This prevents racy creation of the
   # cache while linting java targets in android_lint.
   android_lint("prepare_android_lint_cache") {
     android_manifest = "//build/android/AndroidManifest.xml"
     create_cache = true
-  }
-
-  action("find_sun_tools_jar") {
-    script = "//build/android/gyp/find_sun_tools_jar.py"
-    depfile = "$target_gen_dir/$target_name.d"
-    outputs = [ sun_tools_jar_path ]
-    args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--output",
-      rebase_path(sun_tools_jar_path, root_build_dir),
-    ]
-  }
-
-  java_prebuilt("sun_tools_java") {
-    jar_path = sun_tools_jar_path
-    deps = [ ":find_sun_tools_jar" ]
   }
 
   # Write to a file some GN vars that are useful to scripts that use the output

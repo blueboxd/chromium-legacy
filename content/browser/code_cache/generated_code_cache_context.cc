@@ -24,12 +24,9 @@ void GeneratedCodeCacheContext::Initialize(const base::FilePath& path,
       new GeneratedCodeCache(path.AppendASCII("js"), max_bytes,
                              GeneratedCodeCache::CodeCacheType::kJavaScript));
 
-  // Only create the Wasm cache if it's enabled.
-  if (base::FeatureList::IsEnabled(blink::features::kWasmCodeCache)) {
-    generated_wasm_code_cache_.reset(new GeneratedCodeCache(
-        path.AppendASCII("wasm"), max_bytes,
-        GeneratedCodeCache::CodeCacheType::kWebAssembly));
-  }
+  generated_wasm_code_cache_.reset(
+      new GeneratedCodeCache(path.AppendASCII("wasm"), max_bytes,
+                             GeneratedCodeCache::CodeCacheType::kWebAssembly));
 }
 
 void GeneratedCodeCacheContext::Shutdown() {

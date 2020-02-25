@@ -4093,8 +4093,7 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
   std::vector<RenderProcessHost*> suitable_renderers;
   suitable_renderers.reserve(GetAllHosts().size());
 
-  iterator iter(AllHostsIterator());
-  while (!iter.IsAtEnd()) {
+  for (iterator iter(AllHostsIterator()); !iter.IsAtEnd(); iter.Advance()) {
     if (iter.GetCurrentValue()->MayReuseHost() &&
         RenderProcessHostImpl::IsSuitableHost(
             iter.GetCurrentValue(), site_instance->GetIsolationContext(),
@@ -4107,7 +4106,6 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
 
       suitable_renderers.push_back(iter.GetCurrentValue());
     }
-    iter.Advance();
   }
 
   // Now pick a random suitable renderer, if we have any.

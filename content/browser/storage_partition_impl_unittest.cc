@@ -1476,10 +1476,6 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
 TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
   const GURL kResourceURL("http://host4/script.js");
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(blink::features::kWasmCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(blink::features::kWasmCodeCache));
-
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   // Ensure code cache is initialized.

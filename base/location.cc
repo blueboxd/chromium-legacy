@@ -57,10 +57,15 @@ std::string Location::ToString() const {
 #define RETURN_ADDRESS() nullptr
 #endif
 
+#if !BUILDFLAG(FROM_HERE_USES_LOCATION_BUILTINS)
+#if !BUILDFLAG(ENABLE_LOCATION_SOURCE)
+
 // static
 NOINLINE Location Location::CreateFromHere(const char* file_name) {
   return Location(file_name, RETURN_ADDRESS());
 }
+
+#else
 
 // static
 NOINLINE Location Location::CreateFromHere(const char* function_name,
@@ -68,6 +73,9 @@ NOINLINE Location Location::CreateFromHere(const char* function_name,
                                            int line_number) {
   return Location(function_name, file_name, line_number, RETURN_ADDRESS());
 }
+
+#endif
+#endif
 
 #if SUPPORTS_LOCATION_BUILTINS && BUILDFLAG(ENABLE_LOCATION_SOURCE)
 // static

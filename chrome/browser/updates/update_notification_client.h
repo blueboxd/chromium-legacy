@@ -23,6 +23,7 @@ class UpdateNotificationClient
  public:
   using NotificationData = notifications::NotificationData;
   using UserActionData = notifications::UserActionData;
+  using ThrottleConfig = notifications::ThrottleConfig;
   using GetServiceCallback =
       base::RepeatingCallback<UpdateNotificationService*()>;
 
@@ -37,6 +38,7 @@ class UpdateNotificationClient
   void OnSchedulerInitialized(bool success,
                               std::set<std::string> guids) override;
   void OnUserAction(const UserActionData& action_data) override;
+  std::unique_ptr<ThrottleConfig> GetThrottleConfig() override;
 
   GetServiceCallback get_service_callback_;
 

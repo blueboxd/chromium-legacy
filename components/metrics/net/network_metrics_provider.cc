@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -27,7 +29,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/android/network_library.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #endif

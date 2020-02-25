@@ -2929,11 +2929,28 @@ MockGLInterface::Mock_glImportMemoryFdEXT(GLuint memory,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
+                                                      GLuint64 size,
+                                                      GLenum handleType,
+                                                      GLuint handle) {
+  MakeGlMockFunctionUnique("glImportMemoryZirconHandleANGLE");
+  interface_->ImportMemoryZirconHandleANGLE(memory, size, handleType, handle);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glImportSemaphoreFdEXT(GLuint semaphore,
                                              GLenum handleType,
                                              GLint fd) {
   MakeGlMockFunctionUnique("glImportSemaphoreFdEXT");
   interface_->ImportSemaphoreFdEXT(semaphore, handleType, fd);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glImportSemaphoreZirconHandleANGLE(GLuint semaphore,
+                                                         GLenum handleType,
+                                                         GLuint handle) {
+  MakeGlMockFunctionUnique("glImportSemaphoreZirconHandleANGLE");
+  interface_->ImportSemaphoreZirconHandleANGLE(semaphore, handleType, handle);
 }
 
 void GL_BINDING_CALL
@@ -6012,8 +6029,14 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glHint);
   if (strcmp(name, "glImportMemoryFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportMemoryFdEXT);
+  if (strcmp(name, "glImportMemoryZirconHandleANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportMemoryZirconHandleANGLE);
   if (strcmp(name, "glImportSemaphoreFdEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glImportSemaphoreFdEXT);
+  if (strcmp(name, "glImportSemaphoreZirconHandleANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glImportSemaphoreZirconHandleANGLE);
   if (strcmp(name, "glInsertEventMarkerEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glInsertEventMarkerEXT);
   if (strcmp(name, "glInvalidateFramebuffer") == 0)

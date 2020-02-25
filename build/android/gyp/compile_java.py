@@ -421,6 +421,7 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
       build_utils.CheckOutput(
           cmd,
           print_stdout=options.chromium_code,
+          stdout_filter=ProcessJavacOutput,
           stderr_filter=ProcessJavacOutput)
       logging.info('Finished build command')
 

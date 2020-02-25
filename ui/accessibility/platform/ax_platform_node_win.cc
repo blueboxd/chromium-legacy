@@ -6902,15 +6902,19 @@ bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
 }
 
 bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
-  switch (GetData().role) {
-    case ax::mojom::Role::kButton:
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kGraphicsSymbol:
+  auto role = GetData().role;
+
+  if (HasPresentationalChildren(role))
+    return true;
+
+  switch (role) {
+    // Other elements that are expected by UIA to hide their children without
+    // having "Children Presentational: True".
+    //
+    // TODO(bebeaudr): We might be able to remove ax::mojom::Role::kLink once
+    // http://crbug.com/1054514 is fixed. Links should not have to hide their
+    // children.
     case ax::mojom::Role::kLink:
-    case ax::mojom::Role::kMath:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kScrollBar:
-    case ax::mojom::Role::kSlider:
     case ax::mojom::Role::kTextField:
       return true;
     default:

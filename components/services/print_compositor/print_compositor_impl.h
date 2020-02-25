@@ -176,9 +176,7 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
   // Stores the concurrent document composition information.
   struct DocumentInfo {
-    // Create the DocumentInfo object, which also creates a corresponding Skia
-    // document object.
-    explicit DocumentInfo(const std::string& creator);
+    DocumentInfo();
     ~DocumentInfo();
 
     SkDynamicMemoryWStream compositor_stream;

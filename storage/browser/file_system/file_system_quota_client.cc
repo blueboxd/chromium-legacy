@@ -73,7 +73,7 @@ blink::mojom::QuotaStatusCode DeleteOriginOnFileTaskRunner(
     return blink::mojom::QuotaStatusCode::kErrorNotSupported;
   base::File::Error result =
       provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-          context, context->quota_manager_proxy(), origin.GetURL(), type);
+          context, context->quota_manager_proxy(), origin, type);
   if (result == base::File::FILE_OK)
     return blink::mojom::QuotaStatusCode::kOk;
   return blink::mojom::QuotaStatusCode::kErrorInvalidModification;

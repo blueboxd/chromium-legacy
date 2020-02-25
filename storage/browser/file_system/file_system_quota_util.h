@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
   virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       QuotaManagerProxy* proxy,
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type) = 0;
 
   virtual void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,

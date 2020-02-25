@@ -231,12 +231,12 @@ base::File::Error
 PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* context,
     QuotaManagerProxy* proxy,
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   if (!CanHandleType(type))
     return base::File::FILE_ERROR_SECURITY;
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
-      url::Origin::Create(origin_url), std::string());
+      origin, std::string());
   if (result)
     return base::File::FILE_OK;
   return base::File::FILE_ERROR_FAILED;

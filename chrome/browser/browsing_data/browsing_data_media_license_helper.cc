@@ -128,7 +128,7 @@ void BrowsingDataMediaLicenseHelperImpl::
   storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
   quota_util->DeleteOriginDataOnFileTaskRunner(
       filesystem_context_.get(), filesystem_context_->quota_manager_proxy(),
-      origin, kType);
+      url::Origin::Create(origin), kType);
 }
 
 }  // namespace

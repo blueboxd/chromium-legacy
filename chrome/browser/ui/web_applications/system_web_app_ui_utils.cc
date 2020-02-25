@@ -148,7 +148,8 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     if (!browser)
-      browser = CreateWebApplicationWindow(profile, params.app_id);
+      browser = CreateWebApplicationWindow(profile, params.app_id,
+                                           params.disposition);
 
     // Navigate application window to application's |url| if necessary.
     web_contents = browser->tab_strip_model()->GetWebContentsAt(0);

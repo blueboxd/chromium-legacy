@@ -15,13 +15,21 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
+
+namespace {
+// The dialog is shifted by the height of the title bar plus a few more pixels.
+constexpr int SHIFT_DISTANCE = 47;
+}  // namespace
 
 TerminalSystemAppMenuModel::TerminalSystemAppMenuModel(
     ui::AcceleratorProvider* provider,
@@ -47,7 +55,10 @@ bool TerminalSystemAppMenuModel::IsCommandIdEnabled(int command_id) const {
 void TerminalSystemAppMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   if (command_id == IDC_OPTIONS) {
-    crostini::LaunchTerminalSettings(browser()->profile());
+    const gfx::Rect& bounds = browser()->window()->GetBounds();
+    crostini::LaunchTerminalSettings(
+        browser()->profile(),
+        gfx::Point(bounds.x() + SHIFT_DISTANCE, bounds.y() + SHIFT_DISTANCE));
     return;
   }
 

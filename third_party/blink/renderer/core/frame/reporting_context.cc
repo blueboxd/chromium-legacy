@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_violation_report_body.h"
@@ -25,7 +26,9 @@ namespace blink {
 const char ReportingContext::kSupplementName[] = "ReportingContext";
 
 ReportingContext::ReportingContext(ExecutionContext& context)
-    : Supplement<ExecutionContext>(context), execution_context_(context) {}
+    : Supplement<ExecutionContext>(context),
+      execution_context_(context),
+      reporting_service_(&context) {}
 
 // static
 ReportingContext* ReportingContext::From(ExecutionContext* context) {
@@ -84,6 +87,7 @@ void ReportingContext::Trace(Visitor* visitor) {
   visitor->Trace(observers_);
   visitor->Trace(report_buffer_);
   visitor->Trace(execution_context_);
+  visitor->Trace(reporting_service_);
   Supplement<ExecutionContext>::Trace(visitor);
 }
 
@@ -104,11 +108,12 @@ void ReportingContext::CountReport(Report* report) {
   UseCounter::Count(execution_context_, feature);
 }
 
-const mojo::Remote<mojom::blink::ReportingServiceProxy>&
+const HeapMojoRemote<mojom::blink::ReportingServiceProxy>&
 ReportingContext::GetReportingService() const {
-  if (!reporting_service_) {
+  if (!reporting_service_.is_bound()) {
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        reporting_service_.BindNewPipeAndPassReceiver());
+        reporting_service_.BindNewPipeAndPassReceiver(
+            execution_context_->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return reporting_service_;
 }
@@ -138,19 +143,13 @@ void ReportingContext::SendToReportingAPI(Report* report,
     const CSPViolationReportBody* body =
         static_cast<CSPViolationReportBody*>(report->body());
     GetReportingService()->QueueCspViolationReport(
-        url,
-        endpoint,
-        body->documentURL() ? body->documentURL() : "",
-        body->referrer(),
-        body->blockedURL(),
+        url, endpoint, body->documentURL() ? body->documentURL() : "",
+        body->referrer(), body->blockedURL(),
         body->effectiveDirective() ? body->effectiveDirective() : "",
         body->originalPolicy() ? body->originalPolicy() : "",
-        body->sourceFile(),
-        body->sample(),
-        body->disposition() ? body->disposition() : "",
-        body->statusCode(),
-        line_number,
-        column_number);
+        body->sourceFile(), body->sample(),
+        body->disposition() ? body->disposition() : "", body->statusCode(),
+        line_number, column_number);
   } else if (type == ReportType::kDeprecation) {
     // Send the deprecation report.
     const DeprecationReportBody* body =

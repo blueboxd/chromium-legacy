@@ -12,21 +12,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
-
-namespace WTF {
-
-template <typename T>
-struct CrossThreadCopier<rtc::scoped_refptr<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = rtc::scoped_refptr<T>;
-  static Type Copy(Type pointer) { return pointer; }
-};
-
-}  // namespace WTF
 
 namespace blink {
 

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
@@ -94,13 +95,6 @@ struct CrossThreadCopier<
     : public CrossThreadCopierPassThrough<
           RetainedRefWrapper<webrtc::SetSessionDescriptionObserver>> {
   STATIC_ONLY(CrossThreadCopier);
-};
-
-template <typename T>
-struct CrossThreadCopier<rtc::scoped_refptr<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = rtc::scoped_refptr<T>;
-  static Type Copy(Type pointer) { return pointer; }
 };
 
 }  // namespace WTF

@@ -409,7 +409,7 @@ const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchDefinitions{
-    "ContextualSearchDefinitions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchDefinitions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchLongpressResolve{
     "ContextualSearchLongpressResolve", base::FEATURE_DISABLED_BY_DEFAULT};

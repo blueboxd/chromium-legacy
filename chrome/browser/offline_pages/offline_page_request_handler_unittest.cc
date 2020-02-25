@@ -661,7 +661,7 @@ void OfflinePageRequestHandlerTest::ExpectOfflinePageSizeTotalSuffixCount(
   base::HistogramTester::CountsMap all_offline_counts =
       histogram_tester_->GetTotalCountsForPrefix(
           kPageSizeAccessOfflineHistogramBase);
-  for (const std::pair<std::string, base::HistogramBase::Count>&
+  for (const std::pair<const std::string, base::HistogramBase::Count>&
            namespace_and_count : all_offline_counts) {
     total_offline_count += namespace_and_count.second;
   }
@@ -684,7 +684,7 @@ void OfflinePageRequestHandlerTest::ExpectOnlinePageSizeTotalSuffixCount(
   base::HistogramTester::CountsMap all_online_counts =
       histogram_tester_->GetTotalCountsForPrefix(
           kPageSizeAccessOnlineHistogramBase);
-  for (const std::pair<std::string, base::HistogramBase::Count>&
+  for (const std::pair<const std::string, base::HistogramBase::Count>&
            namespace_and_count : all_online_counts) {
     online_count += namespace_and_count.second;
   }

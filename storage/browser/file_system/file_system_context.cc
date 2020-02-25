@@ -216,8 +216,8 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
     if (!backend->GetQuotaUtil())
       continue;
     if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-            this, quota_manager_proxy(), origin_url, type_backend_pair.first) !=
-        base::File::FILE_OK) {
+            this, quota_manager_proxy(), url::Origin::Create(origin_url),
+            type_backend_pair.first) != base::File::FILE_OK) {
       // Continue the loop, but record the failure.
       success = false;
     }
@@ -419,10 +419,10 @@ void FileSystemContext::DeleteFileSystem(const url::Origin& origin,
   base::PostTaskAndReplyWithResult(
       default_file_task_runner(), FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
-      base::BindOnce(
-          &FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
-          base::Unretained(backend->GetQuotaUtil()), base::RetainedRef(this),
-          base::Unretained(quota_manager_proxy()), origin.GetURL(), type),
+      base::BindOnce(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
+                     base::Unretained(backend->GetQuotaUtil()),
+                     base::RetainedRef(this),
+                     base::Unretained(quota_manager_proxy()), origin, type),
       std::move(callback));
 }
 

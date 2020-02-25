@@ -115,15 +115,15 @@ function processShortTextOnlyElement(parentElement, node)
 
 function processComplexElement(parentElement, node)
 {
-    var collapsible = createCollapsible();
-    collapsible.start.appendChild(createTag(node, false, false));
+    var folder = createFolder();
+    folder.start.appendChild(createTag(node, false, false));
 
     for (var child = node.firstChild; child; child = child.nextSibling)
-        processNode(collapsible.expandedContent, child);
+        processNode(folder.openedContent, child);
 
-    collapsible.end.appendChild(createTag(node, true, false));
+    folder.end.appendChild(createTag(node, true, false));
 
-    parentElement.appendChild(collapsible);
+    parentElement.appendChild(folder);
 }
 
 function processComment(parentElement, node)
@@ -133,13 +133,13 @@ function processComment(parentElement, node)
         line.appendChild(createComment('<!-- ' + node.nodeValue + ' -->'));
         parentElement.appendChild(line);
     } else {
-        var collapsible = createCollapsible();
+        var folder = createFolder();
 
-        collapsible.start.appendChild(createComment('<!--'));
-        collapsible.expandedContent.appendChild(createComment(node.nodeValue));
-        collapsible.end.appendChild(createComment('-->'));
+        folder.start.appendChild(createComment('<!--'));
+        folder.openedContent.appendChild(createComment(node.nodeValue));
+        folder.end.appendChild(createComment('-->'));
 
-        parentElement.appendChild(collapsible);
+        parentElement.appendChild(folder);
     }
 }
 
@@ -150,12 +150,12 @@ function processCDATA(parentElement, node)
         line.appendChild(createText('<![CDATA[ ' + node.nodeValue + ' ]]>'));
         parentElement.appendChild(line);
     } else {
-        var collapsible = createCollapsible();
+        var folder = createFolder();
 
-        collapsible.start.appendChild(createText('<![CDATA['));
-        collapsible.expandedContent.appendChild(createText(node.nodeValue));
-        collapsible.end.appendChild(createText(']]>'));
-        parentElement.appendChild(collapsible);
+        folder.start.appendChild(createText('<![CDATA['));
+        folder.openedContent.appendChild(createText(node.nodeValue));
+        folder.end.appendChild(createText(']]>'));
+        parentElement.appendChild(folder);
     }
 }
 
@@ -166,13 +166,13 @@ function processProcessingInstruction(parentElement, node)
         line.appendChild(createComment('<?' + node.nodeName + ' ' + node.nodeValue + '?>'));
         parentElement.appendChild(line);
     } else {
-        var collapsible = createCollapsible();
+        var folder = createFolder();
 
-        collapsible.start.appendChild(createComment('<?' + node.nodeName));
-        collapsible.expandedContent.appendChild(createComment(node.nodeValue));
-        collapsible.end.appendChild(createComment('?>'));
+        folder.start.appendChild(createComment('<?' + node.nodeName));
+        folder.openedContent.appendChild(createComment(node.nodeValue));
+        folder.end.appendChild(createComment('?>'));
 
-        parentElement.appendChild(collapsible);
+        parentElement.appendChild(folder);
     }
 }
 
@@ -195,42 +195,35 @@ function createHTMLElement(elementName)
     return document.createElementNS('http://www.w3.org/1999/xhtml', elementName)
 }
 
-function createCollapsible()
+function createFolder()
 {
-    var collapsible = createHTMLElement('div');
-    collapsible.classList.add('collapsible');
+    var folder = createHTMLElement('div');
+    folder.classList.add('folder');
 
-    collapsible.start = createLine();
-    collapsible.start.appendChild(createCollapsibleButton());
-    collapsible.appendChild(collapsible.start);
+    folder.start = createLine();
+    folder.start.appendChild(createFolderButton());
+    folder.appendChild(folder.start);
 
-    collapsible.expandedContent = createHTMLElement('div');
-    collapsible.expandedContent.classList.add('expanded-content');
-    collapsible.appendChild(collapsible.expandedContent);
+    folder.openedContent = createHTMLElement('div');
+    folder.openedContent.classList.add('opened');
+    folder.appendChild(folder.openedContent);
 
-    // Collapsed content.
-    collapsible.collapsedContent = createText('...');
-    collapsible.collapsedContent.classList.add('collapsed-content');
-    collapsible.collapsedContent.classList.add('hidden');
-    collapsible.appendChild(collapsible.collapsedContent);
+    // Folded content.
+    folder.foldedContent = createText('...');
+    folder.foldedContent.classList.add('folded');
+    folder.foldedContent.classList.add('hidden');
+    folder.appendChild(folder.foldedContent);
 
-    collapsible.end = createLine();
-    collapsible.appendChild(collapsible.end);
+    folder.end = createLine();
+    folder.appendChild(folder.end);
 
-    return collapsible;
+    return folder;
 }
 
-function createButton()
-{
+function createFolderButton(str) {
     var button = createHTMLElement('span');
-    button.classList.add('button');
-    return button;
-}
-
-function createCollapsibleButton(str) {
-    var button = createButton();
-    button.classList.add('collapsible-button');
-    button.classList.add('collapse-button');
+    button.classList.add('folder-button');
+    button.classList.add('fold');
     return button;
 }
 
@@ -247,7 +240,6 @@ function createText(value)
 {
     var text = createHTMLElement('span');
     text.textContent = value;
-    text.classList.add('text');
     return text;
 }
 
@@ -313,46 +305,46 @@ function createAttribute(attributeNode)
 
 function toggleFunction(sectionId) {
     return function() {
-        var collapsedContent =
-            document.querySelector('#' + sectionId + ' > .collapsed-content');
-        var expandedContent =
-            document.querySelector('#' + sectionId + ' > .expanded-content');
-        var collapsible_button = document.querySelector(
-            '#' + sectionId + ' > .line > .collapsible-button');
+        var foldedContent =
+            document.querySelector('#' + sectionId + ' > .folded');
+        var openedContent =
+            document.querySelector('#' + sectionId + ' > .opened');
+        var folderButton = document.querySelector(
+            '#' + sectionId + ' > .line > .folder-button');
 
-        if (collapsedContent) {
-            if (collapsedContent.className.includes('hidden'))
-                collapsedContent.className = 'collapsed-content';
+        if (foldedContent) {
+            if (foldedContent.className.includes('hidden'))
+                foldedContent.className = 'folded';
             else
-                collapsedContent.className = 'collapsed-content hidden';
+                foldedContent.className = 'folded hidden';
         }
 
-        if (expandedContent) {
-            if (expandedContent.className.includes('hidden'))
-                expandedContent.className = 'expanded-content';
+        if (openedContent) {
+            if (openedContent.className.includes('hidden'))
+                openedContent.className = 'opened';
             else
-                expandedContent.className = 'expanded-content hidden';
+                openedContent.className = 'opened hidden';
         }
 
-        if (collapsible_button) {
-            if (collapsible_button.className.includes('expand-button'))
-                collapsible_button.className = 'collapsible-button collapse-button';
+        if (folderButton) {
+            if (folderButton.className.includes('open'))
+                folderButton.className = 'folder-button fold';
             else
-                collapsible_button.className = 'collapsible-button expand-button';
+                folderButton.className = 'folder-button open';
         }
     };
 }
 
 function initButtons()
 {
-    var sections = document.querySelectorAll('.collapsible');
+    var sections = document.querySelectorAll('.folder');
     for (var i = 0; i < sections.length; i++) {
-        var sectionId = 'collapsible' + i;
+        var sectionId = 'folder' + i;
         sections[i].id = sectionId;
 
-        var collapseButton = sections[i].querySelector('.collapsible-button');
-        collapseButton.onclick = toggleFunction(sectionId);
-        collapseButton.onmousedown = handleButtonMouseDown;
+        var folderButton = sections[i].querySelector('.folder-button');
+        folderButton.onclick = toggleFunction(sectionId);
+        folderButton.onmousedown = handleButtonMouseDown;
     }
 }
 

@@ -220,7 +220,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, DeleteOriginDirectory) {
 
   // Delete data for kOrigin1.
   error = backend()->DeleteOriginDataOnFileTaskRunner(context_.get(), nullptr,
-                                                      kOrigin1.GetURL(), kType);
+                                                      kOrigin1, kType);
   EXPECT_EQ(base::File::FILE_OK, error);
 
   // Confirm 'foo' in kOrigin1 is deleted.

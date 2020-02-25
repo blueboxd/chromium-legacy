@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORTING_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORTING_CONTEXT_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -49,8 +49,8 @@ class CORE_EXPORT ReportingContext final
   // Counts the use of a report type via UseCounter.
   void CountReport(Report*);
 
-  const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
-      const;
+  const HeapMojoRemote<mojom::blink::ReportingServiceProxy>&
+  GetReportingService() const;
 
   // Send |report| via the Reporting API to |endpoint|.
   void SendToReportingAPI(Report* report, const String& endpoint) const;
@@ -61,7 +61,8 @@ class CORE_EXPORT ReportingContext final
 
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
-  mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
+  mutable HeapMojoRemote<mojom::blink::ReportingServiceProxy>
+      reporting_service_;
 };
 
 }  // namespace blink

@@ -342,18 +342,18 @@ base::File::Error
 SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* file_system_context,
     QuotaManagerProxy* proxy,
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  int64_t usage = GetOriginUsageOnFileTaskRunner(
-      file_system_context, url::Origin::Create(origin_url), type);
+  int64_t usage =
+      GetOriginUsageOnFileTaskRunner(file_system_context, origin, type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
-      url::Origin::Create(origin_url), GetTypeString(type));
+      origin, GetTypeString(type));
   if (result && proxy && usage) {
-    proxy->NotifyStorageModified(
-        QuotaClient::kFileSystem, url::Origin::Create(origin_url),
-        FileSystemTypeToQuotaStorageType(type), -usage);
+    proxy->NotifyStorageModified(storage::QuotaClient::kFileSystem, origin,
+                                 FileSystemTypeToQuotaStorageType(type),
+                                 -usage);
   }
 
   if (result)

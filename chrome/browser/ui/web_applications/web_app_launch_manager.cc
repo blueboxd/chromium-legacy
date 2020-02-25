@@ -62,12 +62,18 @@ void SetTabHelperAppId(content::WebContents* web_contents,
 }  // namespace
 
 Browser* CreateWebApplicationWindow(Profile* profile,
-                                    const std::string& app_id) {
+                                    const std::string& app_id,
+                                    WindowOpenDisposition disposition) {
   std::string app_name = GenerateApplicationNameFromAppId(app_id);
   gfx::Rect initial_bounds;
-  auto browser_params = Browser::CreateParams::CreateForApp(
-      app_name, /*trusted_source=*/true, initial_bounds, profile,
-      /*user_gesture=*/true);
+  Browser::CreateParams browser_params =
+      disposition == WindowOpenDisposition::NEW_POPUP
+          ? Browser::CreateParams::CreateForAppPopup(
+                app_name, /*trusted_source=*/true, initial_bounds, profile,
+                /*user_gesture=*/true)
+          : Browser::CreateParams::CreateForApp(
+                app_name, /*trusted_source=*/true, initial_bounds, profile,
+                /*user_gesture=*/true);
   browser_params.initial_show_state = DetermineWindowShowState();
   return new Browser(browser_params);
 }
@@ -137,7 +143,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
                                             /*user_gesture=*/true));
     }
   } else {
-    browser = CreateWebApplicationWindow(profile(), params.app_id);
+    browser = CreateWebApplicationWindow(profile(), params.app_id,
+                                         params.disposition);
   }
 
   content::WebContents* web_contents;

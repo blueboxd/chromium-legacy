@@ -59,7 +59,8 @@ class WebAppLaunchManager : public apps::LaunchManager {
 };
 
 Browser* CreateWebApplicationWindow(Profile* profile,
-                                    const std::string& app_id);
+                                    const std::string& app_id,
+                                    WindowOpenDisposition disposition);
 
 content::WebContents* NavigateWebApplicationWindow(
     Browser* browser,

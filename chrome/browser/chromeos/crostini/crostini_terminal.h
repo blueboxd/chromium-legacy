@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "ui/gfx/geometry/point.h"
 
 class GURL;
 class Browser;
@@ -45,7 +46,7 @@ void LaunchContainerTerminal(Profile* profile,
                              const std::vector<std::string>& terminal_args);
 
 // Launches the terminal settings popup window.
-void LaunchTerminalSettings(Profile* profile);
+void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin);
 
 }  // namespace crostini
 

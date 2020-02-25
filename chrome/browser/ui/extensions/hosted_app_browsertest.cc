@@ -80,6 +80,7 @@
 using content::RenderFrameHost;
 using content::WebContents;
 using extensions::Extension;
+using extensions::ExtensionRegistry;
 using web_app::GetAppMenuCommandState;
 using web_app::IsBrowserOpen;
 using web_app::kDisabled;
@@ -103,10 +104,11 @@ constexpr const char kAppDotComManifest[] =
     "    \"urls\": [\"*://app.com/\"]"
     "  }"
     "}";
+constexpr const char kExampleURL[] = "https://www.example.com/empty.html";
 
 enum class AppType {
   HOSTED_APP,    // Using HostedAppBrowserController
-  BOOKMARK_APP,  // Using HostedAppBrowserController
+  BOOKMARK_APP,  // Using WebAppBrowserController
 };
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
@@ -152,13 +154,18 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
  public:
   HostedOrBookmarkAppTest()
       : app_browser_(nullptr),
-        app_(nullptr),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kDesktopPWAsUnifiedUiController,
-             predictors::kSpeculativePreconnectFeature});
+    if (GetParam() == AppType::HOSTED_APP) {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kDesktopPWAsUnifiedUiController,
+               predictors::kSpeculativePreconnectFeature});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsUnifiedUiController},
+          {predictors::kSpeculativePreconnectFeature});
+    }
   }
-  ~HostedOrBookmarkAppTest() override {}
+  ~HostedOrBookmarkAppTest() override = default;
 
   void SetUp() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
@@ -170,12 +177,25 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
 
  protected:
   void SetupAppWithURL(const GURL& app_url) {
-    // TODO(ortuno): Use InstallBookmarkApp instead of loading a manifest,
-    // if |app_type_ == BOOKMARK_APP|.
-    extensions::TestExtensionDir test_app_dir;
-    test_app_dir.WriteManifest(
-        base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-    SetupApp(test_app_dir.UnpackedPath());
+    if (GetParam() == AppType::HOSTED_APP) {
+      extensions::TestExtensionDir test_app_dir;
+      test_app_dir.WriteManifest(
+          base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
+      SetupApp(test_app_dir.UnpackedPath());
+    } else {
+      auto web_app_info = std::make_unique<WebApplicationInfo>();
+      web_app_info->app_url = app_url;
+      web_app_info->scope = app_url.GetWithoutFilename();
+      web_app_info->open_as_window = true;
+      app_id_ = web_app::InstallWebApp(profile(), std::move(web_app_info));
+
+      // Launch app in a window.
+      app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id_);
+    }
+
+    ASSERT_FALSE(app_id_.empty());
+    ASSERT_TRUE(app_browser_);
+    ASSERT_TRUE(app_browser_ != browser());
   }
 
   void SetupApp(const std::string& app_folder) {
@@ -183,19 +203,18 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
   }
 
   void SetupApp(const base::FilePath& app_folder) {
-    app_ = InstallExtensionWithSourceAndFlags(
+    DCHECK_EQ(GetParam(), AppType::HOSTED_APP);
+    const Extension* app = InstallExtensionWithSourceAndFlags(
         app_folder, 1, extensions::Manifest::INTERNAL,
         app_type_ == AppType::HOSTED_APP
             ? extensions::Extension::NO_FLAGS
             : extensions::Extension::FROM_BOOKMARK);
-    ASSERT_TRUE(app_);
+    ASSERT_TRUE(app);
+    ASSERT_FALSE(app->from_bookmark());
+    app_id_ = app->id();
 
-    LaunchApp();
-  }
-
-  void LaunchApp() {
     // Launch app in a window.
-    app_browser_ = LaunchAppBrowser(app_);
+    app_browser_ = LaunchAppBrowser(app);
     ASSERT_TRUE(app_browser_);
     ASSERT_TRUE(app_browser_ != browser());
   }
@@ -272,8 +291,8 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
     return provider->registrar();
   }
 
+  std::string app_id_;
   Browser* app_browser_;
-  const extensions::Extension* app_;
 
   AppType app_type() const { return app_type_; }
 
@@ -297,7 +316,7 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
 
 // Tests that "Open link in new tab" opens a link in a foreground tab.
 IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, OpenLinkInNewTab) {
-  SetupApp("app");
+  SetupAppWithURL(GURL(kExampleURL));
 
   const GURL url("http://www.foo.com/");
   TestAppActionOpensForegroundTab(
@@ -358,7 +377,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, CtrlClickLink) {
 // has the correct prefs.
 IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
                        WebContentsPrefsOpenApplication) {
-  SetupApp("https_app");
+  SetupAppWithURL(GURL(kExampleURL));
   CheckWebContentsHasAppPrefs(
       app_browser_->tab_strip_model()->GetActiveWebContents());
 }
@@ -367,14 +386,14 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 // web_app::ReparentWebContentsIntoAppBrowser has the correct prefs.
 IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
                        WebContentsPrefsReparentWebContents) {
-  SetupApp("https_app");
+  SetupAppWithURL(GURL(kExampleURL));
 
   content::WebContents* current_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   CheckWebContentsDoesNotHaveAppPrefs(current_tab);
 
   Browser* app_browser =
-      web_app::ReparentWebContentsIntoAppBrowser(current_tab, app_->id());
+      web_app::ReparentWebContentsIntoAppBrowser(current_tab, app_id_);
   ASSERT_NE(browser(), app_browser);
 
   CheckWebContentsHasAppPrefs(
@@ -384,7 +403,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 // Tests that the WebContents of a regular browser window launched using
 // OpenInChrome has the correct prefs.
 IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, WebContentsPrefsOpenInChrome) {
-  SetupApp("https_app");
+  SetupAppWithURL(GURL(kExampleURL));
 
   content::WebContents* app_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
@@ -423,9 +442,11 @@ using HostedAppTest = HostedOrBookmarkAppTest;
 // Tests that hosted apps are not web apps.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, NotWebApp) {
   SetupApp("app");
-  EXPECT_TRUE(app_->is_hosted_app());
-  EXPECT_FALSE(app_->from_bookmark());
-  EXPECT_FALSE(registrar().IsInstalled(app_->id()));
+  EXPECT_FALSE(registrar().IsInstalled(app_id_));
+  const Extension* app = ExtensionRegistry::Get(profile())->GetExtensionById(
+      app_id_, ExtensionRegistry::ENABLED);
+  EXPECT_TRUE(app->is_hosted_app());
+  EXPECT_FALSE(app->from_bookmark());
 }
 
 class HostedAppTestWithAutoupgradesDisabled : public HostedOrBookmarkAppTest {
@@ -512,9 +533,11 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
   // "http" scheme.
   SetupAppWithURL(app_url.ReplaceComponents(scheme_http));
 
-  // Navigate to the https version of the site; the toolbar should
-  // be hidden, as it is a more secure version of the site.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
+  // Navigate to the https version of the site.
+  // For hosted apps, the toolbar should be hidden, as it is a more secure
+  // version of the site.
+  const bool expected_visibility = (GetParam() != AppType::HOSTED_APP);
+  NavigateAndCheckForToolbar(app_browser_, app_url, expected_visibility);
 }
 
 IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
@@ -556,18 +579,22 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
   SetupAppWithURL(app_url);
 
   // Navigate to the app's launch page; the toolbar should be hidden.
-  NavigateAndCheckForToolbar(app_browser_, app_url, false);
+  NavigateAndCheckForToolbar(app_browser_, app_url,
+                             /*expected_visibility=*/false);
 
-  // Navigate to the app's launch page with the 'www.' prefix; the toolbar
-  // should be hidden.
-  NavigateAndCheckForToolbar(
-      app_browser_, https_server()->GetURL("www.app.com", "/simple.html"),
-      false);
+  // Navigate to the app's launch page with the 'www.' prefix.
+  // For hosted apps, the toolbar should be hidden.
+  {
+    const bool expected_visibility = (GetParam() != AppType::HOSTED_APP);
+    NavigateAndCheckForToolbar(
+        app_browser_, https_server()->GetURL("www.app.com", "/simple.html"),
+        expected_visibility);
+  }
 
   // Navigate to different origin; the toolbar should now be visible.
   NavigateAndCheckForToolbar(
       app_browser_, https_server()->GetURL("www.foo.com", "/simple.html"),
-      true);
+      /*expected_visibility=*/true);
 }
 
 // Check that a subframe on a regular web page can navigate to a URL that
@@ -1161,7 +1188,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, MAYBE_FromOutsideHostedApp) {
 IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
                        AppRegistrarExcludesPackaged) {
   SetupApp("https_app");
-  EXPECT_FALSE(registrar().IsInstalled(app_->id()));
+  EXPECT_FALSE(registrar().IsInstalled(app_id_));
 }
 
 // Check that we can successfully complete a navigation to an app URL with a
@@ -1204,7 +1231,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
   EXPECT_FALSE(main_frame->GetSiteInstance()->GetSiteURL().is_empty());
   EXPECT_TRUE(main_frame->GetSiteInstance()->GetSiteURL().SchemeIs(
       extensions::kExtensionScheme));
-  EXPECT_EQ(main_frame->GetSiteInstance()->GetSiteURL().host(), app_->id());
+  EXPECT_EQ(main_frame->GetSiteInstance()->GetSiteURL().host(), app_id_);
 }
 
 // Helper class that sets up two isolated origins, where one is a subdomain of

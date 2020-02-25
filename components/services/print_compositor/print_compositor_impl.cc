@@ -181,7 +181,7 @@ void PrintCompositorImpl::CompositeDocumentToPdf(
 void PrintCompositorImpl::PrepareForDocumentToPdf(
     mojom::PrintCompositor::PrepareForDocumentToPdfCallback callback) {
   DCHECK(!docinfo_);
-  docinfo_ = std::make_unique<DocumentInfo>(creator_);
+  docinfo_ = std::make_unique<DocumentInfo>();
   std::move(callback).Run(mojom::PrintCompositor::Status::kSuccess);
 }
 
@@ -192,6 +192,12 @@ void PrintCompositorImpl::CompleteDocumentToPdf(
   DCHECK_GT(page_count, 0U);
   docinfo_->page_count = page_count;
   docinfo_->callback = std::move(callback);
+
+  if (!docinfo_->doc) {
+    docinfo_->doc = MakePdfDocument(creator_, accessibility_tree_,
+                                    &docinfo_->compositor_stream);
+  }
+
   HandleDocumentCompletionRequest();
 }
 
@@ -345,14 +351,20 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
 
   SkDynamicMemoryWStream wstream;
   sk_sp<SkDocument> doc =
-      MakePdfDocument(creator_, accessibility_tree_, &wstream);
+      MakePdfDocument(creator_, ui::AXTreeUpdate(), &wstream);
 
   for (const auto& page : pages) {
     SkCanvas* canvas = doc->beginPage(page.fSize.width(), page.fSize.height());
     canvas->drawPicture(page.fPicture);
     doc->endPage();
     if (docinfo_) {
-      // Also collect this page into document PDF.
+      // Create document PDF if needed.
+      if (!docinfo_->doc) {
+        docinfo_->doc = MakePdfDocument(creator_, accessibility_tree_,
+                                        &docinfo_->compositor_stream);
+      }
+
+      // Collect this page into document PDF.
       SkCanvas* canvas_doc =
           docinfo_->doc->beginPage(page.fSize.width(), page.fSize.height());
       canvas_doc->drawPicture(page.fPicture);
@@ -455,8 +467,7 @@ PrintCompositorImpl::FrameInfo::FrameInfo() = default;
 
 PrintCompositorImpl::FrameInfo::~FrameInfo() = default;
 
-PrintCompositorImpl::DocumentInfo::DocumentInfo(const std::string& creator)
-    : doc(MakePdfDocument(creator, ui::AXTreeUpdate(), &compositor_stream)) {}
+PrintCompositorImpl::DocumentInfo::DocumentInfo() = default;
 
 PrintCompositorImpl::DocumentInfo::~DocumentInfo() = default;
 

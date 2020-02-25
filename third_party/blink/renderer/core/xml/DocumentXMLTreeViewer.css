@@ -9,11 +9,11 @@ div.header {
     margin: 10px;
 }
 
-div.collapsible > div.hidden {
+div.folder > div.hidden {
     display:none;
 }
 
-div.collapsible > span.hidden {
+div.folder > span.hidden {
     display:none;
 }
 
@@ -28,7 +28,7 @@ div.collapsible > span.hidden {
     display: none;
 }
 
-.expanded-content {
+.opened {
     margin-left: 1em;
 }
 
@@ -36,7 +36,7 @@ div.collapsible > span.hidden {
     white-space: pre;
 }
 
-.collapsible-button {
+.folder-button {
     -webkit-user-select: none;
     cursor: pointer;
     display: inline-block;
@@ -47,12 +47,12 @@ div.collapsible > span.hidden {
     vertical-align: bottom;
 }
 
-.collapse-button {
+.fold {
     background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23909090' width='10' height='10'><path d='M0 0 L8 0 L4 7 Z'/></svg>");
     height: 10px;
 }
 
-.expand-button {
+.open {
     background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23909090' width='10' height='10'><path d='M0 0 L0 8 L7 4 Z'/></svg>");
     height: 10px;
 }

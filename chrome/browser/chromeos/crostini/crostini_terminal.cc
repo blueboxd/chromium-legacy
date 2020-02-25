@@ -19,6 +19,12 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
+
+namespace {
+constexpr gfx::Size TERMINAL_SETTINGS_SIZE(768, 512);
+}  // namespace
 
 namespace crostini {
 
@@ -104,12 +110,14 @@ void LaunchContainerTerminal(Profile* profile,
   ShowContainerTerminal(profile, launch_params, vsh_in_crosh_url, browser);
 }
 
-void LaunchTerminalSettings(Profile* profile) {
+void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin) {
   DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL);
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
+  params->override_bounds.set_origin(window_origin);
+  params->override_bounds.set_size(TERMINAL_SETTINGS_SIZE);
   web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
                               GURL(std::string(chrome::kChromeUITerminalURL) +
                                    "html/terminal_settings.html"),

@@ -3,20 +3,7 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/test/base/chrome_test_utils.h"
-#include "chrome/test/payments/payment_request_test_controller.h"
-#include "components/network_session_configurator/common/network_switches.h"
-#include "components/payments/core/features.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/test/browser_test_utils.h"
-#include "net/dns/mock_host_resolver.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/test/base/in_process_browser_test.h"
-#endif  // defined(OS_ANDROID)
+#include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 
 // This test suite verifies that the the "canmakepayment" event does not fire
 // for standardized payment methods. The test uses hasEnrolledInstrument() which
@@ -35,42 +22,14 @@ static constexpr char kTestFileName[] = "can_make_payment_true_responder.js";
 static constexpr char kExpectedResult[] = "false";
 #endif  // defined(OS_ANDROID)
 
-class PaymentRequestCanMakePaymentEventTest : public PlatformBrowserTest {
+class PaymentRequestCanMakePaymentEventTest
+    : public PaymentRequestPlatformBrowserTestBase {
  public:
   PaymentRequestCanMakePaymentEventTest() = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // HTTPS server only serves a valid cert for localhost, so this is needed to
-    // load pages from "a.com" without an interstitial.
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    https_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-    ASSERT_TRUE(https_server_->InitializeAndListen());
-    https_server_->ServeFilesFromSourceDirectory(
-        "components/test/data/payments");
-    https_server_->StartAcceptingConnections();
-  }
-
-  content::WebContents* GetActiveWebContents() {
-    return chrome_test_utils::GetActiveWebContents(this);
-  }
-
-  void NavigateTo(const std::string& host, const std::string& file_path) {
-    EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
-                                       https_server_->GetURL(host, file_path)));
-  }
-
   std::string GetPaymentMethodForHost(const std::string& host) {
-    return https_server_->GetURL(host, "/").spec();
+    return https_server()->GetURL(host, "/").spec();
   }
-
- private:
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // A payment handler with two standardized payment methods ("interledger" and

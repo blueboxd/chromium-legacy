@@ -110,7 +110,7 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     }
     mojom_match->destination_url = match.destination_url.spec();
     mojom_match->image_dominant_color = match.image_dominant_color;
-    mojom_match->image_url = match.image_url;
+    mojom_match->image_url = match.image_url.spec();
     mojom_match->fill_into_edit = match.fill_into_edit;
     mojom_match->inline_autocompletion = match.inline_autocompletion;
     mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);

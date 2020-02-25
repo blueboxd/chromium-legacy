@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace payments {
 
@@ -170,9 +171,32 @@ PaymentRequestPlatformBrowserTestBase::CreateAndAddCreditCardForProfile(
   return card;
 }
 
+autofill::CreditCard
+PaymentRequestPlatformBrowserTestBase::CreatCreditCardForProfile(
+    const autofill::AutofillProfile& profile) {
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(profile.guid());
+  return card;
+}
+
 void PaymentRequestPlatformBrowserTestBase::AddCreditCard(
     const autofill::CreditCard& card) {
   test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(), card);
+}
+
+std::string PaymentRequestPlatformBrowserTestBase::ClearPortNumber(
+    const std::string& may_contain_method_url) {
+  std::string before;
+  std::string method;
+  std::string after;
+  GURL::Replacements port;
+  port.ClearPort();
+  return re2::RE2::FullMatch(
+             may_contain_method_url,
+             "(.*\"supportedMethods\":\")(https://.*)(\",\"total\".*)", &before,
+             &method, &after)
+             ? before + GURL(method).ReplaceComponents(port).spec() + after
+             : may_contain_method_url;
 }
 
 }  // namespace payments

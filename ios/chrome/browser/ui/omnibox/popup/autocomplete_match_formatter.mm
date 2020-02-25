@@ -82,7 +82,7 @@ UIColor* DimColorIncognito() {
 - (BOOL)hasImage {
   BOOL hasAnswerImage =
       self.hasAnswer && _match.answer->second_line().image_url().is_valid();
-  BOOL hasRichEntityImage = !_match.image_url.empty();
+  BOOL hasRichEntityImage = !_match.image_url.is_empty();
   return hasAnswerImage || hasRichEntityImage;
 }
 

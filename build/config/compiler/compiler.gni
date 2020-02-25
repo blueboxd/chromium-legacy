@@ -78,11 +78,6 @@ declare_args() {
   # to use (for linkers that support this).
   max_jobs_per_link = 8
 
-  # Tell VS to create a PDB that references information in .obj files rather
-  # than copying it all. This should improve linker performance. mspdbcmf.exe
-  # can be used to convert a fastlink pdb to a normal one.
-  is_win_fastlink = false
-
   # Whether we're using a sample profile collected on an architecture different
   # than the one we're compiling for.
   #
@@ -253,13 +248,6 @@ if (symbol_level == -1) {
     symbol_level = 2
   } else {
     symbol_level = 0
-  }
-} else if (symbol_level == 2) {
-  if (is_win) {
-    # See crbug.com/630074
-    assert(is_win_fastlink || use_lld || !use_goma || is_clang,
-           "VC++ goma builds that use symbol_level 2 must use " +
-               "is_win_fastlink or use_lld.")
   }
 }
 

@@ -599,6 +599,53 @@ void XR::OverlayFullscreenEventManager::Trace(Visitor* visitor) {
   EventListener::Trace(visitor);
 }
 
+XR::OverlayFullscreenExitObserver::OverlayFullscreenExitObserver(XR* xr)
+    : xr_(xr) {
+  DVLOG(2) << __func__;
+}
+
+XR::OverlayFullscreenExitObserver::~OverlayFullscreenExitObserver() = default;
+
+void XR::OverlayFullscreenExitObserver::Invoke(
+    ExecutionContext* execution_context,
+    Event* event) {
+  DVLOG(2) << __func__ << ": event type=" << event->type();
+
+  element_->GetDocument().removeEventListener(
+      event_type_names::kFullscreenchange, this, true);
+
+  if (event->type() == event_type_names::kFullscreenchange) {
+    // Succeeded, proceed with session shutdown.
+    xr_->ExitPresent(std::move(on_exited_));
+  }
+}
+
+void XR::OverlayFullscreenExitObserver::ExitFullscreen(
+    Element* element,
+    base::OnceClosure on_exited) {
+  DVLOG(2) << __func__;
+  element_ = element;
+  on_exited_ = std::move(on_exited);
+
+  element->GetDocument().addEventListener(event_type_names::kFullscreenchange,
+                                          this, true);
+  // "ua_originated" means that the browser process already exited
+  // fullscreen. Set it to false because we need the browser process
+  // to get notified that it needs to exit fullscreen. Use
+  // FullyExitFullscreen to ensure that we return to non-fullscreen mode.
+  // ExitFullscreen only unfullscreens a single element, potentially
+  // leaving others in fullscreen mode.
+  constexpr bool kUaOriginated = false;
+
+  Fullscreen::FullyExitFullscreen(element_->GetDocument(), kUaOriginated);
+}
+
+void XR::OverlayFullscreenExitObserver::Trace(Visitor* visitor) {
+  visitor->Trace(xr_);
+  visitor->Trace(element_);
+  EventListener::Trace(visitor);
+}
+
 device::mojom::blink::XRSessionOptionsPtr XR::XRSessionOptionsFromQuery(
     const PendingRequestSessionQuery& query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
@@ -672,12 +719,6 @@ void XR::AddEnvironmentProviderErrorHandler(
 
 void XR::ExitPresent(base::OnceClosure on_exited) {
   DVLOG(1) << __func__;
-  if (service_) {
-    service_->ExitPresent(std::move(on_exited));
-  } else {
-    // The service was already shut down, run the callback immediately.
-    std::move(on_exited).Run();
-  }
 
   // If the document was potentially being shown in a DOM overlay via
   // fullscreened elements, make sure to clear any fullscreen states on exiting
@@ -689,36 +730,43 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
   // - renderer processes XR session shutdown (this method)
   // - browser re-enters fullscreen unexpectedly
   LocalFrame* frame = GetFrame();
-  if (!frame)
-    return;
+  if (frame) {
+    Document* doc = frame->GetDocument();
+    DCHECK(doc);
+    DVLOG(3) << __func__ << ": doc->IsXrOverlay()=" << doc->IsXrOverlay();
+    if (doc->IsXrOverlay()) {
+      Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
+      DVLOG(3) << __func__ << ": fullscreen_element=" << fullscreen_element;
+      doc->SetIsXrOverlay(false, fullscreen_element);
 
-  Document* doc = frame->GetDocument();
-  DCHECK(doc);
-  if (doc->IsXrOverlay()) {
-    Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
-    doc->SetIsXrOverlay(false, fullscreen_element);
-    if (fullscreen_element) {
-      // "ua_originated" means that the browser process already exited
-      // fullscreen. Set it to false because we need the browser process
-      // to get notified that it needs to exit fullscreen. Use
-      // FullyExitFullscreen to ensure that we return to non-fullscreen mode.
-      // ExitFullscreen only unfullscreens a single element, potentially
-      // leaving others in fullscreen mode.
-      constexpr bool kUaOriginated = false;
-      Fullscreen::FullyExitFullscreen(*doc, kUaOriginated);
+      // Restore the FrameView background color that was changed in
+      // OnRequestSessionReturned. The layout view can be null on navigation.
+      auto* layout_view = doc->GetLayoutView();
+      if (layout_view) {
+        auto* frame_view = layout_view->GetFrameView();
+        // SetBaseBackgroundColor updates composited layer mappings.
+        // That DCHECKs IsAllowedToQueryCompositingState which requires
+        // DocumentLifecycle >= kInCompositingUpdate.
+        frame_view->UpdateLifecycleToCompositingInputsClean(
+            DocumentUpdateReason::kBaseColor);
+        frame_view->SetBaseBackgroundColor(original_base_background_color_);
+      }
+
+      if (fullscreen_element) {
+        fullscreen_exit_observer_ =
+            MakeGarbageCollected<OverlayFullscreenExitObserver>(this);
+        fullscreen_exit_observer_->ExitFullscreen(fullscreen_element,
+                                                  std::move(on_exited));
+        return;
+      }
     }
-    // Restore the FrameView background color that was changed in
-    // OnRequestSessionReturned. The layout view can be null on navigation.
-    auto* layout_view = doc->GetLayoutView();
-    if (layout_view) {
-      auto* frame_view = layout_view->GetFrameView();
-      // SetBaseBackgroundColor updates composited layer mappings.
-      // That DCHECKs IsAllowedToQueryCompositingState which requires
-      // DocumentLifecycle >= kInCompositingUpdate.
-      frame_view->UpdateLifecycleToCompositingInputsClean(
-          DocumentUpdateReason::kBaseColor);
-      frame_view->SetBaseBackgroundColor(original_base_background_color_);
-    }
+  }
+
+  if (service_) {
+    service_->ExitPresent(std::move(on_exited));
+  } else {
+    // The service was already shut down, run the callback immediately.
+    std::move(on_exited).Run();
   }
 }
 
@@ -1347,6 +1395,7 @@ void XR::Trace(Visitor* visitor) {
   visitor->Trace(outstanding_support_queries_);
   visitor->Trace(outstanding_request_queries_);
   visitor->Trace(fullscreen_event_manager_);
+  visitor->Trace(fullscreen_exit_observer_);
   ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

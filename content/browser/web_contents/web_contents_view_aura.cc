@@ -722,14 +722,18 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
-                                  blink::WebDragOperationsMask ops) {
+void WebContentsViewAura::EndDrag(
+    base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
+    blink::WebDragOperationsMask ops) {
   drag_start_process_id_ = ChildProcessHost::kInvalidUniqueID;
   drag_start_view_id_ = GlobalRoutingID(ChildProcessHost::kInvalidUniqueID,
                                         MSG_ROUTING_NONE);
 
   if (!web_contents_)
     return;
+
+  // It is OK for source_rwh to be null.
+  RenderWidgetHost* source_rwh = source_rwh_weak_ptr.get();
 
   aura::Window* window = GetContentNativeView();
   gfx::PointF screen_loc =
@@ -1110,11 +1114,11 @@ void WebContentsViewAura::StartDragging(
   // callback yet. So we have to make sure to delay calling EndDrag until drop
   // is done.
   if (!drag_in_progress_)
-    EndDrag(source_rwh_weak_ptr.get(), ConvertToWeb(result_op));
+    EndDrag(std::move(source_rwh_weak_ptr), ConvertToWeb(result_op));
   else
     end_drag_runner_ = base::ScopedClosureRunner(base::BindOnce(
         &WebContentsViewAura::EndDrag, weak_ptr_factory_.GetWeakPtr(),
-        source_rwh_weak_ptr.get(), ConvertToWeb(result_op)));
+        std::move(source_rwh_weak_ptr), ConvertToWeb(result_op)));
 }
 
 void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {

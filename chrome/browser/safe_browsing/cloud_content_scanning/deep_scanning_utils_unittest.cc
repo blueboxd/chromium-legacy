@@ -33,33 +33,6 @@ constexpr base::TimeDelta kDuration = base::TimeDelta::FromSeconds(10);
 
 constexpr base::TimeDelta kInvalidDuration = base::TimeDelta::FromSeconds(0);
 
-std::string ResultToString(const BinaryUploadService::Result& result,
-                           bool success) {
-  switch (result) {
-    case BinaryUploadService::Result::SUCCESS:
-      if (success)
-        return "Success";
-      else
-        return "FailedToGetVerdict";
-    case BinaryUploadService::Result::UPLOAD_FAILURE:
-      return "UploadFailure";
-    case BinaryUploadService::Result::TIMEOUT:
-      return "Timeout";
-    case BinaryUploadService::Result::FILE_TOO_LARGE:
-      return "FileTooLarge";
-    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      return "FailedToGetToken";
-    case BinaryUploadService::Result::UNKNOWN:
-      return "Unknown";
-    case BinaryUploadService::Result::UNAUTHORIZED:
-      return "";
-    case BinaryUploadService::Result::FILE_ENCRYPTED:
-      return "FileEncrypted";
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      return "UnsupportedFileType";
-  }
-}
-
 }  // namespace
 
 class DeepScanningUtilsUMATest
@@ -81,7 +54,7 @@ class DeepScanningUtilsUMATest
   }
 
   std::string result_value(bool success) const {
-    return ResultToString(result(), success);
+    return BinaryUploadServiceResultToString(result(), success);
   }
 
   const base::HistogramTester& histograms() const { return histograms_; }

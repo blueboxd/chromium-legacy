@@ -181,7 +181,7 @@ public class ShareDelegateImpl implements ShareDelegate {
         if (sScreenshotCaptureSkippedForTesting) {
             callback.onResult(null);
         } else {
-            ShareHelper.captureScreenshotForContents(webContents, 0, 0, callback);
+            ShareImageFileUtils.captureScreenshotForContents(webContents, 0, 0, callback);
         }
     }
 

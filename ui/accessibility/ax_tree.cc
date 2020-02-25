@@ -614,8 +614,6 @@ AXNode* AXTree::GetFromId(int32_t id) const {
 }
 
 void AXTree::Destroy() {
-  for (auto& entry : table_info_map_)
-    delete entry.second;
   table_info_map_.clear();
   if (root_) {
     RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
@@ -1102,19 +1100,14 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   if (cached != table_info_map_.end()) {
     // Get existing table info, and update if invalid because the
     // tree has changed since the last time we accessed it.
-    AXTableInfo* table_info = cached->second;
+    AXTableInfo* table_info = cached->second.get();
     if (!table_info->valid()) {
-      bool success = table_info->Update();
-      if (!success) {
+      if (!table_info->Update()) {
         // If Update() returned false, this is no longer a valid table.
         // Remove it from the map.
-        delete table_info;
-        table_info = nullptr;
         table_info_map_.erase(table_node->id());
+        return nullptr;
       }
-      // See note about const_cast, above.
-      for (AXTreeObserver& observer : observers_)
-        observer.OnNodeChanged(tree, table_node);
     }
     return table_info;
   }
@@ -1123,10 +1116,7 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   if (!table_info)
     return nullptr;
 
-  table_info_map_[table_node->id()] = table_info;
-  for (AXTreeObserver& observer : observers_)
-    observer.OnNodeChanged(tree, table_node);
-
+  table_info_map_[table_node->id()] = base::WrapUnique<AXTableInfo>(table_info);
   return table_info;
 }
 
@@ -1434,8 +1424,12 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
     AXNode* node,
     const AXTreeUpdateState* update_state) {
   DCHECK(!GetTreeUpdateInProgressState());
-  if (node->id() == AXNode::kInvalidAXID)
+
+  AXNode::AXID id = node->id();
+  if (id == AXNode::kInvalidAXID)
     return;
+
+  table_info_map_.erase(id);
 
   for (AXTreeObserver& observer : observers_) {
     if (update_state->IsReparentedNode(node)) {
@@ -1444,6 +1438,9 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
       observer.OnNodeWillBeDeleted(this, node);
     }
   }
+
+  DCHECK(table_info_map_.find(id) == table_info_map_.end())
+      << "Table info should never be recreated during node deletion";
 }
 
 void AXTree::RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node) {
@@ -1744,13 +1741,6 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   AXNodeData empty_data;
   empty_data.id = node->id();
   UpdateReverseRelations(node, empty_data);
-
-  // Remove any table infos.
-  const auto& table_info_entry = table_info_map_.find(node->id());
-  if (table_info_entry != table_info_map_.end()) {
-    delete table_info_entry->second;
-    table_info_map_.erase(node->id());
-  }
 
   id_map_.erase(node->id());
   for (auto* child : node->children())

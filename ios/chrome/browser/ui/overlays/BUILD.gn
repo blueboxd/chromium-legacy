@@ -90,7 +90,6 @@ source_set("util") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "overlay_container_coordinator_unittest.mm",
     "overlay_presentation_context_fullscreen_disabler_unittest.mm",
     "overlay_request_mediator_unittest.mm",
     "overlay_request_mediator_util_unittest.mm",

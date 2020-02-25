@@ -41,14 +41,11 @@ LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
       should_collect_gradient_attributes_(true),
       gradient_map_(MakeGarbageCollected<GradientMap>()) {}
 
-void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
+void LayoutSVGResourceGradient::RemoveAllClientsFromCache() {
   gradient_map_->clear();
   should_collect_gradient_attributes_ = true;
   To<SVGGradientElement>(*GetElement()).InvalidateDependentGradients();
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kPaintInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kPaintInvalidation);
 }
 
 bool LayoutSVGResourceGradient::RemoveClientFromCache(

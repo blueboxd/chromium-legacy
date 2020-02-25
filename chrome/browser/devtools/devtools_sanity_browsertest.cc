@@ -882,7 +882,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   // Now that we know the panel is loaded, switch to it.
   SwitchToExtensionPanel(window_, extension, "iframe_panel");
-  content::WaitForLoadStop(main_web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(main_web_contents()));
 
   std::vector<RenderFrameHost*> rfhs = main_web_contents()->GetAllFrames();
   EXPECT_EQ(7U, rfhs.size());
@@ -2345,7 +2345,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
 
   navigation_manager.WaitForNavigationFinished();
   navigation_manager_iframe.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   std::vector<RenderFrameHost*> frames = GetInspectedTab()->GetAllFrames();
   ASSERT_EQ(2u, frames.size());
@@ -2455,7 +2455,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
 
   navigation_manager.WaitForNavigationFinished();
   navigation_manager_iframe.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   for (auto* frame : GetInspectedTab()->GetAllFrames()) {
     content::WaitForHitTestData(frame);

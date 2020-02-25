@@ -879,7 +879,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
 
   const ComputedStyle& style = Style();
   LayoutUnit max = ResolveMaxBlockLength(
-      ConstraintSpace(), style, border_padding_, style.LogicalMaxHeight(), size,
+      ConstraintSpace(), style, border_padding_, style.LogicalMaxHeight(),
       LengthResolvePhase::kLayout);
   LayoutUnit extent = ResolveMainBlockLength(
       ConstraintSpace(), style, border_padding_, style.LogicalHeight(), size,

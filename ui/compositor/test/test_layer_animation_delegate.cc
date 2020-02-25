@@ -4,6 +4,7 @@
 
 #include "ui/compositor/test/test_layer_animation_delegate.h"
 
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 
@@ -49,7 +50,8 @@ void TestLayerAnimationDelegate::ExpectLastPropertyChangeReason(
   last_property_change_reason_is_set_ = false;
 }
 
-void TestLayerAnimationDelegate::SetFrameNumber(int frame_number) {
+void TestLayerAnimationDelegate::SetFrameNumber(
+    base::Optional<int> frame_number) {
   frame_number_ = frame_number;
 }
 
@@ -187,7 +189,7 @@ TestLayerAnimationDelegate::GetThreadedAnimationDelegate() {
   return &threaded_delegate_;
 }
 
-int TestLayerAnimationDelegate::GetFrameNumber() const {
+base::Optional<int> TestLayerAnimationDelegate::GetFrameNumber() const {
   return frame_number_;
 }
 

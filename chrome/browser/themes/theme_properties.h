@@ -146,8 +146,6 @@ class ThemeProperties {
     COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
 
-    // These colors don't have constant default values. They are derived from
-    // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,
     COLOR_NTP_LOGO,
     // Color for the background of the most visited/custom link tile.

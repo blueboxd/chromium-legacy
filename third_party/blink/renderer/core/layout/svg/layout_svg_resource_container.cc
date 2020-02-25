@@ -143,7 +143,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   if (is_invalidating_)
     return;
   LocalSVGResource* resource = ResourceForContainer(*this);
-  if (!resource || !resource->HasClients())
+  if (!resource)
     return;
   // Remove modes for which invalidations have already been
   // performed. If no modes remain we are done.
@@ -155,8 +155,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   is_invalidating_ = true;
 
   // Invalidate clients registered via an SVGResource.
-  if (resource)
-    resource->NotifyContentChanged(invalidation_mask);
+  resource->NotifyContentChanged(invalidation_mask);
 
   is_invalidating_ = false;
 }

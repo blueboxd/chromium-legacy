@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/values.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
@@ -49,6 +51,11 @@ class POLICY_EXPORT PolicyConversions {
   // Set to get all user scope policies.
   // Enabled by default.
   PolicyConversions& EnableUserPolicies(bool enabled);
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Sets the updater policies.
+  PolicyConversions& WithUpdaterPolicies(std::unique_ptr<PolicyMap> policies);
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // Returns the policy data as a base::Value object.
   virtual base::Value ToValue() = 0;
@@ -93,6 +100,10 @@ class POLICY_EXPORT ArrayPolicyConversions : public PolicyConversions {
 
  private:
   base::Value GetChromePolicies();
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::Value GetUpdaterPolicies();
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   DISALLOW_COPY_AND_ASSIGN(ArrayPolicyConversions);
 };

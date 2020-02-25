@@ -10,6 +10,8 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_export.h"
@@ -57,6 +59,15 @@ class POLICY_EXPORT PolicyConversionsClient {
   // Set to get all user scope policies.
   // Enabled by default.
   void EnableUserPolicies(bool enabled);
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Sets the updater policies.
+  void SetUpdaterPolicies(std::unique_ptr<PolicyMap> policies);
+  // Returns true if this client is able to return information on the updater's
+  // policies.
+  bool HasUpdaterPolicies() const;
+  base::Value GetUpdaterPolicies();
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // Converts the given |value| to JSON, respecting the configuration
   // preferences that were set on this client.
@@ -137,6 +148,10 @@ class POLICY_EXPORT PolicyConversionsClient {
   bool GetUserPoliciesEnabled() const;
 
  private:
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  std::unique_ptr<PolicyMap> updater_policies_;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+
   bool convert_types_enabled_ = true;
   bool convert_values_enabled_ = false;
   bool device_local_account_policies_enabled_ = false;

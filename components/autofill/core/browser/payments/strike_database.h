@@ -11,12 +11,15 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace autofill {
+
+extern const base::FilePath::StringPieceType kStrikeDatabaseFileName;
 
 namespace {
 const char kKeyDeliminator[] = "__";

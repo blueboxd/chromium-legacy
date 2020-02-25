@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -130,7 +131,12 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   bool is_origin_clean_ = true;
 };
 
-DEFINE_IMAGE_TYPE_CASTS(StaticBitmapImage);
+template <>
+struct DowncastTraits<StaticBitmapImage> {
+  static bool AllowFrom(const Image& image) {
+    return image.IsStaticBitmapImage();
+  }
+};
 
 }  // namespace blink
 

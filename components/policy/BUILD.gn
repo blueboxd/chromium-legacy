@@ -50,6 +50,7 @@ if (is_component_build) {
       "//components/policy/core/common",
     ]
     public_deps = [
+      "//build:branding_buildflags",
       "//components/policy/core/browser:internal",
       "//components/policy/core/common:internal",
     ]

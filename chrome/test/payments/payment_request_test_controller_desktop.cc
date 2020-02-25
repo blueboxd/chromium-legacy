@@ -76,6 +76,12 @@ PaymentRequestTestController::PaymentRequestTestController()
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
 
+content::WebContents*
+PaymentRequestTestController::GetPaymentHandlerWebContents() {
+  // Todo(1053722): return the invoked payment app's web contents for testing.
+  return nullptr;
+}
+
 void PaymentRequestTestController::SetUpOnMainThread() {
   // Register all prefs with our pref testing service, since we're not using the
   // one chrome sets up.

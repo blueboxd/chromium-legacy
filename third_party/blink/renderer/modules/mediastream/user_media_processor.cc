@@ -617,7 +617,7 @@ void UserMediaProcessor::SetupAudioInput() {
     GetMediaDevicesDispatcher()->GetAudioInputCapabilities(
         WTF::Bind(&UserMediaProcessor::SelectAudioDeviceSettings,
                   WrapWeakPersistent(this),
-                  WrapWeakPersistent(current_request_info_->web_request())));
+                  WrapPersistent(current_request_info_->web_request())));
   } else {
     if (!blink::IsAudioInputMediaType(audio_controls.stream_type)) {
       String failed_constraint_name =
@@ -774,7 +774,7 @@ void UserMediaProcessor::SetupVideoInput() {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
         WTF::Bind(&UserMediaProcessor::SelectVideoDeviceSettings,
                   WrapWeakPersistent(this),
-                  WrapWeakPersistent(current_request_info_->web_request())));
+                  WrapPersistent(current_request_info_->web_request())));
   } else {
     if (!blink::IsVideoInputMediaType(video_controls.stream_type)) {
       String failed_constraint_name =
@@ -986,8 +986,8 @@ void UserMediaProcessor::OnStreamGenerated(
         video_device_id,
         WTF::Bind(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
                   WrapWeakPersistent(this),
-                  WrapWeakPersistent(current_request_info_->web_request()),
-                  label, video_device_id));
+                  WrapPersistent(current_request_info_->web_request()), label,
+                  video_device_id));
   }
 }
 
@@ -1481,7 +1481,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
                 WrapWeakPersistent(this), current_request_info_->request_id(),
-                stream, WrapWeakPersistent(web_request)));
+                stream, WrapPersistent(web_request)));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
@@ -1515,8 +1515,8 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestFailed,
                 WrapWeakPersistent(this), current_request_info_->request_id(),
-                WrapWeakPersistent(current_request_info_->web_request()),
-                result, constraint_name));
+                WrapPersistent(current_request_info_->web_request()), result,
+                constraint_name));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestFailed(

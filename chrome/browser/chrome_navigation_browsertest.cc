@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, TestViewFrameSource) {
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_NE(new_web_contents, web_contents);
-  WaitForLoadStop(new_web_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_web_contents));
 
   GURL view_frame_source_url(content::kViewSourceScheme + std::string(":") +
                              iframe_target_url.spec());
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   int index_of_new_tab = browser()->tab_strip_model()->count() - 1;
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(index_of_new_tab);
-  WaitForLoadStop(new_web_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_web_contents));
 
   // Verify that the final URL after the redirects gets committed.
   EXPECT_EQ(GURL("http://bar.com/title2.html"),
@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   GURL error_url(content::kUnreachableWebDataURL);
   EXPECT_TRUE(ExecuteScript(web_contents,
                             "location.href = '" + error_url.spec() + "';"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(url, web_contents->GetLastCommittedURL());
 
   // Also ensure that a page can't embed an iframe for an error page URL.
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
                             "var frame = document.createElement('iframe');\n"
                             "frame.src = '" + error_url.spec() + "';\n"
                             "document.body.appendChild(frame);"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   content::RenderFrameHost* subframe_host =
       ChildFrameAt(web_contents->GetMainFrame(), 0);
   // The new subframe should remain blank without a committed URL.
@@ -1031,7 +1031,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(popup, opener);
-  WaitForLoadStop(popup);
+  EXPECT_TRUE(WaitForLoadStop(popup));
 
   content::ConsoleObserverDelegate console_observer(
       opener,
@@ -1083,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(popup, opener);
-  WaitForLoadStop(popup);
+  EXPECT_TRUE(WaitForLoadStop(popup));
 
   content::DownloadTestObserverInProgress observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
@@ -1419,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(HistoryManipulationInterventionBrowserTest,
 
   ASSERT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(main_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(main_contents));
   ASSERT_EQ(pdf_url, main_contents->GetLastCommittedURL());
 }
 

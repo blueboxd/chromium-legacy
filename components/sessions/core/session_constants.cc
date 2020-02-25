@@ -6,6 +6,16 @@
 
 namespace sessions {
 
+const base::FilePath::StringPieceType kCurrentTabSessionFileName =
+    FILE_PATH_LITERAL("Current Tabs");
+const base::FilePath::StringPieceType kLastTabSessionFileName =
+    FILE_PATH_LITERAL("Last Tabs");
+
+const base::FilePath::StringPieceType kCurrentSessionFileName =
+    FILE_PATH_LITERAL("Current Session");
+const base::FilePath::StringPieceType kLastSessionFileName =
+    FILE_PATH_LITERAL("Last Session");
+
 const int gMaxPersistNavigationCount = 6;
 
 }  // namespace sessions

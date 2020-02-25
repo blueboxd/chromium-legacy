@@ -16,9 +16,10 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,9 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT, true);
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
             put(ChromeFeatureList.PAINT_PREVIEW_TEST, false);
+            put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
+            put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
+            put(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, false);
         }
     };
 
@@ -106,6 +110,12 @@ public class CachedFeatureFlags {
                     ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED);
             put(ChromeFeatureList.PAINT_PREVIEW_TEST,
                     ChromePreferenceKeys.FLAGS_CACHED_PAINT_PREVIEW_TEST_ENABLED_KEY);
+            put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                    ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED);
+            put(ChromeFeatureList.TAB_GROUPS_ANDROID,
+                    ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED);
+            put(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
+                    ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED);
         }
     };
 
@@ -318,10 +328,11 @@ public class CachedFeatureFlags {
 
     @VisibleForTesting
     static void cacheNativeTabSwitcherUiFlags() {
-        if (isEligibleForTabUiExperiments()) {
-            cacheGridTabSwitcherEnabled();
-            cacheTabGroupsAndroidEnabled();
-            cacheDuetTabStripIntegrationAndroidEnabled();
+        if (isEligibleForTabUiExperiments() && !DeviceClassManager.enableAccessibilityLayout()) {
+            List<String> featuresToCache = Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                    ChromeFeatureList.TAB_GROUPS_ANDROID,
+                    ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID);
+            cacheNativeFlags(featuresToCache);
         }
     }
 
@@ -334,22 +345,6 @@ public class CachedFeatureFlags {
                         ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false);
     }
 
-    @VisibleForTesting
-    static void cacheGridTabSwitcherEnabled() {
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        String featureKey = ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED;
-        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
-        if (!shouldQueryFeatureFlag) {
-            sharedPreferencesManager.writeBoolean(featureKey, false);
-            return;
-        }
-        boolean queriedFlagValue =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
-        boolean gridTabSwitcherEnabled =
-                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
-        sharedPreferencesManager.writeBoolean(featureKey, gridTabSwitcherEnabled);
-    }
-
     /**
      * @return Whether the Grid Tab Switcher UI is enabled and available for use.
      */
@@ -358,8 +353,8 @@ public class CachedFeatureFlags {
         // changing that setting while Chrome is alive.
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return !(isTabGroupsAndroidContinuationChromeFlagEnabled() && SysUtils.isLowEndDevice())
-                && getConsistentBooleanValue(
-                        ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, false)
+                && isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+                && TabUiFeatureUtilities.isTabManagementModuleSupported()
                 || isTabGroupsAndroidEnabled() || isStartSurfaceEnabled();
     }
 
@@ -369,48 +364,15 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setGridTabSwitcherEnabledForTesting(@Nullable Boolean enabled) {
-        sBoolValuesReturned.put(
-                ChromePreferenceKeys.FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED, enabled);
-    }
-
-    @VisibleForTesting
-    static void cacheTabGroupsAndroidEnabled() {
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        String featureKey = ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED;
-        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
-        if (!shouldQueryFeatureFlag) {
-            sharedPreferencesManager.writeBoolean(featureKey, false);
-            return;
-        }
-        boolean queriedFlagValue =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
-        boolean tabGroupsEnabled =
-                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
-        sharedPreferencesManager.writeBoolean(featureKey, tabGroupsEnabled);
-    }
-
-    private static void cacheDuetTabStripIntegrationAndroidEnabled() {
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        String featureKey =
-                ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED;
-        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
-        if (!shouldQueryFeatureFlag) {
-            sharedPreferencesManager.writeBoolean(featureKey, false);
-            return;
-        }
-        boolean queriedFlagValue =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID);
-        boolean duetTabStripIntegrationEnabled =
-                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
-        sharedPreferencesManager.writeBoolean(featureKey, duetTabStripIntegrationEnabled);
+        setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, enabled);
     }
 
     /**
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        return getConsistentBooleanValue(
-                ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, false);
+        return isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
+                && TabUiFeatureUtilities.isTabManagementModuleSupported();
     }
 
     /**
@@ -419,8 +381,7 @@ public class CachedFeatureFlags {
      */
     @VisibleForTesting
     public static void setTabGroupsAndroidEnabledForTesting(@Nullable Boolean available) {
-        sBoolValuesReturned.put(
-                ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, available);
+        setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, available);
     }
 
     /**
@@ -440,9 +401,7 @@ public class CachedFeatureFlags {
     @VisibleForTesting
     public static void setDuetTabStripIntegrationAndroidEnabledForTesting(
             @Nullable Boolean isEnabled) {
-        sBoolValuesReturned.put(
-                ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
-                isEnabled);
+        setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, isEnabled);
     }
 
     private static boolean isEligibleForTabUiExperiments() {
@@ -478,10 +437,9 @@ public class CachedFeatureFlags {
      * @return Whether the tab strip and duet integration feature is enabled and available for use.
      */
     public static boolean isDuetTabStripIntegrationAndroidEnabled() {
-        return isTabGroupsAndroidEnabled()
-                && getConsistentBooleanValue(
-                        ChromePreferenceKeys.FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
-                        false);
+        return isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
+                && isEnabled(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID)
+                && TabUiFeatureUtilities.isTabManagementModuleSupported();
     }
 
     /**

@@ -60,6 +60,14 @@ Polymer({
       observer: 'disabledChanged_',
     },
 
+    /**
+     * Use this property in order to configure the "tabindex" attribute.
+     */
+    customTabIndex: {
+      type: Number,
+      observer: 'applyTabIndex_',
+    },
+
     ironIcon: {
       type: String,
       observer: 'onIronIconChanged_',
@@ -120,7 +128,19 @@ Polymer({
       this.blur();
     }
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-    this.setAttribute('tabindex', this.disabled ? '-1' : '0');
+    this.applyTabIndex_();
+  },
+
+  /**
+   * Updates the tabindex HTML attribute to the actual value.
+   * @private
+   */
+  applyTabIndex_() {
+    let value = this.customTabIndex;
+    if (value === undefined) {
+      value = this.disabled ? -1 : 0;
+    }
+    this.setAttribute('tabindex', value);
   },
 
   /**

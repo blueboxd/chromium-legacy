@@ -164,6 +164,9 @@ void LayerAnimator::AttachLayerAndTimeline(Compositor* compositor) {
 
   DCHECK(delegate_->GetCcLayer());
   AttachLayerToAnimation(delegate_->GetCcLayer()->id());
+
+  for (auto& layer_animation_sequence : animation_queue_)
+    layer_animation_sequence->OnAnimatorAttached(delegate());
 }
 
 void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
@@ -174,6 +177,9 @@ void LayerAnimator::DetachLayerAndTimeline(Compositor* compositor) {
 
   DetachLayerFromAnimation();
   timeline->DetachAnimation(animation_);
+
+  for (auto& layer_animation_sequence : animation_queue_)
+    layer_animation_sequence->OnAnimatorDetached();
 }
 
 void LayerAnimator::AttachLayerToAnimation(int layer_id) {

@@ -152,8 +152,7 @@ config("compiler") {
 
   if (!is_debug && !is_component_build) {
     # Enable standard linker optimizations like GC (/OPT:REF) and ICF in static
-    # release builds. These are implied by /PROFILE below, but /PROFILE is
-    # incompatible with /debug:fastlink.
+    # release builds.
     # Release builds always want these optimizations, so enable them explicitly.
     ldflags += [
       "/OPT:REF",
@@ -173,9 +172,7 @@ config("compiler") {
     # PDB file by about 5%) but does not otherwise alter the output binary. It
     # is enabled opportunistically for builds where it is not prohibited (not
     # supported when incrementally linking, or using /debug:fastlink).
-    if (!is_win_fastlink) {
-      ldflags += [ "/PROFILE" ]
-    }
+    ldflags += [ "/PROFILE" ]
   }
 
   # arflags apply only to static_libraries. The normal linker configs are only

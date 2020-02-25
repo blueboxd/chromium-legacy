@@ -157,8 +157,9 @@ class RuleIndexingTest : public DNRTestBase {
 
     if (persist_initial_indexed_ruleset_) {
       std::string data = "user ruleset";
-      base::WriteFile(file_util::GetIndexedRulesetPath(extension_dir_),
-                      data.c_str(), data.size());
+      base::WriteFile(
+          extension_dir_.Append(file_util::GetIndexedRulesetRelativePath()),
+          data.c_str(), data.size());
     }
   }
 

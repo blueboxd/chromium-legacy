@@ -97,7 +97,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
   if (isAnswer && match.answer->second_line().image_url().is_valid()) {
     iconType = OmniboxIconTypeImage;
     imageURL = match.answer->second_line().image_url();
-  } else if (!match.image_url.empty()) {
+  } else if (!match.image_url.is_empty()) {
     iconType = OmniboxIconTypeImage;
     imageURL = GURL(match.image_url);
   } else if (!AutocompleteMatch::IsSearchType(match.type) &&

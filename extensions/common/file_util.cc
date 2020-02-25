@@ -585,17 +585,15 @@ base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path) {
 base::FilePath GetComputedHashesPath(const base::FilePath& extension_path) {
   return extension_path.Append(kMetadataFolder).Append(kComputedHashesFilename);
 }
-base::FilePath GetIndexedRulesetPath(const base::FilePath& extension_path) {
-  return extension_path.Append(kMetadataFolder).Append(kIndexedRulesetFilename);
+base::FilePath GetIndexedRulesetRelativePath() {
+  return base::FilePath(kMetadataFolder).Append(kIndexedRulesetFilename);
 }
 
 std::vector<base::FilePath> GetReservedMetadataFilePaths(
     const base::FilePath& extension_path) {
-  return {
-      GetVerifiedContentsPath(extension_path),
-      GetComputedHashesPath(extension_path),
-      GetIndexedRulesetPath(extension_path),
-  };
+  return {GetVerifiedContentsPath(extension_path),
+          GetComputedHashesPath(extension_path),
+          extension_path.Append(GetIndexedRulesetRelativePath())};
 }
 
 }  // namespace file_util

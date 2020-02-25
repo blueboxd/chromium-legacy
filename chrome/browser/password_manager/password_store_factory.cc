@@ -69,6 +69,16 @@ std::string GetSyncUsername(Profile* profile) {
 }
 #endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+bool IsSignedIn(Profile* profile) {
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(profile);
+  return identity_manager
+             ? !identity_manager->GetAccountsWithRefreshTokens().empty()
+             : false;
+}
+#endif
+
 }  // namespace
 
 // static
@@ -163,7 +173,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Prepare password hash data for reuse detection.
-  ps->PreparePasswordHashData(GetSyncUsername(profile));
+  ps->PreparePasswordHashData(GetSyncUsername(profile), IsSignedIn(profile));
 #endif
 
   auto network_context_getter = base::BindRepeating(

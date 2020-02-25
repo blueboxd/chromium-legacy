@@ -666,6 +666,8 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // css-flexbox section 4.5
   const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
                                          : child.StyleRef().MinHeight();
+  // TODO(dgrogan): min.IsIntrinsic should also get past this check when in the
+  // item's block direction.
   if (!min.IsAuto())
     return false;
 
@@ -673,6 +675,8 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   if (StyleRef().IsDeprecatedWebkitBox())
     return false;
 
+  // TODO(dgrogan): MainAxisOverflowForChild == kClip also qualifies, not just
+  // kVisible.
   return !child.ShouldApplySizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
 }

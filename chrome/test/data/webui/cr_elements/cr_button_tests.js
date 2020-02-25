@@ -66,9 +66,21 @@ suite('cr-button', function() {
   });
 
   test('when tabindex is -1, it stays -1', async () => {
-    document.body.innerHTML = '<cr-button tabindex="-1"></cr-button>';
+    document.body.innerHTML = '<cr-button custom-tab-index="-1"></cr-button>';
     button = document.body.querySelector('cr-button');
     assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = true;
+    assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = false;
+    assertEquals('-1', button.getAttribute('tabindex'));
+  });
+
+  test('tabindex update', async () => {
+    document.body.innerHTML = '<cr-button></cr-button>';
+    button = document.body.querySelector('cr-button');
+    assertEquals('0', button.getAttribute('tabindex'));
+    button.customTabIndex = 1;
+    assertEquals('1', button.getAttribute('tabindex'));
   });
 
   test('hidden', () => {

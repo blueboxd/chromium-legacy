@@ -335,7 +335,8 @@ class PasswordStore : protected PasswordStoreSync,
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Immediately called after |Init()| to retrieve password hash data for
   // reuse detection.
-  void PreparePasswordHashData(const std::string& sync_username);
+  void PreparePasswordHashData(const std::string& sync_username,
+                               bool is_signed_in);
 
   // Checks that some suffix of |input| equals to a password saved on another
   // registry controlled domain than |domain|.
@@ -389,9 +390,11 @@ class PasswordStore : protected PasswordStoreSync,
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
 
   // Schedules the update of password hashes used by reuse detector.
-  // |does_primary_account_exists| is only used if |should_log_metrics| is true.
+  // |does_primary_account_exists| and |is_signed_in| fields are only used if
+  // |should_log_metrics| is true.
   void SchedulePasswordHashUpdate(bool should_log_metrics,
-                                  bool does_primary_account_exists);
+                                  bool does_primary_account_exists,
+                                  bool is_signed_in);
 
   // Schedules the update of enterprise login and change password URLs.
   // These URLs are used in enterprise password reuse detection.
@@ -575,7 +578,8 @@ class PasswordStore : protected PasswordStoreSync,
   void SaveProtectedPasswordHashImpl(
       PasswordHashDataList protected_password_data_list,
       bool should_log_metrics,
-      bool does_primary_account_exists);
+      bool does_primary_account_exists,
+      bool is_signed_in);
 
   // Propagates enterprise login urls and change password url to
   // |reuse_detector_|.

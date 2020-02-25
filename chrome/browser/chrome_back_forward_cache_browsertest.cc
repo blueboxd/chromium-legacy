@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, Basic) {
 
   // 3) Navigate back.
   web_contents()->GetController().GoBack();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // A is restored, B is stored.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, Basic) {
 
   // 4) Navigate forward.
   web_contents()->GetController().GoForward();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // A is stored, B is restored.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
     iframe.url = url;
     document.body.appendChild(iframe);
   )"));
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   content::RenderFrameHost* rfh_b = nullptr;
   for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
 
   // 3) Navigate back.
   web_contents()->GetController().GoBack();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // The page A(B) is restored.
   EXPECT_FALSE(delete_observer_rfh_a.deleted());

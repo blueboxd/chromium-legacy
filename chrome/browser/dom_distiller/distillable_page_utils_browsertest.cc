@@ -87,7 +87,7 @@ class TestOption : public InProcessBrowserTest {
 
     // This blocks until the navigation has completely finished.
     ui_test_utils::NavigateToURL(browser(), article_url);
-    content::WaitForLoadStop(web_contents_);
+    EXPECT_TRUE(content::WaitForLoadStop(web_contents_));
 
     if (!test_timeout.is_zero())
       QuitAfter(test_timeout);

@@ -162,7 +162,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                          const AutocompleteMatch& match) {
   is_rich_suggestion_ = match.answer ||
                         match.type == AutocompleteMatchType::CALCULATOR ||
-                        !match.image_url.empty();
+                        !match.image_url.is_empty();
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
 
   // Decide layout style once before Layout, while match data is available.

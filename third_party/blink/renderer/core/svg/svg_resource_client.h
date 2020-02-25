@@ -24,8 +24,7 @@ class CORE_EXPORT SVGResourceClient : public GarbageCollectedMixin {
     kLayoutInvalidation = 1 << 0,
     kBoundariesInvalidation = 1 << 1,
     kPaintInvalidation = 1 << 2,
-    kParentOnlyInvalidation = 1 << 3,
-    kSkipAncestorInvalidation = 1 << 4,
+    kSkipAncestorInvalidation = 1 << 3,
   };
   virtual void ResourceContentChanged(InvalidationModeMask) = 0;
   virtual void ResourceElementChanged() = 0;

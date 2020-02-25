@@ -648,9 +648,10 @@ void GraphicsLayer::SetContentsToImage(
 
   ImageOrientation image_orientation = kOriginTopLeft;
   SkMatrix matrix;
-  if (paint_image && image->IsBitmapImage() &&
+  auto* bitmap_image = DynamicTo<BitmapImage>(image);
+  if (paint_image && bitmap_image &&
       respect_image_orientation == kRespectImageOrientation) {
-    image_orientation = ToBitmapImage(image)->CurrentFrameOrientation();
+    image_orientation = bitmap_image->CurrentFrameOrientation();
     image_size_ = IntSize(paint_image.width(), paint_image.height());
     if (image_orientation.UsesWidthAsHeight())
       image_size_ = image_size_.TransposedSize();

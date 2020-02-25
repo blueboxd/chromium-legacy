@@ -529,13 +529,13 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
         break;
     }
 
-    SECItem sign_result = {siBuffer, nullptr, 0};
+    crypto::ScopedSECItem sign_result(SECITEM_AllocItem(nullptr, nullptr, 0));
     if (SEC_SignData(
-            &sign_result,
+            sign_result.get(),
             reinterpret_cast<const unsigned char*>(state->data_.data()),
             state->data_.size(), rsa_key.get(), sign_alg_tag) == SECSuccess) {
-      signature_str.assign(sign_result.data,
-                           sign_result.data + sign_result.len);
+      signature_str.assign(sign_result->data,
+                           sign_result->data + sign_result->len);
     }
   }
 

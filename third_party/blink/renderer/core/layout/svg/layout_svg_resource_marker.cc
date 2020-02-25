@@ -47,12 +47,9 @@ void LayoutSVGResourceMarker::UpdateLayout() {
   ClearInvalidationMask();
 }
 
-void LayoutSVGResourceMarker::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
-                                  SVGResourceClient::kBoundariesInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+void LayoutSVGResourceMarker::RemoveAllClientsFromCache() {
+  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
+                                SVGResourceClient::kBoundariesInvalidation);
 }
 
 FloatRect LayoutSVGResourceMarker::MarkerBoundaries(

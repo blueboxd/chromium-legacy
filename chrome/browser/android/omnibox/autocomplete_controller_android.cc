@@ -532,8 +532,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
   ScopedJavaLocalRef<jstring> image_url;
   ScopedJavaLocalRef<jstring> image_dominant_color;
 
-  if (!match.image_url.empty()) {
-    image_url = ConvertUTF8ToJavaString(env, match.image_url);
+  if (!match.image_url.is_empty()) {
+    image_url = ConvertUTF8ToJavaString(env, match.image_url.spec());
   }
 
   if (!match.image_dominant_color.empty()) {

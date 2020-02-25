@@ -550,8 +550,14 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
                "profile_path",
                profile_path.AsUTF8Unsafe());
 
-  // Make sure that this profile is not pending deletion.
-  if (IsProfileDirectoryMarkedForDeletion(profile_path)) {
+  bool is_allowed_path = IsAllowedProfilePath(profile_path);
+
+  // Make sure the path is correct and this profile is not pending deletion.
+  if (!is_allowed_path || IsProfileDirectoryMarkedForDeletion(profile_path)) {
+    if (!is_allowed_path) {
+      LOG(ERROR) << "Cannot create profile at path "
+                 << profile_path.AsUTF8Unsafe();
+    }
     if (!callback.is_null())
       callback.Run(nullptr, Profile::CREATE_STATUS_LOCAL_FAIL);
     return;
@@ -725,6 +731,10 @@ Profile* ProfileManager::GetProfileByPathInternal(
   TRACE_EVENT0("browser", "ProfileManager::GetProfileByPathInternal");
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return profile_info ? profile_info->profile.get() : nullptr;
+}
+
+bool ProfileManager::IsAllowedProfilePath(const base::FilePath& path) const {
+  return path.DirName() == user_data_dir();
 }
 
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
@@ -923,7 +933,7 @@ void ProfileManager::CleanUpDeletedProfiles() {
     base::FilePath profile_path;
     bool is_valid_profile_path =
         base::GetValueAsFilePath(value, &profile_path) &&
-        profile_path.DirName() == user_data_dir();
+        IsAllowedProfilePath(profile_path);
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentially delete something else.
     if (is_valid_profile_path) {
@@ -954,7 +964,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::InitProfileUserPrefs");
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
 
-  if (profile->GetPath().DirName() != user_data_dir()) {
+  if (!IsAllowedProfilePath(profile->GetPath())) {
     UMA_HISTOGRAM_BOOLEAN("Profile.InitProfileUserPrefs.OutsideUserDir", true);
     return;
   }
@@ -1405,6 +1415,12 @@ Profile* ProfileManager::CreateAndInitializeProfile(
     const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
 
+  if (!IsAllowedProfilePath(profile_dir)) {
+    LOG(ERROR) << "Cannot create profile at path "
+               << profile_dir.AsUTF8Unsafe();
+    return nullptr;
+  }
+
   // CHECK that we are not trying to load the same profile twice, to prevent
   // profile corruption. Note that this check also covers the case when we have
   // already started loading the profile but it is not fully initialized yet,
@@ -1590,7 +1606,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfileToCache");
   if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
-  if (profile->GetPath().DirName() != user_data_dir()) {
+  if (!IsAllowedProfilePath(profile->GetPath())) {
     UMA_HISTOGRAM_BOOLEAN("Profile.GetProfileInfoPath.OutsideUserDir", true);
     return;
   }

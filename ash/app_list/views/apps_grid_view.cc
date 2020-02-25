@@ -2858,7 +2858,8 @@ void AppsGridView::TransitionEnded() {
         compositor->refresh_rate(), IsTabletMode());
   }
   // Gradient mask is no longer necessary once transition is finished.
-  layer()->SetMaskLayer(nullptr);
+  if (layer()->layer_mask_layer())
+    layer()->SetMaskLayer(nullptr);
 }
 
 void AppsGridView::ScrollStarted() {
@@ -2879,8 +2880,9 @@ void AppsGridView::ScrollStarted() {
 void AppsGridView::ScrollEnded() {
   // Scroll can end without triggering state animation.
   presentation_time_recorder_.reset();
-  // No need to reset the mask because transition will happen in almost all
-  // cases.
+  // Need to reset the mask because transition will not happen in some
+  // cases. (See https://crbug.com/1049275)
+  layer()->SetMaskLayer(nullptr);
 }
 
 void AppsGridView::OnAppListModelStatusChanged() {

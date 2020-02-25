@@ -7,26 +7,19 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "components/sessions/core/session_constants.h"
 
 namespace sessions {
 namespace {
-
-// File names (current and previous) for a type of TAB.
-static const char* kCurrentTabSessionFileName = "Current Tabs";
-static const char* kLastTabSessionFileName = "Last Tabs";
-
-// File names (current and previous) for a type of SESSION.
-static const char* kCurrentSessionFileName = "Current Session";
-static const char* kLastSessionFileName = "Last Session";
 
 base::FilePath GetCurrentFilePath(
     SnapshottingCommandStorageManager::SessionType type,
     const base::FilePath& base_path) {
   base::FilePath path = base_path;
   if (type == SnapshottingCommandStorageManager::TAB_RESTORE)
-    path = path.AppendASCII(kCurrentTabSessionFileName);
+    path = path.Append(kCurrentTabSessionFileName);
   else
-    path = path.AppendASCII(kCurrentSessionFileName);
+    path = path.Append(kCurrentSessionFileName);
   return path;
 }
 
@@ -35,9 +28,9 @@ base::FilePath GetLastFilePath(
     const base::FilePath& base_path) {
   base::FilePath path = base_path;
   if (type == SnapshottingCommandStorageManager::TAB_RESTORE)
-    path = path.AppendASCII(kLastTabSessionFileName);
+    path = path.Append(kLastTabSessionFileName);
   else
-    path = path.AppendASCII(kLastSessionFileName);
+    path = path.Append(kLastSessionFileName);
   return path;
 }
 

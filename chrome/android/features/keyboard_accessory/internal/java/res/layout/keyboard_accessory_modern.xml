@@ -58,7 +58,7 @@
             android:background="?android:attr/selectableItemBackground"
             android:visibility="gone"/>
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/bar_items_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

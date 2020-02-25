@@ -473,10 +473,10 @@ void ComputeFullAbsoluteWithChildBlockSize(
 
   LayoutUnit min_block_size = ResolveMinBlockLength(
       space, style, border_padding, style.LogicalMinHeight(),
-      child_block_size_or_indefinite, LengthResolvePhase::kLayout);
+      LengthResolvePhase::kLayout);
   LayoutUnit max_block_size = ResolveMaxBlockLength(
       space, style, border_padding, style.LogicalMaxHeight(),
-      child_block_size_or_indefinite, LengthResolvePhase::kLayout);
+      LengthResolvePhase::kLayout);
 
   bool is_start_dominant;
   if (style.GetWritingMode() == WritingMode::kHorizontalTb) {

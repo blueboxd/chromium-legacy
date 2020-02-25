@@ -32,8 +32,6 @@ class MojoRenderer;
 // MediaPlayerRendererClientFactory for examples of small wrappers around MRF.
 class MojoRendererFactory : public RendererFactory {
  public:
-  using GetTypeSpecificIdCB = base::Callback<std::string()>;
-
   explicit MojoRendererFactory(
       media::mojom::InterfaceFactory* interface_factory);
   ~MojoRendererFactory() final;

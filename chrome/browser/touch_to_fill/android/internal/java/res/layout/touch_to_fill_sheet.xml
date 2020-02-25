@@ -27,7 +27,7 @@
 
     <!-- Please update R.dimens.touch_to_fill_sheet_height_second_credential
          when modifying paddingBottom. -->
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sheet_item_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"

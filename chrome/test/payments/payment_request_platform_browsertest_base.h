@@ -84,6 +84,11 @@ class PaymentRequestPlatformBrowserTestBase
   autofill::CreditCard CreateAndAddCreditCardForProfile(
       const autofill::AutofillProfile& profile);
   void AddCreditCard(const autofill::CreditCard& card);
+  autofill::CreditCard CreatCreditCardForProfile(
+      const autofill::AutofillProfile& profile);
+
+  // Looks for the "supportedMethods" URL and removes its port number.
+  std::string ClearPortNumber(const std::string& may_contain_method_url);
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
   PaymentRequestTestController* test_controller() { return &test_controller_; }

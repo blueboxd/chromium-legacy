@@ -347,6 +347,9 @@ class ProfileManager : public content::NotificationObserver,
   // should be used carefully.
   Profile* GetProfileByPathInternal(const base::FilePath& path) const;
 
+  // Returns whether |path| is allowed for profile creation.
+  bool IsAllowedProfilePath(const base::FilePath& path) const;
+
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
   // Deprecated, use GetProfileAttributesStorage() instead.

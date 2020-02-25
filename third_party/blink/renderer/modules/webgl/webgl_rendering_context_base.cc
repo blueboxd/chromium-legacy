@@ -5457,14 +5457,15 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
   // Still not clear whether we will take the accelerated upload path
   // at this point; it depends on what came back from
   // CanUseTexImageViaGPU, for example.
+  auto* static_bitmap_image = DynamicTo<StaticBitmapImage>(image.get());
   upload_via_gpu &= source_canvas_webgl_context ||
-                    (image->IsStaticBitmapImage() && image->IsTextureBacked());
+                    (static_bitmap_image && image->IsTextureBacked());
 
   if (upload_via_gpu) {
     AcceleratedStaticBitmapImage* accel_image = nullptr;
     if (image) {
-      accel_image = static_cast<AcceleratedStaticBitmapImage*>(
-          ToStaticBitmapImage(image.get()));
+      accel_image =
+          static_cast<AcceleratedStaticBitmapImage*>(static_bitmap_image);
     }
 
     // The GPU-GPU copy path uses the Y-up coordinate system.

@@ -142,6 +142,8 @@ static_library("test_support") {
     "trace_to_file.h",
     "values_test_util.cc",
     "values_test_util.h",
+    "with_feature_override.cc",
+    "with_feature_override.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

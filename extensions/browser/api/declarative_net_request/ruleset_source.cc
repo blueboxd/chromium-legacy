@@ -232,9 +232,9 @@ const size_t RulesetSource::kDynamicRulesetID = 2;
 RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
-      file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
-      dnr_api::SOURCE_TYPE_MANIFEST, dnr_api::MAX_NUMBER_OF_RULES,
-      extension.id());
+      extension.path().Append(file_util::GetIndexedRulesetRelativePath()),
+      kStaticRulesetID, dnr_api::SOURCE_TYPE_MANIFEST,
+      dnr_api::MAX_NUMBER_OF_RULES, extension.id());
 }
 
 // static

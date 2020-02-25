@@ -1104,6 +1104,7 @@ def main(argv):
   if options.base_module_build_config:
     with open(options.base_module_build_config, 'r') as f:
       base_module_build_config = json.load(f)
+      all_inputs.append(options.base_module_build_config)
 
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.

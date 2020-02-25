@@ -54,6 +54,13 @@ void PolicyConversionsClient::EnableUserPolicies(bool enabled) {
   user_policies_enabled_ = enabled;
 }
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void PolicyConversionsClient::SetUpdaterPolicies(
+    std::unique_ptr<PolicyMap> policies) {
+  updater_policies_ = std::move(policies);
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 std::string PolicyConversionsClient::ConvertValueToJSON(
     const Value& value) const {
   std::string json_string;
@@ -269,5 +276,18 @@ bool PolicyConversionsClient::GetDeviceInfoEnabled() const {
 bool PolicyConversionsClient::GetUserPoliciesEnabled() const {
   return user_policies_enabled_;
 }
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+Value PolicyConversionsClient::GetUpdaterPolicies() {
+  return updater_policies_.get()
+             ? GetPolicyValues(*updater_policies_, nullptr, base::nullopt)
+             : base::Value(base::Value::Type::DICTIONARY);
+}
+
+bool PolicyConversionsClient::PolicyConversionsClient::HasUpdaterPolicies()
+    const {
+  return !!updater_policies_;
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace policy

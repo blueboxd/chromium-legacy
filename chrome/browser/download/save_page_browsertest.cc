@@ -1145,7 +1145,7 @@ class SavePageOriginalVsSavedComparisonTest
     // See https://crbug.com/948246.
     ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,foo"));
     chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-    content::WaitForLoadStop(GetCurrentTab(browser()));
+    EXPECT_TRUE(content::WaitForLoadStop(GetCurrentTab(browser())));
     AssertExpectationsAboutCurrentTab(expected_number_of_frames_in_saved_page,
                                       expected_substrings);
   }

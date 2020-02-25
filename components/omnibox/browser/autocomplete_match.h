@@ -533,7 +533,7 @@ struct AutocompleteMatch {
   // Optional image information. Used for entity suggestions. The dominant color
   // can be used to paint the image placeholder while fetching the image.
   std::string image_dominant_color;
-  std::string image_url;
+  GURL image_url;
 
   // Optional override to use for types that specify an icon sub-type.
   DocumentType document_type = DocumentType::NONE;

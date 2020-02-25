@@ -196,7 +196,13 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // Assigns the target value to |target|.
   void GetTargetValue(TargetValue* target) const;
 
+  // Sets the reporter to report animation metrics if |reporter| is not null.
+  // Otherwise, cancels the metric reporting.
   void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
+
+  // Called when the animator is attached to/detached from a Compositor.
+  void OnAnimatorAttached(LayerAnimationDelegate* delegate);
+  void OnAnimatorDetached();
 
   // The properties that the element modifies.
   AnimatableProperties properties() const { return properties_; }

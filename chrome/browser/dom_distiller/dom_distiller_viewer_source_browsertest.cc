@@ -210,9 +210,9 @@ void DomDistillerViewerSourceBrowserTest::
 
   // Wait for the page load to complete as the first page completes the root
   // document.
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
-  ASSERT_TRUE(contents != NULL);
+  ASSERT_TRUE(contents != nullptr);
   EXPECT_EQ(url, contents->GetLastCommittedURL());
 
   std::string result;
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, EarlyTemplateLoad) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Wait for the page load to complete (should only be template).
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   std::string result;
   // Loading spinner should be on screen at this point.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, EarlyTemplateLoad) {
   ArticleDistillationUpdate update(update_pages, true, false);
   distiller->RunDistillerUpdateCallback(update);
 
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetContent, &result));
@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Wait for the page load to complete (this will be a distiller error page).
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   // Execute in isolated world; where all distiller scripts are run.
   EXPECT_EQ(true, content::EvalJsWithManualReply(
@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Wait for the page load to complete (this will be a distiller error page).
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   bool result;
   // Execute in main world, the distiller object should not be here.
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Wait for the page load to complete.
-  content::WaitForLoadStop(contents);
+  EXPECT_FALSE(content::WaitForLoadStop(contents));
 
   bool result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
 
     // Wait for the page load to complete as the first page completes the root
     // document.
-    content::WaitForLoadStop(contents);
+    EXPECT_TRUE(content::WaitForLoadStop(contents));
 
     std::string result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -512,7 +512,7 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ViewSingleDistilledPage(view_url, "text/html");
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
 
   DistilledPagePrefs* distilled_page_prefs =
@@ -557,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   std::string result;
   DistilledPagePrefs* distilled_page_prefs =
@@ -589,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   // Make sure perf persist across web pages.
   GURL url2("chrome-distiller://bad2");
   ui_test_utils::NavigateToURL(browser(), url2);
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(

@@ -416,7 +416,9 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(
   } else {
     // Save the new bitmap to disk.
     new_file_name =
-        old_file_name.empty() ? profiles::kGAIAPictureFileName : old_file_name;
+        old_file_name.empty()
+            ? base::FilePath(profiles::kGAIAPictureFileName).MaybeAsASCII()
+            : old_file_name;
     base::FilePath image_path = path.AppendASCII(new_file_name);
     SaveAvatarImageAtPath(
         GetPathOfProfileAtIndex(index), image, key, image_path,

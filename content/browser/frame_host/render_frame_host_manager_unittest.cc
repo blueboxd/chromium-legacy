@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/with_feature_override.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -280,15 +281,11 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
 
 }  // namespace
 
-class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness,
-                                   public ::testing::WithParamInterface<bool> {
+class RenderFrameHostManagerTest : public base::test::WithFeatureOverride,
+                                   public RenderViewHostImplTestHarness {
  public:
-  RenderFrameHostManagerTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          features::kRenderDocumentForCrashedFrame);
-    }
-  }
+  RenderFrameHostManagerTest()
+      : WithFeatureOverride(features::kRenderDocumentForCrashedFrame) {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -3526,7 +3523,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
   ExpectAdSubframeSignalForFrameProxy(proxy_to_main_frame, true);
 }
 
-INSTANTIATE_TEST_SUITE_P(All, RenderFrameHostManagerTest, ::testing::Bool());
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(RenderFrameHostManagerTest);
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerTestWithSiteIsolation,
                          ::testing::Bool());

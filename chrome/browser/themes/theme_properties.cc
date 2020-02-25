@@ -151,6 +151,7 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
       return gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
+    case ThemeProperties::COLOR_NTP_SHORTCUT:
       return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:

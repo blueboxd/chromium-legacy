@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -184,7 +185,10 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;
 };
 
-DEFINE_IMAGE_TYPE_CASTS(BitmapImage);
+template <>
+struct DowncastTraits<BitmapImage> {
+  static bool AllowFrom(const Image& image) { return image.IsBitmapImage(); }
+};
 
 }  // namespace blink
 

@@ -71,8 +71,6 @@ class SVGResource : public GarbageCollected<SVGResource> {
   void AddClient(SVGResourceClient&);
   void RemoveClient(SVGResourceClient&);
 
-  bool HasClients() const { return !clients_.IsEmpty(); }
-
   virtual void Trace(Visitor*);
 
  protected:

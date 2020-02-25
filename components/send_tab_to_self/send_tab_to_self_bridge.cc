@@ -208,6 +208,9 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     if (change->type() == syncer::EntityChange::ACTION_DELETE) {
       LogApplySyncChangesStatus(UMAApplySyncChangesStatus::DELETE);
       if (entries_.find(guid) != entries_.end()) {
+        if (mru_entry_ && mru_entry_->GetGUID() == guid) {
+          mru_entry_ = nullptr;
+        }
         entries_.erase(change->storage_key());
         batch->DeleteData(guid);
         removed.push_back(change->storage_key());

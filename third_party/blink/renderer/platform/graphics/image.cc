@@ -338,10 +338,9 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   if (!paint_image)
     return {};
 
-  if (respect_image_orientation == kRespectImageOrientation &&
-      IsBitmapImage()) {
-    ImageOrientation orientation =
-        ToBitmapImage(this)->CurrentFrameOrientation();
+  auto* bitmap_image = DynamicTo<BitmapImage>(this);
+  if (respect_image_orientation == kRespectImageOrientation && bitmap_image) {
+    ImageOrientation orientation = bitmap_image->CurrentFrameOrientation();
     paint_image = ResizeAndOrientImage(paint_image, orientation);
     if (!paint_image)
       return {};

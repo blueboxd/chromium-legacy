@@ -109,6 +109,8 @@ void TabMenuBridge::AddDynamicItemsFromModel() {
                action:@selector(activateTab:)
         keyEquivalent:@""]);
     [item setTarget:menu_listener_.get()];
+    if (model_->active_index() == i)
+      [item setState:NSOnState];
     UpdateItemForWebContents(item, model_->GetWebContentsAt(i));
     [menu_item_.submenu addItem:item.get()];
   }
@@ -130,10 +132,6 @@ void TabMenuBridge::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   DCHECK(tab_strip_model);
   DCHECK_EQ(tab_strip_model, model_);
-
-  // The menu doesn't represent selection in any way, so ignore it.
-  if (change.type() == TabStripModelChange::kSelectionOnly)
-    return;
 
   // If a single WebContents is being replaced, just regenerate that one menu
   // item.

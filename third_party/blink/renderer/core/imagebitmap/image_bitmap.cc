@@ -685,7 +685,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
       &status, kPreferAcceleration, FloatSize());
   if (status != kNormalSourceImageStatus)
     return;
-  DCHECK(image_input->IsStaticBitmapImage());
+  DCHECK(IsA<StaticBitmapImage>(image_input.get()));
   scoped_refptr<StaticBitmapImage> input =
       static_cast<StaticBitmapImage*>(image_input.get());
 
@@ -709,7 +709,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
       &status, kPreferNoAcceleration, FloatSize(offscreen_canvas->Size()));
-  DCHECK(raw_input->IsStaticBitmapImage());
+  DCHECK(IsA<StaticBitmapImage>(raw_input.get()));
   scoped_refptr<StaticBitmapImage> input =
       static_cast<StaticBitmapImage*>(raw_input.get());
   raw_input = nullptr;

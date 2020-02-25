@@ -593,7 +593,8 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 // password hashes saved. Currently only called on profile start up.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
                                     size_t enterprise_hash_count,
-                                    bool does_primary_account_exists);
+                                    bool does_primary_account_exists,
+                                    bool is_signed_in);
 
 #endif
 

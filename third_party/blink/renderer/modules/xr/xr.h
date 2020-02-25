@@ -300,6 +300,7 @@ class XR final : public EventTargetWithInlineData,
     void Invoke(ExecutionContext*, Event*) override;
 
     void RequestFullscreen();
+    void OnSessionStarting();
 
     void Trace(Visitor*) override;
 
@@ -308,6 +309,27 @@ class XR final : public EventTargetWithInlineData,
     Member<PendingRequestSessionQuery> query_;
     device::mojom::blink::RequestSessionResultPtr result_;
     DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenEventManager);
+  };
+
+  // Native event listener used when waiting for fullscreen mode to fully exit
+  // when ending an XR session.
+  class OverlayFullscreenExitObserver : public NativeEventListener {
+   public:
+    OverlayFullscreenExitObserver(XR* xr);
+    ~OverlayFullscreenExitObserver() override;
+
+    // NativeEventListener
+    void Invoke(ExecutionContext*, Event*) override;
+
+    void ExitFullscreen(Element* element, base::OnceClosure on_exited);
+
+    void Trace(Visitor*) override;
+
+   private:
+    Member<XR> xr_;
+    Member<Element> element_;
+    base::OnceClosure on_exited_;
+    DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenExitObserver);
   };
 
   ScriptPromise InternalIsSessionSupported(ScriptState*,
@@ -409,6 +431,10 @@ class XR final : public EventTargetWithInlineData,
   // transition to fullscreen mode completes or fails, and reject/resolve
   // the pending request session promise accordingly.
   Member<OverlayFullscreenEventManager> fullscreen_event_manager_;
+  // DOM overlay mode uses a separate temporary fullscreen event listener
+  // if it needs to wait for fullscreen mode to fully exit when ending
+  // the session.
+  Member<OverlayFullscreenExitObserver> fullscreen_exit_observer_;
 
   // In DOM overlay mode, save and restore the FrameView background color.
   Color original_base_background_color_;

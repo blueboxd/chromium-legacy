@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
@@ -39,8 +40,8 @@ const int kProfileAvatarBadgeSizeWin = kShortcutIconSizeWin / 2;
 #endif  // OS_WIN
 
 // Avatar access.
-extern const char kGAIAPictureFileName[];
-extern const char kHighResAvatarFolderName[];
+extern const base::FilePath::CharType kGAIAPictureFileName[];
+extern const base::FilePath::CharType kHighResAvatarFolderName[];
 
 // Avatar formatting.
 extern const int kAvatarIconSize;

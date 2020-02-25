@@ -691,6 +691,17 @@ void LayerAnimationElement::SetAnimationMetricsReporter(
   }
 }
 
+void LayerAnimationElement::OnAnimatorAttached(
+    LayerAnimationDelegate* delegate) {
+  if (animation_metrics_recorder_)
+    animation_metrics_recorder_->OnAnimatorAttached(delegate->GetFrameNumber());
+}
+
+void LayerAnimationElement::OnAnimatorDetached() {
+  if (animation_metrics_recorder_)
+    animation_metrics_recorder_->OnAnimatorDetached();
+}
+
 bool LayerAnimationElement::IsThreaded(LayerAnimationDelegate* delegate) const {
   return false;
 }

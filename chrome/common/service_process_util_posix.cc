@@ -172,25 +172,13 @@ bool ServiceProcessState::DeleteServiceProcessDataRegion() {
 
 #endif  // !defined(OS_MACOSX)
 
-// Attempts to take a lock named |name|. If |waiting| is true then this will
-// make multiple attempts to acquire the lock.
-// Caller is responsible for ownership of the MultiProcessLock.
-MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
+// Attempts to take a lock named |name|. Returns the lock if successful, or
+// nullptr if not.
+std::unique_ptr<MultiProcessLock> TakeNamedLock(const std::string& name) {
   std::unique_ptr<MultiProcessLock> lock = MultiProcessLock::Create(name);
-  if (lock == NULL) return NULL;
-  bool got_lock = false;
-  for (int i = 0; i < 10; ++i) {
-    if (lock->TryLock()) {
-      got_lock = true;
-      break;
-    }
-    if (!waiting) break;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100 * i));
-  }
-  if (!got_lock) {
+  if (!lock->TryLock())
     lock.reset();
-  }
-  return lock.release();
+  return lock;
 }
 
 ServiceProcessTerminateMonitor::ServiceProcessTerminateMonitor(
@@ -324,8 +312,8 @@ bool ServiceProcessState::SignalReady(
   DCHECK(state_);
 
 #if !defined(OS_MACOSX)
-  state_->running_lock.reset(TakeServiceRunningLock(true));
-  if (state_->running_lock.get() == NULL) {
+  state_->running_lock = TakeServiceRunningLock();
+  if (!state_->running_lock.get()) {
     return false;
   }
 #endif

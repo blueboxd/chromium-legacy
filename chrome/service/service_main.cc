@@ -38,9 +38,21 @@ int CloudPrintServiceProcessMain(
   VLOG(1) << "Service process launched: "
           << parameters.command_line.GetCommandLineString();
 
-  // If there is already a service process running, quit now.
-  std::unique_ptr<ServiceProcessState> state(new ServiceProcessState);
-  if (!state->Initialize())
+  auto initialize_service = [](ServiceProcessState* service) {
+    for (int i = 0; i < 10; ++i) {
+      if (service->Initialize())
+        return true;
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(i * 100));
+    }
+    return false;
+  };
+
+  // If there is already a service process running, quit now. Retry a few times
+  // in case the running service is busy exiting.
+  // TODO(ellyjones): Are these retries actually necessary / can this case
+  // happen in practice?
+  auto state = std::make_unique<ServiceProcessState>();
+  if (!initialize_service(state.get()))
     return 0;
 
   base::RunLoop run_loop;

@@ -110,16 +110,13 @@ LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
 
 LayoutSVGResourceClipper::~LayoutSVGResourceClipper() = default;
 
-void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
+void LayoutSVGResourceClipper::RemoveAllClientsFromCache() {
   clip_content_path_validity_ = kClipContentPathUnknown;
   clip_content_path_.Clear();
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
-                                  SVGResourceClient::kBoundariesInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
+                                SVGResourceClient::kBoundariesInvalidation);
 }
 
 base::Optional<Path> LayoutSVGResourceClipper::AsPath() {

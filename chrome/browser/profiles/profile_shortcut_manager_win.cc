@@ -57,9 +57,6 @@ using content::BrowserThread;
 
 namespace {
 
-// Name of the badged icon file generated for a given profile.
-const char kProfileIconFileName[] = "Google Profile.ico";
-
 // Characters that are not allowed in Windows filenames. Taken from
 // http://msdn.microsoft.com/en-us/library/aa365247.aspx
 const base::char16 kReservedCharacters[] =
@@ -617,10 +614,14 @@ base::string16 SanitizeShortcutProfileNameString(
 }  // namespace
 
 namespace profiles {
+
+const base::FilePath::StringPieceType kProfileIconFileName =
+    FILE_PATH_LITERAL("Google Profile.ico");
+
 namespace internal {
 
 base::FilePath GetProfileIconPath(const base::FilePath& profile_path) {
-  return profile_path.AppendASCII(kProfileIconFileName);
+  return profile_path.Append(kProfileIconFileName);
 }
 
 base::string16 GetShortcutFilenameForProfile(

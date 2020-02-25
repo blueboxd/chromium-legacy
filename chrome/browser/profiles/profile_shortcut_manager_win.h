@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -15,6 +16,10 @@
 
 // Internal free-standing functions that are exported here for testing.
 namespace profiles {
+
+// Name of the badged icon file generated for a given profile.
+extern const base::FilePath::StringPieceType kProfileIconFileName;
+
 namespace internal {
 
 // Returns the full path to the profile icon file.

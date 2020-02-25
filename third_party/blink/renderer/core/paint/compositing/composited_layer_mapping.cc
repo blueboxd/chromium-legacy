@@ -1578,8 +1578,7 @@ bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
     if (!cached_image->HasImage())
       return false;
 
-    Image* image = cached_image->GetImage();
-    if (!image->IsBitmapImage())
+    if (!IsA<BitmapImage>(cached_image->GetImage()))
       return false;
 
     UseCounter::Count(GetLayoutObject().GetDocument(),

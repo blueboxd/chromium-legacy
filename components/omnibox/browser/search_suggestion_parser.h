@@ -166,7 +166,7 @@ class SearchSuggestionParser {
     const std::string& image_dominant_color() const {
       return image_dominant_color_;
     }
-    const std::string& image_url() const { return image_url_; }
+    const GURL& image_url() const { return image_url_; }
 
     bool should_prefetch() const { return should_prefetch_; }
 
@@ -206,7 +206,7 @@ class SearchSuggestionParser {
     // color can be used to paint the image placeholder while fetching the
     // image.
     std::string image_dominant_color_;
-    std::string image_url_;
+    GURL image_url_;
 
     // Should this result be prefetched?
     bool should_prefetch_;

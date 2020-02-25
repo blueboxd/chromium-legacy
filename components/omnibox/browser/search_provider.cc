@@ -1618,8 +1618,8 @@ void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
     prefetch_limit--;
 
     const auto& image_url = suggestion.image_url();
-    if (!image_url.empty())
-      prefetch_image_urls.push_back(GURL(image_url));
+    if (!image_url.is_empty())
+      prefetch_image_urls.push_back(image_url);
 
     if (suggestion.answer())
       suggestion.answer()->AddImageURLsTo(&prefetch_image_urls);

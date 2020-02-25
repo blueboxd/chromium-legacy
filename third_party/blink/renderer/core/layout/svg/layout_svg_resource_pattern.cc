@@ -52,13 +52,10 @@ LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
       attributes_wrapper_(MakeGarbageCollected<PatternAttributesWrapper>()),
       pattern_map_(MakeGarbageCollected<PatternMap>()) {}
 
-void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
+void LayoutSVGResourcePattern::RemoveAllClientsFromCache() {
   pattern_map_->clear();
   should_collect_pattern_attributes_ = true;
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kPaintInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kPaintInvalidation);
 }
 
 bool LayoutSVGResourcePattern::RemoveClientFromCache(

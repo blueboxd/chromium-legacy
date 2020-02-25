@@ -10,7 +10,7 @@
 
 namespace payments {
 
-PaymentRequestTestController::PaymentRequestTestController() {}
+PaymentRequestTestController::PaymentRequestTestController() = default;
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
 

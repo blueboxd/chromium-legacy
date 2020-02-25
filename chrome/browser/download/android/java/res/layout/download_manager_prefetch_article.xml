@@ -4,7 +4,7 @@
      found in the LICENSE file.
 -->
 
-<android.support.v7.widget.GridLayout
+<androidx.gridlayout.widget.GridLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -124,4 +124,4 @@
             android:id="@+id/selection"
             style="@style/DownloadItemSelectionView"/>
     </FrameLayout>
-</android.support.v7.widget.GridLayout>
+</androidx.gridlayout.widget.GridLayout>

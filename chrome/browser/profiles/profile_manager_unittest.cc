@@ -1699,3 +1699,38 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   EXPECT_EQ(profile_name3, local_state->GetString(prefs::kProfileLastUsed));
 }
 #endif  // defined(OS_MACOSX)
+
+TEST_F(ProfileManagerTest, CannotCreateProfileOusideUserDir) {
+  base::ScopedTempDir non_user_dir;
+  ASSERT_TRUE(non_user_dir.CreateUniqueTempDir());
+
+  base::FilePath dest_path = non_user_dir.GetPath();
+  dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  Profile* profile = profile_manager->GetProfile(dest_path);
+  EXPECT_EQ(nullptr, profile);
+}
+
+TEST_F(ProfileManagerTest, CannotCreateProfileOusideUserDirAsync) {
+  base::ScopedTempDir non_user_dir;
+  ASSERT_TRUE(non_user_dir.CreateUniqueTempDir());
+
+  const std::string profile_name = "New Profile";
+  base::FilePath dest_path = non_user_dir.GetPath();
+  dest_path = dest_path.AppendASCII(profile_name);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(nullptr, Profile::CREATE_STATUS_LOCAL_FAIL));
+
+  profile_manager->CreateProfileAsync(
+      dest_path,
+      base::Bind(&MockObserver::OnProfileCreated,
+                 base::Unretained(&mock_observer)),
+      base::UTF8ToUTF16(profile_name), profiles::GetDefaultAvatarIconUrl(0));
+  content::RunAllTasksUntilIdle();
+}

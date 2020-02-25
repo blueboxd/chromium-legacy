@@ -79,10 +79,23 @@ suite('cr-icon-button', function() {
   });
 
   test('when tabindex is -1, it stays -1', async () => {
-    document.body.innerHTML = '<cr-icon-button tabindex="-1"></cr-icon-button>';
+    document.body.innerHTML =
+        '<cr-icon-button custom-tab-index="-1"></cr-icon-button>';
     await test_util.flushTasks();
     button = document.body.querySelector('cr-icon-button');
     assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = true;
+    assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = false;
+    assertEquals('-1', button.getAttribute('tabindex'));
+  });
+
+  test('tabindex update', async () => {
+    document.body.innerHTML = '<cr-icon-button></cr-icon-button>';
+    button = document.body.querySelector('cr-icon-button');
+    assertEquals('0', button.getAttribute('tabindex'));
+    button.customTabIndex = 1;
+    assertEquals('1', button.getAttribute('tabindex'));
   });
 
   test('ripple is a circle with background icon or single iron-icon', () => {

@@ -22,6 +22,7 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -5182,18 +5183,11 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
 }
 
 class TouchpadRenderWidgetHostViewAuraTest
-    : public RenderWidgetHostViewAuraTest,
-      public testing::WithParamInterface<bool> {
+    : public base::test::WithFeatureOverride,
+      public RenderWidgetHostViewAuraTest {
  public:
-  TouchpadRenderWidgetHostViewAuraTest() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kTouchpadAsyncPinchEvents);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kTouchpadAsyncPinchEvents);
-    }
-  }
+  TouchpadRenderWidgetHostViewAuraTest()
+      : WithFeatureOverride(features::kTouchpadAsyncPinchEvents) {}
   ~TouchpadRenderWidgetHostViewAuraTest() override = default;
 
  private:
@@ -5201,9 +5195,7 @@ class TouchpadRenderWidgetHostViewAuraTest
   DISALLOW_COPY_AND_ASSIGN(TouchpadRenderWidgetHostViewAuraTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         TouchpadRenderWidgetHostViewAuraTest,
-                         testing::Bool());
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(TouchpadRenderWidgetHostViewAuraTest);
 
 // Test that we elide touchpad pinch gesture steams consisting of only begin
 // and end events.

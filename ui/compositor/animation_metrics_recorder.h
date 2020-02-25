@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_ANIMATION_METRICS_RECORDER_H_
 #define UI_COMPOSITOR_ANIMATION_METRICS_RECORDER_H_
 
+#include "base/optional.h"
 #include "base/time/time.h"
 
 namespace ui {
@@ -14,24 +15,37 @@ class AnimationMetricsReporter;
 class AnimationMetricsRecorder {
  public:
   explicit AnimationMetricsRecorder(AnimationMetricsReporter* reporter);
-  ~AnimationMetricsRecorder();
-
   AnimationMetricsRecorder(const AnimationMetricsRecorder&) = delete;
   AnimationMetricsRecorder& operator=(const AnimationMetricsRecorder&) = delete;
+  ~AnimationMetricsRecorder();
 
-  void OnAnimationStart(int start_frame_number,
+  // Called when the animator is attached to/detached from a Compositor to
+  // update |start_frame_number_|.
+  void OnAnimatorAttached(base::Optional<int> frame_number);
+  void OnAnimatorDetached();
+
+  void OnAnimationStart(base::Optional<int> start_frame_number,
                         base::TimeTicks effective_start_time,
                         base::TimeDelta duration);
-  void OnAnimationEnd(int end_frame_number, float refresh_rate);
+  void OnAnimationEnd(base::Optional<int> end_frame_number, float refresh_rate);
 
  private:
   AnimationMetricsReporter* const reporter_;
 
   // Variables set at the start of an animation which are required to compute
   // the smoothness when the animation ends.
-  int start_frame_number_ = 0;
+  // |start_frame_number_| is the frame number in relevant Compositor when
+  // the animation starts. If not set, it means the animator and its Layer
+  // is not attached to a Compositor when the animation starts, or is
+  // detached from the Compositor partway through the animation.
+  base::Optional<int> start_frame_number_;
   base::TimeTicks effective_start_time_;
   base::TimeDelta duration_;
+
+  // Whether animator is detached from Compositor partway through the animation.
+  // If it is true, no metrics is reported because the number of frames could
+  // not be counted correctly in such case.
+  bool animator_detached_after_start_ = false;
 };
 
 }  // namespace ui

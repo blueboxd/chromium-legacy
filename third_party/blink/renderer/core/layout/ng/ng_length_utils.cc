@@ -286,7 +286,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                                  max_length, LengthResolvePhase::kIntrinsic);
   } else {
     max = ResolveMaxBlockLength(space, style, border_padding, max_length,
-                                content_size, LengthResolvePhase::kIntrinsic);
+                                LengthResolvePhase::kIntrinsic);
   }
   computed_sizes.Constrain(max);
 
@@ -299,7 +299,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                                  min_length, LengthResolvePhase::kIntrinsic);
   } else {
     min = ResolveMinBlockLength(space, style, border_padding, min_length,
-                                content_size, LengthResolvePhase::kIntrinsic);
+                                LengthResolvePhase::kIntrinsic);
   }
   computed_sizes.Encompass(min);
 
@@ -486,7 +486,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
         nullptr) {
   LayoutUnit min = ResolveMinBlockLength(
       constraint_space, style, border_padding, style.LogicalMinHeight(),
-      content_size, LengthResolvePhase::kLayout,
+      LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
   const Length& logical_height = style.LogicalHeight();
   // Scrollable percentage-sized children of table cells, in the table
@@ -518,7 +518,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
 
   LayoutUnit max = ResolveMaxBlockLength(
       constraint_space, style, border_padding, style.LogicalMaxHeight(),
-      content_size, LengthResolvePhase::kLayout,
+      LengthResolvePhase::kLayout,
       opt_percentage_resolution_block_size_for_min_max);
 
   return ConstrainByMinMax(extent, min, max);
@@ -565,12 +565,12 @@ void ComputeReplacedSize(const NGLayoutInputNode& node,
   LayoutUnit inline_max = ResolveMaxInlineLength(
       space, style, border_padding, child_min_max_size, style.LogicalMaxWidth(),
       LengthResolvePhase::kLayout);
-  LayoutUnit block_min = ResolveMinBlockLength(
-      space, style, border_padding, style.LogicalMinHeight(),
-      border_padding.BlockSum(), LengthResolvePhase::kLayout);
-  LayoutUnit block_max = ResolveMaxBlockLength(
-      space, style, border_padding, style.LogicalMaxHeight(), LayoutUnit::Max(),
-      LengthResolvePhase::kLayout);
+  LayoutUnit block_min = ResolveMinBlockLength(space, style, border_padding,
+                                               style.LogicalMinHeight(),
+                                               LengthResolvePhase::kLayout);
+  LayoutUnit block_max = ResolveMaxBlockLength(space, style, border_padding,
+                                               style.LogicalMaxHeight(),
+                                               LengthResolvePhase::kLayout);
 
   const Length& inline_length = style.LogicalWidth();
   const Length& block_length = style.LogicalHeight();

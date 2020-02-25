@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_mock_clock_override.h"
 #include "base/test/task_environment.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
@@ -134,10 +135,21 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
         property);
   }
 
+  void Wait() {
+    if (animations_completed_)
+      return;
+
+    base::RunLoop run_loop;
+    quit_wait_loop_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
  private:
   // ImplicitAnimationObserver implementation
   void OnImplicitAnimationsCompleted() override {
     animations_completed_ = true;
+    if (quit_wait_loop_)
+      std::move(quit_wait_loop_).Run();
   }
 
   bool RequiresNotificationWhenAnimatorDestroyed() const override {
@@ -146,6 +158,8 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
 
   bool animations_completed_;
   bool notify_when_animator_destructed_;
+
+  base::OnceClosure quit_wait_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImplicitAnimationObserver);
 };
@@ -3394,6 +3408,9 @@ TEST(LayerAnimatorTest, ReportMetricsSmooth) {
   TestLayerAnimationDelegate delegate;
   scoped_refptr<LayerAnimator> animator(CreateImplicitTestAnimator(&delegate));
 
+  // Simulates that Layer has attached to a Compositor.
+  delegate.SetFrameNumber(0);
+
   std::unique_ptr<ui::LayerAnimationElement> animation_element =
       ui::LayerAnimationElement::CreateColorElement(SK_ColorRED,
                                                     kAnimationDuration);
@@ -3436,6 +3453,9 @@ TEST(LayerAnimatorTest, ReportMetricsNotSmooth) {
   TestLayerAnimationDelegate delegate;
   scoped_refptr<LayerAnimator> animator(CreateImplicitTestAnimator(&delegate));
 
+  // Simulates that Layer has attached to a Compositor.
+  delegate.SetFrameNumber(0);
+
   std::unique_ptr<ui::LayerAnimationElement> animation_element =
       ui::LayerAnimationElement::CreateColorElement(SK_ColorRED,
                                                     kAnimationDuration);
@@ -3465,6 +3485,72 @@ TEST(LayerAnimatorTest, ReportMetricsNotSmooth) {
   // interval between refreshes.
   int expected = base::Time::kMillisecondsPerSecond / delegate.GetRefreshRate();
   EXPECT_EQ(reporter.value(), expected);
+}
+
+// Tests that metrics is reported correctly as not smooth when animation starts
+// before Layer is attached to a Compositor.
+TEST(LayerAnimatorTest,
+     ReportMetricsNotSmoothForAnimationStartsBeforeAttached) {
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::UI);
+  const bool enable_pixel_output = false;
+  TestContextFactories context_factories(enable_pixel_output);
+  const gfx::Rect bounds(10, 10, 100, 100);
+  std::unique_ptr<TestCompositorHost> host(
+      TestCompositorHost::Create(bounds, context_factories.GetContextFactory(),
+                                 context_factories.GetContextFactoryPrivate()));
+  host->Show();
+
+  Compositor* compositor = host->GetCompositor();
+  Layer root;
+  compositor->SetRootLayer(&root);
+
+  constexpr base::TimeDelta kAnimationDuration =
+      base::TimeDelta::FromMilliseconds(50);
+
+  // Draw enough frames so that missing the start frame number would cause the
+  // reporter to always report 100% smoothness. 4 times of the expected
+  // animation frames because somehow the refresh rate changes from 60fps to
+  // 200fps when reporting.
+  const float frame_interval =
+      base::Time::kMillisecondsPerSecond / compositor->refresh_rate();
+  const int kStartFrameNumber =
+      static_cast<int>(kAnimationDuration.InMillisecondsF() / frame_interval) *
+      4;
+  while (compositor->activated_frame_count() < kStartFrameNumber) {
+    compositor->ScheduleFullRedraw();
+    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  }
+
+  Layer layer;
+  layer.SetBounds(gfx::Rect(0, 0, 5, 5));
+
+  TestImplicitAnimationObserver waiter(false);
+  TestMetricsReporter reporter;
+  {
+    // Starts an animation before |layer| is attached.
+    ScopedLayerAnimationSettings settings(layer.GetAnimator());
+    settings.SetAnimationMetricsReporter(&reporter);
+    settings.AddObserver(&waiter);
+    settings.SetTransitionDuration(kAnimationDuration);
+    layer.SetBounds(gfx::Rect(0, 0, 50, 50));
+  }
+
+  // Attaches |layer|.
+  root.Add(&layer);
+
+  // Blocks UI thread for kAnimationDuration to make animation not smooth.
+  base::TimeTicks start = base::TimeTicks::Now();
+  do {
+    base::PlatformThread::Sleep(kAnimationDuration);
+  } while (base::TimeTicks::Now() - start < kAnimationDuration);
+
+  // Waits for the animation to finish.
+  waiter.Wait();
+
+  // Metrics should be reported as not smooth.
+  EXPECT_TRUE(reporter.report_called());
+  EXPECT_LT(reporter.value(), 100);
 }
 
 class LayerOwnerAnimationObserver : public LayerAnimationObserver {

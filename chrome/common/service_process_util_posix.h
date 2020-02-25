@@ -19,7 +19,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/common/multi_process_lock.h"
-MultiProcessLock* TakeServiceRunningLock(bool waiting);
+std::unique_ptr<MultiProcessLock> TakeServiceRunningLock();
 #endif
 
 #if defined(OS_MACOSX)

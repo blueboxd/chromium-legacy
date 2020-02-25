@@ -870,7 +870,7 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
 }
 
 GURL AutocompleteMatch::ImageUrl() const {
-  return answer ? answer->image_url() : GURL(image_url);
+  return answer ? answer->image_url() : image_url;
 }
 
 AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(

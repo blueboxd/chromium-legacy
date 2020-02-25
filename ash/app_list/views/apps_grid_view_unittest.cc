@@ -1859,6 +1859,59 @@ TEST_P(AppsGridViewTabletTest, Basic) {
       1);
 }
 
+// Make sure that a folder icon resets background blur after scrolling the apps
+// grid without completing any transition (See https://crbug.com/1049275). The
+// background blur is masked by the apps grid's layer mask.
+TEST_F(AppsGridViewTabletTest, EnsureBlurAfterScrollingWithoutTransition) {
+  // Create a folder with 2 apps. Then add apps until a second page is created.
+  model_->CreateAndPopulateFolderWithApps(2);
+  model_->PopulateApps(GetTilesPerPage(0));
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, -1));
+  ui::GestureEvent scroll_update_upwards(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_update_downwards(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 15));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+
+  AppListItemView* folder_view = GetItemViewAt(0);
+  ASSERT_TRUE(folder_view->is_folder());
+  ASSERT_FALSE(apps_grid_view_->layer()->layer_mask_layer());
+
+  // On the first page drag upwards, there should not be a page switch and the
+  // layer mask should make the folder lose blur.
+  ASSERT_EQ(0, GetPaginationModel()->selected_page());
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+  apps_grid_view_->OnGestureEvent(&scroll_update_upwards);
+  EXPECT_TRUE(scroll_update_upwards.handled());
+
+  ASSERT_EQ(0, GetPaginationModel()->selected_page());
+  ASSERT_TRUE(apps_grid_view_->layer()->layer_mask_layer());
+
+  // Continue drag, now switching directions and release. There shouldn't be any
+  // transition and the mask layer should've been reset.
+  apps_grid_view_->OnGestureEvent(&scroll_update_downwards);
+  EXPECT_TRUE(scroll_update_downwards.handled());
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(scroll_end.handled());
+
+  EXPECT_FALSE(GetPaginationModel()->has_transition());
+  EXPECT_FALSE(apps_grid_view_->layer()->layer_mask_layer());
+}
+
 INSTANTIATE_TEST_SUITE_P(All, AppsGridViewTabletTest, testing::Bool());
 
 // Test various dragging behaviors only allowed when apps grid gap (part of

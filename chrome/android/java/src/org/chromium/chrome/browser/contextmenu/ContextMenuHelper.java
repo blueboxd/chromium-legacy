@@ -27,6 +27,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -272,7 +273,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             public void onResult(byte[] result) {
                 if (mActivity == null) return;
 
-                ShareHelper.generateUriFromData(mActivity, result, callback);
+                ShareImageFileUtils.generateTemporaryUriFromData(mActivity, result, callback);
             }
         };
 

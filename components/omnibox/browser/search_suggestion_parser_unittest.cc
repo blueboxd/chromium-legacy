@@ -143,7 +143,7 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
     ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.annotation());
     // This entry has no image.
     ASSERT_EQ("", suggestion_result.image_dominant_color());
-    ASSERT_EQ("", suggestion_result.image_url());
+    ASSERT_EQ(GURL(), suggestion_result.image_url());
   }
   {
     const auto& suggestion_result = results.suggest_results[1];
@@ -152,7 +152,7 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
     ASSERT_EQ(base::ASCIIToUTF16("American author"),
               suggestion_result.annotation());
     ASSERT_EQ("#424242", suggestion_result.image_dominant_color());
-    ASSERT_EQ("http://example.com/a.png", suggestion_result.image_url());
+    ASSERT_EQ(GURL("http://example.com/a.png"), suggestion_result.image_url());
   }
 }
 

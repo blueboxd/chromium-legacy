@@ -76,7 +76,7 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
            LayoutSVGResourceContainer::IsOfType(type);
   }
 
-  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveAllClientsFromCache() override;
   bool RemoveClientFromCache(SVGResourceClient&) override;
 
   FloatRect ResourceBoundingBox(const FloatRect& reference_box) const;

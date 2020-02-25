@@ -79,4 +79,5 @@ include_rules = [
   "+mojo/core/embedder",
   "+sandbox/win/tests",
   "+third_party/webrtc",
+  "+third_party/re2",
 ]

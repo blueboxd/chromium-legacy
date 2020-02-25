@@ -106,6 +106,7 @@ public class TabGridDialogTest {
     public void setUp() {
         CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
         CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(true);
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
@@ -119,6 +120,7 @@ public class TabGridDialogTest {
     public void tearDown() {
         CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
         CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(null);
     }
 
     @Test

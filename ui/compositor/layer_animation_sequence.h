@@ -127,6 +127,10 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Called when the animator is destroyed.
   void OnAnimatorDestroyed();
 
+  // Called when the animator is attached to/detached from a Compositor.
+  void OnAnimatorAttached(LayerAnimationDelegate* delegate);
+  void OnAnimatorDetached();
+
   // Sets |animation_metrics_reporter_| and passes it to all |elements_|.
   void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
 

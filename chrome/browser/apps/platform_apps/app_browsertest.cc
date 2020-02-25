@@ -454,10 +454,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       << message_;
   observer.Wait();
   ASSERT_EQ(kExpectedNumberOfTabs, observer.tabs().size());
-  content::WaitForLoadStop(observer.tabs()[kExpectedNumberOfTabs - 1]);
+  EXPECT_FALSE(
+      content::WaitForLoadStop(observer.tabs()[kExpectedNumberOfTabs - 1]));
   EXPECT_EQ(GURL(kChromiumURL),
             observer.tabs()[kExpectedNumberOfTabs - 1]->GetURL());
-  content::WaitForLoadStop(observer.tabs()[kExpectedNumberOfTabs - 2]);
+  EXPECT_FALSE(
+      content::WaitForLoadStop(observer.tabs()[kExpectedNumberOfTabs - 2]));
   EXPECT_EQ(GURL(kChromiumURL),
             observer.tabs()[kExpectedNumberOfTabs - 2]->GetURL());
 }

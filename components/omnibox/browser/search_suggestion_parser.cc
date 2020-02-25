@@ -130,7 +130,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       annotation_(annotation),
       additional_query_params_(additional_query_params),
       image_dominant_color_(image_dominant_color),
-      image_url_(image_url),
+      image_url_(GURL(image_url)),
       should_prefetch_(should_prefetch) {
   match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());

@@ -31,6 +31,7 @@ public class StringCachedFieldTrialParameter extends CachedFieldTrialParameter {
     void cacheToDisk() {
         String value =
                 ChromeFeatureList.getFieldTrialParamByFeature(getFeatureName(), getParameterName());
-        SharedPreferencesManager.getInstance().writeString(getSharedPreferenceKey(), value);
+        SharedPreferencesManager.getInstance().writeString(
+                getSharedPreferenceKey(), value.isEmpty() ? getDefaultValue() : value);
     }
 }

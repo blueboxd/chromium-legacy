@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_Reload) {
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_LoadInNewTab) {
             GetActiveWebContents()->GetController().GetVisibleEntry()->
                 GetVirtualURL());
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_EQ(title_before_crash, title_after_crash);
@@ -196,11 +196,11 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
   SimulateRendererCrash(browser());
 
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(GetActiveWebContents());
+  EXPECT_FALSE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(GetActiveWebContents());
+  EXPECT_FALSE(content::WaitForLoadStop(GetActiveWebContents()));
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 }
 

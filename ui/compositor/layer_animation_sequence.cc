@@ -245,6 +245,17 @@ void LayerAnimationSequence::OnAnimatorDestroyed() {
   }
 }
 
+void LayerAnimationSequence::OnAnimatorAttached(
+    LayerAnimationDelegate* delegate) {
+  for (auto& element : elements_)
+    element->OnAnimatorAttached(delegate);
+}
+
+void LayerAnimationSequence::OnAnimatorDetached() {
+  for (auto& element : elements_)
+    element->OnAnimatorDetached();
+}
+
 void LayerAnimationSequence::SetAnimationMetricsReporter(
     AnimationMetricsReporter* reporter) {
   animation_metrics_reporter_ = reporter;

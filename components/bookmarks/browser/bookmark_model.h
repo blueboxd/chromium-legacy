@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -424,6 +425,11 @@ class BookmarkModel : public BookmarkUndoProvider,
   std::unique_ptr<BookmarkStorage> store_;
 
   std::unique_ptr<TitledUrlIndex> titled_url_index_;
+
+#if DCHECK_IS_ON()
+  // GUID index used to verify uniqueness in DCHECK-enabled builds.
+  std::set<std::string> guid_index_;
+#endif  // DCHECK_IS_ON()
 
   // Owned by |model_loader_|.
   // WARNING: in some tests this does *not* refer to

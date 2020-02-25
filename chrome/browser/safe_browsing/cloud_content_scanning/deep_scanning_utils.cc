@@ -149,6 +149,9 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                            int64_t total_bytes,
                            const BinaryUploadService::Result& result,
                            const DeepScanningClientResponse& response) {
+  // Don't record UMA metrics for this result.
+  if (result == BinaryUploadService::Result::UNAUTHORIZED)
+    return;
   bool dlp_verdict_success = response.has_dlp_scan_verdict()
                                  ? response.dlp_scan_verdict().status() ==
                                        DlpDeepScanningVerdict::SUCCESS
@@ -159,39 +162,7 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                 MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED
           : true;
   bool success = dlp_verdict_success && malware_verdict_success;
-  std::string result_value;
-  switch (result) {
-    case BinaryUploadService::Result::SUCCESS:
-      if (success)
-        result_value = "Success";
-      else
-        result_value = "FailedToGetVerdict";
-      break;
-    case BinaryUploadService::Result::UPLOAD_FAILURE:
-      result_value = "UploadFailure";
-      break;
-    case BinaryUploadService::Result::TIMEOUT:
-      result_value = "Timeout";
-      break;
-    case BinaryUploadService::Result::FILE_TOO_LARGE:
-      result_value = "FileTooLarge";
-      break;
-    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      result_value = "FailedToGetToken";
-      break;
-    case BinaryUploadService::Result::UNKNOWN:
-      result_value = "Unknown";
-      break;
-    case BinaryUploadService::Result::UNAUTHORIZED:
-      // Don't record UMA metrics for this result.
-      return;
-    case BinaryUploadService::Result::FILE_ENCRYPTED:
-      result_value = "FileEncrypted";
-      break;
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      result_value = "UnsupportedFileType";
-      break;
-  }
+  std::string result_value = BinaryUploadServiceResultToString(result, success);
 
   // Update |success| so non-SUCCESS results don't log the bytes/sec metric.
   success &= (result == BinaryUploadService::Result::SUCCESS);
@@ -306,6 +277,34 @@ DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
   }
 
   return response;
+}
+
+std::string BinaryUploadServiceResultToString(
+    const BinaryUploadService::Result& result,
+    bool success) {
+  switch (result) {
+    case BinaryUploadService::Result::SUCCESS:
+      if (success)
+        return "Success";
+      else
+        return "FailedToGetVerdict";
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+      return "UploadFailure";
+    case BinaryUploadService::Result::TIMEOUT:
+      return "Timeout";
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+      return "FileTooLarge";
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+      return "FailedToGetToken";
+    case BinaryUploadService::Result::UNKNOWN:
+      return "Unknown";
+    case BinaryUploadService::Result::UNAUTHORIZED:
+      return "";
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      return "FileEncrypted";
+    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+      return "UnsupportedFileType";
+  }
 }
 
 }  // namespace safe_browsing

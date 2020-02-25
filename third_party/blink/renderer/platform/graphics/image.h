@@ -322,10 +322,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
-#define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \
-  DEFINE_TYPE_CASTS(typeName, Image, image, image->Is##typeName(), \
-                    image.Is##typeName())
-
 }  // namespace blink
 
 #endif

@@ -128,6 +128,9 @@ void SubresourceRedirectObserver::DidFinishNavigation(
 
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
+  if (!render_frame_host || !render_frame_host->GetProcess())
+    return;
+
   optimization_guide_decider->CanApplyOptimizationAsync(
       navigation_handle, optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
       base::BindOnce(&OnReadyToSendResourceLoadingImageHints,

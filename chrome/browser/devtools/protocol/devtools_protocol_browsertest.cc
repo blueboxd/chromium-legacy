@@ -141,7 +141,7 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                        VisibleSecurityStateChangedNeutralState) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   Attach();
   SendCommand("Security.enable");

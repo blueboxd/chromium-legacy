@@ -65,16 +65,13 @@ bool LayoutSVGResourceFilter::IsChildAllowed(LayoutObject* child,
   return child->IsSVGResourceFilterPrimitive();
 }
 
-void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
+void LayoutSVGResourceFilter::RemoveAllClientsFromCache() {
   // LayoutSVGResourceFilter::removeClientFromCache will be called for
   // all clients through markAllClientsForInvalidation so no explicit
   // display item invalidation is needed here.
   DisposeFilterMap();
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
-                                  SVGResourceClient::kBoundariesInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
+                                SVGResourceClient::kBoundariesInvalidation);
 }
 
 bool LayoutSVGResourceFilter::RemoveClientFromCache(SVGResourceClient& client) {

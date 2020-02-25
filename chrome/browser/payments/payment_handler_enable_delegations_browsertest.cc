@@ -3,52 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "build/build_config.h"
-#include "chrome/test/base/chrome_test_utils.h"
-#include "chrome/test/payments/payment_request_test_controller.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/test/base/in_process_browser_test.h"
-#endif
+#include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 
 namespace payments {
 namespace {
 
-class PaymentHandlerEnableDelegationsTest : public PlatformBrowserTest {
+class PaymentHandlerEnableDelegationsTest
+    : public PaymentRequestPlatformBrowserTestBase {
  public:
-  PaymentHandlerEnableDelegationsTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-
-  ~PaymentHandlerEnableDelegationsTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
+  PaymentHandlerEnableDelegationsTest() = default;
+  ~PaymentHandlerEnableDelegationsTest() override = default;
 
   void SetUpOnMainThread() override {
-    https_server_.ServeFilesFromSourceDirectory(
-        "components/test/data/payments");
-    ASSERT_TRUE(https_server_.Start());
-    ASSERT_TRUE(content::NavigateToURL(
-        GetActiveWebContents(), https_server_.GetURL("/payment_handler.html")));
-    test_controller_.SetUpOnMainThread();
-    PlatformBrowserTest::SetUpOnMainThread();
-  }
-
-  content::WebContents* GetActiveWebContents() {
-    return chrome_test_utils::GetActiveWebContents(this);
+    PaymentRequestPlatformBrowserTestBase::SetUpOnMainThread();
+    NavigateTo("/payment_handler.html");
   }
 
  private:
-  PaymentRequestTestController test_controller_;
-  net::EmbeddedTestServer https_server_;
-
   DISALLOW_COPY_AND_ASSIGN(PaymentHandlerEnableDelegationsTest);
 };
 

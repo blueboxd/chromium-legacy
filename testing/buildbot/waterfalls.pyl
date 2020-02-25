@@ -2071,6 +2071,16 @@
   {
     'name': 'chromium.goma',
     'machines': {
+      'Chromium Android ARM 32-bit Goma RBE ToT': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Chromium Android ARM 32-bit Goma RBE ToT (ATS)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'Chromium Linux Goma RBE Staging': {
         'mixins': [
           'linux-xenial',

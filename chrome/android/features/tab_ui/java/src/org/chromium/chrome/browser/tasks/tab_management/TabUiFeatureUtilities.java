@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
@@ -11,11 +13,12 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
  */
 public class TabUiFeatureUtilities {
     private static Boolean sSearchTermChipEnabledForTesting;
+    private static Boolean sTabManagementModuleSupportedForTesting;
 
     /**
      * Set whether the search term chip in Grid tab switcher is enabled for testing.
      */
-    public static void setSearchTermChipEnabledForTesting(Boolean enabled) {
+    public static void setSearchTermChipEnabledForTesting(@Nullable Boolean enabled) {
         sSearchTermChipEnabledForTesting = enabled;
     }
 
@@ -26,5 +29,23 @@ public class TabUiFeatureUtilities {
         if (sSearchTermChipEnabledForTesting != null) return sSearchTermChipEnabledForTesting;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "enable_search_term_chip", false);
+    }
+
+    /**
+     * Set whether the tab management module is supported for testing.
+     */
+    public static void setTabManagementModuleSupportedForTesting(@Nullable Boolean enabled) {
+        sTabManagementModuleSupportedForTesting = enabled;
+    }
+
+    /**
+     * @return Whether the tab management module is supported.
+     */
+    public static boolean isTabManagementModuleSupported() {
+        if (sTabManagementModuleSupportedForTesting != null) {
+            return sTabManagementModuleSupportedForTesting;
+        }
+
+        return TabManagementModuleProvider.isTabManagementModuleSupported();
     }
 }

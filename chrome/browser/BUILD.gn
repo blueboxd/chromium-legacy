@@ -4034,6 +4034,8 @@ jumbo_static_library("browser") {
       sources += [
         "component_updater/third_party_module_list_component_installer_win.cc",
         "component_updater/third_party_module_list_component_installer_win.h",
+        "google/google_update_policy_fetcher_win.cc",
+        "google/google_update_policy_fetcher_win.h",
         "google/google_update_win.cc",
         "google/google_update_win.h",
         "win/conflicts/incompatible_applications_updater.cc",

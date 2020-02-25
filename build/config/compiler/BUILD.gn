@@ -1998,8 +1998,6 @@ config("optimize") {
     # Favor size over speed, /O1 must be before the common flags.
     # /O1 implies /Os and /GF.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-    # TODO(thakis): Use -flto in official builds here eventually,
-    # https://crbug.com/598772
   } else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
     # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
@@ -2067,13 +2065,6 @@ config("optimize_max") {
       # Favor speed over size, /O2 must be before the common flags.
       # /O2 implies /Ot, /Oi, and /GF.
       cflags = [ "/O2" ] + common_optimize_on_cflags
-
-      if (is_official_build) {
-        if (!is_clang) {
-          cflags += [ "/GL" ]  # Whole program optimization.
-        }
-        # TODO(crbug.com/598772): Enable -flto for Clang.
-      }
     } else if (optimize_for_fuzzing) {
       cflags = [ "-O1" ] + common_optimize_on_cflags
     } else {
@@ -2106,11 +2097,6 @@ config("optimize_speed") {
       # Favor speed over size, /O2 must be before the common flags.
       # /O2 implies /Ot, /Oi, and /GF.
       cflags = [ "/O2" ] + common_optimize_on_cflags
-
-      # TODO(thakis): Remove is_clang here, https://crbug.com/598772
-      if (is_official_build && !is_clang) {
-        cflags += [ "/GL" ]  # Whole program optimization.
-      }
     } else if (optimize_for_fuzzing) {
       cflags = [ "-O1" ] + common_optimize_on_cflags
     } else {
@@ -2237,24 +2223,13 @@ config("win_pdbaltpath") {
 # Full symbols.
 config("symbols") {
   if (is_win) {
-    if (use_goma || is_clang) {
-      # Note that with VC++ this requires is_win_fastlink, enforced elsewhere.
+    if (is_clang) {
       cflags = [ "/Z7" ]  # Debug information in the .obj files.
     } else {
       cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
     }
 
-    if (is_win_fastlink && !use_lld) {
-      # TODO(hans): is_win_fastlink=true is incompatible with use_lld. However,
-      # some developers might have enabled it manually, so to ease the
-      # transition to lld, just ignore it rather than asserting. Eventually we
-      # want to assert instead.
-
-      # Tell VS 2015+ to create a PDB that references debug
-      # information in .obj and .lib files instead of copying
-      # it all. This flag is incompatible with /PROFILE
-      ldflags = [ "/DEBUG:FASTLINK" ]
-    } else if (is_clang && use_lld && use_ghash) {
+    if (is_clang && use_lld && use_ghash) {
       cflags += [ "-gcodeview-ghash" ]
       ldflags = [ "/DEBUG:GHASH" ]
     } else {
@@ -2265,19 +2240,13 @@ config("symbols") {
     configs = [ ":win_pdbaltpath" ]
 
     if (is_clang) {
-      # /DEBUG:FASTLINK requires every object file to have standalone debug
-      # information.
-      if (is_win_fastlink && !use_lld) {
-        cflags += [ "-fstandalone-debug" ]
-      } else {
-        # Use constructor debug mode. This option reduces debug info more than
-        # -fno-standalone-debug by emitting class type information only when
-        # constructors are emitted.
-        cflags += [
-          "-Xclang",
-          "-debug-info-kind=constructor",
-        ]
-      }
+      # Use constructor debug mode. This option reduces debug info more than
+      # -fno-standalone-debug by emitting class type information only when
+      # constructors are emitted.
+      cflags += [
+        "-Xclang",
+        "-debug-info-kind=constructor",
+      ]
     }
   } else {
     cflags = []

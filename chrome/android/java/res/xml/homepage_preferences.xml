@@ -21,6 +21,7 @@
     <org.chromium.chrome.browser.settings.homepage.RadioButtonGroupHomepagePreference
         android:key="homepage_radio_group"
         android:visibility="gone"
+        android:selectable="false"
         app:allowDividerBelow="false" />
 
     <org.chromium.chrome.browser.settings.TextMessagePreference

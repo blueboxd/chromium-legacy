@@ -244,7 +244,6 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
 
 TEST(BookmarkSpecificsConversionsTest,
      ShouldCreateBookmarkNodeFromSpecificsWithIllegalTitle) {
-  const std::string kGuid = base::GenerateGUID();
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
@@ -256,7 +255,7 @@ TEST(BookmarkSpecificsConversionsTest,
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
     bm_specifics->set_url("http://www.url.com");
-    bm_specifics->set_guid(kGuid);
+    bm_specifics->set_guid(base::GenerateGUID());
     // Legacy clients append an extra space to illegal clients.
     bm_specifics->set_title(illegal_title + " ");
     const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(

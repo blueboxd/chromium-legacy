@@ -9,25 +9,25 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/TabLayoutStyle" >
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/files_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/download_manager_files_tab"/>
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/prefetch_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/download_manager_explore_offline"/>
 
-    </android.support.design.widget.TabLayout>
+    </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:id="@+id/content_container"

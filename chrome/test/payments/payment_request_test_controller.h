@@ -13,11 +13,11 @@
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
 }
-#else
+#endif
+
 namespace content {
 class WebContents;
 }
-#endif
 
 namespace payments {
 
@@ -56,13 +56,14 @@ class PaymentRequestTestController {
   void SetIncognito(bool is_incognito);
   void SetValidSsl(bool valid_ssl);
   void SetCanMakePaymentEnabledPref(bool can_make_payment_enabled);
-#if defined(OS_ANDROID)
-  // Get the WebContents of the Expandable Payment Handler for testing purpose,
-  // or null if nonexistent. To guarantee a non-null return, this function
-  // should be called only if: 1) PaymentRequest UI is opening. 2)
-  // ScrollToExpandPaymentHandler feature is enabled. 3) PaymentHandler is
-  // opening.
+
+  // Get the WebContents of the Payment Handler for testing purpose, or null if
+  // nonexistent. To guarantee a non-null return, this function should be called
+  // only if: 1) PaymentRequest UI is opening. 2) ScrollToExpandPaymentHandler
+  // feature is enabled (on Android). 3) PaymentHandler is opening.
   content::WebContents* GetPaymentHandlerWebContents();
+
+#if defined(OS_ANDROID)
   // Click the security icon on the Expandable Payment Handler toolbar for
   // testing purpose. return whether it's succeeded.
   bool ClickPaymentHandlerSecurityIcon();

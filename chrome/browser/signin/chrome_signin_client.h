@@ -18,7 +18,7 @@
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_change_manager.mojom-forward.h"
 
 #if !defined(OS_CHROMEOS)
 #include "services/network/public/cpp/network_connection_tracker.h"

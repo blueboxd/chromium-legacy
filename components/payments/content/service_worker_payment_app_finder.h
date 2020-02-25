@@ -87,9 +87,7 @@ class ServiceWorkerPaymentAppFinder {
   friend struct base::DefaultSingletonTraits<ServiceWorkerPaymentAppFinder>;
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
-  friend class HybridRequestSkipUITest;
   friend class PaymentRequestPlatformBrowserTestBase;
-  friend class PaymentHandlerJustInTimeInstallationTest;
 
   ServiceWorkerPaymentAppFinder();
   ~ServiceWorkerPaymentAppFinder();

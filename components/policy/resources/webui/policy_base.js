@@ -50,6 +50,7 @@ cr.define('policy', function() {
   /**
    * @typedef {{
    *     id: ?string,
+   *     isExtension?: boolean,
    *     name: string,
    *     policies: !Array<!Policy>
    * }}
@@ -496,8 +497,7 @@ cr.define('policy', function() {
     onPoliciesReceived_(policyNames, policyValues) {
       /** @type {Array<!PolicyTableModel>} */
       const policyGroups = policyValues.map(value => {
-        const knownPolicyNames =
-            (policyNames[value.id] || policyNames.chrome).policyNames;
+        const knownPolicyNames = policyNames[value.id].policyNames;
         const knownPolicyNamesSet = new Set(knownPolicyNames);
         const receivedPolicyNames = Object.keys(value.policies);
         const allPolicyNames =
@@ -518,7 +518,7 @@ cr.define('policy', function() {
           name: value.forSigninScreen ?
               `${value.name} [${loadTimeData.getString('signinProfile')}]` :
               value.name,
-          id: value.id,
+          id: value.isExtension ? value.id : null,
           policies
         };
       });

@@ -1067,14 +1067,7 @@ void InstantService::SetNtpElementsNtpTheme() {
                                 ThemeProperties::NTP_LOGO_ALTERNATE) == 1;
     theme->logo_color =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_LOGO);
-
-    // For default theme in dark mode use dark shortcuts.
-    if (native_theme_->ShouldUseDarkColors() &&
-        ThemeServiceFactory::GetForProfile(profile_)->UsingDefaultTheme()) {
-      theme->shortcut_color = gfx::kGoogleGrey900;
-    } else {
-      theme->shortcut_color =
-          theme_provider.GetColor(ThemeProperties::COLOR_NTP_SHORTCUT);
-    }
+    theme->shortcut_color =
+        theme_provider.GetColor(ThemeProperties::COLOR_NTP_SHORTCUT);
   }
 }

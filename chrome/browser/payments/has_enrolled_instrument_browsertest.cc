@@ -8,25 +8,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/payments/personal_data_manager_test_util.h"
-#include "chrome/test/base/chrome_test_utils.h"
-#include "chrome/test/payments/payment_request_test_controller.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/network_session_configurator/common/network_switches.h"
+#include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test_utils.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/test/base/in_process_browser_test.h"
-#endif
 
 namespace payments {
 namespace {
@@ -41,13 +26,6 @@ const char kNotSupportedMessage[] =
 #endif  // OS_ANDROID
     "User does not have valid information on file.";
 
-autofill::CreditCard GetCardWithBillingAddress(
-    const autofill::AutofillProfile& profile) {
-  autofill::CreditCard card = autofill::test::GetCreditCard();
-  card.set_billing_address_id(profile.guid());
-  return card;
-}
-
 enum HasEnrolledInstrumentMode {
   STRICT_HAS_ENROLLED_INSTRUMENT,
   LEGACY_HAS_ENROLLED_INSTRUMENT,
@@ -56,11 +34,10 @@ enum HasEnrolledInstrumentMode {
 // A parameterized test to test both values of
 // features::kStrictHasEnrolledAutofillInstrument.
 class HasEnrolledInstrumentTest
-    : public PlatformBrowserTest,
+    : public PaymentRequestPlatformBrowserTestBase,
       public testing::WithParamInterface<HasEnrolledInstrumentMode> {
  public:
-  HasEnrolledInstrumentTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  HasEnrolledInstrumentTest() {
     if (GetParam() == STRICT_HAS_ENROLLED_INSTRUMENT) {
       feature_list_.InitWithFeatures(
           /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
@@ -68,21 +45,11 @@ class HasEnrolledInstrumentTest
     }
   }
 
-  ~HasEnrolledInstrumentTest() override {}
+  ~HasEnrolledInstrumentTest() override = default;
 
   void SetUpOnMainThread() override {
-    https_server_.ServeFilesFromSourceDirectory(
-        "components/test/data/payments");
-    ASSERT_TRUE(https_server_.Start());
-    ASSERT_TRUE(content::NavigateToURL(
-        GetActiveWebContents(),
-        https_server_.GetURL("/has_enrolled_instrument.html")));
-    test_controller_.SetUpOnMainThread();
-    PlatformBrowserTest::SetUpOnMainThread();
-  }
-
-  content::WebContents* GetActiveWebContents() {
-    return chrome_test_utils::GetActiveWebContents(this);
+    PaymentRequestPlatformBrowserTestBase::SetUpOnMainThread();
+    NavigateTo("/has_enrolled_instrument.html");
   }
 
   const std::string& not_supported_message() const {
@@ -144,8 +111,6 @@ class HasEnrolledInstrumentTest
   }
 
  private:
-  PaymentRequestTestController test_controller_;
-  net::EmbeddedTestServer https_server_;
   std::string not_supported_message_ = kNotSupportedMessage;
   base::test::ScopedFeatureList feature_list_;
 
@@ -158,18 +123,15 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, NoCard) {
 }
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, NoBillingAddress) {
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      autofill::test::GetCreditCard());
+  AddCreditCard(autofill::test::GetCreditCard());
   ExpectHasEnrolledInstrumentIs(GetParam() != STRICT_HAS_ENROLLED_INSTRUMENT);
   ExpectShowRejects();
 }
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest,
                        HaveShippingNoBillingAddress) {
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           autofill::test::GetFullProfile());
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      autofill::test::GetCreditCard());
+  CreateAndAddAutofillProfile();
+  AddCreditCard(autofill::test::GetCreditCard());
 
   ExpectHasEnrolledInstrumentIs(GetParam() != STRICT_HAS_ENROLLED_INSTRUMENT);
   ExpectShowRejects();
@@ -177,23 +139,18 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest,
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest,
                        HaveShippingAndBillingAddress) {
-  autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
+  CreateAndAddCreditCardForProfile(CreateAndAddAutofillProfile());
 
   ExpectHasEnrolledInstrumentIs(true);
 }
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, InvalidCardNumber) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  autofill::CreditCard card = GetCardWithBillingAddress(address);
+  AddAutofillProfile(address);
+  autofill::CreditCard card = CreatCreditCardForProfile(address);
   card.SetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NUMBER,
                   base::ASCIIToUTF16("1111111111111111"));
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(), card);
+  AddCreditCard(card);
 
   ExpectHasEnrolledInstrumentIs(false);
   ExpectShowRejects();
@@ -201,11 +158,10 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, InvalidCardNumber) {
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, ExpiredCard) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  autofill::CreditCard card = GetCardWithBillingAddress(address);
+  AddAutofillProfile(address);
+  autofill::CreditCard card = CreatCreditCardForProfile(address);
   card.SetExpirationYear(2000);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(), card);
+  AddCreditCard(card);
 
   ExpectHasEnrolledInstrumentIs(GetParam() != STRICT_HAS_ENROLLED_INSTRUMENT);
   ExpectShowRejects();
@@ -216,15 +172,11 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, ExpiredCard) {
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest,
                        HaveNoNameShippingAndBillingAddress) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-
   address.SetRawInfo(autofill::ServerFieldType::NAME_FIRST, base::string16());
   address.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE, base::string16());
   address.SetRawInfo(autofill::ServerFieldType::NAME_LAST, base::string16());
-
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
+  AddAutofillProfile(address);
+  CreateAndAddCreditCardForProfile(address);
 
   // Recipient name is required for shipping address in strict mode.
   EXPECT_EQ(GetParam() != STRICT_HAS_ENROLLED_INSTRUMENT,
@@ -266,10 +218,8 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest,
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS,
                      base::string16());
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
+  AddAutofillProfile(address);
+  CreateAndAddCreditCardForProfile(address);
 
   ExpectHasEnrolledInstrumentIs(GetParam() != STRICT_HAS_ENROLLED_INSTRUMENT);
   ExpectShowRejects();
@@ -279,10 +229,8 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, NoEmailAddress) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
                      base::string16());
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
+  AddAutofillProfile(address);
+  CreateAndAddCreditCardForProfile(address);
 
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
@@ -305,10 +253,8 @@ IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, InvalidEmailAddress) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
                      base::ASCIIToUTF16("this-is-not-a-valid-email-address"));
-  test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
-                           address);
-  test::AddCreditCard(GetActiveWebContents()->GetBrowserContext(),
-                      GetCardWithBillingAddress(address));
+  AddAutofillProfile(address);
+  CreateAndAddCreditCardForProfile(address);
 
   EXPECT_EQ(true,
             content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));

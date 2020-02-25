@@ -35,6 +35,14 @@ PolicyConversions::PolicyConversions(
 
 PolicyConversions::~PolicyConversions() = default;
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+PolicyConversions& PolicyConversions::WithUpdaterPolicies(
+    std::unique_ptr<PolicyMap> policies) {
+  client()->SetUpdaterPolicies(std::move(policies));
+  return *this;
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 PolicyConversions& PolicyConversions::EnableConvertTypes(bool enabled) {
   client_->EnableConvertTypes(enabled);
   return *this;
@@ -91,6 +99,11 @@ Value DictionaryPolicyConversions::ToValue() {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   }
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (client()->HasUpdaterPolicies())
+    all_policies.SetKey("updaterPolicies", client()->GetUpdaterPolicies());
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
   all_policies.SetKey("loginScreenExtensionPolicies",
                       GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS));
@@ -144,6 +157,11 @@ Value ArrayPolicyConversions::ToValue() {
   if (client()->HasUserPolicies()) {
     all_policies.Append(GetChromePolicies());
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    if (client()->HasUpdaterPolicies())
+      all_policies.Append(GetUpdaterPolicies());
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     for (auto& policy :
          client()->GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS).TakeList()) {
@@ -174,8 +192,19 @@ Value ArrayPolicyConversions::ToValue() {
   return all_policies;
 }
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+Value ArrayPolicyConversions::GetUpdaterPolicies() {
+  Value chrome_policies_data(Value::Type::DICTIONARY);
+  chrome_policies_data.SetKey("name", Value("Updater Policies"));
+  chrome_policies_data.SetKey("id", Value("updater"));
+  chrome_policies_data.SetKey("policies", client()->GetUpdaterPolicies());
+  return chrome_policies_data;
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 Value ArrayPolicyConversions::GetChromePolicies() {
   Value chrome_policies_data(Value::Type::DICTIONARY);
+  chrome_policies_data.SetKey("id", Value("chrome"));
   chrome_policies_data.SetKey("name", Value("Chrome Policies"));
   chrome_policies_data.SetKey("policies", client()->GetChromePolicies());
   return chrome_policies_data;

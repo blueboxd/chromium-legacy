@@ -77,6 +77,12 @@ DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
     base::Optional<bool> dlp_success,
     base::Optional<bool> malware_success);
 
+// Helper function to convert a BinaryUploadService::Result to a CamelCase
+// string.
+std::string BinaryUploadServiceResultToString(
+    const BinaryUploadService::Result& result,
+    bool success);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_UTILS_H_

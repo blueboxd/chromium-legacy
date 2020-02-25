@@ -23,6 +23,14 @@ Polymer({
     },
 
     /**
+     * Use this property in order to configure the "tabindex" attribute.
+     */
+    customTabIndex: {
+      type: Number,
+      observer: 'applyTabIndex_',
+    },
+
+    /**
      * Flag used for formatting ripples on circle shaped cr-buttons.
      * @private
      */
@@ -79,7 +87,7 @@ Polymer({
 
   /**
    * @param {boolean} newValue
-   * @param {boolean} oldValue
+   * @param {boolean|undefined} oldValue
    * @private
    */
   disabledChanged_(newValue, oldValue) {
@@ -90,7 +98,19 @@ Polymer({
       this.blur();
     }
     this.setAttribute('aria-disabled', Boolean(this.disabled));
-    this.setAttribute('tabindex', this.disabled ? -1 : 0);
+    this.applyTabIndex_();
+  },
+
+  /**
+   * Updates the tabindex HTML attribute to the actual value.
+   * @private
+   */
+  applyTabIndex_() {
+    let value = this.customTabIndex;
+    if (value === undefined) {
+      value = this.disabled ? -1 : 0;
+    }
+    this.setAttribute('tabindex', value);
   },
 
   /**

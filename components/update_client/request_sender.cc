@@ -24,10 +24,10 @@ namespace update_client {
 namespace {
 
 // This is an ECDSA prime256v1 named-curve key.
-constexpr int kKeyVersion = 9;
+constexpr int kKeyVersion = 10;
 const char kKeyPubBytesBase64[] =
-    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsVwVMmIJaWBjktSx9m1JrZWYBvMm"
-    "bsrGGQPhScDtao+DloD871YmEeunAaQvRMZgDh1nCaWkVG6wo75+yDbKDA==";
+    "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzOqC8cKNUYIi0UkNu0smZKDW8w5/"
+    "0EmEw1KQ6Aj/5JWBMdUVm13EIVwFwPlkO/U6vXa+iu4wyUB89GFaldJ7Bg==";
 
 }  // namespace
 

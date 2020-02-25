@@ -44,6 +44,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/with_feature_override.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -525,22 +526,12 @@ TEST_F(AppListControllerImplTestWithoutHotseat,
   EXPECT_FALSE(GetExpandArrowViewVisibility());
 }
 
-class HotseatAppListControllerImplTest
-    : public AppListControllerImplTest,
-      public testing::WithParamInterface<bool> {
+class HotseatAppListControllerImplTest : public base::test::WithFeatureOverride,
+                                         public AppListControllerImplTest {
  public:
-  HotseatAppListControllerImplTest() = default;
+  HotseatAppListControllerImplTest()
+      : WithFeatureOverride(chromeos::features::kShelfHotseat) {}
   ~HotseatAppListControllerImplTest() override = default;
-
-  // AshTestBase:
-  void SetUp() override {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
-    } else {
-      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
-    }
-    AppListControllerImplTest::SetUp();
-  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -548,9 +539,7 @@ class HotseatAppListControllerImplTest
 };
 
 // Tests with both hotseat disabled and enabled.
-INSTANTIATE_TEST_SUITE_P(All,
-                         HotseatAppListControllerImplTest,
-                         testing::Bool());
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(HotseatAppListControllerImplTest);
 
 // Verifies that the pinned app should still show after canceling the drag from
 // AppsGridView to Shelf (https://crbug.com/1021768).

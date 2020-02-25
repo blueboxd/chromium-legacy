@@ -42,7 +42,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   explicit LayoutSVGResourceContainer(SVGElement*);
   ~LayoutSVGResourceContainer() override;
 
-  virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
+  virtual void RemoveAllClientsFromCache() = 0;
 
   // Remove any cached data for the |client|, and return true if so.
   virtual bool RemoveClientFromCache(SVGResourceClient&) { return false; }

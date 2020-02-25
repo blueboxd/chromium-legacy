@@ -716,8 +716,10 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     base::FilePath relative_path = relative_unix_path.NormalizePathSeparators();
     base::FilePath full_path = extension_root.Append(relative_path);
 
-    if (full_path == file_util::GetIndexedRulesetPath(extension_root))
+    if (full_path ==
+        extension_root.Append(file_util::GetIndexedRulesetRelativePath())) {
       continue;
+    }
 
     if (locales_relative_dir.IsParent(relative_path)) {
       if (!all_locales) {

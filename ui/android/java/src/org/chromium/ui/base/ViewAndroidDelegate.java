@@ -14,8 +14,8 @@ import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.view.inputmethod.InputConnection;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
 import androidx.annotation.VisibleForTesting;
@@ -131,17 +131,19 @@ public class ViewAndroidDelegate {
 
     /**
      * Set the anchor view to specified position and size (all units in px).
-     * @param view The anchor view that needs to be positioned.
+     * @param anchorView The view that needs to be positioned. This must be the result of a previous
+     *         call to {@link acquireView} which has not yet been removed via {@link removeView}.
      * @param x X coordinate of the top left corner of the anchor view.
      * @param y Y coordinate of the top left corner of the anchor view.
      * @param width The width of the anchor view.
      * @param height The height of the anchor view.
      */
     @CalledByNative
-    public void setViewPosition(
-            View view, float x, float y, float width, float height, int leftMargin, int topMargin) {
+    public void setViewPosition(View anchorView, float x, float y, float width, float height,
+            int leftMargin, int topMargin) {
         ViewGroup containerView = getContainerView();
         if (containerView == null) return;
+        assert anchorView.getParent() == containerView;
 
         int widthInt = Math.round(width);
         int heightInt = Math.round(height);
@@ -155,10 +157,12 @@ public class ViewAndroidDelegate {
         if (widthInt + startMargin > containerView.getWidth()) {
             widthInt = containerView.getWidth() - startMargin;
         }
-        LayoutParams lp = new LayoutParams(widthInt, heightInt);
-        MarginLayoutParamsCompat.setMarginStart(lp, startMargin);
-        lp.topMargin = topMargin;
-        view.setLayoutParams(lp);
+        MarginLayoutParams mlp = (MarginLayoutParams) anchorView.getLayoutParams();
+        mlp.width = widthInt;
+        mlp.height = heightInt;
+        MarginLayoutParamsCompat.setMarginStart(mlp, startMargin);
+        mlp.topMargin = topMargin;
+        anchorView.setLayoutParams(mlp);
     }
 
     /**

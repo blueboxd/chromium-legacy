@@ -439,11 +439,7 @@ class TestRunner(object):
 
     self.app_name = os.path.splitext(os.path.split(app_path)[-1])[0]
     self.app_path = app_path
-    self.cfbundleid = subprocess.check_output([
-        '/usr/libexec/PlistBuddy',
-        '-c', 'Print:CFBundleIdentifier',
-        os.path.join(app_path, 'Info.plist'),
-    ]).rstrip()
+    self.cfbundleid = test_apps.get_bundle_id(app_path)
     self.env_vars = env_vars or []
     self.logs = collections.OrderedDict()
     self.out_dir = out_dir

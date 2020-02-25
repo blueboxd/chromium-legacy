@@ -5,6 +5,7 @@
 
 import os
 import plistlib
+import subprocess
 import time
 
 import test_runner
@@ -49,6 +50,20 @@ def get_gtest_filter(tests, invert=False):
   if invert:
     return '-%s' % test_filter
   return test_filter
+
+
+def get_bundle_id(app_path):
+  """Get bundle identifier for app.
+
+  Args:
+    app_path: (str) A path to app.
+  """
+  return subprocess.check_output([
+      '/usr/libexec/PlistBuddy',
+      '-c',
+      'Print:CFBundleIdentifier',
+      os.path.join(app_path, 'Info.plist'),
+  ]).rstrip()
 
 
 class GTestsApp(object):
@@ -140,6 +155,7 @@ class GTestsApp(object):
     module_data = {
         'TestBundlePath': self.test_app_path,
         'TestHostPath': self.test_app_path,
+        'TestHostBundleIdentifier': get_bundle_id(self.test_app_path),
         'TestingEnvironmentVariables': {
             'DYLD_LIBRARY_PATH':
                 '%s:__PLATFORMS__/iPhoneSimulator.platform/Developer/Library' %

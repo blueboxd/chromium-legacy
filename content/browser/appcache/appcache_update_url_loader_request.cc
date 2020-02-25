@@ -49,7 +49,7 @@ constexpr net::NetworkTrafficAnnotationTag kAppCacheTrafficAnnotation =
 const char kAppCacheAllowed[] = "X-AppCache-Allowed";
 }
 
-AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() {}
+AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() = default;
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   // If we are in tests mode, we don't need to issue network requests.

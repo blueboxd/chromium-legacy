@@ -17,9 +17,11 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -226,6 +228,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return nullptr;
 
+    FlushCanvas();
     // Its important to end read access and ref the resource before the WillDraw
     // call below. Since it relies on resource ref-count to trigger
     // copy-on-write and asserts that we only have write access when the
@@ -261,6 +264,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       return SnapshotInternal(orientation);
 
     if (!cached_snapshot_) {
+      FlushCanvas();
       EndWriteAccess();
       cached_snapshot_ = resource_->Bitmap();
     }
@@ -559,8 +563,8 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
                  "CanvasResourceProviderSwapChain::ProduceCanvasResource");
     if (!IsValid())
       return nullptr;
+    FlushCanvas();
     if (dirty_) {
-      FlushSkia();
       resource_->PresentSwapChain();
       dirty_ = false;
     }
@@ -1012,11 +1016,11 @@ SkSurface* CanvasResourceProvider::GetSkSurface() const {
   return surface_.get();
 }
 
-void CanvasResourceProvider::InitializePaintCanvas() {
-  // Since canvas_ has a reference to canvas_image_provider_, canvas must be
-  // deleted before the image_provider.
-  canvas_ = nullptr;
-  canvas_image_provider_ = nullptr;
+void CanvasResourceProvider::EnsureSkiaCanvas() {
+  WillDraw();
+
+  if (skia_canvas_)
+    return;
 
   // Create an ImageDecodeCache for half float images only if the canvas is
   // using half float back storage.
@@ -1036,26 +1040,27 @@ void CanvasResourceProvider::InitializePaintCanvas() {
     context_flushes.enable = true;
     context_flushes.max_draws_before_flush = kMaxDrawsBeforeContextFlush;
   }
-  canvas_ = std::make_unique<cc::SkiaPaintCanvas>(GetSkSurface()->getCanvas(),
-                                                  canvas_image_provider_.get(),
-                                                  context_flushes);
+  skia_canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
+      GetSkSurface()->getCanvas(), canvas_image_provider_.get(),
+      context_flushes);
 }
 
 cc::PaintCanvas* CanvasResourceProvider::Canvas() {
-  WillDraw();
+  if (!recorder_) {
+    // A raw pointer is safe here because the callback is only used by the
+    // |recorder_|.
+    recorder_ = std::make_unique<MemoryManagedPaintRecorder>(WTF::BindRepeating(
+        &CanvasResourceProvider::SetNeedsFlush, WTF::Unretained(this)));
 
-  if (!canvas_) {
-    TRACE_EVENT0("blink", "CanvasResourceProvider::Canvas");
-    DCHECK(!canvas_image_provider_);
-    InitializePaintCanvas();
+    return recorder_->beginRecording(Size().Width(), Size().Height());
   }
-  return canvas_.get();
+  return recorder_->getRecordingCanvas();
 }
 
 void CanvasResourceProvider::OnContextDestroyed() {
   if (canvas_image_provider_) {
-    DCHECK(canvas_);
-    canvas_->reset_image_provider();
+    DCHECK(skia_canvas_);
+    skia_canvas_->reset_image_provider();
     canvas_image_provider_.reset();
   }
 }
@@ -1077,6 +1082,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal(
 }
 
 cc::PaintImage CanvasResourceProvider::MakeImageSnapshot() {
+  FlushCanvas();
   auto sk_image = GetSkSurface()->makeImageSnapshot();
   if (!sk_image)
     return cc::PaintImage();
@@ -1116,8 +1122,18 @@ GrContext* CanvasResourceProvider::GetGrContext() const {
   return context_provider_wrapper_->ContextProvider()->GetGrContext();
 }
 
-void CanvasResourceProvider::FlushSkia() const {
+void CanvasResourceProvider::FlushCanvas() {
+  if (!recorder_ || !recorder_->ListHasDrawOps())
+    return;
+  EnsureSkiaCanvas();
+  last_recording_ = recorder_->finishRecordingAsPicture();
+  skia_canvas_->drawPicture(last_recording_);
+  cc::PaintCanvas* canvas =
+      recorder_->beginRecording(Size().Width(), Size().Height());
+  if (restore_clip_stack_callback_)
+    restore_clip_stack_callback_.Run(canvas);
   GetSkSurface()->flush();
+  needs_flush_ = false;
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {
@@ -1134,6 +1150,18 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
   TRACE_EVENT0("blink", "CanvasResourceProvider::WritePixels");
 
   DCHECK(IsValid());
+  DCHECK(!recorder_->ListHasDrawOps());
+
+  EnsureSkiaCanvas();
+
+  // Apply clipstack to skia_canvas_ and then restore it to original state once
+  // we leave this scope. This is needed because each recording initializes and
+  // resets this state after every flush. restore_clip_stack_callback_ sets the
+  // initial save required for a restore.
+  cc::PaintCanvasAutoRestore auto_restore(skia_canvas_.get(), false);
+  if (restore_clip_stack_callback_)
+    restore_clip_stack_callback_.Run(skia_canvas_.get());
+
   return GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes,
                                                   x, y);
 }
@@ -1243,12 +1271,29 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
   return canvas_resources_.back();
 }
 
+void CanvasResourceProvider::SkipQueuedDrawCommands() {
+  if (!recorder_)
+    return;
+  recorder_->finishRecordingAsPicture();
+  cc::PaintCanvas* canvas =
+      recorder_->beginRecording(Size().Width(), Size().Height());
+  if (restore_clip_stack_callback_)
+    restore_clip_stack_callback_.Run(canvas);
+}
+
+void CanvasResourceProvider::SetRestoreClipStackCallback(
+    RestoreMatrixClipStackCb callback) {
+  DCHECK(restore_clip_stack_callback_.is_null() || callback.is_null());
+  restore_clip_stack_callback_ = std::move(callback);
+}
+
 void CanvasResourceProvider::RestoreBackBuffer(const cc::PaintImage& image) {
   DCHECK_EQ(image.height(), Size().Height());
   DCHECK_EQ(image.width(), Size().Width());
+  EnsureSkiaCanvas();
   cc::PaintFlags copy_paint;
   copy_paint.setBlendMode(SkBlendMode::kSrc);
-  Canvas()->drawImage(image, 0, 0, &copy_paint);
+  skia_canvas_->drawImage(image, 0, 0, &copy_paint);
 }
 
 }  // namespace blink

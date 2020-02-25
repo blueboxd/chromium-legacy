@@ -1,5 +1,6 @@
-document
-++group IsControlElement=false
-++++img IsControlElement=false
-++++img
-++++img Name='full'
+Document
+++Group IsControlElement=false
+++++Image IsControlElement=false
+++++Image
+++++Image Name='full'
+<-- End-of-file -->

@@ -1,7 +1,8 @@
-document
-++group IsControlElement=false
-++++img
-++++++description Name='Static fallback'
-++++img
-++++++link Name='Interactive fallback'
-++++++++description Name='Interactive fallback' IsControlElement=false
+Document
+++Group IsControlElement=false
+++++Image
+++++++Text Name='Static fallback'
+++++Image
+++++++Hyperlink Name='Interactive fallback'
+++++++++Text Name='Interactive fallback' IsControlElement=false
+<-- End-of-file -->

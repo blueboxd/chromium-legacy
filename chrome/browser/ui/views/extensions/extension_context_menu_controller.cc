@@ -56,6 +56,7 @@ void ExtensionContextMenuController::ShowContextMenuForViewImpl(
 
   menu_runner_ = std::make_unique<views::MenuRunner>(menu_, run_types);
 
+  controller_->OnContextMenuShown();
   menu_runner_->RunMenuAt(
       parent,
       static_cast<views::MenuButtonController*>(

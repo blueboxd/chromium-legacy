@@ -10,18 +10,23 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -65,6 +70,9 @@ class AppTimeControllerTest : public testing::Test {
   size_t GetNotificationsCount();
   void DismissNotifications();
 
+  void DeleteController();
+  void InstantiateController();
+
   AppTimeController::TestApi* test_api() { return test_api_.get(); }
   AppTimeController* controller() { return controller_.get(); }
 
@@ -81,6 +89,8 @@ class AppTimeControllerTest : public testing::Test {
   }
 
   apps::AppServiceTest& app_service_test() { return app_service_test_; }
+
+  Profile& profile() { return profile_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_{
@@ -112,8 +122,7 @@ void AppTimeControllerTest::SetUp() {
       arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SKIP);
   task_environment_.RunUntilIdle();
 
-  controller_ = std::make_unique<AppTimeController>(&profile_);
-  test_api_ = std::make_unique<AppTimeController::TestApi>(controller_.get());
+  InstantiateController();
   SimulateInstallArcApp(kApp1, kApp1Name);
   SimulateInstallArcApp(kApp2, kApp2Name);
 }
@@ -192,6 +201,16 @@ size_t AppTimeControllerTest::GetNotificationsCount() {
 void AppTimeControllerTest::DismissNotifications() {
   notification_tester_.RemoveAllNotifications(
       NotificationHandler::Type::TRANSIENT, true /* by_user */);
+}
+
+void AppTimeControllerTest::DeleteController() {
+  controller_.reset();
+  test_api_.reset();
+}
+
+void AppTimeControllerTest::InstantiateController() {
+  controller_ = std::make_unique<AppTimeController>(&profile_);
+  test_api_ = std::make_unique<AppTimeController::TestApi>(controller_.get());
 }
 
 TEST_F(AppTimeControllerTest, EnableFeature) {
@@ -368,6 +387,78 @@ TEST_F(AppTimeControllerTest, TimeLimitUpdatedNotification) {
       HasNotificationFor(kApp1Name, AppNotification::kTimeLimitChanged));
 
   DismissNotifications();
+}
+
+TEST_F(AppTimeControllerTest, RestoreLastResetTime) {
+  {
+    AppTimeLimitsPolicyBuilder builder;
+    builder.AddAppLimit(kApp1, AppLimit(AppRestriction::kTimeLimit,
+                                        kOneHour * 2, base::Time::Now()));
+    builder.AddAppLimit(kApp2, AppLimit(AppRestriction::kTimeLimit,
+                                        kOneHour / 2, base::Time::Now()));
+    builder.SetResetTime(6, 0);
+    DictionaryPrefUpdate update(profile().GetPrefs(),
+                                prefs::kPerAppTimeLimitsPolicy);
+    base::Value* value = update.Get();
+    *value = builder.value().Clone();
+  }
+
+  // If there was no valid last reset time stored in user pref,
+  // AppTimeController sets it to base::Time::Now().
+  base::Time last_reset_time = base::Time::Now();
+  EXPECT_EQ(test_api()->GetLastResetTime(), last_reset_time);
+
+  controller()->app_registry()->OnAppActive(kApp1, nullptr, last_reset_time);
+  controller()->app_registry()->OnAppActive(kApp2, nullptr, last_reset_time);
+  task_environment().FastForwardBy(kOneHour);
+
+  controller()->app_registry()->OnAppInactive(kApp1, nullptr,
+                                              base::Time::Now());
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp1),
+            AppState::kAvailable);
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp2),
+            AppState::kLimitReached);
+
+  AppActivityRegistry::TestApi(controller()->app_registry()).SaveAppActivity();
+
+  DeleteController();
+
+  // Don't change last reset time. Ensure that application state's are not
+  // cleared.
+  InstantiateController();
+
+  // Make sure that AppTimeController doesn't always take base::Time::Now() for
+  // its last reset time.
+  EXPECT_EQ(test_api()->GetLastResetTime(), last_reset_time);
+
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp1),
+            AppState::kAvailable);
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp2),
+            AppState::kLimitReached);
+  EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp1), kOneHour);
+  EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp2), kOneHour / 2);
+
+  DeleteController();
+
+  // Now let's update the last reset time so that it is 24 hours before
+  // |last_reset_time|.
+  last_reset_time = last_reset_time - kDay;
+  profile().GetPrefs()->SetInt64(
+      prefs::kPerAppTimeLimitsLastResetTime,
+      last_reset_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  InstantiateController();
+
+  // AppTimeController will realize that the reset boundary has been crossed.
+  // Therefore, it will trigger reset and update the last reset time to now.
+  EXPECT_EQ(test_api()->GetLastResetTime(), base::Time::Now());
+
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp1),
+            AppState::kAvailable);
+  EXPECT_EQ(controller()->app_registry()->GetAppState(kApp2),
+            AppState::kAvailable);
+  EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp1), kZeroTime);
+  EXPECT_EQ(controller()->app_registry()->GetActiveTime(kApp2), kZeroTime);
 }
 
 }  // namespace app_time

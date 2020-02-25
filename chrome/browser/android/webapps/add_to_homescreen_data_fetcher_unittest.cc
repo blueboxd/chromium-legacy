@@ -74,8 +74,7 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
   }
 
   void OnDataAvailable(const ShortcutInfo& info,
-                       const SkBitmap& primary_icon,
-                       const SkBitmap& badge_icon) override {
+                       const SkBitmap& primary_icon) override {
     // This should only be called once.
     EXPECT_FALSE(data_available_);
     EXPECT_TRUE(title_available_);
@@ -162,9 +161,8 @@ class TestInstallableManager : public InstallableManager {
         {std::move(errors), GURL(kDefaultManifestUrl), &manifest_,
          params.valid_primary_icon ? primary_icon_url_ : GURL(),
          params.valid_primary_icon ? primary_icon_.get() : nullptr,
-         params.prefer_maskable_icon,
-         params.valid_badge_icon ? badge_icon_url_ : GURL(),
-         params.valid_badge_icon ? badge_icon_.get() : nullptr,
+         params.prefer_maskable_icon, GURL() /* splash_icon_url */,
+         nullptr /* splash_icon */,
          params.valid_manifest ? is_installable : false,
          params.has_worker ? is_installable : false});
   }
@@ -177,10 +175,6 @@ class TestInstallableManager : public InstallableManager {
     if (!manifest.icons.empty()) {
       primary_icon_url_ = manifest_.icons[0].src;
       primary_icon_.reset(
-          new SkBitmap(gfx::test::CreateBitmap(kIconSizePx, kIconSizePx)));
-
-      badge_icon_url_ = manifest_.icons[0].src;
-      badge_icon_.reset(
           new SkBitmap(gfx::test::CreateBitmap(kIconSizePx, kIconSizePx)));
     }
   }
@@ -196,9 +190,7 @@ class TestInstallableManager : public InstallableManager {
  private:
   blink::Manifest manifest_;
   GURL primary_icon_url_;
-  GURL badge_icon_url_;
   std::unique_ptr<SkBitmap> primary_icon_;
-  std::unique_ptr<SkBitmap> badge_icon_;
 
   bool is_installable_ = true;
 
@@ -324,8 +316,7 @@ TEST_F(AddToHomescreenDataFetcherTest, NoIconManifest) {
   CheckHistograms(histograms);
 
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
-  EXPECT_TRUE(fetcher->badge_icon().drawsNothing());
-  EXPECT_TRUE(fetcher->shortcut_info().best_badge_icon_url.is_empty());
+  EXPECT_TRUE(fetcher->shortcut_info().splash_image_url.is_empty());
 }
 
 // Check that the AddToHomescreenDataFetcher::Observer methods are called
@@ -467,9 +458,8 @@ TEST_F(AddToHomescreenDataFetcherTest, InstallableManifest) {
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
             GURL(kDefaultIconUrl));
 
-  // No badge icon as InstallableManager does not fetch badge icon.
-  EXPECT_TRUE(fetcher->badge_icon().drawsNothing());
-  EXPECT_TRUE(fetcher->shortcut_info().best_badge_icon_url.is_empty());
+  // Check that splash icon url has been selected.
+  EXPECT_EQ(fetcher->shortcut_info().splash_image_url, GURL(kDefaultIconUrl));
   CheckHistograms(histograms);
 }
 

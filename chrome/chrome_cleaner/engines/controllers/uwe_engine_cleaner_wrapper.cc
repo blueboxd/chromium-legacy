@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"
@@ -269,9 +270,10 @@ void UwEEngineCleanerWrapper::Start(const std::vector<UwSId>& pup_ids,
                         base::SequencedTaskRunnerHandle::Get()));
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-           base::BindOnce(&UwEEngineCleanerWrapper::TryRemovePUPExtensions,
-                          base::Unretained(this), pup_ids));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&UwEEngineCleanerWrapper::TryRemovePUPExtensions,
+                     base::Unretained(this), pup_ids));
 
   cleaner_->Start(pup_ids,
                   base::BindOnce(&UwEEngineCleanerWrapper::OnDoneUwSCleanup,

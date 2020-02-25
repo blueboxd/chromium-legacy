@@ -98,8 +98,8 @@ void AppCacheGroup::AddCache(AppCache* complete_cache) {
     newest_complete_cache_ = complete_cache;
 
     // Update hosts of older caches to add a reference to the newest cache.
-    // (This loop mutates |old_caches_| so a range-based for-loop cannot be
-    // used, because it caches the end iterator.)
+    // This loop mutates |old_caches_| so a range-based for-loop cannot be
+    // used, because it caches the end iterator. NOLINTNEXTLINE
     for (auto it = old_caches_.begin(); it != old_caches_.end(); ++it) {
       AppCache* cache = *it;
       for (AppCacheHost* host : cache->associated_hosts())

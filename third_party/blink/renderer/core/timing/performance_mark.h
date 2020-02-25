@@ -43,18 +43,17 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMark* Create(ScriptState* script_state,
-                                 const AtomicString& name,
-                                 double start_time,
-                                 const ScriptValue& detail,
-                                 ExceptionState& exception_state);
-
-  // This method is required by the constructor defined in performance_mark.idl.
+  // This method corresponds to the PerformanceMark constructor defined in the
+  // User Timing L3 spec
+  // (https://w3c.github.io/user-timing/#the-performancemark-constructor). It
+  // gets called as a subroutine of the `performance.mark` method as well as
+  // whenever script runs `new PerformanceMark(..)`.
   static PerformanceMark* Create(ScriptState*,
                                  const AtomicString& mark_name,
                                  PerformanceMarkOptions*,
                                  ExceptionState&);
 
+  // This constructor is only public so that MakeGarbageCollected can call it.
   PerformanceMark(const AtomicString& name,
                   double start_time,
                   scoped_refptr<SerializedScriptValue>,

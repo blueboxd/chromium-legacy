@@ -42,6 +42,10 @@ base::string16 UiaIdentifierToCondensedString16(int32_t id) {
     // remove leading 'UIA_' and trailing 'PropertyId'
     return identifier.substr(4, identifier.size() - 14);
   }
+  if (id >= UIA_ButtonControlTypeId && id <= UIA_AppBarControlTypeId) {
+    // remove leading 'UIA_' and trailing 'ControlTypeId'
+    return identifier.substr(4, identifier.size() - 17);
+  }
   return identifier;
 }
 
@@ -1005,14 +1009,15 @@ base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
   std::unique_ptr<base::DictionaryValue> tree;
   base::string16 line;
 
-  // Always show role, and show it first.
-  base::string16 role_value;
-  dict.GetString(UiaIdentifierToCondensedString(UIA_AriaRolePropertyId),
-                 &role_value);
-  WriteAttribute(true, role_value, &line);
+  // Always show control type, and show it first.
+  base::string16 control_type_value;
+  dict.GetString(UiaIdentifierToCondensedString(UIA_ControlTypePropertyId),
+                 &control_type_value);
+  WriteAttribute(true, control_type_value, &line);
   if (filtered_result) {
     filtered_result->SetString(
-        UiaIdentifierToStringUTF8(UIA_AriaRolePropertyId), role_value);
+        UiaIdentifierToStringUTF8(UIA_ControlTypePropertyId),
+        control_type_value);
   }
 
   // properties

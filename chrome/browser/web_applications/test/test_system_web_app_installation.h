@@ -27,6 +27,10 @@ class TestSystemWebAppInstallation {
   SetUpStandaloneSingleWindowApp();
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppThatReceivesLaunchDirectory();
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppNotShownInLauncher();
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppWithAdditionalSearchTerms();
 
   ~TestSystemWebAppInstallation();
 

@@ -129,6 +129,7 @@ ProfileActivityMetricsRecorder::~ProfileActivityMetricsRecorder() {
   base::RemoveActionCallback(action_callback_);
 }
 
-void ProfileActivityMetricsRecorder::OnUserAction(const std::string& action) {
+void ProfileActivityMetricsRecorder::OnUserAction(const std::string& action,
+                                                  base::TimeTicks action_time) {
   RecordUserAction(last_active_profile_);
 }

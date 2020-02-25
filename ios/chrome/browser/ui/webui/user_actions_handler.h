@@ -9,6 +9,10 @@
 #include "base/metrics/user_metrics.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 // UI Handler for chrome://user-actions/
 // It listens to user action notifications and passes those notifications
 // into the Javascript to update the page.
@@ -22,7 +26,7 @@ class UserActionsHandler : public web::WebUIIOSMessageHandler {
 
  private:
   // Called whenever a user action is registered.
-  void OnUserAction(const std::string& action);
+  void OnUserAction(const std::string& action, base::TimeTicks action_time);
 
   // The callback to invoke whenever a user action is registered.
   base::ActionCallback action_callback_;

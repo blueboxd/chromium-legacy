@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
 namespace blink {
@@ -88,9 +89,10 @@ TEST_F(PerformanceObserverTest, Enqueue) {
   NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
-  ScriptValue empty_value;
+  PerformanceMarkOptions* options = PerformanceMarkOptions::Create();
+  options->setStartTime(1234);
   Persistent<PerformanceEntry> entry = PerformanceMark::Create(
-      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
+      scope.GetScriptState(), "m", options, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -102,9 +104,10 @@ TEST_F(PerformanceObserverTest, Deliver) {
   NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
-  ScriptValue empty_value;
+  PerformanceMarkOptions* options = PerformanceMarkOptions::Create();
+  options->setStartTime(1234);
   Persistent<PerformanceEntry> entry = PerformanceMark::Create(
-      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
+      scope.GetScriptState(), "m", options, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -119,9 +122,10 @@ TEST_F(PerformanceObserverTest, Disconnect) {
   NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
-  ScriptValue empty_value;
+  PerformanceMarkOptions* options = PerformanceMarkOptions::Create();
+  options->setStartTime(1234);
   Persistent<PerformanceEntry> entry = PerformanceMark::Create(
-      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
+      scope.GetScriptState(), "m", options, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);

@@ -1,3 +1,4 @@
-document
-++group LocalizedControlType='figure'
-++++img Name='Sunspots'
+Document
+++Group LocalizedControlType='figure'
+++++Image Name='Sunspots'
+<-- End-of-file -->

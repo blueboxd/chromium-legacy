@@ -992,7 +992,8 @@ void TraceEventDataSource::OnMetricsSampleCallback(
 }
 
 void TraceEventDataSource::OnUserActionSampleCallback(
-    const std::string& action) {
+    const std::string& action,
+    base::TimeTicks action_time) {
   TRACE_EVENT_INSTANT(
       TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
       TRACE_EVENT_SCOPE_GLOBAL, [&](perfetto::EventContext ctx) {

@@ -1,1 +1,2 @@
-document Name='Title of the document'
+Document Name='Title of the document'
+<-- End-of-file -->

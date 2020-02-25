@@ -329,10 +329,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, CtrlClickLink) {
       embedded_test_server()->GetURL("app.com", "/click_modifier/href.html");
   ui_test_utils::UrlLoadObserver url_observer(
       app_url, content::NotificationService::AllSources());
-  extensions::TestExtensionDir test_app_dir;
-  test_app_dir.WriteManifest(
-      base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath());
+  SetupAppWithURL(app_url);
   // Wait for the URL to load so that we can click on the page.
   url_observer.Wait();
 
@@ -584,10 +581,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, SubframeRedirectsToHostedApp) {
 
   // Set up an app which covers app.com URLs.
   GURL app_url = embedded_test_server()->GetURL("app.com", "/title1.html");
-  extensions::TestExtensionDir test_app_dir;
-  test_app_dir.WriteManifest(
-      base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath());
+  SetupAppWithURL(app_url);
 
   // Navigate a regular tab to a page with a subframe.
   GURL url = embedded_test_server()->GetURL("foo.com", "/iframe.html");
@@ -620,10 +614,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
 
   ui_test_utils::UrlLoadObserver url_observer(
       app_url, content::NotificationService::AllSources());
-  extensions::TestExtensionDir test_app_dir;
-  test_app_dir.WriteManifest(
-      base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
-  SetupApp(test_app_dir.UnpackedPath());
+  SetupAppWithURL(app_url);
   url_observer.Wait();
 
   web_app::CheckMixedContentLoaded(app_browser_);

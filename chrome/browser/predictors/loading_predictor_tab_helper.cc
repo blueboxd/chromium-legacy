@@ -4,17 +4,11 @@
 
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 
-#include <set>
 #include <string>
 
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -71,21 +65,10 @@ bool IsHandledNavigation(content::NavigationHandle* navigation_handle) {
 LoadingPredictorTabHelper::LoadingPredictorTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  auto* predictor = LoadingPredictorFactory::GetForProfile(profile);
+  auto* predictor = LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (predictor)
     predictor_ = predictor->GetWeakPtr();
-  if (base::FeatureList::IsEnabled(
-          features::kLoadingPredictorUseOptimizationGuide)) {
-    optimization_guide_decider_ =
-        OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-    if (optimization_guide_decider_) {
-      optimization_guide_decider_->RegisterOptimizationTypesAndTargets(
-          {optimization_guide::proto::LOADING_PREDICTOR},
-          /*optimization_targets=*/{});
-    }
-  }
 }
 
 LoadingPredictorTabHelper::~LoadingPredictorTabHelper() = default;
@@ -103,36 +86,8 @@ void LoadingPredictorTabHelper::DidStartNavigation(
                                     navigation_handle->NavigationStart());
   if (!navigation_id.is_valid())
     return;
-  current_navigation_id_ = navigation_id;
 
-  if (predictor_->OnNavigationStarted(navigation_id))
-    return;
-
-  if (!optimization_guide_decider_)
-    return;
-
-  // We do not have any predictions on device, so consult the optimization
-  // guide.
-  optimization_guide_decider_->CanApplyOptimizationAsync(
-      navigation_handle, optimization_guide::proto::LOADING_PREDICTOR,
-      base::BindOnce(&LoadingPredictorTabHelper::OnOptimizationGuideDecision,
-                     weak_ptr_factory_.GetWeakPtr(), navigation_id));
-}
-
-void LoadingPredictorTabHelper::DidRedirectNavigation(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!predictor_)
-    return;
-
-  if (!IsHandledNavigation(navigation_handle))
-    return;
-
-  auto navigation_id = NavigationID(web_contents(), navigation_handle->GetURL(),
-                                    navigation_handle->NavigationStart());
-  if (!navigation_id.is_valid())
-    return;
-  current_navigation_id_ = navigation_id;
+  predictor_->OnNavigationStarted(navigation_id);
 }
 
 void LoadingPredictorTabHelper::DidFinishNavigation(
@@ -143,9 +98,6 @@ void LoadingPredictorTabHelper::DidFinishNavigation(
 
   if (!IsHandledNavigation(navigation_handle))
     return;
-
-  // Clear out the current navigation since there is not one in flight anymore.
-  current_navigation_id_ = NavigationID();
 
   auto old_navigation_id = NavigationID(
       web_contents(), navigation_handle->GetRedirectChain().front(),
@@ -217,62 +169,6 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
   predictor_->loading_data_collector()->RecordMainFrameLoadComplete(
       navigation_id);
-}
-
-void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
-    const NavigationID& navigation_id,
-    optimization_guide::OptimizationGuideDecision decision,
-    const optimization_guide::OptimizationMetadata& metadata) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(navigation_id.is_valid());
-
-  if (!predictor_)
-    return;
-
-  if (decision != optimization_guide::OptimizationGuideDecision::kTrue)
-    return;
-
-  if (!metadata.loading_predictor_metadata())
-    return;
-
-  if (!current_navigation_id_.is_valid()) {
-    // There is not a pending navigation, so return.
-    return;
-  }
-  if (current_navigation_id_ != navigation_id) {
-    // The current navigation has either redirected or a new one has started, so
-    // return.
-    return;
-  }
-  auto last_committed_navigation_id = NavigationID(web_contents());
-  if (last_committed_navigation_id.is_valid() &&
-      navigation_id == last_committed_navigation_id) {
-    // The navigation has already committed, so all the connections have already
-    // started.
-    return;
-  }
-
-  PreconnectPrediction prediction;
-  url::Origin main_frame_origin =
-      url::Origin::Create(navigation_id.main_frame_url);
-  net::NetworkIsolationKey network_isolation_key(main_frame_origin,
-                                                 main_frame_origin);
-  std::set<url::Origin> predicted_origins;
-  const auto lp_metadata = metadata.loading_predictor_metadata();
-  for (const auto& subresource : lp_metadata->subresources()) {
-    GURL subresource_url(subresource.url());
-    if (!subresource_url.is_valid())
-      continue;
-    url::Origin subresource_origin = url::Origin::Create(subresource_url);
-    if (predicted_origins.find(subresource_origin) != predicted_origins.end())
-      continue;
-    predicted_origins.insert(subresource_origin);
-    prediction.requests.emplace_back(subresource_origin, 1,
-                                     network_isolation_key);
-  }
-  predictor_->PrepareForPageLoad(navigation_id.main_frame_url,
-                                 HintOrigin::OPTIMIZATION_GUIDE,
-                                 /*preconnectable=*/false, prediction);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LoadingPredictorTabHelper)

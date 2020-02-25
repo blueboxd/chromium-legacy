@@ -1,4 +1,5 @@
-document
-++heading Name='Image'
-++++description Name='Image' IsControlElement=false
-++img Name='ImageAlt'
+Document
+++Text Name='Image'
+++++Text Name='Image' IsControlElement=false
+++Image Name='ImageAlt'
+<-- End-of-file -->

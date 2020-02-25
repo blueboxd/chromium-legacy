@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_com_initializer.h"
 
 namespace ui {
@@ -19,8 +20,8 @@ namespace {
 // have a situation where a modal dialog in one window blocks the appearance
 // of a modal dialog in another.
 scoped_refptr<base::SingleThreadTaskRunner> CreateDialogTaskRunner() {
-  return CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+  return base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 }

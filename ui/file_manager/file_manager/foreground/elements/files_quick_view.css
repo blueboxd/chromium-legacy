@@ -171,8 +171,8 @@ dialog#delete-confirm-dialog::backdrop {
 }
 
 :host([files-ng]) cr-button {
-  --hover-bg-color: rgba(255, 255, 255, .04);
-  --ink-color: rgba(255, 255, 255, .88);
+  --hover-bg-color: rgba(255, 255, 255, 4%);
+  --ink-color: rgba(255, 255, 255, 88%);
   --text-color: currentColor;
   border: 2px solid transparent;
   border-radius: 50%;
@@ -258,7 +258,7 @@ iron-icon {
 }
 
 :host(:not([files-ng])) cr-button:focus:not(:active) {
-  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5);
+  box-shadow: 0 0 0 1px rgba(66, 133, 244, 50%);
   font-weight: bold;
 }
 
@@ -267,7 +267,7 @@ iron-icon {
 }
 
 #metadata-box {
-  background-color: rgba(20, 22, 24, 0.8);
+  background-color: rgba(20, 22, 24, 80%);
   bottom: 0;
   height: 100%;
   margin: 0;

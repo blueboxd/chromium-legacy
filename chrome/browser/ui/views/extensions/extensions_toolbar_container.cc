@@ -137,6 +137,11 @@ bool ExtensionsToolbarContainer::ShouldForceVisibility(
   if (popped_out_action_ && popped_out_action_->GetId() == extension_id)
     return true;
 
+  if (extension_with_open_context_menu_id_.has_value() &&
+      extension_with_open_context_menu_id_.value() == extension_id) {
+    return true;
+  }
+
   for (const auto& anchored_widget : anchored_widgets_) {
     if (anchored_widget.extension_id == extension_id)
       return true;
@@ -225,6 +230,21 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetActionForId(
 ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
     const {
   return popped_out_action_;
+}
+
+void ExtensionsToolbarContainer::OnContextMenuShown(
+    ToolbarActionViewController* extension) {
+  extension_with_open_context_menu_id_ = extension->GetId();
+  UpdateIconVisibility(extension_with_open_context_menu_id_.value());
+}
+
+void ExtensionsToolbarContainer::OnContextMenuClosed(
+    ToolbarActionViewController* extension) {
+  DCHECK(extension_with_open_context_menu_id_.has_value());
+  base::Optional<extensions::ExtensionId> const
+      extension_with_open_context_menu = extension_with_open_context_menu_id_;
+  extension_with_open_context_menu_id_.reset();
+  UpdateIconVisibility(extension_with_open_context_menu.value());
 }
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(

@@ -181,11 +181,14 @@ void SetImageData(webapk::Image* image, const SkBitmap& icon) {
 
 // Populates webapk::WebApk and returns it.
 // Must be called on a worker thread because it encodes an SkBitmap.
+// The splash icon can be passed either via |icon_url_to_murmur2_hash| or via
+// |splash_icon| parameter. |splash_icon| parameter is only used when the
+// splash icon URL is unknown.
 std::unique_ptr<std::string> BuildProtoInBackground(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
-    const SkBitmap& badge_icon,
+    const SkBitmap& splash_icon,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -262,10 +265,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
       best_primary_icon_image->add_purposes(webapk::Image::ANY);
     }
 
-    if (!badge_icon.drawsNothing()) {
-      webapk::Image* best_badge_icon_image = web_app_manifest->add_icons();
-      SetImageData(best_badge_icon_image, badge_icon);
-      best_badge_icon_image->add_usages(webapk::Image::BADGE_ICON);
+    if (!splash_icon.drawsNothing()) {
+      webapk::Image* splash_icon_image = web_app_manifest->add_icons();
+      SetImageData(splash_icon_image, splash_icon);
+      splash_icon_image->add_usages(webapk::Image::SPLASH_ICON);
+      splash_icon_image->add_purposes(webapk::Image::ANY);
     }
   }
 
@@ -285,12 +289,13 @@ std::unique_ptr<std::string> BuildProtoInBackground(
         image->add_purposes(webapk::Image::ANY);
       }
     }
-    if (icon_url == shortcut_info.best_badge_icon_url.spec()) {
-      if (shortcut_info.best_badge_icon_url !=
+    if (icon_url == shortcut_info.splash_image_url.spec()) {
+      if (shortcut_info.splash_image_url !=
           shortcut_info.best_primary_icon_url) {
-        SetImageData(image, badge_icon);
+        image->set_image_data(it->second.data);
       }
-      image->add_usages(webapk::Image::BADGE_ICON);
+      image->add_usages(webapk::Image::SPLASH_ICON);
+      image->add_purposes(webapk::Image::ANY);
     }
   }
 
@@ -342,8 +347,10 @@ bool StoreUpdateRequestToFileInBackground(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
+  // TODO(crbug.com/1043271): Passing an empty SkBitmap for now as webapk update
+  // does not include splash_icon image yet.
   std::unique_ptr<std::string> proto = BuildProtoInBackground(
-      shortcut_info, primary_icon, is_primary_icon_maskable, badge_icon,
+      shortcut_info, primary_icon, is_primary_icon_maskable, SkBitmap(),
       package_name, version, std::move(icon_url_to_murmur2_hash),
       is_manifest_stale, update_reason);
 
@@ -385,12 +392,11 @@ void WebApkInstaller::InstallAsync(content::BrowserContext* context,
                                    const ShortcutInfo& shortcut_info,
                                    const SkBitmap& primary_icon,
                                    bool is_primary_icon_maskable,
-                                   const SkBitmap& badge_icon,
                                    FinishCallback finish_callback) {
   // The installer will delete itself when it is done.
   WebApkInstaller* installer = new WebApkInstaller(context);
   installer->InstallAsync(shortcut_info, primary_icon, is_primary_icon_maskable,
-                          badge_icon, std::move(finish_callback));
+                          std::move(finish_callback));
 }
 
 // static
@@ -407,10 +413,9 @@ void WebApkInstaller::InstallAsyncForTesting(WebApkInstaller* installer,
                                              const ShortcutInfo& shortcut_info,
                                              const SkBitmap& primary_icon,
                                              bool is_primary_icon_maskable,
-                                             const SkBitmap& badge_icon,
                                              FinishCallback callback) {
   installer->InstallAsync(shortcut_info, primary_icon, is_primary_icon_maskable,
-                          badge_icon, std::move(callback));
+                          std::move(callback));
 }
 
 // static
@@ -437,7 +442,7 @@ void WebApkInstaller::BuildProto(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
-    const SkBitmap& badge_icon,
+    const SkBitmap& splash_icon,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -446,7 +451,7 @@ void WebApkInstaller::BuildProto(
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
       base::BindOnce(&BuildProtoInBackground, shortcut_info, primary_icon,
-                     is_primary_icon_maskable, badge_icon, package_name,
+                     is_primary_icon_maskable, splash_icon, package_name,
                      version, std::move(icon_url_to_murmur2_hash),
                      is_manifest_stale, WebApkUpdateReason::NONE),
       std::move(callback));
@@ -538,13 +543,11 @@ void WebApkInstaller::CreateJavaRef() {
 void WebApkInstaller::InstallAsync(const ShortcutInfo& shortcut_info,
                                    const SkBitmap& primary_icon,
                                    bool is_primary_icon_maskable,
-                                   const SkBitmap& badge_icon,
                                    FinishCallback finish_callback) {
   install_duration_timer_.reset(new base::ElapsedTimer());
 
   install_shortcut_info_.reset(new ShortcutInfo(shortcut_info));
   install_primary_icon_ = primary_icon;
-  install_badge_icon_ = badge_icon;
   is_primary_icon_maskable_ = is_primary_icon_maskable;
   short_name_ = shortcut_info.short_name;
   finish_callback_ = std::move(finish_callback);
@@ -666,10 +669,10 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
   // should be fast because the icon should be in the HTTP cache.
 
   std::set<GURL> icons{install_shortcut_info_->best_primary_icon_url};
-  if (!install_shortcut_info_->best_badge_icon_url.is_empty() &&
-      install_shortcut_info_->best_badge_icon_url !=
+  if (!install_shortcut_info_->splash_image_url.is_empty() &&
+      install_shortcut_info_->splash_image_url !=
           install_shortcut_info_->best_primary_icon_url) {
-    icons.insert(install_shortcut_info_->best_badge_icon_url);
+    icons.insert(install_shortcut_info_->splash_image_url);
   }
 
   for (const auto& shortcut_icon :
@@ -692,8 +695,10 @@ void WebApkInstaller::OnGotIconMurmur2Hashes(
     return;
   }
 
+  // Using empty |splash_icon| here because in this code path (WebApk install),
+  // we are using the splash icon data from |hashes|.
   BuildProto(*install_shortcut_info_, install_primary_icon_,
-             is_primary_icon_maskable_, install_badge_icon_,
+             is_primary_icon_maskable_, SkBitmap() /* splash_icon */,
              "" /* package_name */, "" /* version */, std::move(*hashes),
              false /* is_manifest_stale */,
              base::BindOnce(&WebApkInstaller::SendRequest,

@@ -14,6 +14,8 @@
 
 namespace base {
 
+class TimeTicks;
+
 // This module provides some helper functions for logging actions tracked by
 // the user metrics system.
 
@@ -55,8 +57,13 @@ BASE_EXPORT void RecordAction(const UserMetricsAction& action);
 // SetRecordActionTaskRunner().
 BASE_EXPORT void RecordComputedAction(const std::string& action);
 
+// Similar to RecordComputedAction, but also takes the time at which the action
+// was observed.
+BASE_EXPORT void RecordComputedActionAt(const std::string& action,
+                                        TimeTicks action_time);
+
 // Called with the action string.
-using ActionCallback = RepeatingCallback<void(const std::string&)>;
+using ActionCallback = RepeatingCallback<void(const std::string&, TimeTicks)>;
 
 // Add/remove action callbacks (see above).
 // These functions must be called after the task runner has been set with

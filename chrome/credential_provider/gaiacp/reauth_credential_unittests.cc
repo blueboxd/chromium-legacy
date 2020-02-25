@@ -28,6 +28,8 @@
 #include "chrome/credential_provider/test/test_credential.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -521,6 +523,97 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {
   // associated to this Google account.
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_ACCOUNT_IN_USE_BASE));
 }
+
+// Tests the normal reauth scenario.
+// 1. Is gem features enabled. If enabled, tos should be tested out.
+//    Otherwise, ToS shouldn't be set irrespective of the |kAcceptTos|
+//    registry entry.
+class GcpNormalReauthCredentialUserSidMismatch
+    : public GcpReauthCredentialGlsRunnerTest,
+      public ::testing::WithParamInterface<bool> {};
+
+TEST_P(GcpNormalReauthCredentialUserSidMismatch, ShouldFail) {
+  USES_CONVERSION;
+
+  bool is_non_matching_sid_empty = GetParam();
+
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  // Override registry to enable cloud association with google.
+  constexpr wchar_t kRegCloudAssociation[] = L"enable_cloud_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegCloudAssociation, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_verbose_logging", 1));
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+  CComBSTR domain = L"domain";
+
+  // Create a fake user to reauth.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                OLE2CW(email), OLE2CW(domain), &sid));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+  // Delete the registry entries and create the environment where
+  // GCPW is installed on an AD joined machine and GetSerialization
+  // is triggered on a reauth credential.
+  RemoveAllUserProperties(OLE2CW(sid));
+
+  // The admin sdk users directory get URL.
+  std::string get_cd_user_url_ = base::StringPrintf(
+      "https://www.googleapis.com/admin/directory/v1/users/"
+      "%s?projection=full&viewType=domain_public",
+      net::EscapeUrlEncodedData(base::UTF16ToUTF8(OLE2CW(email)), true)
+          .c_str());
+  GaiaUrls* gaia_urls_ = GaiaUrls::GetInstance();
+  // Set token result as a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  std::string admin_sdk_response;
+  CComBSTR different_user = L"different_foo_bar";
+  if (!is_non_matching_sid_empty) {
+    DWORD error;
+    ASSERT_EQ(S_OK, fake_os_user_manager()->AddUser(
+                        OLE2W(different_user), L"password", L"fullname",
+                        L"comment", true, L"domain", &sid, &error));
+  }
+
+  // Set valid response from admin sdk.
+  admin_sdk_response = base::StringPrintf(
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
+      " \"%ls/%ls\"}}}",
+      L"domain", OLE2CW(different_user));
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
+      admin_sdk_response);
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Logon process should fail with an internal error.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_ACCOUNT_IN_USE_BASE));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpNormalReauthCredentialUserSidMismatch,
+                         ::testing::Values(true, false));
 
 // Tests the normal reauth scenario.
 // 1. Is gem features enabled. If enabled, tos should be tested out.

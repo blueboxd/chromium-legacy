@@ -25,7 +25,7 @@ namespace base {
 class HistogramFlattener;
 class HistogramSamples;
 class HistogramSnapshotManager;
-}
+}  // namespace base
 
 namespace metrics {
 
@@ -118,7 +118,7 @@ class MetricsLog {
       SystemProfileProto* system_profile);
 
   // Records a user-initiated action.
-  void RecordUserAction(const std::string& key);
+  void RecordUserAction(const std::string& key, base::TimeTicks action_time);
 
   // Record any changes in a given histogram for transmission.
   void RecordHistogramDelta(const std::string& histogram_name,

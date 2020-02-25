@@ -176,9 +176,6 @@ const IndexInfo kIndexes[] = {
     true },
 };
 
-const int kTableCount = base::size(kTables);
-const int kIndexCount = base::size(kIndexes);
-
 bool CreateTable(sql::Database* db, const TableInfo& info) {
   std::string sql("CREATE TABLE ");
   sql += info.table_name;
@@ -219,22 +216,19 @@ AppCacheDatabase::GroupRecord::GroupRecord()
 
 AppCacheDatabase::GroupRecord::GroupRecord(const GroupRecord& other) = default;
 
-AppCacheDatabase::GroupRecord::~GroupRecord() {
-}
+AppCacheDatabase::GroupRecord::~GroupRecord() = default;
 
 AppCacheDatabase::CacheRecord::CacheRecord() = default;
 
 AppCacheDatabase::CacheRecord::CacheRecord(const CacheRecord& other) = default;
 
-AppCacheDatabase::CacheRecord::~CacheRecord() {}
+AppCacheDatabase::CacheRecord::~CacheRecord() = default;
 
 AppCacheDatabase::NamespaceRecord::NamespaceRecord()
     : cache_id(0) {
 }
 
-AppCacheDatabase::NamespaceRecord::~NamespaceRecord() {
-}
-
+AppCacheDatabase::NamespaceRecord::~NamespaceRecord() = default;
 
 AppCacheDatabase::AppCacheDatabase(const base::FilePath& path)
     : db_file_path_(path),
@@ -1146,12 +1140,10 @@ bool AppCacheDatabase::EnsureDatabaseVersion() {
 
 #ifndef NDEBUG
   DCHECK(sql::MetaTable::DoesTableExist(db_.get()));
-  for (int i = 0; i < kTableCount; ++i) {
-    DCHECK(db_->DoesTableExist(kTables[i].table_name));
-  }
-  for (int i = 0; i < kIndexCount; ++i) {
-    DCHECK(db_->DoesIndexExist(kIndexes[i].index_name));
-  }
+  for (const TableInfo& table : kTables)
+    DCHECK(db_->DoesTableExist(table.table_name));
+  for (const IndexInfo& index : kIndexes)
+    DCHECK(db_->DoesIndexExist(index.index_name));
 #endif
 
   return true;
@@ -1170,13 +1162,13 @@ bool AppCacheDatabase::CreateSchema() {
     return false;
   }
 
-  for (int i = 0; i < kTableCount; ++i) {
-    if (!CreateTable(db_.get(), kTables[i]))
+  for (const TableInfo& table : kTables) {
+    if (!CreateTable(db_.get(), table))
       return false;
   }
 
-  for (int i = 0; i < kIndexCount; ++i) {
-    if (!CreateIndex(db_.get(), kIndexes[i]))
+  for (const IndexInfo& index : kIndexes) {
+    if (!CreateIndex(db_.get(), index))
       return false;
   }
 

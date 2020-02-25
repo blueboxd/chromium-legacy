@@ -215,6 +215,17 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
   }
 
+  void RightClickExtensionInToolbar(ToolbarActionView* extension) {
+    ui::MouseEvent click_down_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
+                                    gfx::Point(), base::TimeTicks(),
+                                    ui::EF_RIGHT_MOUSE_BUTTON, 0);
+    ui::MouseEvent click_up_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                                  gfx::Point(), base::TimeTicks(),
+                                  ui::EF_RIGHT_MOUSE_BUTTON, 0);
+    extension->OnMouseEvent(&click_down_event);
+    extension->OnMouseEvent(&click_up_event);
+  }
+
   void ClickExtensionsMenuButton(Browser* browser) {
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
@@ -386,6 +397,46 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   // and the icon should no longer be visible in the extensions container.
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       ContextMenuKeepsExtensionPoppedOut) {
+  LoadTestExtension("extensions/simple_with_popup");
+  ShowUi("");
+  VerifyUi();
+
+  ExtensionsToolbarContainer* const extensions_container =
+      GetExtensionsToolbarContainer();
+
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+
+  TriggerSingleExtensionButton();
+
+  // After triggering an extension with a popup, there should a popped-out
+  // action and show the view.
+  auto visible_icons = GetVisibleToolbarActionViews();
+  EXPECT_NE(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_EQ(base::nullopt,
+            extensions_container->GetExtensionWithOpenContextMenuForTesting());
+  ASSERT_EQ(1u, visible_icons.size());
+  EXPECT_EQ(extensions_container->GetPoppedOutAction(),
+            visible_icons[0]->view_controller());
+
+  RightClickExtensionInToolbar(extensions_container->GetViewForId(
+      extensions_container->GetPoppedOutAction()->GetId()));
+  extensions_container->HideActivePopup();
+
+  // Wait for animations to finish.
+  views::test::WaitForAnimatingLayoutManager(extensions_container);
+
+  visible_icons = GetVisibleToolbarActionViews();
+  ASSERT_EQ(1u, visible_icons.size());
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+  EXPECT_NE(base::nullopt,
+            extensions_container->GetExtensionWithOpenContextMenuForTesting());
+  EXPECT_EQ(extensions_container->GetExtensionWithOpenContextMenuForTesting(),
+            visible_icons[0]->view_controller()->GetId());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,

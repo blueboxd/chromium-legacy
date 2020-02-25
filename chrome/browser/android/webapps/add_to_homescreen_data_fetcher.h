@@ -39,8 +39,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
     // Called when all the data needed to prompt the user to add to home screen
     // is available.
     virtual void OnDataAvailable(const ShortcutInfo& info,
-                                 const SkBitmap& primary_icon,
-                                 const SkBitmap& badge_icon) = 0;
+                                 const SkBitmap& primary_icon) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -63,7 +62,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
       const WebApplicationInfo& web_app_info);
 
   // Accessors, etc.
-  const SkBitmap& badge_icon() const { return badge_icon_; }
   const SkBitmap& primary_icon() const { return primary_icon_; }
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
   bool has_maskable_primary_icon() const { return has_maskable_primary_icon_; }
@@ -101,7 +99,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   // The icons must only be set on the UI thread for thread safety.
   SkBitmap raw_primary_icon_;
-  SkBitmap badge_icon_;
   SkBitmap primary_icon_;
   ShortcutInfo shortcut_info_;
   bool has_maskable_primary_icon_;

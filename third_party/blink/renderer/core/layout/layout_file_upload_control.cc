@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 
 #include <math.h>
-#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -30,12 +29,10 @@
 #include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/string_truncator.h"
-#include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 
-const int kDefaultWidthNumChars = 34;
 const int kButtonShadowHeight = 2;
 
 LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
@@ -58,35 +55,6 @@ void LayoutFileUploadControl::PaintObject(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
   FileUploadControlPainter(*this).PaintObject(paint_info, paint_offset);
-}
-
-void LayoutFileUploadControl::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  // Figure out how big the filename space needs to be for a given number of
-  // characters (using "0" as the nominal character).
-  const UChar kCharacter = '0';
-  const String character_as_string = String(&kCharacter, 1);
-  const Font& font = StyleRef().GetFont();
-  float min_default_label_width =
-      kDefaultWidthNumChars *
-      font.Width(ConstructTextRun(font, character_as_string, StyleRef(),
-                                  TextRun::kAllowTrailingExpansion));
-
-  const String label = To<HTMLInputElement>(GetNode())->GetLocale().QueryString(
-      IDS_FORM_FILE_NO_FILE_LABEL);
-  float default_label_width = font.Width(ConstructTextRun(
-      font, label, StyleRef(), TextRun::kAllowTrailingExpansion));
-  if (HTMLInputElement* button = UploadButton()) {
-    if (LayoutObject* button_layout_object = button->GetLayoutObject())
-      default_label_width += button_layout_object->MaxPreferredLogicalWidth() +
-                             kAfterButtonSpacing;
-  }
-  max_logical_width =
-      LayoutUnit(ceilf(std::max(min_default_label_width, default_label_width)));
-
-  if (!StyleRef().Width().IsPercentOrCalc())
-    min_logical_width = max_logical_width;
 }
 
 HTMLInputElement* LayoutFileUploadControl::UploadButton() const {

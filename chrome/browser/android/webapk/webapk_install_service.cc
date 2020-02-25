@@ -37,7 +37,6 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
                                         const ShortcutInfo& shortcut_info,
                                         const SkBitmap& primary_icon,
                                         bool is_primary_icon_maskable,
-                                        const SkBitmap& badge_icon,
                                         WebappInstallSource install_source) {
   if (IsInstallInProgress(shortcut_info.manifest_url)) {
     ShortcutHelper::ShowWebApkInstallInProgressToast();
@@ -56,7 +55,6 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
   auto observer = std::make_unique<LifetimeObserver>(web_contents);
   WebApkInstaller::InstallAsync(
       browser_context_, shortcut_info, primary_icon, is_primary_icon_maskable,
-      badge_icon,
       base::Bind(&WebApkInstallService::OnFinishedInstall,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&observer),
                  shortcut_info, primary_icon, is_primary_icon_maskable));

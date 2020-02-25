@@ -61,6 +61,14 @@ std::string AppServiceIdFromAppId(const AppId& app_id, Profile* profile) {
              : app_id.app_id();
 }
 
+apps::PauseData PauseAppInfoToPauseData(const PauseAppInfo& pause_info) {
+  apps::PauseData details;
+  details.should_show_pause_dialog = pause_info.show_pause_dialog;
+  details.hours = pause_info.daily_limit.InHours();
+  details.minutes = pause_info.daily_limit.InMinutes() % 60;
+  return details;
+}
+
 }  // namespace
 
 AppServiceWrapper::AppServiceWrapper(Profile* profile) : profile_(profile) {
@@ -70,17 +78,18 @@ AppServiceWrapper::AppServiceWrapper(Profile* profile) : profile_(profile) {
 
 AppServiceWrapper::~AppServiceWrapper() = default;
 
-void AppServiceWrapper::PauseApp(const AppId& app_id,
-                                 base::TimeDelta daily_limit,
-                                 bool show_dialog) {
-  apps::PauseData details;
-  details.should_show_pause_dialog = show_dialog;
-  details.hours = daily_limit.InHours();
-  details.minutes =
-      (daily_limit - base::TimeDelta::FromHours(details.hours)).InMinutes();
-
+void AppServiceWrapper::PauseApp(const PauseAppInfo& pause_app) {
   const std::map<std::string, apps::PauseData> apps{
-      {GetAppServiceId(app_id), std::move(details)}};
+      {GetAppServiceId(pause_app.app_id), PauseAppInfoToPauseData(pause_app)}};
+  GetAppProxy()->PauseApps(apps);
+}
+
+void AppServiceWrapper::PauseApps(
+    const std::vector<PauseAppInfo>& paused_apps) {
+  std::map<std::string, apps::PauseData> apps;
+  for (const auto& entry : paused_apps) {
+    apps[GetAppServiceId(entry.app_id)] = PauseAppInfoToPauseData(entry);
+  }
   GetAppProxy()->PauseApps(apps);
 }
 

@@ -1,3 +1,4 @@
-document
-++contentinfo LocalizedControlType='footer'
-++++description Name='Footer element'
+Document
+++Group LocalizedControlType='footer'
+++++Text Name='Footer element'
+<-- End-of-file -->

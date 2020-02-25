@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_storage.h"
@@ -173,19 +174,18 @@ void AppCache::InitializeWithDatabaseRecords(
   online_whitelist_all_ = cache_record.online_wildcard;
   update_time_ = cache_record.update_time;
 
-  for (size_t i = 0; i < entries.size(); ++i) {
-    const AppCacheDatabase::EntryRecord& entry = entries.at(i);
+  for (const AppCacheDatabase::EntryRecord& entry : entries) {
     AddEntry(entry.url, AppCacheEntry(entry.flags, entry.response_id,
                                       entry.response_size, entry.padding_size));
   }
   DCHECK_EQ(cache_size_, cache_record.cache_size);
   DCHECK_EQ(padding_size_, cache_record.padding_size);
 
-  for (size_t i = 0; i < intercepts.size(); ++i)
-    intercept_namespaces_.push_back(intercepts.at(i).namespace_);
+  for (const auto& intercept : intercepts)
+    intercept_namespaces_.push_back(intercept.namespace_);
 
-  for (size_t i = 0; i < fallbacks.size(); ++i)
-    fallback_namespaces_.push_back(fallbacks.at(i).namespace_);
+  for (const auto& fallback : fallbacks)
+    fallback_namespaces_.push_back(fallback.namespace_);
 
   // Sort the fallback namespaces by url string length, longest to shortest,
   // since longer matches trump when matching a url to a namespace.
@@ -194,10 +194,9 @@ void AppCache::InitializeWithDatabaseRecords(
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
 
-  for (size_t i = 0; i < whitelists.size(); ++i) {
-    const AppCacheDatabase::OnlineWhiteListRecord& record = whitelists.at(i);
-    online_whitelist_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_NETWORK_NAMESPACE, record.namespace_url, GURL()));
+  for (const auto& record : whitelists) {
+    online_whitelist_namespaces_.emplace_back(APPCACHE_NETWORK_NAMESPACE,
+                                              record.namespace_url, GURL());
   }
 }
 
@@ -233,27 +232,28 @@ void AppCache::ToDatabaseRecords(
 
   const url::Origin origin = url::Origin::Create(group->manifest_url());
 
-  for (size_t i = 0; i < intercept_namespaces_.size(); ++i) {
+  for (const AppCacheNamespace& intercept_namespace : intercept_namespaces_) {
     intercepts->push_back(AppCacheDatabase::NamespaceRecord());
     AppCacheDatabase::NamespaceRecord& record = intercepts->back();
     record.cache_id = cache_id_;
     record.origin = origin;
-    record.namespace_ = intercept_namespaces_[i];
+    record.namespace_ = intercept_namespace;
   }
 
-  for (size_t i = 0; i < fallback_namespaces_.size(); ++i) {
+  for (const AppCacheNamespace& fallback_namespace : fallback_namespaces_) {
     fallbacks->push_back(AppCacheDatabase::NamespaceRecord());
     AppCacheDatabase::NamespaceRecord& record = fallbacks->back();
     record.cache_id = cache_id_;
     record.origin = origin;
-    record.namespace_ = fallback_namespaces_[i];
+    record.namespace_ = fallback_namespace;
   }
 
-  for (size_t i = 0; i < online_whitelist_namespaces_.size(); ++i) {
+  for (const AppCacheNamespace& online_namespace :
+       online_whitelist_namespaces_) {
     whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
     AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
     record.cache_id = cache_id_;
-    record.namespace_url = online_whitelist_namespaces_[i].namespace_url;
+    record.namespace_url = online_namespace.namespace_url;
   }
 }
 

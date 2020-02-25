@@ -1,3 +1,4 @@
-document
-++group IsControlElement=false
-++++slider RangeValue.IsReadOnly=false RangeValue.LargeChange=10.00 RangeValue.SmallChange=1.00 RangeValue.Maximum=10.00 RangeValue.Minimum=1.00 RangeValue.Value=5.00 Value.Value='5'
+Document
+++Group IsControlElement=false
+++++Slider RangeValue.IsReadOnly=false RangeValue.LargeChange=10.00 RangeValue.SmallChange=1.00 RangeValue.Maximum=10.00 RangeValue.Minimum=1.00 RangeValue.Value=5.00 Value.Value='5'
+<-- End-of-file -->

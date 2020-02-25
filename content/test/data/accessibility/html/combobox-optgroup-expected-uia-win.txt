@@ -1,8 +1,9 @@
-document
-++group IsControlElement=false
-++++combobox ExpandCollapse.ExpandCollapseState='Collapsed' Value.IsReadOnly=false Value.Value='Mercedes Label'
-++++++list Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Value.IsReadOnly=false
-++++++++listitem Name='Volvo Label' SelectionItem.IsSelected=false
-++++++++listitem Name='Saab Label' SelectionItem.IsSelected=false
-++++++++listitem Name='Mercedes Label' SelectionItem.IsSelected=true
-++++++++listitem Name='Audi Label' SelectionItem.IsSelected=false
+Document
+++Group IsControlElement=false
+++++ComboBox ExpandCollapse.ExpandCollapseState='Collapsed' Value.IsReadOnly=false Value.Value='Mercedes Label'
+++++++List Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false Value.IsReadOnly=false
+++++++++ListItem Name='Volvo Label' SelectionItem.IsSelected=false
+++++++++ListItem Name='Saab Label' SelectionItem.IsSelected=false
+++++++++ListItem Name='Mercedes Label' SelectionItem.IsSelected=true
+++++++++ListItem Name='Audi Label' SelectionItem.IsSelected=false
+<-- End-of-file -->

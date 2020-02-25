@@ -38,7 +38,7 @@ class ProfileActivityMetricsRecorder
   ProfileActivityMetricsRecorder();
   ~ProfileActivityMetricsRecorder() override;
 
-  void OnUserAction(const std::string& action);
+  void OnUserAction(const std::string& action, base::TimeTicks action_time);
 
   Profile* last_active_profile_ = nullptr;
   base::TimeTicks profile_session_start_;

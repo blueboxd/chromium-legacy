@@ -63,7 +63,6 @@ class WebApkInstaller {
                            const ShortcutInfo& shortcut_info,
                            const SkBitmap& primary_icon,
                            bool is_primary_icon_maskable,
-                           const SkBitmap& badge_icon,
                            FinishCallback finish_callback);
 
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
@@ -80,7 +79,6 @@ class WebApkInstaller {
                                      const ShortcutInfo& shortcut_info,
                                      const SkBitmap& primary_icon,
                                      bool is_primary_icon_maskable,
-                                     const SkBitmap& badge_icon,
                                      FinishCallback callback);
 
   // Calls the private function |UpdateAsync| for testing.
@@ -111,7 +109,7 @@ class WebApkInstaller {
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
       bool is_primary_icon_maskable,
-      const SkBitmap& badge_icon,
+      const SkBitmap& splash_icon,
       const std::string& package_name,
       const std::string& version,
       std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -126,7 +124,7 @@ class WebApkInstaller {
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
       bool is_primary_icon_maskable,
-      const SkBitmap& badge_icon,
+      const SkBitmap& splash_icon,
       const std::string& package_name,
       const std::string& version,
       std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -164,7 +162,6 @@ class WebApkInstaller {
   void InstallAsync(const ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
                     bool is_primary_icon_maskable,
-                    const SkBitmap& badge_icon,
                     FinishCallback finish_callback);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
@@ -212,7 +209,6 @@ class WebApkInstaller {
   // Data for installs.
   std::unique_ptr<ShortcutInfo> install_shortcut_info_;
   SkBitmap install_primary_icon_;
-  SkBitmap install_badge_icon_;
 
   bool is_primary_icon_maskable_;
 

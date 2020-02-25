@@ -2509,6 +2509,9 @@ enum WebFeature {
   kV8ArrayPrototypeHasElements = 3163,
   kV8ObjectPrototypeHasElements = 3164,
   kDisallowDocumentAccess = 3165,
+  kXRSessionRequestHitTestSource = 3166,
+  kXRSessionRequestHitTestSourceForTransientInput = 3167,
+  kXRDOMOverlay = 3168,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

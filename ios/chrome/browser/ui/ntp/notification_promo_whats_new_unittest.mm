@@ -106,7 +106,8 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
       EXPECT_EQ(icon, promo_.icon());
   }
 
-  void OnUserAction(const std::string& user_action) {
+  void OnUserAction(const std::string& user_action,
+                    base::TimeTicks action_time) {
     user_action_count_map_[user_action]++;
   }
 

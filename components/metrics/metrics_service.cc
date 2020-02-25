@@ -553,8 +553,9 @@ void MetricsService::InitializeMetricsState() {
   IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
 }
 
-void MetricsService::OnUserAction(const std::string& action) {
-  log_manager_.current_log()->RecordUserAction(action);
+void MetricsService::OnUserAction(const std::string& action,
+                                  base::TimeTicks action_time) {
+  log_manager_.current_log()->RecordUserAction(action, action_time);
   HandleIdleSinceLastTransmission(false);
 }
 

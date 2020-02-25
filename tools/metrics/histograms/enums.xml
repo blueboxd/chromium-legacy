@@ -26551,6 +26551,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3163" label="V8ArrayPrototypeHasElements"/>
   <int value="3164" label="V8ObjectPrototypeHasElements"/>
   <int value="3165" label="DisallowDocumentAccess"/>
+  <int value="3166" label="XRSessionRequestHitTestSource"/>
+  <int value="3167" label="XRSessionRequestHitTestSourceForTransientInput"/>
+  <int value="3168" label="XRDOMOverlay"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

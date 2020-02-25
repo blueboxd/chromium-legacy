@@ -29,7 +29,7 @@ function GetPrerenderEventCount(index, type) {
 function PrerenderEventHandler(index, ev) {
   // Check for errors.
   if (ev.type == 'webkitprerenderstart') {
-    // No event may preceed start.
+    // No event may precede start.
     if (GetPrerenderEventCount(index, 'webkitprerenderstart') ||
         GetPrerenderEventCount(index, 'webkitprerenderdomcontentloaded') ||
         GetPrerenderEventCount(index, 'webkitprerenderload') ||

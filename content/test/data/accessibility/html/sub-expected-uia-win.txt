@@ -1,5 +1,6 @@
-document
-++group IsControlElement=false
-++++description Name='This text contains '
-++++description Name='subscript'
-++++description Name=' text.'
+Document
+++Group IsControlElement=false
+++++Text Name='This text contains '
+++++Text Name='subscript'
+++++Text Name=' text.'
+<-- End-of-file -->

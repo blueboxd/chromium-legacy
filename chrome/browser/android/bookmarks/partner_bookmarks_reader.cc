@@ -143,9 +143,6 @@ void PartnerBookmarksReader::Reset(JNIEnv* env,
   wip_next_available_id_ = 0;
 }
 
-// TODO (crbug.com/980464): This method could theoretically accept contradicting
-// parameters for type (is_folder) and URL validity (jurl) and should therefore
-// be changed.
 jlong PartnerBookmarksReader::AddPartnerBookmark(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

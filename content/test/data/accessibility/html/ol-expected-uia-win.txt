@@ -1,27 +1,28 @@
-document
-++list
-++++listitem
-++++++group
-++++++++description Name='1. ' IsControlElement=false
-++++++description Name='Chrome' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='2. ' IsControlElement=false
-++++++description Name='Safari' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='3. ' IsControlElement=false
-++++++description Name='IE' IsControlElement=false
-++list
-++++listitem
-++++++group
-++++++++description Name='10. ' IsControlElement=false
-++++++description Name='Android' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='11. ' IsControlElement=false
-++++++description Name='Mac' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='12. ' IsControlElement=false
-++++++description Name='Windows' IsControlElement=false
+Document
+++List
+++++ListItem
+++++++Group
+++++++++Text Name='1. ' IsControlElement=false
+++++++Text Name='Chrome' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='2. ' IsControlElement=false
+++++++Text Name='Safari' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='3. ' IsControlElement=false
+++++++Text Name='IE' IsControlElement=false
+++List
+++++ListItem
+++++++Group
+++++++++Text Name='10. ' IsControlElement=false
+++++++Text Name='Android' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='11. ' IsControlElement=false
+++++++Text Name='Mac' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='12. ' IsControlElement=false
+++++++Text Name='Windows' IsControlElement=false
+<-- End-of-file -->

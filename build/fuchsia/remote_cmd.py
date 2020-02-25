@@ -130,4 +130,9 @@ class CommandRunner(object):
     scp_command += [dest]
 
     _SSH_LOGGER.debug(' '.join(scp_command))
-    subprocess.check_call(scp_command, stdout=open(os.devnull, 'w'))
+    try:
+      scp_output = subprocess.check_output(scp_command,
+                                           stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as error:
+      _SSH_LOGGER.info(error.output)
+      raise

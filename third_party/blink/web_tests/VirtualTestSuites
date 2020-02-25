@@ -356,14 +356,6 @@
     "bases": ["external/wpt/web-bundle"],
     "args": ["--enable-features=WebBundlesFromNetwork"]
   },
-
-  {
-    "prefix": "omt-service-worker-startup",
-    "bases": ["external/wpt/service-workers",
-              "external/wpt/shape-detection",
-              "http/tests/serviceworker"],
-    "args": ["--disable-features=OffMainThreadServiceWorkerStartup"]
-  },
   {
     "prefix": "omt-worker-fetch",
     "bases": ["external/wpt/content-security-policy/inside-worker",

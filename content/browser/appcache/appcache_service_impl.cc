@@ -370,7 +370,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
 AppCacheStorageReference::AppCacheStorageReference(
     std::unique_ptr<AppCacheStorage> storage)
     : storage_(std::move(storage)) {}
-AppCacheStorageReference::~AppCacheStorageReference() {}
+AppCacheStorageReference::~AppCacheStorageReference() = default;
 
 // AppCacheServiceImpl -------
 

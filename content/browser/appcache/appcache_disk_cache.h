@@ -131,7 +131,8 @@ class CONTENT_EXPORT AppCacheDiskCache {
   };
 
   bool is_initializing_or_waiting_to_initialize() const {
-    return create_backend_callback_.get() != NULL || is_waiting_to_initialize_;
+    return create_backend_callback_.get() != nullptr ||
+           is_waiting_to_initialize_;
   }
 
   net::Error Init(net::CacheType cache_type,

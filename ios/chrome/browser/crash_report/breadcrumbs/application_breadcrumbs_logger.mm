@@ -32,7 +32,8 @@ ApplicationBreadcrumbsLogger::~ApplicationBreadcrumbsLogger() {
   breakpad::StopMonitoringBreadcrumbManager(breadcrumb_manager_);
 }
 
-void ApplicationBreadcrumbsLogger::OnUserAction(const std::string& action) {
+void ApplicationBreadcrumbsLogger::OnUserAction(const std::string& action,
+                                                base::TimeTicks action_time) {
   // Filter out unwanted actions.
   if (action.find("InProductHelp.") == 0) {
     // InProductHelp actions are very noisy.

@@ -78,6 +78,11 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   views::Widget* GetAnchoredWidgetForExtensionForTesting(
       const std::string& extension_id);
 
+  base::Optional<extensions::ExtensionId>
+  GetExtensionWithOpenContextMenuForTesting() {
+    return extension_with_open_context_menu_id_;
+  }
+
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
   bool GetDropFormats(int* formats,
@@ -92,6 +97,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ToolbarActionViewController* GetActionForId(
       const std::string& action_id) override;
   ToolbarActionViewController* GetPoppedOutAction() const override;
+  void OnContextMenuShown(ToolbarActionViewController* extension) override;
+  void OnContextMenuClosed(ToolbarActionViewController* extension) override;
   bool IsActionVisibleOnToolbar(
       const ToolbarActionViewController* action) const override;
   void UndoPopOut() override;
@@ -217,6 +224,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.
   ToolbarActionViewController* popup_owner_ = nullptr;
+  // Extension with an open context menu, if any.
+  base::Optional<extensions::ExtensionId> extension_with_open_context_menu_id_;
 
   // The widgets currently popped out and, for each, the extension it is
   // associated with. See AnchoredWidget.

@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -30,20 +31,25 @@ void RecordAction(const UserMetricsAction& action) {
 }
 
 void RecordComputedAction(const std::string& action) {
-  TRACE_EVENT_INSTANT1("ui", "UserEvent", TRACE_EVENT_SCOPE_GLOBAL, "action", action);
+  RecordComputedActionAt(action, TimeTicks::Now());
+}
+
+void RecordComputedActionAt(const std::string& action, TimeTicks action_time) {
+  TRACE_EVENT_INSTANT1("ui", "UserEvent", TRACE_EVENT_SCOPE_GLOBAL, "action",
+                       action);
   if (!g_task_runner.Get()) {
     DCHECK(g_callbacks.Get().empty());
     return;
   }
 
   if (!g_task_runner.Get()->BelongsToCurrentThread()) {
-    g_task_runner.Get()->PostTask(FROM_HERE,
-                                  BindOnce(&RecordComputedAction, action));
+    g_task_runner.Get()->PostTask(
+        FROM_HERE, BindOnce(&RecordComputedActionAt, action, action_time));
     return;
   }
 
   for (const ActionCallback& callback : g_callbacks.Get()) {
-    callback.Run(action);
+    callback.Run(action, action_time);
   }
 }
 

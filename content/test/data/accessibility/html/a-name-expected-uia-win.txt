@@ -1,5 +1,6 @@
-document
-++link Name='named anchor'
-++++description Name='named anchor'
-++link Name='both a named anchor and a link'
-++++description Name='both a named anchor and a link' IsControlElement=false
+Document
+++Hyperlink Name='named anchor'
+++++Text Name='named anchor'
+++Hyperlink Name='both a named anchor and a link'
+++++Text Name='both a named anchor and a link' IsControlElement=false
+<-- End-of-file -->

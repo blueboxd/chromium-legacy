@@ -32,6 +32,7 @@
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
@@ -48,6 +50,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
@@ -56,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -95,6 +99,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
@@ -121,6 +126,33 @@ static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
               "LayoutBox should stay small");
 
 namespace {
+
+LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
+                                                const LayoutBox& box) {
+  // Figure out how big the filename space needs to be for a given number of
+  // characters (using "0" as the nominal character).
+  constexpr int kDefaultWidthNumChars = 34;
+  constexpr UChar kCharacter = '0';
+  const String character_as_string = String(&kCharacter, 1);
+  const Font& font = box.StyleRef().GetFont();
+  const float min_default_label_width =
+      kDefaultWidthNumChars *
+      font.Width(ConstructTextRun(font, character_as_string, box.StyleRef(),
+                                  TextRun::kAllowTrailingExpansion));
+
+  const String label =
+      input.GetLocale().QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
+  float default_label_width = font.Width(ConstructTextRun(
+      font, label, box.StyleRef(), TextRun::kAllowTrailingExpansion));
+  if (HTMLInputElement* button = input.UploadButton()) {
+    if (LayoutObject* button_layout_object = button->GetLayoutObject()) {
+      default_label_width += button_layout_object->MaxPreferredLogicalWidth() +
+                             LayoutFileUploadControl::kAfterButtonSpacing;
+    }
+  }
+  return LayoutUnit(
+      ceilf(std::max(min_default_label_width, default_label_width)));
+}
 
 LayoutUnit ListBoxDefaultItemHeight(const LayoutBox& box) {
   constexpr int kDefaultPaddingBottom = 1;
@@ -903,6 +935,9 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
   if (UNLIKELY(select && select->UsesMenuList())) {
     return MenuListIntrinsicInlineSize(*select, *this);
   }
+  auto* input = DynamicTo<HTMLInputElement>(GetNode());
+  if (UNLIKELY(input && input->type() == input_type_names::kFile))
+    return FileUploadControlIntrinsicInlineSize(*input, *this);
   return kIndefiniteSize;
 }
 

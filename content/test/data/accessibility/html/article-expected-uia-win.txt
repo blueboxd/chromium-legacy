@@ -1,3 +1,4 @@
-document
-++article ControlType='UIA_GroupControlTypeId' LocalizedControlType='article'
-++++description Name='This is an article element.'
+Document
+++Group LocalizedControlType='article'
+++++Text Name='This is an article element.'
+<-- End-of-file -->

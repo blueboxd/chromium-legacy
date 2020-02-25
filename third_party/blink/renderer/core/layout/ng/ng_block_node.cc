@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
@@ -665,7 +667,10 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(box_->GetNode());
     if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
       maybe_sizes->min_size = LayoutUnit();
-    else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode())) &&
+    else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode()) ||
+                      (IsA<HTMLInputElement>(box_->GetNode()) &&
+                       To<HTMLInputElement>(box_->GetNode())->type() ==
+                           input_type_names::kFile)) &&
              Style().LogicalWidth().IsPercentOrCalc())
       maybe_sizes->min_size = LayoutUnit();
     return *maybe_sizes;

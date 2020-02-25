@@ -1,23 +1,24 @@
-document
-++list
-++++listitem
-++++++group
-++++++++description Name='• ' IsControlElement=false
-++++++description Name='tic' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='• ' IsControlElement=false
-++++++description Name='tac' IsControlElement=false
-++++listitem
-++++++group
-++++++++description Name='• ' IsControlElement=false
-++++++description Name='toe' IsControlElement=false
-++list
-++++listitem
-++++++description Name='tic' IsControlElement=false
-++++description Name=' '
-++++listitem
-++++++description Name='tac' IsControlElement=false
-++++description Name=' '
-++++listitem
-++++++description Name='toe' IsControlElement=false
+Document
+++List
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='tic' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='tac' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='toe' IsControlElement=false
+++List
+++++ListItem
+++++++Text Name='tic' IsControlElement=false
+++++Text Name=' '
+++++ListItem
+++++++Text Name='tac' IsControlElement=false
+++++Text Name=' '
+++++ListItem
+++++++Text Name='toe' IsControlElement=false
+<-- End-of-file -->

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -116,6 +115,8 @@ class AppTimeController : public SystemClockClient::Observer,
 
   void ScheduleForTimeLimitReset();
   void OnResetTimeReached();
+
+  void RestoreLastResetTime();
   void SetLastResetTime(base::Time timestamp);
 
   // Called when the system time or timezone may have changed.
@@ -129,7 +130,7 @@ class AppTimeController : public SystemClockClient::Observer,
   base::TimeDelta limits_reset_time_ = base::TimeDelta::FromHours(6);
 
   // The last time when |reset_timer_| fired.
-  base::Optional<base::Time> last_limits_reset_time_;
+  base::Time last_limits_reset_time_;
 
   // Timer scheduled for the next reset of app time limits.
   // Only set when |reset_time_| is

@@ -220,7 +220,7 @@ const base::Feature kQuickAnswersRichUi{"QuickAnswersRichUi",
 
 // ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
 // https://crbug.com/996549
-const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Release Notes on Chrome OS.
 const base::Feature kReleaseNotes{"ReleaseNotes",

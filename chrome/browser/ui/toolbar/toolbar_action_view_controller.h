@@ -88,6 +88,10 @@ class ToolbarActionViewController {
   // Returns the context menu model, or null if no context menu should be shown.
   virtual ui::MenuModel* GetContextMenu() = 0;
 
+  // Called when a context menu is shown so the controller can perform any
+  // necessary setup.
+  virtual void OnContextMenuShown() {}
+
   // Called when a context menu has closed so the controller can perform any
   // necessary cleanup.
   virtual void OnContextMenuClosed() {}

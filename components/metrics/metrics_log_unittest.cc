@@ -373,7 +373,7 @@ TEST_F(MetricsLogTest, TruncateEvents) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
 
   for (int i = 0; i < internal::kUserActionEventLimit * 2; ++i) {
-    log.RecordUserAction("BasicAction");
+    log.RecordUserAction("BasicAction", base::TimeTicks::Now());
     EXPECT_EQ(i + 1, log.uma_proto().user_action_event_size());
   }
   for (int i = 0; i < internal::kOmniboxEventLimit * 2; ++i) {

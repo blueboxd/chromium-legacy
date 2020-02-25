@@ -1,6 +1,7 @@
-document
-++group IsControlElement=false
-++++region IsControlElement=false
-++++++description IsControlElement=false
-++++++++description Name='ruby text'
-++++++description Name='ruby base'
+Document
+++Group IsControlElement=false
+++++Pane IsControlElement=false
+++++++Text IsControlElement=false
+++++++++Text Name='ruby text'
+++++++Text Name='ruby base'
+<-- End-of-file -->

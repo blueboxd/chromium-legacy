@@ -103,6 +103,7 @@ message Image {
   enum Usage {
     PRIMARY_ICON = 1;
     BADGE_ICON = 2;
+    SPLASH_ICON = 3;
   }
 
   // Image's URL.

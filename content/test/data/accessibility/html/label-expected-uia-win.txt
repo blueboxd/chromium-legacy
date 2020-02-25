@@ -1,4 +1,5 @@
-document
-++group IsControlElement=false
-++++description
-++++++description Name='Label'
+Document
+++Group IsControlElement=false
+++++Text
+++++++Text Name='Label'
+<-- End-of-file -->

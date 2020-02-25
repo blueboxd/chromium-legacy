@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -85,15 +86,15 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
       &ShellDownloadManagerDelegate::OnDownloadPathGenerated,
       weak_ptr_factory_.GetWeakPtr(), download->GetId(), std::move(*callback));
 
-  PostTask(FROM_HERE,
-           {base::ThreadPool(), base::MayBlock(),
-            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-            base::TaskPriority::USER_VISIBLE},
-           base::BindOnce(&ShellDownloadManagerDelegate::GenerateFilename,
-                          download->GetURL(), download->GetContentDisposition(),
-                          download->GetSuggestedFilename(),
-                          download->GetMimeType(), default_download_path_,
-                          std::move(filename_determined_callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&ShellDownloadManagerDelegate::GenerateFilename,
+                     download->GetURL(), download->GetContentDisposition(),
+                     download->GetSuggestedFilename(), download->GetMimeType(),
+                     default_download_path_,
+                     std::move(filename_determined_callback)));
   return true;
 }
 

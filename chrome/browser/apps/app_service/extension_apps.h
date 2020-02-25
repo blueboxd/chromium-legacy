@@ -145,6 +145,9 @@ class ExtensionApps : public apps::mojom::Publisher,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  // Function called when SystemWebAppManager::on_apps_synchronized() runs.
+  void OnSystemWebAppsInstalled();
+
   // ArcAppListPrefs::Observer overrides.
   void OnPackageInstalled(
       const arc::mojom::ArcPackageInfo& package_info) override;

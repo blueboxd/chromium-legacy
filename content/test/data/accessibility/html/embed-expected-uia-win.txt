@@ -1,3 +1,4 @@
-document
-++group IsControlElement=false
-++++document
+Document
+++Group IsControlElement=false
+++++Pane
+<-- End-of-file -->

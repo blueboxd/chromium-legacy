@@ -13,6 +13,8 @@
 
 namespace base {
 
+class TimeTicks;
+
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
 // Note: This class is NOT thread-safe.
@@ -31,7 +33,7 @@ class UserActionTester {
   typedef std::map<std::string, int> UserActionCountMap;
 
   // The callback that is notified when a user actions occurs.
-  void OnUserAction(const std::string& user_action);
+  void OnUserAction(const std::string& user_action, TimeTicks action_time);
 
   // A map that tracks the number of times a user action has occurred.
   UserActionCountMap count_map_;

@@ -25,7 +25,6 @@ struct AddToHomescreenParams {
 
   AppType app_type;
   SkBitmap primary_icon;
-  SkBitmap badge_icon;
   bool has_maskable_primary_icon = false;
   std::unique_ptr<ShortcutInfo> shortcut_info;
   WebappInstallSource install_source;

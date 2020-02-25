@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
-#include "third_party/blink/renderer/core/timing/performance_user_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
@@ -27,10 +27,49 @@ PerformanceMark::PerformanceMark(
 
 // static
 PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
-                                         const AtomicString& name,
-                                         double start_time,
-                                         const ScriptValue& detail,
+                                         const AtomicString& mark_name,
+                                         PerformanceMarkOptions* mark_options,
                                          ExceptionState& exception_state) {
+  Performance* performance = nullptr;
+  bool is_worker_global_scope = false;
+  if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
+    performance = DOMWindowPerformance::performance(*window);
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(
+                 ExecutionContext::From(script_state))) {
+    performance = WorkerGlobalScopePerformance::performance(*scope);
+    is_worker_global_scope = true;
+  }
+  DCHECK(performance);
+
+  DOMHighResTimeStamp start = 0.0;
+  ScriptValue detail = ScriptValue::CreateNull(script_state->GetIsolate());
+  if (mark_options) {
+    if (mark_options->hasStartTime()) {
+      start = mark_options->startTime();
+      if (start < 0.0) {
+        exception_state.ThrowTypeError("'" + mark_name +
+                                       "' cannot have a negative start time.");
+        return nullptr;
+      }
+    } else {
+      start = performance->now();
+    }
+
+    detail = mark_options->detail();
+  } else {
+    start = performance->now();
+  }
+
+  if (!is_worker_global_scope &&
+      PerformanceTiming::GetAttributeMapping().Contains(mark_name)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "'" + mark_name +
+            "' is part of the PerformanceTiming interface, and "
+            "cannot be used as a mark name.");
+    return nullptr;
+  }
+
   scoped_refptr<SerializedScriptValue> serialized_detail;
   if (detail.IsEmpty()) {
     serialized_detail = SerializedScriptValue::NullValue();
@@ -42,31 +81,7 @@ PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
       return nullptr;
   }
   return MakeGarbageCollected<PerformanceMark>(
-      name, start_time, std::move(serialized_detail), exception_state);
-}
-
-// static
-PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
-                                         const AtomicString& mark_name,
-                                         PerformanceMarkOptions* mark_options,
-                                         ExceptionState& exception_state) {
-  Performance* performance = nullptr;
-  if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
-    performance = DOMWindowPerformance::performance(*window);
-    DCHECK(performance);
-  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(
-                 ExecutionContext::From(script_state))) {
-    performance = WorkerGlobalScopePerformance::performance(*scope);
-    DCHECK(performance);
-  }
-
-  if (performance) {
-    return performance->GetUserTiming().CreatePerformanceMark(
-        script_state, mark_name, mark_options, exception_state);
-  }
-  exception_state.ThrowTypeError(
-      "PerformanceMark: no 'worker' or 'window' in current context.");
-  return nullptr;
+      mark_name, start, std::move(serialized_detail), exception_state);
 }
 
 AtomicString PerformanceMark::entryType() const {

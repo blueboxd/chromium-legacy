@@ -70,7 +70,7 @@ bool ChromeAppCacheService::CanCreateAppCache(
                                                       browser_context_);
 }
 
-ChromeAppCacheService::~ChromeAppCacheService() {}
+ChromeAppCacheService::~ChromeAppCacheService() = default;
 
 void ChromeAppCacheService::DeleteOnCorrectThread() const {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {

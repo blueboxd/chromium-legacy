@@ -71,7 +71,6 @@ class WebApkInstallService : public KeyedService {
                     const ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
                     bool is_primary_icon_maskable,
-                    const SkBitmap& badge_icon,
                     WebappInstallSource install_source);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to

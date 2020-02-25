@@ -172,11 +172,11 @@ class CONTENT_EXPORT AppCacheDatabase {
                      int additional_flags);
   bool FindResponseIdsForCacheAsVector(int64_t cache_id,
                                        std::vector<int64_t>* response_ids) {
-    return FindResponseIdsForCacheHelper(cache_id, response_ids, NULL);
+    return FindResponseIdsForCacheHelper(cache_id, response_ids, nullptr);
   }
   bool FindResponseIdsForCacheAsSet(int64_t cache_id,
                                     std::set<int64_t>* response_ids) {
-    return FindResponseIdsForCacheHelper(cache_id, NULL, response_ids);
+    return FindResponseIdsForCacheHelper(cache_id, nullptr, response_ids);
   }
 
   bool FindNamespacesForOrigin(const url::Origin& origin,

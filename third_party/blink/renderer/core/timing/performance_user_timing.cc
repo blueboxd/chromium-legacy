@@ -65,36 +65,7 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
     const AtomicString& mark_name,
     PerformanceMarkOptions* mark_options,
     ExceptionState& exception_state) {
-  DOMHighResTimeStamp start = 0.0;
-  if (mark_options && mark_options->hasStartTime()) {
-    start = mark_options->startTime();
-    if (start < 0.0) {
-      exception_state.ThrowTypeError("'" + mark_name +
-                                     "' cannot have a negative start time.");
-      return nullptr;
-    }
-  } else {
-    start = performance_->now();
-  }
-
-  ScriptValue detail = ScriptValue::CreateNull(script_state->GetIsolate());
-  if (mark_options)
-    detail = mark_options->detail();
-
-  bool is_worker_global_scope =
-      performance_->GetExecutionContext() &&
-      performance_->GetExecutionContext()->IsWorkerGlobalScope();
-  if (!is_worker_global_scope &&
-      PerformanceTiming::GetAttributeMapping().Contains(mark_name)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "'" + mark_name +
-            "' is part of the PerformanceTiming interface, and "
-            "cannot be used as a mark name.");
-    return nullptr;
-  }
-
-  return PerformanceMark::Create(script_state, mark_name, start, detail,
+  return PerformanceMark::Create(script_state, mark_name, mark_options,
                                  exception_state);
 }
 

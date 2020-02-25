@@ -49,12 +49,11 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBE\xBF" "CACHE MANIFEST\r",  // bad UTF-8 BOM value
   };
 
-  for (size_t i = 0; i < base::size(kBadSignatures); ++i) {
+  for (const std::string& bad_signature : kBadSignatures) {
     AppCacheManifest manifest;
-    const std::string bad = kBadSignatures[i];
-    EXPECT_FALSE(ParseManifest(url, scope, bad.c_str(), bad.length(),
-                               PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
-                               manifest));
+    EXPECT_FALSE(
+        ParseManifest(url, scope, bad_signature.c_str(), bad_signature.length(),
+                      PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   }
 
   const std::string kGoodSignatures[] = {
@@ -69,12 +68,11 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBB\xBF" "CACHE MANIFEST \r\n",   // BOM present
   };
 
-  for (size_t i = 0; i < base::size(kGoodSignatures); ++i) {
+  for (const std::string& good_signature : kGoodSignatures) {
     AppCacheManifest manifest;
-    const std::string good = kGoodSignatures[i];
-    EXPECT_TRUE(ParseManifest(url, scope, good.c_str(), good.length(),
-                              PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
-                              manifest));
+    EXPECT_TRUE(ParseManifest(
+        url, scope, good_signature.c_str(), good_signature.length(),
+        PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   }
 }
 

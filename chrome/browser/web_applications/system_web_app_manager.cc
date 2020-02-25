@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -244,6 +245,14 @@ base::Optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
   return it->second;
 }
 
+std::vector<AppId> SystemWebAppManager::GetAppIds() const {
+  std::vector<AppId> app_ids;
+  for (const auto& app_id_to_app_type : app_id_to_app_type_) {
+    app_ids.push_back(app_id_to_app_type.first);
+  }
+  return app_ids;
+}
+
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
   return app_id_to_app_type_.contains(app_id);
 }
@@ -262,6 +271,28 @@ bool SystemWebAppManager::AppShouldReceiveLaunchDirectory(
   if (it == system_app_infos_.end())
     return false;
   return it->second.include_launch_directory;
+}
+
+std::vector<std::string> SystemWebAppManager::GetAdditionalSearchTerms(
+    SystemAppType type) const {
+  auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return {};
+
+  const auto& search_terms = it->second.additional_search_terms;
+
+  std::vector<std::string> search_terms_strings;
+  std::transform(search_terms.begin(), search_terms.end(),
+                 std::back_inserter(search_terms_strings),
+                 [](int term) { return l10n_util::GetStringUTF8(term); });
+  return search_terms_strings;
+}
+
+bool SystemWebAppManager::ShouldShowInLauncher(SystemAppType type) const {
+  auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return false;
+  return it->second.show_in_launcher;
 }
 
 gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {

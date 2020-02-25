@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -356,13 +357,13 @@ bool BrowsingDataRemoverFunction::RunAsync() {
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA) {
     // If we're being asked to remove plugin data, check whether it's actually
     // supported.
-    PostTask(FROM_HERE,
-             {base::ThreadPool(), base::MayBlock(),
-              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-              base::TaskPriority::USER_VISIBLE},
-             base::BindOnce(
-                 &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
-                 this, PluginPrefs::GetForProfile(GetProfile())));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+         base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(
+            &BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported,
+            this, PluginPrefs::GetForProfile(GetProfile())));
   } else {
     StartRemoving();
   }

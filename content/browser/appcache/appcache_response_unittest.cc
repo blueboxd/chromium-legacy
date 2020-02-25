@@ -81,7 +81,7 @@ class AppCacheResponseTest : public testing::Test {
     task_environment_.reset();
   }
 
-  AppCacheResponseTest() {}
+  AppCacheResponseTest() = default;
 
   template <class Method>
   void RunTestOnIOThread(Method method) {

@@ -1103,18 +1103,32 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     gfx::Rect crop_rect =
         gfx::ToEnclosingRect(rpdq_params.backdrop_filter_bounds->rect());
     SkIRect sk_crop_rect = gfx::RectToSkIRect(crop_rect);
-    // Offsetting (0,0) does nothing to the actual image, but is the most
-    // convenient way to embed the crop rect into the filter DAG.
-    // TODO(michaelludwig) - Remove this once Skia doesn't always auto-expand
-    sk_sp<SkImageFilter> crop =
-        SkImageFilters::Offset(0.0f, 0.0f, nullptr, &sk_crop_rect);
-    backdrop_filter = SkImageFilters::Compose(
-        crop, SkImageFilters::Compose(std::move(backdrop_filter), crop));
-    // Update whether or not a post-filter clear is needed (crop didn't
-    // completely match bounds)
-    post_backdrop_filter_clear_needed |=
-        backdrop_bounds_type != gfx::RRectF::Type::kRect ||
-        gfx::RectF(crop_rect) != rpdq_params.backdrop_filter_bounds->rect();
+
+    SkIRect sk_src_rect = backdrop_filter->filterBounds(
+        sk_crop_rect, SkMatrix::I(), SkImageFilter::kReverse_MapDirection,
+        &sk_crop_rect);
+    if (sk_crop_rect == sk_src_rect) {
+      // The backdrop filter does not "move" pixels, i.e. a pixel's value only
+      // depends on its (x,y) and prior color. Avoid cropping the input in this
+      // case since composing a crop rect into the filter DAG forces Skia to
+      // map the backdrop content into the local space, which can introduce
+      // filtering artifacts: crbug.com/1044032. Instead just post-filter
+      // clearing will achieve the same cropping of the output at higher quality
+      post_backdrop_filter_clear_needed = true;
+    } else {
+      // Offsetting (0,0) does nothing to the actual image, but is the most
+      // convenient way to embed the crop rect into the filter DAG.
+      // TODO(michaelludwig) - Remove this once Skia doesn't always auto-expand
+      sk_sp<SkImageFilter> crop =
+          SkImageFilters::Offset(0.0f, 0.0f, nullptr, &sk_crop_rect);
+      backdrop_filter = SkImageFilters::Compose(
+          crop, SkImageFilters::Compose(std::move(backdrop_filter), crop));
+      // Update whether or not a post-filter clear is needed (crop didn't
+      // completely match bounds)
+      post_backdrop_filter_clear_needed |=
+          backdrop_bounds_type != gfx::RRectF::Type::kRect ||
+          gfx::RectF(crop_rect) != rpdq_params.backdrop_filter_bounds->rect();
+    }
   }
 
   SkRect bounds = gfx::RectFToSkRect(rpdq_params.bypass_clip.has_value()

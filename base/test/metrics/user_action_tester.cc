@@ -31,7 +31,8 @@ void UserActionTester::ResetCounts() {
   count_map_.clear();
 }
 
-void UserActionTester::OnUserAction(const std::string& user_action) {
+void UserActionTester::OnUserAction(const std::string& user_action,
+                                    TimeTicks action_time) {
   ++(count_map_[user_action]);
 }
 

@@ -76,8 +76,7 @@ class AddToHomescreenMediator : public AddToHomescreenDataFetcher::Observer {
                             bool is_webapk_compatible) override;
 
   void OnDataAvailable(const ShortcutInfo& info,
-                       const SkBitmap& display_icon,
-                       const SkBitmap& badge_icon) override;
+                       const SkBitmap& display_icon) override;
 
   void RecordEventForAppMenu(AddToHomescreenInstaller::Event event,
                              const AddToHomescreenParams& a2hs_params);

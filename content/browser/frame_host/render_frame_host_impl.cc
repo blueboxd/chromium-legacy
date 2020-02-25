@@ -727,6 +727,8 @@ class FileChooserImpl : public blink::mojom::FileChooser,
     std::move(callback_).Run(nullptr);
   }
 
+  void ResetProxy() { proxy_ = nullptr; }
+
  private:
   class ListenerProxy : public content::FileSelectListener {
    public:
@@ -737,6 +739,8 @@ class FileChooserImpl : public blink::mojom::FileChooser,
           << "Should call either FileSelectListener::FileSelected() or "
              "FileSelectListener::FileSelectionCanceled()";
 #endif
+      if (owner_)
+        owner_->ResetProxy();
     }
     void ResetOwner() { owner_ = nullptr; }
 

@@ -300,6 +300,13 @@ void ExtensionApps::Initialize(
       HostContentSettingsMapFactory::GetForProfile(profile_));
   app_service_ = app_service.get();
 
+  auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+  if (app_type_ == apps::mojom::AppType::kWeb && web_app_provider) {
+    web_app_provider->system_web_app_manager().on_apps_synchronized().Post(
+        FROM_HERE, base::BindOnce(&ExtensionApps::OnSystemWebAppsInstalled,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
   // Remaining initialization is only relevant to the kExtension app type.
   if (app_type_ != apps::mojom::AppType::kExtension) {
     return;
@@ -331,6 +338,24 @@ bool ExtensionApps::Accepts(const extensions::Extension* extension) {
     default:
       NOTREACHED();
       return false;
+  }
+}
+
+void ExtensionApps::OnSystemWebAppsInstalled() {
+  // This function wouldn't get called unless WebAppProvider existed.
+  const auto& system_web_app_ids = web_app::WebAppProvider::Get(profile_)
+                                       ->system_web_app_manager()
+                                       .GetAppIds();
+  for (const auto& app_id : system_web_app_ids) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+            app_id);
+
+    if (!extension || !Accepts(extension)) {
+      continue;
+    }
+
+    Publish(Convert(extension, apps::mojom::Readiness::kReady));
   }
 }
 
@@ -1032,9 +1057,17 @@ void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
       return;
     }
 
-    if (web_app_provider->system_web_app_manager().IsSystemWebApp(
-            extension->id())) {
+    const auto& system_web_app_manager =
+        web_app_provider->system_web_app_manager();
+    base::Optional<web_app::SystemAppType> system_app_type =
+        system_web_app_manager.GetSystemAppTypeForAppId(app->app_id);
+    if (system_app_type.has_value()) {
       app->show_in_management = apps::mojom::OptionalBool::kFalse;
+      app->show_in_launcher =
+          system_web_app_manager.ShouldShowInLauncher(system_app_type.value())
+              ? apps::mojom::OptionalBool::kTrue
+              : apps::mojom::OptionalBool::kFalse;
+      app->show_in_search = apps::mojom::OptionalBool::kTrue;
     }
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
@@ -1190,12 +1223,6 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     }
   }
 
-  // Extensions where |from_bookmark| is true wrap websites and use web
-  // permissions.
-  if (extension->from_bookmark()) {
-    PopulatePermissions(extension, &app->permissions);
-  }
-
   app->install_source = GetInstallSource(profile_, extension);
 
   app->is_platform_app = extension->is_platform_app()
@@ -1207,15 +1234,33 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                        : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);
 
-  // Get the intent filters for PWAs.
-  if (extension->from_bookmark()) {
-    auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+  if (!extension->from_bookmark()) {
+    return app;
+  }
 
-    if (web_app_provider) {
-      PopulateIntentFilters(
-          web_app_provider->registrar().GetAppScope(extension->id()),
-          &app->intent_filters);
-    }
+  // Do Bookmark Apps specific setup.
+
+  // Extensions where |from_bookmark| is true wrap websites and use web
+  // permissions.
+  PopulatePermissions(extension, &app->permissions);
+
+  auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+  if (!web_app_provider) {
+    return app;
+  }
+
+  PopulateIntentFilters(
+      web_app_provider->registrar().GetAppScope(extension->id()),
+      &app->intent_filters);
+
+  const auto& system_web_app_manager =
+      web_app_provider->system_web_app_manager();
+  base::Optional<web_app::SystemAppType> system_app_type =
+      system_web_app_manager.GetSystemAppTypeForAppId(app->app_id);
+  if (system_app_type.has_value()) {
+    app->additional_search_terms =
+        system_web_app_manager.GetAdditionalSearchTerms(
+            system_app_type.value());
   }
 
   return app;

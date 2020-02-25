@@ -11,7 +11,7 @@ namespace content {
 
 class AppCachePolicy {
  public:
-  AppCachePolicy() {}
+  AppCachePolicy() = default;
 
   // Called prior to loading a main resource from the appache.
   // Returns true if allowed. This is expected to return immediately
@@ -24,7 +24,7 @@ class AppCachePolicy {
                                  const GURL& first_party) = 0;
 
  protected:
-  ~AppCachePolicy() {}
+  ~AppCachePolicy() = default;
 };
 
 }  // namespace content

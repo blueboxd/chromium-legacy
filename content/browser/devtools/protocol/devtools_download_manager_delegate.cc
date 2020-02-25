@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -115,10 +116,9 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
       &DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
       base::Unretained(this), item->GetId(), std::move(*callback));
 
-  PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&DevToolsDownloadManagerDelegate::GenerateFilename,
                      item->GetURL(), item->GetContentDisposition(),

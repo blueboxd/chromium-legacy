@@ -28,11 +28,15 @@ namespace base {
 class OneShotTimer;
 }  // namespace base
 
+class PrefRegistrySimple;
+class Profile;
+
 namespace chromeos {
 namespace app_time {
 
 class AppTimeLimitsWhitelistPolicyWrapper;
 class AppTimeNotificationDelegate;
+class PersistedAppInfo;
 
 // Keeps track of app activity and time limits information.
 // Stores app activity between user session. Information about uninstalled apps
@@ -48,6 +52,7 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
     const base::Optional<AppLimit>& GetAppLimit(const AppId& app_id) const;
     base::Optional<base::TimeDelta> GetTimeLeft(const AppId& app_id) const;
+    void SaveAppActivity();
 
    private:
     AppActivityRegistry* const registry_;
@@ -75,8 +80,11 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     virtual void OnAppInstalled(const AppId& app_id) = 0;
   };
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   AppActivityRegistry(AppServiceWrapper* app_service_wrapper,
-                      AppTimeNotificationDelegate* notification_delegate);
+                      AppTimeNotificationDelegate* notification_delegate,
+                      Profile* profile);
   AppActivityRegistry(const AppActivityRegistry&) = delete;
   AppActivityRegistry& operator=(const AppActivityRegistry&) = delete;
   ~AppActivityRegistry() override;
@@ -109,6 +117,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   base::TimeDelta GetActiveTime(const AppId& app_id) const;
 
   AppState GetAppState(const AppId& app_id) const;
+
+  // Returns the vector of paused applications.
+  std::vector<PauseAppInfo> GetPausedApps(bool show_pause_dialog) const;
 
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
@@ -204,6 +215,21 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   void WebTimeLimitReached(base::Time timestamp);
 
+  // Initializes |activity_registry_| from the stored values in user pref.
+  // Installed applications, their AppStates and their running active times will
+  // be restored.
+  void InitializeRegistryFromPref();
+
+  // Updates |AppActivity::active_times_| to include the current activity up to
+  // |timestamp| then creates the most up to date instance of PersistedAppInfo.
+  PersistedAppInfo GetPersistedAppInfoForApp(const AppId& app_id,
+                                             base::Time timestamp);
+
+  // Saves app activity into user preference.
+  void SaveAppActivity();
+
+  Profile* const profile_;
+
   // Owned by AppTimeController.
   AppServiceWrapper* const app_service_wrapper_;
 
@@ -214,6 +240,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   base::ObserverList<AppStateObserver> app_state_observers_;
 
   std::map<AppId, AppDetails> activity_registry_;
+
+  // Newly installed applications which have not yet been added to the user
+  // pref.
+  std::vector<AppId> newly_installed_apps_;
 };
 
 }  // namespace app_time

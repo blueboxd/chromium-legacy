@@ -24,6 +24,14 @@ class ExtensionsContainer {
   // that relate to more than one extension.
   virtual ToolbarActionViewController* GetPoppedOutAction() const = 0;
 
+  // Called when a context menu is shown so the container can perform any
+  // necessary setup.
+  virtual void OnContextMenuShown(ToolbarActionViewController* extension) {}
+
+  // Called when a context menu is closed so the container can perform any
+  // necessary cleanup.
+  virtual void OnContextMenuClosed(ToolbarActionViewController* extension) {}
+
   // Returns true if the given |action| is visible on the toolbar.
   virtual bool IsActionVisibleOnToolbar(
       const ToolbarActionViewController* action) const = 0;

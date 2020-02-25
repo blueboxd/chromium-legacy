@@ -81,7 +81,7 @@ public class WebappSplashScreenTest {
 
     @Test
     @SmallTest
-    @Feature({"Webapps"})
+    @Feature({"StatusBar", "Webapps"})
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testThemeColorWhenNotSpecified() {

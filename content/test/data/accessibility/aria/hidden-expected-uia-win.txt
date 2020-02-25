@@ -1,3 +1,4 @@
-document
-++group Name='b'
-++group Name='c'
+Document
+++Group Name='b'
+++Group Name='c'
+<-- End-of-file -->

@@ -291,13 +291,11 @@
   {
     "name": "autofill-no-local-save-on-unmask-success",
     "owners": [ "jsaul@google.com" ],
-    // Must wait for the Autofill Auth Project to be launched.
     "expiry_milestone": 84
   },
   {
     "name": "autofill-no-local-save-on-upload-success",
     "owners": [ "jsaul@google.com", "annelim@google.com" ],
-    // Must wait for the Autofill Auth Project to be launched.
     "expiry_milestone": 84
   },
   {
@@ -1034,13 +1032,13 @@
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
-    "owners": [ "dlkumar@google.com" ],
+    "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 88
   },
   {
     "name": "enable-autofill-credit-card-authentication",
     "owners": [ "jsaul@google.com", "manasverma@google.com" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "enable-autofill-credit-card-upload",
@@ -1057,22 +1055,12 @@
   },
   {
     "name": "enable-autofill-credit-card-upload-editable-expiration-date",
-    "owners": [ "hozhng@google.com", "jsaul@google.com" ],
+    "owners": [ "jsaul@google.com" ],
     "expiry_milestone": 83
   },
   {
     "name": "enable-autofill-credit-card-upload-feedback",
     "owners": [ "siyua@chromium.org, payments-autofill-team@google.com" ],
-    "expiry_milestone": 84
-  },
-  {
-    "name": "enable-autofill-do-not-migrate-unsupported-local-cards",
-    "owners": [ "sujiezhu@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
-    "name": "enable-autofill-local-card-migration-uses-strike-system-v2",
-    "owners": [ "annelim@google.com", "jsaul@google.com" , "jiahuiguo@google.com"],
     "expiry_milestone": 84
   },
   {
@@ -1084,11 +1072,6 @@
     "name": "enable-autofill-refresh-style",
     "owners": [ "tmartino@chromium.org" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "enable-autofill-save-card-show-no-thanks",
-    "owners": ["siashah", "jsaul@google.com"],
-    "expiry_milestone": 82
   },
   {
     "name": "enable-autofill-upi-vpa",
@@ -3743,7 +3726,7 @@
   },
   {
     "name": "wallet-service-use-sandbox",
-    "owners": [ "jsaul@google.com", "jiahuiguo", "payments-autofill-team@google.com" ],
+    "owners": [ "jsaul@google.com", "payments-autofill-team@google.com" ],
     // This flag is used by testing teams to run Google Payments calls against
     // the development server environment.
     "expiry_milestone": -1

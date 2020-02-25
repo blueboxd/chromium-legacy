@@ -1,4 +1,5 @@
-document
-++group
-++++button Name='details tag' ExpandCollapse.ExpandCollapseState='Collapsed'
-++++++description Name='details tag'
+Document
+++Group
+++++Button Name='details tag' ExpandCollapse.ExpandCollapseState='Collapsed'
+++++++Text Name='details tag'
+<-- End-of-file -->

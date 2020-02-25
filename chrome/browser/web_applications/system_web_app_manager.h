@@ -76,6 +76,12 @@ struct SystemAppInfo {
   // If set, when the app is launched through the File Handling Web API, we will
   // include the file's directory in window.launchQueue as the first value.
   bool include_launch_directory = false;
+
+  // Resource Ids for additional search terms.
+  std::vector<int> additional_search_terms;
+
+  // If set to false, this app will be hidden from the Chrome OS app launcher.
+  bool show_in_launcher = true;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -127,6 +133,9 @@ class SystemWebAppManager {
   // Returns the System App Type for the given |app_id|.
   base::Optional<SystemAppType> GetSystemAppTypeForAppId(AppId app_id) const;
 
+  // Returns the App Ids for all installed System Web Apps.
+  std::vector<AppId> GetAppIds() const;
+
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
 
@@ -136,6 +145,12 @@ class SystemWebAppManager {
   // Returns whether the given System App |type| should get launch directory in
   // launch parameter.
   bool AppShouldReceiveLaunchDirectory(SystemAppType type) const;
+
+  // Returns terms to be used when searching for the app.
+  std::vector<std::string> GetAdditionalSearchTerms(SystemAppType type) const;
+
+  // Returns whether the app should be shown in the launcher.
+  bool ShouldShowInLauncher(SystemAppType type) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.

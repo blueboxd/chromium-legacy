@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_RESPONSE_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_RESPONSE_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <vector>
@@ -83,11 +84,13 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifySuggestionsAdded(const std::vector<AssistantSuggestion*>&);
 
+  struct PendingUiElement;
   class Processor;
 
   friend class base::RefCounted<AssistantResponse>;
   ~AssistantResponse();
 
+  std::deque<std::unique_ptr<PendingUiElement>> pending_ui_elements_;
   std::vector<AssistantSuggestionPtr> suggestions_;
   ProcessingState processing_state_ = ProcessingState::kUnprocessed;
   bool has_tts_ = false;
@@ -101,6 +104,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   std::unique_ptr<Processor> processor_;
 
   base::ObserverList<AssistantResponseObserver> observers_;
+
+  base::WeakPtrFactory<AssistantResponse> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantResponse);
 };

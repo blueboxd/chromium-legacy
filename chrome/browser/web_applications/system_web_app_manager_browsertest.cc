@@ -13,6 +13,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +25,8 @@
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/cpp/app_update.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -143,6 +147,13 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT, extension->location());
   }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
+      });
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
@@ -434,6 +445,53 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
       &file_removed));
   EXPECT_TRUE(file_removed);
   EXPECT_FALSE(base::PathExists(temp_file_path2));
+}
+
+class SystemWebAppManagerNotShownInLauncherTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerNotShownInLauncherTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppNotShownInLauncher();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerNotShownInLauncherTest,
+                       NotShownInLauncher) {
+  WaitForSystemAppInstallAndLaunch(GetMockAppType());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
+      });
+}
+
+class SystemWebAppManagerAdditionalSearchTermsTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerAdditionalSearchTermsTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerAdditionalSearchTermsTest,
+                       AdditionalSearchTerms) {
+  WaitForSystemAppInstallAndLaunch(GetMockAppType());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {
+        EXPECT_EQ(std::vector<std::string>({"Security"}),
+                  update.AdditionalSearchTerms());
+      });
 }
 
 INSTANTIATE_TEST_SUITE_P(

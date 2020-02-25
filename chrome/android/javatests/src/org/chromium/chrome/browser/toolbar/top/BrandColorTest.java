@@ -124,7 +124,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testNoBrandColor() {
         startMainActivityWithURL(getUrlWithBrandColor(""));
         checkForBrandColor(mDefaultColor);
@@ -136,7 +136,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testBrandColorNoAlpha() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
@@ -148,7 +148,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testImmediateColorChange() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
@@ -169,7 +169,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testBrandColorWithLoadStarted() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
@@ -188,7 +188,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testNavigatingToNewBrandColor() {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
@@ -203,7 +203,7 @@ public class BrandColorTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testNavigatingToBrandColorAndBack() {
         startMainActivityWithURL("about:blank");
         checkForBrandColor(mDefaultColor);
@@ -228,7 +228,7 @@ public class BrandColorTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableInTabbedMode
-    @Feature({"Omnibox"})
+    @Feature({"StatusBar", "Omnibox"})
     public void testBrandColorInterstitial() {
         final String brandColorUrl = getUrlWithBrandColor(BRAND_COLOR_1);
         startMainActivityWithURL(brandColorUrl);

@@ -873,6 +873,7 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
+    @Feature({"StatusBar"})
     @RetryOnFailure
     public void testToolbarColor() {
         Intent intent = createMinimalCustomTabIntent();

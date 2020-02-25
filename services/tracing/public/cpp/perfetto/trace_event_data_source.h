@@ -215,7 +215,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   // Registered as a callback to receive every action recorded using
   // base::RecordAction(), when tracing is enabled with a histogram category.
-  static void OnUserActionSampleCallback(const std::string& action);
+  static void OnUserActionSampleCallback(const std::string& action,
+                                         base::TimeTicks action_time);
 
  private:
   friend class base::NoDestructor<TraceEventDataSource>;

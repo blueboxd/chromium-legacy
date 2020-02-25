@@ -20,8 +20,6 @@ extern const base::Feature kLoadingPreconnectToRedirectTarget;
 
 extern const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork;
 
-extern const base::Feature kLoadingPredictorUseOptimizationGuide;
-
 }  // namespace features
 
 #endif  // CHROME_BROWSER_PREDICTORS_PREDICTORS_FEATURES_H_

@@ -68,6 +68,7 @@ class ExtensionActionViewController
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
+  void OnContextMenuShown() override;
   void OnContextMenuClosed() override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;

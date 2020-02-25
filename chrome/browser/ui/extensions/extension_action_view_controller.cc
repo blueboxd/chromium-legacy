@@ -219,9 +219,19 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   return context_menu_model_.get();
 }
 
+void ExtensionActionViewController::OnContextMenuShown() {
+  extensions_container_->OnContextMenuShown(this);
+}
+
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (extensions_container_->GetPoppedOutAction() == this && !IsShowingPopup())
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    extensions_container_->OnContextMenuClosed(this);
+    return;
+  }
+  if (extensions_container_->GetPoppedOutAction() == this &&
+      !view_delegate_->IsMenuRunning()) {
     extensions_container_->UndoPopOut();
+  }
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
@@ -439,7 +449,8 @@ void ExtensionActionViewController::OnPopupClosed() {
   popup_host_ = nullptr;
   extensions_container_->SetPopupOwner(nullptr);
   if (extensions_container_->GetPoppedOutAction() == this &&
-      !view_delegate_->IsMenuRunning()) {
+      (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu) ||
+       !view_delegate_->IsMenuRunning())) {
     extensions_container_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();

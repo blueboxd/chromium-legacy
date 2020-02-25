@@ -940,6 +940,14 @@ const char kNTLMShareAuthenticationEnabled[] =
 // Controlled by ParentAccessCodeConfig policy.
 const char kParentAccessCodeConfig[] = "child_user.parent_access_code.config";
 
+// List pref containing app activity and state for each application.
+const char kPerAppTimeLimitsAppActivities[] =
+    "child_user.per_app_time_limits.app_activities";
+
+// Int64 to specify the last timestamp the AppActivityRegistry was reset.
+const char kPerAppTimeLimitsLastResetTime[] =
+    "child_user.per_app_time_limits.last_reset_time";
+
 // Dictionary pref containing the per-app time limits configuration for child
 // user. Controlled by PerAppTimeLimits policy.
 const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";

@@ -37,6 +37,8 @@ class CC_PAINT_EXPORT PaintRecorder {
 
   sk_sp<PaintRecord> finishRecordingAsPicture();
 
+  bool ListHasDrawOps() const;
+
  protected:
   virtual std::unique_ptr<RecordPaintCanvas> CreateCanvas(DisplayItemList* list,
                                                           const SkRect& bounds);

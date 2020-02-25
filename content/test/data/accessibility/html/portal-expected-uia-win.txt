@@ -1,6 +1,7 @@
-document
-++group IsControlElement=false
-++++description Name='Before portal'
-++button Name='portal'
-++group IsControlElement=false
-++++description Name='After portal'
+Document
+++Group IsControlElement=false
+++++Text Name='Before portal'
+++Button Name='portal'
+++Group IsControlElement=false
+++++Text Name='After portal'
+<-- End-of-file -->

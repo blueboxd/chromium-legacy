@@ -1,7 +1,8 @@
-document
-++document
-++++document
-++++++img
-++document
-++++document
-++++++img
+Document
+++Document
+++++Document
+++++++Image
+++Document
+++++Document
+++++++Image
+<-- End-of-file -->

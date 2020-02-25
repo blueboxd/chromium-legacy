@@ -86,8 +86,8 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> propertyModels =
                 coordinator.createTopRowPropertyModels(bottomSheet, activity);
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
-        Assert.assertEquals("First property model isn't QR Code.",
-                activity.getResources().getString(R.string.qr_code_share_icon_label),
+        Assert.assertEquals("First property model isn't Copy URL.",
+                activity.getResources().getString(R.string.sharing_copy_url),
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("First property model isn't marked as first party.", true,
                 propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
@@ -96,8 +96,8 @@ public final class ShareSheetCoordinatorTest {
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("Second property model isn't marked as first party.", true,
                 propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Third property model isn't Copy URL.",
-                activity.getResources().getString(R.string.sharing_copy_url),
+        Assert.assertEquals("Third property model isn't QR Code.",
+                activity.getResources().getString(R.string.qr_code_share_icon_label),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("Third property model isn't marked as first party.", true,
                 propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
@@ -115,23 +115,23 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> propertyModels =
                 coordinator.createTopRowPropertyModels(bottomSheet, activity);
         Assert.assertEquals("Incorrect number of property models.", 4, propertyModels.size());
-        Assert.assertEquals("First property model isn't QR Code.",
-                activity.getResources().getString(R.string.qr_code_share_icon_label),
+        Assert.assertEquals("First property model isn't Screenshotz.",
+                activity.getResources().getString(R.string.sharing_screenshot),
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("First property model isn't marked as first party.", true,
                 propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Second property model isn't SendTabToSelf.",
-                activity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
+        Assert.assertEquals("Second property model isn't Copy URL.",
+                activity.getResources().getString(R.string.sharing_copy_url),
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("Second property model isn't marked as first party.", true,
                 propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Third property model isn't Copy URL.",
-                activity.getResources().getString(R.string.sharing_copy_url),
+        Assert.assertEquals("Third property model isn't SendTabToSelf.",
+                activity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("Third property model isn't marked as first party.", true,
                 propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Fourth property model isn't Screenshotz.",
-                activity.getResources().getString(R.string.sharing_screenshot),
+        Assert.assertEquals("Fourth property model isn't QR Code.",
+                activity.getResources().getString(R.string.qr_code_share_icon_label),
                 propertyModels.get(3).get(ShareSheetItemViewProperties.LABEL));
         Assert.assertEquals("Fourth property model isn't marked as first party.", true,
                 propertyModels.get(3).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));

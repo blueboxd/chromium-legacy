@@ -30,6 +30,7 @@ namespace chromeos {
 namespace app_time {
 
 class AppId;
+struct PauseAppInfo;
 
 // Wrapper around AppService.
 // Provides abstraction layer for Per-App Time Limits (PATL). Takes care of
@@ -82,14 +83,14 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   AppServiceWrapper& operator=(const AppServiceWrapper&) = delete;
   ~AppServiceWrapper() override;
 
-  // Pauses the app identified by |app_id|.
-  // Uses |daily_limit| to communicate applied time restriction to the user by
-  // showing the dialog. After this is called user will not be able to launch
-  // the app and the visual effect will be applied to the icon. |show_dialog|
-  // indicates whether the user should be notified with a dialog.
-  void PauseApp(const AppId& app_id,
-                base::TimeDelta daily_limit,
-                bool show_dialog);
+  // Pauses the app identified by |PauseAppInfo::app_id|.
+  // Uses |PauseAppInfo::daily_limit| to communicate applied time restriction to
+  // the user by showing the dialog. After this is called user will not be able
+  // to launch the app and the visual effect will be applied to the icon.
+  // |PauseAppInfo::show_pause_dialog| indicates whether the user should be
+  // notified with a dialog.
+  void PauseApp(const PauseAppInfo& pause_app);
+  void PauseApps(const std::vector<PauseAppInfo>& paused_apps);
 
   // Resets time restriction from the app identified with |app_id|. After this
   // is called user will be able to use the app again and the visual effect

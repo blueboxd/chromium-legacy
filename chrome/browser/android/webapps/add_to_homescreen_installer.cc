@@ -66,8 +66,7 @@ void AddToHomescreenInstaller::InstallWebApk(
     const AddToHomescreenParams& params) {
   WebApkInstallService::Get(web_contents->GetBrowserContext())
       ->InstallAsync(web_contents, *(params.shortcut_info), params.primary_icon,
-                     params.has_maskable_primary_icon, params.badge_icon,
-                     params.install_source);
+                     params.has_maskable_primary_icon, params.install_source);
 }
 
 // static

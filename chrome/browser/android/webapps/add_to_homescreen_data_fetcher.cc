@@ -53,7 +53,6 @@ InstallableParams ParamsToPerformManifestAndIconFetch() {
   params.valid_primary_icon = true;
   params.prefer_maskable_icon =
       ShortcutHelper::DoesAndroidSupportMaskableIcons();
-  params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
 }
@@ -254,10 +253,6 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
           data.manifest->icons, shortcut_info_.ideal_splash_image_size_in_px,
           shortcut_info_.minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);
-  if (data.badge_icon) {
-    shortcut_info_.best_badge_icon_url = data.badge_icon_url;
-    badge_icon_ = *data.badge_icon;
-  }
 
   installable_manager_->GetData(
       ParamsToPerformInstallableCheck(),
@@ -378,5 +373,6 @@ void AddToHomescreenDataFetcher::OnIconCreated(bool use_for_launcher,
     primary_icon_ = icon_for_view;
   if (is_icon_generated)
     shortcut_info_.best_primary_icon_url = GURL();
-  observer_->OnDataAvailable(shortcut_info_, icon_for_view, badge_icon_);
+
+  observer_->OnDataAvailable(shortcut_info_, icon_for_view);
 }

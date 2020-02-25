@@ -1,3 +1,4 @@
-document
-++group IsControlElement=false
-++++button Name='Button'
+Document
+++Group IsControlElement=false
+++++Button Name='Button'
+<-- End-of-file -->

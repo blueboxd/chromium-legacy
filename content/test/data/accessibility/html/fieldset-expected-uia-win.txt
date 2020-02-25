@@ -1,5 +1,6 @@
-document
-++form IsControlElement=false
-++++group Name='Browser Engines:'
-++++++description IsControlElement=false
-++++++++description Name='Browser Engines:' IsControlElement=false
+Document
+++Group IsControlElement=false
+++++Group Name='Browser Engines:'
+++++++Text IsControlElement=false
+++++++++Text Name='Browser Engines:' IsControlElement=false
+<-- End-of-file -->

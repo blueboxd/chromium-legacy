@@ -298,7 +298,7 @@ class CONTENT_EXPORT AppCacheStorage {
         delegate_references_.find(delegate);
     if (iter != delegate_references_.end())
       return iter->second;
-    return NULL;
+    return nullptr;
   }
 
   DelegateReference* GetOrCreateDelegateReference(Delegate* delegate) {

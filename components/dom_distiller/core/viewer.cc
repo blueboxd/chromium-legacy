@@ -175,7 +175,13 @@ const std::string GetErrorPageJs() {
 }
 
 const std::string GetSetTitleJs(std::string title) {
+#if defined(OS_ANDROID)
   base::Value value(title);
+#else  // !defined(OS_ANDROID)
+  std::string suffix(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_TITLE_SUFFIX));
+  base::Value value(title + " - " + suffix);
+#endif
   std::string output;
   base::JSONWriter::Write(value, &output);
   return "setTitle(" + output + ");";

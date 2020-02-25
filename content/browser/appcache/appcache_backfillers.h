@@ -16,7 +16,7 @@ namespace content {
 class AppCacheBackfillerVersion8 {
  public:
   // |db| must outlive this instance.
-  AppCacheBackfillerVersion8(sql::Database* db) : db_(db) {}
+  explicit AppCacheBackfillerVersion8(sql::Database* db) : db_(db) {}
 
   // Populates the |padding_size| column in the Caches and Entries tables.
   //
@@ -53,7 +53,7 @@ class AppCacheBackfillerVersion8 {
 class AppCacheBackfillerVersion9 {
  public:
   // |db| must outlive this instance.
-  AppCacheBackfillerVersion9(sql::Database* db) : db_(db) {}
+  explicit AppCacheBackfillerVersion9(sql::Database* db) : db_(db) {}
 
   // Populates the |manifest_parser_version| and |manifest_scope| columns in the
   // Groups table.

@@ -3150,10 +3150,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void VerifyHeadersAndDeleteUpdate(AppCacheUpdateJob* update) {
-    for (auto it = http_headers_request_test_jobs_.begin();
-         it != http_headers_request_test_jobs_.end(); ++it) {
-      it->second->Verify(it->first);
-    }
+    for (const auto& kvp : http_headers_request_test_jobs_)
+      kvp.second->Verify(kvp.first);
     delete update;
   }
 
@@ -3388,12 +3386,14 @@ class AppCacheUpdateJobTest : public testing::Test,
         std::move(response_info), kManifest1Contents);
 
     // Add all header checks from |cache_entries|.
-    for (auto it = cache_entries.begin(); it != cache_entries.end(); ++it) {
+    for (const auto& kvp : cache_entries) {
+      const GURL& cache_entry_url = kvp.first;
+      const AppCacheCacheTestHelper::CacheEntry* cache_entry = kvp.second.get();
       http_headers_request_test_jobs_.emplace(
-          it->first,
+          cache_entry_url,
           std::make_unique<HttpHeadersRequestTestJob>(
-              it->second->expect_if_modified_since,
-              it->second->expect_if_none_match, it->second->headers_allowed));
+              cache_entry->expect_if_modified_since,
+              cache_entry->expect_if_none_match, cache_entry->headers_allowed));
     }
 
     cache_helper_ = std::make_unique<AppCacheCacheTestHelper>(
@@ -4024,9 +4024,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   // has finished. Cannot verify update job internals as update is deleted.
   void VerifyExpectations() {
     RetryRequestTestJob::Verify();
-    for (auto it = http_headers_request_test_jobs_.begin();
-         it != http_headers_request_test_jobs_.end(); ++it) {
-      it->second->Verify(it->first);
+    for (auto& kvp : http_headers_request_test_jobs_) {
+      const GURL& test_job_url = kvp.first;
+      HttpHeadersRequestTestJob* test_job = kvp.second.get();
+      test_job->Verify(test_job_url);
     }
 
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
@@ -4098,9 +4099,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     }
 
     // Check expected events.
-    for (size_t i = 0; i < frontends_.size(); ++i) {
-      MockFrontend* frontend = frontends_[i].get();
-
+    for (const std::unique_ptr<MockFrontend>& frontend : frontends_) {
       MockFrontend::RaisedEvents& expected_events = frontend->expected_events_;
       MockFrontend::RaisedEvents& actual_events = frontend->raised_events_;
       ASSERT_EQ(expected_events.size(), actual_events.size());
@@ -4441,8 +4440,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   bool CheckNamespaceExists(const std::vector<AppCacheNamespace>& namespaces,
                             const AppCacheNamespace& namespace_entry) {
-    for (auto it = namespaces.begin(); it != namespaces.end(); ++it) {
-      if (*it == namespace_entry)
+    for (const AppCacheNamespace& appcache_namespace : namespaces) {
+      if (appcache_namespace == namespace_entry)
         return true;
     }
     return false;

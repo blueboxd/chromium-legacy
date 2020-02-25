@@ -197,7 +197,7 @@ base::Time AppTimeController::TestApi::GetNextResetTime() const {
 }
 
 base::Time AppTimeController::TestApi::GetLastResetTime() const {
-  return controller_->last_limits_reset_time_.value();
+  return controller_->last_limits_reset_time_;
 }
 
 AppActivityRegistry* AppTimeController::TestApi::app_registry() {
@@ -215,6 +215,7 @@ bool AppTimeController::IsAppActivityReportingEnabled() {
 
 // static
 void AppTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kPerAppTimeLimitsLastResetTime, 0);
   registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsPolicy);
   registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsWhitelistPolicy);
 }
@@ -224,7 +225,8 @@ AppTimeController::AppTimeController(Profile* profile)
       app_service_wrapper_(std::make_unique<AppServiceWrapper>(profile)),
       app_registry_(
           std::make_unique<AppActivityRegistry>(app_service_wrapper_.get(),
-                                                this)),
+                                                this,
+                                                profile)),
       web_time_activity_provider_(std::make_unique<WebTimeActivityProvider>(
           this,
           app_service_wrapper_.get())) {
@@ -233,20 +235,16 @@ AppTimeController::AppTimeController(Profile* profile)
   if (WebTimeLimitEnforcer::IsEnabled())
     web_time_enforcer_ = std::make_unique<WebTimeLimitEnforcer>(this);
 
-  app_registry_->AddAppStateObserver(this);
-
   PrefService* pref_service = profile->GetPrefs();
   RegisterProfilePrefObservers(pref_service);
+  TimeLimitsWhitelistPolicyUpdated(prefs::kPerAppTimeLimitsWhitelistPolicy);
+  TimeLimitsPolicyUpdated(prefs::kPerAppTimeLimitsPolicy);
 
-  // TODO: Update the following from user pref.instead of setting it to Now().
-  SetLastResetTime(base::Time::Now());
+  // Restore the last reset time. If reset time has have been crossed, triggers
+  // AppActivityRegistry to clear up the running active times of applications.
+  RestoreLastResetTime();
 
-  if (HasTimeCrossedResetBoundary()) {
-    OnResetTimeReached();
-  } else {
-    ScheduleForTimeLimitReset();
-  }
-
+  // Start observing system clock client and time zone settings.
   auto* system_clock_client = SystemClockClient::Get();
   // SystemClockClient may not be initialized in some tests.
   if (system_clock_client)
@@ -256,8 +254,13 @@ AppTimeController::AppTimeController(Profile* profile)
   if (time_zone_settings)
     time_zone_settings->AddObserver(this);
 
-  // Update app limits and reset time from policy.
-  TimeLimitsPolicyUpdated(prefs::kPerAppTimeLimitsPolicy);
+  // At this point application states should have been restored. Get the paused
+  // applications and notify app service. Don't show dialog for the paused apps.
+  app_service_wrapper_->PauseApps(
+      app_registry_->GetPausedApps(/* show_pause_dialog */ false));
+
+  // Start observing |app_registry_|
+  app_registry_->AddAppStateObserver(this);
 }
 
 AppTimeController::~AppTimeController() {
@@ -364,7 +367,7 @@ void AppTimeController::ShowAppTimeLimitNotification(
 void AppTimeController::OnAppLimitReached(const AppId& app_id,
                                           base::TimeDelta time_limit,
                                           bool was_active) {
-  app_service_wrapper_->PauseApp(app_id, time_limit, was_active);
+  app_service_wrapper_->PauseApp(PauseAppInfo(app_id, time_limit, was_active));
 }
 
 void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {
@@ -431,23 +434,40 @@ void AppTimeController::OnResetTimeReached() {
   ScheduleForTimeLimitReset();
 }
 
+void AppTimeController::RestoreLastResetTime() {
+  PrefService* pref_service = profile_->GetPrefs();
+  int64_t reset_time =
+      pref_service->GetInt64(prefs::kPerAppTimeLimitsLastResetTime);
+
+  if (reset_time == 0) {
+    SetLastResetTime(base::Time::Now());
+  } else {
+    last_limits_reset_time_ = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(reset_time));
+  }
+
+  if (HasTimeCrossedResetBoundary()) {
+    OnResetTimeReached();
+  } else {
+    ScheduleForTimeLimitReset();
+  }
+}
+
 void AppTimeController::SetLastResetTime(base::Time timestamp) {
   last_limits_reset_time_ = timestamp;
-  // TODO(crbug.com/1015658) : |last_limits_reset_time_| should be persisted
-  // across sessions.
+
+  PrefService* service = profile_->GetPrefs();
+  DCHECK(service);
+  service->SetInt64(prefs::kPerAppTimeLimitsLastResetTime,
+                    timestamp.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  service->CommitPendingWrite();
 }
 
 bool AppTimeController::HasTimeCrossedResetBoundary() const {
-  // last_limits_reset_time_ doesn't have a value yet. This may be because
-  // it has not yet been populated yet (it has not been restored yet).
-  if (!last_limits_reset_time_.has_value())
-    return false;
-
   // Time after system time or timezone changed.
   base::Time now = base::Time::Now();
-  base::Time last_reset = last_limits_reset_time_.value();
 
-  return now < last_reset || now >= kDay + last_reset;
+  return now < last_limits_reset_time_ || now >= kDay + last_limits_reset_time_;
 }
 
 }  // namespace app_time

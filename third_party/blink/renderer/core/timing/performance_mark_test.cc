@@ -14,26 +14,6 @@
 
 namespace blink {
 
-TEST(PerformanceMarkTest, CreateWithScriptValue) {
-  V8TestingScope scope;
-
-  ExceptionState& exception_state = scope.GetExceptionState();
-  ScriptState* script_state = scope.GetScriptState();
-  v8::Isolate* isolate = scope.GetIsolate();
-  scoped_refptr<SerializedScriptValue> payload_string =
-      SerializedScriptValue::Create(String("some-payload"));
-  ScriptValue script_value(isolate, payload_string->Deserialize(isolate));
-
-  PerformanceMark* pm = PerformanceMark::Create(script_state, "mark-name",
-                                                /*start_time=*/0.0,
-                                                script_value, exception_state);
-
-  ASSERT_EQ(pm->entryType(), performance_entry_names::kMark);
-  ASSERT_EQ(pm->EntryTypeEnum(), PerformanceEntry::EntryType::kMark);
-  ASSERT_EQ(payload_string->Deserialize(isolate),
-            pm->detail(script_state).V8Value());
-}
-
 TEST(PerformanceMarkTest, CreateWithOptions) {
   V8TestingScope scope;
 
@@ -49,7 +29,6 @@ TEST(PerformanceMarkTest, CreateWithOptions) {
 
   PerformanceMark* pm = PerformanceMark::Create(script_state, "mark-name",
                                                 options, exception_state);
-
   ASSERT_EQ(pm->entryType(), performance_entry_names::kMark);
   ASSERT_EQ(pm->EntryTypeEnum(), PerformanceEntry::EntryType::kMark);
   ASSERT_EQ(payload_string->Deserialize(isolate),

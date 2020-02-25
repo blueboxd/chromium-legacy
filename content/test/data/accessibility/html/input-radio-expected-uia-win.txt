@@ -1,13 +1,14 @@
-document
-++form IsControlElement=false
-++++radio SelectionItem.IsSelected=false
-++++description Name='Radio1'
-++++separator Name='<newline>'
-++++radio SelectionItem.IsSelected=false
-++++description Name='Radio2'
-++form IsControlElement=false
-++++radio Name='Radio3' SelectionItem.IsSelected=false
-++++radio Name='Radio4' SelectionItem.IsSelected=true
-++form IsControlElement=false
-++++radio Name='Radio5' SelectionItem.IsSelected=false
-++++radio Name='Radio6' SelectionItem.IsSelected=true
+Document
+++Group IsControlElement=false
+++++RadioButton SelectionItem.IsSelected=false
+++++Text Name='Radio1'
+++++Separator Name='<newline>'
+++++RadioButton SelectionItem.IsSelected=false
+++++Text Name='Radio2'
+++Group IsControlElement=false
+++++RadioButton Name='Radio3' SelectionItem.IsSelected=false
+++++RadioButton Name='Radio4' SelectionItem.IsSelected=true
+++Group IsControlElement=false
+++++RadioButton Name='Radio5' SelectionItem.IsSelected=false
+++++RadioButton Name='Radio6' SelectionItem.IsSelected=true
+<-- End-of-file -->

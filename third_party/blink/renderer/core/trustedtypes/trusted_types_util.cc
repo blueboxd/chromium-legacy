@@ -164,6 +164,8 @@ String GetStringFromScriptHelper(
     const char* attribute_name_for_exception,
     TrustedTypeViolationKind violation_kind,
     TrustedTypeViolationKind violation_kind_when_default_policy_failed) {
+  if (!doc)
+    return script;
   bool require_trusted_type =
       RequireTrustedTypesCheck(doc->ToExecutionContext());
   if (!require_trusted_type)

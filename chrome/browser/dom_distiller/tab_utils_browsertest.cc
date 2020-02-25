@@ -36,6 +36,11 @@ namespace {
 
 const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 const char* kOriginalArticleTitle = "Test Page Title";
+#if defined(OS_ANDROID)
+const char* kExpectedArticleTitle = "Test Page Title";
+#else
+const char* kExpectedArticleTitle = "Test Page Title - Reader Mode";
+#endif  // defined(OS_ANDROID)
 
 std::unique_ptr<content::WebContents> NewContentsWithSameParamsAs(
     content::WebContents* source_web_contents) {
@@ -160,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   EXPECT_NE(initial_web_contents, after_web_contents);
   EXPECT_TRUE(
       after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
-  EXPECT_EQ(kOriginalArticleTitle, GetPageTitle(after_web_contents));
+  EXPECT_EQ(kExpectedArticleTitle, GetPageTitle(after_web_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
@@ -188,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   // Verify the destination WebContents is showing distilled content.
   EXPECT_TRUE(destination_web_contents->GetLastCommittedURL().SchemeIs(
       kDomDistillerScheme));
-  EXPECT_EQ(kOriginalArticleTitle, GetPageTitle(destination_web_contents));
+  EXPECT_EQ(kExpectedArticleTitle, GetPageTitle(destination_web_contents));
 
   content::WebContentsDestroyedWatcher destroyed_watcher(
       destination_web_contents);

@@ -74,19 +74,41 @@ public class ShareSheetCoordinator {
     ArrayList<PropertyModel> createTopRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity) {
         ArrayList<PropertyModel> models = new ArrayList<>();
-        // QR Codes
-        PropertyModel qrcodePropertyModel = mPropertyModelBuilder.createPropertyModel(
-                AppCompatResources.getDrawable(activity, R.drawable.qr_code),
-                activity.getResources().getString(R.string.qr_code_share_icon_label),
-                (currentActivity)
-                        -> {
-                    RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
+        // ScreenShot
+        PropertyModel screenshotPropertyModel = null;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
+            screenshotPropertyModel = mPropertyModelBuilder.createPropertyModel(
+                    AppCompatResources.getDrawable(activity, R.drawable.screenshot),
+                    activity.getResources().getString(R.string.sharing_screenshot),
+                    (shareParams)
+                            -> {
+                        mBottomSheetController.hideContent(bottomSheet, true);
+                        Tab tab = mActivityTabProvider.get();
+                        ScreenshotCoordinator screenshotCoordinator =
+                                new ScreenshotCoordinator(activity, tab);
+                        screenshotCoordinator.handleScreenshot();
+                    },
+                    /*isFirstParty=*/true);
+            models.add(screenshotPropertyModel);
+        }
+
+        // Copy URL
+        PropertyModel copyPropertyModel = mPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
+                activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
-                    QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
-                    qrCodeCoordinator.show();
-                },
-                /*isFirstParty=*/true);
-        models.add(qrcodePropertyModel);
+                    Tab tab = mActivityTabProvider.get();
+                    NavigationEntry entry =
+                            tab.getWebContents().getNavigationController().getVisibleEntry();
+                    ClipboardManager clipboard =
+                            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText(entry.getTitle(), entry.getUrl());
+                    clipboard.setPrimaryClip(clip);
+                    Toast toast =
+                            Toast.makeText(activity, R.string.link_copied, Toast.LENGTH_SHORT);
+                    toast.show();
+                }, /*isFirstParty=*/true);
+        models.add(copyPropertyModel);
 
         // Send Tab To Self
         PropertyModel sttsPropertyModel =
@@ -110,43 +132,18 @@ public class ShareSheetCoordinator {
                                 /*isFirstParty=*/true);
         models.add(sttsPropertyModel);
 
-        // Copy URL
-        PropertyModel copyPropertyModel = mPropertyModelBuilder.createPropertyModel(
-                AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
-                activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
-                    RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
+        // QR Codes
+        PropertyModel qrcodePropertyModel = mPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(activity, R.drawable.qr_code),
+                activity.getResources().getString(R.string.qr_code_share_icon_label),
+                (currentActivity)
+                        -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
-                    Tab tab = mActivityTabProvider.get();
-                    NavigationEntry entry =
-                            tab.getWebContents().getNavigationController().getVisibleEntry();
-                    ClipboardManager clipboard =
-                            (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText(entry.getTitle(), entry.getUrl());
-                    clipboard.setPrimaryClip(clip);
-                    Toast toast =
-                            Toast.makeText(activity, R.string.link_copied, Toast.LENGTH_SHORT);
-                    toast.show();
-                }, /*isFirstParty=*/true);
-        models.add(copyPropertyModel);
-
-         // ScreenShot
-        PropertyModel screenshotPropertyModel = null;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
-            screenshotPropertyModel = mPropertyModelBuilder.createPropertyModel(
-                    AppCompatResources.getDrawable(activity, R.drawable.screenshot),
-                    activity.getResources().getString(R.string.sharing_screenshot),
-                    (shareParams)
-                            -> {
-                        RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
-                        mBottomSheetController.hideContent(bottomSheet, true);
-                        Tab tab = mActivityTabProvider.get();
-                        ScreenshotCoordinator screenshotCoordinator =
-                                new ScreenshotCoordinator(activity, tab);
-                        screenshotCoordinator.handleScreenshot();
-                    },
-                    /*isFirstParty=*/true);
-            models.add(screenshotPropertyModel);
-        }
+                    QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
+                    qrCodeCoordinator.show();
+                },
+                /*isFirstParty=*/true);
+        models.add(qrcodePropertyModel);
 
         return models;
     }

@@ -37,7 +37,7 @@ namespace content {
 // test the AppCache code in that mode.
 class AppCacheNetworkServiceBrowserTest : public ContentBrowserTest {
  public:
-  AppCacheNetworkServiceBrowserTest() {}
+  AppCacheNetworkServiceBrowserTest() = default;
 
   ~AppCacheNetworkServiceBrowserTest() override = default;
 

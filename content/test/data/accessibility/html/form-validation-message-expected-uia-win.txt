@@ -1,6 +1,7 @@
-document
-++form IsControlElement=false
-++++description
-++++++description Name='Pet name:'
-++++textbox Name='Pet name:' IsRequiredForForm=true
-++alert Name='Please enter pet name'
+Document
+++Group IsControlElement=false
+++++Text
+++++++Text Name='Pet name:'
+++++Edit Name='Pet name:' IsRequiredForForm=true
+++Text Name='Please enter pet name'
+<-- End-of-file -->

@@ -17,8 +17,8 @@ IN_PROC_BROWSER_TEST_F(DiscoverModuleLaunchHelpAppTest, ShowHelpTab) {
 
   base::RunLoop run_loop;
 
-  base::ActionCallback on_user_action =
-      base::BindLambdaForTesting([&](const std::string& action) {
+  base::ActionCallback on_user_action = base::BindLambdaForTesting(
+      [&](const std::string& action, base::TimeTicks action_time) {
         if (action == "ShowHelpTab")
           run_loop.Quit();
       });

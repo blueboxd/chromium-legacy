@@ -223,7 +223,7 @@ class AppCacheStorageImplTest : public testing::Test {
     bool async_ = false;
 
    protected:
-    ~MockQuotaManagerProxy() override {}
+    ~MockQuotaManagerProxy() override = default;
   };
 
   template <class Method>

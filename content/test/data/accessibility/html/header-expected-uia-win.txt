@@ -1,3 +1,4 @@
-document
-++banner LocalizedControlType='header'
-++++description Name='Chromium Browser'
+Document
+++Group LocalizedControlType='header'
+++++Text Name='Chromium Browser'
+<-- End-of-file -->

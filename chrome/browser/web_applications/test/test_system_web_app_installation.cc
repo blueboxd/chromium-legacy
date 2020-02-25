@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
 
 namespace web_app {
@@ -84,6 +86,24 @@ TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory() {
       SystemAppType::MEDIA, media_system_app_info));
 }
 
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppNotShownInLauncher() {
+  SystemAppInfo app_info("Test", GURL("chrome://test-system-app/pwa.html"));
+  app_info.show_in_launcher = false;
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS, std::move(app_info)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms() {
+  SystemAppInfo app_info("Test", GURL("chrome://test-system-app/pwa.html"));
+  app_info.additional_search_terms = {IDS_SETTINGS_SECURITY};
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS, std::move(app_info)));
+}
+
 std::unique_ptr<KeyedService>
 TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
                                                    Profile* profile) {
@@ -101,7 +121,12 @@ void TestSystemWebAppInstallation::WaitForAppInstall() {
   WebAppProvider::Get(profile_)
       ->system_web_app_manager()
       .on_apps_synchronized()
-      .Post(FROM_HERE, run_loop.QuitClosure());
+      .Post(FROM_HERE, base::BindLambdaForTesting([&]() {
+              // Wait one execution loop for on_apps_synchronized() to be
+              // called on all listeners.
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE, run_loop.QuitClosure());
+            }));
   run_loop.Run();
 }
 

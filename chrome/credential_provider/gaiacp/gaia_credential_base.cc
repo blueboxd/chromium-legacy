@@ -2230,17 +2230,34 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
     }
   }
 
+  // Validates the authenticated user to either login to an existing user
+  // profile or fall back to creation of a new user profile. Below are few
+  // workflows.
+  //
+  // 1.) Add user flow with no existing association, found_sid should be empty,
+  //     falls through account creation
+  // 2.) Reauth user flow with no existing association, found_sid should be
+  //     empty, login attempt fails.
+  // 3.) Add user flow with existing association, found_sid exists,
+  //     logs into existing Windows account.
+  // 4.) Reauth user flow with existing association, found_sid exists,
+  //     logs into existing Windows account if found_sid matches reauth user
+  //     sid.
+  // 5.) Add user flow with cloud association, found_sid exists,
+  //     logs into existing account.
+  // 6.) Add/Reauth user flow with cloud association, found_sid exists,
+  //     logs into existing account if found_sid matches reauth user sid.
+  hr =
+      ValidateExistingUser(found_username, found_domain, found_sid, error_text);
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
+    return hr;
+  }
+
   // If an existing user associated to the gaia id or email address was found,
   // make sure that it is valid for this credential.
   if (found_sid[0]) {
-    hr = ValidateExistingUser(found_username, found_domain, found_sid,
-                              error_text);
-
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
-      return hr;
-    }
-
     // Update the name on the OS account if authenticated user has a different
     // name.
     base::string16 os_account_fullname;

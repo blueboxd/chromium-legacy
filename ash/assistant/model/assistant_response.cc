@@ -10,9 +10,24 @@
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
+
+// AssistantResponse::PendingUiElement -----------------------------------------
+
+struct AssistantResponse::PendingUiElement {
+ public:
+  PendingUiElement() = default;
+  ~PendingUiElement() = default;
+
+  PendingUiElement(const PendingUiElement&) = delete;
+  PendingUiElement& operator=(const PendingUiElement&) = delete;
+
+  std::unique_ptr<AssistantUiElement> ui_element;
+  bool is_processing = false;
+};
 
 // AssistantResponse::Processor ------------------------------------------------
 
@@ -105,8 +120,44 @@ void AssistantResponse::RemoveObserver(AssistantResponseObserver* observer) {
 
 void AssistantResponse::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
-  ui_elements_.push_back(std::move(ui_element));
-  NotifyUiElementAdded(ui_elements_.back().get());
+  // In processing v1, UI elements are immediately added to the response.
+  if (!chromeos::assistant::features::IsResponseProcessingV2Enabled()) {
+    ui_elements_.push_back(std::move(ui_element));
+    NotifyUiElementAdded(ui_elements_.back().get());
+    return;
+  }
+
+  // In processing v2, UI elements are first cached in a pending state...
+  auto pending_ui_element = std::make_unique<PendingUiElement>();
+  pending_ui_element->ui_element = std::move(ui_element);
+  pending_ui_element->is_processing = true;
+  pending_ui_elements_.push_back(std::move(pending_ui_element));
+
+  // ...while we perform any pre-processing necessary prior to rendering.
+  pending_ui_elements_.back()->ui_element->Process(base::BindOnce(
+      [](const base::WeakPtr<AssistantResponse>& self,
+         PendingUiElement* pending_ui_element) {
+        if (!self)
+          return;
+
+        // Indicate that |pending_ui_element| has finished processing.
+        pending_ui_element->is_processing = false;
+
+        // Add any UI elements that are ready for rendering to the response.
+        // Note that this may or may not include the |pending_ui_element| which
+        // just finished processing as we are required to add renderable UI
+        // elements to the response in the same order that they were initially
+        // pended to avoid inadvertently shuffling the response.
+        while (!self->pending_ui_elements_.empty() &&
+               !self->pending_ui_elements_.front()->is_processing) {
+          self->ui_elements_.push_back(
+              std::move(self->pending_ui_elements_.front()->ui_element));
+          self->pending_ui_elements_.pop_front();
+          self->NotifyUiElementAdded(self->ui_elements_.back().get());
+        }
+      },
+      weak_factory_.GetWeakPtr(),
+      base::Unretained(pending_ui_elements_.back().get())));
 }
 
 const std::vector<std::unique_ptr<AssistantUiElement>>&

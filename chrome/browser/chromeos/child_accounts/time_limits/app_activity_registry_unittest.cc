@@ -17,9 +17,12 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_types.h"
@@ -68,26 +71,37 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   void SetAppLimit(const AppId& app_id,
                    const base::Optional<AppLimit>& app_limit);
 
-  AppActivityRegistry& registry() { return registry_; }
-  AppActivityRegistry::TestApi& registry_test() { return registry_test_; }
+  void ReInitializeRegistry();
+
+  AppActivityRegistry& registry() {
+    EXPECT_TRUE(!!registry_.get());
+    return *registry_;
+  }
+  AppActivityRegistry::TestApi& registry_test() {
+    EXPECT_TRUE(registry_test_.get());
+    return *registry_test_;
+  }
 
   base::test::TaskEnvironment& task_environment() { return task_environment_; }
   AppTimeNotificationDelegateMock& notification_delegate_mock() {
     return notification_delegate_mock_;
   }
+  Profile& profile() { return profile_; }
 
  private:
   TestingProfile profile_;
   AppTimeNotificationDelegateMock notification_delegate_mock_;
   AppServiceWrapper wrapper_{&profile_};
-  AppActivityRegistry registry_{&wrapper_, &notification_delegate_mock_};
-  AppActivityRegistry::TestApi registry_test_{&registry_};
+  std::unique_ptr<AppActivityRegistry> registry_;
+  std::unique_ptr<AppActivityRegistry::TestApi> registry_test_;
 
   std::map<AppId, std::vector<std::unique_ptr<aura::Window>>> windows_;
 };
 
 void AppActivityRegistryTest::SetUp() {
   ChromeViewsTestBase::SetUp();
+  ReInitializeRegistry();
+
   registry().OnAppInstalled(GetChromeAppId());
   registry().OnAppInstalled(kApp1);
   registry().OnAppInstalled(kApp2);
@@ -109,8 +123,16 @@ aura::Window* AppActivityRegistryTest::CreateWindowForApp(const AppId& app_id) {
 void AppActivityRegistryTest::SetAppLimit(
     const AppId& app_id,
     const base::Optional<AppLimit>& app_limit) {
-  registry_.SetAppLimit(app_id, app_limit);
+  registry().SetAppLimit(app_id, app_limit);
   task_environment_.RunUntilIdle();
+}
+
+void AppActivityRegistryTest::ReInitializeRegistry() {
+  registry_ = std::make_unique<AppActivityRegistry>(
+      &wrapper_, &notification_delegate_mock_, &profile_);
+
+  registry_test_ =
+      std::make_unique<AppActivityRegistry::TestApi>(registry_.get());
 }
 
 TEST_F(AppActivityRegistryTest, RunningActiveTimeCheck) {
@@ -575,6 +597,78 @@ TEST_F(AppActivityRegistryTest, WhitelistedAppsNoLimits) {
             limit.daily_limit());
 
   EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
+}
+
+TEST_F(AppActivityRegistryTest, RestoredApplicationInformation) {
+  auto* app1_window = CreateWindowForApp(kApp1);
+  base::TimeDelta active_time = base::TimeDelta::FromMinutes(30);
+
+  const AppLimit limit(AppRestriction::kTimeLimit, active_time,
+                       base::Time::Now());
+  SetAppLimit(kApp1, limit);
+
+  base::Time app1_start_time_1 = base::Time::Now();
+  registry().OnAppActive(kApp1, app1_window, app1_start_time_1);
+  task_environment().FastForwardBy(active_time / 2);
+
+  // Save app activity.
+  registry_test().SaveAppActivity();
+
+  base::Time app1_inactive_time_1 = base::Time::Now();
+  registry().OnAppInactive(kApp1, app1_window, app1_inactive_time_1);
+
+  // App1 is inactive for 5 minutes.
+  task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
+
+  base::Time app1_start_time_2 = base::Time::Now();
+  registry().OnAppActive(kApp1, app1_window, app1_start_time_2);
+  task_environment().FastForwardBy(active_time / 2);
+
+  // Time limit is reached. App becomes inactive.
+  EXPECT_FALSE(registry().IsAppActive(kApp1));
+  base::Time app1_inactive_time_2 = base::Time::Now();
+
+  // Save app activity.
+  registry_test().SaveAppActivity();
+
+  // Now let's recreate AppActivityRegistry. Its state should be restored.
+  ReInitializeRegistry();
+
+  EXPECT_TRUE(registry().IsAppInstalled(kApp1));
+  EXPECT_TRUE(registry().IsAppInstalled(kApp2));
+  EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
+  EXPECT_TRUE(registry().IsAppAvailable(kApp2));
+  EXPECT_EQ(registry().GetActiveTime(kApp1), active_time);
+
+  // Now let's test that the app activity are stored appropriately.
+  const base::Value* value =
+      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+
+  const std::vector<PersistedAppInfo> app_infos =
+      PersistedAppInfo::PersistedAppInfosFromList(
+          value,
+          /* include_app_activity_array */ true);
+
+  // 3 applications. kApp1, kApp2 and Chrome browser.
+  EXPECT_TRUE(app_infos.size() == 3);
+  std::vector<AppActivity::ActiveTime> app1_times = {{
+      AppActivity::ActiveTime(app1_start_time_1, app1_inactive_time_1),
+      AppActivity::ActiveTime(app1_start_time_2, app1_inactive_time_2),
+  }};
+
+  for (const auto& app_info : app_infos) {
+    if (app_info.app_id() == kApp1) {
+      const std::vector<AppActivity::ActiveTime> active_time =
+          app_info.active_times();
+      EXPECT_EQ(app1_times.size(), active_time.size());
+      for (size_t i = 0; i < app1_times.size(); i++) {
+        EXPECT_EQ(app1_times[i], active_time[i]);
+      }
+
+    } else {
+      EXPECT_TRUE(app_info.active_times().size() == 0);
+    }
+  }
 }
 
 }  // namespace app_time

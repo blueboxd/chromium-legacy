@@ -610,6 +610,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return prerender_link_manager;
   }
 
+  // Synchronization note: The IPCs used to communicate DOM events back to the
+  // referring web page (see blink::mojom::PrerenderHandleClient) may race w/
+  // the IPCs used here to inject script. The WaitFor* variants should be used
+  // when an event was expected to happen or to happen soon.
+
   int GetPrerenderEventCount(int index, const std::string& type) const {
     int event_count;
     std::string expression = base::StringPrintf(
@@ -630,10 +635,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return GetPrerenderEventCount(index, "webkitprerenderload");
   }
 
-  int GetPrerenderDomContentLoadedEventCountForLinkNumber(int index) const {
-    return GetPrerenderEventCount(index, "webkitprerenderdomcontentloaded");
-  }
-
   bool DidReceivePrerenderStopEventForLinkNumber(int index) const {
     return GetPrerenderEventCount(index, "webkitprerenderstop") > 0;
   }
@@ -651,6 +652,14 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     CHECK(content::ExecuteScriptAndExtractInt(GetActiveWebContents(),
                                               expression, &dummy));
     CHECK_EQ(0, dummy);
+  }
+
+  void WaitForPrerenderStartEventForLinkNumber(int index) const {
+    WaitForPrerenderEventCount(index, "webkitprerenderstart", 1);
+  }
+
+  void WaitForPrerenderStopEventForLinkNumber(int index) const {
+    WaitForPrerenderEventCount(index, "webkitprerenderstart", 1);
   }
 
   bool HadPrerenderEventErrors() const {
@@ -753,17 +762,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return &clock_;
   }
 
-  void SetMidLoadClockAdvance(base::SimpleTestTickClock* clock,
-                              base::TimeDelta delta) {
-    mid_load_clock_ = clock;
-    mid_load_clock_tick_advance_ = delta;
-  }
-
-  void ClearMidLoadClock() {
-    mid_load_clock_tick_advance_ = base::TimeDelta();
-    mid_load_clock_ = nullptr;
-  }
-
   // Makes |url| never respond on the first load, and then with the contents of
   // |file| afterwards. When the first load has been scheduled, runs
   // |callback_io| on the IO thread.
@@ -813,9 +811,12 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         NavigateWithPrerenders(loader_url, expected_final_status_queue);
     prerenders[0]->WaitForLoads(expected_number_of_loads);
 
-    if (!mid_load_clock_tick_advance_.is_zero()) {
-      EXPECT_TRUE(mid_load_clock_);
-      mid_load_clock_->Advance(mid_load_clock_tick_advance_);
+    // Ensure that the referring page receives the right start and load events.
+    WaitForPrerenderStartEventForLinkNumber(0);
+    if (check_load_events_) {
+      EXPECT_EQ(expected_number_of_loads, prerenders[0]->number_of_loads());
+      WaitForPrerenderEventCount(0, "webkitprerenderload",
+                                 expected_number_of_loads);
     }
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
@@ -823,7 +824,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
       // The prerender will abort on its own. Assert it does so correctly.
       prerenders[0]->WaitForStop();
       EXPECT_FALSE(prerenders[0]->contents());
-      EXPECT_TRUE(DidReceivePrerenderStopEventForLinkNumber(0));
+      WaitForPrerenderStopEventForLinkNumber(0);
     } else {
       // Otherwise, check that it prerendered correctly.
       TestPrerenderContents* prerender_contents = prerenders[0]->contents();
@@ -837,13 +838,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
       }
     }
 
-    // Test that the referring page received the right start and load events.
-    EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
-    if (check_load_events_) {
-      EXPECT_EQ(expected_number_of_loads, prerenders[0]->number_of_loads());
-      EXPECT_EQ(expected_number_of_loads,
-                GetPrerenderLoadEventCountForLinkNumber(0));
-    }
+    // Test for proper event ordering.
     EXPECT_FALSE(HadPrerenderEventErrors());
 
     return prerenders;
@@ -913,8 +908,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::string loader_path_;
   std::string loader_query_;
   base::test::ScopedFeatureList feature_list_;
-  base::TimeDelta mid_load_clock_tick_advance_;
-  base::SimpleTestTickClock* mid_load_clock_;
   std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
 
@@ -971,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   RemoveLinkElement(0);
   prerender->WaitForStop();
 
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
   EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
@@ -988,20 +981,21 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   set_loader_query("links_to_insert=2");
   std::unique_ptr<TestPrerender> prerender = PrerenderTestURL(
       "/prerender/prerender_page.html", FINAL_STATUS_CANCELLED, 1);
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
 
   RemoveLinkElement(0);
   RemoveLinkElement(1);
   prerender->WaitForStop();
 
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
   EXPECT_FALSE(HadPrerenderEventErrors());
+
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
   // calls did a thread/process hop to the renderer which insured pending
   // renderer events have arrived.
@@ -1020,8 +1014,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Add a second prerender for the same link. It reuses the prerender, so only
   // the start event fires here.
   AddPrerender(url, 1);
-  WaitForPrerenderEventCount(1, "webkitprerenderstart", 1);
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_EQ(0, GetPrerenderLoadEventCountForLinkNumber(1));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
 
@@ -1029,9 +1022,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   RemoveLinkElement(1);
   prerender->WaitForStop();
 
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
   EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
@@ -1046,15 +1039,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
   set_loader_query("links_to_insert=2");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
 
   RemoveLinkElement(0);
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(1));
+  WaitForPrerenderStartEventForLinkNumber(1);
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(1));
   EXPECT_FALSE(HadPrerenderEventErrors());
   // IsEmptyPrerenderLinkManager() is not racy because the earlier DidReceive*
@@ -1528,10 +1521,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
   PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
 }
 
-// Flaky on multiple platforms, http://crbug.com/1050143
 // Ensures that we do not prerender pages which have a malware iframe.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderSafeBrowsingIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
   GURL iframe_url = embedded_test_server()->GetURL(
       "/prerender/prerender_embedded_content.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
@@ -1608,8 +1599,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
   GetPrerenderManager()->CancelAllPrerenders();
   prerender->WaitForStop();
 
-  EXPECT_TRUE(DidReceivePrerenderStartEventForLinkNumber(0));
-  EXPECT_TRUE(DidReceivePrerenderStopEventForLinkNumber(0));
+  WaitForPrerenderStartEventForLinkNumber(0);
+  WaitForPrerenderStopEventForLinkNumber(0);
   EXPECT_FALSE(HadPrerenderEventErrors());
 }
 
@@ -1756,10 +1747,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 // Checks that non-http/https main page redirects cancel the prerender.
-// Disabled for flakes: crbug.com/1050143.
-IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest,
-    DISABLED_PrerenderCancelMainFrameRedirectUnsupportedScheme) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCancelMainFrameRedirectUnsupportedScheme) {
   // Disable load event checks because they race with cancellation.
   DisableLoadEventCheck();
   GURL url = embedded_test_server()->GetURL(

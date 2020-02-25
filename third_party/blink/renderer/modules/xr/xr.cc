@@ -425,6 +425,8 @@ void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
       XRSessionFeature::REF_SPACE_BOUNDED_FLOOR, session);
   auto feature_request_unbounded =
       GetFeatureRequestStatus(XRSessionFeature::REF_SPACE_UNBOUNDED, session);
+  auto feature_request_dom_overlay =
+      GetFeatureRequestStatus(XRSessionFeature::DOM_OVERLAY, session);
 
   ukm::builders::XR_WebXR_SessionRequest(ukm_source_id_)
       .SetMode(static_cast<int64_t>(mode_))
@@ -436,6 +438,15 @@ void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
           static_cast<int64_t>(feature_request_bounded_floor))
       .SetFeature_Unbounded(static_cast<int64_t>(feature_request_unbounded))
       .Record(doc->UkmRecorder());
+
+  // If the session was successfully created and DOM overlay was requested,
+  // count this as a use of the DOM overlay feature.
+  if (session && status == SessionRequestStatus::kSuccess &&
+      feature_request_dom_overlay !=
+          device::mojom::XRSessionFeatureRequestStatus::kNotRequested) {
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kXRDOMOverlay);
+  }
 
   if (session && metrics_recorder) {
     mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder(

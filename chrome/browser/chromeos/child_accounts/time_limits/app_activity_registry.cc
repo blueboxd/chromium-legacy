@@ -8,14 +8,22 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace chromeos {
 namespace app_time {
@@ -85,6 +93,10 @@ base::Optional<base::TimeDelta> AppActivityRegistry::TestApi::GetTimeLeft(
   return registry_->GetTimeLeftForApp(app_id);
 }
 
+void AppActivityRegistry::TestApi::SaveAppActivity() {
+  registry_->SaveAppActivity();
+}
+
 AppActivityRegistry::AppDetails::AppDetails() = default;
 
 AppActivityRegistry::AppDetails::AppDetails(const AppActivity& activity)
@@ -128,14 +140,24 @@ bool AppActivityRegistry::AppDetails::IsLimitEqual(
   return false;
 }
 
+// static
+void AppActivityRegistry::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kPerAppTimeLimitsAppActivities);
+}
+
 AppActivityRegistry::AppActivityRegistry(
     AppServiceWrapper* app_service_wrapper,
-    AppTimeNotificationDelegate* notification_delegate)
-    : app_service_wrapper_(app_service_wrapper),
+    AppTimeNotificationDelegate* notification_delegate,
+    Profile* profile)
+    : profile_(profile),
+      app_service_wrapper_(app_service_wrapper),
       notification_delegate_(notification_delegate) {
   DCHECK(app_service_wrapper_);
   DCHECK(notification_delegate_);
-  // TODO(agawronska): Read stored data.
+  DCHECK(profile_);
+
+  InitializeRegistryFromPref();
+
   app_service_wrapper_->AddObserver(this);
 }
 
@@ -267,6 +289,23 @@ base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
 AppState AppActivityRegistry::GetAppState(const AppId& app_id) const {
   DCHECK(base::Contains(activity_registry_, app_id));
   return activity_registry_.at(app_id).activity.app_state();
+}
+
+std::vector<PauseAppInfo> AppActivityRegistry::GetPausedApps(
+    bool show_pause_dialog) const {
+  std::vector<PauseAppInfo> paused_apps;
+  for (const auto& info : activity_registry_) {
+    const AppId& app_id = info.first;
+    const AppDetails& details = info.second;
+    if (GetAppState(app_id) == AppState::kLimitReached) {
+      DCHECK(details.limit.has_value());
+      DCHECK(details.limit->daily_limit().has_value());
+      paused_apps.push_back(PauseAppInfo(
+          app_id, details.limit->daily_limit().value(), show_pause_dialog));
+    }
+  }
+
+  return paused_apps;
 }
 
 AppActivityReportInterface::ReportParams
@@ -472,6 +511,7 @@ void AppActivityRegistry::OnResetTimeReached(base::Time timestamp) {
 
 void AppActivityRegistry::Add(const AppId& app_id) {
   activity_registry_[app_id].activity = AppActivity(AppState::kAvailable);
+  newly_installed_apps_.push_back(app_id);
   for (auto& observer : app_state_observers_)
     observer.OnAppInstalled(app_id);
 }
@@ -734,6 +774,83 @@ void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
 
     SetAppState(app_id, AppState::kLimitReached);
   }
+}
+
+void AppActivityRegistry::InitializeRegistryFromPref() {
+  PrefService* pref_service = profile_->GetPrefs();
+  const base::Value* value =
+      pref_service->GetList(prefs::kPerAppTimeLimitsAppActivities);
+  DCHECK(value);
+
+  const std::vector<PersistedAppInfo> applications_info =
+      PersistedAppInfo::PersistedAppInfosFromList(
+          value,
+          /* include_app_activity_array */ false);
+
+  for (const auto& app_info : applications_info) {
+    DCHECK(!base::Contains(activity_registry_, app_info.app_id()));
+
+    // Don't restore uninstalled application's data.
+    if (app_info.app_state() == AppState::kUninstalled)
+      continue;
+
+    activity_registry_[app_info.app_id()].activity =
+        AppActivity(app_info.app_state(), app_info.active_running_time());
+  }
+}
+
+PersistedAppInfo AppActivityRegistry::GetPersistedAppInfoForApp(
+    const AppId& app_id,
+    base::Time timestamp) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+
+  AppDetails& details = activity_registry_.at(app_id);
+
+  // Updates |AppActivity::active_times_| to include the current activity up to
+  // |timestamp|.
+  details.activity.CaptureOngoingActivity(timestamp);
+
+  return PersistedAppInfo(app_id, details.activity.app_state(),
+                          details.activity.RunningActiveTime(),
+                          details.activity.TakeActiveTimes());
+}
+
+void AppActivityRegistry::SaveAppActivity() {
+  {
+    ListPrefUpdate update(profile_->GetPrefs(),
+                          prefs::kPerAppTimeLimitsAppActivities);
+    base::ListValue* list_value = update.Get();
+
+    const base::Time now = base::Time::Now();
+
+    base::Value::ListView list_view = list_value->GetList();
+    for (base::Value& entry : list_view) {
+      base::Optional<AppId> app_id = policy::AppIdFromAppInfoDict(entry);
+      DCHECK(app_id.has_value());
+
+      if (!base::Contains(activity_registry_, app_id.value())) {
+        base::Optional<AppState> state =
+            PersistedAppInfo::GetAppStateFromDict(&entry);
+        DCHECK(state.has_value() && state.value() == AppState::kUninstalled);
+        continue;
+      }
+
+      const PersistedAppInfo info =
+          GetPersistedAppInfoForApp(app_id.value(), now);
+      info.UpdateAppActivityPreference(&entry);
+    }
+
+    for (const AppId& app_id : newly_installed_apps_) {
+      const PersistedAppInfo info = GetPersistedAppInfoForApp(app_id, now);
+      base::Value value(base::Value::Type::DICTIONARY);
+      info.UpdateAppActivityPreference(&value);
+      list_value->Append(std::move(value));
+    }
+    newly_installed_apps_.clear();
+  }
+
+  // Ensure that the app activity is persisted.
+  profile_->GetPrefs()->CommitPendingWrite();
 }
 
 }  // namespace app_time

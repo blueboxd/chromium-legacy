@@ -59,6 +59,11 @@ class ManifestPermission {
   virtual std::unique_ptr<ManifestPermission> Intersect(
       const ManifestPermission* rhs) const = 0;
 
+  // Returns true if one of the permissions should trigger a permission message
+  // in the management page.  If the permission should trigger a warning message
+  // in chrome://management, set this function to return true.
+  virtual bool RequiresManagementUIWarning() const = 0;
+
   // Returns true if |rhs| is a subset of this.
   bool Contains(const ManifestPermission* rhs) const;
 

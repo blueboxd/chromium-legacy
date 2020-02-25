@@ -73,6 +73,10 @@ String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
                                                  const ExecutionContext*,
                                                  ExceptionState&);
 
+String CORE_EXPORT GetStringFromTrustedScriptURL(const String&,
+                                                 const ExecutionContext*,
+                                                 ExceptionState&);
+
 // Functionally equivalent to GetStringFromTrustedScript(const String&, ...),
 // but with setup & error handling suitable for the asynchronous execution
 // cases.

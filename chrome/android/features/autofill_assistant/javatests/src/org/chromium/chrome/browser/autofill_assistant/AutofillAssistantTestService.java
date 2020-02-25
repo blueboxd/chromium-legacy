@@ -44,7 +44,8 @@ public class AutofillAssistantTestService
                 (ClientSettingsProto) ClientSettingsProto.newBuilder()
                         .setIntegrationTestSettings(
                                 ClientSettingsProto.IntegrationTestSettings.newBuilder()
-                                        .setDisableHeaderAnimations(true))
+                                        .setDisableHeaderAnimations(true)
+                                        .setDisableCarouselChangeAnimations(true))
                         .build());
     }
 

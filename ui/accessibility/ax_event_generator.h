@@ -6,20 +6,15 @@
 #define UI_ACCESSIBILITY_AX_EVENT_GENERATOR_H_
 
 #include <map>
-#include <memory>
 #include <ostream>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "ui/accessibility/ax_export.h"
-#include "ui/accessibility/ax_live_region_tracker.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_observer.h"
 
 namespace ui {
-
-class AXLiveRegionTracker;
 
 // Subclass of AXTreeObserver that automatically generates AXEvents to fire
 // based on changes to an accessibility tree.  Every platform
@@ -97,10 +92,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     Event event;
     ax::mojom::EventFrom event_from;
 
-    // Only for LIVE_REGION_CHANGED events, if explicitly enabled
-    // with set_compute_live_region_change_description(true).
-    std::string live_region_change_description;
-
     bool operator==(const EventParams& rhs);
     bool operator<(const EventParams& rhs) const;
   };
@@ -172,12 +163,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // same order they were added.
   void AddEvent(ui::AXNode* node, Event event);
 
-  // Set whether or not the text of live region changed events should
-  // be computed. (It's only needed on some platforms.)
-  void set_should_compute_live_region_change_description(bool should_compute) {
-    should_compute_live_region_change_description_ = should_compute;
-  }
-
  protected:
   // AXTreeObserver overrides.
   void OnNodeDataChanged(AXTree* tree,
@@ -228,11 +213,10 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
                               const std::vector<Change>& changes) override;
 
  private:
-  void FireLiveRegionEvents(AXNode* node, AXLiveRegionTracker::ChangeType type);
+  void FireLiveRegionEvents(AXNode* node);
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
-  void ComputeLiveRegionChangeDescription();
   static void GetRestrictionStates(ax::mojom::Restriction restriction,
                                    bool* is_enabled,
                                    bool* is_readonly);
@@ -248,14 +232,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // Valid between the call to OnIntAttributeChanged and the call to
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
-
-  // Whether or not we should compute the text of LIVE_REGION_CHANGED events.
-  // Only needed on some platforms.
-  bool should_compute_live_region_change_description_ = false;
-
-  // Helper class that optionally tracks live regions and computes the
-  // text that should be spoken when a live region changes.
-  std::unique_ptr<AXLiveRegionTracker> live_region_tracker_;
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& os,

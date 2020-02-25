@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CHROME_SSL_HOST_STATE_DELEGATE_H_
-#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CHROME_SSL_HOST_STATE_DELEGATE_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_STATEFUL_SSL_HOST_STATE_DELEGATE_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_STATEFUL_SSL_HOST_STATE_DELEGATE_H_
 
 #include <memory>
 #include <set>
@@ -35,15 +35,16 @@ class PrefRegistrySyncable;
 //   of time depending on experimental groups)
 // - mixed content exceptions
 // - when errors have recurred multiple times
-class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate,
-                                   public KeyedService {
+class StatefulSSLHostStateDelegate : public content::SSLHostStateDelegate,
+                                     public KeyedService {
  public:
   enum RecurrentInterstitialMode { PREF, IN_MEMORY, NOT_SET };
 
-  ChromeSSLHostStateDelegate(content::BrowserContext* browser_context,
-                             PrefService* pref_service,
-                             HostContentSettingsMap* host_content_settings_map);
-  ~ChromeSSLHostStateDelegate() override;
+  StatefulSSLHostStateDelegate(
+      content::BrowserContext* browser_context,
+      PrefService* pref_service,
+      HostContentSettingsMap* host_content_settings_map);
+  ~StatefulSSLHostStateDelegate() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -93,7 +94,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate,
 
   void SetRecurrentInterstitialThresholdForTesting(int threshold);
   void SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode mode);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode mode);
   void SetRecurrentInterstitialResetTimeForTesting(int reset);
 
   RecurrentInterstitialMode GetRecurrentInterstitialMode() const;
@@ -158,11 +159,11 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate,
   // to a certain threshold value.
   std::map<int /* error code */, int /* count */> recurrent_errors_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeSSLHostStateDelegate);
+  DISALLOW_COPY_AND_ASSIGN(StatefulSSLHostStateDelegate);
 
   int recurrent_interstitial_threshold_for_testing;
   enum RecurrentInterstitialMode recurrent_interstitial_mode_for_testing;
   int recurrent_interstitial_reset_time_for_testing;
 };
 
-#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CHROME_SSL_HOST_STATE_DELEGATE_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_STATEFUL_SSL_HOST_STATE_DELEGATE_H_

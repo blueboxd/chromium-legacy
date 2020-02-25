@@ -306,13 +306,14 @@ std::vector<base::Value> GetPermissionsForExtension(
     return permission_messages;
 
   extensions::PermissionIDSet permissions =
-      extensions::PermissionMessageProvider::Get()->GetAllPermissionIDs(
-          extension->permissions_data()->active_permissions(),
-          extension->GetType());
+      extensions::PermissionMessageProvider::Get()
+          ->GetManagementUIPermissionIDs(
+              extension->permissions_data()->active_permissions(),
+              extension->GetType());
 
   const extensions::PermissionMessages messages =
-      extensions::PermissionMessageProvider::Get()
-          ->GetPowerfulPermissionMessages(permissions);
+      extensions::PermissionMessageProvider::Get()->GetPermissionMessages(
+          permissions);
 
   for (const auto& message : messages)
     permission_messages.push_back(base::Value(message.message()));

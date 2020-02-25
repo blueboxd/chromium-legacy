@@ -415,8 +415,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
 
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
-  if (base::Contains(sticky_dirty_origins_,
-                     std::make_pair(origin.GetURL(), type)))
+  if (base::Contains(sticky_dirty_origins_, std::make_pair(origin, type)))
     return RecalculateUsage(file_system_context, origin, type);
 
   base::FilePath base_path =
@@ -432,7 +431,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
   uint32_t dirty_status = 0;
   bool dirty_status_available =
       usage_cache()->GetDirty(usage_file_path, &dirty_status);
-  bool visited = !visited_origins_.insert(origin.GetURL()).second;
+  bool visited = !visited_origins_.insert(origin).second;
   if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
@@ -535,7 +534,7 @@ void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
 void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
     const url::Origin& origin,
     FileSystemType type) {
-  sticky_dirty_origins_.insert(std::make_pair(origin.GetURL(), type));
+  sticky_dirty_origins_.insert(std::make_pair(origin, type));
   quota_observer()->SetUsageCacheEnabled(origin, type, false);
   InvalidateUsageCache(origin, type);
 }

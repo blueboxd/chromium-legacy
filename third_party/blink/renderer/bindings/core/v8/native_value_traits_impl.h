@@ -23,6 +23,7 @@ class CallbackFunctionBase;
 class CallbackInterfaceBase;
 class EventListener;
 class FlexibleArrayBufferView;
+class IDLDictionaryBase;
 class ScriptWrappable;
 struct WrapperTypeInfo;
 
@@ -950,6 +951,36 @@ struct NativeValueTraits<
                         v8::Local<v8::Value> value,
                         ExceptionState& exception_state) {
     return T::Create(isolate, value, exception_state);
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<IDLDictionaryBase, T>::value>>
+    : public NativeValueTraitsBase<IDLNullable<T>> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsObject())
+      return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError("The given value is not an object.");
+    return nullptr;
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsObject())
+      return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError(
+        ExceptionMessages::ArgumentNotOfType(argument_index, "Object"));
+    return nullptr;
   }
 };
 

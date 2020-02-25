@@ -54,10 +54,10 @@
         var uiSourceCode2 =
             Workspace.workspace.uiSourceCodeForURL('http://127.0.0.1:8000/devtools/resources/source2.js');
 
-        SourcesTestRunner.checkUILocation(uiSourceCode1, 4, 4, uiLocation(script, 0, 81));
-        SourcesTestRunner.checkUILocation(uiSourceCode1, 5, 4, uiLocation(script, 0, 93));
-        SourcesTestRunner.checkUILocation(uiSourceCode2, 7, 4, uiLocation(script, 1, 151));
-        SourcesTestRunner.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
+        SourcesTestRunner.checkUILocation(uiSourceCode1, 4, 4, await uiLocation(script, 0, 81));
+        SourcesTestRunner.checkUILocation(uiSourceCode1, 5, 4, await uiLocation(script, 0, 93));
+        SourcesTestRunner.checkUILocation(uiSourceCode2, 7, 4, await uiLocation(script, 1, 151));
+        SourcesTestRunner.checkUILocation(originalUISourceCode, 1, 200, await uiLocation(script, 1, 200));
 
         SourcesTestRunner.checkRawLocation(
             script, 0, 48, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode1, 3, 10))[0]);
@@ -114,7 +114,7 @@
 
       async function originalUISourceCodeAdded(uiSourceCode) {
         TestRunner.addResult('source3.js UISourceCode arrived');
-        SourcesTestRunner.checkUILocation(uiSourceCode, 2, 4, uiLocation(script, 0, 18));
+        SourcesTestRunner.checkUILocation(uiSourceCode, 2, 4, await uiLocation(script, 0, 18));
         SourcesTestRunner.checkRawLocation(
             script, 0, 18, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 2, 4))[0]);
 
@@ -134,12 +134,12 @@
       TestRunner.debuggerModel.sourceMapManager().addEventListener(
           SDK.SourceMapManager.Events.SourceMapFailedToAttach, onSourceMapLoaded, this);
 
-      function onSourceMapLoaded(event) {
+      async function onSourceMapLoaded(event) {
         var script = event.data;
         if (script.sourceMapURL !== 'http://127.0.0.1:8000/devtools/resources/source-map.json_')
           return;
         TestRunner.addResult('SourceMap Failed to load.');
-        var location = uiLocation(script, 0, 0);
+        var location = await uiLocation(script, 0, 0);
         TestRunner.addResult(location.uiSourceCode.url().replace(/VM\d+/g, 'VM'));
         next();
       }

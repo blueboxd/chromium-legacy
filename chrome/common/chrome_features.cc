@@ -484,7 +484,7 @@ const base::Feature kMacMaterialDesignDownloadShelf{
 // which, when clicked, displays a bubble with information on how to toggle
 // Chrome's system-level media permissions.
 const base::Feature kMacSystemMediaPermissionsInfoUi{
-    "MacSystemMediaPermissionsInfoUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MacSystemMediaPermissionsInfoUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable screen capture system permission check on Mac 10.15+.
 const base::Feature kMacSystemScreenCapturePermissionCheck{

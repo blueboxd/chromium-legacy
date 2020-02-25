@@ -11,8 +11,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -27,7 +29,7 @@ namespace extensions {
 // NOTE: No extensions are created as part of these tests. Integration tests
 // that test the messages are generated properly for extensions can be found in
 // chrome/browser/extensions/permission_messages_unittest.cc.
-class ChromePermissionMessageProviderUnittest : public testing::Test {
+class ChromePermissionMessageProviderUnittest : public ChromeManifestTest {
  public:
   ChromePermissionMessageProviderUnittest()
       : message_provider_(new ChromePermissionMessageProvider()) {}
@@ -43,11 +45,13 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
             type));
   }
 
-  PermissionMessages GetPowerfulMessages(const APIPermissionSet& permissions,
-                                         Manifest::Type type) {
-    return message_provider_->GetPowerfulPermissionMessages(
-        message_provider_->GetAllPermissionIDs(
-            PermissionSet(permissions.Clone(), ManifestPermissionSet(),
+  PermissionMessages GetManagementUIPermissionIDs(
+      const APIPermissionSet& api_permissions,
+      const ManifestPermissionSet& manifest_permissions,
+      Manifest::Type type) {
+    return message_provider_->GetPermissionMessages(
+        message_provider_->GetManagementUIPermissionIDs(
+            PermissionSet(api_permissions.Clone(), manifest_permissions.Clone(),
                           URLPatternSet(), URLPatternSet()),
             type));
   }
@@ -177,8 +181,8 @@ TEST_F(ChromePermissionMessageProviderUnittest, PowerfulPermissions) {
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kTab);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(1U, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
@@ -187,20 +191,57 @@ TEST_F(ChromePermissionMessageProviderUnittest, PowerfulPermissions) {
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kBookmark);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(0U, messages.size());
   }
   {
     APIPermissionSet permissions;
     permissions.insert(APIPermission::kTab);
     permissions.insert(APIPermission::kBookmark);
-    PermissionMessages messages =
-        GetPowerfulMessages(permissions, Manifest::TYPE_EXTENSION);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, ManifestPermissionSet(), Manifest::TYPE_EXTENSION);
     ASSERT_EQ(1U, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
         messages.front().message());
+  }
+  {
+    scoped_refptr<Extension> extension =
+        ManifestTest::LoadAndExpectSuccess("automation_desktop_true.json");
+    ASSERT_TRUE(extension.get());
+    ManifestPermissionSet manifest_permissions = extension->permissions_data()
+                                                     ->active_permissions()
+                                                     .manifest_permissions()
+                                                     .Clone();
+    APIPermissionSet permissions;
+    permissions.insert(APIPermission::kTab);
+    permissions.insert(APIPermission::kBookmark);
+    permissions.insert(APIPermission::kDebugger);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, manifest_permissions, Manifest::TYPE_EXTENSION);
+    ASSERT_EQ(2U, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_DEBUGGER),
+              messages.front().message());
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
+        messages[1].message());
+  }
+  {
+    scoped_refptr<Extension> extension = ManifestTest::LoadAndExpectSuccess(
+        "automation_all_hosts_interact_true.json");
+    ASSERT_TRUE(extension.get());
+    ManifestPermissionSet manifest_permissions = extension->permissions_data()
+                                                     ->active_permissions()
+                                                     .manifest_permissions()
+                                                     .Clone();
+    APIPermissionSet permissions;
+    permissions.insert(APIPermission::kTab);
+    PermissionMessages messages = GetManagementUIPermissionIDs(
+        permissions, manifest_permissions, Manifest::TYPE_EXTENSION);
+    ASSERT_EQ(1U, messages.size());
+    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS),
+              messages.front().message());
   }
 }
 

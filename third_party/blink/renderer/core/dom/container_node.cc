@@ -1513,15 +1513,14 @@ HTMLCollection* ContainerNode::getElementsByTagNameNS(
 // Takes an AtomicString in argument because it is common for elements to share
 // the same name attribute.  Therefore, the NameNodeList factory function
 // expects an AtomicString type.
-NameNodeList* ContainerNode::getElementsByName(
-    const AtomicString& element_name) {
+NodeList* ContainerNode::getElementsByName(const AtomicString& element_name) {
   return EnsureCachedCollection<NameNodeList>(kNameNodeListType, element_name);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share
 // the same set of class names.  Therefore, the ClassNodeList factory function
 // expects an AtomicString type.
-ClassCollection* ContainerNode::getElementsByClassName(
+HTMLCollection* ContainerNode::getElementsByClassName(
     const AtomicString& class_names) {
   return EnsureCachedCollection<ClassCollection>(kClassCollectionType,
                                                  class_names);

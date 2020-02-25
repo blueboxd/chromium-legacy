@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant.carousel;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.RECYCLER_VIEW_TAG;
 
 import android.content.Context;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -66,6 +67,10 @@ public class AssistantActionsCarouselCoordinator {
         model.addObserver((source, propertyKey) -> {
             if (propertyKey == AssistantCarouselModel.CHIPS) {
                 chipAdapter.setChips(model.get(AssistantCarouselModel.CHIPS));
+            } else if (propertyKey == AssistantCarouselModel.DISABLE_CHANGE_ANIMATIONS) {
+                ((DefaultItemAnimator) mView.getItemAnimator())
+                        .setSupportsChangeAnimations(
+                                !model.get(AssistantCarouselModel.DISABLE_CHANGE_ANIMATIONS));
             }
         });
     }

@@ -6565,7 +6565,7 @@ HTMLCollection* Document::DocumentAllNamedItems(const AtomicString& name) {
       kDocumentAllNamedItems, name);
 }
 
-LocalDOMWindow* Document::defaultView() const {
+DOMWindow* Document::defaultView() const {
   // The HTML spec requires to return null if the document is detached from the
   // DOM.  However, |dom_window_| is not cleared on the detachment.  So, we need
   // to check |frame_| to tell whether the document is attached or not.

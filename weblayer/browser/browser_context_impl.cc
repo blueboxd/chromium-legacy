@@ -13,13 +13,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
-#include "weblayer/browser/chrome_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/fake_permission_controller_delegate.h"
+#include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/public/common/switches.h"
 
 #if defined(OS_ANDROID)
@@ -141,7 +141,7 @@ BrowserContextImpl::GetStorageNotificationService() {
 }
 
 content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate() {
-  return ChromeSSLHostStateDelegateFactory::GetForBrowserContext(this);
+  return StatefulSSLHostStateDelegateFactory::GetForBrowserContext(this);
 }
 
 content::PermissionControllerDelegate*
@@ -218,7 +218,7 @@ void BrowserContextImpl::RegisterPrefs(
   pref_registry->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
 
-  ChromeSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
+  StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
 }

@@ -61,9 +61,6 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
                      SafetyCheckHandlerObserver* observer);
 
  private:
-  // Handles page initialization. Should be called when page is loaded.
-  void HandleInitialize(const base::ListValue* args);
-
   // Handles triggering the safety check from the frontend (by user pressing a
   // button).
   void HandlePerformSafetyCheck(const base::ListValue* args);

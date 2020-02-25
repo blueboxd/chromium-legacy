@@ -1451,6 +1451,10 @@ void UiControllerAndroid::OnClientSettingsChanged(
     Java_AssistantHeaderModel_setDisableAnimations(
         env, GetHeaderModel(),
         settings.integration_test_settings->disable_header_animations());
+    Java_AutofillAssistantUiController_setDisableChipChangeAnimations(
+        env, java_object_,
+        settings.integration_test_settings
+            ->disable_carousel_change_animations());
   }
 }
 

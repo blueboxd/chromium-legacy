@@ -5,5 +5,11 @@
 /** @typedef {{testQueryResult: string}} */
 var TestMessageResponseData;
 
-/** @typedef {{testQuery: string, property: ?string}} */
+/**
+ * @typedef {{
+ *     testQuery: string,
+ *     pathToRoot: (Array<string>|undefined),
+ *     property: (string|undefined),
+ *     requestFullscreen: (boolean|undefined)}}
+ */
 var TestMessageQueryData;

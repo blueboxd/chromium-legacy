@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is for functions that are used only by generated code.
-// CAUTION:
-// All functions defined in this file should be used by generated code only.
-// If you want to use them from hand-written code, please find appropriate
-// location and move them to that location.
+// This file provides utilities to be used only by generated bindings code.
+//
+// CAUTION: Do not use this header outside generated bindings code.
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -93,6 +92,29 @@ void V8SetReflectedNullableDOMStringAttribute(
     const QualifiedName& content_attr);
 
 namespace bindings {
+
+template <typename T>
+typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
+    v8::Isolate* isolate,
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    int start_index,
+    ExceptionState& exception_state) {
+  using VectorType = typename IDLSequence<T>::ImplType;
+
+  const int length = info.Length();
+  if (start_index >= length)
+    return VectorType();
+
+  VectorType result;
+  result.ReserveInitialCapacity(length - start_index);
+  for (int i = start_index; i < length; ++i) {
+    result.UncheckedAppend(NativeValueTraits<T>::ArgumentValue(
+        isolate, i, info[i], exception_state));
+    if (exception_state.HadException())
+      return VectorType();
+  }
+  return std::move(result);
+}
 
 base::Optional<size_t> FindIndexInEnumStringTable(
     v8::Isolate* isolate,

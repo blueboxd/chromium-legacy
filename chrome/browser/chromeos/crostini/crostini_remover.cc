@@ -102,6 +102,7 @@ void CrostiniRemover::StopConciergeFinished(bool is_successful) {
     profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
     profile_->GetPrefs()->Set(prefs::kCrostiniContainers,
                               base::Value(base::Value::Type::LIST));
+    profile_->GetPrefs()->ClearPref(prefs::kCrostiniDefaultContainerConfigured);
   }
   std::move(callback_).Run(CrostiniResult::SUCCESS);
 }

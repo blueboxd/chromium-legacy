@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 
 #include <stdint.h>
 #include <utility>
@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -62,18 +62,18 @@ bool CStrStringMatcher(const char* a, const std::string& b) {
 
 }  // namespace
 
-class ChromeSSLHostStateDelegateTest : public InProcessBrowserTest {};
+class StatefulSSLHostStateDelegateTest : public InProcessBrowserTest {};
 
-// ChromeSSLHostStateDelegateTest tests basic unit test functionality of the
+// StatefulSSLHostStateDelegateTest tests basic unit test functionality of the
 // SSLHostStateDelegate class.  For example, tests that if a certificate is
 // accepted, then it is added to queryable, and if it is revoked, it is not
 // queryable. Even though it is effectively a unit test, in needs to be an
 // InProcessBrowserTest because the actual functionality is provided by
-// ChromeSSLHostStateDelegate which is provided per-profile.
+// StatefulSSLHostStateDelegate which is provided per-profile.
 //
 // QueryPolicy unit tests the expected behavior of calling QueryPolicy on the
 // SSLHostStateDelegate class after various SSL cert decisions have been made.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicy) {
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, QueryPolicy) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -128,13 +128,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicy) {
 // HasPolicyAndRevoke unit tests the expected behavior of calling
 // HasAllowException before and after calling RevokeUserAllowExceptions on the
 // SSLHostStateDelegate class.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, HasPolicyAndRevoke) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  StatefulSSLHostStateDelegate* state =
+      StatefulSSLHostStateDelegateFactory::GetForProfile(profile);
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
@@ -165,13 +165,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
 
 // Clear unit tests the expected behavior of calling Clear to forget all cert
 // decision state on the SSLHostStateDelegate class.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, Clear) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  StatefulSSLHostStateDelegate* state =
+      StatefulSSLHostStateDelegateFactory::GetForProfile(profile);
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
 // DidHostRunInsecureContent unit tests the expected behavior of calling
 // DidHostRunInsecureContent as well as HostRanInsecureContent to check if
 // insecure content has been run and to mark it as such.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
                        DidHostRunInsecureContent) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -288,13 +288,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 // Test the migration code needed as a result of changing how the content
 // setting is stored. We used to map the settings dictionary to the pattern
 // pair <origin, origin> but now we map it to <origin, wildcard>.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, Migrate) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  StatefulSSLHostStateDelegate* state =
+      StatefulSSLHostStateDelegateFactory::GetForProfile(profile);
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
@@ -327,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 
   // Trigger the migration code that happens on construction.
   {
-    std::unique_ptr<ChromeSSLHostStateDelegate> temp_delegate(
-        new ChromeSSLHostStateDelegate(
+    std::unique_ptr<StatefulSSLHostStateDelegate> temp_delegate(
+        new StatefulSSLHostStateDelegate(
             profile, profile->GetPrefs(),
             HostContentSettingsMapFactory::GetForProfile(profile)));
   }
@@ -346,19 +346,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), settings[0].secondary_pattern);
 }
 
-// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors returns true
+// Tests that StatefulSSLHostStateDelegate::HasSeenRecurrentErrors returns true
 // after seeing an error of interest multiple times, in the default mode in
 // which error occurrences are stored in-memory.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
+                       HasSeenRecurrentErrors) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
   chrome_state->SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
@@ -371,20 +372,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasSeenRecurrentErrors) {
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
 }
 
-// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors returns true
+// Tests that StatefulSSLHostStateDelegate::HasSeenRecurrentErrors returns true
 // after seeing an error of interest multiple times in pref mode (where the
 // count of each error is persisted across browsing sessions).
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPref) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
   chrome_state->SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   chrome_state->DidDisplayErrorPage(net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(chrome_state->HasSeenRecurrentErrors(
@@ -399,14 +400,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
   EXPECT_TRUE(
       chrome_state->HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
 
-  // Create a new ChromeSSLHostStateDelegate to check that the state has been
-  // saved to the pref and that the new ChromeSSLHostStateDelegate reads it.
-  ChromeSSLHostStateDelegate new_state(
+  // Create a new StatefulSSLHostStateDelegate to check that the state has been
+  // saved to the pref and that the new StatefulSSLHostStateDelegate reads it.
+  StatefulSSLHostStateDelegate new_state(
       profile, profile->GetPrefs(),
       HostContentSettingsMapFactory::GetForProfile(profile));
   new_state.SetRecurrentInterstitialThresholdForTesting(2);
   new_state.SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   EXPECT_TRUE(new_state.HasSeenRecurrentErrors(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
@@ -418,19 +419,19 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
   EXPECT_TRUE(new_state.HasSeenRecurrentErrors(net::ERR_CERT_SYMANTEC_LEGACY));
 }
 
-// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors handles clocks
-// going backwards in pref mode.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+// Tests that StatefulSSLHostStateDelegate::HasSeenRecurrentErrors handles
+// clocks going backwards in pref mode.
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPrefClockGoesBackwards) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetRecurrentInterstitialThresholdForTesting(2);
   chrome_state->SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   clock->SetNow(base::Time::Now());
@@ -455,20 +456,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
 }
 
-// Tests that ChromeSSLHostStateDelegate::HasSeenRecurrentErrors in pref mode
+// Tests that StatefulSSLHostStateDelegate::HasSeenRecurrentErrors in pref mode
 // ignores errors that occurred too far in the past. Note that this test uses a
 // threshold of 3 errors, unlike previous tests which use a threshold of 2.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
                        HasSeenRecurrentErrorsPrefErrorsInPast) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetRecurrentInterstitialResetTimeForTesting(10);
   chrome_state->SetRecurrentInterstitialModeForTesting(
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   clock->SetNow(base::Time::Now());
@@ -499,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 
 // Tests the basic behavior of cert memory in incognito.
 class IncognitoSSLHostStateDelegateTest
-    : public ChromeSSLHostStateDelegateTest {};
+    : public StatefulSSLHostStateDelegateTest {};
 
 IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
@@ -562,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
 
 // Tests the default certificate memory, which is one week.
 class DefaultMemorySSLHostStateDelegateTest
-    : public ChromeSSLHostStateDelegateTest {};
+    : public StatefulSSLHostStateDelegateTest {};
 
 IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
                        PRE_AfterRestart) {
@@ -587,8 +588,8 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
 
   // chrome_state takes ownership of this clock
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetClockForTesting(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time.
@@ -621,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
                                net::ERR_CERT_DATE_INVALID, tab));
 }
 
-// The same test as ChromeSSLHostStateDelegateTest.QueryPolicyExpired but now
+// The same test as StatefulSSLHostStateDelegateTest.QueryPolicyExpired but now
 // applied to a browser context that expires based on time, not restart. This
 // unit tests to make sure that if a certificate decision has expired, the
 // return value from QueryPolicy returns the correct vaule.
@@ -635,8 +636,8 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
 
   // chrome_state takes ownership of this clock
   base::SimpleTestClock* clock = new base::SimpleTestClock();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
+  StatefulSSLHostStateDelegate* chrome_state =
+      static_cast<StatefulSSLHostStateDelegate*>(state);
   chrome_state->SetClockForTesting(std::unique_ptr<base::Clock>(clock));
 
   // Start the clock at standard system time but do not advance at all to
@@ -667,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
 // Tests to make sure that if the user deletes their browser history, SSL
 // exceptions will be deleted as well.
 class RemoveBrowsingHistorySSLHostStateDelegateTest
-    : public ChromeSSLHostStateDelegateTest {
+    : public StatefulSSLHostStateDelegateTest {
  public:
   void RemoveAndWait(Profile* profile) {
     content::BrowsingDataRemover* remover =
@@ -708,7 +709,7 @@ IN_PROC_BROWSER_TEST_F(RemoveBrowsingHistorySSLHostStateDelegateTest,
 //
 // When the flag isn't set, requests to localhost with invalid
 // certificates should be denied.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest,
                        LocalhostErrorWithoutFlag) {
   // Serve the Google cert for localhost to generate an error.
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
@@ -726,10 +727,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
                                net::ERR_CERT_COMMON_NAME_INVALID, tab));
 }
 
-class ChromeSSLHostStateDelegateExtensionTest
+class StatefulSSLHostStateDelegateExtensionTest
     : public extensions::ExtensionBrowserTest {
  public:
-  ChromeSSLHostStateDelegateExtensionTest() {
+  StatefulSSLHostStateDelegateExtensionTest() {
     guest_view::GuestViewManager::set_factory_for_testing(&factory_);
   }
 
@@ -747,7 +748,7 @@ class ChromeSSLHostStateDelegateExtensionTest
 // Tests that certificate decisions are isolated by storage partition. In
 // particular, clicking through a certificate error in a <webview> in a Chrome
 // App shouldn't affect normal browsing. See https://crbug.com/639173.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateExtensionTest,
+IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
                        StoragePartitionIsolation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -794,10 +795,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateExtensionTest,
 // When the flag is set, requests to localhost with invalid certificates
 // should be allowed.
 class AllowLocalhostErrorsSSLHostStateDelegateTest
-    : public ChromeSSLHostStateDelegateTest {
+    : public StatefulSSLHostStateDelegateTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
+    StatefulSSLHostStateDelegateTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kAllowInsecureLocalhost);
   }
 };

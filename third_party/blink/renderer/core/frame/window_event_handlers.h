@@ -30,6 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_EVENT_HANDLERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_EVENT_HANDLERS_H_
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 

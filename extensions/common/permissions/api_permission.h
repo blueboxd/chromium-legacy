@@ -388,6 +388,12 @@ class APIPermissionInfo {
     // Indicates that the permission may be granted to web contents by
     // extensions using the content_capabilities manifest feature.
     kFlagSupportsContentCapabilities = 1 << 5,
+
+    // Indicates whether the permission should trigger one of the powerful
+    // permissions messages in chrome://management. Reach out to the privacy
+    // team when you add a new permission to check whether you should set this
+    // flag or not.
+    kFlagRequiresManagementUIWarning = 1 << 6
   };
 
   using APIPermissionConstructor =
@@ -439,6 +445,12 @@ class APIPermissionInfo {
   // extension through the content_capabilities manifest feature.
   bool supports_content_capabilities() const {
     return (flags_ & kFlagSupportsContentCapabilities) != 0;
+  }
+
+  // Returns true if this permission should trigger a warning on the management
+  // page
+  bool requires_management_ui_warning() const {
+    return (flags_ & kFlagRequiresManagementUIWarning) != 0;
   }
 
  private:

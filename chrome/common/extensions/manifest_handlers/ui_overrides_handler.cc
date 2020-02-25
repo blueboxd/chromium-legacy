@@ -84,6 +84,8 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
         other->override_bookmarks_ui_permission_);
   }
 
+  bool RequiresManagementUIWarning() const override { return false; }
+
  private:
   bool override_bookmarks_ui_permission_;
 };

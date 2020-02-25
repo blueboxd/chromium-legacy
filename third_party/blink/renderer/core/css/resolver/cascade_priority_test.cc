@@ -206,4 +206,22 @@ TEST(CascadePriorityTest, Generation) {
   EXPECT_LT(CascadePriority(ua, 2), CascadePriority(author, 3));
 }
 
+TEST(CascadePriorityTest, PositionEncoding) {
+  // Test 0b0, 0b1, 0b11, 0b111, etc.
+  uint32_t pos = 0;
+  do {
+    // AuthorPriority(tree_order, position)
+    ASSERT_EQ(pos, AuthorPriority(0, pos).GetPosition());
+    pos = (pos << 1) | 1;
+  } while (pos != ~static_cast<uint32_t>(0));
+
+  // Test 0b1, 0b10, 0b100, etc
+  pos = 1;
+  do {
+    // AuthorPriority(tree_order, position)
+    ASSERT_EQ(pos, AuthorPriority(0, pos).GetPosition());
+    pos <<= 1;
+  } while (pos != ~static_cast<uint32_t>(1) << 31);
+}
+
 }  // namespace blink

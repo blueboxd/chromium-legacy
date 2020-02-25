@@ -18,7 +18,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContentUriUtils;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.UrlUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Tests logic in the Clipboard class.
@@ -28,7 +35,29 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 public class ClipboardTest {
     private static final String PLAIN_TEXT = "plain";
     private static final String HTML_TEXT = "<span style=\"color: red;\">HTML</span>";
-    private static final Uri IMAGE_URI = Uri.parse("content://test.image");
+    private static final byte[] TEST_IMAGE_DATA = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    private Uri generateUriFromImage(final byte[] jpegImageData) {
+        FileOutputStream fOut = null;
+        try {
+            File path = new File(UrlUtils.getIsolatedTestFilePath("test_image"));
+            if (path.exists() || path.mkdir()) {
+                File saveFile = File.createTempFile(
+                        String.valueOf(System.currentTimeMillis()), ".jpg", path);
+                fOut = new FileOutputStream(saveFile);
+                fOut.write(jpegImageData);
+                fOut.flush();
+
+                return ContentUriUtils.getContentUriFromFile(saveFile);
+            }
+        } catch (IOException ie) {
+            // Ignore exception.
+        } finally {
+            StreamUtil.closeQuietly(fOut);
+        }
+
+        return null;
+    }
 
     @Test
     public void testClipDataToHtmlText() {
@@ -61,11 +90,12 @@ public class ClipboardTest {
         Clipboard clipboard = Clipboard.getInstance();
 
         // simple set a null, check if there is no crash.
-        clipboard.setImage(null);
+        clipboard.setImageUri(null);
 
         // Set actually data.
-        clipboard.setImage(IMAGE_URI);
+        Uri imageUri = generateUriFromImage(TEST_IMAGE_DATA);
+        clipboard.setImageUri(imageUri);
 
-        assertEquals(IMAGE_URI, clipboard.getUri());
+        assertEquals(imageUri, clipboard.getImageUri());
     }
 }

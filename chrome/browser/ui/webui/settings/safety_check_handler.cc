@@ -14,7 +14,6 @@ namespace {
 
 // Constants for communication with JS.
 static constexpr char kStatusChanged[] = "safety-check-status-changed";
-static constexpr char kInitialize[] = "initializeSafetyCheck";
 static constexpr char kPerformSafetyCheck[] = "performSafetyCheck";
 static constexpr char kSafetyCheckComponent[] = "safetyCheckComponent";
 static constexpr char kNewState[] = "newState";
@@ -54,6 +53,7 @@ SafetyCheckHandler::SafetyCheckHandler()
 SafetyCheckHandler::~SafetyCheckHandler() = default;
 
 void SafetyCheckHandler::PerformSafetyCheck() {
+  AllowJavascript();
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }
@@ -65,10 +65,6 @@ SafetyCheckHandler::SafetyCheckHandler(
     std::unique_ptr<VersionUpdater> version_updater,
     SafetyCheckHandlerObserver* observer)
     : version_updater_(std::move(version_updater)), observer_(observer) {}
-
-void SafetyCheckHandler::HandleInitialize(const base::ListValue* /*args*/) {
-  AllowJavascript();
-}
 
 void SafetyCheckHandler::HandlePerformSafetyCheck(
     const base::ListValue* /*args*/) {
@@ -140,9 +136,6 @@ void SafetyCheckHandler::OnJavascriptAllowed() {}
 void SafetyCheckHandler::OnJavascriptDisallowed() {}
 
 void SafetyCheckHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      kInitialize, base::BindRepeating(&SafetyCheckHandler::HandleInitialize,
-                                       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kPerformSafetyCheck,
       base::BindRepeating(&SafetyCheckHandler::HandlePerformSafetyCheck,

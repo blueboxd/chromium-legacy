@@ -251,9 +251,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   THREAD_CHECKER(io_thread_checker_);
 
   // Accessed only on the file thread.
-  std::set<GURL> visited_origins_;
+  std::set<url::Origin> visited_origins_;
 
-  std::set<std::pair<GURL, FileSystemType>> sticky_dirty_origins_;
+  std::set<std::pair<url::Origin, FileSystemType>> sticky_dirty_origins_;
 
   std::map<FileSystemType, UpdateObserverList> update_observers_;
   std::map<FileSystemType, ChangeObserverList> change_observers_;

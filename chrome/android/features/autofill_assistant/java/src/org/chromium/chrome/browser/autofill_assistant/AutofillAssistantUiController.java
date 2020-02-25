@@ -305,6 +305,12 @@ class AutofillAssistantUiController {
     }
 
     @CalledByNative
+    private void setDisableChipChangeAnimations(boolean disable) {
+        // TODO(b/144075373): Move this to AssistantCarouselModel.
+        getModel().getActionsModel().setDisableChangeAnimations(disable);
+    }
+
+    @CalledByNative
     private void setAllChipsVisibleExcept(String identifier, boolean visible) {
         AssistantCarouselModel model = getModel().getActionsModel();
         List<AssistantChip> chips = model.get(AssistantCarouselModel.CHIPS);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 
 #include <memory>
 
@@ -11,41 +11,41 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 
 // static
-ChromeSSLHostStateDelegate* ChromeSSLHostStateDelegateFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<ChromeSSLHostStateDelegate*>(
+StatefulSSLHostStateDelegate*
+StatefulSSLHostStateDelegateFactory::GetForProfile(Profile* profile) {
+  return static_cast<StatefulSSLHostStateDelegate*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-ChromeSSLHostStateDelegateFactory*
-ChromeSSLHostStateDelegateFactory::GetInstance() {
-  return base::Singleton<ChromeSSLHostStateDelegateFactory>::get();
+StatefulSSLHostStateDelegateFactory*
+StatefulSSLHostStateDelegateFactory::GetInstance() {
+  return base::Singleton<StatefulSSLHostStateDelegateFactory>::get();
 }
 
-ChromeSSLHostStateDelegateFactory::ChromeSSLHostStateDelegateFactory()
+StatefulSSLHostStateDelegateFactory::StatefulSSLHostStateDelegateFactory()
     : BrowserContextKeyedServiceFactory(
-          "ChromeSSLHostStateDelegate",
+          "StatefulSSLHostStateDelegate",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
-ChromeSSLHostStateDelegateFactory::~ChromeSSLHostStateDelegateFactory() =
+StatefulSSLHostStateDelegateFactory::~StatefulSSLHostStateDelegateFactory() =
     default;
 
-KeyedService* ChromeSSLHostStateDelegateFactory::BuildServiceInstanceFor(
+KeyedService* StatefulSSLHostStateDelegateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new ChromeSSLHostStateDelegate(
+  return new StatefulSSLHostStateDelegate(
       profile, profile->GetPrefs(),
       HostContentSettingsMapFactory::GetForProfile(profile));
 }
 
 content::BrowserContext*
-ChromeSSLHostStateDelegateFactory::GetBrowserContextToUse(
+StatefulSSLHostStateDelegateFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

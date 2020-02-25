@@ -27,7 +27,7 @@
     SourcesTestRunner.showScriptSource('linkifier.html', debuggerTest);
   }
 
-  function debuggerTest() {
+  async function debuggerTest() {
     for (var scriptCandidate of TestRunner.debuggerModel.scripts()) {
       if (scriptCandidate.sourceURL === resourceURL && scriptCandidate.lineOffset === 4) {
         script = scriptCandidate;
@@ -41,6 +41,8 @@
     var count1 = liveLocationsCount();
     link = linkifier.linkifyScriptLocation(
         SDK.targetManager.mainTarget(), null, resourceURL, 8, 0, 'dummy-class');
+    // The script location in the link is a live location that may be unresolved.
+    await TestRunner.waitForPendingLiveLocationUpdates();
     var count2 = liveLocationsCount();
 
     TestRunner.addResult('listeners added on raw source code: ' + (count2 - count1));
@@ -54,7 +56,8 @@
     var formattedContent = (await Formatter.sourceFormatter._formattedSourceCodes.get(uiSourceCode).formatData.formattedSourceCode.requestContent()).content;
     TestRunner.addResult('pretty printed content:');
     TestRunner.addResult(formattedContent);
-    Formatter.sourceFormatter.discardFormattedUISourceCode(UI.panels.sources.visibleView.uiSourceCode());
+    await Formatter.sourceFormatter.discardFormattedUISourceCode(UI.panels.sources.visibleView.uiSourceCode());
+    await TestRunner.waitForPendingLiveLocationUpdates();
     TestRunner.addResult('reverted location: ' + link.textContent);
 
     var count1 = liveLocationsCount();

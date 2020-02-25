@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_SET_RETURN_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_SET_RETURN_VALUE_H_
 
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -67,6 +68,18 @@ void V8SetReturnValue(const CallbackInfo& info, uint32_t value) {
 }
 
 template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info, int64_t value) {
+  // ECMAScript doesn't support 64-bit integer in Number type.
+  info.GetReturnValue().Set(static_cast<double>(value));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info, uint64_t value) {
+  // ECMAScript doesn't support 64-bit integer in Number type.
+  info.GetReturnValue().Set(static_cast<double>(value));
+}
+
+template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info, double value) {
   info.GetReturnValue().Set(value);
 }
@@ -96,6 +109,17 @@ void V8SetReturnValue(const CallbackInfo& info,
 
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
+                      const WebString& string,
+                      v8::Isolate* isolate,
+                      V8ReturnValue::NonNullable) {
+  if (string.IsNull())
+    return info.GetReturnValue().SetEmptyString();
+  V8PerIsolateData::From(isolate)->GetStringCache()->SetReturnValueFromString(
+      info.GetReturnValue(), static_cast<String>(string).Impl());
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
                       const AtomicString& string,
                       v8::Isolate* isolate,
                       V8ReturnValue::Nullable) {
@@ -114,6 +138,17 @@ void V8SetReturnValue(const CallbackInfo& info,
     return info.GetReturnValue().SetNull();
   V8PerIsolateData::From(isolate)->GetStringCache()->SetReturnValueFromString(
       info.GetReturnValue(), string.Impl());
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const WebString& string,
+                      v8::Isolate* isolate,
+                      V8ReturnValue::Nullable) {
+  if (string.IsNull())
+    return info.GetReturnValue().SetNull();
+  V8PerIsolateData::From(isolate)->GetStringCache()->SetReturnValueFromString(
+      info.GetReturnValue(), static_cast<String>(string).Impl());
 }
 
 // ScriptWrappable
@@ -200,6 +235,15 @@ void V8SetReturnValue(const CallbackInfo& info,
 
   info.GetReturnValue().Set(
       wrappable->Wrap(info.GetIsolate(), creation_context->Global()));
+}
+
+// Nullable types
+template <typename CallbackInfo, typename T>
+void V8SetReturnValue(const CallbackInfo& info, base::Optional<T> value) {
+  if (value.has_value())
+    V8SetReturnValue(info, value.value());
+  else
+    info.GetReturnValue().SetNull();
 }
 
 }  // namespace bindings

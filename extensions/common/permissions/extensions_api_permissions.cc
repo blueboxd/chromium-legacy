@@ -90,11 +90,14 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kNetworkingPrivate, "networkingPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kNewTabPageOverride, "newTabPageOverride",
-     APIPermissionInfo::kFlagCannotBeOptional},
+     APIPermissionInfo::kFlagCannotBeOptional |
+         APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kPower, "power"},
     {APIPermission::kPrinterProvider, "printerProvider"},
-    {APIPermission::kPrinting, "printing"},
-    {APIPermission::kPrintingMetrics, "printingMetrics"},
+    {APIPermission::kPrinting, "printing",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
+    {APIPermission::kPrintingMetrics, "printingMetrics",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kSerial, "serial"},
     {APIPermission::kSocket, "socket", APIPermissionInfo::kFlagCannotBeOptional,
      &CreateAPIPermission<SocketPermission>},
@@ -132,7 +135,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kWindowShape, "app.window.shape"},
     {APIPermission::kFileSystemRequestDownloads, "fileSystem.requestDownloads"},
     {APIPermission::kDeclarativeNetRequestFeedback,
-     declarative_net_request::kFeedbackAPIPermission},
+     declarative_net_request::kFeedbackAPIPermission,
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
 };
 
 }  // namespace

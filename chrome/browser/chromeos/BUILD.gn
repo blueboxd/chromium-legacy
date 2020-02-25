@@ -142,6 +142,8 @@ source_set("chromeos") {
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/system_clock",
+    "//chromeos/dbus/system_proxy",
+    "//chromeos/dbus/system_proxy:system_proxy_proto",
     "//chromeos/dbus/upstart",
     "//chromeos/disks",
     "//chromeos/geolocation",

@@ -3265,6 +3265,8 @@ crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-u
 crbug.com/1032016 http/tests/devtools/sources/debugger/live-edit-breakpoints.js [ Pass Failure ]
 crbug.com/1032016 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
 crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
+crbug.com/1032016 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
+crbug.com/1032016 http/tests/devtools/bindings/livelocation-main-frame-navigated.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
@@ -6750,10 +6752,6 @@ crbug.com/979593 [ Win ] external/wpt/service-workers/service-worker/registratio
 crbug.com/979593 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 crbug.com/979593 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-schedule-job.https.html [ Pass Failure ]
 
-# Sheriff 2019-07-03
-crbug.com/979490 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/979490 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-referrer.html [ Pass Timeout ]
-
 # Sheriff 2019-07-04
 crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
@@ -7451,8 +7449,6 @@ crbug.com/1047420 [ Mac ] http/tests/devtools/persistence/persistence-move-break
 crbug.com/1047760 [ Win ] http/tests/devtools/screen-orientation-override.js [ Pass Timeout ]
 
 crbug.com/1049454 external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Pass Timeout ]
-crbug.com/1049689 external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
-crbug.com/1049689 virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/944449 external/wpt/scroll-animations/scroll-animation.html [ Pass Crash ]

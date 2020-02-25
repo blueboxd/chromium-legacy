@@ -19,10 +19,34 @@ const ParentStatus = {
   AFTER: 2,
 };
 
+/**
+ * Values used to identify safety check components in the callback dictionary.
+ * Needs to be kept in sync with SafetyCheckComponent in
+ * chrome/browser/ui/webui/settings/safety_check_handler.h
+ * @enum {number}
+ */
+const SafetyCheckComponent = {
+  UPDATES: 0,
+  PASSWORDS: 1,
+  SAFE_BROWSING: 2,
+  EXTENSIONS: 3,
+};
+
+/**
+ * @typedef {{
+ *   safetyCheckComponent: SafetyCheckComponent,
+ *   newState: number,
+ *   passwordsCompromised: (number|undefined),
+ *   badExtensions: (number|undefined),
+ * }}
+ */
+/* #export */ let SafetyCheckStatusChangedEvent;
+
 Polymer({
   is: 'settings-safety-check-page',
 
   behaviors: [
+    WebUIListenerBehavior,
     I18nBehavior,
   ],
 
@@ -35,6 +59,72 @@ Polymer({
       type: Number,
       value: ParentStatus.BEFORE,
     },
+
+    /**
+     * Current state of the safety check updates element.
+     * @private {!settings.SafetyCheckUpdatesStatus}
+     */
+    updatesStatus_: {
+      type: Number,
+      value: settings.SafetyCheckUpdatesStatus.CHECKING,
+    },
+
+    /**
+     * Current state of the safety check passwords element.
+     * @private {!settings.SafetyCheckPasswordsStatus}
+     */
+    passwordsStatus_: {
+      type: Number,
+      value: settings.SafetyCheckPasswordsStatus.CHECKING,
+    },
+
+    /**
+     * Number of password compromises.
+     * @private {number}
+     */
+    passwordsCompromisedCount_: {
+      type: Number,
+    },
+
+    /**
+     * Current state of the safety check safe browsing element.
+     * @private {!settings.SafetyCheckSafeBrowsingStatus}
+     */
+    safeBrowsingStatus_: {
+      type: Number,
+      value: settings.SafetyCheckSafeBrowsingStatus.CHECKING,
+    },
+
+    /**
+     * Current state of the safety check extensions element.
+     * @private {!settings.SafetyCheckExtensionsStatus}
+     */
+    extensionsStatus_: {
+      type: Number,
+      value: settings.SafetyCheckExtensionsStatus.CHECKING,
+    },
+
+    /**
+     * Number of bad extensions.
+     * @private {number}
+     */
+    badExtensionsCount_: {
+      type: Number,
+    },
+  },
+
+  /** @private {settings.SafetyCheckBrowserProxy} */
+  safetyCheckBrowserProxy_: null,
+
+  /** @override */
+  attached: function() {
+    this.safetyCheckBrowserProxy_ =
+        settings.SafetyCheckBrowserProxyImpl.getInstance();
+
+    // Register for safety check status updates.
+    this.addWebUIListener(
+        'safety-check-status-changed',
+        this.onSafetyCheckStatusUpdate_.bind(this));
   },
 
   /**
@@ -42,8 +132,52 @@ Polymer({
    * @private
    */
   onRunSafetyCheckClick_: function() {
-    // TODO(crbug.com/1010001) Trigger backend safety check here.
+    // Update UI.
     this.parentStatus_ = ParentStatus.CHECKING;
+    // Reset all children states.
+    this.updatesStatus_ = settings.SafetyCheckUpdatesStatus.CHECKING;
+    this.passwordsStatus_ = settings.SafetyCheckPasswordsStatus.CHECKING;
+    this.safeBrowsingStatus_ = settings.SafetyCheckSafeBrowsingStatus.CHECKING;
+    this.extensionsStatus_ = settings.SafetyCheckExtensionsStatus.CHECKING;
+    // Trigger safety check.
+    this.safetyCheckBrowserProxy_.runSafetyCheck();
+  },
+
+  /**
+   * Safety check callback to update UI from safety check result.
+   * @param {SafetyCheckStatusChangedEvent} event
+   * @private
+   */
+  onSafetyCheckStatusUpdate_: function(event) {
+    const status = event['newState'];
+    switch (event.safetyCheckComponent) {
+      case SafetyCheckComponent.UPDATES:
+        this.updatesStatus_ = status;
+        break;
+      case SafetyCheckComponent.PASSWORDS:
+        this.passwordsStatus_ = status;
+        this.passwordsCompromisedCount_ = event['passwordsCompromised'];
+        break;
+      case SafetyCheckComponent.SAFE_BROWSING:
+        this.safeBrowsingStatus_ = status;
+        break;
+      case SafetyCheckComponent.EXTENSIONS:
+        this.extensionsStatus_ = status;
+        this.badExtensionsCount_ = event['badExtensions'];
+        break;
+      default:
+        assertNotReached();
+    }
+
+    // If all children elements received updates: update parent element.
+    if (this.updatesStatus_ != settings.SafetyCheckUpdatesStatus.CHECKING &&
+        this.passwordsStatus_ != settings.SafetyCheckPasswordsStatus.CHECKING &&
+        this.safeBrowsingStatus_ !=
+            settings.SafetyCheckSafeBrowsingStatus.CHECKING &&
+        this.extensionsStatus_ !=
+            settings.SafetyCheckExtensionsStatus.CHECKING) {
+      this.parentStatus_ = ParentStatus.AFTER;
+    }
   },
 
   /**

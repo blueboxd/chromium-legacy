@@ -41,7 +41,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEven
 }
 
 template <>
-struct NativeValueTraits<TestInterfaceEventInit> : public NativeValueTraitsBase<TestInterfaceEventInit> {
+struct NativeValueTraits<TestInterfaceEventInit> : public NativeValueTraitsBase<TestInterfaceEventInit*> {
   CORE_EXPORT static TestInterfaceEventInit* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 

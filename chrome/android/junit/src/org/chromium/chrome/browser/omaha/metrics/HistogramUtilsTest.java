@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -26,14 +25,12 @@ public class HistogramUtilsTest {
     @Test
     public void testStartHistogram() {
         HistogramUtils.recordStartedUpdateHistogram(false);
-        CachedMetrics.commitCachedMetrics();
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "GoogleUpdate.StartingUpdateState", 0));
         ShadowRecordHistogram.reset();
 
         HistogramUtils.recordStartedUpdateHistogram(true);
-        CachedMetrics.commitCachedMetrics();
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "GoogleUpdate.StartingUpdateState", 1));
@@ -130,7 +127,6 @@ public class HistogramUtilsTest {
     }
 
     private static void validateHistogram(String base, String suffix, boolean success) {
-        CachedMetrics.commitCachedMetrics();
         int value = success ? 1 : 0;
         Assert.assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(base, value));
         Assert.assertEquals(

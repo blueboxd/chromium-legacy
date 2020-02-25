@@ -30,7 +30,11 @@
   var xhrNode = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
 
   UI.panels.network._networkLogView._refresh();
-  for (var columnName of columnsToTest)
-    TestRunner.addResult(columnName + ': ' + xhrNode.createCell(columnName).textContent);
+  for (var columnName of columnsToTest) {
+    const cell = xhrNode.createCell(columnName);
+    // Cell may contain live locations that are unresolved.
+    await TestRunner.waitForPendingLiveLocationUpdates();
+    TestRunner.addResult(columnName + ': ' + cell.textContent);
+  }
   TestRunner.completeTest();
 })();

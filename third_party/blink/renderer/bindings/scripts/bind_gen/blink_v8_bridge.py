@@ -487,10 +487,14 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
     assert isinstance(v8_array_start_index, (int, long))
     assert isinstance(idl_type, web_idl.IdlType)
 
-    pattern = "auto&& ${{{_1}}} = ToImplArguments<{_2}>({_3});"
+    pattern = ("auto&& ${{{_1}}} = "
+               "bindings::VariadicArgumentsToNativeValues<{_2}>({_3});")
     _1 = blink_var_name
     _2 = native_value_tag(idl_type.element_type)
-    _3 = [v8_array, str(v8_array_start_index), "${exception_state}"]
+    _3 = [
+        "${isolate}", v8_array,
+        str(v8_array_start_index), "${exception_state}"
+    ]
     text = _format(pattern, _1=_1, _2=_2, _3=", ".join(_3))
 
     def create_definition(symbol_node):

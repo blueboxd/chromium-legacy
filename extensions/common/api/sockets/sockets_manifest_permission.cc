@@ -314,4 +314,8 @@ void SocketsManifestPermission::AddSocketHostPermissions(
   AddNetworkListMessage(sockets, ids);
 }
 
+bool SocketsManifestPermission::RequiresManagementUIWarning() const {
+  return false;
+}
+
 }  // namespace extensions

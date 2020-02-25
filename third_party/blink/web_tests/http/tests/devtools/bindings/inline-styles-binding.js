@@ -16,7 +16,7 @@
   var i = 0;
   for (var script of scripts) {
     var rawLocation = TestRunner.debuggerModel.createRawLocation(script, script.lineOffset, script.columnOffset);
-    Bindings.debuggerWorkspaceBinding.createLiveLocation(
+    await Bindings.debuggerWorkspaceBinding.createLiveLocation(
       rawLocation, updateDelegate.bind(null, 'script' + i), locationPool);
     i++;
   }
@@ -25,7 +25,7 @@
   for (var styleSheetId of styleSheets) {
     var header = TestRunner.cssModel.styleSheetHeaderForId(styleSheetId);
     var rawLocation = new SDK.CSSLocation(header, header.startLine, header.startColumn);
-    Bindings.cssWorkspaceBinding.createLiveLocation(
+    await Bindings.cssWorkspaceBinding.createLiveLocation(
       rawLocation, updateDelegate.bind(null, 'style' + i), locationPool);
     i++;
   }
@@ -36,13 +36,13 @@
     await TestRunner.cssModel.addRule(styleSheetId, `.new-rule {
   --new: true;
 }`, TextUtils.TextRange.createFromLocation(0, 0));
-    await Promise.resolve();
+    await TestRunner.waitForPendingLiveLocationUpdates();
     i++;
   }
 
 
-  function updateDelegate(name, location) {
-    var uiLocation = location.uiLocation();
+  async function updateDelegate(name, location) {
+    var uiLocation = await location.uiLocation();
     TestRunner.addResult(`LiveLocation '${name}' was updated ${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
   }
 

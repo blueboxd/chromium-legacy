@@ -32,7 +32,7 @@ namespace safe_browsing {
 class ChromePasswordProtectionService;
 }
 
-class ChromeSSLHostStateDelegate;
+class StatefulSSLHostStateDelegate;
 class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
@@ -313,7 +313,7 @@ class PageInfo : public content::WebContentsObserver {
 
   // Service for managing SSL error page bypasses. Used to revoke bypass
   // decisions by users.
-  ChromeSSLHostStateDelegate* chrome_ssl_host_state_delegate_;
+  StatefulSSLHostStateDelegate* stateful_ssl_host_state_delegate_;
 
   // The TabSpecificContentSettings for this site, used to propagate changes
   // from the UI back to the model. This is held as a raw pointer because the

@@ -99,7 +99,8 @@ class MEDIA_EXPORT MediaDrmStorage
   DISALLOW_COPY_AND_ASSIGN(MediaDrmStorage);
 };
 
-using CreateStorageCB = base::Callback<std::unique_ptr<MediaDrmStorage>()>;
+using CreateStorageCB =
+    base::RepeatingCallback<std::unique_ptr<MediaDrmStorage>()>;
 
 }  // namespace media
 

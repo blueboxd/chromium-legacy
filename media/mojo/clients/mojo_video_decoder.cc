@@ -126,7 +126,7 @@ MojoVideoDecoder::~MojoVideoDecoder() {
   if (remote_decoder_bound_)
     get_mojo_instance_counter()--;
   if (request_overlay_info_cb_ && overlay_info_requested_)
-    request_overlay_info_cb_.Run(false, ProvideOverlayInfoCB());
+    request_overlay_info_cb_.Run(false, base::NullCallback());
 }
 
 bool MojoVideoDecoder::IsPlatformDecoder() const {

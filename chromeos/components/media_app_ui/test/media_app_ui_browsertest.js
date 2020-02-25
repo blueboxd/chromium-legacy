@@ -118,3 +118,29 @@ TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
   assertEquals(result.errorMessage, '');
   testDone();
 });
+
+// Tests that video elements in the guest can be full-screened.
+TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
+  // Remove `overflow: hidden` to work around a spurious DCHECK in Blink
+  // layout. See crbug.com/1052791. Oddly, even though the video is in the guest
+  // iframe document (which also has these styles on its body), it is necessary
+  // and sufficient to remove these styles applied to the main frame.
+  document.body.style.overflow = 'unset';
+
+  // Load a zero-byte video. It won't load, but the video element should be
+  // added to the DOM (and it can still be fullscreened).
+  loadFile(new File([], 'zero_byte_video.webm', {type: 'video/webm'}));
+
+  const SELECTOR = 'video';
+  const tagName = await driver.waitForElementInGuest(
+      SELECTOR, 'tagName', {pathToRoot: ['backlight-video-container']});
+  const result = await driver.waitForElementInGuest(
+      SELECTOR, undefined,
+      {pathToRoot: ['backlight-video-container'], requestFullscreen: true});
+
+  // A TypeError of 'fullscreen error' results if fullscreen fails.
+  assertEquals(result, 'hooray');
+  assertEquals(tagName, '"VIDEO"');
+
+  testDone();
+});

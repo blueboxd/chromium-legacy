@@ -119,6 +119,8 @@ message ClientSettingsProto {
   message IntegrationTestSettings {
     // Disables animations for the poodle and the progress bar.
     optional bool disable_header_animations = 1;
+    // Disables change animations in the actions carousel.
+    optional bool disable_carousel_change_animations = 2;
   }
 
   // Time between two periodic script precondition checks.

@@ -91,7 +91,6 @@
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 #include "components/security_interstitials/content/common_name_mismatch_handler.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
@@ -100,6 +99,7 @@
 #include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "components/security_interstitials/content/ssl_error_assistant.pb.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/features.h"
@@ -4482,8 +4482,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+  StatefulSSLHostStateDelegate* state =
+      reinterpret_cast<StatefulSSLHostStateDelegate*>(
           profile->GetSSLHostStateDelegate());
 
   // First check that frame requests revoke the decision.
@@ -4530,8 +4530,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByBlobUrl) {
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+  StatefulSSLHostStateDelegate* state =
+      reinterpret_cast<StatefulSSLHostStateDelegate*>(
           profile->GetSSLHostStateDelegate());
 
   // Proceed through the interstitial, accepting the broken cert.
@@ -8097,8 +8097,8 @@ IN_PROC_BROWSER_TEST_F(RecurrentInterstitialBrowserTest,
   mock_cert_verifier()->set_default_result(
       net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
 
-  ChromeSSLHostStateDelegate* state =
-      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+  StatefulSSLHostStateDelegate* state =
+      reinterpret_cast<StatefulSSLHostStateDelegate*>(
           browser()->profile()->GetSSLHostStateDelegate());
   state->ResetRecurrentErrorCountForTesting();
 

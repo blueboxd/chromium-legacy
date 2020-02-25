@@ -64,6 +64,8 @@ class AutomationManifestPermission : public ManifestPermission {
   std::unique_ptr<ManifestPermission> Intersect(
       const ManifestPermission* rhs) const override;
 
+  bool RequiresManagementUIWarning() const override;
+
  private:
   std::unique_ptr<const AutomationInfo> automation_info_;
 };
@@ -158,12 +160,16 @@ std::unique_ptr<ManifestPermission> AutomationManifestPermission::Intersect(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
 
-AutomationHandler::AutomationHandler() {}
+bool AutomationManifestPermission::RequiresManagementUIWarning() const {
+  return automation_info_->desktop || !automation_info_->matches.is_empty();
+}
 
-AutomationHandler::~AutomationHandler() {}
+AutomationHandler::AutomationHandler() = default;
+
+AutomationHandler::~AutomationHandler() = default;
 
 bool AutomationHandler::Parse(Extension* extension, base::string16* error) {
-  const base::Value* automation = NULL;
+  const base::Value* automation = nullptr;
   CHECK(extension->manifest()->Get(keys::kAutomation, &automation));
   std::vector<InstallWarning> install_warnings;
   std::unique_ptr<AutomationInfo> info =

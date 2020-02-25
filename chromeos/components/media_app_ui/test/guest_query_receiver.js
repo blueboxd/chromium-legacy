@@ -6,10 +6,20 @@
  * Repeatedly runs a query selector until it finds an element.
  *
  * @param {string} query
- * @return {Promise<Element>}
+ * @param {!Array<string>=} opt_path
+ * @return {Promise<!Element>}
  */
-function waitForNode(query) {
-  const node = document.body;
+async function waitForNode(query, opt_path) {
+  /** @type{!HTMLElement|!ShadowRoot} */
+  let node = document.body;
+  const parent = opt_path ? opt_path.shift() : undefined;
+  if (parent) {
+    const element = await waitForNode(parent, opt_path);
+    if (!(element instanceof HTMLElement) || !element.shadowRoot) {
+      throw new Error('Path not a shadow root HTMLElement');
+    }
+    node = element.shadowRoot;
+  }
   const existingElement = node.querySelector(query);
   if (existingElement) {
     return Promise.resolve(existingElement);
@@ -34,9 +44,19 @@ function waitForNode(query) {
  */
 async function runTestQuery(event) {
   const data = event.data;
-  const element = await waitForNode(data.testQuery);
-  const result =
-      data.property ? JSON.stringify(element[data.property]) : element.tagName;
+  const element = await waitForNode(data.testQuery, data.pathToRoot || []);
+  let result = element.tagName;
+  if (data.property) {
+    result = JSON.stringify(element[data.property]);
+  } else if (data.requestFullscreen) {
+    try {
+      await element.requestFullscreen();
+      result = 'hooray';
+    } catch (/** @type{TypeError} */ typeError) {
+      result = typeError.message;
+    }
+  }
+
   const response = {testQueryResult: result};
   event.source.postMessage(response, event.origin);
 }

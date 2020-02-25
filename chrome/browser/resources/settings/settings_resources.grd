@@ -883,6 +883,12 @@
       <structure name="IDR_SETTINGS_SAFETY_CHECK_PAGE_JS"
                  file="safety_check_page/safety_check_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SAFETY_CHECK_BROWSER_PROXY_HTML"
+                 file="safety_check_page/safety_check_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SAFETY_CHECK_BROWSER_PROXY_JS"
+                 file="safety_check_page/safety_check_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_HTML"
                  file="site_settings/protocol_handlers.html"
                  preprocess="true"

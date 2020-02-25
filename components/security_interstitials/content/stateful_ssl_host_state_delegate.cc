@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 
 #include <stdint.h>
 
@@ -47,13 +47,13 @@
 namespace {
 
 #if defined(OS_ANDROID)
-ChromeSSLHostStateDelegate::RecurrentInterstitialMode
+StatefulSSLHostStateDelegate::RecurrentInterstitialMode
     kRecurrentInterstitialDefaultMode =
-        ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF;
+        StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF;
 #else
-ChromeSSLHostStateDelegate::RecurrentInterstitialMode
+StatefulSSLHostStateDelegate::RecurrentInterstitialMode
     kRecurrentInterstitialDefaultMode =
-        ChromeSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY;
+        StatefulSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY;
 #endif
 
 // The number of times an error must recur before the recurrent error message is
@@ -232,7 +232,7 @@ bool HostFilterToPatternFilter(
 
 }  // namespace
 
-ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(
+StatefulSSLHostStateDelegate::StatefulSSLHostStateDelegate(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     HostContentSettingsMap* host_content_settings_map)
@@ -246,17 +246,18 @@ ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(
   MigrateOldSettings(host_content_settings_map_);
 }
 
-ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() = default;
+StatefulSSLHostStateDelegate::~StatefulSSLHostStateDelegate() = default;
 
-void ChromeSSLHostStateDelegate::RegisterProfilePrefs(
+void StatefulSSLHostStateDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kRecurrentSSLInterstitial);
 }
 
-void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
-                                           const net::X509Certificate& cert,
-                                           int error,
-                                           content::WebContents* web_contents) {
+void StatefulSSLHostStateDelegate::AllowCert(
+    const std::string& host,
+    const net::X509Certificate& cert,
+    int error,
+    content::WebContents* web_contents) {
   DCHECK(web_contents);
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartition(
@@ -307,7 +308,7 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
       std::move(value));
 }
 
-void ChromeSSLHostStateDelegate::Clear(
+void StatefulSSLHostStateDelegate::Clear(
     base::RepeatingCallback<bool(const std::string&)> host_filter) {
   // Convert host matching to content settings pattern matching. Content
   // settings deletion is done synchronously on the UI thread, so we can use
@@ -324,10 +325,10 @@ void ChromeSSLHostStateDelegate::Clear(
 }
 
 content::SSLHostStateDelegate::CertJudgment
-ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
-                                        const net::X509Certificate& cert,
-                                        int error,
-                                        content::WebContents* web_contents) {
+StatefulSSLHostStateDelegate::QueryPolicy(const std::string& host,
+                                          const net::X509Certificate& cert,
+                                          int error,
+                                          content::WebContents* web_contents) {
   DCHECK(web_contents);
 
   // If the appropriate flag is set, let requests on localhost go
@@ -393,7 +394,7 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
   return DENIED;
 }
 
-void ChromeSSLHostStateDelegate::HostRanInsecureContent(
+void StatefulSSLHostStateDelegate::HostRanInsecureContent(
     const std::string& host,
     int child_id,
     InsecureContentType content_type) {
@@ -408,7 +409,7 @@ void ChromeSSLHostStateDelegate::HostRanInsecureContent(
   }
 }
 
-bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
+bool StatefulSSLHostStateDelegate::DidHostRunInsecureContent(
     const std::string& host,
     int child_id,
     InsecureContentType content_type) {
@@ -423,7 +424,7 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
   return false;
 }
 
-void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
+void StatefulSSLHostStateDelegate::RevokeUserAllowExceptions(
     const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
 
@@ -436,7 +437,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
   allowed_certs_for_non_default_storage_partitions_.erase(host);
 }
 
-bool ChromeSSLHostStateDelegate::HasAllowException(
+bool StatefulSSLHostStateDelegate::HasAllowException(
     const std::string& host,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
@@ -494,7 +495,7 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
 // where it is necessary to revoke the preferences immediately. It does so by
 // flushing idle sockets, thus it is a big hammer and should be wielded with
 // extreme caution as it can have a big, negative impact on network performance.
-void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
+void StatefulSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
     const std::string& host) {
   RevokeUserAllowExceptions(host);
   auto* network_context =
@@ -503,7 +504,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
   network_context->CloseIdleConnections(base::NullCallback());
 }
 
-void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
+void StatefulSSLHostStateDelegate::DidDisplayErrorPage(int error) {
   if (error != net::ERR_CERT_SYMANTEC_LEGACY &&
       error != net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
     return;
@@ -511,7 +512,7 @@ void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
   RecurrentInterstitialMode mode_param = GetRecurrentInterstitialMode();
   const int threshold = GetRecurrentInterstitialThreshold();
   if (mode_param ==
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY) {
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY) {
     const auto count_it = recurrent_errors_.find(error);
     if (count_it == recurrent_errors_.end()) {
       recurrent_errors_[error] = 1;
@@ -522,23 +523,23 @@ void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
     }
     recurrent_errors_[error] = count_it->second + 1;
   } else if (mode_param ==
-             ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
+             StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
     UpdateRecurrentInterstitialPref(pref_service_, clock_.get(), error,
                                     threshold);
   }
 }
 
-bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
+bool StatefulSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
   RecurrentInterstitialMode mode_param = GetRecurrentInterstitialMode();
   const int threshold = GetRecurrentInterstitialThreshold();
   if (mode_param ==
-      ChromeSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY) {
+      StatefulSSLHostStateDelegate::RecurrentInterstitialMode::IN_MEMORY) {
     const auto count_it = recurrent_errors_.find(error);
     if (count_it == recurrent_errors_.end())
       return false;
     return count_it->second >= threshold;
   } else if (mode_param ==
-             ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
+             StatefulSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
     return DoesRecurrentInterstitialPrefMeetThreshold(
         pref_service_, clock_.get(), error, threshold,
         GetRecurrentInterstitialResetTime());
@@ -547,34 +548,34 @@ bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
   return false;
 }
 
-void ChromeSSLHostStateDelegate::ResetRecurrentErrorCountForTesting() {
+void StatefulSSLHostStateDelegate::ResetRecurrentErrorCountForTesting() {
   recurrent_errors_.clear();
   DictionaryPrefUpdate pref_update(pref_service_,
                                    prefs::kRecurrentSSLInterstitial);
   pref_update->Clear();
 }
 
-void ChromeSSLHostStateDelegate::SetClockForTesting(
+void StatefulSSLHostStateDelegate::SetClockForTesting(
     std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
-void ChromeSSLHostStateDelegate::SetRecurrentInterstitialThresholdForTesting(
+void StatefulSSLHostStateDelegate::SetRecurrentInterstitialThresholdForTesting(
     int threshold) {
   recurrent_interstitial_threshold_for_testing = threshold;
 }
 
-void ChromeSSLHostStateDelegate::SetRecurrentInterstitialModeForTesting(
-    ChromeSSLHostStateDelegate::RecurrentInterstitialMode mode) {
+void StatefulSSLHostStateDelegate::SetRecurrentInterstitialModeForTesting(
+    StatefulSSLHostStateDelegate::RecurrentInterstitialMode mode) {
   recurrent_interstitial_mode_for_testing = mode;
 }
 
-void ChromeSSLHostStateDelegate::SetRecurrentInterstitialResetTimeForTesting(
+void StatefulSSLHostStateDelegate::SetRecurrentInterstitialResetTimeForTesting(
     int reset) {
   recurrent_interstitial_reset_time_for_testing = reset;
 }
 
-int ChromeSSLHostStateDelegate::GetRecurrentInterstitialThreshold() const {
+int StatefulSSLHostStateDelegate::GetRecurrentInterstitialThreshold() const {
   if (recurrent_interstitial_threshold_for_testing == -1) {
     return kRecurrentInterstitialDefaultThreshold;
   } else {
@@ -582,7 +583,7 @@ int ChromeSSLHostStateDelegate::GetRecurrentInterstitialThreshold() const {
   }
 }
 
-int ChromeSSLHostStateDelegate::GetRecurrentInterstitialResetTime() const {
+int StatefulSSLHostStateDelegate::GetRecurrentInterstitialResetTime() const {
   if (recurrent_interstitial_reset_time_for_testing == -1) {
     return kRecurrentInterstitialDefaultResetTime;
   } else {
@@ -590,8 +591,8 @@ int ChromeSSLHostStateDelegate::GetRecurrentInterstitialResetTime() const {
   }
 }
 
-ChromeSSLHostStateDelegate::RecurrentInterstitialMode
-ChromeSSLHostStateDelegate::GetRecurrentInterstitialMode() const {
+StatefulSSLHostStateDelegate::RecurrentInterstitialMode
+StatefulSSLHostStateDelegate::GetRecurrentInterstitialMode() const {
   if (recurrent_interstitial_mode_for_testing == NOT_SET) {
     return kRecurrentInterstitialDefaultMode;
   } else {
@@ -610,7 +611,7 @@ ChromeSSLHostStateDelegate::GetRecurrentInterstitialMode() const {
 // addition to there not being any values in the dictionary). If create_entries
 // is set to |CREATE_DICTIONARY_ENTRIES|, if no dictionary is found or the
 // decisions are expired, a new dictionary will be created.
-base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
+base::DictionaryValue* StatefulSSLHostStateDelegate::GetValidCertDecisionsDict(
     base::DictionaryValue* dict,
     CreateDictionaryEntriesDisposition create_entries) {
   // Extract the version of the certificate decision structure from the content

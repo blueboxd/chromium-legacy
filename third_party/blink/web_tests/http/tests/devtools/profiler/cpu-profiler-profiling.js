@@ -19,12 +19,16 @@
         }
         pageFunction();`);
 
-    function checkFunction(tree, name) {
+    async function checkFunction(tree, name) {
       let node = tree.children[0];
       if (!node)
         TestRunner.addResult('no node');
       while (node) {
-        const url = node.element().children[2].lastChild.textContent;
+        // Ordering is important here, as accessing the element the first time around
+        // triggers live location creation and updates which we need to await properly.
+        const element = node.element();
+        await TestRunner.waitForPendingLiveLocationUpdates();
+        const url = element.children[2].lastChild.textContent;
         if (node.functionName === name) {
           TestRunner.addResult(`found ${name} ${url}`);
           return;
@@ -34,12 +38,12 @@
       TestRunner.addResult(name + ' not found');
     }
 
-    function findPageFunctionInProfileView(view) {
+    async function findPageFunctionInProfileView(view) {
       const tree = view.profileDataGridTree;
       if (!tree)
         TestRunner.addResult('no tree');
-      checkFunction(tree, 'pageFunction');
-      checkFunction(tree, '(anonymous)');
+      await checkFunction(tree, 'pageFunction');
+      await checkFunction(tree, '(anonymous)');
       next();
     }
   }]);

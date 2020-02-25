@@ -104,7 +104,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onSaveImageToClipboard(Uri uri) {
-        Clipboard.getInstance().setImage(uri);
+        Clipboard.getInstance().setImageUri(uri);
     }
 
     @Override

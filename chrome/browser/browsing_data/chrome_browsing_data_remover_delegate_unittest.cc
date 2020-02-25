@@ -49,7 +49,7 @@
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -91,7 +91,7 @@
 #include "components/permissions/permission_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -1098,10 +1098,10 @@ class ClearNetworkErrorLoggingTester {
 class BrowsingDataRemoverTestingProfile : public TestingProfile {
  public:
   BrowsingDataRemoverTestingProfile() {}
-  ~BrowsingDataRemoverTestingProfile() override {}
+  ~BrowsingDataRemoverTestingProfile() override = default;
 
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+    return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
   }
 
  private:

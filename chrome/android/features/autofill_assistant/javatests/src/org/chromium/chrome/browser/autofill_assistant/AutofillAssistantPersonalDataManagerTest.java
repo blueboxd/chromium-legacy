@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -168,7 +167,6 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky: crbug/1053606")
     public void testExternalAddAndEnterProfile() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
@@ -208,8 +206,8 @@ public class AutofillAssistantPersonalDataManagerTest {
         mHelper.addDummyProfile("John Doe", "johndoe@google.com");
         waitUntilViewMatchesCondition(
                 withId(R.id.contact_summary), allOf(withText("johndoe@google.com"), isDisplayed()));
-        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
-        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("Continue"), isEnabled());
+        onView(withContentDescription("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
         assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
@@ -401,7 +399,6 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky: crbug/1053606")
     public void testExternalAddCreditCard() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
@@ -428,7 +425,7 @@ public class AutofillAssistantPersonalDataManagerTest {
         waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
                                               isDescendantOfA(withId(R.id.payment_method_summary))),
                 allOf(withText(containsString("1111")), isDisplayed()));
-        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        waitUntilViewMatchesCondition(withContentDescription("Continue"), isEnabled());
     }
 
     /**

@@ -126,19 +126,6 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
-     * Gets the Uri of top item on the primary clip on the Android clipboard.
-     *
-     * @return an Uri if any, or null if there is no Uri or no entries on the primary clip.
-     */
-    public Uri getUri() {
-        ClipData clipData = mClipboardManager.getPrimaryClip();
-        if (clipData == null) return null;
-        if (clipData.getItemCount() == 0) return null;
-
-        return clipData.getItemAt(0).getUri();
-    }
-
-    /**
      * Gets the HTML text of top item on the primary clip on the Android clipboard.
      *
      * @return a Java string with the html text if any, or null if there is no html
@@ -157,6 +144,25 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Gets the Uri of top item on the primary clip on the Android clipboard if the mime type is
+     * image.
+     *
+     * @return an Uri if mime type is image type, or null if there is no Uri or no entries on the
+     *         primary clip.
+     */
+    public Uri getImageUri() {
+        ClipData clipData = mClipboardManager.getPrimaryClip();
+        if (clipData == null || clipData.getItemCount() == 0) return null;
+
+        ClipDescription description = clipData.getDescription();
+        if (description == null || !description.hasMimeType("image/*")) {
+            return null;
+        }
+
+        return clipData.getItemAt(0).getUri();
+    }
+
+    /**
      * Emulates the behavior of the now-deprecated
      * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
      * clipboard's current primary clip to a plain-text clip that consists of
@@ -169,10 +175,22 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Writes HTML to the clipboard, together with a plain-text representation
+     * of that very data.
+     *
+     * @param html  The HTML content to be pasted to the clipboard.
+     * @param text  Plain-text representation of the HTML content.
+     */
+    @CalledByNative
+    private void setHTMLText(final String html, final String text) {
+        setPrimaryClipNoException(ClipData.newHtmlText("html", text, html));
+    }
+
+    /**
      * Setting the clipboard's current primary clip to an image.
      * @param Uri The {@link Uri} will become the content of the clipboard's primary clip.
      */
-    public void setImage(final Uri uri) {
+    public void setImageUri(final Uri uri) {
         if (uri == null) {
             showCopyToClipboardFailureMessage();
             return;
@@ -184,18 +202,6 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         ClipData clip = ClipData.newUri(
                 ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
         setPrimaryClipNoException(clip);
-    }
-
-    /**
-     * Writes HTML to the clipboard, together with a plain-text representation
-     * of that very data.
-     *
-     * @param html  The HTML content to be pasted to the clipboard.
-     * @param text  Plain-text representation of the HTML content.
-     */
-    @CalledByNative
-    private void setHTMLText(final String html, final String text) {
-        setPrimaryClipNoException(ClipData.newHtmlText("html", text, html));
     }
 
     /**

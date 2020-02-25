@@ -16,13 +16,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 #include "components/security_interstitials/content/content_metrics_helper.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/content/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -63,8 +63,8 @@ void RecordRecurrentErrorAction(
 
 bool HasSeenRecurrentErrorInternal(content::WebContents* web_contents,
                                    int cert_error) {
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(
+  StatefulSSLHostStateDelegate* state =
+      StatefulSSLHostStateDelegateFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   return state->HasSeenRecurrentErrors(cert_error);
 }
@@ -116,9 +116,10 @@ void SSLErrorControllerClient::Proceed() {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state = static_cast<ChromeSSLHostStateDelegate*>(
-      profile->GetSSLHostStateDelegate());
-  // ChromeSSLHostStateDelegate can be null during tests.
+  StatefulSSLHostStateDelegate* state =
+      static_cast<StatefulSSLHostStateDelegate*>(
+          profile->GetSSLHostStateDelegate());
+  // StatefulSSLHostStateDelegate can be null during tests.
   if (state) {
     state->AllowCert(request_url_.host(), *ssl_info_.cert.get(), cert_error_,
                      web_contents_);

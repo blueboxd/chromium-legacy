@@ -36,6 +36,7 @@ class MockManifestPermission : public ManifestPermission {
       const ManifestPermission* rhs) const override;
   std::unique_ptr<ManifestPermission> Intersect(
       const ManifestPermission* rhs) const override;
+  bool RequiresManagementUIWarning() const override;
 
  private:
   std::string name_;

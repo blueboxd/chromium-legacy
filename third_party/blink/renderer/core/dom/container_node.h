@@ -36,11 +36,9 @@
 
 namespace blink {
 
-class ClassCollection;
 class Element;
 class ExceptionState;
 class HTMLCollection;
-class NameNodeList;
 class RadioNodeList;
 class WhitespaceAttacher;
 
@@ -131,8 +129,8 @@ class CORE_EXPORT ContainerNode : public Node {
   HTMLCollection* getElementsByTagName(const AtomicString&);
   HTMLCollection* getElementsByTagNameNS(const AtomicString& namespace_uri,
                                          const AtomicString& local_name);
-  NameNodeList* getElementsByName(const AtomicString& element_name);
-  ClassCollection* getElementsByClassName(const AtomicString& class_names);
+  NodeList* getElementsByName(const AtomicString& element_name);
+  HTMLCollection* getElementsByClassName(const AtomicString& class_names);
   RadioNodeList* GetRadioNodeList(const AtomicString&,
                                   bool only_match_img_elements = false);
 

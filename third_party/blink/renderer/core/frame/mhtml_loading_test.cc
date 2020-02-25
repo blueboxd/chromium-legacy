@@ -216,7 +216,7 @@ TEST_F(MHTMLLoadingTest, FormControlElements) {
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
-  ClassCollection* formControlElements = document->getElementsByClassName("fc");
+  HTMLCollection* formControlElements = document->getElementsByClassName("fc");
   ASSERT_TRUE(formControlElements);
   for (Element* element : *formControlElements)
     EXPECT_TRUE(element->IsDisabledFormControl());

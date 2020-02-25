@@ -41,7 +41,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary2* 
 }
 
 template <>
-struct NativeValueTraits<TestDictionary2> : public NativeValueTraitsBase<TestDictionary2> {
+struct NativeValueTraits<TestDictionary2> : public NativeValueTraitsBase<TestDictionary2*> {
   MODULES_EXPORT static TestDictionary2* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 

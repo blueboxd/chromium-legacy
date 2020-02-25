@@ -6,8 +6,15 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chromeos/dbus/system_proxy/system_proxy_client.h"
+#include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+
+namespace {
+const char kSystemProxyService[] = "system-proxy-service";
+}
 
 namespace policy {
 
@@ -39,8 +46,63 @@ void SystemProxySettingsPolicyHandler::OnSystemProxySettingsPolicyChanged() {
   if (!proxy_settings)
     return;
 
-  // TODO(acostinas, chromium:1042626) Start/stop and configure system traffic
-  // credentials for System-proxy daemon according to policy.
+  bool enabled =
+      proxy_settings->FindBoolKey(chromeos::kSystemProxySettingsKeyEnabled)
+          .value_or(false);
+  // System-proxy is inactive by default.
+  if (!enabled) {
+    // Send a shut-down command to the daemon. Since System-proxy is started via
+    // dbus activation, if the daemon is inactive, this command will start the
+    // daemon and tell it to exit.
+    // TODO(crbug.com/1055245,acostinas): Do not send shut-down command if
+    // System-proxy is inactive.
+    chromeos::SystemProxyClient::Get()->ShutDownDaemon(
+        base::BindOnce(&SystemProxySettingsPolicyHandler::OnDaemonShutDown,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  const std::string* username = proxy_settings->FindStringKey(
+      chromeos::kSystemProxySettingsKeySystemServicesUsername);
+
+  const std::string* password = proxy_settings->FindStringKey(
+      chromeos::kSystemProxySettingsKeySystemServicesPassword);
+
+  if (!username || username->empty() || !password || password->empty()) {
+    NET_LOG_ERROR("Proxy credentials for system traffic not set.",
+                  kSystemProxyService);
+    return;
+  }
+
+  system_proxy::SetSystemTrafficCredentialsRequest request;
+  request.set_system_services_username(*username);
+  request.set_system_services_password(*password);
+
+  chromeos::SystemProxyClient::Get()->SetSystemTrafficCredentials(
+      request,
+      base::BindOnce(
+          &SystemProxySettingsPolicyHandler::OnSetSystemTrafficCredentials,
+          weak_factory_.GetWeakPtr()));
+}
+
+void SystemProxySettingsPolicyHandler::OnSetSystemTrafficCredentials(
+    const system_proxy::SetSystemTrafficCredentialsResponse& response) {
+  if (response.has_error_message()) {
+    NET_LOG_ERROR(
+        "Failed to set system traffic credentials for system proxy with "
+        "error: " +
+            response.error_message(),
+        kSystemProxyService);
+  }
+}
+
+void SystemProxySettingsPolicyHandler::OnDaemonShutDown(
+    const system_proxy::ShutDownResponse& response) {
+  if (response.has_error_message() && !response.error_message().empty()) {
+    NET_LOG_ERROR("Failed to shutdown system proxy with error: " +
+                      response.error_message(),
+                  kSystemProxyService);
+  }
 }
 
 }  // namespace policy

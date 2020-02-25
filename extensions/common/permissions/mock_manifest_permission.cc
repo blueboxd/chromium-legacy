@@ -56,4 +56,8 @@ std::unique_ptr<ManifestPermission> MockManifestPermission::Intersect(
   return std::make_unique<MockManifestPermission>(name_);
 }
 
+bool MockManifestPermission::RequiresManagementUIWarning() const {
+  return false;
+}
+
 }  // namespace extensions

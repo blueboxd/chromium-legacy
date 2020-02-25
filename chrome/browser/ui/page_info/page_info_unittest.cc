@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -32,7 +32,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -984,8 +984,8 @@ TEST_F(PageInfoTest, ReEnableWarnings) {
       "interstitial.ssl.did_user_revoke_decisions2";
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
-    ChromeSSLHostStateDelegate* ssl_state =
-        ChromeSSLHostStateDelegateFactory::GetForProfile(profile());
+    StatefulSSLHostStateDelegate* ssl_state =
+        StatefulSSLHostStateDelegateFactory::GetForProfile(profile());
     const std::string host = GURL(test.url).host();
 
     ssl_state->RevokeUserAllowExceptionsHard(host);

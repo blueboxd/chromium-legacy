@@ -40,7 +40,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -63,7 +63,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/features.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
@@ -372,8 +372,8 @@ PageInfo::PageInfo(
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
-      chrome_ssl_host_state_delegate_(
-          ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
+      stateful_ssl_host_state_delegate_(
+          StatefulSSLHostStateDelegateFactory::GetForProfile(profile)),
       tab_specific_content_settings_(tab_specific_content_settings),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
@@ -627,8 +627,8 @@ void PageInfo::OnUIClosing(bool* reload_prompt) {
 }
 
 void PageInfo::OnRevokeSSLErrorBypassButtonPressed() {
-  DCHECK(chrome_ssl_host_state_delegate_);
-  chrome_ssl_host_state_delegate_->RevokeUserAllowExceptionsHard(
+  DCHECK(stateful_ssl_host_state_delegate_);
+  stateful_ssl_host_state_delegate_->RevokeUserAllowExceptionsHard(
       site_url().host());
   did_revoke_user_ssl_decisions_ = true;
 }
@@ -946,8 +946,8 @@ __attribute__((optnone)) void PageInfo::ComputeUIInputs(
 
   // Check if a user decision has been made to allow or deny certificates with
   // errors on this site.
-  ChromeSSLHostStateDelegate* delegate =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile_);
+  StatefulSSLHostStateDelegate* delegate =
+      StatefulSSLHostStateDelegateFactory::GetForProfile(profile_);
   DCHECK(delegate);
   // Only show an SSL decision revoke button if the user has chosen to bypass
   // SSL host errors for this host in the past, and we're not presently on a

@@ -29,7 +29,6 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Promise;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -280,7 +279,6 @@ public class UpdateSuccessMetricsTest {
         Shadows.shadowOf(Looper.myLooper()).runToEndOfTasks();
         verify(mProvider, times(5)).clear();
         verify(mProvider, never()).put(any());
-        CachedMetrics.commitCachedMetrics();
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "GoogleUpdate.Result.Session.Inline.Menu", FAILED));

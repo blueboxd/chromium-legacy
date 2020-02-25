@@ -16,12 +16,19 @@ public class AssistantCarouselModel extends PropertyModel {
     public static final WritableObjectPropertyKey<List<AssistantChip>> CHIPS =
             new WritableObjectPropertyKey<>();
 
+    static final WritableBooleanPropertyKey DISABLE_CHANGE_ANIMATIONS =
+            new WritableBooleanPropertyKey();
+
     public AssistantCarouselModel() {
-        super(CHIPS);
+        super(CHIPS, DISABLE_CHANGE_ANIMATIONS);
         set(CHIPS, new ArrayList<>());
     }
 
     public void setChips(List<AssistantChip> chips) {
         set(CHIPS, chips);
+    }
+
+    public void setDisableChangeAnimations(boolean disable) {
+        set(DISABLE_CHANGE_ANIMATIONS, disable);
     }
 }

@@ -476,10 +476,15 @@ String GetStringFromTrustedScriptURL(
   if (string_or_trusted_script_url.IsTrustedScriptURL()) {
     return string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
   }
-
   DCHECK(string_or_trusted_script_url.IsString());
-  String string = string_or_trusted_script_url.GetAsString();
+  return GetStringFromTrustedScriptURL(
+      string_or_trusted_script_url.GetAsString(), execution_context,
+      exception_state);
+}
 
+String GetStringFromTrustedScriptURL(const String& string,
+                                     const ExecutionContext* execution_context,
+                                     ExceptionState& exception_state) {
   bool require_trusted_type =
       RequireTrustedTypesCheck(execution_context) &&
       RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context);

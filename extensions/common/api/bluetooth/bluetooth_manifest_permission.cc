@@ -191,4 +191,8 @@ void BluetoothManifestPermission::AddPermission(const std::string& uuid) {
   uuids_.insert(uuid);
 }
 
+bool BluetoothManifestPermission::RequiresManagementUIWarning() const {
+  return false;
+}
+
 }  // namespace extensions

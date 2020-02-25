@@ -73,18 +73,22 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kFontSettings, "fontSettings",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kHistory, "history"},
+    {APIPermission::kHistory, "history",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kIdltest, "idltest"},
     {APIPermission::kInput, "input"},
     {APIPermission::kManagement, "management"},
     {APIPermission::kMDns, "mdns", APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kPlatformKeys, "platformKeys"},
     {APIPermission::kPrivacy, "privacy"},
-    {APIPermission::kProcesses, "processes"},
+    {APIPermission::kProcesses, "processes",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kSessions, "sessions"},
     {APIPermission::kSignedInDevices, "signedInDevices"},
-    {APIPermission::kTab, "tabs"},
-    {APIPermission::kTopSites, "topSites"},
+    {APIPermission::kTab, "tabs",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
+    {APIPermission::kTopSites, "topSites",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kTransientBackground, "transientBackground",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kTts, "tts", APIPermissionInfo::kFlagCannotBeOptional},
@@ -92,7 +96,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kWallpaper, "wallpaper",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kWebNavigation, "webNavigation"},
+    {APIPermission::kWebNavigation, "webNavigation",
+     APIPermissionInfo::kFlagRequiresManagementUIWarning},
 
     // Register private permissions.
     {APIPermission::kActivityLogPrivate, "activityLogPrivate",
@@ -176,7 +181,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     // Full url access permissions.
     {APIPermission::kDebugger, "debugger",
      APIPermissionInfo::kFlagImpliesFullURLAccess |
-         APIPermissionInfo::kFlagCannotBeOptional},
+         APIPermissionInfo::kFlagCannotBeOptional |
+         APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kDevtools, "devtools",
      APIPermissionInfo::kFlagImpliesFullURLAccess |
          APIPermissionInfo::kFlagCannotBeOptional |

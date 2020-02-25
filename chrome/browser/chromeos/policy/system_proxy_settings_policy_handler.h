@@ -10,6 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
+namespace system_proxy {
+class SetSystemTrafficCredentialsResponse;
+class ShutDownResponse;
+}  // namespace system_proxy
+
 namespace policy {
 
 // This class observes the device setting |SystemProxySettings|, and controls
@@ -28,6 +33,10 @@ class SystemProxySettingsPolicyHandler {
   ~SystemProxySettingsPolicyHandler();
 
  private:
+  void OnSetSystemTrafficCredentials(
+      const system_proxy::SetSystemTrafficCredentialsResponse& response);
+  void OnDaemonShutDown(const system_proxy::ShutDownResponse& response);
+
   // Once a trusted set of policies is established, this function calls
   // the System-proxy dbus client to start/shutdown the daemon and, if
   // necessary, to configure the web proxy credentials for system services.

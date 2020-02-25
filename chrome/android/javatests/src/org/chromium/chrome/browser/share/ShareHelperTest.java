@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
-import android.support.v4.content.FileProvider;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,12 +16,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.base.Clipboard;
@@ -45,17 +43,6 @@ public class ShareHelperTest {
 
     private static final long WAIT_TIMEOUT_SECONDS = 5L;
     private static final byte[] TEST_IMAGE_DATA = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-
-    private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
-        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
-
-        @Override
-        public Uri getContentUriFromFile(File file) {
-            Context appContext = ContextUtils.getApplicationContext();
-            return FileProvider.getUriForFile(
-                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
-        }
-    }
 
     private class GenerateUriCallback extends CallbackHelper implements Callback<Uri> {
         private Uri mImageUri;
@@ -120,7 +107,7 @@ public class ShareHelperTest {
         ShareHelper.generateUriFromData(
                 mActivityTestRule.getActivity(), TEST_IMAGE_DATA, imageCallback);
         imageCallback.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        Clipboard.getInstance().setImage(imageCallback.getImageUri());
+        Clipboard.getInstance().setImageUri(imageCallback.getImageUri());
         return imageCallback.getImageUri();
     }
 

@@ -85,20 +85,33 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
   return permission_ids;
 }
 
-PermissionMessages
-ChromePermissionMessageProvider::GetPowerfulPermissionMessages(
-    const PermissionIDSet& permissions) const {
-  std::vector<ChromePermissionMessageRule> rules =
-      ChromePermissionMessageRule::GetAllRules();
+PermissionIDSet ChromePermissionMessageProvider::GetManagementUIPermissionIDs(
+    const PermissionSet& permissions,
+    Manifest::Type extension_type) const {
+  PermissionIDSet permission_ids;
+  AddAPIPermissionsForManagementUIWarning(permissions, &permission_ids);
+  AddManifestPermissionsForManagementUIWarning(permissions, &permission_ids);
+  AddHostPermissions(permissions, &permission_ids, extension_type);
+  return permission_ids;
+}
 
-  // We pick only top N rules as they are considered as most sensitive ones.
-  // TODO(crbug.com/888981): Find a better way to get wanted rules. Maybe add a
-  // bool to each one telling if we should consider it here or not.
-  constexpr size_t rules_considered = 18;
-  rules.erase(rules.begin() + std::min(rules_considered, rules.size()),
-              rules.end());
+void ChromePermissionMessageProvider::AddAPIPermissionsForManagementUIWarning(
+    const PermissionSet& permissions,
+    PermissionIDSet* permission_ids) const {
+  for (const APIPermission* permission : permissions.apis()) {
+    if (permission->info()->requires_management_ui_warning())
+      permission_ids->InsertAll(permission->GetPermissions());
+  }
+}
 
-  return GetPermissionMessagesHelper(permissions, rules);
+void ChromePermissionMessageProvider::
+    AddManifestPermissionsForManagementUIWarning(
+        const PermissionSet& permissions,
+        PermissionIDSet* permission_ids) const {
+  for (const ManifestPermission* p : permissions.manifest_permissions()) {
+    if (p->RequiresManagementUIWarning())
+      permission_ids->InsertAll(p->GetPermissions());
+  }
 }
 
 void ChromePermissionMessageProvider::AddAPIPermissions(

@@ -54,17 +54,18 @@ class GuestDriver {
    * it returns an element.
    *
    * @param {string} query the querySelector to run in the guest.
-   * @param {?string} opt_property a property to request on the found element.
+   * @param {string=} opt_property a property to request on the found element.
+   * @param {Object=} opt_commands test commands to execute on the element.
    * @return Promise<string> JSON.stringify()'d value of the property, or
    *   tagName if unspecified.
    */
-  async waitForElementInGuest(query, opt_property) {
+  async waitForElementInGuest(query, opt_property, opt_commands = {}) {
     const frame = assertInstanceof(
         document.querySelector(`iframe[src^="${this.origin}"]`),
         HTMLIFrameElement);
     /** @type{TestMessageQueryData} */
     const message = {testQuery: query, property: opt_property};
-    frame.contentWindow.postMessage(message, this.origin);
+    frame.contentWindow.postMessage({...message, ...opt_commands}, this.origin);
     const event = await this.popTestMessage();
     return event.data.testQueryResult;
   }

@@ -64,7 +64,7 @@ class CORE_EXPORT CascadePriority {
                   bool important,
                   uint16_t tree_order,
                   uint32_t position)
-      : bits_(position << 4 |
+      : bits_(static_cast<uint64_t>(position) << 4 |
               EncodeTreeOrder(tree_order, important) << kTreeOrderOffset |
               EncodeOriginImportance(origin, important)
                   << kOriginImportanceOffset) {}

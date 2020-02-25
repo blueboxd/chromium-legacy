@@ -11,12 +11,18 @@
   TestRunner.clickOnURL = function() {
     UI.viewManager.showView("console").then(() => {
       Console.ConsoleView.instance()._updateMessageList();
-      var xpathResult = document.evaluate("//span[@class='devtools-link' and starts-with(., 'test-script.js')]",
-                                          Console.ConsoleView.instance().element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
 
-      var click = document.createEvent("MouseEvent");
-      click.initMouseEvent("click", true, true);
-      xpathResult.singleNodeValue.dispatchEvent(click);
+      // Trigger link creation so we can properly await pending live location updates. Needed so we can
+      // click the link in the first place.
+      for (const messageView of Console.ConsoleView.instance()._visibleViewMessages) messageView.element();
+      TestRunner.waitForPendingLiveLocationUpdates().then(() => {
+        var xpathResult = document.evaluate("//span[@class='devtools-link' and starts-with(., 'test-script.js')]",
+                                            Console.ConsoleView.instance().element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+
+        var click = document.createEvent("MouseEvent");
+        click.initMouseEvent("click", true, true);
+        xpathResult.singleNodeValue.dispatchEvent(click);
+      });
     });
   }
 

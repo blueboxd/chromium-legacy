@@ -636,6 +636,15 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
   }
+
+  if (policy.has_system_proxy_settings()) {
+    const em::SystemProxySettingsProto& settings_proto(
+        policy.system_proxy_settings());
+    if (settings_proto.has_system_proxy_settings()) {
+      SetJsonDevicePolicy(key::kSystemProxySettings,
+                          settings_proto.system_proxy_settings(), policies);
+    }
+  }
 }
 
 void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,

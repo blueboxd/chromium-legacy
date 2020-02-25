@@ -15,12 +15,14 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "extensions/browser/content_verifier/content_verifier_utils.h"
 
 namespace extensions {
 
 using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
 using ShouldComputeHashesCallback =
     base::RepeatingCallback<bool(const base::FilePath& relative_path)>;
+using CanonicalRelativePath = content_verifier_utils::CanonicalRelativePath;
 
 // A class for storage and serialization of a set of SHA256 block hashes
 // computed over the files inside an extension.
@@ -51,7 +53,7 @@ class ComputedHashes {
       HashInfo(HashInfo&&);
       HashInfo& operator=(HashInfo&&);
     };
-    using Items = std::map<base::FilePath::StringType, HashInfo>;
+    using Items = std::map<CanonicalRelativePath, HashInfo>;
 
     Data();
     ~Data();

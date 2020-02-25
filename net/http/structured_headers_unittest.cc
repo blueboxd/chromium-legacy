@@ -29,12 +29,20 @@ std::pair<std::string, Item> Param(std::string key) {
   return std::make_pair(key, Item());
 }
 
+std::pair<std::string, Item> DoubleParam(std::string key, double value) {
+  return std::make_pair(key, Item(value));
+}
+
 std::pair<std::string, Item> Param(std::string key, int64_t value) {
   return std::make_pair(key, Item(value));
 }
 
 std::pair<std::string, Item> Param(std::string key, std::string value) {
   return std::make_pair(key, Item(value));
+}
+
+std::pair<std::string, Item> TokenParam(std::string key, std::string value) {
+  return std::make_pair(key, Token(value));
 }
 
 // Most test cases are taken from
@@ -50,7 +58,7 @@ const struct ItemTestCase {
     {"basic token - item", "a_b-c.d3:f%00/*", Token("a_b-c.d3:f%00/*")},
     {"token with capitals - item", "fooBar", Token("fooBar")},
     {"token starting with capitals - item", "FooBar", Token("FooBar")},
-    {"bad token - item", "abc$%!", base::nullopt},
+    {"bad token - item", "abc$@%!", base::nullopt},
     {"leading whitespace", " foo", Token("foo"), "foo"},
     {"trailing whitespace", "foo ", Token("foo"), "foo"},
     // Number
@@ -638,7 +646,42 @@ const struct ItemTestCase {
     {"c-style unicode escape in string", "\"\\u0061\"", base::nullopt},
 };
 
-// For Structured Headers Draft 13
+// For Structured Headers Draft 15
+const struct ParameterizedItemTestCase {
+  const char* name;
+  const char* raw;
+  const base::Optional<ParameterizedItem>
+      expected;           // nullopt if parse error is expected.
+  const char* canonical;  // nullptr if parse error is expected, or if canonical
+                          // format is identical to raw.
+} parameterized_item_test_cases[] = {
+    {"single parameter item",
+     "text/html;q=1.0",
+     {{Token("text/html"), {DoubleParam("q", 1)}}}},
+    {"missing parameter value item",
+     "text/html;a;q=1.0",
+     {{Token("text/html"), {Param("a"), DoubleParam("q", 1)}}}},
+    {"missing terminal parameter value item",
+     "text/html;q=1.0;a",
+     {{Token("text/html"), {DoubleParam("q", 1), Param("a")}}}},
+    {"whitespace before = parameterised item", "text/html, text/plain;q =0.5",
+     base::nullopt},
+    {"whitespace after = parameterised item", "text/html, text/plain;q= 0.5",
+     base::nullopt},
+    {"whitespace before ; parameterised item", "text/html, text/plain ;q=0.5",
+     base::nullopt},
+    {"whitespace after ; parameterised item",
+     "text/plain; q=0.5",
+     {{Token("text/plain"), {DoubleParam("q", 0.5)}}},
+     "text/plain;q=0.5"},
+    {"extra whitespace parameterised item",
+     "text/plain;  q=0.5;  charset=utf-8",
+     {{Token("text/plain"),
+       {DoubleParam("q", 0.5), TokenParam("charset", "utf-8")}}},
+     "text/plain;q=0.5;charset=utf-8"},
+};
+
+// For Structured Headers Draft 15
 const struct ListTestCase {
   const char* name;
   const char* raw;
@@ -659,55 +702,85 @@ const struct ListTestCase {
     // Lists of lists
     {"basic list of lists",
      "(1 2), (42 43)",
-     {{{{Integer(1L), Integer(2L)}, {}}, {{Integer(42L), Integer(43L)}, {}}}}},
+     {{{{{Integer(1L), {}}, {Integer(2L), {}}}, {}},
+       {{{Integer(42L), {}}, {Integer(43L), {}}}, {}}}}},
     {"single item list of lists",
      "(42)",
-     {{{std::vector<Item>{Integer(42L)}, {}}}}},
-    {"empty item list of lists", "()", {{{std::vector<Item>(), {}}}}},
+     {{{std::vector<ParameterizedItem>{{Integer(42L), {}}}, {}}}}},
+    {"empty item list of lists",
+     "()",
+     {{{std::vector<ParameterizedItem>(), {}}}}},
     {"empty middle item list of lists",
      "(1),(),(42)",
-     {{{std::vector<Item>{Integer(1L)}, {}},
-       {std::vector<Item>(), {}},
-       {std::vector<Item>{Integer(42L)}, {}}}},
+     {{{std::vector<ParameterizedItem>{{Integer(1L), {}}}, {}},
+       {std::vector<ParameterizedItem>(), {}},
+       {std::vector<ParameterizedItem>{{Integer(42L), {}}}, {}}}},
      "(1), (), (42)"},
     {"extra whitespace list of lists",
      "(1  42)",
-     {{{{Integer(1L), Integer(42L)}, {}}}},
+     {{{{{Integer(1L), {}}, {Integer(42L), {}}}, {}}}},
      "(1 42)"},
     {"no trailing parenthesis list of lists", "(1 42", base::nullopt},
     {"no trailing parenthesis middle list of lists", "(1 2, (42 43)",
      base::nullopt},
     // Parameterized Lists
     {"basic parameterised list",
-     "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"w\"",
+     "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"+w\"",
      {{{Token("abc_123"), {Param("a", 1), Param("b", 2), Param("cdef_456")}},
-       {Token("ghi"), {Param("q", "9"), Param("r", "w")}}}},
-     "abc_123;a=1;b=2;cdef_456, ghi;q=\"9\";r=\"w\""},
+       {Token("ghi"), {Param("q", "9"), Param("r", "+w")}}}},
+     "abc_123;a=1;b=2;cdef_456, ghi;q=\"9\";r=\"+w\""},
     {"single item parameterised list",
-     "text/html;q=1",
-     {{{Token("text/html"), {Param("q", 1)}}}}},
+     "text/html;q=1.0",
+     {{{Token("text/html"), {DoubleParam("q", 1)}}}}},
+    {"missing parameter value parameterised list",
+     "text/html;a;q=1.0",
+     {{{Token("text/html"), {Param("a"), DoubleParam("q", 1)}}}}},
+    {"missing terminal parameter value parameterised list",
+     "text/html;q=1.0;a",
+     {{{Token("text/html"), {DoubleParam("q", 1), Param("a")}}}}},
     {"no whitespace parameterised list",
-     "text/html,text/plain;q=1",
-     {{{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}},
-     "text/html, text/plain;q=1"},
-    {"whitespace before = parameterised list", "text/html, text/plain;q =1",
+     "text/html,text/plain;q=0.5",
+     {{{Token("text/html"), {}},
+       {Token("text/plain"), {DoubleParam("q", 0.5)}}}},
+     "text/html, text/plain;q=0.5"},
+    {"whitespace before = parameterised list", "text/html, text/plain;q =0.5",
      base::nullopt},
-    {"whitespace after = parameterised list", "text/html, text/plain;q= 1",
+    {"whitespace after = parameterised list", "text/html, text/plain;q= 0.5",
      base::nullopt},
-    {"extra whitespace param-list",
-     "text/html  ,  text/plain ;  q=1",
-     {{{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}},
-     "text/html, text/plain;q=1"},
-    {"empty item parameterised list", "text/html,,text/plain;q=1",
+    {"whitespace before ; parameterised list", "text/html, text/plain ;q=0.5",
+     base::nullopt},
+    {"whitespace after ; parameterised list",
+     "text/html, text/plain; q=0.5",
+     {{{Token("text/html"), {}},
+       {Token("text/plain"), {DoubleParam("q", 0.5)}}}},
+     "text/html, text/plain;q=0.5"},
+    {"extra whitespace parameterised list",
+     "text/html  ,  text/plain;  q=0.5;  charset=utf-8",
+     {{{Token("text/html"), {}},
+       {Token("text/plain"),
+        {DoubleParam("q", 0.5), TokenParam("charset", "utf-8")}}}},
+     "text/html, text/plain;q=0.5;charset=utf-8"},
+    {"trailing comma parameterised list", "text/html,text/plain;q=0.5,",
+     base::nullopt},
+    {"empty item parameterised list", "text/html,,text/plain;q=0.5",
      base::nullopt},
 };
 
 }  // namespace
 
-TEST(StructuredHeaderTest, ParseItem) {
+TEST(StructuredHeaderTest, ParseBareItem) {
   for (const auto& c : item_test_cases) {
     SCOPED_TRACE(c.name);
-    base::Optional<Item> result = ParseItem(c.raw);
+    base::Optional<Item> result = ParseBareItem(c.raw);
+    EXPECT_EQ(result, c.expected);
+  }
+}
+
+// For Structured Headers Draft 15, these tests include parameters on Items.
+TEST(StructuredHeaderTest, ParseItem) {
+  for (const auto& c : parameterized_item_test_cases) {
+    SCOPED_TRACE(c.name);
+    base::Optional<ParameterizedItem> result = ParseItem(c.raw);
     EXPECT_EQ(result, c.expected);
   }
 }
@@ -826,7 +899,7 @@ TEST(StructuredHeaderTest, ParseParameterisedList) {
   }
 }
 
-// For Structured Headers Draft 13
+// For Structured Headers Draft 15
 TEST(StructuredHeaderTest, ParseList) {
   for (const auto& c : list_test_cases) {
     SCOPED_TRACE(c.name);
@@ -835,10 +908,21 @@ TEST(StructuredHeaderTest, ParseList) {
   }
 }
 
-// Serializer tests are all exclusively for Structured Headers Draft 13
+// Serializer tests are all exclusively for Structured Headers Draft 15
 
 TEST(StructuredHeaderTest, SerializeItem) {
   for (const auto& c : item_test_cases) {
+    SCOPED_TRACE(c.name);
+    if (c.expected) {
+      base::Optional<std::string> result = SerializeItem(*c.expected);
+      EXPECT_TRUE(result.has_value());
+      EXPECT_EQ(result.value(), std::string(c.canonical ? c.canonical : c.raw));
+    }
+  }
+}
+
+TEST(StructuredHeaderTest, SerializeParameterizedItem) {
+  for (const auto& c : parameterized_item_test_cases) {
     SCOPED_TRACE(c.name);
     if (c.expected) {
       base::Optional<std::string> result = SerializeItem(*c.expected);
@@ -881,6 +965,39 @@ TEST(StructuredHeaderTest, UnserializableTokens) {
     SCOPED_TRACE(bad_token.name);
     base::Optional<std::string> serialization =
         SerializeItem(Token(bad_token.value));
+    EXPECT_FALSE(serialization.has_value()) << *serialization;
+  }
+}
+
+TEST(StructuredHeaderTest, UnserializableKeys) {
+  static const struct UnserializableString {
+    const char* name;
+    const char* value;
+  } bad_keys[] = {
+      {"empty key", ""},
+      {"contains high ascii", "a\xff"},
+      {"contains nonprintable character", "a\x7f"},
+      {"contains C0", "a\x01"},
+      {"UTF-8 encoded", "a\xc3\xa9"},
+      {"contains TAB", "a\t"},
+      {"contains LF", "a\n"},
+      {"contains CR", "a\r"},
+      {"contains SP", "a "},
+      {"begins with uppercase", "Atoken"},
+      {"begins with digit", "9token"},
+      {"begins with hyphen", "-token"},
+      {"begins with LF", "\ntoken"},
+      {"begins with SP", " token"},
+      {"begins with colon", ":token"},
+      {"begins with percent", "%token"},
+      {"begins with period", ".token"},
+      {"begins with asterisk", "*token"},
+      {"begins with slash", "/token"},
+  };
+  for (const auto& bad_key : bad_keys) {
+    SCOPED_TRACE(bad_key.name);
+    base::Optional<std::string> serialization =
+        SerializeItem(ParameterizedItem("a", {{bad_key.value, "a"}}));
     EXPECT_FALSE(serialization.has_value()) << *serialization;
   }
 }
@@ -989,7 +1106,7 @@ TEST(StructuredHeaderTest, UnserializableLists) {
        {{Token("abc"), {Param("a:", 1)}}}},
       {"Param value is unserializable", {{Token("abc"), {{"a", Token("\n")}}}}},
       {"Inner list contains unserializable item",
-       {{std::vector<Item>{Token("\n")}, {}}}},
+       {{std::vector<ParameterizedItem>{{Token("\n"), {}}}, {}}}},
   };
   for (const auto& bad_list : bad_lists) {
     SCOPED_TRACE(bad_list.name);

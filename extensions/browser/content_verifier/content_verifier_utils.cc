@@ -22,15 +22,15 @@ bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
   return true;
 }
 
-base::FilePath::StringType CanonicalizeRelativePath(
+CanonicalRelativePath CanonicalizeRelativePath(
     const base::FilePath& relative_path) {
-  base::FilePath::StringType canonicalized_path =
+  base::FilePath::StringType canonical_path =
       relative_path.NormalizePathSeparatorsTo('/').value();
   if (!IsFileAccessCaseSensitive())
-    canonicalized_path = base::ToLowerASCII(canonicalized_path);
+    canonical_path = base::ToLowerASCII(canonical_path);
   if (IsDotSpaceFilenameSuffixIgnored())
-    TrimDotSpaceSuffix(canonicalized_path, &canonicalized_path);
-  return canonicalized_path;
+    TrimDotSpaceSuffix(canonical_path, &canonical_path);
+  return CanonicalRelativePath(std::move(canonical_path));
 }
 
 }  // namespace content_verifier_utils

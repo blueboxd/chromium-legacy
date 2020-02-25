@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "extensions/browser/content_verifier/content_verifier_utils.h"
 #include "extensions/browser/content_verifier/scoped_uma_recorder.h"
 
 namespace extensions {
@@ -66,30 +65,29 @@ ComputedHashes::Data::HashInfo& ComputedHashes::Data::HashInfo::operator=(
 
 const ComputedHashes::Data::HashInfo* ComputedHashes::Data::GetItem(
     const base::FilePath& relative_path) const {
-  base::FilePath::StringType canonicalized_path =
+  CanonicalRelativePath canonical_path =
       content_verifier_utils::CanonicalizeRelativePath(relative_path);
-  auto iter = items_.find(canonicalized_path);
+  auto iter = items_.find(canonical_path);
   return iter == items_.end() ? nullptr : &iter->second;
 }
 
 void ComputedHashes::Data::Add(const base::FilePath& relative_path,
                                int block_size,
                                std::vector<std::string> hashes) {
-  base::FilePath::StringType canonicalized_path =
+  CanonicalRelativePath canonical_path =
       content_verifier_utils::CanonicalizeRelativePath(relative_path);
-  items_.insert(
-      std::make_pair(canonicalized_path,
-                     HashInfo(block_size, std::move(hashes),
-                              relative_path.NormalizePathSeparatorsTo('/'))));
+  items_.insert(std::make_pair(
+      canonical_path, HashInfo(block_size, std::move(hashes),
+                               relative_path.NormalizePathSeparatorsTo('/'))));
 }
 
 void ComputedHashes::Data::Remove(const base::FilePath& relative_path) {
-  base::FilePath::StringType canonicalized_path =
+  CanonicalRelativePath canonical_path =
       content_verifier_utils::CanonicalizeRelativePath(relative_path);
-  items_.erase(canonicalized_path);
+  items_.erase(canonical_path);
 }
 
-const std::map<base::FilePath::StringType, ComputedHashes::Data::HashInfo>&
+const std::map<CanonicalRelativePath, ComputedHashes::Data::HashInfo>&
 ComputedHashes::Data::items() const {
   return items_;
 }

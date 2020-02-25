@@ -554,21 +554,9 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETENCLOSINGELEMENT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(element);
 
-  AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
-  DCHECK(common_anchor);
-  if (!common_anchor)
+  AXPlatformNodeWin* enclosing_node = GetLowestAccessibleCommonPlatformNode();
+  if (!enclosing_node)
     return UIA_E_ELEMENTNOTAVAILABLE;
-
-  const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
-  const AXNode::AXID node_id = common_anchor->id();
-  AXPlatformNodeWin* enclosing_node =
-      static_cast<AXPlatformNodeWin*>(AXPlatformNode::FromNativeViewAccessible(
-          GetDelegate(tree_id, node_id)->GetNativeViewAccessible()));
-  DCHECK(enclosing_node);
-  // If this node has an ancestor that is a control type, use that as the
-  // enclosing element.
-  enclosing_node = enclosing_node->GetLowestAccessibleElement();
-  DCHECK(enclosing_node);
 
   while (enclosing_node->GetData().IsIgnored() ||
          enclosing_node->GetData().role == ax::mojom::Role::kInlineTextBox) {
@@ -1263,6 +1251,23 @@ void AXPlatformNodeTextRangeProviderWin::ValidateStartAndEndPositions() {
 
   if (end_->AtLastNodeInTree())
     end_->SnapToMaxTextOffsetIfBeyond();
+}
+
+AXPlatformNodeWin*
+AXPlatformNodeTextRangeProviderWin::GetLowestAccessibleCommonPlatformNode()
+    const {
+  AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+  if (!common_anchor)
+    return nullptr;
+
+  const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
+  const AXNode::AXID node_id = common_anchor->id();
+  AXPlatformNodeWin* platform_node =
+      static_cast<AXPlatformNodeWin*>(AXPlatformNode::FromNativeViewAccessible(
+          GetDelegate(tree_id, node_id)->GetNativeViewAccessible()));
+  DCHECK(platform_node);
+
+  return platform_node->GetLowestAccessibleElement();
 }
 
 }  // namespace ui

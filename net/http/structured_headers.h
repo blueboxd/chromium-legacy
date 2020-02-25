@@ -21,9 +21,9 @@ namespace structured_headers {
 // This file implements parsing of HTTP structured headers, as defined in
 // https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html.
 //
-// Both drafts 9 and 13 are currently supported. The major difference
+// Both drafts 9 and 15 are currently supported. The major difference
 // between the two drafts is in the various list formats: Draft 9 describes
-// Parameterised lists and lists-of-lists, while draft 13 uses a single List
+// Parameterised lists and lists-of-lists, while draft 15 uses a single List
 // syntax, whose members may be inner lists. There should be no ambiguity,
 // however, as the code which calls this parser should be expecting only a
 // single type for a given header.
@@ -135,12 +135,33 @@ inline bool operator==(const ParameterisedIdentifier& lhs,
          std::tie(rhs.identifier, rhs.params);
 }
 
-// Holds a ParameterizedMember, which may be either an Inner List, or a single
-// Item, with any number of parameters. Parameter ordering is significant.
-struct NET_EXPORT ParameterizedMember {
-  using Parameters = std::vector<std::pair<std::string, Item>>;
+using Parameters = std::vector<std::pair<std::string, Item>>;
 
-  std::vector<Item> member;
+struct NET_EXPORT ParameterizedItem {
+  Item item;
+  Parameters params;
+
+  ParameterizedItem(const ParameterizedItem&);
+  ParameterizedItem& operator=(const ParameterizedItem&);
+  ParameterizedItem(Item, const Parameters&);
+  ~ParameterizedItem();
+};
+
+inline bool operator==(const ParameterizedItem& lhs,
+                       const ParameterizedItem& rhs) {
+  return std::tie(lhs.item, lhs.params) == std::tie(rhs.item, rhs.params);
+}
+
+inline bool operator!=(const ParameterizedItem& lhs,
+                       const ParameterizedItem& rhs) {
+  return !(lhs == rhs);
+}
+
+// Holds a ParameterizedMember, which may be either an single Item, or an Inner
+// List of ParameterizedItems, along with any number of parameters. Parameter
+// ordering is significant.
+struct NET_EXPORT ParameterizedMember {
+  std::vector<ParameterizedItem> member;
   // If false, then |member| should only hold one Item.
   bool member_is_inner_list;
 
@@ -148,9 +169,11 @@ struct NET_EXPORT ParameterizedMember {
 
   ParameterizedMember(const ParameterizedMember&);
   ParameterizedMember& operator=(const ParameterizedMember&);
-  ParameterizedMember(std::vector<Item>, bool, const Parameters&);
+  ParameterizedMember(std::vector<ParameterizedItem>,
+                      bool member_is_inner_list,
+                      const Parameters&);
   // Shorthand constructor for a member which is an inner list.
-  ParameterizedMember(std::vector<Item>, const Parameters&);
+  ParameterizedMember(std::vector<ParameterizedItem>, const Parameters&);
   // Shorthand constructor for a member which is a single Item.
   ParameterizedMember(Item, const Parameters&);
   ~ParameterizedMember();
@@ -166,13 +189,18 @@ inline bool operator==(const ParameterizedMember& lhs,
 using ParameterisedList = std::vector<ParameterisedIdentifier>;
 // Structured Headers Draft 09 List of Lists.
 using ListOfLists = std::vector<std::vector<Item>>;
-// Structured Headers Draft 13 List.
+// Structured Headers Draft 15 List.
 using List = std::vector<ParameterizedMember>;
 
 // Returns the result of parsing the header value as an Item, if it can be
-// parsed as one, or nullopt if it cannot. Note that this uses the Draft 13
+// parsed as one, or nullopt if it cannot. Note that this uses the Draft 15
 // parsing rules, and so applies tighter range limits to integers.
-NET_EXPORT base::Optional<Item> ParseItem(base::StringPiece str);
+NET_EXPORT base::Optional<ParameterizedItem> ParseItem(base::StringPiece str);
+
+// Returns the result of parsing the header value as an Item with no parameters,
+// or nullopt if it cannot. Note that this uses the Draft 15 parsing rules, and
+// so applies tighter range limits to integers.
+NET_EXPORT base::Optional<Item> ParseBareItem(base::StringPiece str);
 
 // Returns the result of parsing the header value as a Parameterised List, if it
 // can be parsed as one, or nullopt if it cannot. Note that parameter keys will
@@ -192,11 +220,13 @@ NET_EXPORT base::Optional<ListOfLists> ParseListOfLists(base::StringPiece str);
 
 // Returns the result of parsing the header value as a general List, if it can
 // be parsed as one, or nullopt if it cannot.
-// Structured-Headers Draft 13 only.
+// Structured-Headers Draft 15 only.
 NET_EXPORT base::Optional<List> ParseList(base::StringPiece str);
 
-// Serialization is implemented for Structured-Headers Draft 13 only.
+// Serialization is implemented for Structured-Headers Draft 15 only.
 NET_EXPORT base::Optional<std::string> SerializeItem(const Item& value);
+NET_EXPORT base::Optional<std::string> SerializeItem(
+    const ParameterizedItem& value);
 NET_EXPORT base::Optional<std::string> SerializeList(const List& value);
 
 }  // namespace structured_headers

@@ -618,6 +618,9 @@ crbug.com/949909 external/wpt/css/css-text-decor/text-decoration-085-manual.html
 crbug.com/949909 external/wpt/css/css-text-decor/text-decoration-097a-manual.html [ Skip ]
 crbug.com/949909 external/wpt/css/css-text-decor/text-decoration-040-manual.html [ Skip ]
 
+# `text-decoration-skip-ink: all` not implemented yet.
+crbug.com/1054656 external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Skip ]
+
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/722825 virtual/audio-service/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 
@@ -3826,9 +3829,6 @@ crbug.com/626703 [ Win ] external/wpt/html/semantics/forms/the-input-element/max
 crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/the-input-element/maxlength-number.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Timeout ]

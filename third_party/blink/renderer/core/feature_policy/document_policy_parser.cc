@@ -43,12 +43,13 @@ DocumentPolicyParser::ParseInternal(
   DocumentPolicy::FeatureState policy;
   for (const net::structured_headers::ParameterizedMember& directive :
        root.value()) {
-    // Each directive is allowed exactly 1 member.
-    if (directive.member.size() != 1)
+    // Directives must not be inner lists.
+    if (directive.member_is_inner_list)
       return base::nullopt;
 
     const net::structured_headers::Item& feature_token =
-        directive.member.front();
+        directive.member.front().item;
+
     // The item in directive should be token type.
     if (!feature_token.is_token())
       return base::nullopt;

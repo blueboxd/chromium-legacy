@@ -64,7 +64,7 @@ base::Optional<std::string> DocumentPolicy::Serialize(
               net::structured_headers::Item::ItemType::kTokenType),
           {}));
     } else {
-      net::structured_headers::ParameterizedMember::Parameters params;
+      net::structured_headers::Parameters params;
       params.push_back(std::pair<std::string, net::structured_headers::Item>{
           info.feature_param_name, PolicyValueToItem(value)});
       root.push_back(net::structured_headers::ParameterizedMember(

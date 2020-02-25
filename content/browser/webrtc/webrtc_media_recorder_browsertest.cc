@@ -59,9 +59,6 @@ class MAYBE_WebRtcMediaRecorderTest
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
   void MaybeForceDisableEncodeAccelerator(bool disable) {

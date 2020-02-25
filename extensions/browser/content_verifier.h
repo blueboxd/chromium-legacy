@@ -49,9 +49,10 @@ class Extension;
 //   2. Relative unix path: Some underlying parts of content-verification
 //      require uniform separator, we use '/' as separator so it is effectively
 //      unix style. Note that this is a reversible transformation.
-//   3. Canonicalized relative_path: Canonicalized paths are used as keys of
-//      maps within VerifiedContents and ComputedHashes. This takes care of OS
-//      specific file access issues:
+//   3. content_verifier_utils::CanonicalRelativePath:
+//      Canonicalized relative paths are used as keys of maps within
+//      VerifiedContents and ComputedHashes. This takes care of OS specific file
+//      access issues:
 //      - windows/mac is case insensitive while accessing files.
 //      - windows ignores (.| )+ suffixes in filename while accessing a file.
 //      Canonicalization consists of normalizing the separators, lower casing

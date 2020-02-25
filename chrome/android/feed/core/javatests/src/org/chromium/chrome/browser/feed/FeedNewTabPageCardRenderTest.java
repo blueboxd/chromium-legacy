@@ -52,7 +52,8 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags
         .Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-        @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+        @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
         public class FeedNewTabPageCardRenderTest {
     private static final String TEST_FEED_DATA_BASE_PATH = "/chrome/test/data/android/feed/";
 

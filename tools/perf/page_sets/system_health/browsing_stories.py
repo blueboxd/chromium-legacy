@@ -1091,57 +1091,6 @@ class GoogleMapsStory2019(_BrowsingStory):
       action_runner.Wait(3)
 
 
-class GoogleEarthStory(_BrowsingStory):
-  """
-  Google Earth story:
-    _ Start at https://www.maps.google.com/maps
-    _ Click on the Earth link
-    _ Click ZoomIn three times, waiting for 3 sec in between.
-
-  """
-  # When recording this story:
-  # Force tactile using this: http://google.com/maps?force=tt
-  # Force webgl using this: http://google.com/maps?force=webgl
-  # Change the speed as mentioned in the comment below for
-  # RepeatableBrowserDrivenScroll
-  NAME = 'browse:tools:earth'
-  # Randomly picked location.
-  URL = 'https://www.google.co.uk/maps/@51.4655936,-0.0985949,3329a,35y,40.58t/data=!3m1!1e3'
-  _EARTH_BUTTON_SELECTOR = '[aria-labelledby="widget-minimap-caption"]'
-  _EARTH_ZOOM_IN_SELECTOR = '[aria-label="Zoom in"]'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [
-      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
-      story_tags.YEAR_2016
-  ]
-
-  def _DidLoadDocument(self, action_runner):
-    # Zommin three times.
-    action_runner.WaitForElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
-    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
-    # To make the recording more realistic.
-    action_runner.Wait(1)
-    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
-    # To make the recording more realistic.
-    action_runner.Wait(1)
-    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
-    # To make the recording more realistic.
-    action_runner.Wait(1)
-    action_runner.ClickElement(selector=self._EARTH_ZOOM_IN_SELECTOR)
-    action_runner.Wait(4)
-
-    # Reduce the speed (the current wpr is recorded with speed set to 50)  when
-    # recording the wpr. If we scroll too fast, the data will not be recorded
-    # well. After recording reset it back to the original value to have a more
-    # realistic scroll.
-    action_runner.RepeatableBrowserDrivenScroll(
-        x_scroll_distance_ratio = 0.0, y_scroll_distance_ratio = 1,
-        repeat_count=3, speed=400, timeout=120)
-    action_runner.RepeatableBrowserDrivenScroll(
-        x_scroll_distance_ratio = 1, y_scroll_distance_ratio = 0,
-        repeat_count=3, speed=500, timeout=120)
-
-
 ##############################################################################
 # Google sheets browsing story.
 ##############################################################################

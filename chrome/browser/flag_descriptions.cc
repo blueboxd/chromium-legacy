@@ -1706,11 +1706,6 @@ const char kSharingSendViaSyncDescription[] =
     "Enables sending Sharing message via commiting to Chrome Sync's "
     "SHARING_MESSAGE data type";
 
-const char kSharingUseDeviceInfoName[] =
-    "Enable Sharing device registration in DeviceInfo";
-const char kSharingUseDeviceInfoDescription[] =
-    "Enables Sharing infrastructure to register devices in DeviceInfo.";
-
 const char kSharingDeriveVapidKeyName[] =
     "Enable Sharing derive VAPID key from sync";
 const char kSharingDeriveVapidKeyDescription[] =

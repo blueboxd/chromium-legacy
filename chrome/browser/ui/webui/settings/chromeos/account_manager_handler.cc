@@ -420,15 +420,24 @@ void AccountManagerUIHandler::OnAccountRemoved(
   RefreshUI();
 }
 
-// |signin::IdentityManager::Observer| overrides. For newly added accounts,
-// |signin::IdentityManager| may take some time to fetch user's full name and
-// account image. Whenever that is completed, we may need to update the UI with
-// this new set of information. Note that we may be listening to
-// |signin::IdentityManager| but we still consider |AccountManager| to be the
-// source of truth for account list.
+// |signin::IdentityManager::Observer| overrides.
+//
+// For newly added accounts, |signin::IdentityManager| may take some time to
+// fetch user's full name and account image. Whenever that is completed, we may
+// need to update the UI with this new set of information. Note that we may be
+// listening to |signin::IdentityManager| but we still consider |AccountManager|
+// to be the source of truth for account list.
 void AccountManagerUIHandler::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
   RefreshUI();
+}
+
+void AccountManagerUIHandler::OnErrorStateOfRefreshTokenUpdatedForAccount(
+    const CoreAccountInfo& account_info,
+    const GoogleServiceAuthError& error) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    RefreshUI();
+  }
 }
 
 void AccountManagerUIHandler::RefreshUI() {

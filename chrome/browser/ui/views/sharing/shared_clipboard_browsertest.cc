@@ -128,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(SharedClipboardBrowserTest, ContextMenu_NoDevices) {
 }
 
 IN_PROC_BROWSER_TEST_F(SharedClipboardBrowserTest, ContextMenu_SyncTurnedOff) {
-  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
-      base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
       base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
     // Turning off sync will have no effect when Shared Clipboard is available
     // on sign-in.

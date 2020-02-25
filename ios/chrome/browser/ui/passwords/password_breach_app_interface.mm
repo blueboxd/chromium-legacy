@@ -14,12 +14,11 @@
 @implementation PasswordBreachAppInterface
 
 + (void)showPasswordBreach {
-  auto dispatcher =
-      chrome_test_util::DispatcherForActiveBrowserViewController();
+  auto handler = chrome_test_util::HandlerForActiveBrowser();
   auto leakType = password_manager::CreateLeakType(
       password_manager::IsSaved(true), password_manager::IsReused(false),
       password_manager::IsSyncing(true));
-  [(id<PasswordBreachCommands>)dispatcher
+  [(id<PasswordBreachCommands>)handler
       showPasswordBreachForLeakType:leakType
                                 URL:GURL("example.com")];
 }

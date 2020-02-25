@@ -27,7 +27,7 @@ class SharingUtilsTest : public testing::Test {
 TEST_F(SharingUtilsTest, SyncEnabled_SigninOnly) {
   // Enable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
@@ -41,7 +41,7 @@ TEST_F(SharingUtilsTest, SyncEnabled_FullySynced) {
   // Disable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
       /*enabled_features=*/{},
-      /*disabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey});
+      /*disabled_features=*/{kSharingDeriveVapidKey});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(
@@ -54,7 +54,7 @@ TEST_F(SharingUtilsTest, SyncEnabled_FullySynced) {
 TEST_F(SharingUtilsTest, SyncDisabled_SigninOnly_MissingDataTypes) {
   // Enable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
@@ -68,7 +68,7 @@ TEST_F(SharingUtilsTest, SyncDisabled_FullySynced_MissingDataTypes) {
   // Disable transport mode required features.
   scoped_feature_list_.InitWithFeatures(
       /*enabled_features=*/{},
-      /*disabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey});
+      /*disabled_features=*/{kSharingDeriveVapidKey});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});

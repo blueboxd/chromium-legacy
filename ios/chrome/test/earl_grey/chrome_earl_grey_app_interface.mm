@@ -120,8 +120,7 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 + (void)dismissSettings {
-  [chrome_test_util::DispatcherForActiveBrowserViewController()
-      closeSettingsUI];
+  [chrome_test_util::HandlerForActiveBrowser() closeSettingsUI];
 }
 
 #pragma mark - Tab Utilities (EG2)

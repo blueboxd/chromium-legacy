@@ -54,6 +54,7 @@ class SizeF;
 namespace blink {
 class PageScheduler;
 class WebFrame;
+class WebFrameWidget;
 class WebHitTestResult;
 class WebLocalFrame;
 class WebPageImportanceSignals;
@@ -484,7 +485,7 @@ class WebView {
 
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
   // completed.
-  virtual WebWidget* MainFrameWidget() = 0;
+  virtual WebFrameWidget* MainFrameWidget() = 0;
 
   // Portals --------------------------------------------------------------
 

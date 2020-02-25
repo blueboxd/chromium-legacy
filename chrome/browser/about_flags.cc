@@ -3899,10 +3899,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDeriveVapidKeyDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingDeriveVapidKey)},
 
-    {"sharing-use-device-info", flag_descriptions::kSharingUseDeviceInfoName,
-     flag_descriptions::kSharingUseDeviceInfoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharingUseDeviceInfo)},
-
     {"sharing-peer-connection-receiver",
      flag_descriptions::kSharingPeerConnectionReceiverName,
      flag_descriptions::kSharingPeerConnectionReceiverDescription, kOsAll,

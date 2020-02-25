@@ -388,7 +388,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_allOf(
       [ChromeMatchersAppInterface
           buttonWithAccessibilityLabelID:(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)],
-      grey_userInteractionEnabled(), nil);
+      grey_userInteractionEnabled(), grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)bookmarksNavigationBarDoneButton {
@@ -495,11 +495,13 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)primarySignInButton {
-  return grey_accessibilityID(kSigninPromoPrimaryButtonId);
+  return grey_allOf(grey_accessibilityID(kSigninPromoPrimaryButtonId),
+                    grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)secondarySignInButton {
-  return grey_accessibilityID(kSigninPromoSecondaryButtonId);
+  return grey_allOf(grey_accessibilityID(kSigninPromoSecondaryButtonId),
+                    grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)settingsAccountButton {

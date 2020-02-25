@@ -1604,7 +1604,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
                 kPrefilledPlaceholderUsernameOverridden);
       }
     }
-    username_element.SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, username_element);
   }
@@ -1843,8 +1842,11 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
   const uint32_t field_id = field.UniqueRendererFormControlId();
   if (field_data_manager_->DidUserType(field_id))
     return;
-  if (field.Value().Utf16() != value)
-    field.SetSuggestedValue(WebString::FromUTF16(value));
+
+  if (field.Value().Utf16() == value)
+    return;
+
+  field.SetSuggestedValue(WebString::FromUTF16(value));
   field.SetAutofillState(WebAutofillState::kAutofilled);
   // Wait to fill until a user gesture occurs. This is to make sure that we do
   // not fill in the DOM with a password until we believe the user is

@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -147,6 +148,8 @@ const char kOverview[] = "overview";
 #endif  // defined(OS_CHROMEOS)
 
 const char kCustomerLogo[] = "customerLogo";
+
+const char kPowerfulExtensionsCountHistogram[] = "Extensions.PowerfulCount";
 
 namespace {
 
@@ -818,6 +821,11 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
           ->enabled_extensions();
 
   base::Value powerful_extensions = GetPowerfulExtensions(extensions);
+
+  // The number of extensions to be reported in chrome://management with
+  // powerful permissions.
+  base::UmaHistogramCounts1000(kPowerfulExtensionsCountHistogram,
+                               powerful_extensions.GetList().size());
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             powerful_extensions);

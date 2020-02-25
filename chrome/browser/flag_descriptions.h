@@ -992,9 +992,6 @@ extern const char kSharingRenameDevicesDescription[];
 extern const char kSharingSendViaSyncName[];
 extern const char kSharingSendViaSyncDescription[];
 
-extern const char kSharingUseDeviceInfoName[];
-extern const char kSharingUseDeviceInfoDescription[];
-
 extern const char kSharingDeriveVapidKeyName[];
 extern const char kSharingDeriveVapidKeyDescription[];
 

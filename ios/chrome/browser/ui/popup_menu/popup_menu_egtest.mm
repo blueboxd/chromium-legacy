@@ -77,7 +77,9 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
       performAction:grey_longPress()];
 
   // Check that the first four entries are shown the back tab history menu.
-  [[EarlGrey selectElementWithMatcher:grey_text(entry0)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_text(entry0),
+                                          grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_text(entry1)]
       assertWithMatcher:grey_notNil()];

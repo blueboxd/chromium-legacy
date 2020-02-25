@@ -7871,6 +7871,13 @@ Unknown properties are collapsed to zero. -->
   <int value="27" label="Too many quads."/>
 </enum>
 
+<enum name="CancelableTaskStatus">
+  <int value="0" label="Live, on same sequence"/>
+  <int value="1" label="Live, on other sequence"/>
+  <int value="2" label="Canceled, on same sequence"/>
+  <int value="3" label="Canceled, on other sequence"/>
+</enum>
+
 <enum name="CanMakePaymentUsage">
   <int value="0" label="Used"/>
   <int value="1" label="Not Used"/>

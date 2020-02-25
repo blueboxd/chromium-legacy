@@ -3344,10 +3344,6 @@
         "name": "system_health.common_desktop/browse:tools:docs_scrolling"
     },
     {
-        "duration": "76.0",
-        "name": "system_health.common_desktop/browse:tools:earth"
-    },
-    {
         "duration": "89.0",
         "name": "system_health.common_desktop/browse:tools:maps:2019"
     },
@@ -3626,10 +3622,6 @@
     {
         "duration": "46.0",
         "name": "system_health.memory_desktop/browse:tools:docs_scrolling"
-    },
-    {
-        "duration": "67.0",
-        "name": "system_health.memory_desktop/browse:tools:earth"
     },
     {
         "duration": "79.0",
@@ -3952,10 +3944,6 @@
         "name": "v8.browsing_desktop-future/browse:tools:docs_scrolling"
     },
     {
-        "duration": "98.0",
-        "name": "v8.browsing_desktop-future/browse:tools:earth"
-    },
-    {
         "duration": "108.0",
         "name": "v8.browsing_desktop-future/browse:tools:maps:2019"
     },
@@ -4038,10 +4026,6 @@
     {
         "duration": "70.0",
         "name": "v8.browsing_desktop/browse:tools:docs_scrolling"
-    },
-    {
-        "duration": "95.0",
-        "name": "v8.browsing_desktop/browse:tools:earth"
     },
     {
         "duration": "105.0",

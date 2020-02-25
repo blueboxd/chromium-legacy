@@ -44,6 +44,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
 
   // |signin::IdentityManager::Observer| overrides.
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error) override;
 
  private:
   friend class AccountManagerUIHandlerTest;

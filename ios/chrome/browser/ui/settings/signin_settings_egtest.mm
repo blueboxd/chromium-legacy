@@ -124,7 +124,9 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Tap on dismiss button.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kSigninPromoCloseButtonId),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   // Check that the sign-in promo is not visible anymore.
   [SigninEarlGreyUI checkSigninPromoNotVisible];

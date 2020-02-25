@@ -107,8 +107,12 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
 
   // Now setting a TabSwitcher will make the switcher active.
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [coordinator_.tabSwitcher viewController] ==
+               coordinator_.activeViewController;
+      });
+  EXPECT_TRUE(tab_switcher_active);
 }
 
 // Tests that it is possible to set a TabViewController after setting a
@@ -124,8 +128,12 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
 
   // Showing the TabSwitcher again will make it active.
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
-  EXPECT_EQ([coordinator_.tabSwitcher viewController],
-            coordinator_.activeViewController);
+  bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [coordinator_.tabSwitcher viewController] ==
+               coordinator_.activeViewController;
+      });
+  EXPECT_TRUE(tab_switcher_active);
 }
 
 // Tests swapping between two TabViewControllers.

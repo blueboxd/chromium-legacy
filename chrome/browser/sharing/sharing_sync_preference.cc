@@ -155,9 +155,6 @@ void SharingSyncPreference::RegisterProfilePrefs(
 // static
 base::Optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfoForSync(PrefService* prefs) {
-  if (!base::FeatureList::IsEnabled(kSharingUseDeviceInfo))
-    return base::nullopt;
-
   return GetLocalSharingInfo(prefs);
 }
 
@@ -389,8 +386,7 @@ void SharingSyncPreference::SetLocalSharingInfo(
   local_sharing_info_update->SetKey(kSharingInfoEnabledFeatures,
                                     std::move(list_value));
 
-  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo))
-    device_info_sync_service_->RefreshLocalDeviceInfo();
+  device_info_sync_service_->RefreshLocalDeviceInfo();
 }
 
 void SharingSyncPreference::ClearLocalSharingInfo() {
@@ -405,8 +401,7 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
   // Update prefs::kSharingLocalSharingInfo to clear local cache.
   prefs_->ClearPref(prefs::kSharingLocalSharingInfo);
 
-  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
-      device_info->sharing_info()) {
+  if (device_info->sharing_info()) {
     device_info_sync_service_->RefreshLocalDeviceInfo();
   }
 }

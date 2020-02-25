@@ -8,10 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-// Feature flag to allow sharing infrastructure to register devices in
-// DeviceInfo.
-extern const base::Feature kSharingUseDeviceInfo;
-
 // Feature flag to enable QR Code Generator (currently desktop-only).
 extern const base::Feature kSharingQRCodeGenerator;
 

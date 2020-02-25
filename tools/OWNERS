@@ -49,8 +49,6 @@ per-file roll_webgl_conformance.py=geofflang@chromium.org
 per-file roll_webgl_conformance.py=zmo@chromium.org
 per-file roll_webrtc.py=phoglund@chromium.org
 
-per-file safely-roll-deps.py=borenet@google.com
-
 per-file sort-headers.py=satorux@chromium.org
 per-file sort-sources.py=satorux@chromium.org
 per-file yes_no.py=satorux@chromium.org

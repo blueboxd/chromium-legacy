@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -125,11 +126,10 @@ UIViewController* GetActiveViewController() {
   return active_view_controller;
 }
 
-id<ApplicationCommands, BrowserCommands>
-DispatcherForActiveBrowserViewController() {
-  UIViewController* vc = GetActiveViewController();
-  BrowserViewController* bvc = base::mac::ObjCCast<BrowserViewController>(vc);
-  return bvc.dispatcher;
+id<ApplicationCommands, BrowserCommands> HandlerForActiveBrowser() {
+  return static_cast<id<ApplicationCommands, BrowserCommands>>(
+      GetMainController()
+          .interfaceProvider.currentInterface.browser->GetCommandDispatcher());
 }
 
 void RemoveAllInfoBars() {

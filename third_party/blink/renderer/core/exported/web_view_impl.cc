@@ -1457,7 +1457,7 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::SetWebWidget(WebWidget* widget) {
+void WebViewImpl::SetWebFrameWidget(WebFrameWidget* widget) {
   web_widget_ = widget;
 }
 
@@ -3408,7 +3408,7 @@ void WebViewImpl::RestorePageFromBackForwardCache(
   SetVisibilityState(PageVisibilityState::kVisible, /*is_initial_state=*/false);
 }
 
-WebWidget* WebViewImpl::MainFrameWidget() {
+WebFrameWidget* WebViewImpl::MainFrameWidget() {
   return web_widget_;
 }
 

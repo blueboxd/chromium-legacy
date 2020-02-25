@@ -53,20 +53,20 @@ BOOL IsIncognitoMode() {
 void OpenNewTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand command];
-    id<ApplicationCommands, BrowserCommands> BVCDispatcher =
-        chrome_test_util::DispatcherForActiveBrowserViewController();
-    if (BVCDispatcher) {
-      [BVCDispatcher openURLInNewTab:command];
+    if (GetMainController().tabSwitcherActive) {
+      // The TabGrid is currently presented.
+      Browser* browser =
+          GetMainController().interfaceProvider.mainInterface.browser;
+      UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
+      [GetMainController().tabSwitcher
+          dismissWithNewTabAnimationToBrowser:browser
+                            withUrlLoadParams:params
+                                      atIndex:INT_MAX];
       return;
     }
-      // The TabGrid is currently presented.
-    Browser* browser =
-        GetMainController().interfaceProvider.mainInterface.browser;
-    UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-    [GetMainController().tabSwitcher
-        dismissWithNewTabAnimationToBrowser:browser
-                          withUrlLoadParams:params
-                                    atIndex:INT_MAX];
+    id<ApplicationCommands, BrowserCommands> handler =
+        chrome_test_util::HandlerForActiveBrowser();
+    [handler openURLInNewTab:command];
   }
 }
 
@@ -80,20 +80,20 @@ void SimulateExternalAppURLOpening() {
 void OpenNewIncognitoTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand incognitoTabCommand];
-    id<ApplicationCommands, BrowserCommands> BVCDispatcher =
-        chrome_test_util::DispatcherForActiveBrowserViewController();
-    if (BVCDispatcher) {
-      [BVCDispatcher openURLInNewTab:command];
+    if (GetMainController().tabSwitcherActive) {
+      // The TabGrid is currently presented.
+      Browser* browser =
+          GetMainController().interfaceProvider.incognitoInterface.browser;
+      UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
+      [GetMainController().tabSwitcher
+          dismissWithNewTabAnimationToBrowser:browser
+                            withUrlLoadParams:params
+                                      atIndex:INT_MAX];
       return;
     }
-      // The TabGrid is currently presented.
-    Browser* browser =
-        GetMainController().interfaceProvider.incognitoInterface.browser;
-    UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-    [GetMainController().tabSwitcher
-        dismissWithNewTabAnimationToBrowser:browser
-                          withUrlLoadParams:params
-                                    atIndex:INT_MAX];
+    id<ApplicationCommands, BrowserCommands> handler =
+        chrome_test_util::HandlerForActiveBrowser();
+    [handler openURLInNewTab:command];
   }
 }
 

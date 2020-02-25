@@ -136,8 +136,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_DevicesAvailable_SyncTurnedOff) {
-  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
-      base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
       base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
     // Turning off sync will have no effect when Click to Call is available on
     // sign-in.

@@ -6,13 +6,13 @@ rendering.desktop,6.89,5,1,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13
 system_health.common_mobile,5.00,5,2,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf","Android Nexus5 Perf, android-pixel2_weblayer-perf"
 system_health.memory_mobile,4.71,5,1,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf",android-pixel2_weblayer-perf
 v8.browsing_mobile,3.87,5,0,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf",
-system_health.common_desktop,3.31,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
-system_health.memory_desktop,2.74,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
+system_health.common_desktop,3.23,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
+system_health.memory_desktop,2.66,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
 loading.desktop,2.54,5,1,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",Win 7 Perf
 blink_perf.layout,2.22,8,0,"Android Nexus5X WebView Perf, android-pixel2-perf, android-pixel2_webview-perf, linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
 blink_perf.css,2.12,8,0,"Android Nexus5X WebView Perf, android-pixel2-perf, android-pixel2_webview-perf, linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
-v8.browsing_desktop-future,1.85,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
-v8.browsing_desktop,1.78,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
+v8.browsing_desktop-future,1.75,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
+v8.browsing_desktop,1.68,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
 v8.runtime_stats.top_25,1.57,1,0,win-10_laptop_low_end-perf,
 startup.mobile,1.46,3,1,"android-go-perf, android-pixel2-perf, android-pixel2_weblayer-perf",Android Nexus5 Perf
 loading.mobile,1.32,3,1,"Android Nexus5X WebView Perf, android-pixel2-perf, android-pixel2_webview-perf",Android Nexus5 Perf

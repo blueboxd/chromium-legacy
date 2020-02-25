@@ -100,7 +100,9 @@ using chrome_test_util::SecondarySignInButton;
 
   // Tap the dismiss button.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kSigninPromoCloseButtonId),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
   // Wait until promo is gone.

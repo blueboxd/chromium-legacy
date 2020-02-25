@@ -46,9 +46,9 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/exported/web_page_popup_impl.h"
 #include "third_party/blink/renderer/core/frame/resize_viewport_anchor.h"
@@ -202,7 +202,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void PutPageIntoBackForwardCache() override;
   void RestorePageFromBackForwardCache(
       base::TimeTicks navigation_start) override;
-  WebWidget* MainFrameWidget() override;
+  WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
   void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
@@ -410,7 +410,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidEnterFullscreen();
   void DidExitFullscreen();
 
-  void SetWebWidget(WebWidget* widget);
+  void SetWebFrameWidget(WebFrameWidget* widget);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
@@ -687,7 +687,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // The WebWidget for the main frame. This is expected to be unset when the
   // WebWidget destroys itself.
-  WebWidget* web_widget_ = nullptr;
+  WebFrameWidget* web_widget_ = nullptr;
 
   // We defer commits when transitioning to a new page. ChromeClientImpl calls
   // StopDeferringCommits() to release this when a new page is loaded.

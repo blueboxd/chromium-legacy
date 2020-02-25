@@ -255,7 +255,7 @@ UIColor* DimColorIncognito() {
   NSMutableAttributedString* result =
       [[NSMutableAttributedString alloc] initWithString:@""];
 
-  for (const auto field : line.text_fields()) {
+  for (const auto& field : line.text_fields()) {
     [result appendAttributedString:
                 [self attributedStringForTextfield:&field
                             useDeemphasizedStyling:useDeemphasizedStyling]];

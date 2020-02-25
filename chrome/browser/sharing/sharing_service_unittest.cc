@@ -357,7 +357,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationPreferenceNotAvailable) {
 TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
   // Enable the transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
@@ -430,7 +430,7 @@ TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
 TEST_F(SharingServiceTest, DeviceUnregistrationLocalSyncEnabled) {
   // Enable the transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);

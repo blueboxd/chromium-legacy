@@ -18,8 +18,7 @@ bool CanListDevices(syncer::SyncService* sync_service) {
     return true;
 
   // Can list device using only DeviceInfo.
-  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
-      active_data_types.Has(syncer::DEVICE_INFO)) {
+  if (active_data_types.Has(syncer::DEVICE_INFO)) {
     return true;
   }
 

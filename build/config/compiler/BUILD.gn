@@ -2317,7 +2317,7 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
-    if (is_clang && !is_nacl) {
+    if (is_clang && !is_nacl && !use_xcode_clang) {
       cflags += [
         "-Xclang",
         "-debug-info-kind=constructor",

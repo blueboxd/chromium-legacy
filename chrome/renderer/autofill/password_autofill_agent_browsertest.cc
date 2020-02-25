@@ -1048,16 +1048,17 @@ TEST_F(PasswordAutofillAgentTest, InputWithNoForms) {
   CheckTextFieldsSuggestedState(std::string(), false, std::string(), false);
 }
 
-// Tests that having a matching username does not preclude the autocomplete.
+// Tests that having a matching username precludes the autofill.
 TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForMatchingFilledField) {
   username_element_.SetValue(WebString::FromUTF8(kAliceUsername));
 
   // Simulate the browser sending back the login info, it triggers the
-  // autocomplete.
+  // autofill.
   SimulateOnFillPasswordForm(fill_data_);
 
-  // The username and password should have been autocompleted.
-  CheckUsernameDOMStatePasswordSuggestedState(kAliceUsername, true,
+  // The password should have been autofilled, but the username field should
+  // have been left alone, since it contained the correct value already.
+  CheckUsernameDOMStatePasswordSuggestedState(kAliceUsername, false,
                                               kAlicePassword, true);
 
   CheckFirstFillingResult(FillingResult::kSuccess);
@@ -2680,16 +2681,15 @@ TEST_F(PasswordAutofillAgentTest, NotAutofillNoUsername) {
   CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
 }
 
-// Tests that both the username and the password fields are autocompleted
-// despite the empty username, when the browser sends back data more than one
-// credential.
+// Tests that the username field is not marked as autofilled when fill data has
+// the empty username.
 TEST_F(PasswordAutofillAgentTest,
        AutofillNoUsernameWhenOtherCredentialsStored) {
   fill_data_.username_field.value.clear();
   ASSERT_FALSE(fill_data_.additional_logins.empty());
   SimulateOnFillPasswordForm(fill_data_);
 
-  CheckTextFieldsSuggestedState("", true, kAlicePassword, true);
+  CheckTextFieldsSuggestedState("", false, kAlicePassword, true);
 }
 
 TEST_F(PasswordAutofillAgentTest, NoForm_PromptForAJAXSubmitWithoutNavigation) {

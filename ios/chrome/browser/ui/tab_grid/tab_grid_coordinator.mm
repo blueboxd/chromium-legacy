@@ -293,20 +293,24 @@
   // necessary animations.
   if (self.bvcContainer) {
     if (base::FeatureList::IsEnabled(kContainedBVC)) {
-      [self.baseViewController contentWillAppearAnimated:animated];
-      self.baseViewController.childViewControllerForStatusBarStyle = nil;
+      // This is done with a dispatch to make sure that the view isn't added to
+      // the view hierarchy right away, as it is not the expectations of the
+      // API.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [self.baseViewController contentWillAppearAnimated:animated];
+        self.baseViewController.childViewControllerForStatusBarStyle = nil;
 
-      self.transitionHandler = [[TabGridTransitionHandler alloc]
-          initWithLayoutProvider:self.baseViewController];
-      self.transitionHandler.animationDisabled = !animated;
-      [self.transitionHandler
-          transitionFromBrowser:self.bvcContainer
-                      toTabGrid:self.baseViewController
-                 withCompletion:^{
-                   self.bvcContainer = nil;
-                   [self.baseViewController contentDidAppear];
-                 }];
-
+        self.transitionHandler = [[TabGridTransitionHandler alloc]
+            initWithLayoutProvider:self.baseViewController];
+        self.transitionHandler.animationDisabled = !animated;
+        [self.transitionHandler
+            transitionFromBrowser:self.bvcContainer
+                        toTabGrid:self.baseViewController
+                   withCompletion:^{
+                     self.bvcContainer = nil;
+                     [self.baseViewController contentDidAppear];
+                   }];
+      });
     } else {
       self.bvcContainer.transitioningDelegate = self.legacyTransitionHandler;
       self.bvcContainer = nil;

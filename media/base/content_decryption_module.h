@@ -187,32 +187,33 @@ struct MEDIA_EXPORT ContentDecryptionModuleTraits {
 
 // Called when the CDM needs to queue a message event to the session object.
 // See http://w3c.github.io/encrypted-media/#dom-evt-message
-typedef base::Callback<void(const std::string& session_id,
-                            CdmMessageType message_type,
-                            const std::vector<uint8_t>& message)>
-    SessionMessageCB;
+using SessionMessageCB =
+    base::RepeatingCallback<void(const std::string& session_id,
+                                 CdmMessageType message_type,
+                                 const std::vector<uint8_t>& message)>;
 
 // Called when the session specified by |session_id| is closed. Note that the
 // CDM may close a session at any point, such as in response to a CloseSession()
 // call, when the session is no longer needed, or when system resources are
 // lost. See http://w3c.github.io/encrypted-media/#session-close
-typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
+using SessionClosedCB =
+    base::RepeatingCallback<void(const std::string& session_id)>;
 
 // Called when there has been a change in the keys in the session or their
 // status. See http://w3c.github.io/encrypted-media/#dom-evt-keystatuseschange
-typedef base::Callback<void(const std::string& session_id,
-                            bool has_additional_usable_key,
-                            CdmKeysInfo keys_info)>
-    SessionKeysChangeCB;
+using SessionKeysChangeCB =
+    base::RepeatingCallback<void(const std::string& session_id,
+                                 bool has_additional_usable_key,
+                                 CdmKeysInfo keys_info)>;
 
 // Called when the CDM changes the expiration time of a session.
 // See http://w3c.github.io/encrypted-media/#update-expiration
 // A null base::Time() will be translated to NaN in Javascript, which means "no
 // such time exists or if the license explicitly never expires, as determined
 // by the CDM", according to the EME spec.
-typedef base::Callback<void(const std::string& session_id,
-                            base::Time new_expiry_time)>
-    SessionExpirationUpdateCB;
+using SessionExpirationUpdateCB =
+    base::RepeatingCallback<void(const std::string& session_id,
+                                 base::Time new_expiry_time)>;
 
 }  // namespace media
 

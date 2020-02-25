@@ -313,7 +313,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Vapid_Only) {
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_SenderIDOnly) {
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_feautres=*/{kSharingSendViaSync, kSharingUseDeviceInfo},
+      /*enabled_feautres=*/{kSharingSendViaSync},
       /*disabled_features=*/{});
   test_sync_service_.SetActiveDataTypes(
       {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
@@ -416,7 +416,7 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
 
 TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_SenderIDonly) {
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingSendViaSync, kSharingUseDeviceInfo},
+      /*enabled_features=*/{kSharingSendViaSync},
       /*disabled_features=*/{});
   test_sync_service_.SetActiveDataTypes(
       {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});

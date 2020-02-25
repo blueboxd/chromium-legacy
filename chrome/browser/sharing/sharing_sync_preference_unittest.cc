@@ -7,12 +7,10 @@
 #include <memory>
 
 #include "base/guid.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/fake_device_info.h"
-#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info.h"
@@ -83,7 +81,6 @@ class SharingSyncPreferenceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
   SharingSyncPreference sharing_sync_preference_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(SharingSyncPreferenceTest, UpdateVapidKeys) {
@@ -93,7 +90,6 @@ TEST_F(SharingSyncPreferenceTest, UpdateVapidKeys) {
 }
 
 TEST_F(SharingSyncPreferenceTest, SyncAndRemoveLocalDevice) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingUseDeviceInfo);
   const syncer::DeviceInfo* local_device_info =
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
           ->GetLocalDeviceInfo();
@@ -152,34 +148,6 @@ TEST_F(SharingSyncPreferenceTest, SyncAndRemoveLocalDevice) {
   EXPECT_EQ(2, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
 }
 
-TEST_F(SharingSyncPreferenceTest,
-       SyncAndRemoveLocalDevice_UseDeviceInfoDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(kSharingUseDeviceInfo);
-
-  auto sharing_info = GetDefaultSharingInfo();
-  sharing_sync_preference_.SetLocalSharingInfo(sharing_info);
-
-  // Sharing info is set but RefreshLocalDeviceInfoCount is not triggered.
-  EXPECT_EQ(sharing_info, sharing_sync_preference_.GetLocalSharingInfo());
-  EXPECT_EQ(0, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
-
-  // Assume LocalDeviceInfoProvider is updated now.
-  fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
-      ->GetMutableDeviceInfo()
-      ->set_sharing_info(sharing_info);
-
-  sharing_sync_preference_.ClearLocalSharingInfo();
-
-  // Assume LocalDeviceInfoProvider has SharingInfo cleared.
-  fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
-      ->GetMutableDeviceInfo()
-      ->set_sharing_info(base::nullopt);
-
-  // Sharing info is cleared but RefreshLocalDeviceInfoCount is not triggered.
-  EXPECT_FALSE(sharing_sync_preference_.GetLocalSharingInfo());
-  EXPECT_EQ(0, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
-}
-
 TEST_F(SharingSyncPreferenceTest, GetLocalSharingInfoFromProvider) {
   EXPECT_FALSE(sharing_sync_preference_.GetLocalSharingInfo());
 
@@ -232,21 +200,9 @@ TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
 }
 
 TEST_F(SharingSyncPreferenceTest, GetLocalSharingInfoForSync) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingUseDeviceInfo);
-
   auto sharing_info = GetDefaultSharingInfo();
   sharing_sync_preference_.SetLocalSharingInfo(sharing_info);
 
   EXPECT_EQ(sharing_info,
             SharingSyncPreference::GetLocalSharingInfoForSync(&prefs_));
-}
-
-TEST_F(SharingSyncPreferenceTest,
-       GetLocalSharingInfoForSync_UseDeviceInfoDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(kSharingUseDeviceInfo);
-
-  auto sharing_info = GetDefaultSharingInfo();
-  sharing_sync_preference_.SetLocalSharingInfo(sharing_info);
-
-  EXPECT_FALSE(SharingSyncPreference::GetLocalSharingInfoForSync(&prefs_));
 }

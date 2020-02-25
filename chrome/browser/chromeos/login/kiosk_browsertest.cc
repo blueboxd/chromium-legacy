@@ -1021,8 +1021,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   WaitForAppLaunchSuccess();
 }
 
-// TODO(https://crbug.com/964333): Flakily seg faults.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppUserCancel) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
   OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);

@@ -42,7 +42,9 @@
                                                  : @"No more tabs.");
     NSString* nextTabTitle = [ChromeEarlGrey nextTabTitle];
 
-    [[EarlGrey selectElementWithMatcher:grey_text(nextTabTitle)]
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_text(nextTabTitle),
+                                            grey_sufficientlyVisible(), nil)]
         performAction:grey_tap()];
 
     GREYAssertEqualObjects([ChromeEarlGrey currentTabTitle], nextTabTitle,

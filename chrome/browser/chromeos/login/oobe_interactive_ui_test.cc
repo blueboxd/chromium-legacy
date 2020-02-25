@@ -737,7 +737,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// TODO(crbug.com/423675): AX tree is different for Win7 and Win10.
+// crbug.com/1054935: SimpleEndToEnd is flaky on ChromeOS.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
   SimpleEndToEnd();
@@ -804,7 +804,8 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
 }
 
 // crbug.com/997987. Disabled on MSAN since they time out. crbug.com/1004327
-#if defined(MEMORY_SANITIZER)
+// crbug.com/1054935: EndToEnd is flaky on ChromeOS.
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd

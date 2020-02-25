@@ -274,6 +274,13 @@ class CORE_EXPORT DisplayLockContext final
   StyleRecalcChange AdjustStyleRecalcChangeForChildren(
       StyleRecalcChange change);
 
+  void DidForceActivatableDisplayLocks() {
+    if (IsLocked() && IsActivatable(DisplayLockActivationReason::kAny)) {
+      MarkForStyleRecalcIfNeeded();
+      MarkForLayoutIfNeeded();
+    }
+  }
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockBudgetTest;

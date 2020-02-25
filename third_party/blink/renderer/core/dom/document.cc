@@ -97,6 +97,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
@@ -8198,6 +8199,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
+  visitor->Trace(display_lock_contexts_);
   visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
@@ -8413,6 +8415,51 @@ void Document::RemoveLockedDisplayLock() {
 
 int Document::LockedDisplayLockCount() const {
   return locked_display_lock_count_;
+}
+
+void Document::AddDisplayLockContext(DisplayLockContext* context) {
+  display_lock_contexts_.insert(context);
+}
+
+void Document::RemoveDisplayLockContext(DisplayLockContext* context) {
+  display_lock_contexts_.erase(context);
+}
+
+Document::ScopedForceActivatableDisplayLocks
+Document::GetScopedForceActivatableLocks() {
+  return ScopedForceActivatableDisplayLocks(this);
+}
+
+Document::ScopedForceActivatableDisplayLocks::
+    ScopedForceActivatableDisplayLocks(Document* document)
+    : document_(document) {
+  if (++document_->activatable_display_locks_forced_ == 1) {
+    for (auto context : document_->display_lock_contexts_)
+      context->DidForceActivatableDisplayLocks();
+  }
+}
+
+Document::ScopedForceActivatableDisplayLocks::
+    ScopedForceActivatableDisplayLocks(
+        ScopedForceActivatableDisplayLocks&& other)
+    : document_(other.document_) {
+  other.document_ = nullptr;
+}
+
+Document::ScopedForceActivatableDisplayLocks&
+Document::ScopedForceActivatableDisplayLocks::operator=(
+    ScopedForceActivatableDisplayLocks&& other) {
+  document_ = other.document_;
+  other.document_ = nullptr;
+  return *this;
+}
+
+Document::ScopedForceActivatableDisplayLocks::
+    ~ScopedForceActivatableDisplayLocks() {
+  if (!document_)
+    return;
+  DCHECK(document_->activatable_display_locks_forced_);
+  --document_->activatable_display_locks_forced_;
 }
 
 void Document::RegisterDisplayLockActivationObservation(Element* element) {

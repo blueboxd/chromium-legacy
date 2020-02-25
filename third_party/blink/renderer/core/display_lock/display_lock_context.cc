@@ -113,7 +113,9 @@ DisplayLockContext::DisplayLockContext(Element* element,
     : ExecutionContextLifecycleObserver(context),
       element_(element),
       document_(&element_->GetDocument()),
-      state_(this) {}
+      state_(this) {
+  document_->AddDisplayLockContext(this);
+}
 
 DisplayLockContext::~DisplayLockContext() {
   DCHECK_EQ(state_, kUnlocked);
@@ -333,6 +335,8 @@ bool DisplayLockContext::ShouldPerformUpdatePhase(
 bool DisplayLockContext::ShouldStyle(DisplayLockLifecycleTarget target) const {
   return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
          state_ > kUpdating ||
+         (document_->ActivatableDisplayLocksForced() &&
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kStyle);
 }
 
@@ -359,7 +363,10 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
     return;
   }
 
-  if (state_ != kCommitting && state_ != kUpdating && !update_forced_)
+  bool update_forced =
+      update_forced_ || (document_->ActivatableDisplayLocksForced() &&
+                         IsActivatable(DisplayLockActivationReason::kAny));
+  if (state_ != kCommitting && state_ != kUpdating && !update_forced)
     return;
 
   if (element_->ChildNeedsReattachLayoutTree())
@@ -376,6 +383,8 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
 bool DisplayLockContext::ShouldLayout(DisplayLockLifecycleTarget target) const {
   return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
          state_ > kUpdating ||
+         (document_->ActivatableDisplayLocksForced() &&
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kLayout);
 }
 
@@ -785,6 +794,9 @@ bool DisplayLockContext::IsElementDirtyForPrePaint() const {
 void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   DCHECK(element_);
   document_ = &element_->GetDocument();
+
+  old_document.RemoveDisplayLockContext(this);
+  document_->AddDisplayLockContext(this);
 
   if (is_observed_) {
     old_document.UnregisterDisplayLockActivationObservation(element_);

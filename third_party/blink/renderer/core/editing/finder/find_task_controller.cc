@@ -52,6 +52,7 @@ class FindTaskController::IdleFindTask
   void Dispose() {
     DCHECK_GT(callback_handle_, 0);
     document_->CancelIdleCallback(callback_handle_);
+    forced_activatable_display_locks_.reset();
   }
 
   void ForceInvocationForTesting() {
@@ -72,6 +73,12 @@ class FindTaskController::IdleFindTask
       controller_->DidFinishTask(identifier_, search_text_, *options_,
                                  true /* finished_whole_request */,
                                  PositionInFlatTree(), 0 /* match_count */);
+      forced_activatable_display_locks_.reset();
+    } else if (!forced_activatable_display_locks_) {
+      forced_activatable_display_locks_.emplace(
+          controller_->GetLocalFrame()
+              ->GetDocument()
+              ->GetScopedForceActivatableLocks());
     }
 
     Document& document = *controller_->GetLocalFrame()->GetDocument();
@@ -96,8 +103,7 @@ class FindTaskController::IdleFindTask
         return;
     }
 
-    // TODO(editing-dev): Use of UpdateStyleAndLayout
-    // needs to be audited.  see http://crbug.com/590369 for more details.
+    // This is required if we forced any of the display-locks.
     search_start.GetDocument()->UpdateStyleAndLayout(
         DocumentUpdateReason::kFindInPage);
 
@@ -156,6 +162,8 @@ class FindTaskController::IdleFindTask
   const int identifier_;
   const WebString search_text_;
   mojom::blink::FindOptionsPtr options_;
+  base::Optional<Document::ScopedForceActivatableDisplayLocks>
+      forced_activatable_display_locks_;
 };
 
 FindTaskController::FindTaskController(WebLocalFrameImpl& owner_frame,

@@ -100,6 +100,7 @@ class CanvasFontCache;
 class ChromeClient;
 class Comment;
 class ComputedAccessibleNode;
+class DisplayLockContext;
 class ElementIntersectionObserverData;
 class WindowAgent;
 class WindowAgentFactory;
@@ -1641,9 +1642,34 @@ class CORE_EXPORT Document : public ContainerNode,
   void RemoveLockedDisplayLock();
   int LockedDisplayLockCount() const;
 
+  void AddDisplayLockContext(DisplayLockContext*);
+  void RemoveDisplayLockContext(DisplayLockContext*);
+
   // Manage the element's observation for display lock activation.
   void RegisterDisplayLockActivationObservation(Element*);
   void UnregisterDisplayLockActivationObservation(Element*);
+
+  class ScopedForceActivatableDisplayLocks {
+    STACK_ALLOCATED();
+
+   public:
+    ScopedForceActivatableDisplayLocks(ScopedForceActivatableDisplayLocks&&);
+    ~ScopedForceActivatableDisplayLocks();
+
+    ScopedForceActivatableDisplayLocks& operator=(
+        ScopedForceActivatableDisplayLocks&&);
+
+   private:
+    friend Document;
+    ScopedForceActivatableDisplayLocks(Document*);
+
+    Document* document_;
+  };
+
+  ScopedForceActivatableDisplayLocks GetScopedForceActivatableLocks();
+  bool ActivatableDisplayLocksForced() const {
+    return activatable_display_locks_forced_ > 0;
+  }
 
   // Deferred compositor commits are disallowed by default, and are only allowed
   // for same-origin navigations to an html document fetched with http.
@@ -2232,6 +2258,10 @@ class CORE_EXPORT Document : public ContainerNode,
   int display_lock_blocking_all_activation_count_ = 0;
   // Number of locked display locks in the document.
   int locked_display_lock_count_ = 0;
+  // All of this document's display lock contexts.
+  HeapHashSet<WeakMember<DisplayLockContext>> display_lock_contexts_;
+  // If non-zero, then the activatable locks have been globally forced.
+  int activatable_display_locks_forced_ = 0;
 
   bool deferred_compositor_commit_is_allowed_ = false;
 

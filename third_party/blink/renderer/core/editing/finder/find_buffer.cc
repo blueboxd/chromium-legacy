@@ -203,47 +203,6 @@ FindBuffer::Results FindBuffer::FindMatches(const WebString& search_text,
   return Results(*this, &text_searcher_, buffer_, search_text_16_bit, options);
 }
 
-bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
-  if (auto* context = element.GetDisplayLockContext()) {
-    DCHECK(!context->IsLocked() ||
-           context->IsActivatable(DisplayLockActivationReason::kFindInPage));
-    scoped_forced_update_list_.push_back(context->GetScopedForcedUpdate());
-    return true;
-  }
-  return false;
-}
-
-void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
-                                            const Node* search_range_end_node,
-                                            const Node* node_after_block) {
-  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
-    return;
-  if (start_node.GetDocument().LockedDisplayLockCount() ==
-      start_node.GetDocument().DisplayLockBlockingAllActivationCount())
-    return;
-
-  Node* node = &start_node;
-  // We assume |start_node| is always visible/activatable if locked, so we don't
-  // need to check activatability of ancestors here.
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
-    auto* ancestor_element = DynamicTo<Element>(ancestor);
-    if (!ancestor_element)
-      continue;
-    PushScopedForcedUpdateIfNeeded(*ancestor_element);
-  }
-
-  while (node && node != node_after_block && node != search_range_end_node) {
-    if (ShouldIgnoreContents(*node)) {
-      // Will skip display:none/non-activatable locked subtrees/etc.
-      node = FlatTreeTraversal::NextSkippingChildren(*node);
-      continue;
-    }
-    if (auto* element = DynamicTo<Element>(node))
-      PushScopedForcedUpdateIfNeeded(*element);
-    node = FlatTreeTraversal::Next(*node);
-  }
-}
-
 void FindBuffer::CollectTextUntilBlockBoundary(
     const EphemeralRangeInFlatTree& range) {
   // Collects text until block boundary located at or after |start_node|
@@ -275,14 +234,6 @@ void FindBuffer::CollectTextUntilBlockBoundary(
   Node* const first_traversed_node = node;
   // We will also stop if we encountered/passed |end_node|.
   Node* end_node = range.EndPosition().NodeAsRangeLastNode();
-
-  if (node) {
-    CollectScopedForcedUpdates(*node, end_node, just_after_block);
-    if (!scoped_forced_update_list_.IsEmpty()) {
-      node->GetDocument().UpdateStyleAndLayout(
-          DocumentUpdateReason::kFindInPage);
-    }
-  }
 
   while (node && node != just_after_block) {
     if (ShouldIgnoreContents(*node)) {

@@ -182,6 +182,9 @@ void TextFragmentFinder::FindMatch(Document& document) {
   PositionInFlatTree search_start =
       PositionInFlatTree::FirstPositionInNode(document);
 
+  auto forced_lock_scope = document.GetScopedForceActivatableLocks();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
+
   EphemeralRangeInFlatTree match =
       FindMatchFromPosition(document, search_start);
 

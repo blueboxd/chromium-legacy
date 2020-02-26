@@ -29,13 +29,13 @@
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
@@ -520,17 +520,6 @@ void ExtensionApps::SetPermission(const std::string& app_id,
       permission_value);
 }
 
-void ExtensionApps::PromptUninstall(const std::string& app_id) {
-  if (!profile_) {
-    return;
-  }
-
-  // ExtensionUninstaller deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller =
-      new ExtensionUninstaller(profile_, app_id);
-  uninstaller->Run();
-}
-
 void ExtensionApps::Uninstall(const std::string& app_id,
                               bool clear_site_data,
                               bool report_abuse) {
@@ -758,7 +747,8 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
 void ExtensionApps::OnPreferredAppSet(
     const std::string& app_id,
     apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent) {
+    apps::mojom::IntentPtr intent,
+    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   NOTIMPLEMENTED();
 }
 

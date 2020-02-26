@@ -13,6 +13,8 @@
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/views/widget/widget.h"
@@ -39,9 +41,13 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 AmbientController::AmbientController(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
   ambient_state_.AddObserver(this);
+  // |SessionController| is initialized before |this| in Shell.
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 AmbientController::~AmbientController() {
+  // |SessionController| is destroyed after |this| in Shell.
+  Shell::Get()->session_controller()->RemoveObserver(this);
   ambient_state_.RemoveObserver(this);
 
   DestroyContainerView();
@@ -71,6 +77,20 @@ void AmbientController::OnAmbientModeEnabled(bool enabled) {
   } else {
     DestroyContainerView();
   }
+}
+
+void AmbientController::OnLockStateChanged(bool locked) {
+  if (!locked) {
+    // We should already exit ambient mode at this time, as the ambient
+    // container needs to be closed to uncover the login port for
+    // re-authentication.
+    DCHECK(!container_view_);
+    return;
+  }
+
+  // Show the ambient container on top of the lock screen.
+  DCHECK(!container_view_);
+  Start();
 }
 
 void AmbientController::Toggle() {

@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/color_picker_view.h"
-#include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -45,10 +45,10 @@
 // static
 views::Widget* TabGroupEditorBubbleView::Show(
     TabGroupHeader* anchor_view,
-    TabController* tab_controller,
+    TabStripController* tab_strip_controller,
     const tab_groups::TabGroupId& group) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(anchor_view, tab_controller, group));
+      new TabGroupEditorBubbleView(anchor_view, tab_strip_controller, group));
   widget->Show();
   return widget;
 }
@@ -69,18 +69,18 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
 
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
-    TabController* tab_controller,
+    TabStripController* tab_strip_controller,
     const tab_groups::TabGroupId& group)
-    : tab_controller_(tab_controller),
+    : tab_strip_controller_(tab_strip_controller),
       group_(group),
       title_field_controller_(this),
-      button_listener_(tab_controller, anchor_view, group) {
+      button_listener_(tab_strip_controller, anchor_view, group) {
   SetAnchorView(anchor_view);
   set_margins(gfx::Insets());
 
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
-  const base::string16 title = tab_controller_->GetGroupTitle(group_);
+  const base::string16 title = tab_strip_controller_->GetGroupTitle(group_);
   title_at_opening_ = title;
   DialogDelegate::set_close_callback(base::BindOnce(
       &TabGroupEditorBubbleView::OnBubbleClose, base::Unretained(this)));
@@ -200,7 +200,7 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
   // Keep track of the current group's color, to be returned as the initial
   // selected value.
   const tab_groups::TabGroupColorId initial_color_id =
-      tab_controller_->GetGroupColorId(group_);
+      tab_strip_controller_->GetGroupColorId(group_);
   SkColor initial_color;
 
   color_ids_.reserve(all_colors.size());
@@ -222,7 +222,7 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
 void TabGroupEditorBubbleView::UpdateGroup() {
   base::Optional<int> selected_element = color_selector_->GetSelectedElement();
   const tab_groups::TabGroupColorId current_color =
-      tab_controller_->GetGroupColorId(group_);
+      tab_strip_controller_->GetGroupColorId(group_);
   const tab_groups::TabGroupColorId updated_color =
       selected_element.has_value() ? color_ids_[selected_element.value()]
                                    : current_color;
@@ -234,7 +234,7 @@ void TabGroupEditorBubbleView::UpdateGroup() {
 
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
                                           updated_color);
-  tab_controller_->SetVisualDataForGroup(group_, new_data);
+  tab_strip_controller_->SetVisualDataForGroup(group_, new_data);
 }
 
 void TabGroupEditorBubbleView::OnBubbleClose() {
@@ -276,10 +276,10 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
 }
 
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
-    TabController* tab_controller,
+    TabStripController* tab_strip_controller,
     TabGroupHeader* anchor_view,
     tab_groups::TabGroupId group)
-    : tab_controller_(tab_controller),
+    : tab_strip_controller_(tab_strip_controller),
       anchor_view_(anchor_view),
       group_(group) {}
 
@@ -290,23 +290,23 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     case TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_NewTabInGroup"));
-      tab_controller_->AddNewTabInGroup(group_);
+      tab_strip_controller_->AddNewTabInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
       anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
-      tab_controller_->UngroupAllTabsInGroup(group_);
+      tab_strip_controller_->UngroupAllTabsInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_CloseGroup"));
-      tab_controller_->CloseAllTabsInGroup(group_);
+      tab_strip_controller_->CloseAllTabsInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_FEEDBACK: {
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_SendFeedback"));
-      const Browser* browser = tab_controller_->GetBrowser();
+      const Browser* browser = tab_strip_controller_->GetBrowser();
       chrome::ShowFeedbackPage(
           browser, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
           std::string() /* description_template */,

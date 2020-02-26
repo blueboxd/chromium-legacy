@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_RECT_H_
 
 #include <iosfwd>
+
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -196,7 +198,7 @@ class PLATFORM_EXPORT LayoutRect {
                        location_.Y() + size_.Height());
   }
 
-  bool Intersects(const LayoutRect&) const;
+  WARN_UNUSED_RESULT bool Intersects(const LayoutRect&) const;
   bool Contains(const LayoutRect&) const;
 
   // This checks to see if the rect contains x,y in the traditional sense.

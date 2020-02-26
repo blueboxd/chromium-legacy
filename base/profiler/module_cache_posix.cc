@@ -83,7 +83,7 @@ PosixModule::PosixModule(const Dl_info& dl_info)
 }  // namespace
 
 // static
-std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
+std::unique_ptr<const ModuleCache::Module> ModuleCache::CreateModuleForAddress(
     uintptr_t address) {
 #if defined(ARCH_CPU_ARM64)
   // arm64 has execute-only memory (XOM) protecting code pages from being read.

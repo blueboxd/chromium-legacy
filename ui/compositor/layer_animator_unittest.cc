@@ -3273,12 +3273,10 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   const bool enable_pixel_output = false;
   TestContextFactories context_factories(enable_pixel_output);
   const gfx::Rect bounds(10, 10, 100, 100);
-  std::unique_ptr<TestCompositorHost> host_1(
-      TestCompositorHost::Create(bounds, context_factories.GetContextFactory(),
-                                 context_factories.GetContextFactoryPrivate()));
-  std::unique_ptr<TestCompositorHost> host_2(
-      TestCompositorHost::Create(bounds, context_factories.GetContextFactory(),
-                                 context_factories.GetContextFactoryPrivate()));
+  std::unique_ptr<TestCompositorHost> host_1(TestCompositorHost::Create(
+      bounds, context_factories.GetContextFactory()));
+  std::unique_ptr<TestCompositorHost> host_2(TestCompositorHost::Create(
+      bounds, context_factories.GetContextFactory()));
   host_1->Show();
   host_2->Show();
 
@@ -3337,9 +3335,8 @@ TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
   const bool enable_pixel_output = false;
   TestContextFactories context_factories(enable_pixel_output);
   const gfx::Rect bounds(10, 10, 100, 100);
-  std::unique_ptr<TestCompositorHost> host(
-      TestCompositorHost::Create(bounds, context_factories.GetContextFactory(),
-                                 context_factories.GetContextFactoryPrivate()));
+  std::unique_ptr<TestCompositorHost> host(TestCompositorHost::Create(
+      bounds, context_factories.GetContextFactory()));
   host->Show();
 
   Compositor* compositor = host->GetCompositor();
@@ -3496,9 +3493,8 @@ TEST(LayerAnimatorTest,
   const bool enable_pixel_output = false;
   TestContextFactories context_factories(enable_pixel_output);
   const gfx::Rect bounds(10, 10, 100, 100);
-  std::unique_ptr<TestCompositorHost> host(
-      TestCompositorHost::Create(bounds, context_factories.GetContextFactory(),
-                                 context_factories.GetContextFactoryPrivate()));
+  std::unique_ptr<TestCompositorHost> host(TestCompositorHost::Create(
+      bounds, context_factories.GetContextFactory()));
   host->Show();
 
   Compositor* compositor = host->GetCompositor();

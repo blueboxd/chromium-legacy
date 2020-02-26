@@ -10,6 +10,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
@@ -43,6 +44,10 @@ class AppElement extends PolymerElement {
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
     /** @private {?number} */
     this.setThemeListenerId_ = null;
+    /** @private {boolean} */
+    this.promoLoaded_ = false;
+    /** @private {!EventTracker} */
+    this.eventTracker_ = new EventTracker();
   }
 
   /** @override */
@@ -52,12 +57,26 @@ class AppElement extends PolymerElement {
         this.callbackRouter_.setTheme.addListener(theme => {
           this.theme_ = theme;
         });
+    this.eventTracker_.add(window, 'message', ({data}) => {
+      if ('frameType' in data && data.frameType === 'promo' &&
+          data.messageType === 'loaded') {
+        this.promoLoaded_ = true;
+        const onResize = () => {
+          const hidePromo = this.$.mostVisited.getBoundingClientRect().bottom >=
+              this.$.promo.offsetTop;
+          this.$.promo.style.opacity = hidePromo ? 0 : 1;
+        };
+        this.eventTracker_.add(window, 'resize', onResize);
+        onResize();
+      }
+    });
   }
 
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
+    this.eventTracker_.removeAll();
   }
 
   /** @private */

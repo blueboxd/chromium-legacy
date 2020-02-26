@@ -98,8 +98,7 @@ class TestAcceleratedWidgetMacNSView : public AcceleratedWidgetMacNSView {
 class TestCompositorHostMac : public TestCompositorHost, public AppKitHost {
  public:
   TestCompositorHostMac(const gfx::Rect& bounds,
-                        ui::ContextFactory* context_factory,
-                        ui::ContextFactoryPrivate* context_factory_private);
+                        ui::ContextFactory* context_factory);
   ~TestCompositorHostMac() override;
 
  private:
@@ -123,12 +122,10 @@ class TestCompositorHostMac : public TestCompositorHost, public AppKitHost {
 
 TestCompositorHostMac::TestCompositorHostMac(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private)
+    ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      compositor_(context_factory_private->AllocateFrameSinkId(),
+      compositor_(context_factory->AllocateFrameSinkId(),
                   context_factory,
-                  context_factory_private,
                   base::ThreadTaskRunnerHandle::Get(),
                   false /* enable_pixel_canvas */),
       window_(nil) {}
@@ -177,10 +174,8 @@ ui::Compositor* TestCompositorHostMac::GetCompositor() {
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new TestCompositorHostMac(bounds, context_factory,
-                                   context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostMac(bounds, context_factory);
 }
 
 }  // namespace ui

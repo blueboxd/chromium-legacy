@@ -13,7 +13,6 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/public/browser/browser_task_traits.h"
 
 using blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo;
 

@@ -3,13 +3,9 @@
 // found in the LICENSE file.
 
 const media_app = {
-  callbackRouter: new mediaAppUi.mojom.PageCallbackRouter(),
   handler: new mediaAppUi.mojom.PageHandlerRemote()
 };
 
-// Get the PageHandlerFactory remote and call createPageHandler.
-// This bootstraps the mojom connection by getting the CPP to set up a
-// handler for our future calls.
+// Set up a page handler to talk to the browser process.
 mediaAppUi.mojom.PageHandlerFactory.getRemote().createPageHandler(
-    media_app.callbackRouter.$.bindNewPipeAndPassRemote(),
     media_app.handler.$.bindNewPipeAndPassReceiver());

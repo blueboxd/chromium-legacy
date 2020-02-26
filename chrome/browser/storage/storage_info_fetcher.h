@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "storage/browser/quota/quota_callbacks.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace storage {
 class QuotaManager;

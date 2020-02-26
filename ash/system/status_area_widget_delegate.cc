@@ -166,7 +166,7 @@ void StatusAreaWidgetDelegate::DeleteDelegate() {
   delete this;
 }
 
-void StatusAreaWidgetDelegate::UpdateLayout() {
+void StatusAreaWidgetDelegate::CalculateTargetBounds() {
   // Use a grid layout so that the trays can be centered in each cell, and
   // so that the widget gets laid out correctly when tray sizes change.
   views::GridLayout* layout =
@@ -209,11 +209,18 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       layout->AddExistingView(child);
     }
   }
+  target_bounds_.set_size(GetPreferredSize());
+}
 
-  StatusAreaWidgetDelegateAnimationSettings settings(layer());
+gfx::Rect StatusAreaWidgetDelegate::GetTargetBounds() const {
+  return target_bounds_;
+}
+
+void StatusAreaWidgetDelegate::UpdateLayout(bool animate) {
+  if (animate)
+    StatusAreaWidgetDelegateAnimationSettings settings(layer());
 
   Layout();
-  UpdateWidgetSize();
 }
 
 void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
@@ -221,9 +228,8 @@ void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
   const gfx::Size new_size = GetPreferredSize();
   if (new_size == current_size)
     return;
-  // Need to resize the window when trays or items are added/removed.
+  // Need to re-layout the shelf when trays or items are added/removed.
   StatusAreaWidgetDelegateAnimationSettings settings(layer());
-  UpdateWidgetSize();
 
   // The shelf only needs a re-layout if this widget has changed size in
   // the primary dimension. No re-layout is needed for changes in the cross
@@ -232,18 +238,13 @@ void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
                                 new_size.width() != current_size.width()) ||
                                (!shelf_->IsHorizontalAlignment() &&
                                 new_size.height() != current_size.height());
+  should_relayout_shelf = false;
   if (should_relayout_shelf)
     shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
 }
 
 void StatusAreaWidgetDelegate::ChildVisibilityChanged(View* child) {
-  UpdateLayout();
   shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/true);
-}
-
-void StatusAreaWidgetDelegate::UpdateWidgetSize() {
-  if (GetWidget())
-    GetWidget()->SetSize(GetPreferredSize());
 }
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,

@@ -76,13 +76,10 @@ void ViewEventTestBase::SetUp() {
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
   views_delegate_.set_context_factory(context_factories_->GetContextFactory());
-  views_delegate_.set_context_factory_private(
-      context_factories_->GetContextFactoryPrivate());
   views_delegate_.set_use_desktop_native_widgets(true);
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(
-      context_factories_->GetContextFactory(),
-      context_factories_->GetContextFactoryPrivate()));
+      context_factories_->GetContextFactory()));
   gfx::NativeWindow context = platform_part_->GetContext();
   window_ = views::Widget::CreateWindowWithContext(this, context);
   window_->Show();

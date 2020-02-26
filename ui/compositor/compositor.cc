@@ -78,13 +78,11 @@ struct PendingBeginFrameArgs {
 
 Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
-                       ui::ContextFactoryPrivate* context_factory_private,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                        bool enable_pixel_canvas,
                        bool use_external_begin_frame_control,
                        bool force_software_compositor)
     : context_factory_(context_factory),
-      context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
       use_external_begin_frame_control_(use_external_begin_frame_control),
@@ -92,14 +90,11 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
       lock_manager_(task_runner) {
-  if (context_factory_private) {
-    auto* host_frame_sink_manager =
-        context_factory_private_->GetHostFrameSinkManager();
-    host_frame_sink_manager->RegisterFrameSinkId(
-        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
-    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
-                                                    "Compositor");
-  }
+  DCHECK(context_factory_);
+  auto* host_frame_sink_manager = context_factory_->GetHostFrameSinkManager();
+  host_frame_sink_manager->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
+  host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, "Compositor");
   root_web_layer_ = cc::Layer::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -278,35 +273,28 @@ Compositor::~Compositor() {
   host_.reset();
 
   context_factory_->RemoveCompositor(this);
-  if (context_factory_private_) {
-    auto* host_frame_sink_manager =
-        context_factory_private_->GetHostFrameSinkManager();
-    for (auto& client : child_frame_sinks_) {
-      DCHECK(client.is_valid());
-      host_frame_sink_manager->UnregisterFrameSinkHierarchy(frame_sink_id_,
-                                                            client);
-    }
-    host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
+  auto* host_frame_sink_manager = context_factory_->GetHostFrameSinkManager();
+  for (auto& client : child_frame_sinks_) {
+    DCHECK(client.is_valid());
+    host_frame_sink_manager->UnregisterFrameSinkHierarchy(frame_sink_id_,
+                                                          client);
   }
+  host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void Compositor::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
-  if (!context_factory_private_)
-    return;
-  context_factory_private_->GetHostFrameSinkManager()
-      ->RegisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+  context_factory_->GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
+      frame_sink_id_, frame_sink_id);
 
   child_frame_sinks_.insert(frame_sink_id);
 }
 
 void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
-  if (!context_factory_private_)
-    return;
   auto it = child_frame_sinks_.find(frame_sink_id);
   DCHECK(it != child_frame_sinks_.end());
   DCHECK(it->is_valid());
-  context_factory_private_->GetHostFrameSinkManager()
-      ->UnregisterFrameSinkHierarchy(frame_sink_id_, *it);
+  context_factory_->GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
+      frame_sink_id_, *it);
   child_frame_sinks_.erase(it);
 }
 

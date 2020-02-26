@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_SECURE_DNS_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/values.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "net/dns/public/doh_provider_list.h"
 
 namespace settings {
 
@@ -22,7 +24,18 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
+  // Get the list of dropdown resolver options. Each option is represented
+  // as a dictionary with the following keys: "name" (the text to display in the
+  // UI), "value" (the DoH template for this provider), and "policy" (the URL of
+  // the provider's privacy policy).
+  base::Value GetSecureDnsResolverListForCountry(
+      int country_id,
+      const std::vector<net::DohProviderEntry>& providers);
+
  protected:
+  // Retrieves all pre-approved secure resolvers and returns them to WebUI.
+  void HandleGetSecureDnsResolverList(const base::ListValue* args);
+
   // Intended to be called once upon creation of the secure DNS setting.
   void HandleGetSecureDnsSetting(const base::ListValue* args);
 

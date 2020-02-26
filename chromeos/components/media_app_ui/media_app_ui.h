@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_MEDIA_APP_UI_MEDIA_APP_UI_H_
 #define CHROMEOS_COMPONENTS_MEDIA_APP_UI_MEDIA_APP_UI_H_
 
+#include <memory>
+
 #include "chromeos/components/media_app_ui/media_app_ui.mojom.h"
 #include "chromeos/components/media_app_ui/media_app_ui_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,8 +34,7 @@ class MediaAppUI : public ui::MojoWebUIController,
 
  private:
   // media_app_ui::mojom::PageHandlerFactory:
-  void CreatePageHandler(mojo::PendingRemote<media_app_ui::mojom::Page> page,
-                         mojo::PendingReceiver<media_app_ui::mojom::PageHandler>
+  void CreatePageHandler(mojo::PendingReceiver<media_app_ui::mojom::PageHandler>
                              receiver) override;
 
   std::unique_ptr<MediaAppPageHandler> page_handler_;

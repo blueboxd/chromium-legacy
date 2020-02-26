@@ -109,6 +109,10 @@ SkColor GetLightModeColor(int id) {
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
       return gfx::kGoogleBlue700;
+    case ThemeProperties::COLOR_OMNIBOX_TEXT:
+      return gfx::kGoogleGrey900;
+    case ThemeProperties::COLOR_OMNIBOX_BACKGROUND:
+      return gfx::kGoogleGrey100;
 
     case ThemeProperties::COLOR_FRAME_INCOGNITO:
     case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
@@ -169,6 +173,10 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return SkColorSetRGB(0x28, 0x28, 0x28);
     case ThemeProperties::COLOR_NTP_LINK:
       return gfx::kGoogleBlue300;
+    case ThemeProperties::COLOR_OMNIBOX_TEXT:
+      return SK_ColorWHITE;
+    case ThemeProperties::COLOR_OMNIBOX_BACKGROUND:
+      return gfx::kGoogleGrey900;
     default:
       return base::nullopt;
   }

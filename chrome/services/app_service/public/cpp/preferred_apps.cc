@@ -211,13 +211,41 @@ base::Value* FindDictAndUpdateBestMatchAppId(
 //     },
 //   },
 // }
-void SetPreferredApp(const std::vector<apps::mojom::ConditionPtr>& conditions,
-                     size_t index,
-                     base::Value* dict,
-                     const std::string& app_id) {
+//
+// The |current_filter| records the current path of the recursion, and
+// |replaced_app_preferences| records the |app_ids| and their corresponding
+// |intent_filters| that are replaced during this action.
+void SetPreferredApp(
+    const std::vector<apps::mojom::ConditionPtr>& conditions,
+    size_t index,
+    base::Value* dict,
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr current_filter,
+    apps::mojom::ReplacedAppPreferencesPtr* replaced_app_preferences) {
   // If there are no more condition key to add to the dictionary, we reach the
   // base case, set the key for the |app_id|.
   if (index == conditions.size()) {
+    // Record the replaced preferred |app_id|, and their corresponding
+    // |intent_filters| so that we can reset them in the publishers.
+    const std::string* app_id_found = dict->FindStringKey(kAppId);
+
+    if (app_id_found) {
+      if (*app_id_found == app_id) {
+        return;
+      }
+      auto& replaced_preference_map =
+          (*replaced_app_preferences)->replaced_preference;
+      auto entry = replaced_preference_map.find(*app_id_found);
+      if (entry == replaced_preference_map.end()) {
+        std::vector<apps::mojom::IntentFilterPtr> intent_filter_vector;
+        intent_filter_vector.push_back(std::move(current_filter));
+        replaced_preference_map.emplace(*app_id_found,
+                                        std::move(intent_filter_vector));
+      } else {
+        entry->second.push_back(std::move(current_filter));
+      }
+    }
+
     dict->SetStringKey(kAppId, app_id);
     return;
   }
@@ -239,8 +267,14 @@ void SetPreferredApp(const std::vector<apps::mojom::ConditionPtr>& conditions,
       condition_value_dictionary =
           FindOrSetDictionary(condition_type_dict, condition_value_key);
     }
+    auto new_filter = current_filter->Clone();
+    std::vector<apps::mojom::ConditionValuePtr> condition_value_vector;
+    condition_value_vector.push_back(condition_value->Clone());
+    new_filter->conditions.push_back(apps_util::MakeCondition(
+        condition->condition_type, std::move(condition_value_vector)));
     // For each |condition_value|, add dictionary for the following conditions.
-    SetPreferredApp(conditions, index + 1, condition_value_dictionary, app_id);
+    SetPreferredApp(conditions, index + 1, condition_value_dictionary, app_id,
+                    std::move(new_filter), replaced_app_preferences);
   }
 }
 
@@ -337,20 +371,22 @@ bool PreferredApps::VerifyPreferredApps(base::Value* value) {
 
 // static
 // Add a preferred app for a preferred app dictionary.
-bool PreferredApps::AddPreferredApp(
+apps::mojom::ReplacedAppPreferencesPtr PreferredApps::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentFilterPtr& intent_filter,
     base::Value* preferred_apps) {
-  if (!preferred_apps) {
-    return false;
-  }
+  auto replaced_app_preferences = apps::mojom::ReplacedAppPreferences::New();
 
+  if (!preferred_apps) {
+    return replaced_app_preferences;
+  }
   // For an |intent_filter| there could be multiple |conditions|, and for each
   // condition, there could be multiple |condition_values|. When we set
   // preferred app for and |intent_filter|, we need to add the preferred app for
   // all combinations of these |condition_values|.
-  SetPreferredApp(intent_filter->conditions, 0, preferred_apps, app_id);
-  return true;
+  SetPreferredApp(intent_filter->conditions, 0, preferred_apps, app_id,
+                  apps::mojom::IntentFilter::New(), &replaced_app_preferences);
+  return replaced_app_preferences;
 }
 
 // static
@@ -404,11 +440,11 @@ void PreferredApps::Init(std::unique_ptr<base::Value> preferred_apps) {
   }
 }
 
-bool PreferredApps::AddPreferredApp(
+apps::mojom::ReplacedAppPreferencesPtr PreferredApps::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentFilterPtr& intent_filter) {
   if (!preferred_apps_) {
-    return false;
+    return apps::mojom::ReplacedAppPreferences::New();
   }
   return AddPreferredApp(app_id, intent_filter, preferred_apps_.get());
 }

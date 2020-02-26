@@ -21,7 +21,7 @@ viz::FrameSinkId AllocateFrameSinkId() {
   return CompositorDependenciesAndroid::Get().AllocateFrameSinkId();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  return factory->GetContextFactoryPrivate()->AllocateFrameSinkId();
+  return factory->GetContextFactory()->AllocateFrameSinkId();
 #endif
 }
 
@@ -32,7 +32,7 @@ viz::HostFrameSinkManager* GetHostFrameSinkManager() {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   if (!factory)
     return nullptr;
-  return factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
+  return factory->GetContextFactory()->GetHostFrameSinkManager();
 #endif
 }
 

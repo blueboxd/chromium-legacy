@@ -31,6 +31,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/static_cookie_policy.h"
+#include "net/http/structured_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
@@ -72,7 +73,10 @@ constexpr size_t kBlockedBodyAllocationSize = 1;
 
 constexpr char kCrossOriginEmbedderPolicyHeader[] =
     "Cross-Origin-Embedder-Policy";
+constexpr char kCrossOriginEmbedderPolicyReportOnlyHeader[] =
+    "Cross-Origin-Embedder-Policy-Report-Only";
 constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
+constexpr char kRequireCorp[] = "require-corp";
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -409,6 +413,34 @@ const struct {
     {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
     {"Via", ConcerningHeaderId::kVia},
 };
+
+std::pair<network::mojom::CrossOriginEmbedderPolicy,
+          base::Optional<std::string>>
+ParseCrossOriginEmbedderPolicyInternal(const net::HttpResponseHeaders* headers,
+                                       base::StringPiece header_name) {
+  constexpr auto kNone = mojom::CrossOriginEmbedderPolicy::kNone;
+  using Item = net::structured_headers::Item;
+  std::string header_value;
+  if (!headers ||
+      !headers->GetNormalizedHeader(header_name.as_string(), &header_value)) {
+    return std::make_pair(kNone, base::nullopt);
+  }
+  const auto item = net::structured_headers::ParseItem(header_value);
+  if (!item || item->item.Type() != Item::kTokenType ||
+      item->item.GetString() != kRequireCorp) {
+    return std::make_pair(kNone, base::nullopt);
+  }
+  base::Optional<std::string> endpoint;
+  auto it = std::find_if(item->params.cbegin(), item->params.cend(),
+                         [](const std::pair<std::string, Item>& param) {
+                           return param.first == "report-to";
+                         });
+  if (it != item->params.end() && it->second.Type() == Item::kStringType) {
+    endpoint = it->second.GetString();
+  }
+  return std::make_pair(mojom::CrossOriginEmbedderPolicy::kRequireCorp,
+                        std::move(endpoint));
+}
 
 }  // namespace
 
@@ -1120,16 +1152,10 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   }
 
   if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {
-    // Parse the Cross-Origin-Embedder-Policy header.
-    std::string raw_coep_string;
-    if (url_request_->response_headers() &&
-        url_request_->response_headers()->GetNormalizedHeader(
-            kCrossOriginEmbedderPolicyHeader, &raw_coep_string)) {
-      if (raw_coep_string == "require-corp") {
-        response_->cross_origin_embedder_policy =
-            mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-      }
-    }
+    // Parse the Cross-Origin-Embedder-Policy and
+    // Cross-Origin-Embedder-Policy-Report-Only headers.
+    response_->cross_origin_embedder_policy =
+        ParseCrossOriginEmbedderPolicy(url_request_->response_headers());
 
     // Parse the Cross-Origin-Opener-Policy header.
     std::string raw_coop_string;
@@ -1438,6 +1464,20 @@ void URLLoader::LogConcerningRequestHeaders(
         "NetworkService.ConcerningRequestHeader.PresentOnStart",
         concerning_header_found);
   }
+}
+
+// static
+CrossOriginEmbedderPolicyWithReporting
+URLLoader::ParseCrossOriginEmbedderPolicy(
+    const net::HttpResponseHeaders* headers) {
+  CrossOriginEmbedderPolicyWithReporting coep;
+  std::tie(coep.value, coep.reporting_endpoint) =
+      ParseCrossOriginEmbedderPolicyInternal(headers,
+                                             kCrossOriginEmbedderPolicyHeader);
+  std::tie(coep.report_only_value, coep.report_only_reporting_endpoint) =
+      ParseCrossOriginEmbedderPolicyInternal(
+          headers, kCrossOriginEmbedderPolicyReportOnlyHeader);
+  return coep;
 }
 
 void URLLoader::OnAuthCredentials(

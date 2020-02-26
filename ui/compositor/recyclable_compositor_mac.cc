@@ -37,12 +37,10 @@ scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() {
 // RecyclableCompositorMac
 
 RecyclableCompositorMac::RecyclableCompositorMac(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private)
+    ui::ContextFactory* context_factory)
     : accelerated_widget_mac_(new ui::AcceleratedWidgetMac()),
-      compositor_(context_factory_private->AllocateFrameSinkId(),
+      compositor_(context_factory->AllocateFrameSinkId(),
                   context_factory,
-                  context_factory_private,
                   GetCompositorTaskRunner(),
                   ui::IsPixelCanvasRecordingEnabled()) {
   g_recyclable_compositor_count += 1;
@@ -115,20 +113,16 @@ RecyclableCompositorMacFactory* RecyclableCompositorMacFactory::Get() {
 std::unique_ptr<RecyclableCompositorMac>
 RecyclableCompositorMacFactory::CreateCompositor(
     ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private,
     bool force_new_compositor) {
   if (!compositors_.empty() && !force_new_compositor) {
     std::unique_ptr<RecyclableCompositorMac> result;
     result = std::move(compositors_.back());
     compositors_.pop_back();
-    if (result->compositor()->context_factory() == context_factory &&
-        result->compositor()->context_factory_private() ==
-            context_factory_private) {
+    if (result->compositor()->context_factory() == context_factory) {
       return result;
     }
   }
-  return std::make_unique<RecyclableCompositorMac>(context_factory,
-                                                   context_factory_private);
+  return std::make_unique<RecyclableCompositorMac>(context_factory);
 }
 
 void RecyclableCompositorMacFactory::RecycleCompositor(

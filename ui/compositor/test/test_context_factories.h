@@ -21,7 +21,6 @@ namespace ui {
 
 class InProcessContextFactory;
 class ContextFactory;
-class ContextFactoryPrivate;
 
 // Set up the compositor ContextFactory for a test environment. Unit tests that
 // do not have a full content environment need to call this before initializing
@@ -37,7 +36,6 @@ class TestContextFactories {
   TestContextFactories& operator=(const TestContextFactories&) = delete;
 
   ContextFactory* GetContextFactory() const;
-  ContextFactoryPrivate* GetContextFactoryPrivate() const;
 
  private:
   std::unique_ptr<gl::DisableNullDrawGLBindings> disable_null_draw_;

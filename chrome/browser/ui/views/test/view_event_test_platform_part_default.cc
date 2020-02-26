@@ -21,9 +21,8 @@ namespace {
 // ViewEventTestPlatformPart implementation for Views, but non-CrOS.
 class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
  public:
-  ViewEventTestPlatformPartDefault(
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private) {
+  explicit ViewEventTestPlatformPartDefault(
+      ui::ContextFactory* context_factory) {
 #if defined(USE_AURA)
     DCHECK(!display::Screen::GetScreen());
 #if defined(USE_X11)
@@ -35,7 +34,6 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
 #endif
     env_ = aura::Env::CreateInstance();
     env_->set_context_factory(context_factory);
-    env_->set_context_factory_private(context_factory_private);
 #endif
   }
 
@@ -60,8 +58,6 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
 
 // static
 ViewEventTestPlatformPart* ViewEventTestPlatformPart::Create(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new ViewEventTestPlatformPartDefault(context_factory,
-                                              context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new ViewEventTestPlatformPartDefault(context_factory);
 }

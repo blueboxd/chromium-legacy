@@ -13,7 +13,7 @@
       <include name="IDR_MEDIA_APP_PWA_HTML" file="pwa.html" type="BINDATA" />
       <include name="IDR_MEDIA_APP_MANIFEST" file="manifest.json" type="BINDATA" />
       <include name="IDR_MEDIA_APP_LAUNCH_JS" file="js/launch.js" type="BINDATA" />
-      <include name="IDR_MEDIA_APP_BROWSER_PROXY_JS" file="js/mojo_api_bootstrap.js" type="BINDATA" />
+      <include name="IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS" file="js/mojo_api_bootstrap.js" type="BINDATA" />
       <include name="IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS" file="${root_gen_dir}/chromeos/components/media_app_ui/media_app_ui.mojom-lite.js" use_base_dir="false" type="BINDATA" />
 
       <!-- Unprivileged guest contents. -->

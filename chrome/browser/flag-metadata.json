@@ -61,7 +61,7 @@
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 87
   },
   {
     "name": "allow-popups-during-page-unload",
@@ -1401,11 +1401,6 @@
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "enable-google-branded-context-menu",
-    "owners": [ "edwardjung@chromium.org" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-gpu-rasterization",

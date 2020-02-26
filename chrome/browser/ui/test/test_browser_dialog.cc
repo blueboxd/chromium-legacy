@@ -114,6 +114,7 @@ bool TestBrowserDialog::VerifyUi() {
 #if !defined(OS_MACOSX)
   if (pixel_diff_) {
     dialog_widget->SetBlockCloseForTesting(true);
+    dialog_widget->Activate();
     base::ScopedClosureRunner unblock_close(
         base::BindOnce(&views::Widget::SetBlockCloseForTesting,
                        base::Unretained(dialog_widget), false));

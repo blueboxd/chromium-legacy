@@ -44,7 +44,6 @@
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-class Browser;
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
@@ -321,13 +320,6 @@ class TabStrip : public views::AccessiblePaneView,
       const tab_groups::TabGroupId& group) const override;
   SkColor GetPaintedGroupColor(
       const tab_groups::TabGroupColorId& color_id) const override;
-  void SetVisualDataForGroup(
-      const tab_groups::TabGroupId& group,
-      const tab_groups::TabGroupVisualData& visual_data) override;
-  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override;
-  void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
-  void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
-  const Browser* GetBrowser() override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

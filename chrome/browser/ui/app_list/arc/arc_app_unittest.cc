@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
+#include "chrome/services/app_service/public/cpp/stub_icon_loader.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -162,14 +164,11 @@ void WaitForIconCreation(ArcAppListPrefs* prefs,
 
 void WaitForIconUpdates(Profile* profile, const std::string& app_id) {
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile, ash::AppListConfig::instance().grid_icon_dimension(), &delegate);
 
-  // |FetchImage| ensures all supported factors are loaded.
-  const std::vector<ui::ScaleFactor>& scale_factors =
-      ui::GetSupportedScaleFactors();
   icon_loader.FetchImage(app_id);
-  delegate.WaitForIconUpdates(scale_factors.size());
+  delegate.WaitForIconUpdates(1);
 }
 
 enum class ArcState {
@@ -1977,21 +1976,21 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
       arc::ArcAppShelfId("arc_test_shelf_group_absent", app_id).ToString();
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   EXPECT_EQ(0UL, delegate.update_image_count());
 
   // Fetch original app icon.
   icon_loader.FetchImage(app_id);
-  delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  delegate.WaitForIconUpdates(1);
   EXPECT_EQ(app_id, delegate.app_id());
   const gfx::ImageSkia app_icon = delegate.image();
 
   // Shortcut exists, icon is requested from shortcut.
   icon_loader.FetchImage(id_shortcut_exist);
   // Icon was sent on request and loader should be updated.
-  delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  delegate.WaitForIconUpdates(1);
   EXPECT_EQ(id_shortcut_exist, delegate.app_id());
 
   // Validate that fetched shortcut icon for existing shortcut does not match
@@ -2015,8 +2014,8 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   const size_t update_image_count_before = delegate.update_image_count();
   MaybeRemoveIconRequestRecord(app_id);
   icon_loader.FetchImage(id_shortcut_absent);
-  // Expected default update.
-  EXPECT_EQ(update_image_count_before + 1, delegate.update_image_count());
+  // Expected no update.
+  EXPECT_EQ(update_image_count_before, delegate.update_image_count());
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(shortcut_request_count,
             app_instance()->shortcut_icon_requests().size());
@@ -2040,7 +2039,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
   ASSERT_NE(nullptr, prefs);
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
 
@@ -2048,7 +2047,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
   content::RunAllTasksUntilIdle();
 
   icon_loader.FetchImage(app_id);
-  delegate.WaitForIconUpdates(2);
+  delegate.WaitForIconUpdates(1);
 
   const gfx::ImageSkia app_normal_icon = delegate.image();
 
@@ -2092,9 +2091,21 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   app_instance()->set_icon_response_type(
       arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SEND_BAD);
 
+  // When calling SendRefreshAppList to add the fake apps, AppServiceAppItem
+  // could load the icon by calling ArcAppIcon, so override the icon loader
+  // temporarily to avoid calling ArcAppIcon. Otherwise, it might affect
+  // the test result when calling AppServiceAppIconLoader to load the icon.
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_.get());
+  DCHECK(proxy);
+  apps::StubIconLoader stub_icon_loader;
+  apps::IconLoader* old_icon_loader =
+      proxy->OverrideInnerIconLoaderForTesting(&stub_icon_loader);
+
   SendRefreshAppList(std::vector<arc::mojom::AppInfo>(fake_apps().begin(),
                                                       fake_apps().begin() + 1));
   content::RunAllTasksUntilIdle();
+  proxy->OverrideInnerIconLoaderForTesting(old_icon_loader);
 
   // Store number of requests generated during the App List item creation. Same
   // request will not be re-sent without clearing the request record in
@@ -2103,19 +2114,13 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
       app_instance()->icon_requests().size();
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   icon_loader.FetchImage(app_id);
 
-  // So far one updated of default icon is expected.
-  EXPECT_EQ(delegate.update_image_count(), 1U);
-
-  // Although icon file is still missing, expect no new request sent to ARC as
-  // them are recorded in IconRequestRecord in ArcAppListPrefs.
-  EXPECT_EQ(app_instance()->icon_requests().size(), initial_icon_request_count);
-  // Validate default image.
-  ValidateIcon(delegate.image());
+  // So far Icon update is not expected because of bad icon.
+  EXPECT_EQ(delegate.update_image_count(), 0U);
 
   MaybeRemoveIconRequestRecord(app_id);
 
@@ -2141,7 +2146,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   }
 
   // Icon update is not expected because of bad icon.
-  EXPECT_EQ(delegate.update_image_count(), 1U);
+  EXPECT_EQ(delegate.update_image_count(), 0U);
 }
 
 TEST_P(ArcAppModelBuilderTest, IconLoader) {
@@ -2163,16 +2168,12 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
   model_updater()->WaitForIconUpdates(1 + scale_factors.size());
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   EXPECT_EQ(0UL, delegate.update_image_count());
   icon_loader.FetchImage(app_id);
-  EXPECT_EQ(1UL, delegate.update_image_count());
-  EXPECT_EQ(app_id, delegate.app_id());
-
-  // Validate default image.
-  ValidateIcon(delegate.image());
+  EXPECT_EQ(0UL, delegate.update_image_count());
 
   AppServiceAppItem* app_item = FindArcItem(app_id);
   for (auto& scale_factor : scale_factors) {
@@ -2181,16 +2182,16 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
         ui::GetScaleForScaleFactor(scale_factor));
   }
 
-  delegate.WaitForIconUpdates(scale_factors.size());
+  delegate.WaitForIconUpdates(1);
 
   // Validate loaded image.
-  EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_count());
+  EXPECT_EQ(1UL, delegate.update_image_count());
   EXPECT_EQ(app_id, delegate.app_id());
   ValidateIcon(delegate.image());
 
   // No more updates are expected.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_count());
+  EXPECT_EQ(1UL, delegate.update_image_count());
 }
 
 TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
@@ -2339,7 +2340,7 @@ TEST_P(ArcAppModelIconTest, MAYBE_IconLoadNonSupportedScales) {
   const std::string app_id = StartApp(1 /* package_version */);
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(
+  AppServiceAppIconLoader icon_loader(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
   icon_loader.FetchImage(app_id);
@@ -2765,12 +2766,12 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
 
   // Icon can be only fetched after app is registered in the system.
   FakeAppIconLoaderDelegate icon_delegate;
-  std::unique_ptr<ArcAppIconLoader> icon_loader =
-      std::make_unique<ArcAppIconLoader>(
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader =
+      std::make_unique<AppServiceAppIconLoader>(
           profile(), ash::AppListConfig::instance().grid_icon_dimension(),
           &icon_delegate);
   icon_loader->FetchImage(app_id);
-  icon_delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  icon_delegate.WaitForIconUpdates(1);
   icon_loader.reset();
 
   // Restart ARC to validate default app icon can be loaded next session.
@@ -2778,7 +2779,7 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
   prefs = ArcAppListPrefs::Get(profile_.get());
 
   FakeAppIconLoaderDelegate icon_delegate2;
-  icon_loader = std::make_unique<ArcAppIconLoader>(
+  icon_loader = std::make_unique<AppServiceAppIconLoader>(
       profile(), ash::AppListConfig::instance().grid_icon_dimension(),
       &icon_delegate2);
   icon_loader->FetchImage(app_id);
@@ -2788,7 +2789,7 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
                   ->MaybeGetIconPathForDefaultApp(
                       app_id, GetAppListIconDescriptor(ui::SCALE_FACTOR_100P))
                   .empty());
-  icon_delegate2.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  icon_delegate2.WaitForIconUpdates(1);
   EXPECT_FALSE(prefs
                    ->MaybeGetIconPathForDefaultApp(
                        app_id, GetAppListIconDescriptor(ui::SCALE_FACTOR_100P))
@@ -2811,10 +2812,10 @@ TEST_P(ArcAppLauncherForDefaultAppTest, AppIconNonDefaultDip) {
 
   FakeAppIconLoaderDelegate icon_delegate;
   // 17 should never be a default dip size.
-  std::unique_ptr<ArcAppIconLoader> icon_loader =
-      std::make_unique<ArcAppIconLoader>(profile(), 17, &icon_delegate);
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader =
+      std::make_unique<AppServiceAppIconLoader>(profile(), 17, &icon_delegate);
   icon_loader->FetchImage(app_id);
-  icon_delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
+  icon_delegate.WaitForIconUpdates(1);
   icon_loader.reset();
 }
 

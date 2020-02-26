@@ -56,7 +56,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
   ui::ContextFactory* GetContextFactory() override;
-  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   std::string GetApplicationName() override;
 
  private:

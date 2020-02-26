@@ -23,7 +23,8 @@ ApiImplementation = class {
    */
   static init(opt_onload) {
     window.addEventListener('message', ApiImplementation.portSetup, true);
-    const scripts = [window.chrome.extension.getURL('injected/api.js')];
+    const scripts =
+        [window.chrome.extension.getURL('chromevox/injected/api.js')];
 
     const didInstall =
         ScriptInstaller.installScript(scripts, 'cvoxapi', opt_onload);

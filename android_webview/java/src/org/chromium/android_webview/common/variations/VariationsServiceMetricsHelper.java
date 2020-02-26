@@ -21,6 +21,9 @@ public class VariationsServiceMetricsHelper {
     private static final String JOB_INTERVAL = "job_interval";
     // The time in milliseconds between scheduling and executing the last seed download job.
     private static final String JOB_QUEUE_TIME = "job_queue_time";
+    // The result of the last seed download.
+    // See the VariationsSeedFetchResult variations enum for valid values.
+    private static final String SEED_FETCH_RESULT = "seed_fetch_result";
     // The duration in milliseconds of the last seed download.
     private static final String SEED_FETCH_TIME = "seed_fetch_time";
 
@@ -59,6 +62,9 @@ public class VariationsServiceMetricsHelper {
         if (prefs.contains(LAST_JOB_START_TIME)) {
             bundle.putLong(LAST_JOB_START_TIME, prefs.getLong(LAST_JOB_START_TIME, 0));
         }
+        if (prefs.contains(SEED_FETCH_RESULT)) {
+            bundle.putInt(SEED_FETCH_RESULT, prefs.getInt(SEED_FETCH_RESULT, 0));
+        }
         if (prefs.contains(SEED_FETCH_TIME)) {
             bundle.putLong(SEED_FETCH_TIME, prefs.getLong(SEED_FETCH_TIME, 0));
         }
@@ -89,6 +95,9 @@ public class VariationsServiceMetricsHelper {
         }
         if (hasLastJobStartTime()) {
             prefsEditor.putLong(LAST_JOB_START_TIME, getLastJobStartTime());
+        }
+        if (hasSeedFetchResult()) {
+            prefsEditor.putInt(SEED_FETCH_RESULT, getSeedFetchResult());
         }
         if (hasSeedFetchTime()) {
             prefsEditor.putLong(SEED_FETCH_TIME, getSeedFetchTime());
@@ -146,6 +155,19 @@ public class VariationsServiceMetricsHelper {
     }
     public long getLastJobStartTime() {
         return mBundle.getLong(LAST_JOB_START_TIME);
+    }
+
+    public void clearSeedFetchResult() {
+        mBundle.remove(SEED_FETCH_RESULT);
+    }
+    public void setSeedFetchResult(int seedFetchResult) {
+        mBundle.putInt(SEED_FETCH_RESULT, seedFetchResult);
+    }
+    public boolean hasSeedFetchResult() {
+        return mBundle.containsKey(SEED_FETCH_RESULT);
+    }
+    public int getSeedFetchResult() {
+        return mBundle.getInt(SEED_FETCH_RESULT);
     }
 
     public void clearSeedFetchTime() {

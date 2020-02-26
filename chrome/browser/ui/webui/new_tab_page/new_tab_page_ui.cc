@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
+#include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,6 +38,8 @@ constexpr char kGeneratedPath[] =
 content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
+  source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
+      "frame-src %s;", chrome::kChromeUIUntrustedNewTabPageUrl));
 
   ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
@@ -129,6 +135,10 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(
                     profile_, chrome::FaviconUrlFormat::kFavicon2));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<UntrustedSource>(profile_));
+
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
   UpdateBackgroundColor(*instant_service_->GetInitializedNtpTheme());
   instant_service_->AddObserver(this);

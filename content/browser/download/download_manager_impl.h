@@ -46,14 +46,17 @@ class DownloadItemImpl;
 
 // These values are persisted to logs (Download.InitiatedByWindowOpener).
 // Entries should not be renumbered and numeric values should never be reused.
+// Openee is the tab over which the download is initiated.
+// Opener is the tab that opened the openee tab and initiated a download on it.
 enum class InitiatedByWindowOpenerType {
   kSameOrigin = 0,
-  // Download URL and the initiator are cross origin.
+  // Openee and opener are cross origin.
   kCrossOrigin = 1,
-  // Download URL and the initiator are cross origin but same site (i.e. same
-  // eTLD+1).
+  // Openee and opener are cross origin but same site (i.e. same eTLD+1).
   kSameSite = 2,
-  kMaxValue = kSameSite
+  // Either the openee or the opener is not HTTP or HTTPS, e.g. about:blank.
+  kNonHTTPOrHTTPS = 3,
+  kMaxValue = kNonHTTPOrHTTPS
 };
 
 namespace content {

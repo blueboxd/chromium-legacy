@@ -192,6 +192,11 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
   return false;
 }
 
+void RulesetManager::OnRenderFrameCreated(content::RenderFrameHost* host) {
+  for (ExtensionRulesetData& ruleset : rulesets_)
+    ruleset.matcher->OnRenderFrameCreated(host);
+}
+
 void RulesetManager::OnRenderFrameDeleted(content::RenderFrameHost* host) {
   for (ExtensionRulesetData& ruleset : rulesets_)
     ruleset.matcher->OnRenderFrameDeleted(host);

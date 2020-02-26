@@ -757,7 +757,8 @@ EarconEngine.HALF_STEP = Math.pow(2.0, 1.0 / 12.0);
  * @type {string} The base url for earcon sound resources.
  * @const
  */
-EarconEngine.BASE_URL = chrome.extension.getURL('background/earcons/');
+EarconEngine.BASE_URL =
+    chrome.extension.getURL('chromevox/background/earcons/');
 
 /**
  * The maximum value to pass to PannerNode.setPosition.

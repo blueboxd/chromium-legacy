@@ -98,6 +98,11 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
   }
 
   std::vector<EGLint> context_attributes;
+  if (attribs.can_skip_validation &&
+      GetGLImplementation() == kGLImplementationEGLANGLE) {
+    context_attributes.push_back(EGL_CONTEXT_OPENGL_NO_ERROR_KHR);
+    context_attributes.push_back(EGL_TRUE);
+  }
 
   // EGL_KHR_create_context allows requesting both a major and minor context
   // version

@@ -31,6 +31,7 @@ MenuListInnerElement::CustomStyleForLayoutObject() {
   style->SetOverflowY(EOverflow::kHidden);
   style->SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
   style->SetTextOverflow(parent_style.TextOverflow());
+  style->SetUserModify(EUserModify::kReadOnly);
 
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.

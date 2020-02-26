@@ -103,7 +103,7 @@ bool FakeNetwork::HandleRequest(URLLoaderInterceptor::RequestParams* params) {
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation) &&
       info.headers->HasHeaderValue("Cross-Origin-Embedder-Policy",
                                    "require-corp")) {
-    response->cross_origin_embedder_policy =
+    response->cross_origin_embedder_policy.value =
         network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
   }
 

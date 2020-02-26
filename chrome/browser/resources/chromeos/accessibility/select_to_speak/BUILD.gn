@@ -16,12 +16,7 @@ select_to_speak_out_dir =
     "$root_out_dir/resources/chromeos/accessibility/select_to_speak"
 
 group("build") {
-  deps = [
-    ":select_to_speak_copied_files",
-    ":select_to_speak_guest_manifest",
-    ":select_to_speak_manifest",
-    "//chrome/browser/resources/chromeos/accessibility/select_to_speak/strings:select_to_speak_strings",
-  ]
+  deps = [ ":select_to_speak_copied_files" ]
 }
 
 # Instead of setting up one copy target for each subdirectory, use a script

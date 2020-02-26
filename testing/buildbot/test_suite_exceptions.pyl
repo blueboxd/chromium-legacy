@@ -97,12 +97,14 @@
   'boringssl_crypto_tests': {
     'remove_from': [
       # https://crbug.com/1054545
+      'Fuchsia ARM64',
       'Fuchsia x64',
     ],
   },
   'boringssl_ssl_tests': {
     'remove_from': [
       # https://crbug.com/1054545
+      'Fuchsia ARM64',
       'Fuchsia x64',
     ],
   },
@@ -277,6 +279,7 @@
       },
     },
     'remove_from': [
+      'Fuchsia ARM64', # https://crbug.com/1046552
       'Fuchsia x64', # https://crbug.com/1046552
     ],
   },
@@ -386,6 +389,7 @@
   },
   'components_unittests': {
     'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/961457
       'Fuchsia x64', # https://crbug.com/961457
       'android-code-coverage-native', # crbug/1018431
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/961457
@@ -1060,6 +1064,7 @@
   },
   'net_unittests': {
     'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/877248
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/877248
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/844416
     ],
@@ -1791,6 +1796,7 @@
   'url_unittests': {
     'remove_from': [
       # crbug.com/1054240
+      'Fuchsia ARM64',
       'Fuchsia x64',
     ],
   },

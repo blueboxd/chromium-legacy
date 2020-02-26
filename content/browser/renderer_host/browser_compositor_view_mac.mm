@@ -268,7 +268,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   if (new_state == HasOwnCompositor) {
     recyclable_compositor_ =
         ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-            content::GetContextFactory(), content::GetContextFactoryPrivate());
+            content::GetContextFactory());
     recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
                                           dfh_display_.device_scale_factor(),
                                           dfh_display_.color_spaces());

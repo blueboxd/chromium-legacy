@@ -74,6 +74,7 @@ class CompositeMatcher {
   // Returns whether this modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
 
+  void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
   void OnDidFinishNavigation(content::RenderFrameHost* host);
 

@@ -1,0 +1,59 @@
+{
+{%if key is defined %}
+  "key": "{{key}}",
+{% endif %}
+  "manifest_version": 2,
+  "name": "__MSG_SELECT_TO_SPEAK_NAME__",
+  "version": "{{set_version}}",
+  "description": "__MSG_SELECT_TO_SPEAK_DESCRIPTION__",
+{% if is_guest_manifest == '1' %}
+  "incognito": "split",
+{% endif %}
+  "background": {
+    "scripts": [
+      "select_to_speak/closure_shim.js",
+      "select_to_speak/constants.js",
+      "select_to_speak/automation_predicate.js",
+      "select_to_speak/tree_walker.js",
+      "select_to_speak/automation_util.js",
+      "select_to_speak/input_handler.js",
+      "select_to_speak/metrics_utils.js",
+      "select_to_speak/node_utils.js",
+      "select_to_speak/paragraph_utils.js",
+      "select_to_speak/prefs_manager.js",
+      "select_to_speak/word_utils.js",
+      "select_to_speak/rect_utils.js",
+      "select_to_speak/select_to_speak.js",
+      "select_to_speak/select_to_speak_main.js"
+    ]
+  },
+  "permissions": [
+    "accessibilityPrivate",
+    "commandLinePrivate",
+    "metricsPrivate",
+    "settingsPrivate",
+    "storage",
+    "tabs",
+    "tts",
+    "https://docs.google.com/*",
+    "https://docs.sandbox.google.com/*",
+    "clipboard",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
+  "automation": {
+    "desktop": true
+  },
+  "default_locale": "en",
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [ "https://docs.google.com/document*",
+                   "https://docs.sandbox.google.com/document*" ],
+      "all_frames": true,
+      "js": [
+        "select_to_speak/select_to_speak_gdocs_script.js"
+      ]
+    }
+  ]
+}

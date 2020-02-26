@@ -84,18 +84,6 @@ struct PendingBeginFrameArgs;
 
 constexpr int kCompositorLockTimeoutMs = 67;
 
-// This is privileged interface to the compositor. It is a global object.
-class COMPOSITOR_EXPORT ContextFactoryPrivate {
- public:
-  virtual ~ContextFactoryPrivate() {}
-
-  // Allocate a new client ID for the display compositor.
-  virtual viz::FrameSinkId AllocateFrameSinkId() = 0;
-
-  // Gets the frame sink manager host instance.
-  virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
-};
-
 // This class abstracts the creation of the 3D context for the compositor. It is
 // a global object.
 class COMPOSITOR_EXPORT ContextFactory {
@@ -126,6 +114,12 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Gets the task graph runner.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
+
+  // Allocate a new client ID for the display compositor.
+  virtual viz::FrameSinkId AllocateFrameSinkId() = 0;
+
+  // Gets the frame sink manager host instance.
+  virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
 };
 
 // Compositor object to take care of GPU painting.
@@ -139,7 +133,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
  public:
   Compositor(const viz::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
-             ui::ContextFactoryPrivate* context_factory_private,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              bool enable_pixel_canvas,
              bool use_external_begin_frame_control = false,
@@ -147,10 +140,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
-
-  ui::ContextFactoryPrivate* context_factory_private() {
-    return context_factory_private_;
-  }
 
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id);
@@ -392,7 +381,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   gfx::Size size_;
 
   ui::ContextFactory* context_factory_;
-  ui::ContextFactoryPrivate* context_factory_private_;
 
   // These pointers are owned by |context_factory_|, and must be reset before
   // calling RemoveCompositor();

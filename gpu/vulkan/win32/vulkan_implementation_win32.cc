@@ -27,9 +27,9 @@ bool VulkanImplementationWin32::InitializeVulkanInstance(bool using_surface) {
       gpu::GetVulkanFunctionPointers();
 
   base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
-      base::FilePath(L"vulkan-1.dll"), &native_library_load_error);
-  if (!vulkan_function_pointers->vulkan_loader_library_)
+  vulkan_function_pointers->set_vulkan_loader_library(base::LoadNativeLibrary(
+      base::FilePath(L"vulkan-1.dll"), &native_library_load_error));
+  if (!vulkan_function_pointers->vulkan_loader_library())
     return false;
 
   if (!vulkan_instance_.Initialize(required_extensions, {}))

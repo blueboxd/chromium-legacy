@@ -8,10 +8,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.drawable.Drawable;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,7 +23,9 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.SysUtils;
@@ -55,8 +59,6 @@ public class AssistantVoiceSearchServiceUnitTest {
     @Mock
     GSAState mGsaState;
     @Mock
-    Context mContext;
-    @Mock
     PackageManager mPackageManager;
     @Mock
     TemplateUrlService mTemplateUrlService;
@@ -64,10 +66,13 @@ public class AssistantVoiceSearchServiceUnitTest {
     ExternalAuthUtils mExternalAuthUtils;
 
     PackageInfo mPackageInfo;
+    Context mContext;
 
     @Before
     public void setUp() throws NameNotFoundException {
         MockitoAnnotations.initMocks(this);
+
+        mContext = Mockito.spy(Robolectric.buildActivity(Activity.class).setup().get());
 
         doReturn(true).when(mExternalAuthUtils).isChromeGoogleSigned();
         doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
@@ -181,5 +186,15 @@ public class AssistantVoiceSearchServiceUnitTest {
     public void getMicButtonColorStateList_ColorfulMicEnabled() {
         mAssistantVoiceSearchService.setColorfulMicEnabledForTesting(true);
         Assert.assertNull(mAssistantVoiceSearchService.getMicButtonColorStateList(0, mContext));
+    }
+
+    @Test
+    @Feature("OmniboxAssistantVoiceSearch")
+    public void getCurrentMicDrawable() {
+        Drawable greyMic = mAssistantVoiceSearchService.getCurrentMicDrawable();
+        mAssistantVoiceSearchService.setColorfulMicEnabledForTesting(true);
+        Drawable colorfulMic = mAssistantVoiceSearchService.getCurrentMicDrawable();
+
+        Assert.assertNotEquals(greyMic, colorfulMic);
     }
 }

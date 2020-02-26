@@ -188,6 +188,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The tween type for dimming shelf icons, widgets, and buttons.
   gfx::Tween::Type DimAnimationTween() const;
 
+  // The size of the shelf drag handle.
+  gfx::Size DragHandleSize() const;
+
  private:
   friend class ShelfConfigTest;
 

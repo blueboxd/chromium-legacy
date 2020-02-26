@@ -90,9 +90,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   AshTestHelper::InitParams init_params;
   // TODO(oshima): Separate the class for ash_shell to reduce the test binary
   // size.
-  if (parameters_.ui_task)
+  if (parameters_.ui_task) {
     init_params.config_type = AshTestHelper::kPerfTest;
-  else {
+  } else {
     new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
     init_params.config_type = AshTestHelper::kShell;
   }
@@ -100,8 +100,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::make_unique<ShellDelegateImpl>();
   shell_init_params.context_factory = content::GetContextFactory();
-  shell_init_params.context_factory_private =
-      content::GetContextFactoryPrivate();
   shell_init_params.keyboard_ui_factory =
       std::make_unique<TestKeyboardUIFactory>();
 

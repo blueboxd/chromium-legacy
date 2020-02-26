@@ -25,8 +25,7 @@ namespace ui {
 class TestCompositorHostX11 : public TestCompositorHost {
  public:
   TestCompositorHostX11(const gfx::Rect& bounds,
-                        ui::ContextFactory* context_factory,
-                        ui::ContextFactoryPrivate* context_factory_private);
+                        ui::ContextFactory* context_factory);
   ~TestCompositorHostX11() override;
 
  private:
@@ -37,7 +36,6 @@ class TestCompositorHostX11 : public TestCompositorHost {
   gfx::Rect bounds_;
 
   ui::ContextFactory* context_factory_;
-  ui::ContextFactoryPrivate* context_factory_private_;
 
   ui::Compositor compositor_;
 
@@ -51,14 +49,11 @@ class TestCompositorHostX11 : public TestCompositorHost {
 
 TestCompositorHostX11::TestCompositorHostX11(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private)
+    ui::ContextFactory* context_factory)
     : bounds_(bounds),
       context_factory_(context_factory),
-      context_factory_private_(context_factory_private),
-      compositor_(context_factory_private_->AllocateFrameSinkId(),
+      compositor_(context_factory_->AllocateFrameSinkId(),
                   context_factory_,
-                  context_factory_private_,
                   base::ThreadTaskRunnerHandle::Get(),
                   false /* enable_pixel_canvas */) {}
 
@@ -100,10 +95,8 @@ ui::Compositor* TestCompositorHostX11::GetCompositor() {
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new TestCompositorHostX11(bounds, context_factory,
-                                   context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostX11(bounds, context_factory);
 }
 
 }  // namespace ui

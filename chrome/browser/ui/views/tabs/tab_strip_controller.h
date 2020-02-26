@@ -82,6 +82,9 @@ class TabStripController {
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
+  // Closes all tabs belonging in the given |group|.
+  virtual void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) = 0;
+
   // Ungroups the tabs at the specified index in the model.
   virtual void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) = 0;
 

@@ -71,15 +71,13 @@ void AuraTestBase::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
   const bool enable_pixel_output = false;
   context_factories_ =
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
   context_factory = context_factories_->GetContextFactory();
-  context_factory_private = context_factories_->GetContextFactoryPrivate();
 
   helper_ = std::make_unique<AuraTestHelper>();
-  helper_->SetUp(context_factory, context_factory_private);
+  helper_->SetUp(context_factory);
 }
 
 void AuraTestBase::TearDown() {

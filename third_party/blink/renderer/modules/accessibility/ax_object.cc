@@ -1339,7 +1339,6 @@ bool AXObject::CanSetValueAttribute() const {
     case ax::mojom::Role::kSplitter:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kTime:
     case ax::mojom::Role::kSearchBox:
       return Restriction() == kRestrictionNone;
     default:

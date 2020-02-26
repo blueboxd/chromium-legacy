@@ -89,6 +89,9 @@ const char kChromeSearchRemoteNtpHost[] = "remote-ntp";
 
 const char kChromeSearchScheme[] = "chrome-search";
 
+const char kChromeUIUntrustedNewTabPageUrl[] =
+    "chrome-untrusted://new-tab-page/";
+
 const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
 const char kCloudPrintLearnMoreURL[] =

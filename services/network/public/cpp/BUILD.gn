@@ -143,6 +143,10 @@ jumbo_component("cpp_base") {
   sources = [
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
+    "cross_origin_embedder_policy.cc",
+    "cross_origin_embedder_policy.h",
+    "cross_origin_embedder_policy_mojom_traits.cc",
+    "cross_origin_embedder_policy_mojom_traits.h",
     "data_element.cc",
     "data_element.h",
     "http_raw_request_response_info.cc",

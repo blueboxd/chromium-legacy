@@ -24,7 +24,7 @@
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -843,7 +843,7 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
     registration()->set_last_update_check(base::Time::Now());
 
     if (registration()->newest_installed_version()) {
-      context_->storage()->UpdateLastUpdateCheckTime(
+      context_->registry()->UpdateLastUpdateCheckTime(
           registration()->id(), registration()->scope().GetOrigin(),
           registration()->last_update_check(),
           base::BindOnce([](blink::ServiceWorkerStatusCode status) {

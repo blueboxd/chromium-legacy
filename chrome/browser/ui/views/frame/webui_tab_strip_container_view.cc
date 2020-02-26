@@ -165,15 +165,39 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
+        drag_in_progress_ = true;
         event->SetHandled();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
+        DCHECK(drag_in_progress_);
         container_->UpdateHeightForDragToOpen(event->details().scroll_y());
         event->SetHandled();
         break;
       case ui::ET_GESTURE_SCROLL_END:
-        container_->EndDragToOpen();
+        DCHECK(drag_in_progress_);
+        container_->EndDragToOpen(false);
         event->SetHandled();
+        drag_in_progress_ = false;
+        break;
+      case ui::ET_GESTURE_SWIPE:
+        // If a touch is released at high velocity, the scroll gesture
+        // is "converted" to a swipe gesture. Note that a
+        // ET_GESTURE_SCROLL_END event will not be sent. ET_GESTURE_END
+        // is still sent after, however.
+        DCHECK(drag_in_progress_);
+        container_->EndDragToOpen(event->details().swipe_down());
+        event->SetHandled();
+        drag_in_progress_ = false;
+        break;
+      case ui::ET_GESTURE_END:
+        if (drag_in_progress_) {
+          // If an unsupported gesture is sent, ensure that we still
+          // finish the drag on gesture end. Otherwise, the container
+          // will be stuck partially open.
+          container_->EndDragToOpen(false);
+          event->SetHandled();
+          drag_in_progress_ = false;
+        }
         break;
       default:
         break;
@@ -183,6 +207,11 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
  private:
   WebUITabStripContainerView* const container_;
   views::View* const drag_handle_;
+
+  // True between ET_GESTURE_SCROLL_BEGIN event received and gesture
+  // end. Used to track when an unsupported gesture ends to reset the
+  // container to a good state.
+  bool drag_in_progress_ = false;
 };
 
 WebUITabStripContainerView::WebUITabStripContainerView(
@@ -338,7 +367,7 @@ void WebUITabStripContainerView::UpdateHeightForDragToOpen(int height_delta) {
   PreferredSizeChanged();
 }
 
-void WebUITabStripContainerView::EndDragToOpen() {
+void WebUITabStripContainerView::EndDragToOpen(bool fling_to_open) {
   if (!current_drag_height_)
     return;
 
@@ -349,7 +378,7 @@ void WebUITabStripContainerView::EndDragToOpen() {
   // Otherwise, animate back to closed.
   const double open_proportion =
       static_cast<double>(final_drag_height) / desired_height_;
-  const bool opening = open_proportion >= 0.5;
+  const bool opening = fling_to_open || open_proportion >= 0.5;
   if (opening) {
     iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
     RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kToolbarDrag);

@@ -176,8 +176,13 @@ const AcceleratorData kAcceleratorData[] = {
 
     // Media Player shortcuts.
     {true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE, MEDIA_NEXT_TRACK},
+    {true, ui::VKEY_MEDIA_PAUSE, ui::EF_NONE, MEDIA_PAUSE},
+    {true, ui::VKEY_MEDIA_PLAY, ui::EF_NONE, MEDIA_PLAY},
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
     {true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
+    {true, ui::VKEY_MEDIA_STOP, ui::EF_NONE, MEDIA_STOP},
+    {true, ui::VKEY_OEM_103, ui::EF_NONE, MEDIA_REWIND},
+    {true, ui::VKEY_OEM_104, ui::EF_NONE, MEDIA_FAST_FORWARD},
 
     // Assistant shortcuts.
     {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_ASSISTANT},

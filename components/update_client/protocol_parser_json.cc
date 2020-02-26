@@ -166,6 +166,13 @@ bool ParseUpdateCheck(const base::Value& updatecheck_node,
     *error = "'updatecheck' is not a dictionary.";
     return false;
   }
+
+  for (const auto& kv : updatecheck_node.DictItems()) {
+    if (kv.first.front() == '_' && kv.second.is_string()) {
+      result->custom_attributes[kv.first] = kv.second.GetString();
+    }
+  }
+
   const auto* status = updatecheck_node.FindKey("status");
   if (!status || !status->is_string()) {
     *error = "Missing status on updatecheck node";

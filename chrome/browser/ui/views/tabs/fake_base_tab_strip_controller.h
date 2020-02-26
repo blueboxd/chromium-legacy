@@ -70,6 +70,7 @@ class FakeBaseTabStripController : public TabStripController {
       const tab_groups::TabGroupVisualData& visual_data) override;
   std::vector<int> ListTabsInGroup(
       const tab_groups::TabGroupId& group) const override;
+  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
   void AddTabToGroup(int model_index,

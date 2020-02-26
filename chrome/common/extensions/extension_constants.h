@@ -205,11 +205,19 @@ extern const char kAutoclickExtensionPath[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];
+// The manifest filename of the ChromeVox extension.
+extern const char kChromeVoxManifestFilename[];
+// The guest manifest filename of the ChromeVox extension.
+extern const char kChromeVoxGuestManifestFilename[];
 // The extension id of the Select-to-speak extension.
 extern const char kSelectToSpeakExtensionId[];
 // Path to preinstalled Select-to-speak extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSelectToSpeakExtensionPath[];
+// The manifest filename of the Select to Speak extension.
+extern const char kSelectToSpeakManifestFilename[];
+// The guest manifest filename of the Select to Speak extension.
+extern const char kSelectToSpeakGuestManifestFilename[];
 // The extension id of the Switch Access extension.
 extern const char kSwitchAccessExtensionId[];
 // Path to preinstalled Switch Access extension (relative to

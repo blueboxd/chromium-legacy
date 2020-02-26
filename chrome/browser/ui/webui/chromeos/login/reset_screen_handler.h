@@ -36,19 +36,19 @@ class ResetView {
   };
 
   virtual void SetIsRollbackAvailable(bool value) = 0;
-  virtual void SetIsRollbackRequested(bool value) = 0;
+  virtual void SetIsRollbackChecked(bool value) = 0;
   virtual void SetIsTpmFirmwareUpdateAvailable(bool value) = 0;
   virtual void SetIsTpmFirmwareUpdateChecked(bool value) = 0;
   virtual void SetIsTpmFirmwareUpdateEditable(bool value) = 0;
   virtual void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) = 0;
-  virtual void SetShouldShowConfirmationDialog(bool value) = 0;
-  virtual void SetConfirmationDialogClosed() = 0;
+  virtual void SetIsConfirmational(bool value) = 0;
+  virtual void SetIsGoogleBrandedBuild(bool value) = 0;
   virtual void SetScreenState(State value) = 0;
 
   virtual State GetScreenState() = 0;
   virtual tpm_firmware_update::Mode GetTpmFirmwareUpdateMode() = 0;
   virtual bool GetIsRollbackAvailable() = 0;
-  virtual bool GetIsRollbackRequested() = 0;
+  virtual bool GetIsRollbackChecked() = 0;
   virtual bool GetIsTpmFirmwareUpdateChecked() = 0;
 };
 
@@ -73,18 +73,18 @@ class ResetScreenHandler : public ResetView,
   void DeclareJSCallbacks() override;
   void Initialize() override;
   void SetIsRollbackAvailable(bool value) override;
-  void SetIsRollbackRequested(bool value) override;
+  void SetIsRollbackChecked(bool value) override;
   void SetIsTpmFirmwareUpdateAvailable(bool value) override;
   void SetIsTpmFirmwareUpdateChecked(bool value) override;
   void SetIsTpmFirmwareUpdateEditable(bool value) override;
   void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) override;
-  void SetShouldShowConfirmationDialog(bool value) override;
-  void SetConfirmationDialogClosed() override;
+  void SetIsConfirmational(bool value) override;
+  void SetIsGoogleBrandedBuild(bool value) override;
   void SetScreenState(State value) override;
   State GetScreenState() override;
   tpm_firmware_update::Mode GetTpmFirmwareUpdateMode() override;
   bool GetIsRollbackAvailable() override;
-  bool GetIsRollbackRequested() override;
+  bool GetIsRollbackChecked() override;
   bool GetIsTpmFirmwareUpdateChecked() override;
 
  private:
@@ -98,9 +98,8 @@ class ResetScreenHandler : public ResetView,
   ResetView::State state_ = ResetView::State::kRestartRequired;
   tpm_firmware_update::Mode mode_ = tpm_firmware_update::Mode::kNone;
   bool is_rollback_available_ = false;
-  bool is_rollback_requested_ = false;
+  bool is_rollback_checked_ = false;
   bool is_tpm_firmware_update_checked_ = false;
-  bool is_showing_confirmation_dialog_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ResetScreenHandler);
 };

@@ -88,6 +88,7 @@ class Runner():
             xcode_path=self.args.xcode_path,
             test_cases=self.args.test_cases,
             test_args=self.test_args,
+            use_clang_coverage=self.args.use_clang_coverage,
             env_vars=self.args.env_var)
       elif self.args.replay_path != 'NO_PATH':
         tr = wpr_runner.WprProxySimulatorTestRunner(
@@ -123,6 +124,7 @@ class Runner():
             shards=self.args.shards,
             test_args=self.test_args,
             test_cases=self.args.test_cases,
+            use_clang_coverage=self.args.use_clang_coverage,
             wpr_tools_path=self.args.wpr_tools_path,
             xcode_path=self.args.xcode_path,
             xctest=self.args.xctest,
@@ -355,6 +357,7 @@ class Runner():
       args.restart = args_json.get('restart', args.restart)
       args.test_cases = args.test_cases or []
       args.test_cases.extend(args_json.get('test_cases', []))
+      args.use_clang_coverage = args_json.get('use_clang_coverage', False)
       args.xctest = args_json.get('xctest', args.xctest)
       args.xcode_parallelization = args_json.get('xcode_parallelization',
                                                  args.xcode_parallelization)

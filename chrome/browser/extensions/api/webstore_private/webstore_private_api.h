@@ -69,6 +69,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
                               const std::string& error_message) override;
 
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+  void OnRequestPromptDone(ExtensionInstallPrompt::Result result);
 
   void HandleInstallProceed();
   void HandleInstallAbort(bool user_initiated);
@@ -345,8 +346,6 @@ class WebstorePrivateRequestExtensionFunction : public ExtensionFunction {
 
   // Extensionfunction:
   ExtensionFunction::ResponseAction Run() override;
-
-  void AddExtensionToPendingList(const ExtensionId& id);
 
   DISALLOW_COPY_AND_ASSIGN(WebstorePrivateRequestExtensionFunction);
 };

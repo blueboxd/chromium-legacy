@@ -92,7 +92,6 @@ base::TimeDelta GetNudgeTimeout(PrefService* prefs, TooltipType type) {
   const int shown_count = GetShownCount(prefs, type);
   if (shown_count == 0)
     return base::TimeDelta();
-  DCHECK(ShouldShowNudge(prefs, type));
   return kNudgeShowDuration;
 }
 

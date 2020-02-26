@@ -91,6 +91,7 @@ void StatusAreaWidget::Initialize() {
 
   UpdateAfterLoginStatusChange(
       Shell::Get()->session_controller()->login_status());
+  UpdateLayout(/*animate=*/false);
 
   ShelfConfig::Get()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -153,7 +154,8 @@ void StatusAreaWidget::UpdateCollapseState() {
 }
 
 void StatusAreaWidget::CalculateTargetBounds() {
-  gfx::Size status_size(status_area_widget_delegate_->size());
+  status_area_widget_delegate_->CalculateTargetBounds();
+  gfx::Size status_size(status_area_widget_delegate_->GetTargetBounds().size());
   const gfx::Size shelf_size = shelf_->shelf_widget()->GetTargetBounds().size();
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
@@ -185,19 +187,18 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
 
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterShelfChange();
-  status_area_widget_delegate_->UpdateLayout();
+  status_area_widget_delegate_->UpdateLayout(animate);
 
   // Having a window which is visible but does not have an opacity is an
   // illegal state.
+  ui::Layer* layer = GetNativeView()->layer();
+  layer->SetOpacity(new_layout_inputs.opacity);
   if (new_layout_inputs.opacity)
     ShowInactive();
   else
     Hide();
 
-  ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  layer->SetOpacity(new_layout_inputs.opacity);
-
   animation_setter.SetTransitionDuration(
       animate ? ShelfConfig::Get()->shelf_animation_duration()
               : base::TimeDelta::FromMilliseconds(0));
@@ -422,7 +423,6 @@ void StatusAreaWidget::OnShelfConfigUpdated() {
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterShelfChange();
   UpdateCollapseState();
-  status_area_widget_delegate_->UpdateLayout();
 }
 
 void StatusAreaWidget::UpdateAfterColorModeChange() {

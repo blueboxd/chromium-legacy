@@ -19,6 +19,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/hotseat_transition_animator.h"
@@ -56,7 +57,6 @@ constexpr int kShelfBlurRadius = 30;
 // the screen edge).
 constexpr int kShelfMaxOvershootHeight = 40;
 constexpr float kShelfBlurQuality = 0.33f;
-constexpr gfx::Size kDragHandleSize(80, 4);
 constexpr int kDragHandleCornerRadius = 2;
 
 // Return the first or last focusable child of |root|.
@@ -173,7 +173,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   ui::Layer* opaque_background() { return opaque_background_.layer(); }
   ui::Layer* animating_background() { return &animating_background_; }
   ui::Layer* animating_drag_handle() { return &animating_drag_handle_; }
-  views::View* drag_handle() { return drag_handle_; }
+  DragHandle* drag_handle() { return drag_handle_; }
 
  private:
   // Whether |opaque_background_| is explicitly hidden during an animation.
@@ -234,8 +234,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
       AshColorProvider::Get()->GetRippleAttributes(
           ShelfConfig::Get()->GetDefaultShelfColor());
 
-  drag_handle_ = AddChildView(std::make_unique<DragHandle>(
-      kDragHandleSize, ripple_attributes, kDragHandleCornerRadius));
+  drag_handle_ = AddChildView(
+      std::make_unique<DragHandle>(ripple_attributes, kDragHandleCornerRadius));
 
   animating_drag_handle_.SetColor(ripple_attributes.base_color);
   animating_drag_handle_.SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
@@ -425,7 +425,7 @@ void ShelfWidget::DelegateView::Layout() {
   login_shelf_view_->SetBoundsRect(GetLocalBounds());
 
   gfx::Rect drag_handle_bounds = GetLocalBounds();
-  drag_handle_bounds.ClampToCenteredSize(kDragHandleSize);
+  drag_handle_bounds.ClampToCenteredSize(ShelfConfig::Get()->DragHandleSize());
   drag_handle_->SetBoundsRect(drag_handle_bounds);
 }
 
@@ -506,6 +506,17 @@ ui::Layer* ShelfWidget::GetAnimatingDragHandle() {
 
 views::View* ShelfWidget::GetDragHandle() {
   return delegate_view_->drag_handle();
+}
+
+void ShelfWidget::ShowDragHandleNudge() {
+  delegate_view_->drag_handle()->ShowDragHandleNudge(
+      contextual_tooltip::GetNudgeTimeout(
+          Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
+          contextual_tooltip::TooltipType::kDragHandle));
+}
+
+void ShelfWidget::HideDragHandleNudge() {
+  delegate_view_->drag_handle()->HideDragHandleNudge();
 }
 
 void ShelfWidget::SetLoginShelfButtonOpacity(float target_opacity) {

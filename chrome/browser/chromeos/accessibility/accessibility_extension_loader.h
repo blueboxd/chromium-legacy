@@ -18,6 +18,12 @@ class AccessibilityExtensionLoader {
   AccessibilityExtensionLoader(const std::string& extension_id,
                                const base::FilePath& extension_path,
                                const base::Closure& unload_callback);
+  AccessibilityExtensionLoader(
+      const std::string& extension_id,
+      const base::FilePath& extension_path,
+      const base::FilePath::CharType* manifest_filename,
+      const base::FilePath::CharType* guest_manifest_filename,
+      const base::Closure& unload_callback);
   ~AccessibilityExtensionLoader();
 
   void SetProfile(Profile* profile, const base::Closure& done_callback);
@@ -31,6 +37,10 @@ class AccessibilityExtensionLoader {
   Profile* profile_;
   std::string extension_id_;
   base::FilePath extension_path_;
+
+  const base::FilePath::CharType* manifest_filename_ = nullptr;
+
+  const base::FilePath::CharType* guest_manifest_filename_ = nullptr;
 
   bool loaded_;
 

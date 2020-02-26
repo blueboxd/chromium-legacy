@@ -177,14 +177,14 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
     bool use_swiftshader = gpu_preferences.use_vulkan ==
                            gpu::VulkanImplementationName::kSwiftshader;
 
-#ifndef USE_X11
+#if !defined(USE_X11)
     // TODO(samans): Support Swiftshader on more platforms.
     // https://crbug.com/963988
     LOG_IF(ERROR, use_swiftshader)
         << "Unable to use Vulkan Swiftshader on this platform. Falling back to "
            "GPU.";
     use_swiftshader = false;
-#endif
+#endif  // !defined(USE_X11)
     vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(

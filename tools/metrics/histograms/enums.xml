@@ -16355,6 +16355,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
     window.opener is cross origin but same site to the top frame of this
     download (e.g. google.com vs subdomain.google.com).
   </int>
+  <int value="3" label="Non HTTP or HTTPS">
+    Either window.opener or the top frame of this download is not an HTTP or
+    HTTPS URL (e.g. about:blank).
+  </int>
 </enum>
 
 <enum name="DownloadInProgressDBCountType">
@@ -22437,6 +22441,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="10" label="Delegated permissions prompt"/>
   <int value="11" label="Delegated bundle permissions prompt (deprecated)"/>
   <int value="12" label="Webstore widget prompt"/>
+  <int value="13" label="Extension request prompt"/>
+  <int value="14" label="Extension pending request prompt"/>
 </enum>
 
 <enum name="ExtensionInstallVerifierGetSignatureResult">
@@ -65836,52 +65842,6 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Seed import failed - invalid response date string"/>
 </enum>
 
-<enum name="VariationsFirstRunSeedFetchResult">
-  <int value="-4" label="Invalid Date header when fetching seed"/>
-  <int value="-3" label="UnknownHostException fetching seed"/>
-  <int value="-2" label="SocketTimeoutException fetching seed"/>
-  <int value="-1" label="IOException fetching seed"/>
-  <int value="200" label="200: OK"/>
-  <int value="201" label="201: Created"/>
-  <int value="202" label="202: Accepted"/>
-  <int value="203" label="203: Non-Authoritative Information"/>
-  <int value="204" label="204: No Content"/>
-  <int value="205" label="205: Reset Content"/>
-  <int value="206" label="206: Partial Content"/>
-  <int value="300" label="300: Multiple Choices"/>
-  <int value="301" label="301: Moved Permanently"/>
-  <int value="302" label="302: Found"/>
-  <int value="303" label="303: See Other"/>
-  <int value="304" label="304: Not Modified"/>
-  <int value="305" label="305: Use Proxy"/>
-  <int value="306" label="306: (Unused)"/>
-  <int value="307" label="307: Temporary Redirect"/>
-  <int value="400" label="400: Bad Request"/>
-  <int value="401" label="401: Unauthorized"/>
-  <int value="402" label="402: Payment Required"/>
-  <int value="403" label="403: Forbidden"/>
-  <int value="404" label="404: Not Found"/>
-  <int value="405" label="405: Method Not Allowed"/>
-  <int value="406" label="406: Not Acceptable"/>
-  <int value="407" label="407: Proxy Authentication Required"/>
-  <int value="408" label="408: Request Timeout"/>
-  <int value="409" label="409: Conflict"/>
-  <int value="410" label="410: Gone"/>
-  <int value="411" label="411: Length Required"/>
-  <int value="412" label="412: Precondition Failed"/>
-  <int value="413" label="413: Request Entity Too Large"/>
-  <int value="414" label="414: Request-URI Too Long"/>
-  <int value="415" label="415: Unsupported Media Type"/>
-  <int value="416" label="416: Requested Range Not Satisfiable"/>
-  <int value="417" label="417: Expectation Failed"/>
-  <int value="500" label="500: Internal Server Error"/>
-  <int value="501" label="501: Not Implemented"/>
-  <int value="502" label="502: Bad Gateway"/>
-  <int value="503" label="503: Service Unavailable"/>
-  <int value="504" label="504: Gateway Timeout"/>
-  <int value="505" label="505: HTTP Version Not Supported"/>
-</enum>
-
 <enum name="VariationsHeadersURLValidationResult">
   <int value="0" label="Rejected: Invalid URL."/>
   <int value="1" label="Rejected: Not https. (Deprecated)"/>
@@ -65946,6 +65906,52 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Not Expired"/>
   <int value="1" label="Fetch Time Missing"/>
   <int value="2" label="Expired"/>
+</enum>
+
+<enum name="VariationsSeedFetchResult">
+  <int value="-4" label="Invalid Date header when fetching seed"/>
+  <int value="-3" label="UnknownHostException fetching seed"/>
+  <int value="-2" label="SocketTimeoutException fetching seed"/>
+  <int value="-1" label="IOException fetching seed"/>
+  <int value="200" label="200: OK"/>
+  <int value="201" label="201: Created"/>
+  <int value="202" label="202: Accepted"/>
+  <int value="203" label="203: Non-Authoritative Information"/>
+  <int value="204" label="204: No Content"/>
+  <int value="205" label="205: Reset Content"/>
+  <int value="206" label="206: Partial Content"/>
+  <int value="300" label="300: Multiple Choices"/>
+  <int value="301" label="301: Moved Permanently"/>
+  <int value="302" label="302: Found"/>
+  <int value="303" label="303: See Other"/>
+  <int value="304" label="304: Not Modified"/>
+  <int value="305" label="305: Use Proxy"/>
+  <int value="306" label="306: (Unused)"/>
+  <int value="307" label="307: Temporary Redirect"/>
+  <int value="400" label="400: Bad Request"/>
+  <int value="401" label="401: Unauthorized"/>
+  <int value="402" label="402: Payment Required"/>
+  <int value="403" label="403: Forbidden"/>
+  <int value="404" label="404: Not Found"/>
+  <int value="405" label="405: Method Not Allowed"/>
+  <int value="406" label="406: Not Acceptable"/>
+  <int value="407" label="407: Proxy Authentication Required"/>
+  <int value="408" label="408: Request Timeout"/>
+  <int value="409" label="409: Conflict"/>
+  <int value="410" label="410: Gone"/>
+  <int value="411" label="411: Length Required"/>
+  <int value="412" label="412: Precondition Failed"/>
+  <int value="413" label="413: Request Entity Too Large"/>
+  <int value="414" label="414: Request-URI Too Long"/>
+  <int value="415" label="415: Unsupported Media Type"/>
+  <int value="416" label="416: Requested Range Not Satisfiable"/>
+  <int value="417" label="417: Expectation Failed"/>
+  <int value="500" label="500: Internal Server Error"/>
+  <int value="501" label="501: Not Implemented"/>
+  <int value="502" label="502: Bad Gateway"/>
+  <int value="503" label="503: Service Unavailable"/>
+  <int value="504" label="504: Gateway Timeout"/>
+  <int value="505" label="505: HTTP Version Not Supported"/>
 </enum>
 
 <enum name="VariationsSeedLoadResult">

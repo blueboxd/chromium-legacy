@@ -125,7 +125,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
             {value: {earconId: 'LINK'}, start: 0, end: 10},
 
             {value: 'role', start: 11, end: 15},
-            {value: {'delay': true}, start: 16, end: 16}
+            {value: {'delay': true}, start: 16, end: 46}
           ]
         },
         o.speechOutputForTest);
@@ -145,7 +145,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Checkbox', function() {
         [
           {value: new Output.EarconAction('CHECK_OFF'), start: 0, end: 0},
           {value: 'role', start: 1, end: 10},
-          {value: {'delay': true}, start: 23, end: 23}
+          {value: {'delay': true}, start: 23, end: 51}
         ],
         o);
     checkBrailleOutput(
@@ -763,7 +763,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', function() {
                 {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
                 {value: 'name', start: 1, end: 10},
                 {value: 'role', start: 11, end: 24},
-                {value: {'delay': true}, start: 33, end: 33}
+                {value: {'delay': true}, start: 33, end: 61}
               ]
             },
             o.speechOutputForTest);
@@ -1264,7 +1264,11 @@ TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', function() {
         o = new Output().withSpeech(
             cursors.Range.fromNode(tooltip), null, 'navigate');
         assertEqualsJSON(
-            {string_: 'tooltip', spans_: []}, o.speechOutputForTest);
+            {
+              string_: 'tooltip',
+              spans_: [{value: {'delay': true}, start: 0, end: 7}]
+            },
+            o.speechOutputForTest);
       });
 });
 
@@ -1313,5 +1317,48 @@ TEST_F('ChromeVoxOutputE2ETest', 'NameOrTextContent', function() {
             chrome.automation.NameFromType.CONTENTS, focusableDiv.nameFrom);
         const o = new Output().withSpeech(cursors.Range.fromNode(focusableDiv));
         assertEquals('hello there world', o.speechOutputForTest.string_);
+      });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'DelayHintVariants', function() {
+  this.runWithLoadedTree(
+      `
+    <div aria-errormessage="error" aria-invalid="true">OK</div>
+    <div id="error" aria-label="error"></div>
+  `,
+      function(root) {
+        const div = root.children[0];
+        const range = cursors.Range.fromNode(div);
+
+        let o = new Output().withSpeech(range, null, 'navigate');
+        assertEqualsJSON(
+            {string_: 'OK|error', spans_: [{value: 'name', start: 3, end: 8}]},
+            o.speechOutputForTest);
+
+        // Force a few properties to be set so that hints are triggered.
+        Object.defineProperty(div, 'clickable', {get: () => true});
+
+        o = new Output().withSpeech(range, null, 'navigate');
+        assertEqualsJSON(
+            {
+              string_: 'OK|error|Press Search+Space to activate',
+              spans_: [
+                {value: 'name', start: 3, end: 8},
+                {value: {delay: true}, start: 9, end: 39}
+              ]
+            },
+            o.speechOutputForTest);
+
+        Object.defineProperty(div, 'placeholder', {get: () => 'placeholder'});
+        o = new Output().withSpeech(range, null, 'navigate');
+        assertEqualsJSON(
+            {
+              string_: 'OK|error|placeholder|Press Search+Space to activate',
+              spans_: [
+                {value: 'name', start: 3, end: 8},
+                {value: {delay: true}, start: 9, end: 20}, {start: 21, end: 51}
+              ]
+            },
+            o.speechOutputForTest);
       });
 });

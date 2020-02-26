@@ -217,7 +217,7 @@ std::unique_ptr<SmartChargingManager> SmartChargingManager::CreateInstance() {
           std::make_unique<base::RepeatingTimer>());
 
   aura::Env::GetInstance()
-      ->context_factory_private()
+      ->context_factory()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer));
 

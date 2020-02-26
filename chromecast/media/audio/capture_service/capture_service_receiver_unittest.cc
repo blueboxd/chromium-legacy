@@ -4,12 +4,15 @@
 
 #include "chromecast/media/audio/capture_service/capture_service_receiver.h"
 
+#include <cstddef>
 #include <memory>
 
 #include "base/big_endian.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
+#include "chromecast/media/audio/capture_service/message_parsing_utils.h"
+#include "chromecast/media/audio/capture_service/packet_header.h"
 #include "chromecast/media/audio/mock_audio_input_callback.h"
 #include "chromecast/net/mock_stream_socket.h"
 #include "net/base/io_buffer.h"
@@ -24,6 +27,26 @@ namespace media {
 namespace capture_service {
 namespace {
 
+constexpr StreamInfo kStreamInfo =
+    StreamInfo{StreamType::kSoftwareEchoCancelled, 1,
+               SampleFormat::PLANAR_FLOAT, 16000, 160};
+constexpr PacketHeader kPacketHeader =
+    PacketHeader{0,
+                 static_cast<uint8_t>(MessageType::kAudio),
+                 static_cast<uint8_t>(kStreamInfo.stream_type),
+                 kStreamInfo.num_channels,
+                 static_cast<uint8_t>(kStreamInfo.sample_format),
+                 kStreamInfo.sample_rate,
+                 kStreamInfo.frames_per_buffer};
+
+void FillHeader(char* buf, uint16_t size, const PacketHeader& header) {
+  base::WriteBigEndian(buf, size);
+  memcpy(buf + sizeof(size),
+         reinterpret_cast<const char*>(&header) +
+             offsetof(struct PacketHeader, message_type),
+         sizeof(header) - offsetof(struct PacketHeader, message_type));
+}
+
 class MockStreamSocket : public chromecast::MockStreamSocket {
  public:
   MockStreamSocket() = default;
@@ -34,9 +57,9 @@ class CaptureServiceReceiverTest : public ::testing::Test {
  public:
   CaptureServiceReceiverTest()
       : receiver_(StreamType::kSoftwareEchoCancelled,
-                  16000,  // sample rate
-                  1,      // channels
-                  160) {  // frames per buffer
+                  kStreamInfo.sample_rate,
+                  kStreamInfo.num_channels,
+                  kStreamInfo.frames_per_buffer) {
     receiver_.SetTaskRunnerForTest(base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::TaskPriority::USER_BLOCKING}));
   }
@@ -93,26 +116,21 @@ TEST_F(CaptureServiceReceiverTest, SendRequest) {
       .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
                           net::CompletionOnceCallback,
                           const net::NetworkTrafficAnnotationTag&) {
-        base::BigEndianReader data_reader(buf->data(), buf_len);
-        uint16_t value_u16;
-        EXPECT_TRUE(data_reader.ReadU16(&value_u16));
-        EXPECT_EQ(value_u16, 14U);  // header - data[0].
-        uint8_t value_u8;
-        EXPECT_TRUE(data_reader.ReadU8(&value_u8));
-        EXPECT_EQ(value_u8, 0U);  // No audio.
-        EXPECT_TRUE(data_reader.ReadU8(&value_u8));
-        EXPECT_EQ(value_u8, 1U);  // kSoftwareEchoCancelled.
-        EXPECT_TRUE(data_reader.ReadU8(&value_u8));
-        EXPECT_EQ(value_u8, 1U);  // Mono channel.
-        EXPECT_TRUE(data_reader.ReadU8(&value_u8));
-        EXPECT_EQ(value_u8, 5U);  // Planar float.
-        EXPECT_TRUE(data_reader.ReadU16(&value_u16));
-        EXPECT_EQ(value_u16, 16000U);  // 16kHz.
-        uint64_t value_u64;
-        EXPECT_TRUE(data_reader.ReadU64(&value_u64));
-        EXPECT_EQ(value_u64, 160U);  // Frames per buffer.
-        EXPECT_EQ(data_reader.remaining(), 0U);
-        return 16;  // Size of header.
+        EXPECT_EQ(buf_len, static_cast<int>(sizeof(PacketHeader)));
+        const char* data = buf->data();
+        uint16_t size;
+        base::ReadBigEndian(data, &size);
+        EXPECT_EQ(size, sizeof(PacketHeader) - sizeof(size));
+        PacketHeader header;
+        memcpy(&header, data, sizeof(PacketHeader));
+        EXPECT_EQ(header.message_type, static_cast<uint8_t>(MessageType::kAck));
+        EXPECT_EQ(header.stream_type, kPacketHeader.stream_type);
+        EXPECT_EQ(header.num_channels, kPacketHeader.num_channels);
+        EXPECT_EQ(header.sample_format, kPacketHeader.sample_format);
+        EXPECT_EQ(header.sample_rate, kPacketHeader.sample_rate);
+        EXPECT_EQ(header.timestamp_or_frames,
+                  kPacketHeader.timestamp_or_frames);
+        return buf_len;
       }));
   EXPECT_CALL(*socket, Read(_, _, _)).WillOnce(Return(net::ERR_IO_PENDING));
 
@@ -129,20 +147,15 @@ TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
   EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
   EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
   EXPECT_CALL(*socket, Read(_, _, _))
-      .WillOnce(Invoke([](net::IOBuffer* buf, int,
+      .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
                           net::CompletionOnceCallback) {
-        std::vector<char> header(16);
-        base::BigEndianWriter data_writer(header.data(), header.size());
-        data_writer.WriteU16(334);  // 160 frames + header - data[0], in bytes.
-        data_writer.WriteU8(1);     // Has audio.
-        data_writer.WriteU8(1);     // kSoftwareEchoCancelled.
-        data_writer.WriteU8(1);     // Mono channel.
-        data_writer.WriteU8(0);     // Interleaved int16.
-        data_writer.WriteU16(16000);  // 16kHz.
-        data_writer.WriteU64(0);      // Timestamp.
-        std::copy(header.data(), header.data() + header.size(), buf->data());
-        // No need to fill audio frames.
-        return 336;  // 160 frames + header, in bytes.
+        int total_size = sizeof(PacketHeader) + DataSizeInBytes(kStreamInfo);
+        EXPECT_GE(buf_len, total_size);
+        uint16_t size = total_size - sizeof(uint16_t);
+        PacketHeader header = kPacketHeader;
+        header.timestamp_or_frames = 0;  // Timestamp.
+        FillHeader(buf->data(), size, header);
+        return total_size;  // No need to fill audio frames.
       }))
       .WillOnce(Return(net::ERR_IO_PENDING));
   EXPECT_CALL(audio_, OnData(_, _, 1.0 /* volume */));
@@ -155,25 +168,23 @@ TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(CaptureServiceReceiverTest, ReceiveEmptyMessage) {
+TEST_F(CaptureServiceReceiverTest, ReceiveAckMessage) {
   auto socket = std::make_unique<MockStreamSocket>();
   EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
   EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
   EXPECT_CALL(*socket, Read(_, _, _))
-      .WillOnce(Invoke([](net::IOBuffer* buf, int,
-                          net::CompletionOnceCallback) {
-        std::vector<char> header(16, 0);
-        base::BigEndianWriter data_writer(header.data(), header.size());
-        data_writer.WriteU16(14);     // header - data[0], in bytes.
-        data_writer.WriteU8(0);       // No audio.
-        data_writer.WriteU8(1);       // kSoftwareEchoCancelled.
-        data_writer.WriteU8(1);       // Mono channel.
-        data_writer.WriteU8(0);       // Interleaved int16.
-        data_writer.WriteU16(16000);  // 16kHz.
-        data_writer.WriteU64(160);    // Frames per buffer.
-        std::copy(header.data(), header.data() + header.size(), buf->data());
-        return 16;
-      }))
+      .WillOnce(Invoke(
+          [](net::IOBuffer* buf, int buf_len, net::CompletionOnceCallback) {
+            int total_size = sizeof(PacketHeader);
+            EXPECT_GE(buf_len, total_size);
+            uint16_t size = total_size - sizeof(uint16_t);
+            PacketHeader header = kPacketHeader;
+            header.message_type = static_cast<uint8_t>(MessageType::kAck);
+            header.sample_format =
+                static_cast<uint8_t>(SampleFormat::INTERLEAVED_INT16);
+            FillHeader(buf->data(), size, header);
+            return total_size;
+          }))
       .WillOnce(Return(net::ERR_IO_PENDING));
   // Neither OnError nor OnData will be called.
   EXPECT_CALL(audio_, OnError()).Times(0);
@@ -188,20 +199,17 @@ TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
   EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
   EXPECT_CALL(*socket, Write(_, _, _, _)).WillOnce(Return(16));
   EXPECT_CALL(*socket, Read(_, _, _))
-      .WillOnce(Invoke([](net::IOBuffer* buf, int,
+      .WillOnce(Invoke([](net::IOBuffer* buf, int buf_len,
                           net::CompletionOnceCallback) {
-        std::vector<char> header(16, 0);
-        base::BigEndianWriter data_writer(header.data(), header.size());
-        data_writer.WriteU16(334);  // 160 frames + header - data[0], in bytes.
-        data_writer.WriteU8(1);     // Has audio.
-        data_writer.WriteU8(1);     // kSoftwareEchoCancelled.
-        data_writer.WriteU8(1);     // Mono channels.
-        data_writer.WriteU8(6);     // Invalid format.
-        data_writer.WriteU16(16000);  // 16kHz.
-        data_writer.WriteU64(0);      // Timestamp.
-        std::copy(header.data(), header.data() + header.size(), buf->data());
-        // No need to fill audio frames.
-        return 336;
+        int total_size = sizeof(PacketHeader) + DataSizeInBytes(kStreamInfo);
+        EXPECT_GE(buf_len, total_size);
+        uint16_t size = total_size - sizeof(uint16_t);
+        PacketHeader header = kPacketHeader;
+        header.sample_format = static_cast<uint8_t>(SampleFormat::LAST_FORMAT) +
+                               1;        // Invalid format.
+        header.timestamp_or_frames = 0;  // Timestamp.
+        FillHeader(buf->data(), size, header);
+        return total_size;  // No need to fill audio frames.
       }));
   EXPECT_CALL(audio_, OnError());
 

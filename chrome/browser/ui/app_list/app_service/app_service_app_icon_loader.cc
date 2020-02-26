@@ -8,13 +8,28 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 namespace {
+
 const char kArcIntentHelperAppId[] = "lomchfnmkmhfhbibboadbgabihofenaa";
+
+// Returns the app id from the app id or the shelf group id.
+std::string GetAppId(Profile* profile, const std::string& id) {
+  const arc::ArcAppShelfId arc_app_shelf_id =
+      arc::ArcAppShelfId::FromString(id);
+  if (!arc_app_shelf_id.valid() || !arc_app_shelf_id.has_shelf_group_id()) {
+    return id;
+  }
+
+  return arc::GetAppFromAppOrGroupId(profile, id);
 }
+
+}  // namespace
 
 AppServiceAppIconLoader::AppServiceAppIconLoader(
     Profile* profile,
@@ -30,7 +45,9 @@ AppServiceAppIconLoader::AppServiceAppIconLoader(
 
 AppServiceAppIconLoader::~AppServiceAppIconLoader() = default;
 
-bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
+bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& id) {
+  const std::string app_id = GetAppId(profile(), id);
+
   // Skip the ARC intent helper, the system Android app that proxies links to
   // Chrome, which should be hidden.
   if (app_id == kArcIntentHelperAppId) {
@@ -52,32 +69,42 @@ bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   return false;
 }
 
-void AppServiceAppIconLoader::FetchImage(const std::string& app_id) {
-  AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
+void AppServiceAppIconLoader::FetchImage(const std::string& id) {
+  const std::string app_id = GetAppId(profile(), id);
+
+  AppIDToIconMap::const_iterator it = icon_map_.find(id);
   if (it != icon_map_.end()) {
     if (!it->second.isNull()) {
-      delegate()->OnAppImageUpdated(app_id, it->second);
+      delegate()->OnAppImageUpdated(id, it->second);
     }
     return;
   }
 
-  icon_map_[app_id] = gfx::ImageSkia();
-
+  icon_map_[id] = gfx::ImageSkia();
+  shelf_app_id_map_[app_id].insert(id);
   constexpr bool allow_placeholder_icon = true;
   CallLoadIcon(app_id, allow_placeholder_icon);
 }
 
-void AppServiceAppIconLoader::ClearImage(const std::string& app_id) {
-  icon_map_.erase(app_id);
+void AppServiceAppIconLoader::ClearImage(const std::string& id) {
+  const std::string app_id = GetAppId(profile(), id);
+  if (base::Contains(shelf_app_id_map_, app_id)) {
+    shelf_app_id_map_[app_id].erase(id);
+    if (shelf_app_id_map_[app_id].empty()) {
+      shelf_app_id_map_.erase(app_id);
+    }
+  }
+
+  icon_map_.erase(id);
 }
 
-void AppServiceAppIconLoader::UpdateImage(const std::string& app_id) {
-  AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
+void AppServiceAppIconLoader::UpdateImage(const std::string& id) {
+  AppIDToIconMap::const_iterator it = icon_map_.find(id);
   if (it == icon_map_.end() || it->second.isNull()) {
     return;
   }
 
-  delegate()->OnAppImageUpdated(app_id, it->second);
+  delegate()->OnAppImageUpdated(id, it->second);
 }
 
 void AppServiceAppIconLoader::OnAppUpdate(const apps::AppUpdate& update) {
@@ -85,15 +112,12 @@ void AppServiceAppIconLoader::OnAppUpdate(const apps::AppUpdate& update) {
     return;
   }
 
-  // Only load the icon that has been added to icon_map_.
-  const std::string& app_id = update.AppId();
-  AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
-  if (it == icon_map_.end()) {
+  if (!Exist(update.AppId())) {
     return;
   }
 
   constexpr bool allow_placeholder_icon = true;
-  CallLoadIcon(app_id, allow_placeholder_icon);
+  CallLoadIcon(update.AppId(), allow_placeholder_icon);
 }
 
 void AppServiceAppIconLoader::OnAppRegistryCacheWillBeDestroyed(
@@ -143,17 +167,37 @@ void AppServiceAppIconLoader::OnLoadIcon(const std::string& app_id,
 
   // Only load the icon that exists in icon_map_. The App could be removed from
   // icon_map_ after calling CallLoadIcon, so check it again.
-  AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
-  if (it == icon_map_.end()) {
+  if (!Exist(app_id)) {
     return;
   }
 
-  gfx::ImageSkia image = icon_value->uncompressed;
-  icon_map_[app_id] = image;
-  delegate()->OnAppImageUpdated(app_id, image);
+  for (auto& id : shelf_app_id_map_[app_id]) {
+    AppIDToIconMap::const_iterator it = icon_map_.find(id);
+    if (it == icon_map_.end()) {
+      continue;
+    }
+    gfx::ImageSkia image = icon_value->uncompressed;
+    icon_map_[id] = image;
+    delegate()->OnAppImageUpdated(id, image);
+  }
 
   if (icon_value->is_placeholder_icon) {
     constexpr bool allow_placeholder_icon = false;
     CallLoadIcon(app_id, allow_placeholder_icon);
   }
+}
+
+bool AppServiceAppIconLoader::Exist(const std::string& app_id) {
+  if (!base::Contains(shelf_app_id_map_, app_id)) {
+    return false;
+  }
+
+  for (auto& id : shelf_app_id_map_[app_id]) {
+    AppIDToIconMap::const_iterator it = icon_map_.find(id);
+    if (it == icon_map_.end()) {
+      continue;
+    }
+    return true;
+  }
+  return false;
 }

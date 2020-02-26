@@ -526,18 +526,6 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
 }
 #endif  // !defined(OS_CHROMEOS)
 
-// Adds Google icon to the last added menu item. Used for Google-powered
-// services like translate and search.
-void AddGoogleIconToLastMenuItem(ui::SimpleMenuModel* menu) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (base::FeatureList::IsEnabled(features::kGoogleBrandedContextMenu)) {
-    menu->SetIcon(
-        menu->GetItemCount() - 1,
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_GOOGLE_ICON));
-  }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-}
-
 void OnProfileCreated(const GURL& link_url,
                       const content::Referrer& referrer,
                       Profile* profile,
@@ -575,19 +563,12 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 // static
 void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                                                      bool is_checked) {
-  // When the Google branding experiment is enabled, we want to show an icon
-  // next to this item, but we can't show icons on check items.  So when the
-  // item is enabled show it as checked, and otherwise add it as a normal item
-  // (instead of a check item) so that, if necessary, we can add the Google
-  // icon.  (If the experiment is off, there's no harm in adding this as a
-  // normal item, as it will look identical to an unchecked check item.)
   if (is_checked) {
     menu->AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
                                    IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
   } else {
     menu->AddItemWithStringId(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
                               IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
-    AddGoogleIconToLastMenuItem(menu);
   }
 }
 
@@ -1417,8 +1398,6 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
       IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
                                  provider->short_name()));
-  if (provider->image_url_ref().HasGoogleBaseURLs(service->search_terms_data()))
-    AddGoogleIconToLastMenuItem(&menu_model_);
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
@@ -1576,7 +1555,6 @@ void RenderViewContextMenu::AppendPageItems() {
       menu_model_.AddItem(
           IDC_CONTENT_CONTEXT_TRANSLATE,
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-      AddGoogleIconToLastMenuItem(&menu_model_);
     }
   }
 }
@@ -1668,12 +1646,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                                    default_provider->short_name(),
                                    printable_selection_text));
-    TemplateURLService* service =
-        TemplateURLServiceFactory::GetForProfile(GetProfile());
-    if (default_provider->url_ref().HasGoogleBaseURLs(
-            service->search_terms_data())) {
-      AddGoogleIconToLastMenuItem(&menu_model_);
-    }
   } else {
     if ((selection_navigation_url_ != params_.link_url) &&
         ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
@@ -2476,7 +2448,6 @@ void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(bool is_checked) {
         l10n_util::GetStringUTF16(
             IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION),
         &accessibility_labels_submenu_model_);
-    AddGoogleIconToLastMenuItem(&menu_model_);
   }
 }
 

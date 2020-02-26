@@ -2342,7 +2342,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           render_frame_host_->GetLastCommittedOrigin(),
           !render_frame_host_->has_committed_any_navigation(),
           request->response()->cross_origin_opener_policy,
-          request->response()->cross_origin_embedder_policy,
+          request->response()->cross_origin_embedder_policy.value,
           url::Origin::Create(request->common_params().url));
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(

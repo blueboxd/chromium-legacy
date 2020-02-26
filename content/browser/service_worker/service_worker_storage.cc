@@ -46,13 +46,6 @@ const base::FilePath::CharType kDatabaseName[] =
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
 
-void DidUpdateNavigationPreloadState(
-    ServiceWorkerStorage::StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  std::move(callback).Run(
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
-}
-
 }  // namespace
 
 ServiceWorkerStorage::InitialData::InitialData()
@@ -78,22 +71,6 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
   ClearSessionOnlyOrigins();
   weak_factory_.InvalidateWeakPtrs();
   database_task_runner_->DeleteSoon(FROM_HERE, std::move(database_));
-}
-
-// static
-blink::ServiceWorkerStatusCode ServiceWorkerStorage::DatabaseStatusToStatusCode(
-    ServiceWorkerDatabase::Status status) {
-  switch (status) {
-    case ServiceWorkerDatabase::Status::kOk:
-      return blink::ServiceWorkerStatusCode::kOk;
-    case ServiceWorkerDatabase::Status::kErrorNotFound:
-      return blink::ServiceWorkerStatusCode::kErrorNotFound;
-    case ServiceWorkerDatabase::Status::kErrorDisabled:
-      return blink::ServiceWorkerStatusCode::kErrorAbort;
-      NOTREACHED();
-    default:
-      return blink::ServiceWorkerStatusCode::kErrorFailed;
-  }
 }
 
 // static
@@ -257,7 +234,7 @@ void ServiceWorkerStorage::GetRegistrationsForOrigin(
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort,
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
                              /*registrations=*/nullptr,
                              /*resource_lists=*/nullptr));
       return;
@@ -292,7 +269,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             blink::ServiceWorkerStatusCode::kErrorAbort,
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
                              /*registrations=*/nullptr));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
@@ -362,14 +339,14 @@ void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
     int64_t registration_id,
     const GURL& origin,
     base::Time last_update_check_time,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
   if (IsDisabled()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
-                           blink::ServiceWorkerStatusCode::kErrorAbort));
+                           ServiceWorkerDatabase::Status::kErrorDisabled));
     return;
   }
 
@@ -378,23 +355,19 @@ void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
       base::BindOnce(&ServiceWorkerDatabase::UpdateLastCheckTime,
                      base::Unretained(database_.get()), registration_id, origin,
                      last_update_check_time),
-      base::BindOnce(
-          [](StatusCallback callback, ServiceWorkerDatabase::Status status) {
-            std::move(callback).Run(DatabaseStatusToStatusCode(status));
-          },
-          std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::UpdateNavigationPreloadEnabled(
     int64_t registration_id,
     const GURL& origin,
     bool enable,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
   if (IsDisabled()) {
-    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
+    std::move(callback).Run(ServiceWorkerDatabase::Status::kErrorDisabled);
     return;
   }
 
@@ -403,19 +376,19 @@ void ServiceWorkerStorage::UpdateNavigationPreloadEnabled(
       base::BindOnce(&ServiceWorkerDatabase::UpdateNavigationPreloadEnabled,
                      base::Unretained(database_.get()), registration_id, origin,
                      enable),
-      base::BindOnce(&DidUpdateNavigationPreloadState, std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
     int64_t registration_id,
     const GURL& origin,
     const std::string& value,
-    StatusCallback callback) {
+    DatabaseStatusCallback callback) {
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
   if (IsDisabled()) {
-    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
+    std::move(callback).Run(ServiceWorkerDatabase::Status::kErrorDisabled);
     return;
   }
 
@@ -424,7 +397,7 @@ void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
       base::BindOnce(&ServiceWorkerDatabase::UpdateNavigationPreloadHeader,
                      base::Unretained(database_.get()), registration_id, origin,
                      value),
-      base::BindOnce(&DidUpdateNavigationPreloadState, std::move(callback)));
+      std::move(callback));
 }
 
 void ServiceWorkerStorage::DeleteRegistration(
@@ -815,7 +788,7 @@ void ServiceWorkerStorage::ClearUserDataForAllRegistrationsByKeyPrefix(
       std::move(callback));
 }
 
-void ServiceWorkerStorage::DeleteAndStartOver(StatusCallback callback) {
+void ServiceWorkerStorage::DeleteAndStartOver(DatabaseStatusCallback callback) {
   Disable();
 
   // Will be used in DiskCacheImplDoneWithDisk()
@@ -981,8 +954,7 @@ void ServiceWorkerStorage::DidGetRegistrationsForOrigin(
     std::unique_ptr<RegistrationList> registration_data_list,
     std::unique_ptr<std::vector<ResourceList>> resource_lists,
     ServiceWorkerDatabase::Status status) {
-  std::move(callback).Run(DatabaseStatusToStatusCode(status),
-                          std::move(registration_data_list),
+  std::move(callback).Run(status, std::move(registration_data_list),
                           std::move(resource_lists));
 }
 
@@ -990,8 +962,7 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
     GetAllRegistrationsCallback callback,
     std::unique_ptr<RegistrationList> registration_data_list,
     ServiceWorkerDatabase::Status status) {
-  std::move(callback).Run(DatabaseStatusToStatusCode(status),
-                          std::move(registration_data_list));
+  std::move(callback).Run(status, std::move(registration_data_list));
 }
 
 void ServiceWorkerStorage::DidStoreRegistrationData(
@@ -1002,8 +973,7 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
     const std::vector<int64_t>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk) {
-    std::move(callback).Run(DatabaseStatusToStatusCode(status),
-                            deleted_version.version_id,
+    std::move(callback).Run(status, deleted_version.version_id,
                             newly_purgeable_resources);
     return;
   }
@@ -1018,7 +988,7 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
             deleted_version.resources_total_size_bytes);
   }
 
-  std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
+  std::move(callback).Run(ServiceWorkerDatabase::Status::kOk,
                           deleted_version.version_id,
                           newly_purgeable_resources);
 }
@@ -1031,8 +1001,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk) {
     std::move(params->callback)
-        .Run(DatabaseStatusToStatusCode(status), deleted_version.version_id,
-             newly_purgeable_resources);
+        .Run(status, deleted_version.version_id, newly_purgeable_resources);
     return;
   }
 
@@ -1049,7 +1018,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     registered_origins_.erase(params->origin);
 
   std::move(params->callback)
-      .Run(blink::ServiceWorkerStatusCode::kOk, deleted_version.version_id,
+      .Run(ServiceWorkerDatabase::Status::kOk, deleted_version.version_id,
            newly_purgeable_resources);
 }
 
@@ -1548,7 +1517,7 @@ void ServiceWorkerStorage::PerformStorageCleanupInDB(
 }
 
 void ServiceWorkerStorage::DidDeleteDatabase(
-    StatusCallback callback,
+    DatabaseStatusCallback callback,
     ServiceWorkerDatabase::Status status) {
   DCHECK_EQ(STORAGE_STATE_DISABLED, state_);
   if (status != ServiceWorkerDatabase::Status::kOk) {
@@ -1557,7 +1526,7 @@ void ServiceWorkerStorage::DidDeleteDatabase(
                << ServiceWorkerDatabase::StatusToString(status);
     ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
         ServiceWorkerMetrics::DELETE_DATABASE_ERROR);
-    std::move(callback).Run(DatabaseStatusToStatusCode(status));
+    std::move(callback).Run(status);
     return;
   }
   DVLOG(1) << "Deleted ServiceWorkerDatabase successfully.";
@@ -1579,7 +1548,7 @@ void ServiceWorkerStorage::DidDeleteDatabase(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ServiceWorkerStorage::DidDeleteDiskCache(StatusCallback callback,
+void ServiceWorkerStorage::DidDeleteDiskCache(DatabaseStatusCallback callback,
                                               bool result) {
   DCHECK_EQ(STORAGE_STATE_DISABLED, state_);
   if (!result) {
@@ -1587,13 +1556,13 @@ void ServiceWorkerStorage::DidDeleteDiskCache(StatusCallback callback,
     LOG(ERROR) << "Failed to delete the diskcache.";
     ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
         ServiceWorkerMetrics::DELETE_DISK_CACHE_ERROR);
-    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorFailed);
+    std::move(callback).Run(ServiceWorkerDatabase::Status::kErrorFailed);
     return;
   }
   DVLOG(1) << "Deleted ServiceWorkerDiskCache successfully.";
   ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
       ServiceWorkerMetrics::DELETE_OK);
-  std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
+  std::move(callback).Run(ServiceWorkerDatabase::Status::kOk);
 }
 
 }  // namespace content

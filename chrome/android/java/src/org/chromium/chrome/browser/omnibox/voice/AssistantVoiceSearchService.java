@@ -9,13 +9,13 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.VisibleForTesting;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.SysUtils;
@@ -72,6 +72,7 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
                     new Locale("ml", "in"), new Locale("gu", "in"), new Locale("ur", "in")));
     private static final boolean DEFAULT_ASSISTANT_COLORFUL_MIC_ENABLED = false;
 
+    // TODO(wylieb): Convert this to an ObserverList and add #addObserver, #removeObserver.
     private final Observer mObserver;
     private final Context mContext;
     private final ExternalAuthUtils mExternalAuthUtils;
@@ -260,5 +261,6 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
     /** Enable the colorful mic for testing purposes. */
     void setColorfulMicEnabledForTesting(boolean enabled) {
         mIsColorfulMicEnabled = enabled;
+        mShouldShowColorfulMic = enabled;
     }
 }

@@ -191,12 +191,6 @@ void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void BuiltInChromeOsApps::PromptUninstall(const std::string& app_id) {
-  constexpr bool kClearSiteData = false;
-  constexpr bool kReportAbuse = false;
-  Uninstall(app_id, kClearSiteData, kReportAbuse);
-}
-
 void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
                                     bool clear_site_data,
                                     bool report_abuse) {
@@ -243,7 +237,8 @@ void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
 void BuiltInChromeOsApps::OnPreferredAppSet(
     const std::string& app_id,
     apps::mojom::IntentFilterPtr intent_filter,
-    apps::mojom::IntentPtr intent) {
+    apps::mojom::IntentPtr intent,
+    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   NOTIMPLEMENTED();
 }
 

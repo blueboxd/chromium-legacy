@@ -126,7 +126,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       const base::FilePath& partition_path,
       const FileSystemOptions& options);
 
-  bool DeleteDataForOriginOnFileTaskRunner(const GURL& origin_url);
+  bool DeleteDataForOriginOnFileTaskRunner(const url::Origin& origin);
 
   // Creates a new QuotaReservation for the given |origin| and |type|.
   // Returns nullptr if |type| does not support quota or reservation fails.

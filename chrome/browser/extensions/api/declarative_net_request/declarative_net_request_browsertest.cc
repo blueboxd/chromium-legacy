@@ -3878,6 +3878,37 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowAllRequests) {
   }
 }
 
+// Ensure allowAllRequests rules work correctly for srcdoc frames. Regression
+// test for crbug.com/1050536.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       AllowAllRequests_SrcDoc) {
+  TestRule block_rule = CreateGenericRule();
+  block_rule.id = kMinValidID;
+  block_rule.priority = kMinValidPriority;
+  block_rule.action->type = "block";
+  block_rule.condition->url_filter = "*";
+
+  TestRule allow_srcdoc_rule = CreateGenericRule();
+  allow_srcdoc_rule.id = kMinValidID + 1;
+  allow_srcdoc_rule.priority = kMinValidPriority + 1;
+  allow_srcdoc_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  allow_srcdoc_rule.action->type = "allowAllRequests";
+  allow_srcdoc_rule.condition->url_filter = "srcdoc";
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({block_rule, allow_srcdoc_rule}));
+
+  GURL page_url = embedded_test_server()->GetURL("/srcdoc.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+
+  const std::set<GURL> requests_seen = GetAndResetRequestsToServer();
+  EXPECT_TRUE(base::Contains(requests_seen, page_url));
+
+  GURL xhr_url = embedded_test_server()->GetURL("/subresources/xhr_target.txt");
+  EXPECT_TRUE(base::Contains(requests_seen, xhr_url));
+}
+
 // Test fixture to verify that host permissions for the request url and the
 // request initiator are properly checked when redirecting requests. Loads an
 // example.com url with four sub-frames named frame_[1..4] from hosts

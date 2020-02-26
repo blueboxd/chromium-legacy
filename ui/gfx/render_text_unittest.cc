@@ -1662,6 +1662,28 @@ const RunListCase kScriptsRunListCases[] = {
     // Control Pictures.
     {"control_pictures", L"␑␒␓␔␕␖␗␘␙␚␛", "[0->10]"},
     {"control_pictures_rewrite", L"␑\t␛", "[0->2]"},
+
+    // Unicode art.
+    {"unicode_emoticon1", L"(▀̿ĺ̯▀̿ ̿)", "[0][1->2][3->4][5->6][7->8][9]"},
+    {"unicode_emoticon2", L"▀̿̿Ĺ̯̿▀̿ ", "[0->2][3->5][6->7][8]"},
+    {"unicode_emoticon3", L"( ͡° ͜ʖ ͡°)", "[0][1->2][3][4->5][6][7->8][9][10]"},
+    {"unicode_emoticon4", L"✩·͙*̩̩͙˚̩̥̩̥( ͡ᵔ ͜ʖ ͡ᵔ )*̩̩͙✩·͙˚̩̥̩̥.",
+     "[0][1->2][3->6][7->11][12][13->14][15][16->17][18][19->20][21][22][23]["
+     "24->27][28][29->30][31->35][36]"},
+    {"unicode_emoticon5", L"ヽ(͡◕ ͜ʖ ͡◕)ﾉ",
+     "[0][1->2][3][4->5][6][7->8][9][10][11]"},
+    {"unicode_art1", L"꧁༒✧ Great ✧༒꧂", "[0][1][2][3][4->8][9][10][11][12]"},
+    {"unicode_art2", L"t͎e͎s͎t͎", "[0->7]"},
+
+    // Combining diacritical sequences.
+    {"unicode_diac1", L"\u2123\u0336", "[0->1]"},
+    {"unicode_diac2", L"\u273c\u0325", "[0->1]"},
+    {"unicode_diac3", L"\u2580\u033f", "[0->1]"},
+    {"unicode_diac4", L"\u2022\u0325\u0329", "[0->2]"},
+    {"unicode_diac5", L"\u2022\u0325", "[0->1]"},
+    {"unicode_diac6", L"\u00b7\u0359\u0325", "[0->2]"},
+    {"unicode_diac7", L"\u2027\u0329\u0325", "[0->2]"},
+    {"unicode_diac8", L"\u0332\u0305\u03c1", "[0->1][2]"},
 };
 
 INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsScripts,

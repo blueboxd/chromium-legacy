@@ -110,6 +110,13 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
 
+  // Check if portal has already been attached.
+  if (portal_contents_ && portal_contents_->GetOuterWebContents()) {
+    mojo::ReportBadMessage(
+        "Trying to attach a portal that has already been attached.");
+    return nullptr;
+  }
+
   mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
       interface_provider;
   auto interface_provider_receiver(

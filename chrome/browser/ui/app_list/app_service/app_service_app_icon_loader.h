@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_SERVICE_APP_SERVICE_APP_ICON_LOADER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -27,10 +28,10 @@ class AppServiceAppIconLoader : public AppIconLoader,
   ~AppServiceAppIconLoader() override;
 
   // AppIconLoader overrides:
-  bool CanLoadImageForApp(const std::string& app_id) override;
-  void FetchImage(const std::string& app_id) override;
-  void ClearImage(const std::string& app_id) override;
-  void UpdateImage(const std::string& app_id) override;
+  bool CanLoadImageForApp(const std::string& id) override;
+  void FetchImage(const std::string& id) override;
+  void ClearImage(const std::string& id) override;
+  void UpdateImage(const std::string& id) override;
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -38,6 +39,9 @@ class AppServiceAppIconLoader : public AppIconLoader,
       apps::AppRegistryCache* cache) override;
 
  private:
+  using AppIDToIconMap = std::map<std::string, gfx::ImageSkia>;
+  using AppIDToShelfAppId = std::map<std::string, std::set<std::string>>;
+
   // Calls AppService LoadIcon to load icons.
   void CallLoadIcon(const std::string& app_id, bool allow_placeholder_icon);
 
@@ -45,9 +49,13 @@ class AppServiceAppIconLoader : public AppIconLoader,
   void OnLoadIcon(const std::string& app_id,
                   apps::mojom::IconValuePtr icon_value);
 
-  using AppIDToIconMap = std::map<std::string, gfx::ImageSkia>;
+  // Returns true if the app_id does exist in icon_map_.
+  bool Exist(const std::string& app_id);
 
-  // Maps from app id to the icon to track the icons added via FetchImage.
+  // Maps from an app id to shelf app ids.
+  AppIDToShelfAppId shelf_app_id_map_;
+
+  // Maps from an app id to the icon to track the icons added via FetchImage.
   AppIDToIconMap icon_map_;
 
   base::WeakPtrFactory<AppServiceAppIconLoader> weak_ptr_factory_{this};

@@ -802,6 +802,7 @@ if (!is_android) {
 
     data = [
       "data/",
+      "//chrome/browser/page_load_metrics/integration_tests/data/",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
       "//components/test/data/arc/",
       "//components/test/data/autofill/",

@@ -10,6 +10,10 @@ cast_source_set("common") {
   sources = [ "constants.h" ]
 }
 
+cast_source_set("packet_header") {
+  sources = [ "packet_header.h" ]
+}
+
 cast_source_set("utils") {
   sources = [
     "message_parsing_utils.cc",
@@ -19,6 +23,7 @@ cast_source_set("utils") {
   public_deps = [ ":common" ]
 
   deps = [
+    ":packet_header",
     "//base",
     "//media",
     "//net",
@@ -52,6 +57,7 @@ cast_source_set("unittests") {
   ]
 
   deps = [
+    ":packet_header",
     ":receiver",
     ":utils",
     "//base",

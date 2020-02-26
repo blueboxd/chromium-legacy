@@ -36,8 +36,13 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
     case ui::VKEY_SLEEP:
       return true;
     case ui::VKEY_MEDIA_NEXT_TRACK:
+    case ui::VKEY_MEDIA_PAUSE:
+    case ui::VKEY_MEDIA_PLAY:
     case ui::VKEY_MEDIA_PLAY_PAUSE:
     case ui::VKEY_MEDIA_PREV_TRACK:
+    case ui::VKEY_MEDIA_STOP:
+    case ui::VKEY_OEM_103:  // KEYCODE_MEDIA_REWIND
+    case ui::VKEY_OEM_104:  // KEYCODE_MEDIA_FAST_FORWARD
       return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling);
     default:
       return false;

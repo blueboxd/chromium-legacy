@@ -297,16 +297,6 @@ void WebApps::SetPermission(const std::string& app_id,
       permission_value);
 }
 
-void WebApps::PromptUninstall(const std::string& app_id) {
-  if (!profile_) {
-    return;
-  }
-
-  web_app::WebAppUiManagerImpl::Get(profile_)->dialog_manager().UninstallWebApp(
-      app_id, web_app::WebAppDialogManager::UninstallSource::kAppMenu,
-      /*parent_window=*/nullptr, base::DoNothing());
-}
-
 void WebApps::Uninstall(const std::string& app_id,
                         bool clear_site_data,
                         bool report_abuse) {
@@ -413,9 +403,11 @@ void WebApps::OpenNativeSettings(const std::string& app_id) {
   chrome::ShowSiteSettings(profile_, web_app->launch_url());
 }
 
-void WebApps::OnPreferredAppSet(const std::string& app_id,
-                                apps::mojom::IntentFilterPtr intent_filter,
-                                apps::mojom::IntentPtr intent) {
+void WebApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   NOTIMPLEMENTED();
 }
 

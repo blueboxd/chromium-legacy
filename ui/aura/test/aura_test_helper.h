@@ -14,7 +14,6 @@
 
 namespace ui {
 class ContextFactory;
-class ContextFactoryPrivate;
 class ScopedAnimationDurationScaleMode;
 }
 
@@ -48,8 +47,7 @@ class AuraTestHelper {
   static AuraTestHelper* GetInstance();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  void SetUp(ui::ContextFactory* context_factory,
-             ui::ContextFactoryPrivate* context_factory_private);
+  void SetUp(ui::ContextFactory* context_factory);
 
   // Clean up objects that are created for tests. This also deletes the Env
   // object.
@@ -73,7 +71,6 @@ class AuraTestHelper {
   bool setup_called_ = false;
   bool teardown_called_ = false;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private_to_restore_ = nullptr;
   std::unique_ptr<Env> env_;
   std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<WindowTreeHost> host_;

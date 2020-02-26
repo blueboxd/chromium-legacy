@@ -136,8 +136,8 @@ TEST_F(FileMonitorTest, TestCleanupFilesForCompletedEntries) {
 
   std::vector<Entry*> entries = {&entry1, &entry2};
   monitor_->CleanupFilesForCompletedEntries(
-      entries,
-      base::Bind(&FileMonitorTest::CompletionCallback, base::Unretained(this)));
+      entries, base::BindOnce(&FileMonitorTest::CompletionCallback,
+                              base::Unretained(this)));
   task_runner_->RunUntilIdle();
 
   EXPECT_FALSE(base::PathExists(entry1.target_file_path));
@@ -149,13 +149,13 @@ TEST_F(FileMonitorTest, TestHardRecovery) {
   base::FilePath temp_file1 = CreateTemporaryFile("temp1");
   base::FilePath temp_file2 = CreateTemporaryFile("temp2");
 
-  auto callback = base::Bind(&FileMonitorTest::HardRecoveryResponse,
-                             base::Unretained(this));
+  auto callback = base::BindOnce(&FileMonitorTest::HardRecoveryResponse,
+                                 base::Unretained(this));
 
   EXPECT_TRUE(base::PathExists(temp_file1));
   EXPECT_TRUE(base::PathExists(temp_file2));
 
-  monitor_->HardRecover(callback);
+  monitor_->HardRecover(std::move(callback));
   task_runner_->RunUntilIdle();
 
   EXPECT_TRUE(hard_recovery_result_.has_value());

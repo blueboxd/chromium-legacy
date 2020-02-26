@@ -1379,7 +1379,7 @@ DeveloperPrivatePackDirectoryFunction::
 
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
 
-bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
+ExtensionFunction::ResponseAction DeveloperPrivateLoadDirectoryFunction::Run() {
   // TODO(grv) : add unittests.
   std::string directory_url_str;
   std::string filesystem_name;
@@ -1399,48 +1399,47 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
         context_->CrackURL(GURL(directory_url_str));
     if (!directory_url.is_valid() ||
         directory_url.type() != storage::kFileSystemTypeSyncable) {
-      SetError("DirectoryEntry of unsupported filesystem.");
-      return false;
+      return RespondNow(Error("DirectoryEntry of unsupported filesystem."));
     }
     return LoadByFileSystemAPI(directory_url);
-  } else {
-    // Check if the DirectoryEntry is the instance of chrome filesystem.
-    if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-            filesystem_name, filesystem_path, source_process_id(),
-            &project_base_path_, &error_)) {
-      SetError("DirectoryEntry of unsupported filesystem.");
-      return false;
-    }
-
-    // Try to load using the FileSystem API backend, in case the filesystem
-    // points to a non-native local directory.
-    std::string filesystem_id;
-    bool cracked =
-        storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
-    CHECK(cracked);
-    base::FilePath virtual_path =
-        storage::IsolatedContext::GetInstance()
-            ->CreateVirtualRootPath(filesystem_id)
-            .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
-    storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(
-            extensions::Extension::GetBaseURLFromExtensionId(extension_id())),
-        storage::kFileSystemTypeIsolated, virtual_path);
-
-    if (directory_url.is_valid() &&
-        directory_url.type() != storage::kFileSystemTypeNativeLocal &&
-        directory_url.type() != storage::kFileSystemTypeRestrictedNativeLocal &&
-        directory_url.type() != storage::kFileSystemTypeDragged) {
-      return LoadByFileSystemAPI(directory_url);
-    }
-
-    Load();
   }
 
-  return true;
+  std::string unused_error;
+  // Check if the DirectoryEntry is the instance of chrome filesystem.
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+          filesystem_name, filesystem_path, source_process_id(),
+          &project_base_path_, &unused_error)) {
+    return RespondNow(Error("DirectoryEntry of unsupported filesystem."));
+  }
+
+  // Try to load using the FileSystem API backend, in case the filesystem
+  // points to a non-native local directory.
+  std::string filesystem_id;
+  bool cracked =
+      storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
+  CHECK(cracked);
+  base::FilePath virtual_path =
+      storage::IsolatedContext::GetInstance()
+          ->CreateVirtualRootPath(filesystem_id)
+          .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
+  storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
+      url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id())),
+      storage::kFileSystemTypeIsolated, virtual_path);
+
+  if (directory_url.is_valid() &&
+      directory_url.type() != storage::kFileSystemTypeNativeLocal &&
+      directory_url.type() != storage::kFileSystemTypeRestrictedNativeLocal &&
+      directory_url.type() != storage::kFileSystemTypeDragged) {
+    return LoadByFileSystemAPI(directory_url);
+  }
+
+  Load();
+  return AlreadyResponded();
 }
 
-bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
+ExtensionFunction::ResponseAction
+DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
     const storage::FileSystemURL& directory_url) {
   std::string directory_url_str = directory_url.ToGURL().spec();
 
@@ -1448,8 +1447,7 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
   // Parse the project directory name from the project url. The project url is
   // expected to have project name as the suffix.
   if ((pos = directory_url_str.rfind("/")) == std::string::npos) {
-    SetError("Invalid Directory entry.");
-    return false;
+    return RespondNow(Error("Invalid Directory entry."));
   }
 
   std::string project_name;
@@ -1470,7 +1468,7 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
       base::BindOnce(
           &DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent,
           this, project_base_path_));
-  return true;
+  return RespondLater();
 }
 
 void DeveloperPrivateLoadDirectoryFunction::Load() {
@@ -1479,8 +1477,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
   // TODO(grv) : The unpacked installer should fire an event when complete
   // and return the extension_id.
-  SetResult(std::make_unique<base::Value>("-1"));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>("-1")));
 }
 
 void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
@@ -1525,7 +1522,7 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
   // are added for copying. We do that to ensure that pendingCopyOperationsCount
   // does not become zero before all copy operations are finished.
   // In case the directory happens to be executing the last copy operation it
-  // will call SendResponse to send the response to the API. The pending copy
+  // will call Respond to send the response to the API. The pending copy
   // operations of files are released by the CopyFile function.
   pending_copy_operations_count_ += file_list.size();
 
@@ -1555,10 +1552,15 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     pending_copy_operations_count_--;
 
     if (!pending_copy_operations_count_) {
+      ExtensionFunction::ResponseValue response;
+      if (success_)
+        response = NoArguments();
+      else
+        response = Error(error_);
       base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
-                         this, success_));
+          base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::Respond, this,
+                         std::move(response)));
     }
   }
 }
@@ -1570,7 +1572,7 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     const base::FilePath& src_path,
     scoped_refptr<storage::ShareableFileReference> file_ref) {
   if (result != base::File::FILE_OK) {
-    SetError("Error in copying files from sync filesystem.");
+    error_ = "Error in copying files from sync filesystem.";
     success_ = false;
     return;
   }
@@ -1587,7 +1589,7 @@ void DeveloperPrivateLoadDirectoryFunction::CopyFile(
     const base::FilePath& src_path,
     const base::FilePath& target_path) {
   if (!base::CreateDirectory(target_path.DirName())) {
-    SetError("Error in copying files from sync filesystem.");
+    error_ = "Error in copying files from sync filesystem.";
     success_ = false;
   }
 

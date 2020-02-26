@@ -500,6 +500,9 @@ This file contains the strings for ash.
                desc="The label used in the notification used to indicate that, the shortcut for docked magnifier feature has been disabled.">
         the docked magnifier
       </message>
+      <message name="IDS_ASH_DRAG_HANDLE_NUDGE" desc="The text shown to users above the drag handle when the device is in tablet mode and showing the in-app shelf. Instructs them that they can transition to home screen by swiping up from the shelf.">
+        Swipe up to go home
+      </message>
       <message name="IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED"
                desc="The label used in the notification used to indicate that, the shortcut for full-screen magnifier feature has been disabled.">
         the full-screen magnifier

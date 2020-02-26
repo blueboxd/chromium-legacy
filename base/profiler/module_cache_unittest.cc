@@ -88,7 +88,7 @@ MAYBE_TEST(ModuleCacheTest, LookupRange) {
   ModuleCache cache;
   auto to_inject = std::make_unique<IsolatedModule>();
   const ModuleCache::Module* module = to_inject.get();
-  cache.InjectModuleForTesting(std::move(to_inject));
+  cache.InjectNativeModuleForTesting(std::move(to_inject));
 
   EXPECT_EQ(nullptr, cache.GetModuleForAddress(module->GetBaseAddress() - 1));
   EXPECT_EQ(module, cache.GetModuleForAddress(module->GetBaseAddress()));
@@ -117,7 +117,7 @@ MAYBE_TEST(ModuleCacheTest, LookupOverlaidNonNativeModule) {
 
   auto native_module_to_inject = std::make_unique<IsolatedModule>();
   const ModuleCache::Module* native_module = native_module_to_inject.get();
-  cache.InjectModuleForTesting(std::move(native_module_to_inject));
+  cache.InjectNativeModuleForTesting(std::move(native_module_to_inject));
 
   // Overlay the native module with the non-native module, starting 8 bytes into
   // the native modules and ending 8 bytes before the end of the module.
@@ -142,10 +142,16 @@ MAYBE_TEST(ModuleCacheTest, LookupOverlaidNonNativeModule) {
 MAYBE_TEST(ModuleCacheTest, ModulesList) {
   ModuleCache cache;
   uintptr_t ptr = reinterpret_cast<uintptr_t>(&AFunctionForTest);
-  const ModuleCache::Module* module = cache.GetModuleForAddress(ptr);
-  EXPECT_NE(nullptr, module);
-  EXPECT_EQ(1u, cache.GetModules().size());
-  EXPECT_EQ(module, cache.GetModules().front());
+  const ModuleCache::Module* native_module = cache.GetModuleForAddress(ptr);
+  auto non_native_module = std::make_unique<FakeModule>(1, 2, false);
+  FakeModule* non_native_module_ptr = non_native_module.get();
+  cache.AddNonNativeModule(std::move(non_native_module));
+
+  EXPECT_NE(nullptr, native_module);
+  std::vector<const ModuleCache::Module*> modules = cache.GetModules();
+  ASSERT_EQ(2u, modules.size());
+  EXPECT_EQ(native_module, modules[0]);
+  EXPECT_EQ(non_native_module_ptr, modules[1]);
 }
 
 MAYBE_TEST(ModuleCacheTest, InvalidModule) {

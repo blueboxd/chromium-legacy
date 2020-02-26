@@ -219,6 +219,10 @@ void AddAppLaunchObserver(content::BrowserContext* context,
                           AppLaunchObserver* observer);
 void RemoveAppLaunchObserver(content::BrowserContext* context,
                              AppLaunchObserver* observer);
+
+// Returns the app id from the app id or the shelf group id.
+const std::string GetAppFromAppOrGroupId(content::BrowserContext* context,
+                                         const std::string& app_or_group_id);
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_

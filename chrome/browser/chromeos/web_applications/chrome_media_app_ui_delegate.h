@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_CHROME_MEDIA_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_CHROME_MEDIA_APP_UI_DELEGATE_H_
 
+#include "base/optional.h"
 #include "chromeos/components/media_app_ui/media_app_ui_delegate.h"
 
 namespace content {

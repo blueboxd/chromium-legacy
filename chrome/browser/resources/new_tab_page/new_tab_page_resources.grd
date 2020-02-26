@@ -84,6 +84,10 @@
           file="browser_proxy.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_NEW_TAB_PAGE_UTILS_JS"
           file="utils.js" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML"
+          file="untrusted/promo.html" type="chrome_html" compress="gzip" />
+      <structure name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS"
+          file="untrusted/promo.js" type="chrome_html" compress="gzip" />
     </structures>
   </release>
 </grit>

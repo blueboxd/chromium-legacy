@@ -35,6 +35,25 @@ import sys
 INTERNAL_ERROR_EXIT_CODE = -1000
 
 
+def _ReadVpythonPin():
+  """Reads the vpython CIPD package name and version from
+  //third_party/depot_tools.
+
+  Returns them as a (pkgname, version) tuple.
+  """
+  chromium_src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  manifest_path = os.path.join(chromium_src_dir, 'third_party', 'depot_tools',
+                               'cipd_manifest.txt')
+  with open(manifest_path, 'r') as manifest:
+    for line in manifest.readlines():
+      # lines look like:
+      # name/of/package version
+      if 'vpython' in line and 'git_revision' in line:
+        vpython_pkg, vpython_version = line.split()
+        return vpython_pkg, vpython_version
+  raise ValueError('unable to read vpython pin from %s' % (manifest_path, ))
+
+
 def _Spawn(args):
   """Triggers a swarming job. The arguments passed are:
   - The index of the job;
@@ -78,15 +97,17 @@ def _Spawn(args):
     trigger_args += ['-d', 'device_os=' + args.device_os]
   # The canonical version numbers are stored in the infra repository here:
   # build/scripts/slave/recipe_modules/swarming/api.py
+  #
+  # HACK(iannucci): These packages SHOULD NOT BE HERE.
+  # Remove method once Swarming Pool Task Templates are implemented.
+  # crbug.com/812428
   cpython_version = 'version:2.7.15.chromium14'
-  vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
   cpython_pkg = (
       '.swarming_module:infra/python/cpython/${platform}=' + cpython_version)
-  vpython_native_pkg = (
-      '.swarming_module:infra/tools/luci/vpython-native/${platform}=' +
-      vpython_version)
-  vpython_pkg = ('.swarming_module:infra/tools/luci/vpython/${platform}=' +
-                 vpython_version)
+
+  vpython_pkg = '.swarming_module:%s=%s' % _ReadVpythonPin()
+  vpython_native_pkg = vpython_pkg.replace('vpython', 'vpython-native')
+
   trigger_args += [
       '--cipd-package',
       cpython_pkg,

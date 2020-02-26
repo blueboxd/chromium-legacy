@@ -42,22 +42,21 @@ void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
   UpdateWindowMonitoring();
 }
 
+void BackGestureContextualNudgeControllerImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  UpdateWindowMonitoring();
+}
+
 void BackGestureContextualNudgeControllerImpl::OnTabletModeStarted() {
   UpdateWindowMonitoring();
-
-  // If there is an active window at this moment and we should monitor its
-  // navigation status, start monitoring it.
-  if (is_monitoring_windows_) {
-    aura::Window* active_window = window_util::GetActiveWindow();
-    if (active_window)
-      nudge_delegate_->MaybeStartTrackingNavigation(active_window);
-  }
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletModeEnded() {
   UpdateWindowMonitoring();
 
-  // TODO: Also cancel in-waiting animation or in-progress animation.
+  // Cancel in-waiting animation or in-progress animation.
+  if (nudge_)
+    nudge_->CancelAnimationOrFadeOutToHide();
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletControllerDestroyed() {
@@ -71,40 +70,48 @@ void BackGestureContextualNudgeControllerImpl::OnWindowActivated(
   if (!gained_active)
     return;
 
-  // TODO: If another window is activated when the nudge is waiting to be shown
-  // or is currently being shown, cancel the animation.
+  // If another window is activated when the nudge is waiting to be shown or
+  // is currently being shown, cancel the animation.
+  if (nudge_)
+    nudge_->CancelAnimationOrFadeOutToHide();
 
-  // Otherwise, start tracking |gained_active|'s navigation status and show the
-  // contextual nudge ui if applicable.
-  nudge_delegate_->MaybeStartTrackingNavigation(gained_active);
+  if (!nudge_ || !nudge_->ShouldNudgeCountAsShown()) {
+    // Start tracking |gained_active|'s navigation status and show the
+    // contextual nudge ui if applicable.
+    nudge_delegate_->MaybeStartTrackingNavigation(gained_active);
+  }
 }
 
 void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
     aura::Window* window) {
-  if (Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge())
+  // If navigation entry changed when the nudge is waiting to be shown or is
+  // currently being shown, cancel the animation.
+  if (nudge_)
+    nudge_->CancelAnimationOrFadeOutToHide();
+
+  if ((!nudge_ || !nudge_->ShouldNudgeCountAsShown()) &&
+      Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge()) {
     ShowNudgeUi();
+  }
 }
 
 bool BackGestureContextualNudgeControllerImpl::CanShowNudge() const {
   if (!Shell::Get()->IsInTabletMode())
     return false;
 
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return false;
+  }
+
   return contextual_tooltip::ShouldShowNudge(
       GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
 }
 
 void BackGestureContextualNudgeControllerImpl::ShowNudgeUi() {
-  nudge_ = std::make_unique<BackGestureContextualNudge>();
-
-  // TODO: Only call HandleNudgeShown after |nudge_| animation is done.
-  contextual_tooltip::HandleNudgeShown(
-      GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
-  UpdateWindowMonitoring();
-
-  // Set a timer to monitoring windows and show nudge ui again.
-  auto_show_timer_.Start(
-      FROM_HERE, contextual_tooltip::kMinInterval, this,
-      &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring);
+  nudge_ = std::make_unique<BackGestureContextualNudge>(base::BindOnce(
+      &BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
@@ -118,6 +125,12 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
     nudge_delegate_ = Shell::Get()
                           ->shell_delegate()
                           ->CreateBackGestureContextualNudgeDelegate(this);
+    // If there is an active window at this moment and we should monitor its
+    // navigation status, start monitoring it now.
+    aura::Window* active_window = window_util::GetActiveWindow();
+    if (active_window)
+      nudge_delegate_->MaybeStartTrackingNavigation(active_window);
+
     Shell::Get()->activation_client()->AddObserver(this);
     return;
   }
@@ -125,6 +138,20 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
   // Stop monitoring window.
   nudge_delegate_.reset();
   Shell::Get()->activation_client()->RemoveObserver(this);
+}
+
+void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
+  if (nudge_->ShouldNudgeCountAsShown()) {
+    contextual_tooltip::HandleNudgeShown(
+        GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
+    UpdateWindowMonitoring();
+
+    // Set a timer to monitoring windows and show nudge ui again.
+    auto_show_timer_.Start(
+        FROM_HERE, contextual_tooltip::kMinInterval, this,
+        &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring);
+  }
+  nudge_.reset();
 }
 
 }  // namespace ash

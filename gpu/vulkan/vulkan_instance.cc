@@ -57,10 +57,8 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
     return false;
 
-  if (vulkan_function_pointers->vkEnumerateInstanceVersionFn) {
-    vulkan_function_pointers->vkEnumerateInstanceVersionFn(
-        &vulkan_info_.api_version);
-  }
+  if (vulkan_function_pointers->HasEnumerateInstanceVersion())
+    vkEnumerateInstanceVersion(&vulkan_info_.api_version);
 
 #if defined(OS_ANDROID)
   // Ensure that android works only with vulkan apiVersion >= 1.1. Vulkan will
@@ -205,15 +203,14 @@ bool VulkanInstance::Initialize(
     return false;
   }
 
+  if (!vulkan_function_pointers->BindInstanceFunctionPointers(
+          vk_instance_, vulkan_info_.used_api_version, enabled_extensions)) {
+    return false;
+  }
+
 #if DCHECK_IS_ON()
   // Register our error logging function.
   if (debug_report_enabled_) {
-    PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
-        reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkCreateDebugReportCallbackEXT"));
-    DCHECK(vkCreateDebugReportCallbackEXT);
-
     VkDebugReportCallbackCreateInfoEXT cb_create_info = {};
     cb_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
 
@@ -239,11 +236,6 @@ bool VulkanInstance::Initialize(
     }
   }
 #endif
-
-  if (!vulkan_function_pointers->BindInstanceFunctionPointers(
-          vk_instance_, vulkan_info_.used_api_version, enabled_extensions)) {
-    return false;
-  }
 
   CollectInfo();
   return true;
@@ -332,11 +324,6 @@ void VulkanInstance::Destroy() {
 #if DCHECK_IS_ON()
   if (debug_report_enabled_ && (error_callback_ != VK_NULL_HANDLE ||
                                 warning_callback_ != VK_NULL_HANDLE)) {
-    PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
-        reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkDestroyDebugReportCallbackEXT"));
-    DCHECK(vkDestroyDebugReportCallbackEXT);
     if (error_callback_ != VK_NULL_HANDLE) {
       vkDestroyDebugReportCallbackEXT(vk_instance_, error_callback_, nullptr);
       error_callback_ = VK_NULL_HANDLE;
@@ -353,9 +340,10 @@ void VulkanInstance::Destroy() {
   }
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
-  if (vulkan_function_pointers->vulkan_loader_library_)
-    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
-  vulkan_function_pointers->vulkan_loader_library_ = nullptr;
+  if (vulkan_function_pointers->vulkan_loader_library())
+    base::UnloadNativeLibrary(
+        vulkan_function_pointers->vulkan_loader_library());
+  vulkan_function_pointers->set_vulkan_loader_library(nullptr);
 }
 
 }  // namespace gpu

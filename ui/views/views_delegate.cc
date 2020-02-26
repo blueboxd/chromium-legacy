@@ -116,10 +116,6 @@ ui::ContextFactory* ViewsDelegate::GetContextFactory() {
   return nullptr;
 }
 
-ui::ContextFactoryPrivate* ViewsDelegate::GetContextFactoryPrivate() {
-  return nullptr;
-}
-
 std::string ViewsDelegate::GetApplicationName() {
   base::FilePath program = base::CommandLine::ForCurrentProcess()->GetProgram();
   return program.BaseName().AsUTF8Unsafe();

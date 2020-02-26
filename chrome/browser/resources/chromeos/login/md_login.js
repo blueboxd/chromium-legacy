@@ -19,6 +19,7 @@
 // <include
 // src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
 // <include src="cr_ui.js">
+// <include src="oobe_screen_reset.js">
 // <include src="oobe_screen_autolaunch.js">
 // <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
@@ -68,6 +69,7 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.login.DisplayManager.initialize();
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
+      login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();

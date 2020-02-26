@@ -24,16 +24,12 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
     : test_views_delegate_(std::move(views_delegate)),
       platform_test_helper_(PlatformTestHelper::Create()) {
   // The ContextFactory must exist before any Compositors are created.
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  platform_test_helper_->InitializeContextFactory(&context_factory,
-                                                  &context_factory_private);
+  ui::ContextFactory* context_factory =
+      platform_test_helper_->InitializeContextFactory();
 
   test_views_delegate_->set_context_factory(context_factory);
-  test_views_delegate_->set_context_factory_private(context_factory_private);
 
-  test_helper_.reset(
-      ViewsTestHelper::Create(context_factory, context_factory_private));
+  test_helper_.reset(ViewsTestHelper::Create(context_factory));
   test_helper_->SetUp();
 
   ui::InitializeInputMethodForTesting();

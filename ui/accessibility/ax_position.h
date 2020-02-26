@@ -3342,8 +3342,11 @@ class AXPosition {
       const AXPosition& move_to,
       const AXMoveType move_type,
       const AXMoveDirection direction) {
-    if (move_from.IsNullPosition() || move_to.IsNullPosition())
+    if (move_from.IsNullPosition() || move_to.IsNullPosition() ||
+        move_from.IsEmptyObjectReplacedByCharacter() ||
+        move_to.IsEmptyObjectReplacedByCharacter()) {
       return true;
+    }
 
     if (!crossed_line_breaking_object_token) {
       crossed_line_breaking_object_token = MoveCrossesLineBreakingObject(

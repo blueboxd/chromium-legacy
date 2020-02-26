@@ -102,6 +102,15 @@ class ComponentLoader {
       const char* extension_id,
       const base::Closure& done_cb);
 
+  // Identical to above except allows for the caller to supply the name of the
+  // manifest file.
+  void AddComponentFromDirWithManifestFilename(
+      const base::FilePath& root_directory,
+      const char* extension_id,
+      const base::FilePath::CharType* manifest_file_name,
+      const base::FilePath::CharType* guest_manifest_file_name,
+      const base::Closure& done_cb);
+
   // Add a component extension from a specific directory. Assumes that the
   // extension's manifest file lives in |root_directory| and its name is
   // 'manifest.json'. |name_string| and |description_string| are used to

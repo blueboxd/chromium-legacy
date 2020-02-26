@@ -140,7 +140,7 @@ std::unique_ptr<ModuleCache::Module> CreateModuleForHandle(
 }  // namespace
 
 // static
-std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
+std::unique_ptr<const ModuleCache::Module> ModuleCache::CreateModuleForAddress(
     uintptr_t address) {
   ScopedModuleHandle module_handle = GetModuleHandleForAddress(address);
   if (!module_handle.IsValid())

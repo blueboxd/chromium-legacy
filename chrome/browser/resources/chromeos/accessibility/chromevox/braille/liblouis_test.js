@@ -15,7 +15,8 @@ GEN_INCLUDE([
 ChromeVoxLibLouisTest = class extends ChromeVoxE2ETest {
   createLiblouis() {
     return new LibLouis(
-        chrome.extension.getURL('braille/liblouis_wrapper.js'), '', () => {});
+        chrome.extension.getURL('chromevox/braille/liblouis_wrapper.js'), '',
+        () => {});
   }
 
   withTranslator(liblouis, tableNames, callback) {
@@ -36,7 +37,7 @@ function assertEqualsUint8Array(expected, actual) {
 function LIBLOUIS_TEST_F(testName, testFunc, opt_preamble) {
   const wrappedTestFunc = function() {
     const liblouis = new LibLouis(
-        chrome.extension.getURL('braille/liblouis_wrapper.js'), '',
+        chrome.extension.getURL('chromevox/braille/liblouis_wrapper.js'), '',
         testFunc.bind(this));
   };
   TEST_F('ChromeVoxLibLouisTest', testName, wrappedTestFunc, opt_preamble);

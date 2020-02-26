@@ -20,6 +20,7 @@ class WebContentsHelper : public content::WebContentsObserver {
   ~WebContentsHelper() override;
 
   // WebContentsObserver overrides:
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;

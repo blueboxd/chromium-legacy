@@ -2671,12 +2671,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityChromeVoxSearchMenus)},
 #endif  // OS_CHROMEOS
-#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    {"enable-google-branded-context-menu",
-     flag_descriptions::kGoogleBrandedContextMenuName,
-     flag_descriptions::kGoogleBrandedContextMenuDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kGoogleBrandedContextMenu)},
-#endif  // !OS_ANDROID && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if defined(OS_MACOSX)
     {"enable-immersive-fullscreen-toolbar",
      flag_descriptions::kImmersiveFullscreenName,

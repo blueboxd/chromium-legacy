@@ -101,6 +101,8 @@ base::Optional<SkColor> SkColorFromColorId(
 
     // Menu
     case ui::NativeTheme::kColorId_MenuBackgroundColor:
+    case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
       return GetBgColor("GtkMenu#menu");
     case ui::NativeTheme::kColorId_MenuBorderColor:
       return GetBorderColor("GtkMenu#menu");
@@ -108,6 +110,7 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetBgColor("GtkMenu#menu GtkMenuItem#menuitem:hover");
     case ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor:
     case ui::NativeTheme::kColorId_MenuDropIndicator:
+    case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel");
@@ -222,6 +225,8 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
+    case ui::NativeTheme::kColorId_ButtonHoverColor:
+      return GetBgColor("GtkButton#button:hover");
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
@@ -237,6 +242,16 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetBgColor("GtkButton#button.text-button:disabled");
     case ui::NativeTheme::kColorId_ButtonBorderColor:
       return GetBorderColor("GtkButton#button.text-button");
+    case ui::NativeTheme::kColorId_ProminentButtonHoverColor:
+      return GetBgColor(
+          "GtkTreeView#treeview.view "
+          "GtkTreeView#treeview.view.cell:selected:focus:hover");
+
+    // ToggleButton
+    case ui::NativeTheme::kColorId_ToggleButtonTrackColorOff:
+      return GetBgColor("GtkButton#button.text-button.toggle");
+    case ui::NativeTheme::kColorId_ToggleButtonTrackColorOn:
+      return GetBgColor("GtkButton#button.text-button.toggle:checked");
 
     // TabbedPane
     case ui::NativeTheme::kColorId_TabTitleColorActive:
@@ -353,6 +368,7 @@ base::Optional<SkColor> SkColorFromColorId(
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();
       break;
+
     default:
       break;
   }

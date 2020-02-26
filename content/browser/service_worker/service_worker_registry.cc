@@ -18,6 +18,33 @@ namespace content {
 
 namespace {
 
+blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
+    ServiceWorkerDatabase::Status status) {
+  switch (status) {
+    case ServiceWorkerDatabase::Status::kOk:
+      return blink::ServiceWorkerStatusCode::kOk;
+    case ServiceWorkerDatabase::Status::kErrorNotFound:
+      return blink::ServiceWorkerStatusCode::kErrorNotFound;
+    case ServiceWorkerDatabase::Status::kErrorDisabled:
+      return blink::ServiceWorkerStatusCode::kErrorAbort;
+      NOTREACHED();
+    default:
+      return blink::ServiceWorkerStatusCode::kErrorFailed;
+  }
+}
+
+ServiceWorkerStorage::DatabaseStatusCallback CreateDatabaseStatusCallback(
+    ServiceWorkerRegistry::StatusCallback callback) {
+  return base::BindOnce(
+      [](ServiceWorkerRegistry::StatusCallback callback,
+         ServiceWorkerDatabase::Status database_status) {
+        blink::ServiceWorkerStatusCode status =
+            DatabaseStatusToStatusCode(database_status);
+        std::move(callback).Run(status);
+      },
+      std::move(callback));
+}
+
 void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
 }
@@ -353,6 +380,36 @@ void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
+    int64_t registration_id,
+    const GURL& origin,
+    base::Time last_update_check_time,
+    StatusCallback callback) {
+  storage()->UpdateLastUpdateCheckTime(
+      registration_id, origin, last_update_check_time,
+      CreateDatabaseStatusCallback(std::move(callback)));
+}
+
+void ServiceWorkerRegistry::UpdateNavigationPreloadEnabled(
+    int64_t registration_id,
+    const GURL& origin,
+    bool enable,
+    StatusCallback callback) {
+  storage()->UpdateNavigationPreloadEnabled(
+      registration_id, origin, enable,
+      CreateDatabaseStatusCallback(std::move(callback)));
+}
+
+void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
+    int64_t registration_id,
+    const GURL& origin,
+    const std::string& value,
+    StatusCallback callback) {
+  storage()->UpdateNavigationPreloadHeader(
+      registration_id, origin, value,
+      CreateDatabaseStatusCallback(std::move(callback)));
+}
+
 void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id) {
   storage()->StoreUncommittedResourceId(
       resource_id,
@@ -568,7 +625,8 @@ void ServiceWorkerRegistry::PrepareForDeleteAndStarOver() {
 }
 
 void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
-  storage()->DeleteAndStartOver(std::move(callback));
+  storage()->DeleteAndStartOver(
+      CreateDatabaseStatusCallback(std::move(callback)));
 }
 
 void ServiceWorkerRegistry::DisableDeleteAndStartOverForTesting() {
@@ -698,7 +756,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
   }
 
   blink::ServiceWorkerStatusCode status =
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(database_status);
+      DatabaseStatusToStatusCode(database_status);
 
   if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // Look for something currently being installed.
@@ -746,7 +804,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
   }
 
   blink::ServiceWorkerStatusCode status =
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(database_status);
+      DatabaseStatusToStatusCode(database_status);
 
   scoped_refptr<ServiceWorkerRegistration> registration;
   if (status == blink::ServiceWorkerStatusCode::kOk) {
@@ -770,7 +828,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
   }
 
   blink::ServiceWorkerStatusCode status =
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(database_status);
+      DatabaseStatusToStatusCode(database_status);
 
   if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // Look for something currently being installed.
@@ -796,10 +854,13 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
 void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     GetRegistrationsCallback callback,
     const GURL& origin_filter,
-    blink::ServiceWorkerStatusCode status,
+    ServiceWorkerDatabase::Status database_status,
     std::unique_ptr<RegistrationList> registration_data_list,
     std::unique_ptr<std::vector<ResourceList>> resources_list) {
   DCHECK(origin_filter.is_valid());
+
+  blink::ServiceWorkerStatusCode status =
+      DatabaseStatusToStatusCode(database_status);
 
   if (status != blink::ServiceWorkerStatusCode::kOk &&
       status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
@@ -836,8 +897,11 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
 
 void ServiceWorkerRegistry::DidGetAllRegistrations(
     GetRegistrationsInfosCallback callback,
-    blink::ServiceWorkerStatusCode status,
+    ServiceWorkerDatabase::Status database_status,
     std::unique_ptr<RegistrationList> registration_data_list) {
+  blink::ServiceWorkerStatusCode status =
+      DatabaseStatusToStatusCode(database_status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk &&
       status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
@@ -925,9 +989,12 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
 void ServiceWorkerRegistry::DidStoreRegistration(
     const ServiceWorkerDatabase::RegistrationData& data,
     StatusCallback callback,
-    blink::ServiceWorkerStatusCode status,
+    ServiceWorkerDatabase::Status database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
+  blink::ServiceWorkerStatusCode status =
+      DatabaseStatusToStatusCode(database_status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     ScheduleDeleteAndStartOver();
     std::move(callback).Run(status);
@@ -965,9 +1032,12 @@ void ServiceWorkerRegistry::DidStoreRegistration(
 void ServiceWorkerRegistry::DidDeleteRegistration(
     int64_t registration_id,
     StatusCallback callback,
-    blink::ServiceWorkerStatusCode status,
+    ServiceWorkerDatabase::Status database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
+  blink::ServiceWorkerStatusCode status =
+      DatabaseStatusToStatusCode(database_status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     ScheduleDeleteAndStartOver();
     std::move(callback).Run(status);
@@ -992,8 +1062,7 @@ void ServiceWorkerRegistry::DidUpdateToActiveState(
       status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
-  std::move(callback).Run(
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
@@ -1020,8 +1089,7 @@ void ServiceWorkerRegistry::DidGetUserData(
       status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
-  std::move(callback).Run(
-      data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(data, DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidGetUserKeysAndData(
@@ -1032,8 +1100,7 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
       status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
-  std::move(callback).Run(
-      data_map, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(data_map, DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidStoreUserData(
@@ -1046,8 +1113,7 @@ void ServiceWorkerRegistry::DidStoreUserData(
       status != ServiceWorkerDatabase::Status::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
-  std::move(callback).Run(
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidClearUserData(
@@ -1055,8 +1121,7 @@ void ServiceWorkerRegistry::DidClearUserData(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk)
     ScheduleDeleteAndStartOver();
-  std::move(callback).Run(
-      ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
@@ -1065,8 +1130,7 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk)
     ScheduleDeleteAndStartOver();
-  std::move(callback).Run(
-      user_data, ServiceWorkerStorage::DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(user_data, DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidGetNewRegistrationId(

@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "base/observer_list.h"
 #include "ui/display/manager/display_configurator.h"
 
 class PrefRegistrySimple;
@@ -22,6 +23,15 @@ class ASH_EXPORT PrivacyScreenController
     : public SessionObserver,
       display::DisplayConfigurator::Observer {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when the privacy screen setting is changed.
+    virtual void OnPrivacyScreenSettingChanged(bool enabled) {}
+
+   protected:
+    ~Observer() override = default;
+  };
+
   PrivacyScreenController();
   ~PrivacyScreenController() override;
 
@@ -36,6 +46,9 @@ class ASH_EXPORT PrivacyScreenController
   bool GetEnabled() const;
   // Set the desired PrivacyScreen settings in the current active user prefs.
   void SetEnabled(bool enabled);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
@@ -60,6 +73,8 @@ class ASH_EXPORT PrivacyScreenController
   // Set to true when entering the login screen. This should happen once per
   // Chrome restart.
   bool applying_login_screen_prefs_ = false;
+
+  base::ObserverList<Observer> observers_;
 
   // The registrar used to watch privacy screen prefs changes in the above
   // |active_user_pref_service_| from outside ash.

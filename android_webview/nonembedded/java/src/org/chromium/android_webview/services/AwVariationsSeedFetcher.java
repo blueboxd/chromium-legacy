@@ -24,11 +24,10 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
-import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
+import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedFetchInfo;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -156,25 +155,21 @@ public class AwVariationsSeedFetcher extends JobService {
                 VariationsSeedFetcher downloader =
                         sMockDownloader != null ? sMockDownloader : VariationsSeedFetcher.get();
                 String milestone = String.valueOf(VersionConstants.PRODUCT_MAJOR_VERSION);
-                SeedInfo newSeed = downloader.downloadContent(
+                SeedFetchInfo fetchInfo = downloader.downloadContent(
                         VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW,
                         /*restrictMode=*/null, milestone, getChannelStr());
 
-                saveMetrics(startTime, /*endTime=*/currentTimeMillis());
+                saveMetrics(fetchInfo.seedFetchResult, startTime, /*endTime=*/currentTimeMillis());
 
                 if (isCancelled()) {
                     return null;
                 }
 
-                if (newSeed != null) {
+                if (fetchInfo.seedInfo != null) {
                     VariationsSeedHolder.getInstance().updateSeed(
-                            newSeed, /*onFinished=*/() -> jobFinished(mParams));
+                            fetchInfo.seedInfo, /*onFinished=*/() -> jobFinished(mParams));
                     shouldFinish = false; // jobFinished will be deferred until updateSeed is done.
                 }
-            } catch (IOException e) {
-                // downloadContent() logs and re-throws these exceptions, so there's no need to log
-                // here. IOException includes SocketTimeoutException and UnknownHostException,
-                // which may happen inside downloadContent().
             } finally {
                 if (shouldFinish) jobFinished(mParams);
             }
@@ -182,10 +177,11 @@ public class AwVariationsSeedFetcher extends JobService {
             return null;
         }
 
-        private void saveMetrics(long startTime, long endTime) {
+        private void saveMetrics(int seedFetchResult, long startTime, long endTime) {
             Context context = ContextUtils.getApplicationContext();
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(context);
+            metrics.setSeedFetchResult(seedFetchResult);
             metrics.setSeedFetchTime(endTime - startTime);
             if (metrics.hasLastEnqueueTime()) {
                 metrics.setJobQueueTime(startTime - metrics.getLastEnqueueTime());

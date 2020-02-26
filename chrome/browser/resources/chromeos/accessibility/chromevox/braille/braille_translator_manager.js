@@ -22,10 +22,12 @@ BrailleTranslatorManager = class {
      * @type {!LibLouis}
      * @private
      */
-    this.liblouis_ = opt_liblouisForTest ||
-        new LibLouis(chrome.extension.getURL('braille/liblouis_wrapper.js'),
-                     chrome.extension.getURL('braille/tables'),
-                     this.loadLiblouis_.bind(this));
+    this.liblouis_ =
+        opt_liblouisForTest ||
+        new LibLouis(
+            chrome.extension.getURL('chromevox/braille/liblouis_wrapper.js'),
+            chrome.extension.getURL('chromevox/braille/tables'),
+            this.loadLiblouis_.bind(this));
 
     /**
      * @type {!Array<function()>}

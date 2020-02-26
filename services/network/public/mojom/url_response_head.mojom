@@ -203,9 +203,9 @@ struct URLResponseHead {
   // (see corresponding documentation in url_loader.mojom).
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 
-  // The parsed value of the Cross-Origin-Embedder-Policy (COEP) header.
-  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
-      CrossOriginEmbedderPolicy.kNone;
+  // The parsed representation of Cross-Origin-Embedder-Policy and
+  // Cross-Origin-Embedder-Policy-Report-Only headers.
+  CrossOriginEmbedderPolicyWithReporting cross_origin_embedder_policy;
 
   // The parsed value of the Cross-Origin-Opener-Policy (COOP) header.
   CrossOriginOpenerPolicy cross_origin_opener_policy =

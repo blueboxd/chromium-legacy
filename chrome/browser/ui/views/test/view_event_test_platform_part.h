@@ -10,7 +10,6 @@
 
 namespace ui {
 class ContextFactory;
-class ContextFactoryPrivate;
 }  // namespace ui
 
 // A helper class owned by tests that performs platform specific initialization.
@@ -23,9 +22,7 @@ class ViewEventTestPlatformPart {
 
   // Set up the platform-specific environment. Teardown is performed in the
   // destructor.
-  static ViewEventTestPlatformPart* Create(
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private);
+  static ViewEventTestPlatformPart* Create(ui::ContextFactory* context_factory);
 
   // The Widget context for creating the test window. This will be the Ash root
   // window on ChromeOS environments. Otherwise it should return NULL.

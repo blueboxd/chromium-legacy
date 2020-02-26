@@ -157,13 +157,24 @@ template("gcc_toolchain") {
     # But if needs_gomacc_path_arg is set in a Chrome OS build, the toolchain
     # wrapper will have picked up gomacc via cmd-line arg. So need to prepend
     # gomacc in that case.
+    goma_path = "$goma_dir/gomacc"
     if (toolchain_uses_goma &&
         (!defined(invoker_toolchain_args.needs_gomacc_path_arg) ||
          !invoker_toolchain_args.needs_gomacc_path_arg)) {
-      goma_path = "$goma_dir/gomacc"
       compiler_prefix = "${goma_path} "
     } else {
       compiler_prefix = "${toolchain_cc_wrapper} "
+    }
+    if (use_goma_thin_lto && toolchain_uses_goma) {
+      # goma_ld.py uses autoninja in an attempt to set a reasonable
+      # number of jobs, but this results in too low a value on
+      # Chrome OS builders. So we pass in an explicit value.
+      goma_ld =
+          rebase_path("//tools/clang/scripts/goma_ld.py", root_build_dir) +
+          " --gomacc ${goma_path} --jobs 100 -- "
+    } else {
+      goma_ld = ""
+      not_needed([ "goma_path" ])
     }
 
     # Create a distinct variable for "asm", since coverage runs pass a bunch of
@@ -215,7 +226,7 @@ template("gcc_toolchain") {
     cxx = compiler_prefix + invoker.cxx
     asm = asm_prefix + invoker.cc
     ar = invoker.ar
-    ld = invoker.ld
+    ld = "$goma_ld${invoker.ld}"
     if (defined(invoker.readelf)) {
       readelf = invoker.readelf
     } else {

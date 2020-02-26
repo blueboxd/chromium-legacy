@@ -19,9 +19,7 @@
 namespace views {
 
 // static
-ViewsTestHelper* ViewsTestHelper::Create(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
+ViewsTestHelper* ViewsTestHelper::Create(ui::ContextFactory* context_factory) {
   return new ViewsTestHelperMac;
 }
 

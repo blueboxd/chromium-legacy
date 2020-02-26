@@ -19,6 +19,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -37,9 +38,6 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
-#include "content/public/browser/storage_usage_info.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -65,10 +63,10 @@ void CreateAndBindTransactionPlaceholder(
 class IndexedDBFactoryTest : public testing::Test {
  public:
   IndexedDBFactoryTest()
-      : task_environment_(std::make_unique<BrowserTaskEnvironment>()) {}
+      : task_environment_(std::make_unique<base::test::TaskEnvironment>()) {}
 
   explicit IndexedDBFactoryTest(
-      std::unique_ptr<BrowserTaskEnvironment> task_environment)
+      std::unique_ptr<base::test::TaskEnvironment> task_environment)
       : task_environment_(std::move(task_environment)) {}
 
   void SetUp() override {
@@ -217,7 +215,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   IndexedDBFactoryImpl* factory() const { return context_->GetIDBFactory(); }
 
-  BrowserTaskEnvironment* task_environment() const {
+  base::test::TaskEnvironment* task_environment() const {
     return task_environment_.get();
   }
 
@@ -229,7 +227,7 @@ class IndexedDBFactoryTest : public testing::Test {
   storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
 
  private:
-  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<storage::MockSpecialStoragePolicy> quota_policy_;
@@ -243,7 +241,7 @@ class IndexedDBFactoryTest : public testing::Test {
 class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
  public:
   IndexedDBFactoryTestWithMockTime()
-      : IndexedDBFactoryTest(std::make_unique<BrowserTaskEnvironment>(
+      : IndexedDBFactoryTest(std::make_unique<base::test::TaskEnvironment>(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME)) {}
 
  private:

@@ -23,6 +23,20 @@ AccessibilityExtensionLoader::AccessibilityExtensionLoader(
       loaded_(false),
       unload_callback_(unload_callback) {}
 
+AccessibilityExtensionLoader::AccessibilityExtensionLoader(
+    const std::string& extension_id,
+    const base::FilePath& extension_path,
+    const base::FilePath::CharType* manifest_filename,
+    const base::FilePath::CharType* guest_manifest_filename,
+    const base::Closure& unload_callback)
+    : profile_(nullptr),
+      extension_id_(extension_id),
+      extension_path_(extension_path),
+      manifest_filename_(manifest_filename),
+      guest_manifest_filename_(guest_manifest_filename),
+      loaded_(false),
+      unload_callback_(unload_callback) {}
+
 AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
 
 void AccessibilityExtensionLoader::SetProfile(
@@ -79,7 +93,7 @@ void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
     Profile* profile) {
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  extension_service->component_loader()->Remove(extension_path_);
+  extension_service->component_loader()->Remove(extension_id_);
 }
 
 void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
@@ -87,8 +101,15 @@ void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
-  extension_service->component_loader()->AddComponentFromDir(
-      extension_path_, extension_id_.c_str(), done_cb);
+  if (manifest_filename_ && guest_manifest_filename_) {
+    extension_service->component_loader()
+        ->AddComponentFromDirWithManifestFilename(
+            extension_path_, extension_id_.c_str(), manifest_filename_,
+            guest_manifest_filename_, done_cb);
+  } else {
+    extension_service->component_loader()->AddComponentFromDir(
+        extension_path_, extension_id_.c_str(), done_cb);
+  }
 }
 
 }  // namespace chromeos

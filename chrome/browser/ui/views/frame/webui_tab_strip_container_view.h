@@ -80,8 +80,14 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   class AutoCloser;
   class DragToOpenHandler;
 
+  // Called as we are dragged open.
   void UpdateHeightForDragToOpen(int height_delta);
-  void EndDragToOpen();
+
+  // Called when drag-to-open finishes. If |fling_to_open| is true, the
+  // user released their touch with a high enough velocity that we
+  // should animate open regardless of the final height.
+  void EndDragToOpen(bool fling_to_open);
+
   void SetContainerTargetVisibility(bool target_visible);
 
   // When the container is open, it intercepts most tap and click

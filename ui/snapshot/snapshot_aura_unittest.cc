@@ -110,8 +110,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
         enable_pixel_output, GetParam());
 
     helper_ = std::make_unique<aura::test::AuraTestHelper>();
-    helper_->SetUp(context_factories_->GetContextFactory(),
-                   context_factories_->GetContextFactoryPrivate());
+    helper_->SetUp(context_factories_->GetContextFactory());
     new ::wm::DefaultActivationClient(helper_->root_window());
   }
 

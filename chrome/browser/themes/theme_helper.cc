@@ -237,25 +237,6 @@ SkColor ThemeHelper::GetDefaultColor(
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   switch (id) {
-    case TP::COLOR_OMNIBOX_BACKGROUND: {
-      constexpr float kMinOmniboxToolbarContrast = 1.3f;
-      const SkColor toolbar_color =
-          GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
-      const SkColor endpoint_color =
-          color_utils::GetEndpointColorWithMinContrast(toolbar_color);
-      const SkColor blend_target =
-          (color_utils::GetContrastRatio(toolbar_color, endpoint_color) >=
-           kMinOmniboxToolbarContrast)
-              ? endpoint_color
-              : color_utils::GetColorWithMaxContrast(endpoint_color);
-      return color_utils::BlendForMinContrast(toolbar_color, toolbar_color,
-                                              blend_target,
-                                              kMinOmniboxToolbarContrast)
-          .color;
-    }
-    case TP::COLOR_OMNIBOX_TEXT:
-      return color_utils::GetColorWithMaxContrast(
-          GetColor(TP::COLOR_OMNIBOX_BACKGROUND, incognito, theme_supplier));
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
@@ -541,6 +522,8 @@ base::Optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
     case TP::COLOR_OMNIBOX_TEXT:
     case TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
       return fg;
+    case TP::COLOR_OMNIBOX_BACKGROUND:
+      return bg;
     case TP::COLOR_OMNIBOX_BACKGROUND_HOVERED:
       return bg_hovered_color();
     case TP::COLOR_OMNIBOX_RESULTS_BG:

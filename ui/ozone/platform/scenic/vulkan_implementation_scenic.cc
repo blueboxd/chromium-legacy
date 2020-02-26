@@ -57,7 +57,7 @@ bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
-  vulkan_function_pointers->vulkan_loader_library_ = handle;
+  vulkan_function_pointers->set_vulkan_loader_library(handle);
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME,
       VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME,

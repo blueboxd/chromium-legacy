@@ -26,5 +26,5 @@ base::Optional<std::string> ChromeMediaAppUIDelegate::OpenFeedbackDialog() {
 
   // TODO(crbug/1048368): Showing the feedback dialog can fail, communicate this
   // back to the client with an error string. For now assume dialog opened.
-  return {};
+  return base::nullopt;
 }

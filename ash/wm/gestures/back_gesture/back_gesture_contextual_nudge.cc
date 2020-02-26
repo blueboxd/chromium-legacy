@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/callback.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -125,10 +126,15 @@ class GradientLayerDelegate : public ui::LayerDelegate {
   GradientLayerDelegate& operator=(const GradientLayerDelegate&) = delete;
 };
 
-class ContextualNudgeView : public views::View,
-                            public ui::ImplicitAnimationObserver {
+}  // namespace
+
+class BackGestureContextualNudge::ContextualNudgeView
+    : public views::View,
+      public ui::ImplicitAnimationObserver {
  public:
-  ContextualNudgeView() : suggestion_view_(new SuggestionView(this)) {
+  explicit ContextualNudgeView(base::OnceClosure callback)
+      : suggestion_view_(new SuggestionView(this)),
+        callback_(std::move(callback)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
@@ -141,10 +147,55 @@ class ContextualNudgeView : public views::View,
         FROM_HERE, kPauseBeforeShowAnimationDuration, this,
         &ContextualNudgeView::ScheduleOffScreenToStartPositionAnimation);
   }
+  ContextualNudgeView(const ContextualNudgeView&) = delete;
+  ContextualNudgeView& operator=(const ContextualNudgeView&) = delete;
 
   ~ContextualNudgeView() override { StopObservingImplicitAnimations(); }
 
+  // Cancel in-waiting animation or in-progress animation.
+  void CancelAnimationOrFadeOutToHide() {
+    if (animation_stage_ == AnimationStage::kWaitingCancelled ||
+        animation_stage_ == AnimationStage::kFadingOut) {
+      return;
+    }
+
+    if (animation_stage_ == AnimationStage::kWaiting) {
+      // Cancel the animation if it's waiting to be shown.
+      animation_stage_ = AnimationStage::kWaitingCancelled;
+      DCHECK(show_timer_.IsRunning());
+      show_timer_.AbandonAndStop();
+      std::move(callback_).Run();
+    } else if (animation_stage_ == AnimationStage::kSlidingIn ||
+               animation_stage_ == AnimationStage::kBouncing ||
+               animation_stage_ == AnimationStage::kSlidingOut) {
+      // Cancel previous animations and fade out the widget if it's animating.
+      layer()->GetAnimator()->AbortAllAnimations();
+      suggestion_view_->layer()->GetAnimator()->AbortAllAnimations();
+
+      animation_stage_ = AnimationStage::kFadingOut;
+      ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+      animation.SetTransitionDuration(kNudgeHideAnimationDuration);
+      animation.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
+      animation.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      animation.AddObserver(this);
+      layer()->SetOpacity(0.f);
+    }
+  }
+
+  bool count_as_shown() const { return count_as_shown_; }
+
  private:
+  enum class AnimationStage {
+    kWaiting,     // Animation hasn't been started.
+    kSlidingIn,   // Sliding in animation to show the affordance and label.
+    kBouncing,    // Bouncing the affordance and label animation.
+    kSlidingOut,  // Sliding out animation to hide the affordance and label.
+    kWaitingCancelled,  // The in-waiting animation is cancelled.
+    kFadingOut,  // Previous in-progress animations are cancelled, fading out
+                 // the affordance and label.
+  };
+
   // Used to show the suggestion information of the nudge, which includes the
   // affordance and a label.
   class SuggestionView : public views::View,
@@ -164,6 +215,9 @@ class ContextualNudgeView : public views::View,
           gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
       AddChildView(label_);
     }
+    SuggestionView(const SuggestionView&) = delete;
+    SuggestionView& operator=(const SuggestionView&) = delete;
+
     ~SuggestionView() override { StopObservingImplicitAnimations(); }
 
     void ScheduleBounceAnimation() {
@@ -211,6 +265,10 @@ class ContextualNudgeView : public views::View,
 
     // ui::ImplicitAnimationObserver:
     void OnImplicitAnimationsCompleted() override {
+      // Do not do the following animation if the bouncing animation is aborted.
+      if (WasAnimationAbortedForProperty(ui::LayerAnimationElement::TRANSFORM))
+        return;
+
       if (current_animation_times_ < (kSuggestionAnimationRepeatTimes - 1)) {
         ScheduleBounceAnimation();
         current_animation_times_++;
@@ -222,13 +280,11 @@ class ContextualNudgeView : public views::View,
     views::Label* label_ = nullptr;
     int current_animation_times_ = 0;
     ContextualNudgeView* nudge_view_ = nullptr;  // Not owned.
-
-    SuggestionView(const SuggestionView&) = delete;
-    SuggestionView& operator=(const SuggestionView&) = delete;
   };
 
   // Showing contextual nudge from off screen to its start position.
   void ScheduleOffScreenToStartPositionAnimation() {
+    animation_stage_ = AnimationStage::kSlidingIn;
     gfx::Transform transform;
     transform.Translate(kBackgroundWidth, 0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
@@ -240,11 +296,13 @@ class ContextualNudgeView : public views::View,
 
   // Hiding the contextual nudge from its current position to off screen.
   void ScheduleStartPositionToOffScreenAnimation() {
+    animation_stage_ = AnimationStage::kSlidingOut;
     gfx::Transform transform;
     transform.Translate(-kBackgroundWidth, 0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.SetTransitionDuration(kNudgeHideAnimationDuration);
     animation.SetTweenType(gfx::Tween::EASE_OUT_2);
+    animation.AddObserver(this);
     layer()->SetTransform(transform);
   }
 
@@ -267,7 +325,20 @@ class ContextualNudgeView : public views::View,
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    suggestion_view_->ScheduleBounceAnimation();
+    if (animation_stage_ == AnimationStage::kFadingOut ||
+        (animation_stage_ == AnimationStage::kSlidingOut &&
+         !WasAnimationAbortedForProperty(
+             ui::LayerAnimationElement::TRANSFORM))) {
+      std::move(callback_).Run();
+      return;
+    }
+
+    if (animation_stage_ == AnimationStage::kSlidingIn &&
+        !WasAnimationAbortedForProperty(ui::LayerAnimationElement::TRANSFORM)) {
+      count_as_shown_ = true;
+      animation_stage_ = AnimationStage::kBouncing;
+      suggestion_view_->ScheduleBounceAnimation();
+    }
   }
 
   std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
@@ -278,20 +349,35 @@ class ContextualNudgeView : public views::View,
   // Timer to start show the sliding in animation.
   base::OneShotTimer show_timer_;
 
-  ContextualNudgeView(const ContextualNudgeView&) = delete;
-  ContextualNudgeView& operator=(const ContextualNudgeView&) = delete;
+  // Current animation stage;
+  AnimationStage animation_stage_ = AnimationStage::kWaiting;
+
+  // The nudge should be counted as shown if the nudge has finished its sliding-
+  // in animation no matter whether its following animations get cancelled or
+  // not.
+  bool count_as_shown_ = false;
+
+  // Callback function to be called after animation is cancelled or completed.
+  // Count the nudge as shown successfully if |success| is true.
+  base::OnceClosure callback_;
 };
 
-}  // namespace
-
-BackGestureContextualNudge::BackGestureContextualNudge() {
-  if (!widget_)
-    widget_ = CreateWidget();
-
-  widget_->SetContentsView(new ContextualNudgeView());
+BackGestureContextualNudge::BackGestureContextualNudge(
+    base::OnceClosure callback) {
+  widget_ = CreateWidget();
+  nudge_view_ = new ContextualNudgeView(std::move(callback));
+  widget_->SetContentsView(nudge_view_);
   widget_->Show();
 }
 
 BackGestureContextualNudge::~BackGestureContextualNudge() = default;
+
+void BackGestureContextualNudge::CancelAnimationOrFadeOutToHide() {
+  nudge_view_->CancelAnimationOrFadeOutToHide();
+}
+
+bool BackGestureContextualNudge::ShouldNudgeCountAsShown() const {
+  return nudge_view_->count_as_shown();
+}
 
 }  // namespace ash

@@ -95,7 +95,7 @@ void NotificationSurface::OnWindowRemovingFromRootWindow(
     // compositor frame when showing the message center. This is to prevent
     // flashes when opening the message center.
     aura::Env::GetInstance()
-        ->context_factory_private()
+        ->context_factory()
         ->GetHostFrameSinkManager()
         ->EvictSurfaces({host_window()->GetSurfaceId()});
 

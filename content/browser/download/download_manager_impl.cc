@@ -279,6 +279,32 @@ CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
       std::move(factory_remote));
 }
 
+void RecordDownloadOpenerType(RenderFrameHost* current,
+                              RenderFrameHost* opener) {
+  DCHECK(current);
+  DCHECK(opener);
+  if (!opener->GetLastCommittedURL().SchemeIsHTTPOrHTTPS() ||
+      !current->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                              InitiatedByWindowOpenerType::kNonHTTPOrHTTPS);
+    return;
+  }
+  if (opener->GetLastCommittedOrigin() == current->GetLastCommittedOrigin()) {
+    UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                              InitiatedByWindowOpenerType::kSameOrigin);
+    return;
+  }
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          opener->GetLastCommittedOrigin(), current->GetLastCommittedOrigin(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                              InitiatedByWindowOpenerType::kSameSite);
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
+                            InitiatedByWindowOpenerType::kCrossOrigin);
+}
+
 }  // namespace
 
 DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
@@ -1208,22 +1234,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     }
     RenderFrameHost* opener = web_contents->GetOpener();
     if (opener) {
-      if (opener->GetLastCommittedOrigin() !=
-          render_frame_host->GetLastCommittedOrigin()) {
-        if (net::registry_controlled_domains::SameDomainOrHost(
-                opener->GetLastCommittedOrigin(),
-                render_frame_host->GetLastCommittedOrigin(),
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-          UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
-                                    InitiatedByWindowOpenerType::kSameSite);
-        } else {
-          UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
-                                    InitiatedByWindowOpenerType::kCrossOrigin);
-        }
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Download.InitiatedByWindowOpener",
-                                  InitiatedByWindowOpenerType::kSameOrigin);
-      }
+      RecordDownloadOpenerType(render_frame_host, opener);
     }
   }
   StoragePartitionImpl* storage_partition =

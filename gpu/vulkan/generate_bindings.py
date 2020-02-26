@@ -42,6 +42,14 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
+    'ifdef': 'DCHECK_IS_ON()',
+    'extension': 'VK_EXT_DEBUG_REPORT_EXTENSION_NAME',
+    'functions': [
+      'vkCreateDebugReportCallbackEXT',
+      'vkDestroyDebugReportCallbackEXT',
+    ]
+  },
+  {
     'extension': 'VK_KHR_SURFACE_EXTENSION_NAME',
     'functions': [
       'vkDestroySurfaceKHR',
@@ -279,7 +287,17 @@ def WriteFunctions(file, functions, template, check_extension=False):
     file.write('\n')
 
 def WriteFunctionDeclarations(file, functions):
-  template = Template('  PFN_${name} ${name}Fn = nullptr;\n')
+  template = Template('  PFN_${name} ${name}Fn_ = nullptr;\n')
+  WriteFunctions(file, functions, template)
+
+def WriteTemplateMethods(file, functions):
+  template = Template('''
+template <typename ... Types>
+NO_SANITIZE("cfi-icall")
+auto ${name}Fn(Types ... args) -> decltype(${name}Fn_(args...)) {
+  return ${name}Fn_(args...);
+}
+''')
   WriteFunctions(file, functions, template)
 
 def WriteMacros(file, functions):
@@ -298,6 +316,7 @@ def GenerateHeaderFile(file):
 
 #include <vulkan/vulkan.h>
 
+#include "base/compiler_specific.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
@@ -322,11 +341,12 @@ def GenerateHeaderFile(file):
 
 namespace gpu {
 
-struct VulkanFunctionPointers;
+class VulkanFunctionPointers;
 
 VULKAN_EXPORT VulkanFunctionPointers* GetVulkanFunctionPointers();
 
-struct VulkanFunctionPointers {
+class VulkanFunctionPointers {
+ public:
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
@@ -344,11 +364,24 @@ struct VulkanFunctionPointers {
       uint32_t api_version,
       const gfx::ExtensionSet& enabled_extensions);
 
+  bool HasEnumerateInstanceVersion() const {
+    return !!vkEnumerateInstanceVersionFn_;
+  }
+
+  base::NativeLibrary vulkan_loader_library() const {
+    return vulkan_loader_library_;
+  }
+
+  void set_vulkan_loader_library(base::NativeLibrary library) {
+    vulkan_loader_library_ = library;
+  }
+
+ private:
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
   // Unassociated functions
-  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn = nullptr;
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
+  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn_ = nullptr;
+  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn_ = nullptr;
 """)
 
   WriteFunctionDeclarations(file, VULKAN_UNASSOCIATED_FUNCTIONS)
@@ -367,6 +400,28 @@ struct VulkanFunctionPointers {
 
   WriteFunctionDeclarations(file, VULKAN_DEVICE_FUNCTIONS)
 
+  file.write("""
+ public:
+  // Unassociated functions
+""")
+  WriteTemplateMethods(file, [{'functions': [ 'vkGetInstanceProcAddr' ,
+                                              'vkEnumerateInstanceVersion']}])
+  WriteTemplateMethods(file, VULKAN_UNASSOCIATED_FUNCTIONS)
+
+  file.write("""\
+
+// Instance functions
+""")
+
+  WriteTemplateMethods(file, VULKAN_INSTANCE_FUNCTIONS);
+
+  file.write("""\
+
+// Device functions
+""")
+
+  WriteTemplateMethods(file, VULKAN_DEVICE_FUNCTIONS)
+
   file.write("""\
 };
 
@@ -375,7 +430,8 @@ struct VulkanFunctionPointers {
 // Unassociated functions
 """)
 
-  WriteMacros(file, [{'functions': [ 'vkGetInstanceProcAddr' ]}])
+  WriteMacros(file, [{'functions': [ 'vkGetInstanceProcAddr' ,
+                                     'vkEnumerateInstanceVersion']}])
   WriteMacros(file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
   file.write("""\
@@ -399,9 +455,9 @@ struct VulkanFunctionPointers {
 
 def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
                                        functions):
-  template = Template("""  ${name}Fn = reinterpret_cast<PFN_${name}>(
+  template = Template("""  ${name}Fn_ = reinterpret_cast<PFN_${name}>(
     ${get_proc_addr}(${parent}, "${name}${extension_suffix}"));
-  if (!${name}Fn) {
+  if (!${name}Fn_) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "${name}${extension_suffix}";
     return false;
@@ -418,15 +474,15 @@ def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
   WriteFunctions(file, functions, template, check_extension=True)
 
 def WriteUnassociatedFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn', 'nullptr',
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr', 'nullptr',
                                      functions)
 
 def WriteInstanceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn',
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr',
                                      'vk_instance', functions)
 
 def WriteDeviceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddrFn', 'vk_device',
+  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddr', 'vk_device',
                                      functions)
 
 def GenerateSourceFile(file):
@@ -449,19 +505,20 @@ VulkanFunctionPointers* GetVulkanFunctionPointers() {
 VulkanFunctionPointers::VulkanFunctionPointers() = default;
 VulkanFunctionPointers::~VulkanFunctionPointers() = default;
 
+NO_SANITIZE("cfi-icall")
 bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   // vkGetInstanceProcAddr must be handled specially since it gets its function
   // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
   // functions don't do this.
-  vkGetInstanceProcAddrFn = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+  vkGetInstanceProcAddrFn_ = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
       base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
                                                 "vkGetInstanceProcAddr"));
-  if (!vkGetInstanceProcAddrFn)
+  if (!vkGetInstanceProcAddrFn_)
     return false;
 
-  vkEnumerateInstanceVersionFn =
+  vkEnumerateInstanceVersionFn_ =
       reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
-          vkGetInstanceProcAddrFn(nullptr, "vkEnumerateInstanceVersion"));
+          vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
   // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
   // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
 """)

@@ -633,7 +633,7 @@ class FileChooserImpl : public blink::mojom::FileChooser,
         std::move(receiver));
   }
 
-  FileChooserImpl(RenderFrameHostImpl* render_frame_host)
+  explicit FileChooserImpl(RenderFrameHostImpl* render_frame_host)
       : render_frame_host_(render_frame_host) {
     Observe(WebContents::FromRenderFrameHost(render_frame_host));
   }
@@ -3970,7 +3970,7 @@ void RenderFrameHostImpl::Reload() {
   if (!IsRenderFrameLive())
     return;
 
-  // TODO(https://crbug.com/995428). This IPC is deprecated. Navigations are
+  // TODO(https://crbug.com/995428): This IPC is deprecated. Navigations are
   // handled from the browser process. There is no need to send an IPC to the
   // renderer process for this.
   Send(new FrameMsg_Reload(GetRoutingID()));
@@ -7420,31 +7420,31 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // specific cases. Check if this is one of those cases.
     bool is_commit_allowed_to_proceed = false;
 
-    //  1) This was a renderer-initiated navigation to an empty document. Most
-    //  of the time: about:blank.
+    // 1) This was a renderer-initiated navigation to an empty document. Most
+    // of the time: about:blank.
     is_commit_allowed_to_proceed |= params->url.SchemeIs(url::kAboutScheme) &&
                                     params->url != GURL(url::kAboutSrcdocURL);
 
-    //  2) This was a same-document navigation.
-    //  TODO(clamy): We should enforce having a request on browser-initiated
-    //  same-document navigations.
+    // 2) This was a same-document navigation.
+    // TODO(clamy): We should enforce having a request on browser-initiated
+    // same-document navigations.
     is_commit_allowed_to_proceed |= is_same_document_navigation;
 
-    //  3) Transient interstitial page commits will not have a matching
-    //  NavigationRequest.
-    //  TODO(clamy): Enforce having a NavigationRequest for data URLs when
-    //  committed interstitials have launched or interstitials create
-    //  NavigationRequests.
+    // 3) Transient interstitial page commits will not have a matching
+    // NavigationRequest.
+    // TODO(clamy): Enforce having a NavigationRequest for data URLs when
+    // committed interstitials have launched or interstitials create
+    // NavigationRequests.
     is_commit_allowed_to_proceed |= !!delegate_->GetAsInterstitialPage();
 
-    //  4) Error pages implementations in Chrome can commit twice.
-    //  TODO(clamy): Fix this.
+    // 4) Error pages implementations in Chrome can commit twice.
+    // TODO(clamy): Fix this.
     is_commit_allowed_to_proceed |= params->url_is_unreachable;
 
-    //  5) Special case for DOMSerializerBrowsertests which are implemented
-    //  entirely renderer-side and unlike normal RenderView based tests load
-    //  file URLs instead of data URLs.
-    //  TODO(clamy): Rework the tests to remove this exception.
+    // 5) Special case for DOMSerializerBrowsertests which are implemented
+    // entirely renderer-side and unlike normal RenderView based tests load
+    // file URLs instead of data URLs.
+    // TODO(clamy): Rework the tests to remove this exception.
     is_commit_allowed_to_proceed |= params->url.SchemeIsFile();
 
     if (!is_commit_allowed_to_proceed) {

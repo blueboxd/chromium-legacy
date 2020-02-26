@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
@@ -39,9 +40,6 @@
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/fake_blob.h"
@@ -408,7 +406,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
@@ -826,7 +824,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
                       &succeeded, phase_one_wait.QuitClosure()))
                   .ok());
   EXPECT_FALSE(succeeded);
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
   phase_one_wait.Run();
 
   // Finish up transaction1, verifying blob writes.
@@ -854,7 +852,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
   EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
   EXPECT_EQ(value3_.bits, result_value.bits);
 
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(CheckBlobInfoMatches(result_value.external_objects));
   EXPECT_TRUE(CheckBlobReadsMatchWrites(result_value.external_objects));
 
@@ -873,7 +871,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
   EXPECT_TRUE(
       transaction3->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
   EXPECT_TRUE(succeeded);
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(succeeded);
 
@@ -884,7 +882,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
   // Clean up on the IDB sequence.
   transaction1.reset();
   transaction3.reset();
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
@@ -941,7 +939,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
     bool succeeded = false;
     EXPECT_TRUE(
         transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Finish committing transaction1.
 
@@ -965,7 +963,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
     succeeded = false;
     EXPECT_TRUE(
         transaction2->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Finish committing transaction2.
 
@@ -980,7 +978,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
     // Clean up on the IDB sequence.
     transaction1.reset();
     transaction2.reset();
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 
@@ -1037,7 +1035,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRangeEmptyRange) {
     bool succeeded = false;
     EXPECT_TRUE(
         transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Finish committing transaction1.
     EXPECT_TRUE(succeeded);
@@ -1060,7 +1058,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRangeEmptyRange) {
     succeeded = false;
     EXPECT_TRUE(
         transaction2->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
 
     // Finish committing transaction2.
     EXPECT_TRUE(succeeded);
@@ -1072,7 +1070,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRangeEmptyRange) {
     // Clean on the IDB sequence.
     transaction1.reset();
     transaction2.reset();
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 
@@ -1093,7 +1091,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects,
   bool succeeded = false;
   EXPECT_TRUE(
       transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify transaction1 phase one completed.
 
@@ -1116,7 +1114,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects,
   succeeded = false;
   EXPECT_TRUE(
       transaction2->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify transaction2 phase one completed.
   EXPECT_TRUE(succeeded);
@@ -1133,7 +1131,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects,
   // Clean up on the IDB sequence.
   transaction1.reset();
   transaction2.reset();
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
@@ -1152,7 +1150,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   EXPECT_TRUE(
       transaction1->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
 
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(CheckBlobWrites());
@@ -1195,7 +1193,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   succeeded = false;
   EXPECT_TRUE(
       transaction3->CommitPhaseOne(CreateBlobWriteCallback(&succeeded)).ok());
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(succeeded);
   EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
@@ -1204,7 +1202,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
     if (read_result_value.external_objects[i].release_callback())
       read_result_value.external_objects[i].release_callback().Run();
   }
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   if (TestType() != ExternalObjectTestType::kOnlyNativeFileSystemHandles) {
     EXPECT_TRUE(backing_store()->IsBlobCleanupPending());
@@ -1227,7 +1225,7 @@ TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   // Clean on the IDB sequence.
   transaction1.reset();
   transaction3.reset();
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Make sure that using very high ( more than 32 bit ) values for
@@ -1633,7 +1631,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
     EXPECT_TRUE(succeeded);
     EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
   }
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Save a value.
   IndexedDBBackingStore::Transaction transaction1(
@@ -1656,7 +1654,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
   const std::string schema_version_key = SchemaVersionKey::Encode();
   ignore_result(indexed_db::PutInt(write_batch.get(), schema_version_key, 2));
   ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   DestroyFactoryAndBackingStore();
   CreateFactoryAndBackingStore();
@@ -1688,7 +1686,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
   EXPECT_TRUE(found);
   EXPECT_EQ(4, found_int);
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Our v2->v3 schema migration code forgot to bump the on-disk version number.
@@ -1740,7 +1738,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
     EXPECT_TRUE(succeeded);
     EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
   }
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   base::RunLoop write_blobs_loop;
   // Initiate transaction1 - writing blobs.
@@ -1760,7 +1758,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
                   ->CommitPhaseOne(CreateBlobWriteCallback(
                       &succeeded, write_blobs_loop.QuitClosure()))
                   .ok());
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
   write_blobs_loop.Run();
 
   // Finish up transaction1, verifying blob writes.
@@ -1776,7 +1774,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
   // Clean up on the IDB sequence.
   transaction1.reset();
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   DestroyFactoryAndBackingStore();
   CreateFactoryAndBackingStore();
@@ -1858,7 +1856,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
     EXPECT_TRUE(succeeded);
     EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
   }
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Initiate transaction1 - writing blobs.
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
@@ -1879,7 +1877,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
                       &succeeded, write_blobs_loop.QuitClosure()))
                   .ok());
   write_blobs_loop.Run();
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Finish up transaction1, verifying blob writes.
   EXPECT_TRUE(succeeded);
@@ -1887,7 +1885,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   ASSERT_TRUE(transaction1->CommitPhaseTwo().ok());
   transaction1.reset();
 
-  RunAllTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Change entries to be v3, and change the schema to be v3.
   std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();

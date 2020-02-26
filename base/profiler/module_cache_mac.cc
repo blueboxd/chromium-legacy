@@ -99,7 +99,7 @@ class MacModule : public ModuleCache::Module {
 };
 
 // static
-std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
+std::unique_ptr<const ModuleCache::Module> ModuleCache::CreateModuleForAddress(
     uintptr_t address) {
   Dl_info info;
   if (!dladdr(reinterpret_cast<const void*>(address), &info))

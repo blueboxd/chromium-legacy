@@ -25,8 +25,7 @@ namespace ui {
 class COMPOSITOR_EXPORT RecyclableCompositorMac
     : public ui::CompositorObserver {
  public:
-  RecyclableCompositorMac(ui::ContextFactory* context_factory,
-                          ui::ContextFactoryPrivate* context_factory_private);
+  explicit RecyclableCompositorMac(ui::ContextFactory* context_factory);
   ~RecyclableCompositorMac() override;
 
   ui::Compositor* compositor() { return &compositor_; }
@@ -79,7 +78,6 @@ class COMPOSITOR_EXPORT RecyclableCompositorMacFactory {
   // Create a compositor, or recycle a preexisting one.
   std::unique_ptr<RecyclableCompositorMac> CreateCompositor(
       ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private,
       bool force_new_compositor = false);
 
   // Delete a compositor, or allow it to be recycled.

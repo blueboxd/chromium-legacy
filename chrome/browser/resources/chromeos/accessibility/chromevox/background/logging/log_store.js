@@ -136,7 +136,7 @@ LogStore = class {
         ChromeVoxState.instance.currentRange.start.node.root) {
       return ChromeVoxState.instance.currentRange.start.node.root.docUrl
                  .indexOf(chrome.extension.getURL(
-                     'background/logging/log.html')) == 0;
+                     'chromevox/background/logging/log.html')) == 0;
     }
     return false;
   }

@@ -94,10 +94,14 @@ const char kAssessmentAssistantExtensionId[] =
     "gndmhdcefbhlchkhipcnnbkcmicncehk";
 const char kAutoclickExtensionId[] = "egfdjlfmgnehecnclamagfafdccgfndp";
 const char kAutoclickExtensionPath[] = "chromeos/accessibility/autoclick";
-const char kChromeVoxExtensionPath[] = "chromeos/accessibility/chromevox";
+const char kChromeVoxExtensionPath[] = "chromeos/accessibility";
+const char kChromeVoxManifestFilename[] = "chromevox_manifest.json";
+const char kChromeVoxGuestManifestFilename[] = "chromevox_manifest_guest.json";
 const char kSelectToSpeakExtensionId[] = "klbcgckkldhdhonijdbnhhaiedfkllef";
-const char kSelectToSpeakExtensionPath[] =
-    "chromeos/accessibility/select_to_speak";
+const char kSelectToSpeakExtensionPath[] = "chromeos/accessibility";
+const char kSelectToSpeakManifestFilename[] = "select_to_speak_manifest.json";
+const char kSelectToSpeakGuestManifestFilename[] =
+    "select_to_speak_manifest_guest.json";
 const char kSwitchAccessExtensionId[] = "pmehocpgjmkenlokgjfkaichfjdhpeol";
 const char kSwitchAccessExtensionPath[] =
     "chromeos/accessibility/switch_access";

@@ -405,15 +405,12 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
   Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
-  ui::ContextFactoryPrivate* context_factory_private =
-      env->context_factory_private();
   compositor_ = std::make_unique<ui::Compositor>(
-      (!context_factory_private || frame_sink_id.is_valid())
-          ? frame_sink_id
-          : context_factory_private->AllocateFrameSinkId(),
-      context_factory, context_factory_private,
-      base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
-      use_external_begin_frame_control, force_software_compositor);
+      (frame_sink_id.is_valid()) ? frame_sink_id
+                                 : context_factory->AllocateFrameSinkId(),
+      context_factory, base::ThreadTaskRunnerHandle::Get(),
+      ui::IsPixelCanvasRecordingEnabled(), use_external_begin_frame_control,
+      force_software_compositor);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif

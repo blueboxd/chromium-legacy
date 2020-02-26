@@ -12,6 +12,7 @@ import os
 import subprocess
 import time
 
+import coverage_util
 import iossim_util
 import test_apps
 import test_runner
@@ -111,6 +112,7 @@ class LaunchCommand(object):
                shards,
                retries,
                out_dir=os.path.basename(os.getcwd()),
+               use_clang_coverage=False,
                env=None):
     """Initialize launch command.
 
@@ -136,6 +138,7 @@ class LaunchCommand(object):
     self.out_dir = out_dir
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
+    self.use_clang_coverage = use_clang_coverage
     self.env = env
     if distutils.version.LooseVersion('11.0') <= distutils.version.LooseVersion(
         test_runner.get_current_xcode_info()['version']):
@@ -201,12 +204,19 @@ class LaunchCommand(object):
         erase_all_simulators()
         erase_all_simulators(XTDEVICE_FOLDER)
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
-      cmd_list = self.egtests_app.command(outdir_attempt,
-                                          'id=%s' % self.udid, shards)
+      cmd_list = self.egtests_app.command(outdir_attempt, 'id=%s' % self.udid,
+                                          shards)
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       LOGGER.info('Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list)))
       output = self.launch_attempt(cmd_list)
+
+      if self.use_clang_coverage:
+        # out_dir of LaunchCommand object is the TestRunner out_dir joined with
+        # UDID. Use os.path.dirname to retrieve the TestRunner out_dir.
+        coverage_util.move_raw_coverage_data(self.udid,
+                                             os.path.dirname(self.out_dir))
+
       self.test_results['attempts'].append(
           self._log_parser.collect_test_results(outdir_attempt, output))
       if self.retries == attempt or not self.test_results[
@@ -247,23 +257,22 @@ class LaunchCommand(object):
 class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
   """Class for running simulator tests using xCode."""
 
-  def __init__(
-      self,
-      app_path,
-      host_app_path,
-      iossim_path,
-      xcode_build_version,
-      version,
-      platform,
-      out_dir,
-      mac_toolchain=None,
-      retries=1,
-      shards=1,
-      xcode_path=None,
-      test_cases=None,
-      test_args=None,
-      env_vars=None
-  ):
+  def __init__(self,
+               app_path,
+               host_app_path,
+               iossim_path,
+               xcode_build_version,
+               version,
+               platform,
+               out_dir,
+               mac_toolchain=None,
+               retries=1,
+               shards=1,
+               xcode_path=None,
+               test_cases=None,
+               test_args=None,
+               use_clang_coverage=False,
+               env_vars=None):
     """Initializes a new instance of SimulatorParallelTestRunner class.
 
     Args:
@@ -283,6 +292,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
                   None or [] to include all tests.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      use_clang_coverage: Whether code coverage is enabled in this run.
       env_vars: List of environment variables to pass to the test itself.
 
     Raises:
@@ -305,8 +315,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         test_args=test_args,
         test_cases=test_cases,
         xcode_path=xcode_path,
-        xctest=False
-    )
+        use_clang_coverage=use_clang_coverage,
+        xctest=False)
     self.set_up()
     self.host_app_path = None
     if host_app_path != 'NO_PATH':
@@ -314,6 +324,10 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
     self.test_results['path_delimiter'] = '/'
+    # Do not enable parallel testing when code coverage is enabled, because raw
+    # coverage data won't be produced with parallel testing.
+    if self.use_clang_coverage:
+      self.shards = 1
 
   def _init_sharding_data(self):
     """Initialize sharding data.
@@ -362,6 +376,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
               shards=params['shards'],
               retries=self.retries,
               out_dir=os.path.join(self.out_dir, params['udid']),
+              use_clang_coverage=self.use_clang_coverage,
               env=self.get_launch_env()))
 
     thread_pool = pool.ThreadPool(len(launch_commands))

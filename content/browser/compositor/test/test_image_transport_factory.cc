@@ -101,9 +101,4 @@ ui::ContextFactory* TestImageTransportFactory::GetContextFactory() {
   return this;
 }
 
-ui::ContextFactoryPrivate*
-TestImageTransportFactory::GetContextFactoryPrivate() {
-  return this;
-}
-
 }  // namespace content

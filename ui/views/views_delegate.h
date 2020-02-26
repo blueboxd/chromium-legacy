@@ -161,9 +161,6 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
 
-  // Returns the privileged context factory for new windows.
-  virtual ui::ContextFactoryPrivate* GetContextFactoryPrivate();
-
   // Returns the user-visible name of the application.
   virtual std::string GetApplicationName();
 

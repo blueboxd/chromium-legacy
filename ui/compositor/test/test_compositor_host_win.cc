@@ -22,13 +22,11 @@ class TestCompositorHostWin : public TestCompositorHost,
                               public gfx::WindowImpl {
  public:
   TestCompositorHostWin(const gfx::Rect& bounds,
-                        ui::ContextFactory* context_factory,
-                        ui::ContextFactoryPrivate* context_factory_private) {
+                        ui::ContextFactory* context_factory) {
     Init(NULL, bounds);
     compositor_ = std::make_unique<ui::Compositor>(
-        context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, base::ThreadTaskRunnerHandle::Get(),
-        false /* enable_pixel_canvas */);
+        context_factory->AllocateFrameSinkId(), context_factory,
+        base::ThreadTaskRunnerHandle::Get(), false /* enable_pixel_canvas */);
     allocator_.GenerateId();
     compositor_->SetAcceleratedWidget(hwnd());
     compositor_->SetScaleAndSize(
@@ -70,10 +68,8 @@ class TestCompositorHostWin : public TestCompositorHost,
 
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new TestCompositorHostWin(bounds, context_factory,
-                                   context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostWin(bounds, context_factory);
 }
 
 }  // namespace ui

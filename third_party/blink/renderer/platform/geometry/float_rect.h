@@ -29,6 +29,7 @@
 
 #include <iosfwd>
 
+#include "base/compiler_specific.h"
 #include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -132,8 +133,8 @@ class PLATFORM_EXPORT FloatRect {
                       location_.Y() + size_.Height());
   }  // typically bottomRight
 
-  bool Intersects(const IntRect&) const;
-  bool Intersects(const FloatRect&) const;
+  WARN_UNUSED_RESULT bool Intersects(const IntRect&) const;
+  WARN_UNUSED_RESULT bool Intersects(const FloatRect&) const;
   bool Contains(const IntRect&) const;
   bool Contains(const FloatRect&) const;
   bool Contains(const FloatPoint&, ContainsMode = kInsideOrOnStroke) const;

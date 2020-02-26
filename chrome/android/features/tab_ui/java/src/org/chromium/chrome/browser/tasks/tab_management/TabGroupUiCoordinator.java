@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -26,13 +27,15 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
 
 /**
  * A coordinator for TabGroupUi component. Manages the communication with
- * {@link TabListCoordinator} and {@link TabStripToolbarCoordinator}, as well as the life-cycle of
+ * {@link TabListCoordinator} as well as the life-cycle of
  * shared component objects.
  */
 public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, TabGroupUi,
@@ -42,10 +45,11 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
     private final ThemeColorProvider mThemeColorProvider;
+    private final PropertyModelChangeProcessor mModelChangeProcessor;
+    private final ViewGroup mTabListContainerView;
     private TabGridDialogCoordinator mTabGridDialogCoordinator;
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
-    private TabStripToolbarCoordinator mTabStripToolbarCoordinator;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private ChromeActivity mActivity;
 
@@ -56,9 +60,13 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         mContext = parentView.getContext();
         mThemeColorProvider = themeColorProvider;
         mTabStripToolbarModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
-
-        mTabStripToolbarCoordinator =
-                new TabStripToolbarCoordinator(mContext, parentView, mTabStripToolbarModel);
+        TabGroupUiToolbarView toolbarView =
+                (TabGroupUiToolbarView) LayoutInflater.from(mContext).inflate(
+                        R.layout.bottom_tab_strip_toolbar, parentView, false);
+        mTabListContainerView = toolbarView.getViewContainer();
+        parentView.addView(toolbarView);
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(
+                mTabStripToolbarModel, toolbarView, TabGroupUiToolbarViewBinder::bind);
     }
 
     /**
@@ -79,8 +87,8 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, null, null, false, null, null, null,
-                TabProperties.UiType.STRIP, null,
-                mTabStripToolbarCoordinator.getTabListContainerView(), null, true, COMPONENT_NAME);
+                TabProperties.UiType.STRIP, null, mTabListContainerView, null, true,
+                COMPONENT_NAME);
 
         boolean isTabGroupsUiImprovementsEnabled =
                 CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled();
@@ -152,6 +160,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();
         }
+        mModelChangeProcessor.destroy();
         mMediator.destroy();
         mActivityLifecycleDispatcher.unregister(this);
     }

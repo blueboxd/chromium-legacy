@@ -2,9 +2,12 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -12,7 +15,16 @@
 
 <dom-module id="settings-secure-dns">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared md-select">
+      #secureResolverSelect {
+        margin-inline-start: 12px;
+      }
+
+      #secureResolverSelectRadioButton {
+        align-items: flex-start;
+        --cr-radio-button-disc-margin-block-start: 1.25em;
+      }
+    </style>
     <settings-toggle-button
         id="secureDnsToggle"
         pref="{{secureDnsToggle_}}"
@@ -24,12 +36,24 @@
         selected="{{secureDnsRadio_}}"
         on-selected-changed="onRadioSelectionChanged_"
         hidden="[[!secureDnsToggle_.value]]">
-      <cr-radio-button
-          class="list-item" name="[[prefModeValues_.AUTOMATIC]]"
+      <cr-radio-button class="list-item" name="[[secureDnsModeEnum_.AUTOMATIC]]"
           label="$i18n{secureDnsAutomaticModeDescription}">
       </cr-radio-button>
-      <cr-radio-button
-          class="list-item" name="[[prefModeValues_.SECURE]]">
+      <cr-radio-button id="secureResolverSelectRadioButton" class="list-item"
+          name="[[secureDnsModeEnum_.SECURE]]">
+        <div class="list-item">
+          <div>$i18n{secureDnsSecureDropdownModeDescription}</div>
+          <select id="secureResolverSelect" class="md-select"
+              on-click="stopDropdownEventPropagation_"
+              on-change="onDropdownSelectionChanged_">
+            <template is="dom-repeat" items="[[resolverOptions_]]">
+              <option value="[[item.value]]">[[item.name]]</option>
+            </template>
+          </select>
+        </div>
+        <div id="privacyPolicy" class="secondary"
+            inner-h-t-m-l="[[privacyPolicyString_]]"
+            hidden="[[!showPrivacyPolicyLine_]]"></div>
       </cr-radio-button>
     </cr-radio-group>
   </template>

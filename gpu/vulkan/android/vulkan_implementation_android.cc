@@ -79,9 +79,9 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance(bool using_surface) {
       gpu::GetVulkanFunctionPointers();
 
   base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
-      base::FilePath("libvulkan.so"), &native_library_load_error);
-  if (!vulkan_function_pointers->vulkan_loader_library_)
+  vulkan_function_pointers->set_vulkan_loader_library(base::LoadNativeLibrary(
+      base::FilePath("libvulkan.so"), &native_library_load_error));
+  if (!vulkan_function_pointers->vulkan_loader_library())
     return false;
 
   return vulkan_instance_.Initialize(required_extensions, {});

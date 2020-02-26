@@ -152,11 +152,11 @@ FileMonitorImpl::FileMonitorImpl(
 
 FileMonitorImpl::~FileMonitorImpl() = default;
 
-void FileMonitorImpl::Initialize(const InitCallback& callback) {
+void FileMonitorImpl::Initialize(InitCallback callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_task_runner_.get(), FROM_HERE,
       base::BindOnce(&InitializeAndCreateDownloadDirectory, download_file_dir_),
-      base::BindOnce(callback));
+      base::BindOnce(std::move(callback)));
 }
 
 void FileMonitorImpl::DeleteUnknownFiles(
@@ -178,7 +178,7 @@ void FileMonitorImpl::DeleteUnknownFiles(
 
 void FileMonitorImpl::CleanupFilesForCompletedEntries(
     const Model::EntryList& entries,
-    const base::Closure& completion_callback) {
+    base::OnceClosure completion_callback) {
   std::set<base::FilePath> files_to_remove;
   for (auto* entry : entries) {
     files_to_remove.insert(entry->target_file_path);
@@ -192,7 +192,7 @@ void FileMonitorImpl::CleanupFilesForCompletedEntries(
       FROM_HERE,
       base::BindOnce(&DeleteFilesOnFileThread, files_to_remove,
                      stats::FileCleanupReason::TIMEOUT),
-      completion_callback);
+      std::move(completion_callback));
 }
 
 void FileMonitorImpl::DeleteFiles(
@@ -203,11 +203,11 @@ void FileMonitorImpl::DeleteFiles(
       base::BindOnce(&DeleteFilesOnFileThread, files_to_remove, reason));
 }
 
-void FileMonitorImpl::HardRecover(const InitCallback& callback) {
+void FileMonitorImpl::HardRecover(InitCallback callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HardRecoverOnFileThread, download_file_dir_),
-      base::BindOnce(callback));
+      base::BindOnce(std::move(callback)));
 }
 
 }  // namespace download

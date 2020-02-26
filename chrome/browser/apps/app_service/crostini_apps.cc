@@ -181,10 +181,6 @@ void CrostiniApps::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void CrostiniApps::PromptUninstall(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
 void CrostiniApps::Uninstall(const std::string& app_id,
                              bool clear_site_data,
                              bool report_abuse) {
@@ -252,9 +248,11 @@ void CrostiniApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
-void CrostiniApps::OnPreferredAppSet(const std::string& app_id,
-                                     apps::mojom::IntentFilterPtr intent_filter,
-                                     apps::mojom::IntentPtr intent) {
+void CrostiniApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   NOTIMPLEMENTED();
 }
 

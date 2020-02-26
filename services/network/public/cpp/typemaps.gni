@@ -8,6 +8,7 @@ typemaps = [
   "//services/network/public/cpp/address_family.typemap",
   "//services/network/public/cpp/address_list.typemap",
   "//services/network/public/cpp/cookie_manager.typemap",
+  "//services/network/public/cpp/cross_origin_embedder_policy.typemap",
   "//services/network/public/cpp/default_credentials.typemap",
   "//services/network/public/cpp/cors_error_status.typemap",
   "//services/network/public/cpp/digitally_signed.typemap",

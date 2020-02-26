@@ -84,6 +84,11 @@ void AwContentsClientBridge::Associate(WebContents* web_contents,
 }
 
 // static
+void AwContentsClientBridge::Dissociate(WebContents* web_contents) {
+  web_contents->RemoveUserData(kAwContentsClientBridge);
+}
+
+// static
 AwContentsClientBridge* AwContentsClientBridge::FromWebContents(
     WebContents* web_contents) {
   return UserData::GetContents(web_contents);

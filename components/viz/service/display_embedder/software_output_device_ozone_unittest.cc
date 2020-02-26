@@ -99,7 +99,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 
   const gfx::Size size(500, 400);
   compositor_ = std::make_unique<ui::Compositor>(
-      FrameSinkId(1, 1), context_factories_->GetContextFactory(), nullptr,
+      FrameSinkId(1, 1), context_factories_->GetContextFactory(),
       base::ThreadTaskRunnerHandle::Get(), false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size, LocalSurfaceIdAllocation());

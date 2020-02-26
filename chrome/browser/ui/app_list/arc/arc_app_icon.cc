@@ -34,37 +34,6 @@ namespace {
 
 bool disable_safe_decoding_for_testing = false;
 
-std::string GetAppFromAppOrGroupId(content::BrowserContext* context,
-                                   const std::string& app_or_group_id) {
-  const arc::ArcAppShelfId app_shelf_id = arc::ArcAppShelfId::FromString(
-      app_or_group_id);
-  if (!app_shelf_id.has_shelf_group_id())
-    return app_shelf_id.app_id();
-
-  const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context);
-  DCHECK(prefs);
-
-  // Try to find a shortcut with requested shelf group id.
-  const std::vector<std::string> app_ids = prefs->GetAppIds();
-  for (const auto& app_id : app_ids) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
-    DCHECK(app_info);
-    if (!app_info || !app_info->shortcut)
-      continue;
-    const arc::ArcAppShelfId shortcut_shelf_id =
-        arc::ArcAppShelfId::FromIntentAndAppId(app_info->intent_uri,
-                                               app_id);
-    if (shortcut_shelf_id.has_shelf_group_id() &&
-        shortcut_shelf_id.shelf_group_id() == app_shelf_id.shelf_group_id()) {
-      return app_id;
-    }
-  }
-
-  // Shortcut with requested shelf group id was not found, use app id as
-  // fallback.
-  return app_shelf_id.app_id();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -253,7 +222,7 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
                        bool serve_compressed_icons)
     : context_(context),
       app_id_(app_id),
-      mapped_app_id_(GetAppFromAppOrGroupId(context, app_id)),
+      mapped_app_id_(arc::GetAppFromAppOrGroupId(context, app_id)),
       resource_size_in_dip_(resource_size_in_dip),
       observer_(observer),
       serve_compressed_icons_(serve_compressed_icons) {

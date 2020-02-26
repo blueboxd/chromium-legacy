@@ -835,6 +835,10 @@ class UnitTest(unittest.TestCase):
       '/fake_src/out/Default/base_unittests.runtime_deps': (
           "base_unittests\n"
       ),
+      '/fake_src/third_party/depot_tools/cipd_manifest.txt': (
+          "# vpython\n"
+          "/some/vpython/pkg  git_revision:deadbeef\n"
+      ),
     }
 
     def run_stub(cmd, **_kwargs):

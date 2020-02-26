@@ -1297,7 +1297,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(USE_AURA)
   env_->set_context_factory(GetContextFactory());
-  env_->set_context_factory_private(GetContextFactoryPrivate());
 #endif  // defined(USE_AURA)
 #endif  // !defined(OS_ANDROID)
 

@@ -582,11 +582,25 @@ class MetaBuildWrapper(object):
       if zip_dir:
         self.RemoveDirectory(zip_dir)
 
-  @staticmethod
-  def _AddBaseSoftware(cmd):
+  def _AddBaseSoftware(self, cmd):
     # HACK(iannucci): These packages SHOULD NOT BE HERE.
     # Remove method once Swarming Pool Task Templates are implemented.
     # crbug.com/812428
+
+    # Read vpython version from pinned depot_tools manifest. Better than
+    # duplicating the pin here. The pin file format is simple enough to parse
+    # it inline here.
+    manifest_path = self.PathJoin(self.chromium_src_dir, 'third_party',
+                                  'depot_tools', 'cipd_manifest.txt')
+    vpython_pkg = vpython_version = None
+    for line in self.ReadFile(manifest_path).splitlines():
+      # lines look like:
+      # name/of/package version
+      if 'vpython' in line and 'git_revision' in line:
+        vpython_pkg, vpython_version = line.split()
+        break
+    if vpython_pkg is None:
+      raise ValueError('unable to read vpython pin from %s' % (manifest_path, ))
 
     # Add in required base software. This should be kept in sync with the
     # `chromium_swarming` recipe module in build.git. All references to
@@ -596,11 +610,11 @@ class MetaBuildWrapper(object):
        'version:2.7.15.chromium14'),
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
-      ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:e317c7d2c17d4c3460ee37524dfce4e1dee4306a'),
-      ('infra/tools/luci/vpython/${platform}',
-       'git_revision:e317c7d2c17d4c3460ee37524dfce4e1dee4306a'),
     ]
+    cipd_packages.append((vpython_pkg, vpython_version))
+    cipd_packages.append((vpython_pkg.replace('vpython', 'vpython-native'),
+                          vpython_version))
+
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
 

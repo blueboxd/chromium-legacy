@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
@@ -25,11 +26,6 @@
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/url_constants.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -173,8 +169,7 @@ class IndexedDBTest : public testing::Test {
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
-  BrowserTaskEnvironment task_environment_;
-  TestBrowserContext browser_context_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<IndexedDBContextImpl> context_;
 
@@ -189,14 +184,14 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   session_only_path = GetFilePathForTesting(kSessionOnlyOrigin);
   ASSERT_TRUE(base::CreateDirectory(normal_path));
   ASSERT_TRUE(base::CreateDirectory(session_only_path));
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
 
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   context()->Shutdown();
 
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(base::DirectoryExists(normal_path));
   EXPECT_FALSE(base::DirectoryExists(session_only_path));

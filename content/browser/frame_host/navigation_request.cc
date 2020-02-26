@@ -1737,7 +1737,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   auto cross_origin_embedder_policy =
-      response_head_->cross_origin_embedder_policy;
+      response_head_->cross_origin_embedder_policy.value;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
     // https://mikewest.github.io/corpp/#process-navigation-response.
     if (GetParentFrame() &&

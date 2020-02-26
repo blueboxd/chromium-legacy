@@ -61,15 +61,6 @@ class JSChecker {
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateWaiter(
       const std::string& js_condition);
 
-  // Waiter that waits until the given attribute is (not) present.
-  // WARNING! This does not cover the case where ATTRIBUTE=false.
-  // Should only be used for boolean attributes.
-  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
-  CreateAttributePresenceWaiter(
-      const std::string& attribute,
-      bool presence,
-      std::initializer_list<base::StringPiece> element_ids);
-
   // Waiter that waits until specified element is (not) hidden.
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
   CreateVisibilityWaiter(bool visibility,

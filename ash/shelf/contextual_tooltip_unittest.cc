@@ -9,8 +9,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test_shell_delegate.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -116,6 +114,9 @@ TEST_P(ContextualTooltipTest, ShouldShowTimedDragHandleNudge) {
   clock()->Advance(contextual_tooltip::kMinInterval);
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
                                                    TooltipType::kDragHandle));
+  EXPECT_EQ(contextual_tooltip::GetNudgeTimeout(GetPrefService(),
+                                                TooltipType::kDragHandle),
+            contextual_tooltip::kNudgeShowDuration);
 }
 
 // Tests that if the user has successfully performed the gesture for at least
@@ -131,31 +132,6 @@ TEST_P(ContextualTooltipTest, ShouldNotShowNudgeAfterSuccessLimit) {
 
   EXPECT_FALSE(contextual_tooltip::ShouldShowNudge(GetPrefService(),
                                                    TooltipType::kDragHandle));
-}
-
-// Contextual nudge logic specific to back gesture.
-TEST_P(ContextualTooltipTest, BackGestureContextualNudge) {
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-
-  // Only show back gesture nudge in tablet mode.
-  wm::ActivateWindow(window1.get());
-  EXPECT_EQ(contextual_tooltip::GetShownCount(GetPrefService(),
-                                              TooltipType::kBackGesture),
-            0);
-  TabletModeControllerTestApi().EnterTabletMode();
-  wm::ActivateWindow(window2.get());
-  EXPECT_EQ(contextual_tooltip::GetShownCount(GetPrefService(),
-                                              TooltipType::kBackGesture),
-            1);
-
-  // We can only show back gesture nudge ui on windows that can perform "go
-  // back" operation.
-  ash_test_helper()->test_shell_delegate()->SetCanGoBack(false);
-  clock()->Advance(contextual_tooltip::kMinInterval);
-  EXPECT_EQ(contextual_tooltip::GetShownCount(GetPrefService(),
-                                              TooltipType::kBackGesture),
-            1);
 }
 
 }  // namespace contextual_tooltip

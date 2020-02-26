@@ -270,9 +270,9 @@ bool VulkanSwapChain::BeginWriteCurrentImage(VkImage* image,
 
     uint32_t next_image = 0;
     // Acquire then next image.
-    auto result =
-        vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX, vk_semaphore,
-                              VK_NULL_HANDLE, &next_image);
+    auto result = vkAcquireNextImageKHR(
+        device, swap_chain_, UINT64_MAX, vk_semaphore,
+        static_cast<VkFence>(VK_NULL_HANDLE), &next_image);
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
       vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
       DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;

@@ -26,17 +26,6 @@ namespace {
 
 AwVulkanContextProvider* g_vulkan_context_provider = nullptr;
 
-GrVkGetProc MakeUnifiedGetter(const PFN_vkGetInstanceProcAddr& iproc,
-                              const PFN_vkGetDeviceProcAddr& dproc) {
-  return [&iproc, &dproc](const char* proc_name, VkInstance instance,
-                          VkDevice device) {
-    if (device != VK_NULL_HANDLE) {
-      return dproc(device, proc_name);
-    }
-    return iproc(instance, proc_name);
-  };
-}
-
 bool InitVulkanForWebView(VkInstance instance,
                           VkPhysicalDevice physical_device,
                           VkDevice device,
@@ -48,11 +37,11 @@ bool InitVulkanForWebView(VkInstance instance,
 
   // If we are re-initing, we don't need to re-load the shared library or
   // re-bind unassociated pointers. These shouldn't change.
-  if (!vulkan_function_pointers->vulkan_loader_library_) {
+  if (!vulkan_function_pointers->vulkan_loader_library()) {
     base::NativeLibraryLoadError native_library_load_error;
-    vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
-        base::FilePath("libvulkan.so"), &native_library_load_error);
-    if (!vulkan_function_pointers->vulkan_loader_library_)
+    vulkan_function_pointers->set_vulkan_loader_library(base::LoadNativeLibrary(
+        base::FilePath("libvulkan.so"), &native_library_load_error));
+    if (!vulkan_function_pointers->vulkan_loader_library())
       return false;
     if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
       return false;
@@ -162,8 +151,11 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
       params->graphics_queue_index, std::move(device_extensions));
 
   // Create our Skia GrContext.
-  GrVkGetProc get_proc =
-      MakeUnifiedGetter(vkGetInstanceProcAddr, vkGetDeviceProcAddr);
+  GrVkGetProc get_proc = [](const char* proc_name, VkInstance instance,
+                            VkDevice device) {
+    return device ? vkGetDeviceProcAddr(device, proc_name)
+                  : vkGetInstanceProcAddr(instance, proc_name);
+  };
   GrVkExtensions vk_extensions;
   vk_extensions.init(get_proc, params->instance, params->physical_device,
                      params->enabled_instance_extension_names_length,

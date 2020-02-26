@@ -285,7 +285,7 @@ void ServiceWorkerRegistrationObjectHost::EnableNavigationPreload(
     return;
   }
 
-  context_->storage()->UpdateNavigationPreloadEnabled(
+  context_->registry()->UpdateNavigationPreloadEnabled(
       registration_->id(), registration_->scope().GetOrigin(), enable,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerRegistrationObjectHost::
@@ -335,7 +335,7 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
     return;
   }
 
-  context_->storage()->UpdateNavigationPreloadHeader(
+  context_->registry()->UpdateNavigationPreloadHeader(
       registration_->id(), registration_->scope().GetOrigin(), value,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerRegistrationObjectHost::

@@ -439,6 +439,10 @@ class Component {
   int diff_error_code_ = 0;
   int diff_extra_code1_ = 0;
 
+  // Contains app-specific custom response attributes from the server, sent in
+  // the last update check.
+  std::map<std::string, std::string> custom_attrs_;
+
   // Contains the optional |run| and |arguments| values in the update response
   // manifest. This data is provided as an argument to the |Install| call.
   base::Optional<CrxInstaller::InstallParams> install_params_;

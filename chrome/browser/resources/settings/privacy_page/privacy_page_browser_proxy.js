@@ -4,17 +4,31 @@
 
 /** @fileoverview Handles interprocess communication for the privacy page. */
 
-/** @typedef {{enabled: boolean, managed: boolean}} */
-let MetricsReporting;
-
-/** @typedef {{mode: string}} */
-let SecureDnsSetting;
-
 cr.define('settings', function() {
+  /** @typedef {{enabled: boolean, managed: boolean}} */
+  let MetricsReporting;
+
+  /** @typedef {{name: string, value: string, policy: string}} */
+  let ResolverOption;
+
+  /**
+   * Contains the possible string values for the secure DNS mode. This should be
+   * kept in sync with the modes in chrome/browser/net/dns_util.h.
+   * @enum {string}
+   */
+  const SecureDnsMode = {
+    OFF: 'off',
+    AUTOMATIC: 'automatic',
+    SECURE: 'secure',
+  };
+
+  /** @typedef {{mode: settings.SecureDnsMode, templates: !Array<string>}} */
+  let SecureDnsSetting;
+
   /** @interface */
   class PrivacyPageBrowserProxy {
     // <if expr="_google_chrome and not chromeos">
-    /** @return {!Promise<!MetricsReporting>} */
+    /** @return {!Promise<!settings.MetricsReporting>} */
     getMetricsReporting() {}
 
     /** @param {boolean} enabled */
@@ -31,7 +45,10 @@ cr.define('settings', function() {
     /** @param {boolean} enabled */
     setBlockAutoplayEnabled(enabled) {}
 
-    /** @return {!Promise<!SecureDnsSetting>} */
+    /** @return {!Promise<!Array<!settings.ResolverOption>>} */
+    getSecureDnsResolverList() {}
+
+    /** @return {!Promise<!settings.SecureDnsSetting>} */
     getSecureDnsSetting() {}
   }
 
@@ -65,6 +82,11 @@ cr.define('settings', function() {
     // </if>
 
     /** @override */
+    getSecureDnsResolverList() {
+      return cr.sendWithPromise('getSecureDnsResolverList');
+    }
+
+    /** @override */
     getSecureDnsSetting() {
       return cr.sendWithPromise('getSecureDnsSetting');
     }
@@ -74,7 +96,11 @@ cr.define('settings', function() {
 
   // #cr_define_end
   return {
-    PrivacyPageBrowserProxy: PrivacyPageBrowserProxy,
-    PrivacyPageBrowserProxyImpl: PrivacyPageBrowserProxyImpl,
+    MetricsReporting,
+    PrivacyPageBrowserProxy,
+    PrivacyPageBrowserProxyImpl,
+    ResolverOption,
+    SecureDnsMode,
+    SecureDnsSetting,
   };
 });

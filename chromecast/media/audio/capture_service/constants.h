@@ -14,7 +14,7 @@ namespace capture_service {
 constexpr char kDefaultUnixDomainSocketPath[] = "/tmp/capture-service";
 constexpr int kDefaultTcpPort = 12855;
 
-enum class SampleFormat {
+enum class SampleFormat : uint8_t {
   INTERLEAVED_INT16 = 0,
   INTERLEAVED_INT32 = 1,
   INTERLEAVED_FLOAT = 2,
@@ -24,7 +24,7 @@ enum class SampleFormat {
   LAST_FORMAT = PLANAR_FLOAT,
 };
 
-enum class StreamType {
+enum class StreamType : uint8_t {
   // Raw microphone capture from ALSA or other platform interface.
   kMicRaw = 0,
   // Echo cancelled capture using software AEC.
@@ -36,6 +36,19 @@ enum class StreamType {
   kHardwareEchoCancelled,
   // Mark the last type.
   kLastType = kHardwareEchoCancelled,
+};
+
+enum class MessageType : uint8_t {
+  // Acknowledge message that has stream header but empty body. It is used by
+  // receiver notifying the stream it is observing, and sender can confirm the
+  // parameters are all correct.
+  kAck = 0,
+  // Audio message that has stream header and audio data in the message body.
+  // The audio data will match the parameters in the header.
+  kAudio,
+  // Metadata message that doesn't have stream header but a serialized proto
+  // data besides the type bits.
+  kMetadata,
 };
 
 struct StreamInfo {
@@ -51,7 +64,7 @@ struct StreamInfo {
 // it's the ALSA capture timestamp; otherwise, it may be shifted based on the
 // samples and sample rate upon raw mic input.
 struct PacketInfo {
-  bool has_audio;
+  MessageType message_type;
   StreamInfo stream_info;
   int64_t timestamp_us = 0;
 };

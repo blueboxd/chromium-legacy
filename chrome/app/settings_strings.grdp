@@ -341,6 +341,9 @@
   <message name="IDS_SETTINGS_CLEAR" desc="Label used on a menu item or button to clear an item.">
     Clear
   </message>
+  <message name="IDS_SETTINGS_CUSTOM" desc="Label for a custom option in a dropdown menu.">
+    Custom
+  </message>
   <message name="IDS_SETTINGS_DELETE" desc="Label used on a menu item or button to delete an item.">
     Delete
   </message>
@@ -937,133 +940,6 @@
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_DISCOVERY_MESSAGE" desc="The message shown next to the loading spinner shown when searching for SMB shares.">
       Looking for file shares
-    </message>
-  </if>
-
-  <!-- Kerberos tickets -->
-  <if expr="chromeos">
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SUBMENU_LABEL" desc="Label of 'Kerberos tickets' submenu in Settings page.">
-      Kerberos tickets
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE" desc="Title of 'Kerberos tickets' Settings page.">
-      Kerberos tickets
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_DESCRIPTION" desc="Description of the 'Kerberos tickets' Settings page. Shown just below the title of the page.">
-      Choose a ticket to use for authentication. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_LIST_HEADER" desc="List header for the ticket list on 'Kerberos tickets' Settings page.">
-      Tickets
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADD_ACCOUNT_LABEL" desc="Label of the 'Add a ticket' button on 'Kerberos tickets' Settings page.">
-      Add a ticket
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REFRESH_NOW_LABEL" desc="Label of the 'Refresh now' button on 'Kerberos tickets' Settings page.">
-      Refresh now
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SET_AS_ACTIVE_ACCOUNT_LABEL" desc="Label of the 'Set as ticket ticket' button on 'Kerberos tickets' Settings page.">
-      Set as active ticket
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL" desc="Label of the 'Remove from this device' button on 'Kerberos tickets' Settings page.">
-      Remove from this device
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REMOVED_TIP" desc="Tip shown when a Kerberos ticket was removed on 'Kerberos tickets' Settings page.">
-      Ticket removed
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REFRESHED_TIP" desc="Tip shown when a Kerberos ticket was refreshed on 'Kerberos tickets' Settings page.">
-      Ticket refreshed
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN" desc="Text displayed if a Kerberos ticket is in signed-in state on 'Kerberos tickets' Settings page.">
-      Valid for <ph name="TICKET_TIME_LEFT">$1<ex>7 hours 12 minutes</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT" desc="Text displayed if a Kerberos ticket is in signed-out state on 'Kerberos tickets' Settings page.">
-      Expired
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_REAUTHENTICATION_LABEL" desc="Label of the re-authentication button on 'Kerberos tickets' Settings page.">
-      Refresh
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_TICKET_ACTIVE" desc="Text displayed if a Kerberos ticket is selected to be the currently active ticket on 'Kerberos tickets' Settings page.">
-      Active
-    </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT" desc="Title of the 'Add a Kerberos ticket' dialog.">
-      Add a Kerberos ticket
-    </message>
-    <message name="IDS_SETTINGS_REFRESH_KERBEROS_ACCOUNT" desc="Title of the 'Refresh a Kerberos ticket' dialog.">
-      Refresh a Kerberos ticket
-    </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_DESCRIPTION" desc="Description of the 'Add a Kerberos ticket' dialog. Shown just below the title of the dialog.">
-      To automatically refresh a ticket, check “Remember password.” Your password will be stored on your device only.
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_USERNAME" desc="Title for the input that lets users specify their username for a Kerberos ticket.">
-      Kerberos username
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_PASSWORD" desc="Title for the input that lets users specify their password for a Kerberos ticket.">
-      Password
-    </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REMEMBER_PASSWORD" desc="Label of the checkbox to remember the password in the 'Add a Kerberos ticket' dialog.">
-      Remember password
-    </message>
-    <message name="IDS_SETTINGS_ADD_KERBEROS_ACCOUNT_REFRESH_BUTTON_LABEL" desc="Label of the action button on the 'Refresh a Kerberos tickets' dialog.">
-      Refresh
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ACCOUNTS_ADVANCED_CONFIG_LABEL" desc="Label of the button in 'Add a Kerberos ticket' dialog to get to the Advanced configuration dialog.">
-      Advanced
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_TITLE" desc="In Kerberos Advanced Configuration dialog, the title of the dialog.">
-      Configure Kerberos
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ADVANCED_CONFIG_DESC" desc="In Kerberos Advanced Configuration dialog, the description of the dialog (below the title).">
-      Edit the configuration file
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_NETWORK_PROBLEM" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user has no network connection or enters a bad realm.">
-      Network problem or bad realm
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_INVALID" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a badly formatted username.">
-      Username invalid
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_USERNAME_UNKNOWN" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a username that is not known to the Kerberos realm.">
-      Username not known to server
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_DUPLICATE_PRINCIPAL_NAME" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters a username for which there is already a ticket.">
-      A ticket with this username already exists
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_CONTACTING_SERVER" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the OS is not able to contact the server for the given realm.">
-      Contacting server for realm failed
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_INVALID" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user enters the wrong password.">
-      Password invalid
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_PASSWORD_EXPIRED" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the user's password is expired.">
-      Password expired
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_KDC_ENC_TYPE" desc="Error message displayed in the 'Add a Kerberos ticket' dialog when the KDC does not support the encryption types specified in the Kerberos configuration (KDC = Key Distribution Center, part of Kerberos infrastructure).">
-      KDC does not support encryption type
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_ERROR_GENERAL" desc="Fallback error message displayed in the 'Add a Kerberos ticket' dialog.">
-      Couldn't get Kerberos ticket. Try again, or contact your organization's device admin. (Error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NESTED_IN_GROUP" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that has a section (some text in angular braces) inside a group (some text in curly braces), e.g. 'someOption = { [someSection] }'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Section nested in group: <ph name="ERROR_LINE">$1<ex>[realms] (inside a block of curly braces '{ ... })</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_SYNTAX" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a malformed section, e.g. '[someSection'. Sections must have opening and closing angular braces. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Section syntax error: <ph name="ERROR_LINE">$1<ex>[realms</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXPECTED_OPENING_CURLY_BRACE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that is missing a curly brace somewhere. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Expected opening curly brace: <ph name="ERROR_LINE">$1<ex>ticket_lifetime = 1d (in the line after 'EXAMPLE.COM = )'</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXTRA_CURLY_BRACE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that has a closing curly brace '}' that cannot be matched with an opening curly brace '{'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Extra curly brace: <ph name="ERROR_LINE">$1<ex>} (without having a corresponding opening curly brace '{')</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_RELATION_SYNTAX_ERROR" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a malformed relation. A relation is 'key = value'. A malformed relation would be e.g. 'key : value' instead of 'key = value'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Relation syntax error: <ph name="ERROR_LINE">$1<ex>ticket_lifetime : 1d</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KEY_NOT_SUPPORTED" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a configuration option that we do not support, e.g. '[libdefaults] ccache_type = 1'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Configuration option not supported: <ph name="ERROR_LINE">$1<ex>ccache_type = 1</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NOT_SUPPORTED" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a section that we do not support, e.g. '[appdefaults]'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Section not supported: <ph name="ERROR_LINE">$1<ex>[appdefaults]</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KRB5_FAILED_TO_PARSE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that cannot be parsed by the underlying Kerberos library for unknown reasons. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
-      Failed to parse configuration
     </message>
   </if>
 
@@ -1952,7 +1828,13 @@
     Determines how to connect to websites over a secure connection
   </message>
   <message name="IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION" desc="Text of the radio button that puts secure DNS in auto-upgrade mode">
-    When possible, with your current service provider
+    With your current service provider. Secure DNS may not be available all the time.
+  </message>
+  <message name="IDS_SETTINGS_SECURE_DROPDOWN_MODE_DESCRIPTION" desc="Text of the radio button that allows a secure resolver to be selected from a dropdown menu">
+    With
+  </message>
+  <message name="IDS_SETTINGS_SECURE_DROPDOWN_MODE_PRIVACY_POLICY" desc="Text that displays a link to the privacy policy of the resolver selected from a dropdown menu">
+    See this provider's <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>privacy policy<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_CONTENT_SETTINGS" desc="Text of the button that takes a user to settings page thats allows users to modify site settings. Also the title of that settings page.">
     Content settings
@@ -3234,9 +3116,6 @@
   </message>
   <message name="IDS_SETTINGS_VERY_LARGE_FONT" desc="The very large choice in the font size dropdown menu in settings.">
     Very large
-  </message>
-  <message name="IDS_SETTINGS_CUSTOM" desc="Label for the custom font size setting.">
-    Custom
   </message>
   <message name="IDS_SETTINGS_CUSTOMIZE_FONTS" desc="Label for the customize fonts button in settings.">
     Customize fonts

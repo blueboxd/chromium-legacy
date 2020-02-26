@@ -30,9 +30,8 @@ namespace {
 // ViewEventTestPlatformPart implementation for ChromeOS (chromeos=1).
 class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
  public:
-  ViewEventTestPlatformPartChromeOS(
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private);
+  explicit ViewEventTestPlatformPartChromeOS(
+      ui::ContextFactory* context_factory);
   ~ViewEventTestPlatformPartChromeOS() override;
 
   // Overridden from ViewEventTestPlatformPart:
@@ -48,8 +47,7 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
 };
 
 ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
+    ui::ContextFactory* context_factory) {
   chromeos::DBusThreadManager::Initialize();
   chromeos::PowerManagerClient::InitializeFake();
   // ash::Shell::CreateInstance needs chromeos::PowerPolicyController
@@ -65,7 +63,6 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   ash::ShellInitParams init_params;
   init_params.delegate = std::make_unique<ash::TestShellDelegate>();
   init_params.context_factory = context_factory;
-  init_params.context_factory_private = context_factory_private;
   init_params.keyboard_ui_factory = std::make_unique<ChromeKeyboardUIFactory>();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
@@ -92,8 +89,6 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
 
 // static
 ViewEventTestPlatformPart* ViewEventTestPlatformPart::Create(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new ViewEventTestPlatformPartChromeOS(context_factory,
-                                               context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new ViewEventTestPlatformPartChromeOS(context_factory);
 }

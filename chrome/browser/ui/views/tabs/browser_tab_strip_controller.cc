@@ -316,6 +316,15 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
+void BrowserTabStripController::CloseAllTabsInGroup(
+    const tab_groups::TabGroupId& group) {
+  tabstrip_->UpdateHoverCard(nullptr);
+
+  std::vector<int> tabs = ListTabsInGroup(group);
+  for (int i = tabs.size() - 1; i >= 0; --i)
+    CloseTab(tabs[i], CLOSE_TAB_FROM_MOUSE);
+}
+
 void BrowserTabStripController::UngroupAllTabsInGroup(
     const tab_groups::TabGroupId& group) {
   model_->RemoveFromGroup(ListTabsInGroup(group));

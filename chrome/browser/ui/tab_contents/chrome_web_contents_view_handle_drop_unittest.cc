@@ -7,9 +7,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
@@ -60,14 +62,14 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
 
     using FakeDelegate = safe_browsing::FakeDeepScanningDialogDelegate;
     using Verdict = safe_browsing::DlpDeepScanningVerdict;
-    auto callback = base::BindRepeating(
-        [](bool scan_succeeds, const base::FilePath&) {
+    auto callback = base::BindLambdaForTesting(
+        [this, scan_succeeds](const base::FilePath&) {
+          current_requests_count_++;
           return scan_succeeds ? FakeDelegate::SuccessfulResponse()
                                : FakeDelegate::DlpResponse(
                                      Verdict::FAILURE, std::string(),
                                      Verdict::TriggeredRule::REPORT_ONLY);
-        },
-        scan_succeeds);
+        });
     auto is_encrypted_callback =
         base::BindRepeating([](const base::FilePath&) { return false; });
 
@@ -84,6 +86,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
   void RunTest(const content::DropData& data,
                bool enable,
                bool scan_succeeds = false) {
+    current_requests_count_ = 0;
     EnableDeepScanning(enable, scan_succeeds);
 
     content::WebContentsViewDelegate::DropCompletionResult result =
@@ -106,7 +109,10 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
       RunUntilDone();
 
     EXPECT_TRUE(called);
+    ASSERT_EQ(expected_requests_count_, current_requests_count_);
   }
+
+  void SetExpectedRequestsCount(int count) { expected_requests_count_ = count; }
 
  private:
   void SetScanPolicies(safe_browsing::CheckContentComplianceValues state) {
@@ -123,12 +129,16 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
   TestingProfile* profile_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<content::WebContents> web_contents_;
+  int expected_requests_count_ = 0;
+  int current_requests_count_ = 0;
 };
 
 // When no drop data is specified, HandleOnPerformDrop() should indicate
 // the caller can proceed, whether scanning is enabled or not.
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, NoData) {
   content::DropData data;
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
@@ -137,7 +147,11 @@ TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, NoData) {
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, UrlTitle) {
   content::DropData data;
   data.url_title = base::UTF8ToUTF16("title");
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
@@ -146,7 +160,11 @@ TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, UrlTitle) {
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Text) {
   content::DropData data;
   data.text = base::NullableString16(base::UTF8ToUTF16("text"), false);
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
@@ -155,7 +173,11 @@ TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Text) {
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Html) {
   content::DropData data;
   data.html = base::NullableString16(base::UTF8ToUTF16("<html></html>"), false);
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
@@ -164,19 +186,65 @@ TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Html) {
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, FileContents) {
   content::DropData data;
   data.file_contents = "file_contents";
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(1);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }
 
 // Make sure DropData::filenames is handled correctly.
 TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Files) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath path_1 = temp_dir.GetPath().AppendASCII("Foo.doc");
+  base::FilePath path_2 = temp_dir.GetPath().AppendASCII("Bar.doc");
+
+  base::File file_1(path_1, base::File::FLAG_CREATE | base::File::FLAG_READ);
+  base::File file_2(path_2, base::File::FLAG_CREATE | base::File::FLAG_READ);
+
+  ASSERT_TRUE(file_1.IsValid());
+  ASSERT_TRUE(file_2.IsValid());
+
   content::DropData data;
-  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Foo.doc")),
-                              base::FilePath(FILE_PATH_LITERAL("Foo.doc")));
-  data.filenames.emplace_back(base::FilePath(FILE_PATH_LITERAL("C:\\Bar.doc")),
-                              base::FilePath(FILE_PATH_LITERAL("Bar.doc")));
+  data.filenames.emplace_back(path_1, path_1);
+  data.filenames.emplace_back(path_2, path_2);
+
+  SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(2);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
+  RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
+}
+
+// Make sure DropData::filenames directories are handled correctly.
+TEST_F(ChromeWebContentsViewDelegateHandleOnPerformDrop, Directories) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath path_1 = temp_dir.GetPath().AppendASCII("Foo.doc");
+  base::FilePath path_2 = temp_dir.GetPath().AppendASCII("Bar.doc");
+  base::FilePath path_3 = temp_dir.GetPath().AppendASCII("Baz.doc");
+
+  base::File file_1(path_1, base::File::FLAG_CREATE | base::File::FLAG_READ);
+  base::File file_2(path_2, base::File::FLAG_CREATE | base::File::FLAG_READ);
+  base::File file_3(path_3, base::File::FLAG_CREATE | base::File::FLAG_READ);
+
+  ASSERT_TRUE(file_1.IsValid());
+  ASSERT_TRUE(file_2.IsValid());
+  ASSERT_TRUE(file_3.IsValid());
+
+  content::DropData data;
+  data.filenames.emplace_back(temp_dir.GetPath(), temp_dir.GetPath());
+
+  SetExpectedRequestsCount(0);
+  RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
+
+  SetExpectedRequestsCount(3);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/false);
   RunTest(data, /*enable=*/true, /*scan_succeeds=*/true);
 }

@@ -24,11 +24,10 @@
 
 namespace content {
 
-// Test implementation of ImageTransportFactory, ContextFactory and
-// ContextFactoryPrivate. This class tries to do very little, mostly setting up
-// HostFrameSinkManager and returning fake implementations where possible.
+// Test implementation of ImageTransportFactory and ContextFactory. This class
+// tries to do very little, mostly setting up HostFrameSinkManager and returning
+// fake implementations where possible.
 class TestImageTransportFactory : public ui::ContextFactory,
-                                  public ui::ContextFactoryPrivate,
                                   public ImageTransportFactory {
  public:
   TestImageTransportFactory();
@@ -44,15 +43,12 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void RemoveCompositor(ui::Compositor* compositor) override {}
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-
-  // ui::ContextFactoryPrivate implementation.
   viz::FrameSinkId AllocateFrameSinkId() override;
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
   ui::ContextFactory* GetContextFactory() override;
-  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
  private:
   cc::TestTaskGraphRunner task_graph_runner_;

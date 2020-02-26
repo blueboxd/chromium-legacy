@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class AwVariationsSeedFetcherTest {
+    private static final int HTTP_NOT_FOUND = 404;
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
     private static final long DOWNLOAD_DURATION = 10;
     private static final long JOB_DELAY = 2000;
@@ -110,13 +111,18 @@ public class AwVariationsSeedFetcherTest {
     // A test VariationsSeedFetcher which doesn't actually download seeds, but verifies the request
     // parameters.
     private class TestVariationsSeedFetcher extends VariationsSeedFetcher {
+        public int fetchResult;
+
         @Override
-        public SeedInfo downloadContent(@VariationsSeedFetcher.VariationsPlatform int platform,
+        public SeedFetchInfo downloadContent(@VariationsSeedFetcher.VariationsPlatform int platform,
                 String restrictMode, String milestone, String channel) {
             Assert.assertEquals(VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, platform);
             Assert.assertTrue(Integer.parseInt(milestone) > 0);
             mClock.timestamp += DOWNLOAD_DURATION;
-            return null;
+
+            SeedFetchInfo fetchInfo = new SeedFetchInfo();
+            fetchInfo.seedFetchResult = fetchResult;
+            return fetchInfo;
         }
     }
 
@@ -299,6 +305,7 @@ public class AwVariationsSeedFetcherTest {
         try {
             AwVariationsSeedFetcher.setTestClock(mClock);
             mClock.timestamp = START_TIME;
+            mDownloader.fetchResult = HTTP_NOT_FOUND;
 
             TestAwVariationsSeedFetcher fetcher = new TestAwVariationsSeedFetcher();
             fetcher.onStartJob(null);
@@ -307,6 +314,7 @@ public class AwVariationsSeedFetcherTest {
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(HTTP_NOT_FOUND, metrics.getSeedFetchResult());
             Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
             Assert.assertEquals(START_TIME, metrics.getLastJobStartTime());
             Assert.assertFalse(metrics.hasLastEnqueueTime());
@@ -326,6 +334,7 @@ public class AwVariationsSeedFetcherTest {
         try {
             AwVariationsSeedFetcher.setTestClock(mClock);
             mClock.timestamp = START_TIME;
+            mDownloader.fetchResult = HTTP_NOT_FOUND;
             AwVariationsSeedFetcher.scheduleIfNeeded();
             mScheduler.assertScheduled();
 
@@ -341,6 +350,7 @@ public class AwVariationsSeedFetcherTest {
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(HTTP_NOT_FOUND, metrics.getSeedFetchResult());
             Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
             Assert.assertEquals(START_TIME + JOB_DELAY, metrics.getLastJobStartTime());
             Assert.assertEquals(JOB_DELAY, metrics.getJobQueueTime());
@@ -364,6 +374,7 @@ public class AwVariationsSeedFetcherTest {
             VariationsServiceMetricsHelper initialMetrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
             mClock.timestamp = START_TIME;
+            mDownloader.fetchResult = HTTP_NOT_FOUND;
             initialMetrics.setLastJobStartTime(mClock.timestamp);
             mClock.timestamp += appRunDelay;
             initialMetrics.setLastEnqueueTime(mClock.timestamp);
@@ -378,6 +389,7 @@ public class AwVariationsSeedFetcherTest {
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(HTTP_NOT_FOUND, metrics.getSeedFetchResult());
             Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
             Assert.assertEquals(
                     START_TIME + appRunDelay + JOB_DELAY, metrics.getLastJobStartTime());

@@ -66,6 +66,11 @@ class ProtocolParser {
     // The updatecheck response status.
     std::string status;
 
+    // App-specific additions in the updatecheck response, including the
+    // mandatory '_' prefix (which prevents collision with formal protocol
+    // elements).
+    std::map<std::string, std::string> custom_attributes;
+
     // The list of fallback urls, for full and diff updates respectively.
     // These urls are base urls; they don't include the filename.
     std::vector<GURL> crx_urls;

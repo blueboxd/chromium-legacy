@@ -21,7 +21,6 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -221,6 +220,131 @@ apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
   }
 
   return intent_filter;
+}
+
+arc::IntentFilter CreateArcIntentFilter(
+    const std::string& package_name,
+    const apps::mojom::IntentFilterPtr& intent_filter) {
+  std::vector<std::string> schemes;
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  std::vector<arc::IntentFilter::PatternMatcher> paths;
+  for (auto& condition : intent_filter->conditions) {
+    switch (condition->condition_type) {
+      case apps::mojom::ConditionType::kScheme:
+        for (auto& condition_value : condition->condition_values) {
+          schemes.push_back(condition_value->value);
+        }
+        break;
+      case apps::mojom::ConditionType::kHost:
+        for (auto& condition_value : condition->condition_values) {
+          authorities.push_back(arc::IntentFilter::AuthorityEntry(
+              /*host=*/condition_value->value, /*port=*/0));
+        }
+        break;
+      case apps::mojom::ConditionType::kPattern:
+        for (auto& condition_value : condition->condition_values) {
+          arc::mojom::PatternType match_type;
+          switch (condition_value->match_type) {
+            case apps::mojom::PatternMatchType::kLiteral:
+              match_type = arc::mojom::PatternType::PATTERN_LITERAL;
+              break;
+            case apps::mojom::PatternMatchType::kPrefix:
+              match_type = arc::mojom::PatternType::PATTERN_PREFIX;
+              break;
+            case apps::mojom::PatternMatchType::kGlob:
+              match_type = arc::mojom::PatternType::PATTERN_SIMPLE_GLOB;
+              break;
+            case apps::mojom::PatternMatchType::kNone:
+              NOTREACHED();
+              return arc::IntentFilter();
+          }
+          paths.push_back(arc::IntentFilter::PatternMatcher(
+              condition_value->value, match_type));
+        }
+        break;
+    }
+  }
+  // TODO(crbug.com/853604): Add support for other action and category types.
+  return arc::IntentFilter(package_name, std::move(authorities),
+                           std::move(paths), std::move(schemes));
+}
+
+// Check if this intent filter only contains HTTP and HTTPS schemes.
+bool IsHttpOrHttpsIntentFilter(
+    const apps::mojom::IntentFilterPtr& intent_filter) {
+  for (const auto& condition : intent_filter->conditions) {
+    if (condition->condition_type != apps::mojom::ConditionType::kScheme) {
+      continue;
+    }
+    for (const auto& condition_value : condition->condition_values) {
+      if (condition_value->value != url::kHttpScheme &&
+          condition_value->value != url::kHttpsScheme) {
+        return false;
+      }
+    }
+    return true;
+  }
+  // If there is no scheme |condition_type| found, return false.
+  return false;
+}
+
+void AddPreferredApp(const std::string& app_id,
+                     const apps::mojom::IntentFilterPtr& intent_filter,
+                     apps::mojom::IntentPtr intent,
+                     arc::ArcServiceManager* arc_service_manager,
+                     ArcAppListPrefs* prefs) {
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        AddPreferredApp);
+  }
+  if (!instance) {
+    return;
+  }
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+
+  // If |app_info| doesn't exist, we are trying to set preferences for a
+  // non-ARC app. Set the preferred app as the ARC intent helper package.
+  const std::string& package_name =
+      app_info ? app_info->package_name
+               : arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
+
+  instance->AddPreferredApp(package_name,
+                            CreateArcIntentFilter(package_name, intent_filter),
+                            CreateArcViewIntent(std::move(intent)));
+}
+
+void ResetVerifiedLinks(
+    const apps::mojom::IntentFilterPtr& intent_filter,
+    const apps::mojom::ReplacedAppPreferencesPtr& replaced_app_preferences,
+    arc::ArcServiceManager* arc_service_manager,
+    ArcAppListPrefs* prefs) {
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        ResetVerifiedLinks);
+  }
+  if (!instance) {
+    return;
+  }
+  std::vector<std::string> package_names;
+
+  // Find the apps that needs to reset verified link domain status in ARC.
+  for (auto& entry : replaced_app_preferences->replaced_preference) {
+    auto app_info = prefs->GetApp(entry.first);
+    if (!app_info) {
+      continue;
+    }
+    for (auto& intent_filter : entry.second) {
+      if (IsHttpOrHttpsIntentFilter(intent_filter)) {
+        package_names.push_back(app_info->package_name);
+        break;
+      }
+    }
+  }
+  instance->ResetVerifiedLinks(package_names);
 }
 
 }  // namespace
@@ -464,13 +588,6 @@ void ArcApps::SetPermission(const std::string& app_id,
   }
 }
 
-void ArcApps::PromptUninstall(const std::string& app_id) {
-  if (!profile_) {
-    return;
-  }
-  arc::ShowArcAppUninstallDialog(profile_, nullptr /* controller */, app_id);
-}
-
 void ArcApps::Uninstall(const std::string& app_id,
                         bool clear_site_data,
                         bool report_abuse) {
@@ -557,79 +674,21 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
-void ArcApps::OnPreferredAppSet(const std::string& app_id,
-                                apps::mojom::IntentFilterPtr intent_filter,
-                                apps::mojom::IntentPtr intent) {
+void ArcApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {
   auto* arc_service_manager = arc::ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        AddPreferredApp);
-  }
-  if (!instance) {
-    return;
-  }
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
     return;
   }
-  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs->GetApp(app_id);
-  if (!app_info) {
-    LOG(ERROR) << "Launch App failed, could not find app with id " << app_id;
-    return;
-  }
-
-  auto arc_intent = CreateArcViewIntent(std::move(intent));
-
-  std::vector<std::string> schemes;
-  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
-  std::vector<arc::IntentFilter::PatternMatcher> paths;
-  for (auto& condition : intent_filter->conditions) {
-    switch (condition->condition_type) {
-      case apps::mojom::ConditionType::kScheme:
-        for (auto& condition_value : condition->condition_values) {
-          schemes.push_back(condition_value->value);
-        }
-        break;
-      case apps::mojom::ConditionType::kHost:
-        for (auto& condition_value : condition->condition_values) {
-          authorities.push_back(
-              arc::IntentFilter::AuthorityEntry(condition_value->value, 0));
-        }
-        break;
-      case apps::mojom::ConditionType::kPattern:
-        for (auto& condition_value : condition->condition_values) {
-          arc::mojom::PatternType match_type;
-          switch (condition_value->match_type) {
-            case apps::mojom::PatternMatchType::kLiteral:
-              match_type = arc::mojom::PatternType::PATTERN_LITERAL;
-              break;
-            case apps::mojom::PatternMatchType::kPrefix:
-              match_type = arc::mojom::PatternType::PATTERN_PREFIX;
-              break;
-            case apps::mojom::PatternMatchType::kGlob:
-              match_type = arc::mojom::PatternType::PATTERN_SIMPLE_GLOB;
-              break;
-            case apps::mojom::PatternMatchType::kNone:
-              NOTREACHED();
-              return;
-          }
-          paths.push_back(arc::IntentFilter::PatternMatcher(
-              condition_value->value, match_type));
-        }
-        break;
-    }
-  }
-  // TODO(crbug.com/853604): Add support for other action and category types.
-  arc::IntentFilter arc_intent_filter(app_info->package_name,
-                                      std::move(authorities), std::move(paths),
-                                      std::move(schemes));
-  instance->AddPreferredApp(app_info->package_name,
-                            std::move(arc_intent_filter),
-                            std::move(arc_intent));
+  AddPreferredApp(app_id, intent_filter, std::move(intent), arc_service_manager,
+                  prefs);
+  ResetVerifiedLinks(intent_filter, replaced_app_preferences,
+                     arc_service_manager, prefs);
 }
 
 void ArcApps::OnAppRegistered(const std::string& app_id,

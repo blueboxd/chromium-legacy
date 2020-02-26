@@ -3999,4 +3999,132 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   RunThreads();
 }
 
+// Tests that custom response attributes are visible to observers.
+TEST_F(UpdateClientTest, CustomAttributeNoUpdate) {
+  class DataCallbackMock {
+   public:
+    static std::vector<base::Optional<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      CrxComponent crx;
+      crx.name = "test_jebg";
+      crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
+      crx.version = base::Version("0.9");
+      crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX3;
+      std::vector<base::Optional<CrxComponent>> component = {crx};
+      return component;
+    }
+  };
+
+  class CompletionCallbackMock {
+   public:
+    static void Callback(base::OnceClosure quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
+      std::move(quit_closure).Run();
+    }
+  };
+
+  class MockUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        scoped_refptr<Configurator> config,
+        PersistedData* metadata) {
+      return std::make_unique<MockUpdateChecker>();
+    }
+
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+      EXPECT_TRUE(enabled_component_updates);
+      EXPECT_EQ(1u, ids_to_check.size());
+      const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
+      EXPECT_EQ(id, ids_to_check.front());
+      EXPECT_EQ(1u, components.count(id));
+
+      auto& component = components.at(id);
+
+      EXPECT_TRUE(component->is_foreground());
+
+      ProtocolParser::Result result;
+      result.extension_id = id;
+      result.status = "noupdate";
+      result.custom_attributes["_example"] = "example_value";
+
+      ProtocolParser::Results results;
+      results.list.push_back(result);
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
+    }
+  };
+
+  class MockCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
+      return std::make_unique<MockCrxDownloader>();
+    }
+
+    MockCrxDownloader() : CrxDownloader(nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class MockPingManager : public MockPingManagerImpl {
+   public:
+    explicit MockPingManager(scoped_refptr<Configurator> config)
+        : MockPingManagerImpl(config) {}
+
+   protected:
+    ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeRefCounted<MockPingManager>(config()),
+          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+
+  class Observer : public UpdateClient::Observer {
+   public:
+    explicit Observer(scoped_refptr<UpdateClient> update_client)
+        : update_client_(update_client) {}
+
+    void OnEvent(Events event, const std::string& id) override {
+      if (event != Events::COMPONENT_NOT_UPDATED)
+        return;
+      ++calls;
+      CrxUpdateItem item;
+      EXPECT_TRUE(update_client_->GetCrxUpdateState(
+          "jebgalgnebhfojomionfpkfelancnnkf", &item));
+      EXPECT_EQ("example_value", item.custom_updatecheck_data["_example"]);
+    }
+
+    int calls = 0;
+
+   private:
+    scoped_refptr<UpdateClient> update_client_;
+  };
+
+  Observer observer(update_client);
+  update_client->AddObserver(&observer);
+
+  const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
+  update_client->Update(
+      ids, base::BindOnce(&DataCallbackMock::Callback), true,
+      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
+
+  RunThreads();
+
+  update_client->RemoveObserver(&observer);
+
+  EXPECT_EQ(1, observer.calls);
+}
 }  // namespace update_client

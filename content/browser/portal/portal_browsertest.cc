@@ -1720,6 +1720,34 @@ IN_PROC_BROWSER_TEST_F(
   nav_observer.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  // Hijacks navigate request and calls CreateProxyAndAttachPortal instead.
+  portal_interceptor->SetNavigateCallback(base::BindRepeating(
+      [](Portal* portal, const GURL& url, blink::mojom::ReferrerPtr referrer,
+         blink::mojom::Portal::NavigateCallback callback) {
+        portal->CreateProxyAndAttachPortal();
+        std::move(callback).Run();
+      },
+      portal));
+
+  RenderProcessHostKillWaiter rph_kill_waiter(main_frame->GetProcess());
+  GURL dummy_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+  ExecuteScriptAsync(
+      main_frame,
+      JsReplace("document.querySelector('portal').src = $1", dummy_url));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, rph_kill_waiter.Wait());
+}
+
 class PortalOOPIFBrowserTest : public PortalBrowserTest {
  protected:
   PortalOOPIFBrowserTest() {}

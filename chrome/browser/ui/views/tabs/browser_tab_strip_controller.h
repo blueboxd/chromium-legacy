@@ -64,6 +64,7 @@ class BrowserTabStripController : public TabStripController,
   void AddSelectionFromAnchorTo(int model_index) override;
   bool BeforeCloseTab(int model_index, CloseTabSource source) override;
   void CloseTab(int model_index, CloseTabSource source) override;
+  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
   void AddTabToGroup(int model_index,

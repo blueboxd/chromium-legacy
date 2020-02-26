@@ -14,24 +14,19 @@
 namespace views {
 
 // static
-ViewsTestHelper* ViewsTestHelper::Create(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new ViewsTestHelperAura(context_factory, context_factory_private);
+ViewsTestHelper* ViewsTestHelper::Create(ui::ContextFactory* context_factory) {
+  return new ViewsTestHelperAura(context_factory);
 }
 
-ViewsTestHelperAura::ViewsTestHelperAura(
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private)
-    : context_factory_(context_factory),
-      context_factory_private_(context_factory_private) {
+ViewsTestHelperAura::ViewsTestHelperAura(ui::ContextFactory* context_factory)
+    : context_factory_(context_factory) {
   aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
 }
 
 ViewsTestHelperAura::~ViewsTestHelperAura() = default;
 
 void ViewsTestHelperAura::SetUp() {
-  aura_test_helper_->SetUp(context_factory_, context_factory_private_);
+  aura_test_helper_->SetUp(context_factory_);
 
   // GetContext() may return null. See comment in GetContext().
   gfx::NativeWindow root_window = GetContext();

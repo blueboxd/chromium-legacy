@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "components/prefs/pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_manager.h"
@@ -22,6 +23,14 @@ namespace {
 constexpr char kUser1Email[] = "user1@privacyscreen";
 constexpr char kUser2Email[] = "user2@privacyscreen";
 constexpr gfx::Size kDisplaySize{1024, 768};
+
+class MockObserver : public PrivacyScreenController::Observer {
+ public:
+  MockObserver() {}
+  ~MockObserver() override = default;
+
+  MOCK_METHOD(void, OnPrivacyScreenSettingChanged, (bool enabled), (override));
+};
 
 class PrivacyScreenControllerTest : public NoSessionAshTestBase {
  public:
@@ -60,6 +69,8 @@ class PrivacyScreenControllerTest : public NoSessionAshTestBase {
         std::make_unique<display::DisplayChangeObserver>(display_manager());
     test_api_ = std::make_unique<display::DisplayConfigurator::TestApi>(
         display_manager()->configurator());
+
+    controller()->AddObserver(observer());
   }
 
   struct TestSnapshotParams {
@@ -72,6 +83,7 @@ class PrivacyScreenControllerTest : public NoSessionAshTestBase {
     // DisplayChangeObserver access DeviceDataManager in its destructor, so
     // destroy it first.
     display_change_observer_ = nullptr;
+    controller()->RemoveObserver(observer());
     AshTestBase::TearDown();
   }
 
@@ -110,6 +122,8 @@ class PrivacyScreenControllerTest : public NoSessionAshTestBase {
     display_change_observer_->OnDisplayModeChanged(outputs);
   }
 
+  MockObserver* observer() { return &observer_; }
+
  private:
   std::unique_ptr<display::test::ActionLogger> logger_;
   display::test::TestNativeDisplayDelegate*
@@ -117,6 +131,7 @@ class PrivacyScreenControllerTest : public NoSessionAshTestBase {
   std::unique_ptr<display::DisplayChangeObserver> display_change_observer_;
   std::unique_ptr<display::DisplayConfigurator::TestApi> test_api_;
   std::vector<std::unique_ptr<display::DisplaySnapshot>> owned_snapshots_;
+  ::testing::NiceMock<MockObserver> observer_;
 };
 
 // Test that user prefs do not get mixed up between user changes on a device
@@ -153,9 +168,14 @@ TEST_F(PrivacyScreenControllerTest, TestOutsidePrefsUpdates) {
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
   ASSERT_TRUE(controller()->IsSupported());
 
+  EXPECT_CALL(*observer(), OnPrivacyScreenSettingChanged(true));
   EXPECT_FALSE(controller()->GetEnabled());
   user1_pref_service()->SetBoolean(prefs::kDisplayPrivacyScreenEnabled, true);
   EXPECT_TRUE(controller()->GetEnabled());
+
+  EXPECT_CALL(*observer(), OnPrivacyScreenSettingChanged(false));
+  user1_pref_service()->SetBoolean(prefs::kDisplayPrivacyScreenEnabled, false);
+  EXPECT_FALSE(controller()->GetEnabled());
 }
 
 TEST_F(PrivacyScreenControllerTest, NotSupportedOnSingleInternalDisplay) {

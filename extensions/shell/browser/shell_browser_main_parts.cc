@@ -215,8 +215,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
-  aura::Env::GetInstance()->set_context_factory_private(
-      content::GetContextFactoryPrivate());
 #endif
 
   storage_monitor::StorageMonitor::Create();

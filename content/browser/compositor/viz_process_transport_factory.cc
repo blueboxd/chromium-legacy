@@ -289,11 +289,6 @@ ui::ContextFactory* VizProcessTransportFactory::GetContextFactory() {
   return this;
 }
 
-ui::ContextFactoryPrivate*
-VizProcessTransportFactory::GetContextFactoryPrivate() {
-  return this;
-}
-
 void VizProcessTransportFactory::DisableGpuCompositing(
     ui::Compositor* guilty_compositor) {
 #if defined(OS_CHROMEOS)

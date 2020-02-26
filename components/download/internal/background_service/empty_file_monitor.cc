@@ -13,9 +13,9 @@ EmptyFileMonitor::EmptyFileMonitor() {}
 
 EmptyFileMonitor::~EmptyFileMonitor() = default;
 
-void EmptyFileMonitor::Initialize(const InitCallback& callback) {
+void EmptyFileMonitor::Initialize(InitCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindRepeating(callback, true /* success */));
+      FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
 }
 
 void EmptyFileMonitor::DeleteUnknownFiles(
@@ -24,18 +24,18 @@ void EmptyFileMonitor::DeleteUnknownFiles(
 
 void EmptyFileMonitor::CleanupFilesForCompletedEntries(
     const Model::EntryList& entries,
-    const base::RepeatingClosure& completion_callback) {
+    base::OnceClosure completion_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindRepeating(completion_callback));
+      FROM_HERE, base::BindOnce(std::move(completion_callback)));
 }
 
 void EmptyFileMonitor::DeleteFiles(
     const std::set<base::FilePath>& files_to_remove,
     stats::FileCleanupReason reason) {}
 
-void EmptyFileMonitor::HardRecover(const InitCallback& callback) {
+void EmptyFileMonitor::HardRecover(InitCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindRepeating(callback, true /* success */));
+      FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
 }
 
 }  // namespace download

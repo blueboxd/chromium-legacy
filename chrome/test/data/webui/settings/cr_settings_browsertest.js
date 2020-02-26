@@ -923,11 +923,6 @@ TEST_F(
       mocha.run();
     });
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSecureDnsTests', function() {
-  settings_privacy_page.registerPrivacyPageSecureDnsTests();
-  mocha.run();
-});
-
 TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
   settings_privacy_page.registerUMALoggingTests();
   mocha.run();
@@ -977,6 +972,33 @@ CrSettingsSafetyCheckPageTest.prototype = {
 };
 
 TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/secure_dns.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSecureDnsTest() {}
+
+CrSettingsSecureDnsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/secure_dns.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
+    'secure_dns_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSecureDnsTest', 'All', function() {
   mocha.run();
 });
 

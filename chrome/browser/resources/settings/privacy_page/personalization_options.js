@@ -98,7 +98,7 @@ Polymer({
   },
 
   /**
-   * @param {!MetricsReporting} metricsReporting
+   * @param {!settings.MetricsReporting} metricsReporting
    * @private
    */
   setMetricsReportingPref_(metricsReporting) {

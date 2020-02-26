@@ -146,15 +146,6 @@ void AppServiceImpl::SetPermission(apps::mojom::AppType app_type,
   iter->second->SetPermission(app_id, std::move(permission));
 }
 
-void AppServiceImpl::PromptUninstall(apps::mojom::AppType app_type,
-                                     const std::string& app_id) {
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
-  }
-  iter->second->PromptUninstall(app_id);
-}
-
 void AppServiceImpl::Uninstall(apps::mojom::AppType app_type,
                                const std::string& app_id,
                                bool clear_site_data,
@@ -219,7 +210,8 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
 
   DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
   DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
-  PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
+  apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences =
+      PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
@@ -228,12 +220,18 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
   if (from_publisher || !intent) {
     return;
   }
-  auto iter = publishers_.find(app_type);
-  if (iter == publishers_.end()) {
-    return;
+
+  // Sync the change to publishers. Because |replaced_app_preference| can
+  // be any app type, we should run this for all publishers. Currently
+  // only implemented in ARC publisher.
+  // TODO(crbug.com/853604): The |replaced_app_preference| can be really big,
+  // update this logic to only call the relevant publisher for each app after
+  // updating the storage structure.
+  for (const auto& iter : publishers_) {
+    iter.second->OnPreferredAppSet(app_id, std::move(intent_filter),
+                                   std::move(intent),
+                                   replaced_app_preferences->Clone());
   }
-  iter->second->OnPreferredAppSet(app_id, std::move(intent_filter),
-                                  std::move(intent));
 }
 
 void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,

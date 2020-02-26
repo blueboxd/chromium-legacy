@@ -2038,33 +2038,6 @@ SkColor TabStrip::GetPaintedGroupColor(
                                          : color_data.light_theme_color;
 }
 
-void TabStrip::SetVisualDataForGroup(
-    const tab_groups::TabGroupId& group,
-    const tab_groups::TabGroupVisualData& visual_data) {
-  controller_->SetVisualDataForGroup(group, visual_data);
-}
-
-void TabStrip::CloseAllTabsInGroup(const tab_groups::TabGroupId& group) {
-  UpdateHoverCard(nullptr);
-
-  std::vector<int> tabs = controller_->ListTabsInGroup(group);
-  for (int i = tabs.size() - 1; i >= 0; i--) {
-    controller_->CloseTab(tabs[i], CLOSE_TAB_FROM_MOUSE);
-  }
-}
-
-void TabStrip::UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) {
-  UpdateHoverCard(nullptr);
-  controller_->UngroupAllTabsInGroup(group);
-}
-
-void TabStrip::AddNewTabInGroup(const tab_groups::TabGroupId& group) {
-  controller_->AddNewTabInGroup(group);
-}
-
-const Browser* TabStrip::GetBrowser() {
-  return controller_->GetBrowser();
-}
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::AccessiblePaneView overrides:
 

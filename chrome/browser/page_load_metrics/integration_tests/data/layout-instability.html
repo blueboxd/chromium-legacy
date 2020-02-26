@@ -1,0 +1,35 @@
+<script src="/layout-instability/resources/util.js"></script>
+<script src="resources/testharness.js"></script>
+<script>
+// Tell testharness.js to not wait for 'real' tests; we only want
+// testharness.js for its assertion helpers.
+setup({'output': false});
+</script>
+
+<style>
+#shifter { position: relative; width: 300px; height: 200px; }
+</style>
+<div id="shifter"></div>
+<script>
+runtest = async () => {
+  const watcher = new ScoreWatcher;
+
+  // Wait for the initial render to complete.
+  await waitForAnimationFrames(2);
+
+  // Modify the position of the div.
+  document.querySelector("#shifter").style = "top: 160px";
+
+  // An element of size (300 x 200) has shifted by 160px.
+  const expectedScore = computeExpectedScore(300 * (200 + 160), 160);
+
+  // Observer fires after the frame is painted.
+  assert_equals(watcher.score, 0, "The shift should not have happened yet");
+  await watcher.promise;
+
+  // Verify that the Performance API returns what we'd expect.
+  assert_equals(watcher.score, expectedScore, "bad score");
+
+  return expectedScore;
+};
+</script>

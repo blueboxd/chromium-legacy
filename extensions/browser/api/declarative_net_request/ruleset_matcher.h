@@ -79,6 +79,7 @@ class RulesetMatcher {
       std::vector<RequestAction>* remove_headers_actions) const;
   bool IsExtraHeadersMatcher() const;
 
+  void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
   void OnDidFinishNavigation(content::RenderFrameHost* host);
 

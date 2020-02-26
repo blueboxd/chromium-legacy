@@ -4,6 +4,9 @@
  * found in the LICENSE file.
  */
 
+/* TODO(aee): this file should probably be turned into a module that imports
+ * 'ui/webui/resources/shared_vars_css.m.js'.
+ */
 html {
   --ntp-active-background-color: rgba(var(--google-grey-900-rgb), .16);
   --ntp-background-override-color: white;

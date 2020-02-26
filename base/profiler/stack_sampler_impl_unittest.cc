@@ -147,7 +147,7 @@ class TestModule : public ModuleCache::Module {
 void InjectModuleForContextInstructionPointer(
     const std::vector<uintptr_t>& stack,
     ModuleCache* module_cache) {
-  module_cache->InjectModuleForTesting(
+  module_cache->InjectNativeModuleForTesting(
       std::make_unique<TestModule>(stack[0], sizeof(uintptr_t)));
 }
 
@@ -263,7 +263,8 @@ TEST(StackSamplerImplTest, WalkStack_Completed) {
   RegisterContext thread_context;
   RegisterContextInstructionPointer(&thread_context) =
       GetTestInstructionPointer();
-  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+  module_cache.InjectNativeModuleForTesting(
+      std::make_unique<TestModule>(1u, 1u));
   FakeTestUnwinder native_unwinder({{UnwindResult::COMPLETED, {1u}}});
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
@@ -278,7 +279,8 @@ TEST(StackSamplerImplTest, WalkStack_Aborted) {
   RegisterContext thread_context;
   RegisterContextInstructionPointer(&thread_context) =
       GetTestInstructionPointer();
-  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+  module_cache.InjectNativeModuleForTesting(
+      std::make_unique<TestModule>(1u, 1u));
   FakeTestUnwinder native_unwinder({{UnwindResult::ABORTED, {1u}}});
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
@@ -331,7 +333,8 @@ TEST(StackSamplerImplTest, WalkStack_AuxThenNative) {
   // non-native module.
   module_cache.AddNonNativeModule(std::make_unique<TestModule>(0u, 1u, false));
   // Inject a fake native module for the second frame.
-  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(1u, 1u));
+  module_cache.InjectNativeModuleForTesting(
+      std::make_unique<TestModule>(1u, 1u));
 
   FakeTestUnwinder aux_unwinder(
       {{UnwindResult::UNRECOGNIZED_FRAME, {1u}}, false});
@@ -353,8 +356,10 @@ TEST(StackSamplerImplTest, WalkStack_NativeThenAux) {
 
   // Inject fake native modules for the instruction pointer from the context and
   // the third frame.
-  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(0u, 1u));
-  module_cache.InjectModuleForTesting(std::make_unique<TestModule>(2u, 1u));
+  module_cache.InjectNativeModuleForTesting(
+      std::make_unique<TestModule>(0u, 1u));
+  module_cache.InjectNativeModuleForTesting(
+      std::make_unique<TestModule>(2u, 1u));
   // Treat the second frame's pointer as being in the aux unwinder's non-native
   // module.
   module_cache.AddNonNativeModule(std::make_unique<TestModule>(1u, 1u, false));

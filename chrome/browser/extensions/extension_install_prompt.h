@@ -68,7 +68,9 @@ class ExtensionInstallPrompt {
     DELEGATED_PERMISSIONS_PROMPT = 10,
     // DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED = 11,
     WEBSTORE_WIDGET_PROMPT = 12,
-    NUM_PROMPT_TYPES = 13,
+    EXTENSION_REQUEST_PROMPT = 13,
+    EXTENSION_PENDING_REQUEST_PROMPT = 14,
+    NUM_PROMPT_TYPES = 15,
   };
 
   // The last prompt type to display; only used for testing.

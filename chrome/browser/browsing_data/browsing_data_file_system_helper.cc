@@ -105,7 +105,7 @@ void BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread(
 void BrowsingDataFileSystemHelper::DeleteFileSystemOriginInFileThread(
     const url::Origin& origin) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
-  filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin.GetURL());
+  filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin);
 }
 
 BrowsingDataFileSystemHelper::FileSystemInfo::FileSystemInfo(

@@ -242,6 +242,7 @@ CrxUpdateItem Component::GetCrxUpdateItem() const {
   crx_update_item.error_category = error_category_;
   crx_update_item.error_code = error_code_;
   crx_update_item.extra_code1 = extra_code1_;
+  crx_update_item.custom_updatecheck_data = custom_attrs_;
 
   return crx_update_item;
 }
@@ -253,6 +254,7 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
 
   status_ = result.status;
   action_run_ = result.action_run;
+  custom_attrs_ = result.custom_attributes;
 
   if (result.manifest.packages.empty())
     return;
@@ -306,6 +308,7 @@ void Component::SetUpdateCheckResult(
 
   error_category_ = error_category;
   error_code_ = error;
+
   if (result)
     SetParseResult(result.value());
 

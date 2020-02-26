@@ -19,6 +19,7 @@ import subprocess
 import threading
 import time
 
+import coverage_util
 import gtest_utils
 import iossim_util
 import test_apps
@@ -763,6 +764,7 @@ class SimulatorTestRunner(TestRunner):
       test_cases=None,
       wpr_tools_path='',
       xcode_path='',
+      use_clang_coverage=False,
       xctest=False,
   ):
     """Initializes a new instance of this class.
@@ -783,6 +785,7 @@ class SimulatorTestRunner(TestRunner):
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
+      use_clang_coverage: Whether code coverage is enabled in this run.
       wpr_tools_path: Path to pre-installed WPR-related tools
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
@@ -818,6 +821,7 @@ class SimulatorTestRunner(TestRunner):
     self.shards = shards
     self.wpr_tools_path = wpr_tools_path
     self.udid = iossim_util.get_simulator(self.platform, self.version)
+    self.use_clang_coverage = use_clang_coverage
 
   @staticmethod
   def kill_simulators():
@@ -864,6 +868,9 @@ class SimulatorTestRunner(TestRunner):
 
   def extract_test_data(self):
     """Extracts data emitted by the test."""
+    if self.use_clang_coverage:
+      coverage_util.move_raw_coverage_data(self.udid, self.out_dir)
+
     # Find the Documents directory of the test app. The app directory names
     # don't correspond with any known information, so we have to examine them
     # all until we find one with a matching CFBundleIdentifier.

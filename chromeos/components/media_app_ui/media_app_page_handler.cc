@@ -4,16 +4,15 @@
 
 #include "chromeos/components/media_app_ui/media_app_page_handler.h"
 
+#include <utility>
+
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/media_app_ui_delegate.h"
 
 MediaAppPageHandler::MediaAppPageHandler(
     chromeos::MediaAppUI* media_app_ui,
-    mojo::PendingRemote<media_app_ui::mojom::Page> page,
     mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver)
-    : receiver_(this, std::move(receiver)),
-      page_(std::move(page)),
-      media_app_ui_(media_app_ui) {}
+    : receiver_(this, std::move(receiver)), media_app_ui_(media_app_ui) {}
 
 MediaAppPageHandler::~MediaAppPageHandler() = default;
 

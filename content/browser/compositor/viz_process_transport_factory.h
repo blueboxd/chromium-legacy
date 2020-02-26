@@ -47,7 +47,6 @@ namespace content {
 // Interface implementations to interact with the display compositor in the viz
 // process.
 class VizProcessTransportFactory : public ui::ContextFactory,
-                                   public ui::ContextFactoryPrivate,
                                    public ImageTransportFactory {
  public:
   VizProcessTransportFactory(
@@ -70,15 +69,12 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   void RemoveCompositor(ui::Compositor* compositor) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-
-  // ui::ContextFactoryPrivate implementation.
   viz::FrameSinkId AllocateFrameSinkId() override;
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
   ui::ContextFactory* GetContextFactory() override;
-  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
  private:
   struct CompositorData {

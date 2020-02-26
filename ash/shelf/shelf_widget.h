@@ -159,6 +159,12 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Gets the view used to display the drag handle on the in-app shelf.
   views::View* GetDragHandle();
 
+  // Starts the animation to show the drag handle nudge.
+  void ShowDragHandleNudge();
+
+  // Starts the animation to hide the drag handle nudge.
+  void HideDragHandleNudge();
+
   // Sets opacity of login shelf buttons to be consistent with shelf icons.
   void SetLoginShelfButtonOpacity(float target_opacity);
 

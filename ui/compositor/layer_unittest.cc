@@ -129,8 +129,7 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factories_->GetContextFactory(),
-        context_factories_->GetContextFactoryPrivate()));
+        host_bounds, context_factories_->GetContextFactory()));
     compositor_host_->Show();
   }
 
@@ -308,9 +307,9 @@ class TestLayerDelegate : public LayerDelegate {
 // LayerDelegate that verifies that a layer was asked to update its canvas.
 class DrawTreeLayerDelegate : public LayerDelegate {
  public:
-  DrawTreeLayerDelegate(const gfx::Rect& layer_bounds)
+  explicit DrawTreeLayerDelegate(const gfx::Rect& layer_bounds)
       : painted_(false), layer_bounds_(layer_bounds) {}
-  ~DrawTreeLayerDelegate() override {}
+  ~DrawTreeLayerDelegate() override = default;
 
   void Reset() {
     painted_ = false;
@@ -492,8 +491,7 @@ class LayerWithDelegateTest : public testing::Test {
 
     const gfx::Rect host_bounds(1000, 1000);
     compositor_host_.reset(TestCompositorHost::Create(
-        host_bounds, context_factories_->GetContextFactory(),
-        context_factories_->GetContextFactoryPrivate()));
+        host_bounds, context_factories_->GetContextFactory()));
     compositor_host_->Show();
   }
 

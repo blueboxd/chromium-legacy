@@ -28,8 +28,7 @@ void ShellTestHelperAura::SetUp() {
 
   // AuraTestHelper sets up the rest of the Aura initialization.
   helper_ = std::make_unique<aura::test::AuraTestHelper>();
-  helper_->SetUp(context_factories_->GetContextFactory(),
-                 context_factories_->GetContextFactoryPrivate());
+  helper_->SetUp(context_factories_->GetContextFactory());
 }
 
 void ShellTestHelperAura::TearDown() {

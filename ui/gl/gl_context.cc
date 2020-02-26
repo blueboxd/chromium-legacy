@@ -54,6 +54,16 @@ void GLContext::ScopedReleaseCurrent::Cancel() {
   canceled_ = true;
 }
 
+GLContextAttribs::GLContextAttribs() = default;
+GLContextAttribs::GLContextAttribs(const GLContextAttribs& other) = default;
+GLContextAttribs::GLContextAttribs(GLContextAttribs&& other) = default;
+GLContextAttribs::~GLContextAttribs() = default;
+
+GLContextAttribs& GLContextAttribs::operator=(const GLContextAttribs& other) =
+    default;
+GLContextAttribs& GLContextAttribs::operator=(GLContextAttribs&& other) =
+    default;
+
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
     share_group_ = new gl::GLShareGroup();

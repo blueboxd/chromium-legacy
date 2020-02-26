@@ -2393,24 +2393,6 @@
             ]
         }
     ],
-    "GoogleBrandedContextMenu": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GoogleBrandedContextMenu"
-                    ]
-                }
-            ]
-        }
-    ],
     "GpuUseDisplayThreadPriority": [
         {
             "platforms": [
@@ -6504,23 +6486,6 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebUITabStrip": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebUITabStrip"
                     ]
                 }
             ]

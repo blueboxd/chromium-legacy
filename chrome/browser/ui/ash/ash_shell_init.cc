@@ -23,8 +23,6 @@ void CreateShell() {
   ash::ShellInitParams shell_init_params;
   shell_init_params.delegate = std::make_unique<ChromeShellDelegate>();
   shell_init_params.context_factory = content::GetContextFactory();
-  shell_init_params.context_factory_private =
-      content::GetContextFactoryPrivate();
   shell_init_params.local_state = g_browser_process->local_state();
   shell_init_params.keyboard_ui_factory =
       std::make_unique<ChromeKeyboardUIFactory>();

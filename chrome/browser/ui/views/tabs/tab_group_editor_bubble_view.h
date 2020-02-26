@@ -12,7 +12,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
-class TabController;
+class TabStripController;
 
 namespace gfx {
 class Size;
@@ -37,7 +37,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // Shows the editor for |group|. Returns an *unowned* pointer to the
   // bubble's widget.
   static views::Widget* Show(TabGroupHeader* anchor_view,
-                             TabController* tab_controller,
+                             TabStripController* tab_strip_controller,
                              const tab_groups::TabGroupId& group);
 
   // views::BubbleDialogDelegateView:
@@ -47,7 +47,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
  private:
   TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
-                           TabController* tab_controller,
+                           TabStripController* tab_strip_controller,
                            const tab_groups::TabGroupId& group);
   ~TabGroupEditorBubbleView() override;
 
@@ -57,7 +57,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   void OnBubbleClose();
 
-  TabController* const tab_controller_;
+  TabStripController* const tab_strip_controller_;
   const tab_groups::TabGroupId group_;
 
   class TitleFieldController : public views::TextfieldController {
@@ -80,7 +80,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   class ButtonListener : public views::ButtonListener {
    public:
-    explicit ButtonListener(TabController* tab_controller,
+    explicit ButtonListener(TabStripController* tab_strip_controller,
                             TabGroupHeader* anchor_view,
                             tab_groups::TabGroupId group);
 
@@ -88,7 +88,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
    private:
-    TabController* const tab_controller_;
+    TabStripController* const tab_strip_controller_;
     TabGroupHeader* anchor_view_;
     const tab_groups::TabGroupId group_;
   };

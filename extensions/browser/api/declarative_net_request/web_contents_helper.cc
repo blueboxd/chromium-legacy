@@ -35,6 +35,12 @@ WebContentsHelper::WebContentsHelper(content::WebContents* web_contents)
 
 WebContentsHelper::~WebContentsHelper() = default;
 
+void WebContentsHelper::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(ruleset_manager_);
+  ruleset_manager_->OnRenderFrameCreated(render_frame_host);
+}
+
 void WebContentsHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(ruleset_manager_);

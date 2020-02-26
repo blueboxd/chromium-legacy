@@ -16,12 +16,11 @@ class MediaAppUI;
 }
 
 // Implements the media_app mojom interface providing chrome://media-app
-// with CPP functions to call from JS.
+// with browser process functions to call from the renderer process.
 class MediaAppPageHandler : public media_app_ui::mojom::PageHandler {
  public:
   MediaAppPageHandler(
       chromeos::MediaAppUI* media_app_ui,
-      mojo::PendingRemote<media_app_ui::mojom::Page> page,
       mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver);
   ~MediaAppPageHandler() override;
 
@@ -33,7 +32,6 @@ class MediaAppPageHandler : public media_app_ui::mojom::PageHandler {
 
  private:
   mojo::Receiver<media_app_ui::mojom::PageHandler> receiver_;
-  mojo::Remote<media_app_ui::mojom::Page> page_;
   chromeos::MediaAppUI* media_app_ui_;  // Owns |this|.
 };
 

@@ -2838,12 +2838,6 @@ const char kWebUIA11yEnhancementsDescription[] =
     "from behind this feature flag. This flag will remain disabled and ready "
     "to be used for other enhancements.";
 
-const char kGoogleBrandedContextMenuName[] =
-    "Google branding in the context menu";
-const char kGoogleBrandedContextMenuDescription[] =
-    "Shows a Google icon next to context menu items powered by Google "
-    "services.";
-
 const char kSyncSetupFriendlySettingsName[] = "Sync setup friendly settings";
 const char kSyncSetupFriendlySettingsDescription[] =
     "Enable the new sync setup friendly settings";

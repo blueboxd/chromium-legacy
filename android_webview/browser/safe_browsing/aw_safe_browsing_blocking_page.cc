@@ -185,9 +185,11 @@ void AwSafeBrowsingBlockingPage::OnInterstitialClosing() {
     // With committed interstitials, the navigation to the site is failed before
     // showing the interstitial so we omit notifications to embedders at that
     // time, and manually trigger them here.
-    client->OnReceivedError(*resource_request_,
-                            safe_browsing::GetNetErrorCodeForSafeBrowsing(),
-                            true, false);
+    if (client) {
+      client->OnReceivedError(*resource_request_,
+                              safe_browsing::GetNetErrorCodeForSafeBrowsing(),
+                              true, false);
+    }
   }
   safe_browsing::BaseBlockingPage::OnInterstitialClosing();
 }

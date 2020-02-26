@@ -57,7 +57,6 @@ class KeyboardUIFactory;
 
 namespace ui {
 class ContextFactory;
-class ContextFactoryPrivate;
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 }  // namespace ui
@@ -583,7 +582,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ~Shell() override;
 
   void Init(ui::ContextFactory* context_factory,
-            ui::ContextFactoryPrivate* context_factory_private,
             PrefService* local_state,
             std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
             scoped_refptr<dbus::Bus> dbus_bus);

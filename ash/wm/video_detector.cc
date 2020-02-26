@@ -120,7 +120,7 @@ void VideoDetector::EstablishConnectionToViz() {
   receiver_.set_disconnect_handler(base::BindOnce(
       &VideoDetector::OnConnectionError, base::Unretained(this)));
   aura::Env::GetInstance()
-      ->context_factory_private()
+      ->context_factory()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(observer));
 }

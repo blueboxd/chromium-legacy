@@ -1702,8 +1702,13 @@ Output = class {
   }
 
   /**
-   * Renders the given range using optional context previous range and event
-   * type.
+   * Renders all hints for the given |range|.
+   *
+   * Add new hints to either method computeHints_ or computeDelayedHints_. Hints
+   * are outputted in order, so consider the relative priority of any new
+   * additions. Rendering processes these two methods in order. The only
+   * distinction is a small delay gets introduced before the first hint in
+   * |computeDelayedHints_|.
    * @param {!cursors.Range} range
    * @param {!Array<AutomationNode>} uniqueAncestors
    * @param {EventType|Output.EventType} type
@@ -1727,185 +1732,150 @@ Output = class {
     }
 
     const node = range.start.node;
-
-    if (!node) {
-      this.append_(buff, Msgs.getMsg('warning_no_current_range'));
-      ruleStr.write('hint_: ' + Msgs.getMsg('warning_no_current_range') + '\n');
-      return;
-    }
-
-    // Add hints by priority.
     if (node.restriction == chrome.automation.Restriction.DISABLED) {
-      // No hints here without further context such as form validation.
       return;
     }
 
-    // Undelayed hints.
-    if (node.errorMessage) {
-      this.format_({
-        node,
-        outputFormat: '$node(errorMessage)',
-        outputBuffer: buff,
-        outputRuleString: ruleStr
-      });
+    const msgs = Output.computeHints_(node);
+    const delayedMsgs =
+        Output.computeDelayedHints_(node, uniqueAncestors, type);
+    if (delayedMsgs.length > 0) {
+      delayedMsgs[0].props = new Output.SpeechProperties();
+      delayedMsgs[0].props.properties['delay'] = true;
     }
 
-    // Hints should be delayed.
-    const hintProperties = new Output.SpeechProperties();
-    hintProperties.properties['delay'] = true;
-
-    ruleStr.write('hint_: ');
-    if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
-      if (node.state[StateType.EDITABLE]) {
+    const allMsgs = msgs.concat(delayedMsgs);
+    for (const msg of allMsgs) {
+      if (msg.msgId) {
+        const text = Msgs.getMsg(msg.msgId);
+        this.append_(buff, text, {annotation: [msg.props]});
+        ruleStr.write('hint_: ' + text + '\n');
+      } else if (msg.text) {
+        this.append_(buff, msg.text, {annotation: [msg.props]});
+        ruleStr.write('hint_: ' + msg.text + '\n');
+      } else if (msg.outputFormat) {
+        ruleStr.write('hint_: ...');
         this.format_({
           node,
-          outputFormat: node.state[StateType.FOCUSED] ?
-              '@hint_is_editing' :
-              '@hint_double_tap_to_edit',
+          outputFormat: msg.outputFormat,
           outputBuffer: buff,
           outputRuleString: ruleStr,
-          opt_speechProps: hintProperties
+          opt_speechProps: msg.props
         });
-        return;
+      } else {
+        throw new Error('Unexpected hint: ' + msg);
+      }
+    }
+  }
+
+  /**
+   * Internal helper to |hint_|. Returns a list of message hints.
+   * @param {!AutomationNode} node
+   * @return {!Array<{text: (string|undefined),
+   *           msgId: (string|undefined),
+   *           outputFormat: (string|undefined)}>} Note that the above caller
+   * expects one and only one key be set.
+   * @private
+   */
+  static computeHints_(node) {
+    const ret = [];
+    if (node.errorMessage) {
+      ret.push({outputFormat: '$node(errorMessage)'});
+    }
+    return ret;
+  }
+
+  /**
+   * Internal helper to |hint_|. Returns a list of message hints.
+   * @param {!AutomationNode} node
+   * @param {!Array<AutomationNode>} uniqueAncestors
+   * @param {EventType|Output.EventType} type
+   * @return {!Array<{text: (string|undefined),
+   *           msgId: (string|undefined),
+   *           outputFormat: (string|undefined)}>} Note that the above caller
+   * expects one and only one key be set.
+   * @private
+   */
+  static computeDelayedHints_(node, uniqueAncestors, type) {
+    const ret = [];
+    if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
+      if (node.state[StateType.EDITABLE]) {
+        ret.push({
+          msgId: node.state[StateType.FOCUSED] ? 'hint_is_editing' :
+                                                 'hint_double_tap_to_edit'
+        });
+        return ret;
       }
 
       const isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           (n) => n.role == RoleType.KEYBOARD);
       if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard) {
-        this.format_({
-          node,
-          outputFormat: '@hint_double_tap',
-          outputBuffer: buff,
-          outputRuleString: ruleStr,
-          opt_speechProps: hintProperties
-        });
+        ret.push({msgId: 'hint_double_tap'});
       }
 
       const enteredVirtualKeyboard =
           uniqueAncestors.find((n) => n.role == RoleType.KEYBOARD);
       if (enteredVirtualKeyboard) {
-        this.format_({
-          node,
-          outputFormat: '@hint_touch_type',
-          outputBuffer: buff,
-          outputRuleString: ruleStr,
-          opt_speechProps: hintProperties
-        });
+        ret.push({msgId: 'hint_touch_type'});
       }
-
-      return;
+      return ret;
     }
 
     if (node.state[StateType.EDITABLE] && ChromeVox.isStickyPrefOn) {
-      this.format_({
-        node,
-        outputFormat: '@sticky_mode_enabled',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'sticky_mode_enabled'});
     }
 
     if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
-        !this.formatOptions_.braille) {
-      if (node.state[StateType.MULTILINE] ||
-          node.state[StateType.RICHLY_EDITABLE]) {
-        this.format_({
-          node,
-          outputFormat: '@hint_search_within_text_field',
-          outputBuffer: buff,
-          outputRuleString: ruleStr,
-          opt_speechProps: hintProperties
-        });
-      }
+        (node.state[StateType.MULTILINE] ||
+         node.state[StateType.RICHLY_EDITABLE])) {
+      ret.push({msgId: 'hint_search_within_text_field'});
     }
 
     if (node.placeholder) {
-      this.append_(buff, node.placeholder);
+      ret.push({text: node.placeholder});
     }
 
     // Only include tooltip as a hint as a last alternative. It may have been
     // included as the name or description previously. As a rule of thumb,
     // only include it if there's no name and no description.
     if (node.tooltip && !node.name && !node.description) {
-      this.append_(buff, node.tooltip);
+      ret.push({text: node.tooltip});
     }
 
     if (AutomationPredicate.checkable(node)) {
-      this.format_({
-        node,
-        outputFormat: '@hint_checkable',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_checkable'});
     } else if (AutomationPredicate.clickable(node)) {
-      this.format_({
-        node,
-        outputFormat: '@hint_clickable',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_clickable'});
     }
 
     if (node.autoComplete == 'list' || node.autoComplete == 'both' ||
         node.state[StateType.AUTOFILL_AVAILABLE]) {
-      this.format_({
-        node,
-        outputFormat: '@hint_autocomplete_list',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_autocomplete_list'});
     }
     if (node.autoComplete == 'inline' || node.autoComplete == 'both') {
-      this.format_({
-        node,
-        outputFormat: '@hint_autocomplete_inline',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_autocomplete_inline'});
     }
     if (node.accessKey) {
-      this.append_(buff, Msgs.getMsg('access_key', [node.accessKey]));
-      ruleStr.write(Msgs.getMsg('access_key', [node.accessKey]));
+      ret.push({text: Msgs.getMsg('access_key', [node.accessKey])});
     }
 
     // Ancestry based hints.
     if (uniqueAncestors.find(
             /** @type {function(?) : boolean} */ (AutomationPredicate.table))) {
-      this.format_({
-        node,
-        outputFormat: '@hint_table',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_table'});
     }
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
             AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))) {
-      this.format_({
-        node,
-        outputFormat: '@hint_menu',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_menu'});
     }
     if (uniqueAncestors.find(
             /** @type {function(?) : boolean} */ (function(n) {
               return !!n.details;
             }))) {
-      this.format_({
-        node,
-        outputFormat: '@hint_details',
-        outputBuffer: buff,
-        outputRuleString: ruleStr,
-        opt_speechProps: hintProperties
-      });
+      ret.push({msgId: 'hint_details'});
     }
+
+    return ret;
   }
 
   /**

@@ -256,14 +256,11 @@ void AshTestHelper::TearDown() {
 
   context_factories_.reset();
 
-  // Context factory (and context factory private) referenced by Env are now
-  // destroyed. Reset Env's members in case some other test tries to use it.
-  // This matters if someone else created Env (such as the test suite) and is
-  // long lived.
-  if (aura::Env::HasInstance()) {
+  // Context factory referenced by Env is now destroyed. Reset Env's members in
+  // case some other test tries to use it. This matters if someone else created
+  // Env (such as the test suite) and is long lived.
+  if (aura::Env::HasInstance())
     aura::Env::GetInstance()->set_context_factory(nullptr);
-    aura::Env::GetInstance()->set_context_factory_private(nullptr);
-  }
 
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
@@ -310,8 +307,6 @@ void AshTestHelper::CreateShell(base::Optional<ShellInitParams> init_params,
     init_params.emplace(ShellInitParams());
     init_params->delegate.reset(test_shell_delegate_);
     init_params->context_factory = context_factories_->GetContextFactory();
-    init_params->context_factory_private =
-        context_factories_->GetContextFactoryPrivate();
     init_params->keyboard_ui_factory =
         std::make_unique<TestKeyboardUIFactory>();
   }

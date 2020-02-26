@@ -84,6 +84,7 @@ class RulesetManager {
   bool HasExtraHeadersMatcherForRequest(const WebRequestInfo& request,
                                         bool is_incognito_context) const;
 
+  void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
   void OnDidFinishNavigation(content::RenderFrameHost* host);
 

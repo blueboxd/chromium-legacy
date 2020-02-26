@@ -452,6 +452,21 @@ void HandleMediaNextTrack() {
   Shell::Get()->media_controller()->HandleMediaNextTrack();
 }
 
+void HandleMediaFastForward() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Fast_Forward"));
+  Shell::Get()->media_controller()->HandleMediaSeekForward();
+}
+
+void HandleMediaPause() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Pause"));
+  Shell::Get()->media_controller()->HandleMediaPause();
+}
+
+void HandleMediaPlay() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Play"));
+  Shell::Get()->media_controller()->HandleMediaPlay();
+}
+
 void HandleMediaPlayPause() {
   base::RecordAction(UserMetricsAction("Accel_Media_PlayPause"));
   Shell::Get()->media_controller()->HandleMediaPlayPause();
@@ -460,6 +475,15 @@ void HandleMediaPlayPause() {
 void HandleMediaPrevTrack() {
   base::RecordAction(UserMetricsAction("Accel_Media_Prev_Track"));
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
+}
+void HandleMediaRewind() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Rewind"));
+  Shell::Get()->media_controller()->HandleMediaSeekBackward();
+}
+
+void HandleMediaStop() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Stop"));
+  Shell::Get()->media_controller()->HandleMediaStop();
 }
 
 void HandleToggleMirrorMode() {
@@ -1876,9 +1900,14 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case LAUNCH_LAST_APP:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
+    case MEDIA_FAST_FORWARD:
     case MEDIA_NEXT_TRACK:
+    case MEDIA_PAUSE:
+    case MEDIA_PLAY:
     case MEDIA_PLAY_PAUSE:
     case MEDIA_PREV_TRACK:
+    case MEDIA_REWIND:
+    case MEDIA_STOP:
     case NEW_TAB:
     case NEW_WINDOW:
     case OPEN_CROSH:
@@ -2066,14 +2095,29 @@ void AcceleratorControllerImpl::PerformAction(
     case MAGNIFIER_ZOOM_OUT:
       HandleActiveMagnifierZoom(-1);
       break;
+    case MEDIA_FAST_FORWARD:
+      HandleMediaFastForward();
+      break;
     case MEDIA_NEXT_TRACK:
       HandleMediaNextTrack();
+      break;
+    case MEDIA_PAUSE:
+      HandleMediaPause();
+      break;
+    case MEDIA_PLAY:
+      HandleMediaPlay();
       break;
     case MEDIA_PLAY_PAUSE:
       HandleMediaPlayPause();
       break;
     case MEDIA_PREV_TRACK:
       HandleMediaPrevTrack();
+      break;
+    case MEDIA_REWIND:
+      HandleMediaRewind();
+      break;
+    case MEDIA_STOP:
+      HandleMediaStop();
       break;
     case MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS:
       display_move_window_util::HandleMoveActiveWindowBetweenDisplays();

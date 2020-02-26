@@ -193,11 +193,6 @@ fun:*XImageDeleter*
 src:*mojo/public/c/system/thunks.cc
 
 # Call to vulkan function pointers from shared library.
-src:*/gpu/vulkan/*
-src:*components/viz/common/gpu/vulkan_in_process_context_provider.cc
-src:*gpu/command_buffer/service/skia_utils.cc
-src:*gpu/command_buffer/service/external_vk_*
-src:*components/viz/service/display_embedder/skia_output_device_vulkan.cc
 src:*/third_party/skia/src/gpu/vk/*
 src:*/third_party/skia/third_party/vulkanmemoryallocator/*
 

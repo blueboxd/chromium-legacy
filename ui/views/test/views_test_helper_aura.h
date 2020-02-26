@@ -23,8 +23,7 @@ namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
-  ViewsTestHelperAura(ui::ContextFactory* context_factory,
-                      ui::ContextFactoryPrivate* context_factory_private);
+  explicit ViewsTestHelperAura(ui::ContextFactory* context_factory);
   ~ViewsTestHelperAura() override;
 
   // Overridden from ViewsTestHelper:
@@ -34,7 +33,6 @@ class ViewsTestHelperAura : public ViewsTestHelper {
 
  private:
   ui::ContextFactory* context_factory_;
-  ui::ContextFactoryPrivate* context_factory_private_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 

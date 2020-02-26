@@ -10,7 +10,6 @@
 
 namespace ui {
 class ContextFactory;
-class ContextFactoryPrivate;
 }  // namespace ui
 
 namespace views {
@@ -23,9 +22,7 @@ class ViewsTestHelper {
   virtual ~ViewsTestHelper();
 
   // Create a platform specific instance.
-  static ViewsTestHelper* Create(
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private);
+  static ViewsTestHelper* Create(ui::ContextFactory* context_factory);
 
   // Creates objects that are needed for tests.
   virtual void SetUp();

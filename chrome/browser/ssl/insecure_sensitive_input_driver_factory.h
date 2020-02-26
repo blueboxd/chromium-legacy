@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-forward.h"
 
 namespace content {
 class WebContents;

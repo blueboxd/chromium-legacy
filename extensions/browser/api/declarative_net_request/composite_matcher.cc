@@ -160,6 +160,11 @@ bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {
   return has_any_extra_headers_matcher_.value();
 }
 
+void CompositeMatcher::OnRenderFrameCreated(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnRenderFrameCreated(host);
+}
+
 void CompositeMatcher::OnRenderFrameDeleted(content::RenderFrameHost* host) {
   for (auto& matcher : matchers_)
     matcher->OnRenderFrameDeleted(host);

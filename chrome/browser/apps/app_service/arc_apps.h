@@ -87,7 +87,6 @@ class ArcApps : public KeyedService,
                            int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
-  void PromptUninstall(const std::string& app_id) override;
   void Uninstall(const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
@@ -98,9 +97,11 @@ class ArcApps : public KeyedService,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
   void OpenNativeSettings(const std::string& app_id) override;
-  void OnPreferredAppSet(const std::string& app_id,
-                         apps::mojom::IntentFilterPtr intent_filter,
-                         apps::mojom::IntentPtr intent) override;
+  void OnPreferredAppSet(
+      const std::string& app_id,
+      apps::mojom::IntentFilterPtr intent_filter,
+      apps::mojom::IntentPtr intent,
+      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
 
   // ArcAppListPrefs::Observer overrides.
   void OnAppRegistered(const std::string& app_id,

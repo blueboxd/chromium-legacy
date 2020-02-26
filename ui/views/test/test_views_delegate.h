@@ -35,11 +35,6 @@ class TestViewsDelegate : public ViewsDelegate {
     context_factory_ = context_factory;
   }
 
-  void set_context_factory_private(
-      ui::ContextFactoryPrivate* context_factory_private) {
-    context_factory_private_ = context_factory_private;
-  }
-
   // For convenience, we create a layout provider by default, but embedders
   // that use their own layout provider subclasses may need to set those classes
   // as the layout providers for their tests.
@@ -54,11 +49,9 @@ class TestViewsDelegate : public ViewsDelegate {
   void OnBeforeWidgetInit(Widget::InitParams* params,
                           internal::NativeWidgetDelegate* delegate) override;
   ui::ContextFactory* GetContextFactory() override;
-  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
  private:
   ui::ContextFactory* context_factory_ = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private_ = nullptr;
   bool use_desktop_native_widgets_ = false;
   bool use_transparent_windows_ = false;
   std::unique_ptr<LayoutProvider> layout_provider_ =

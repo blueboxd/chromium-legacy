@@ -174,7 +174,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
               .InitWithNewPipeAndPassReceiver(),
           std::make_unique<base::RepeatingTimer>());
   aura::Env::GetInstance()
-      ->context_factory_private()
+      ->context_factory()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(
           std::move(video_observer_screen_brightness_logger));

@@ -38,8 +38,6 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   std::unique_ptr<views::TestViewsDelegate> test_views_delegate(
       new views::DesktopTestViewsDelegate);
   test_views_delegate->set_context_factory(content::GetContextFactory());
-  test_views_delegate->set_context_factory_private(
-      content::GetContextFactoryPrivate());
   views_delegate_ = std::move(test_views_delegate);
   run_loop_ = std::make_unique<base::RunLoop>();
   views_content_client()->set_quit_closure(run_loop_->QuitClosure());

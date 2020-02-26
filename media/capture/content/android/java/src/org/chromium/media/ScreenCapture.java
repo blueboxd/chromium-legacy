@@ -25,7 +25,6 @@ import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
-import android.view.WindowManager;
 
 import androidx.annotation.IntDef;
 
@@ -238,10 +237,10 @@ public class ScreenCapture extends Fragment {
             return false;
         }
 
-        WindowManager windowManager =
-                (WindowManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.WINDOW_SERVICE);
-        mDisplay = windowManager.getDefaultDisplay();
+        DisplayManager displayManager =
+                (DisplayManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.DISPLAY_SERVICE);
+        mDisplay = displayManager.getDisplay(Display.DEFAULT_DISPLAY);
 
         DisplayMetrics metrics = new DisplayMetrics();
         mDisplay.getMetrics(metrics);

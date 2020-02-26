@@ -24,10 +24,10 @@ struct DriverEntry;
 // An utility class containing various file cleanup methods.
 class FileMonitor {
  public:
-  using InitCallback = base::Callback<void(bool)>;
+  using InitCallback = base::OnceCallback<void(bool)>;
 
   // Creates the file directory for the downloads if it doesn't exist.
-  virtual void Initialize(const InitCallback& callback) = 0;
+  virtual void Initialize(InitCallback callback) = 0;
 
   // Deletes the files in storage directory that are not related to any entries
   // in either database.
@@ -38,7 +38,7 @@ class FileMonitor {
   // Deletes the files associated with the |entries|.
   virtual void CleanupFilesForCompletedEntries(
       const Model::EntryList& entries,
-      const base::Closure& completion_callback) = 0;
+      base::OnceClosure completion_callback) = 0;
 
   // Deletes a list of files and logs UMA.
   virtual void DeleteFiles(const std::set<base::FilePath>& files_to_remove,
@@ -46,7 +46,7 @@ class FileMonitor {
 
   // Deletes all files in the download service directory.  This is a hard reset
   // on this directory.
-  virtual void HardRecover(const InitCallback& callback) = 0;
+  virtual void HardRecover(InitCallback callback) = 0;
 
   virtual ~FileMonitor() = default;
 };

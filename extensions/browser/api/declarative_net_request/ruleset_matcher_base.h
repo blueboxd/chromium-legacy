@@ -62,6 +62,7 @@ class RulesetMatcherBase {
     return source_type_;
   }
 
+  void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
   void OnDidFinishNavigation(content::RenderFrameHost* host);
 

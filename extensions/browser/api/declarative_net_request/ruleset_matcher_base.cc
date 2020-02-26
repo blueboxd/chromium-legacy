@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 
+#include <tuple>
+
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "content/public/browser/render_frame_host.h"
@@ -212,6 +214,33 @@ base::Optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
   return GetMaxPriorityAction(std::move(action), std::move(parent_action));
 }
 
+void RulesetMatcherBase::OnRenderFrameCreated(content::RenderFrameHost* host) {
+  DCHECK(host);
+  content::RenderFrameHost* parent = host->GetParent();
+  if (!parent)
+    return;
+
+  // Some frames like srcdoc frames inherit URLLoaderFactories from their
+  // parents and can make network requests before a corresponding navigation
+  // commit for the frame is received in the browser (via DidFinishNavigation).
+  // Hence if the parent frame is allowlisted, we allow list the current frame
+  // as well in OnRenderFrameCreated.
+  content::GlobalFrameRoutingId parent_frame_id(parent->GetProcess()->GetID(),
+                                                parent->GetRoutingID());
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(parent_frame_id);
+  if (!parent_action)
+    return;
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+
+  bool inserted = false;
+  std::tie(std::ignore, inserted) = allowlisted_frames_.insert(
+      std::make_pair(frame_id, std::move(*parent_action)));
+  DCHECK(inserted);
+}
+
 void RulesetMatcherBase::OnRenderFrameDeleted(content::RenderFrameHost* host) {
   DCHECK(host);
   allowlisted_frames_.erase(content::GlobalFrameRoutingId(
@@ -237,10 +266,11 @@ void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
 
   content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
                                          host->GetRoutingID());
+
+  allowlisted_frames_.erase(frame_id);
+
   if (action)
     allowlisted_frames_.insert(std::make_pair(frame_id, std::move(*action)));
-  else
-    allowlisted_frames_.erase(frame_id);
 }
 
 base::Optional<RequestAction>

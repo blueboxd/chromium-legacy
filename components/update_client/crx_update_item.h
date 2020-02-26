@@ -44,6 +44,7 @@ struct CrxUpdateItem {
   ErrorCategory error_category = ErrorCategory::kNone;
   int error_code = 0;
   int extra_code1 = 0;
+  std::map<std::string, std::string> custom_updatecheck_data;
 };
 
 }  // namespace update_client

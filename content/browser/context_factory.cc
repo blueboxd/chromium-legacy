@@ -14,9 +14,4 @@ ui::ContextFactory* GetContextFactory() {
   return ImageTransportFactory::GetInstance()->GetContextFactory();
 }
 
-ui::ContextFactoryPrivate* GetContextFactoryPrivate() {
-  DCHECK(ImageTransportFactory::GetInstance());
-  return ImageTransportFactory::GetInstance()->GetContextFactoryPrivate();
-}
-
 }  // namespace content

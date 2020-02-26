@@ -63,9 +63,12 @@ class AwContentsClientBridge {
       base::OnceCallback<void(AwUrlCheckerDelegateImpl::SafeBrowsingAction,
                               bool)>;
 
-  // Adds the handler to the UserData registry.
+  // Adds the handler to the UserData registry. Dissociate should be called
+  // before handler is deleted.
   static void Associate(content::WebContents* web_contents,
                         AwContentsClientBridge* handler);
+  // Removes any handlers associated to the UserData registry.
+  static void Dissociate(content::WebContents* web_contents);
   static AwContentsClientBridge* FromWebContents(
       content::WebContents* web_contents);
   static AwContentsClientBridge* FromWebContentsGetter(

@@ -198,6 +198,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::HttpRequestHeaders& request_headers,
       bool added_during_redirect);
 
+  // Exposed for testing.
+  static CrossOriginEmbedderPolicyWithReporting ParseCrossOriginEmbedderPolicy(
+      const net::HttpResponseHeaders* headers);
+
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
   // is used instead of URLLoader directly because SetUserData requires a

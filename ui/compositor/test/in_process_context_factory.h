@@ -29,8 +29,7 @@ class HostFrameSinkManager;
 namespace ui {
 class InProcessContextProvider;
 
-class InProcessContextFactory : public ContextFactory,
-                                public ContextFactoryPrivate {
+class InProcessContextFactory : public ContextFactory {
  public:
   // Both |host_frame_sink_manager| and |frame_sink_manager| must outlive the
   // ContextFactory. The constructor without |use_skia_renderer| will use

@@ -196,7 +196,7 @@ bool ScriptedAnimationController::HasScheduledFrameTasks() const {
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
     base::TimeTicks monotonic_time_now) {
-  if (!GetDocument() || !GetDocument()->GetFrame() ||
+  if (!GetDocument() || !GetDocument()->Loader() ||
       GetDocument()->IsContextPaused()) {
     return;
   }

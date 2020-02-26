@@ -786,10 +786,9 @@ cc_test("cc_unittests") {
 
   defines = []
 
-  # TODO(crbug.com/1047032): Enable SKIA renderers on emulators with Swiftshader
-  # support.
-  if (!is_fuchsia) {
-    defines += [ "GL_ON_PLATFORM" ]
+  if (is_fuchsia) {
+    defines += [ "GL_NOT_ON_PLATFORM" ]
+    manifest = "//build/config/fuchsia/gfx_tests.cmx"
   }
 
   if (enable_vulkan) {
@@ -801,7 +800,9 @@ cc_test("cc_unittests") {
     # TODO(samans): Support more configurations.
     # CFI issue: https://crbug.com/967819
     # LSAN issue: https://crbug.com/971325
-    if (use_x11 && !is_cfi && !is_lsan) {
+    # Fuchsia ARM64 issue: https://b/issues/146226835
+    if ((use_x11 && !is_cfi && !is_lsan) ||
+        (is_fuchsia && target_cpu == "x64")) {
       defines += [ "ENABLE_CC_VULKAN_TESTS" ]
     }
   }

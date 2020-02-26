@@ -7,21 +7,43 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
+#include "base/callback_forward.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
-class BackGestureContextualNudge {
+// The class to show the back gesture nudge UI animation or cancel/hide the
+// animation.
+class ASH_EXPORT BackGestureContextualNudge {
  public:
-  BackGestureContextualNudge();
-  ~BackGestureContextualNudge();
-
- private:
-  std::unique_ptr<views::Widget> widget_;
-
+  // Constructor to create a BackGestureContextualNudge with |callback| to be
+  // called after the animation is completed or cancelled.
+  explicit BackGestureContextualNudge(base::OnceClosure callback);
   BackGestureContextualNudge(const BackGestureContextualNudge&) = delete;
   BackGestureContextualNudge& operator=(const BackGestureContextualNudge&) =
       delete;
+
+  ~BackGestureContextualNudge();
+
+  // Cancels the animation if the widget is waiting to be shown or fades out
+  // the widget if it's currently in animation.
+  void CancelAnimationOrFadeOutToHide();
+
+  // The nudge should be counted as shown if the nudge has finished its sliding-
+  // in animation no matter whether its following animations get cancelled or
+  // not.
+  bool ShouldNudgeCountAsShown() const;
+
+  views::Widget* widget() { return widget_.get(); }
+
+ private:
+  class ContextualNudgeView;
+
+  std::unique_ptr<views::Widget> widget_;
+
+  // The pointer to the contents view of |widget_|.
+  ContextualNudgeView* nudge_view_ = nullptr;  // not owned
 };
 
 }  // namespace ash

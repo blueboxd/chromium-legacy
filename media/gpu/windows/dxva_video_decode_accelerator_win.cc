@@ -550,6 +550,9 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
 
 bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
+  if (media_log_)
+    MEDIA_LOG(INFO, media_log_) << "Starting Initialization of DXVAVDA";
+
   if (!get_gl_context_cb_ || !make_context_current_cb_) {
     NOTREACHED() << "GL callbacks are required for this VDA";
     return false;
@@ -604,8 +607,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   // below, probe whether we can successfully load the DLL now.
   // See http://crbug.com/339678 for details.
   HMODULE dxgi_manager_dll = ::GetModuleHandle(L"MFPlat.dll");
-  RETURN_ON_FAILURE(dxgi_manager_dll, "MFPlat.dll is required for decoding",
-                    false);
+  if (!dxgi_manager_dll) {
+    PLOG(ERROR) << "DXVAVDA fatal error: Could not load MFPlat.dll";
+    return false;
+  }
 
 // On Windows 8+ mfplat.dll provides the MFCreateDXGIDeviceManager API.
 // On Windows 7 mshtmlmedia.dll provides it.
@@ -618,8 +623,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 #if defined(ENABLE_DX11_FOR_WIN7)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     dxgi_manager_dll = ::GetModuleHandle(L"mshtmlmedia.dll");
-    RETURN_ON_FAILURE(dxgi_manager_dll,
-                      "mshtmlmedia.dll is required for decoding", false);
+    if (!dxgi_manager_dll) {
+      LOG(ERROR) << "DXVAVDA fatal error: Could not load mshtmlmedia.dll";
+      return false;
+    }
   }
 #endif
   // If we don't find the MFCreateDXGIDeviceManager API we fallback to D3D9
@@ -1244,7 +1251,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     if (!::GetModuleHandle(mfdll)) {
       // Windows N is missing the media foundation DLLs unless the media
       // feature pack is installed.
-      DVLOG(ERROR) << mfdll << " is required for hardware video decoding";
+      PLOG(ERROR) << "DXVAVDA fatal error: Could not load " << mfdll;
       return profiles;
     }
   }
@@ -1339,9 +1346,10 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     // as a more minimal approach to avoid other side-effects CCI might have (as
     // we are still in a reduced sandbox).
     decoder_dll = ::GetModuleHandle(L"msmpeg2vdec.dll");
-    RETURN_ON_FAILURE(decoder_dll,
-                      "msmpeg2vdec.dll required for decoding is not loaded",
-                      false);
+    if (!decoder_dll) {
+      PLOG(ERROR) << "DXVAVDA fatal error: Could not load msmpeg2vdec.dll";
+      return false;
+    }
 
     // Check version of DLL, version 6.1.7140 is blacklisted due to high crash
     // rates in browsers loading that DLL. If that is the version installed we

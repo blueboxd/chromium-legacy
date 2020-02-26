@@ -127,14 +127,14 @@ class MockFileMonitor : public FileMonitor {
   void TriggerInit(bool success);
   void TriggerHardRecover(bool success);
 
-  void Initialize(const FileMonitor::InitCallback& callback) override;
+  void Initialize(FileMonitor::InitCallback callback) override;
   MOCK_METHOD2(DeleteUnknownFiles,
                void(const Model::EntryList&, const std::vector<DriverEntry>&));
   MOCK_METHOD2(CleanupFilesForCompletedEntries,
-               void(const Model::EntryList&, const base::Closure&));
+               void(const Model::EntryList&, base::OnceClosure));
   MOCK_METHOD2(DeleteFiles,
                void(const std::set<base::FilePath>&, stats::FileCleanupReason));
-  void HardRecover(const FileMonitor::InitCallback&) override;
+  void HardRecover(FileMonitor::InitCallback) override;
 
  private:
   FileMonitor::InitCallback init_callback_;
@@ -142,19 +142,19 @@ class MockFileMonitor : public FileMonitor {
 };
 
 void MockFileMonitor::TriggerInit(bool success) {
-  init_callback_.Run(success);
+  std::move(init_callback_).Run(success);
 }
 
 void MockFileMonitor::TriggerHardRecover(bool success) {
-  recover_callback_.Run(success);
+  std::move(recover_callback_).Run(success);
 }
 
-void MockFileMonitor::Initialize(const FileMonitor::InitCallback& callback) {
-  init_callback_ = callback;
+void MockFileMonitor::Initialize(FileMonitor::InitCallback callback) {
+  init_callback_ = std::move(callback);
 }
 
-void MockFileMonitor::HardRecover(const FileMonitor::InitCallback& callback) {
-  recover_callback_ = callback;
+void MockFileMonitor::HardRecover(FileMonitor::InitCallback callback) {
+  recover_callback_ = std::move(callback);
 }
 
 class DownloadServiceControllerImplTest : public testing::Test {

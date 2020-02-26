@@ -24,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -67,25 +66,23 @@ class CONTENT_EXPORT ServiceWorkerStorage {
  public:
   using RegistrationList = std::vector<ServiceWorkerDatabase::RegistrationData>;
   using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;
-  using StatusCallback =
-      base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
   using FindRegistrationDataCallback = base::OnceCallback<void(
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
       std::unique_ptr<ResourceList> resources,
       ServiceWorkerDatabase::Status status)>;
   using GetRegistrationsDataCallback = base::OnceCallback<void(
-      blink::ServiceWorkerStatusCode status,
+      ServiceWorkerDatabase::Status status,
       std::unique_ptr<RegistrationList> registrations,
       std::unique_ptr<std::vector<ResourceList>> resource_lists)>;
   using GetAllRegistrationsCallback =
-      base::OnceCallback<void(blink::ServiceWorkerStatusCode status,
+      base::OnceCallback<void(ServiceWorkerDatabase::Status status,
                               std::unique_ptr<RegistrationList> registrations)>;
   using StoreRegistrationDataCallback = base::OnceCallback<void(
-      blink::ServiceWorkerStatusCode status,
+      ServiceWorkerDatabase::Status status,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
   using DeleteRegistrationCallback = base::OnceCallback<void(
-      blink::ServiceWorkerStatusCode status,
+      ServiceWorkerDatabase::Status status,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources)>;
 
@@ -107,9 +104,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   ~ServiceWorkerStorage();
 
-  static blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
-      ServiceWorkerDatabase::Status status);
-
   // TODO(crbug.com/1039200): Stop passing ServiceWorkerRegistry once
   // ServiceWorkerRegistration dependencies are moved to ServiceWorkerRegistry.
   static std::unique_ptr<ServiceWorkerStorage> Create(
@@ -123,9 +117,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerStorage* old_storage);
 
   // Reads stored registrations for |client_url| or |scope| or
-  // |registration_id|. Returns blink::ServiceWorkerStatusCode::kOk with
+  // |registration_id|. Returns ServiceWorkerDatabase::Status::kOk with
   // non-null RegistrationData and ResourceList if registration is found, or
-  // returns blink::ServiceWorkerStatusCode::kErrorNotFound if no matching
+  // returns ServiceWorkerDatabase::Status::kErrorNotFound if no matching
   // registration is found.
   void FindRegistrationForClientUrl(const GURL& client_url,
                                     FindRegistrationDataCallback callback);
@@ -160,18 +154,18 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void UpdateLastUpdateCheckTime(int64_t registration_id,
                                  const GURL& origin,
                                  base::Time last_update_check_time,
-                                 StatusCallback callback);
+                                 DatabaseStatusCallback callback);
 
   // Updates the specified registration's navigation preload state in storage.
   // The caller is responsible for mutating the live registration's state.
   void UpdateNavigationPreloadEnabled(int64_t registration_id,
                                       const GURL& origin,
                                       bool enable,
-                                      StatusCallback callback);
+                                      DatabaseStatusCallback callback);
   void UpdateNavigationPreloadHeader(int64_t registration_id,
                                      const GURL& origin,
                                      const std::string& value,
-                                     StatusCallback callback);
+                                     DatabaseStatusCallback callback);
 
   // Deletes the registration specified by |registration_id|. This should be
   // called only from ServiceWorkerRegistry.
@@ -253,7 +247,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Deletes the storage and starts over. This should be called only from
   // ServiceWorkerRegistry other than tests.
-  void DeleteAndStartOver(StatusCallback callback);
+  void DeleteAndStartOver(DatabaseStatusCallback callback);
 
   // Returns a new registration id which is guaranteed to be unique in the
   // storage. Returns blink::mojom::kInvalidServiceWorkerRegistrationId if the
@@ -505,10 +499,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Posted by the underlying cache implementation after it finishes making
   // disk changes upon its destruction.
   void DiskCacheImplDoneWithDisk();
-  void DidDeleteDatabase(StatusCallback callback,
+  void DidDeleteDatabase(DatabaseStatusCallback callback,
                          ServiceWorkerDatabase::Status status);
   // Posted when we finish deleting the cache directory.
-  void DidDeleteDiskCache(StatusCallback callback, bool result);
+  void DidDeleteDiskCache(DatabaseStatusCallback callback, bool result);
 
   // Origins having registations.
   std::set<GURL> registered_origins_;
@@ -530,7 +524,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // non-null between when DeleteAndStartOver() is called and when the
   // underlying disk cache stops using the disk.
-  StatusCallback delete_and_start_over_callback_;
+  DatabaseStatusCallback delete_and_start_over_callback_;
 
   // This is set when we know that a call to Disable() will result in
   // DiskCacheImplDoneWithDisk() eventually called. This might not happen

@@ -7,8 +7,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/country_codes/country_codes.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
@@ -21,10 +23,69 @@
 #include "base/win/win_util.h"
 #endif
 
+using net::DohProviderEntry;
 using testing::_;
 using testing::Return;
 
 namespace settings {
+
+namespace {
+
+constexpr char kGetSecureDnsResolverList[] = "getSecureDnsResolverList";
+constexpr char kWebUiFunctionName[] = "webUiCallbackName";
+
+const std::vector<DohProviderEntry>& GetDohProviderListForTesting() {
+  static const base::NoDestructor<std::vector<DohProviderEntry>> test_providers{
+      {
+          DohProviderEntry(
+              "Provider_Global1", {} /*ip_strs */, {} /* dot_hostnames */,
+              "https://global1.provider/dns-query{?dns}",
+              "Global Provider 1" /* ui_name */,
+              "https://global1.provider/privacy_policy/" /* privacy_policy */,
+              true /* display_globally */, {} /* display_countries */),
+          DohProviderEntry(
+              "Provider_NoDisplay", {} /*ip_strs */, {} /* dot_hostnames */,
+              "https://nodisplay.provider/dns-query{?dns}",
+              "No Display Provider" /* ui_name */,
+              "https://nodisplay.provider/privacy_policy/" /* privacy_policy */,
+              false /* display_globally */, {} /* display_countries */),
+          DohProviderEntry(
+              "Provider_EE_FR", {} /*ip_strs */, {} /* dot_hostnames */,
+              "https://ee.fr.provider/dns-query{?dns}",
+              "EE/FR Provider" /* ui_name */,
+              "https://ee.fr.provider/privacy_policy/" /* privacy_policy */,
+              false /* display_globally */,
+              {"EE", "FR"} /* display_countries */),
+          DohProviderEntry(
+              "Provider_FR", {} /*ip_strs */, {} /* dot_hostnames */,
+              "https://fr.provider/dns-query{?dns}",
+              "FR Provider" /* ui_name */,
+              "https://fr.provider/privacy_policy/" /* privacy_policy */,
+              false /* display_globally */, {"FR"} /* display_countries */),
+          DohProviderEntry(
+              "Provider_Global2", {} /*ip_strs */, {} /* dot_hostnames */,
+              "https://global2.provider/dns-query{?dns}",
+              "Global Provider 2" /* ui_name */,
+              "https://global2.provider/privacy_policy/" /* privacy_policy */,
+              true /* display_globally */, {} /* display_countries */),
+      }};
+  return *test_providers;
+}
+
+bool FindDropdownItem(const base::Value& resolvers,
+                      const std::string& name,
+                      const std::string& value,
+                      const std::string& policy) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("name", base::Value(name));
+  dict.SetKey("value", base::Value(value));
+  dict.SetKey("policy", base::Value(policy));
+
+  return std::find(resolvers.GetList().begin(), resolvers.GetList().end(),
+                   dict) != resolvers.GetList().end();
+}
+
+}  // namespace
 
 class TestSecureDnsHandler : public SecureDnsHandler {
  public:
@@ -62,9 +123,10 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override { handler_.reset(); }
 
   // Updates out-params from the last message sent to WebUI about a secure DNS
-  // change. False is returned if the message was invalid or
-  // not found.
-  bool GetLastSettingsChangedMessage(std::string* secure_dns_mode) {
+  // change. Returns false if the message was invalid or not found.
+  bool GetLastSettingsChangedMessage(
+      std::string* secure_dns_mode,
+      std::vector<std::string>* secure_dns_templates) {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
       const content::TestWebUI::CallData* data = it->get();
@@ -78,9 +140,21 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
       if (!data->arg2()->GetAsDictionary(&dict))
         return false;
 
+      // Get the secure DNS mode.
       if (!dict->FindStringPath("mode"))
         return false;
       *secure_dns_mode = *dict->FindStringPath("mode");
+
+      // Get the secure DNS templates.
+      if (!dict->FindListPath("templates"))
+        return false;
+      secure_dns_templates->clear();
+      for (const auto& template_str :
+           dict->FindListPath("templates")->GetList()) {
+        if (!template_str.is_string())
+          return false;
+        secure_dns_templates->push_back(template_str.GetString());
+      }
 
       return true;
     }
@@ -113,24 +187,29 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsModes) {
   PrefService* local_state = g_browser_process->local_state();
   std::string secure_dns_mode;
+  std::vector<std::string> secure_dns_templates;
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          chrome_browser_net::kDnsOverHttpsModeOff);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          chrome_browser_net::kDnsOverHttpsModeAutomatic);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          chrome_browser_net::kDnsOverHttpsModeSecure);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeSecure, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode, "unknown");
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
 }
 
@@ -145,7 +224,9 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicy) {
                          chrome_browser_net::kDnsOverHttpsModeSecure);
 
   std::string secure_dns_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  std::vector<std::string> secure_dns_templates;
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
 }
 
@@ -156,13 +237,16 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicyChange) {
                             chrome_browser_net::kDnsOverHttpsModeAutomatic));
 
   std::string secure_dns_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  std::vector<std::string> secure_dns_templates;
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
 
   SetPolicyForPolicyKey(
       &policy_map, policy::key::kDnsOverHttpsMode,
       std::make_unique<base::Value>(chrome_browser_net::kDnsOverHttpsModeOff));
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
 }
 
@@ -179,9 +263,158 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
                          chrome_browser_net::kDnsOverHttpsModeSecure);
 
   std::string secure_dns_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode));
+  std::vector<std::string> secure_dns_templates;
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
   EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
 }
 #endif
+
+// This test makes no assumptions about the country or underlying resolver list.
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownList) {
+  base::ListValue args;
+  args.AppendString(kWebUiFunctionName);
+
+  web_ui_.HandleReceivedMessage(kGetSecureDnsResolverList, &args);
+  const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
+  ASSERT_TRUE(call_data.arg2()->GetBool());
+
+  // Check results.
+  base::Value::ConstListView resolver_list = call_data.arg3()->GetList();
+  ASSERT_GE(resolver_list.size(), 1U);
+  EXPECT_EQ("custom", resolver_list[0].FindKey("value")->GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListForCountry) {
+  // The 'EE' list should start with the custom entry, followed by the two
+  // global providers and the 'EE' provider in some random order.
+  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
+      country_codes::CountryCharsToCountryID('E', 'E'),
+      GetDohProviderListForTesting());
+  EXPECT_EQ(4u, resolver_list.GetList().size());
+  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
+                               "https://global1.provider/dns-query{?dns}",
+                               "https://global1.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
+                               "https://global2.provider/dns-query{?dns}",
+                               "https://global2.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "EE/FR Provider",
+                               "https://ee.fr.provider/dns-query{?dns}",
+                               "https://ee.fr.provider/privacy_policy/"));
+
+  // The 'FR' list should start with the custom entry, followed by the two
+  // global providers and the two 'FR' providers in some random order.
+  resolver_list = handler_->GetSecureDnsResolverListForCountry(
+      country_codes::CountryCharsToCountryID('F', 'R'),
+      GetDohProviderListForTesting());
+  EXPECT_EQ(5u, resolver_list.GetList().size());
+  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
+                               "https://global1.provider/dns-query{?dns}",
+                               "https://global1.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
+                               "https://global2.provider/dns-query{?dns}",
+                               "https://global2.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "EE/FR Provider",
+                               "https://ee.fr.provider/dns-query{?dns}",
+                               "https://ee.fr.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "FR Provider",
+                               "https://fr.provider/dns-query{?dns}",
+                               "https://fr.provider/privacy_policy/"));
+
+  // The 'CA' list should start with the custom entry, followed by the two
+  // global providers.
+  resolver_list = handler_->GetSecureDnsResolverListForCountry(
+      country_codes::CountryCharsToCountryID('C', 'A'),
+      GetDohProviderListForTesting());
+  EXPECT_EQ(3u, resolver_list.GetList().size());
+  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
+                               "https://global1.provider/dns-query{?dns}",
+                               "https://global1.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
+                               "https://global2.provider/dns-query{?dns}",
+                               "https://global2.provider/privacy_policy/"));
+}
+
+class SecureDnsHandlerTestWithDisabledProviders : public SecureDnsHandlerTest {
+ protected:
+  SecureDnsHandlerTestWithDisabledProviders() {
+    scoped_features_.InitAndEnableFeatureWithParameters(
+        features::kDnsOverHttps,
+        {{"DisabledProviders",
+          "Provider_Global2, , Provider_EE_FR,Unexpected"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecureDnsHandlerTestWithDisabledProviders);
+};
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
+                       DropdownListDisabledProviders) {
+  // The 'FR' list should start with the custom entry, followed by the two
+  // global providers and the two 'FR' providers in some random order.
+  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
+      country_codes::CountryCharsToCountryID('F', 'R'),
+      GetDohProviderListForTesting());
+  EXPECT_EQ(3u, resolver_list.GetList().size());
+  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
+                               "https://global1.provider/dns-query{?dns}",
+                               "https://global1.provider/privacy_policy/"));
+  EXPECT_TRUE(FindDropdownItem(resolver_list, "FR Provider",
+                               "https://fr.provider/dns-query{?dns}",
+                               "https://fr.provider/privacy_policy/"));
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
+                       SecureDnsTemplates) {
+  std::string good_post_template = "https://foo.test/";
+  std::string good_get_template = "https://bar.test/dns-query{?dns}";
+  std::string bad_template = "dns-query{?dns}";
+
+  std::string secure_dns_mode;
+  std::vector<std::string> secure_dns_templates;
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, good_post_template);
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
+  EXPECT_EQ(1u, secure_dns_templates.size());
+  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
+
+  local_state->SetString(prefs::kDnsOverHttpsTemplates,
+                         good_post_template + " " + good_get_template);
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
+  EXPECT_EQ(2u, secure_dns_templates.size());
+  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
+  EXPECT_EQ(good_get_template, secure_dns_templates[1]);
+
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
+  EXPECT_EQ(0u, secure_dns_templates.size());
+
+  local_state->SetString(prefs::kDnsOverHttpsTemplates,
+                         bad_template + " " + good_post_template);
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
+  EXPECT_EQ(1u, secure_dns_templates.size());
+  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
+
+  // Should still return a provider that was disabled.
+  local_state->SetString(prefs::kDnsOverHttpsTemplates,
+                         "https://global2.provider/dns-query{?dns}");
+  EXPECT_TRUE(
+      GetLastSettingsChangedMessage(&secure_dns_mode, &secure_dns_templates));
+  EXPECT_EQ(1u, secure_dns_templates.size());
+  EXPECT_EQ("https://global2.provider/dns-query{?dns}",
+            secure_dns_templates[0]);
+}
 
 }  // namespace settings

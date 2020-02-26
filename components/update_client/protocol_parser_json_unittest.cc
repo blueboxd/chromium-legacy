@@ -349,6 +349,23 @@ const char* kJSONManifestRun = R"()]}'
    ]
   }})";
 
+// Includes two custom response attributes in the update_check.
+const char* kJSONCustomAttributes = R"()]}'
+  {"response":{
+   "protocol":"3.1",
+   "app":[
+    {"appid":"12345",
+     "updatecheck":{
+     "_example1":"example_value1",
+     "_example2":"example_value2",
+     "_example_bad": {"value": "bad-non-string-value"},
+     "_example_bad2": 15,
+     "status":"noupdate"
+     }
+    }
+   ]
+  }})";
+
 TEST(UpdateClientProtocolParserJSONTest, Parse) {
   const auto parser = std::make_unique<ProtocolParserJSON>();
 
@@ -529,6 +546,26 @@ TEST(UpdateClientProtocolParserJSONTest, Parse) {
     const auto& result = parser->results().list[0];
     EXPECT_STREQ("UpdaterSetup.exe", result.manifest.run.c_str());
     EXPECT_STREQ("--arg1 --arg2", result.manifest.arguments.c_str());
+  }
+}
+
+TEST(UpdateClientProtocolParserJSONTest, ParseAttrs) {
+  const auto parser = std::make_unique<ProtocolParserJSON>();
+  {  // No custom attrs in kJSONManifestRun
+    EXPECT_TRUE(parser->Parse(kJSONManifestRun));
+    EXPECT_TRUE(parser->errors().empty());
+    EXPECT_EQ(1u, parser->results().list.size());
+    const auto& result = parser->results().list[0];
+    EXPECT_EQ(0u, result.custom_attributes.size());
+  }
+  {  // Two custom attrs in kJSONCustomAttributes
+    EXPECT_TRUE(parser->Parse(kJSONCustomAttributes));
+    EXPECT_TRUE(parser->errors().empty());
+    EXPECT_EQ(1u, parser->results().list.size());
+    const auto& result = parser->results().list[0];
+    EXPECT_EQ(2u, result.custom_attributes.size());
+    EXPECT_EQ("example_value1", result.custom_attributes.at("_example1"));
+    EXPECT_EQ("example_value2", result.custom_attributes.at("_example2"));
   }
 }
 

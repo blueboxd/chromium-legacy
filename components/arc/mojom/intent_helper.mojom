@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 35
+// Next MinVersion: 36
 
 module arc.mojom;
 
@@ -296,7 +296,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 18
+// Next method ID: 19
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -313,6 +313,12 @@ interface IntentHelperInstance {
   [MinVersion=32] AddPreferredApp@17(string package_name,
                                      IntentFilter intent_filter,
                                      IntentInfo intent_info);
+
+  // Reset the verified link domain status to always ask for the
+  // |package_names|.
+  // This method will be called when Chrome OS replaced the preferred package
+  // from an ARC app to something else.
+  [MinVersion=35] ResetVerifiedLinks@18(array<string> package_names);
 
   // DEPRECATED. Use FileSystemInstance.GetFileSize() instead.
   [MinVersion=15] GetFileSizeDeprecated@11(string url) => (int64 size);

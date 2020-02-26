@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 
-#helpDialog {
+#help-dialog {
   border: 0;
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), 0.3),
@@ -14,7 +14,8 @@
   width: 512px;
 }
 
-#helpDialogTitle {
+#help-dialog-title ::slotted(h1),
+#help-dialog-title .fallback {
   color: var(--oobe-header-text-color);
   @apply --oobe-help-dialog-header-font;
   margin: 0;
@@ -22,13 +23,13 @@
   user-select: none;
 }
 
-#contentContainer {
+#content-container {
   color: var(--oobe-text-color);
   @apply --oobe-default-font;
   padding-bottom: 20px;
 }
 
-#buttonContainer {
+#button-container {
   display: flex;
   justify-content: flex-end;
   min-height: 0;

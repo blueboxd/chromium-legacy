@@ -164,6 +164,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<bool> kDnsOverHttpsShowUiParam;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kDnsOverHttpsDisabledProvidersParam;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDnsHttpssvc;
@@ -238,12 +241,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
-
-#if !defined(OS_ANDROID)
-// Only has an effect in branded builds.
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kGoogleBrandedContextMenu;
-#endif
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)

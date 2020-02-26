@@ -57,7 +57,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // If |data_path| is empty, nothing will be saved to disk.
   // |task_runner| is optional, and only set during testing.
-  // This is called on the UI thread.
+  // This is *not* called on the IDBTaskRunner, unlike most other functions.
   IndexedDBContextImpl(
       const base::FilePath& data_path,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
@@ -105,6 +105,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   base::SequencedTaskRunner* IOTaskRunner();
 
   // Called by StoragePartitionImpl to clear session-only data.
+  // *not* called on the IDBTaskRunner.
   void Shutdown();
 
   int64_t GetOriginDiskUsage(const url::Origin& origin);

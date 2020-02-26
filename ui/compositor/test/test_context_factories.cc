@@ -45,8 +45,4 @@ ContextFactory* TestContextFactories::GetContextFactory() const {
   return implicit_factory_.get();
 }
 
-ContextFactoryPrivate* TestContextFactories::GetContextFactoryPrivate() const {
-  return implicit_factory_.get();
-}
-
 }  // namespace ui

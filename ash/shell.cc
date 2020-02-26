@@ -244,8 +244,7 @@ Shell* Shell::instance_ = nullptr;
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
   instance_ = new Shell(std::move(init_params.delegate));
-  instance_->Init(init_params.context_factory,
-                  init_params.context_factory_private, init_params.local_state,
+  instance_->Init(init_params.context_factory, init_params.local_state,
                   std::move(init_params.keyboard_ui_factory),
                   init_params.dbus_bus);
   return instance_;
@@ -865,7 +864,6 @@ Shell::~Shell() {
 
 void Shell::Init(
     ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private,
     PrefService* local_state,
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
     scoped_refptr<dbus::Bus> dbus_bus) {
@@ -934,8 +932,6 @@ void Shell::Init(
   aura::Env* env = aura::Env::GetInstance();
   if (context_factory)
     env->set_context_factory(context_factory);
-  if (context_factory_private)
-    env->set_context_factory_private(context_factory_private);
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.

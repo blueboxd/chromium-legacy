@@ -23,8 +23,8 @@ from pylib.local.emulator import ini
 from pylib.local.emulator.proto import avd_pb2
 
 _ALL_PACKAGES = object()
-_DEFAULT_AVDMANAGER_PATH = os.path.join(constants.ANDROID_SDK_ROOT, 'tools',
-                                        'bin', 'avdmanager')
+_DEFAULT_AVDMANAGER_PATH = os.path.join(
+    constants.ANDROID_SDK_ROOT, 'cmdline-tools', 'latest', 'bin', 'avdmanager')
 # Default to a 480dp mdpi screen (a relatively large phone).
 # See https://developer.android.com/training/multiscreen/screensizes
 # and https://developer.android.com/training/multiscreen/screendensities

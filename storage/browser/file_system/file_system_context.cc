@@ -206,9 +206,9 @@ FileSystemContext::FileSystemContext(
 }
 
 bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
-    const GURL& origin_url) {
+    const url::Origin& origin) {
   DCHECK(default_file_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK(origin_url == origin_url.GetOrigin());
+  DCHECK(origin.GetURL().is_valid());
 
   bool success = true;
   for (auto& type_backend_pair : backend_map_) {
@@ -216,8 +216,8 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
     if (!backend->GetQuotaUtil())
       continue;
     if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-            this, quota_manager_proxy(), url::Origin::Create(origin_url),
-            type_backend_pair.first) != base::File::FILE_OK) {
+            this, quota_manager_proxy(), origin, type_backend_pair.first) !=
+        base::File::FILE_OK) {
       // Continue the loop, but record the failure.
       success = false;
     }

@@ -68,7 +68,15 @@ enum ContextPriority {
   ContextPriorityHigh
 };
 
-struct GLContextAttribs {
+struct GL_EXPORT GLContextAttribs {
+  GLContextAttribs();
+  GLContextAttribs(const GLContextAttribs& other);
+  GLContextAttribs(GLContextAttribs&& other);
+  ~GLContextAttribs();
+
+  GLContextAttribs& operator=(const GLContextAttribs& other);
+  GLContextAttribs& operator=(GLContextAttribs&& other);
+
   GpuPreference gpu_preference = GpuPreference::kLowPower;
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
@@ -77,6 +85,7 @@ struct GLContextAttribs {
   bool robust_buffer_access = false;
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
+  bool can_skip_validation = false;
   ContextPriority context_priority = ContextPriorityMedium;
 };
 

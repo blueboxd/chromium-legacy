@@ -94,7 +94,7 @@ CaptureServiceReceiver::Socket::~Socket() = default;
 
 bool CaptureServiceReceiver::Socket::SendRequest() {
   capture_service::PacketInfo info;
-  info.has_audio = false;
+  info.message_type = capture_service::MessageType::kAck;
   info.stream_info.stream_type = stream_type_;
   info.stream_info.sample_rate = sample_rate_;
   info.stream_info.num_channels = audio_bus_->channels();
@@ -142,7 +142,7 @@ bool CaptureServiceReceiver::Socket::OnMessage(char* data, size_t size) {
     ReportErrorAndStop();
     return false;
   }
-  if (!info.has_audio) {
+  if (info.message_type != capture_service::MessageType::kAudio) {
     LOG(WARNING) << "Received non-audio message, ignored.";
     return true;
   }

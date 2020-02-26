@@ -105,6 +105,11 @@ extern const char kChromeSearchRemoteNtpHost[];
 //     coming from a blessed Instant process, and deny the request.
 extern const char kChromeSearchScheme[];
 
+// This is the base URL of content that can be embedded in chrome://new-tab-page
+// using an <iframe>. The embedded untrusted content can make web requests and
+// can include content that is from an external source.
+extern const char kChromeUIUntrustedNewTabPageUrl[];
+
 // The URL for the Chromium project used in the About dialog.
 extern const char kChromiumProjectURL[];
 

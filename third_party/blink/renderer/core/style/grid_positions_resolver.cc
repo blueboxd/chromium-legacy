@@ -109,8 +109,7 @@ size_t NamedLineCollection::FirstPosition() {
   size_t first_line = 0;
 
   if (!auto_repeat_named_lines_indexes_) {
-    if (insertion_point_ == 0 ||
-        insertion_point_ < named_lines_indexes_->at(first_line))
+    if (insertion_point_ < named_lines_indexes_->at(first_line))
       return named_lines_indexes_->at(first_line) +
              (auto_repeat_total_tracks_ ? auto_repeat_total_tracks_ - 1 : 0);
     return named_lines_indexes_->at(first_line);
@@ -118,11 +117,6 @@ size_t NamedLineCollection::FirstPosition() {
 
   if (!named_lines_indexes_)
     return auto_repeat_named_lines_indexes_->at(first_line) + insertion_point_;
-
-  if (insertion_point_ == 0)
-    return std::min(
-        named_lines_indexes_->at(first_line) + auto_repeat_total_tracks_,
-        auto_repeat_named_lines_indexes_->at(first_line));
 
   return std::min(
       named_lines_indexes_->at(first_line),

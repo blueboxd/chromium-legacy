@@ -71,8 +71,7 @@ AuraTestHelper* AuraTestHelper::GetInstance() {
   return g_instance;
 }
 
-void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
-                           ui::ContextFactoryPrivate* context_factory_private) {
+void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&EventGeneratorDelegateAura::Create));
 
@@ -97,9 +96,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   env_helper.ResetEnvForTesting();
 
   context_factory_to_restore_ = env->context_factory();
-  context_factory_private_to_restore_ = env->context_factory_private();
   env->set_context_factory(context_factory);
-  env->set_context_factory_private(context_factory_private);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
   env_helper.SetInputStateLookup(nullptr);
@@ -154,7 +151,6 @@ void AuraTestHelper::TearDown() {
   } else {
     Env* env = GetEnv();
     env->set_context_factory(context_factory_to_restore_);
-    env->set_context_factory_private(context_factory_private_to_restore_);
   }
   wm_state_.reset();
 

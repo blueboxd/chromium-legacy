@@ -305,28 +305,6 @@ TEST_P(ShelfLayoutManagerTest, SetStateWhileAnimating) {
       small_change);
 }
 
-// Makes sure the shelf is sized when the status area changes size.
-TEST_P(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
-  Shelf* shelf = GetPrimaryShelf();
-  ASSERT_TRUE(shelf);
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  ASSERT_TRUE(shelf_widget);
-  ASSERT_TRUE(shelf_widget->status_area_widget());
-  shelf_widget->status_area_widget()->SetBounds(gfx::Rect(0, 0, 200, 200));
-  shelf->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
-  const int total_width =
-      screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
-          .width();
-  const int nav_width =
-      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
-  const int hotseat_width =
-      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
-                          true /* is_primary_axis_edge */) +
-                      ShelfConfig::Get()->app_icon_group_margin();
-  EXPECT_EQ(200, total_width - nav_width - hotseat_width - margins);
-}
-
 // Various assertions around auto-hide.
 TEST_P(ShelfLayoutManagerTest, AutoHide) {
   ui::test::EventGenerator* generator = GetEventGenerator();

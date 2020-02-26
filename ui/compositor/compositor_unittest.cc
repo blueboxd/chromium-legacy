@@ -35,9 +35,8 @@ class CompositorTest : public testing::Test {
     context_factories_ = std::make_unique<TestContextFactories>(false);
 
     compositor_ = std::make_unique<Compositor>(
-        context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
-        context_factories_->GetContextFactory(),
-        context_factories_->GetContextFactoryPrivate(), CreateTaskRunner(),
+        context_factories_->GetContextFactory()->AllocateFrameSinkId(),
+        context_factories_->GetContextFactory(), CreateTaskRunner(),
         false /* enable_pixel_canvas */);
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }

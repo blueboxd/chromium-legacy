@@ -26,7 +26,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -219,7 +218,7 @@ public class PictureInPictureController {
         final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
         final FullscreenListener fullscreenListener = new FullscreenListener() {
             @Override
-            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+            public void onExitFullscreen(Tab tab) {
                 dismissActivity(activity, METRICS_END_REASON_LEFT_FULLSCREEN);
             }
         };

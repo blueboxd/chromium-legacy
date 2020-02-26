@@ -10,6 +10,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -40,6 +41,7 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -54,6 +56,12 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
   // BackGestureContextualNudgeController:
   void NavigationEntryChanged(aura::Window* window) override;
 
+  bool is_monitoring_windows() const { return is_monitoring_windows_; }
+  BackGestureContextualNudge* nudge() { return nudge_.get(); }
+  BackGestureContextualNudgeDelegate* nudge_delegate() {
+    return nudge_delegate_.get();
+  }
+
  private:
   // Returns true if we can show back gesture contextual nudge ui in current
   // configuration.
@@ -63,6 +71,10 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
   // Starts or stops monitoring windows activation changes to decide if and when
   // to show up the contextual nudge ui.
   void UpdateWindowMonitoring();
+
+  // Callback function to be called after nudge animation is cancelled or
+  // completed.
+  void OnNudgeAnimationFinished();
 
   ScopedSessionObserver session_observer_{this};
   ScopedObserver<TabletModeController, TabletModeObserver>
@@ -79,6 +91,9 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
 
   // Timer to automatically show nudge ui in 24 hours.
   base::OneShotTimer auto_show_timer_;
+
+  base::WeakPtrFactory<BackGestureContextualNudgeControllerImpl>
+      weak_ptr_factory_{this};
 };
 
 }  // namespace ash

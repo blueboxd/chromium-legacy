@@ -979,6 +979,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         @Override
         public void onAssistantVoiceSearchServiceChanged() {
+            // Potential race condition between destroy and the observer, see crbug.com/1055274.
+            if (mAssistantVoiceSearchService == null) return;
+
             Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
             mVoiceSearchButton.setImageDrawable(drawable);
 

@@ -135,18 +135,6 @@ class FakeTabController : public TabController {
     return SkColor();
   }
 
-  void SetVisualDataForGroup(
-      const tab_groups::TabGroupId& group,
-      const tab_groups::TabGroupVisualData& visual_data) override {}
-
-  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override {}
-
-  void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override {}
-
-  void AddNewTabInGroup(const tab_groups::TabGroupId& group) override {}
-
-  const Browser* GetBrowser() override { return nullptr; }
-
   void SetTabColors(SkColor bg_color_active,
                     SkColor fg_color_active,
                     SkColor bg_color_inactive,

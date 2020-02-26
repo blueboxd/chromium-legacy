@@ -6,19 +6,14 @@ module media_app_ui.mojom;
 
 // Browser interface for chrome://media-app to bootstrap a connection.
 interface PageHandlerFactory {
-  // Create a page handler which processes RPCs received via `handler`.
-  CreatePageHandler(pending_remote<Page> page,
-                    pending_receiver<PageHandler> handler);
+  // Create a page handler which exposes interfaces implemented in the browser
+  // process to the renderer process via |handler|.
+  CreatePageHandler(pending_receiver<PageHandler> handler);
 };
 
-// Browser interface for chrome://media-app. These are the functions that are
-// exposed to the JS on chrome://media-app and implemented in
-// media_app_page_handler.cc.
+// An interface implemented in the browser process that is exposed to the
+// renderer process for chrome://media-app.
 interface PageHandler {
   // Opens the chrome feedback dialog.
   OpenFeedbackDialog() => (string? error_message);
 };
-
-// Frontend interface, There is currently empty as we don't have any use cases
-// that require the browser to message.
-interface Page {};

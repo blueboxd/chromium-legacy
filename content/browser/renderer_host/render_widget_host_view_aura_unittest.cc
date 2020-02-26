@@ -496,8 +496,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         std::make_unique<TestImageTransportFactory>());
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
-        ImageTransportFactory::GetInstance()->GetContextFactory(),
-        ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
+        ImageTransportFactory::GetInstance()->GetContextFactory());
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
 
     browser_context_.reset(new TestBrowserContext);

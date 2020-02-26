@@ -18,14 +18,11 @@ namespace ui {
 
 class TestCompositorHostAndroid : public TestCompositorHost {
  public:
-  TestCompositorHostAndroid(
-      const gfx::Rect& bounds,
-      ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private) {
+  TestCompositorHostAndroid(const gfx::Rect& bounds,
+                            ui::ContextFactory* context_factory) {
     compositor_ = std::make_unique<ui::Compositor>(
-        context_factory_private->AllocateFrameSinkId(), context_factory,
-        context_factory_private, base::ThreadTaskRunnerHandle::Get(),
-        false /* enable_pixel_canvas */);
+        context_factory->AllocateFrameSinkId(), context_factory,
+        base::ThreadTaskRunnerHandle::Get(), false /* enable_pixel_canvas */);
     // TODO(sievers): Support onscreen here.
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
     compositor_->SetScaleAndSize(1.0f,
@@ -45,10 +42,8 @@ class TestCompositorHostAndroid : public TestCompositorHost {
 
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  return new TestCompositorHostAndroid(bounds, context_factory,
-                                       context_factory_private);
+    ui::ContextFactory* context_factory) {
+  return new TestCompositorHostAndroid(bounds, context_factory);
 }
 
 }  // namespace ui

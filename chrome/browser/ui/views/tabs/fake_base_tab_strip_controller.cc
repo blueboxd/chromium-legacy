@@ -88,6 +88,9 @@ void FakeBaseTabStripController::SetVisualDataForGroup(
   fake_group_data_ = visual_data;
 }
 
+void FakeBaseTabStripController::CloseAllTabsInGroup(
+    const tab_groups::TabGroupId& group) {}
+
 void FakeBaseTabStripController::UngroupAllTabsInGroup(
     const tab_groups::TabGroupId& group) {}
 

@@ -27,7 +27,7 @@
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_registry.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
@@ -204,7 +204,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const url::Origin& origin,
       const std::string& backend_key,
       const std::string& data,
-      ServiceWorkerStorage::StatusCallback callback);
+      ServiceWorkerRegistry::StatusCallback callback);
   virtual void GetDataFromBackend(
       const std::string& backend_key,
       ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback callback);
@@ -259,7 +259,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Write all registrations for a given |sw_registration_id| to persistent
   // storage.
   void StoreRegistrations(int64_t sw_registration_id,
-                          ServiceWorkerStorage::StatusCallback callback);
+                          ServiceWorkerRegistry::StatusCallback callback);
 
   // Removes the active registration if it is in the map.
   void RemoveActiveRegistration(

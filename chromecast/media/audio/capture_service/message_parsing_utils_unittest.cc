@@ -21,7 +21,7 @@ constexpr size_t kChannels = 2;
 constexpr StreamInfo kStreamInfo =
     StreamInfo{StreamType::kSoftwareEchoCancelled, kChannels,
                SampleFormat::PLANAR_FLOAT, 16000, kFrames};
-constexpr PacketInfo kPacketInfo = {true /* has_audio */, kStreamInfo, 0};
+constexpr PacketInfo kPacketInfo = {MessageType::kAudio, kStreamInfo, 0};
 
 TEST(MessageParsingUtilsTest, ValidPlanarFloat) {
   size_t data_size = kTotalHeaderBytes / sizeof(float) + kFrames * kChannels;
@@ -39,7 +39,7 @@ TEST(MessageParsingUtilsTest, ValidPlanarFloat) {
       ReadHeader(reinterpret_cast<char*>(data.data()) + sizeof(uint16_t),
                  data_size * sizeof(float) - sizeof(uint16_t), &info);
   EXPECT_TRUE(success);
-  EXPECT_TRUE(info.has_audio);
+  EXPECT_EQ(info.message_type, kPacketInfo.message_type);
   EXPECT_EQ(info.stream_info.stream_type, kStreamInfo.stream_type);
   EXPECT_EQ(info.stream_info.num_channels, kStreamInfo.num_channels);
   EXPECT_EQ(info.stream_info.sample_format, kStreamInfo.sample_format);
@@ -112,7 +112,7 @@ TEST(MessageParsingUtilsTest, InvalidType) {
   size_t data_size = kTotalHeaderBytes / sizeof(float);
   std::vector<float> data(data_size, 1.0f);
   PacketInfo packet_info = kPacketInfo;
-  packet_info.has_audio = false;
+  packet_info.message_type = MessageType::kAck;
   PopulateHeader(reinterpret_cast<char*>(data.data()),
                  data.size() * sizeof(float), packet_info);
   *(reinterpret_cast<uint8_t*>(data.data()) + 3) =
@@ -128,7 +128,7 @@ TEST(MessageParsingUtilsTest, InvalidFormat) {
   size_t data_size = kTotalHeaderBytes / sizeof(float);
   std::vector<float> data(data_size, 1.0f);
   PacketInfo packet_info = kPacketInfo;
-  packet_info.has_audio = false;
+  packet_info.message_type = MessageType::kAck;
   PopulateHeader(reinterpret_cast<char*>(data.data()),
                  data.size() * sizeof(float), packet_info);
   *(reinterpret_cast<uint8_t*>(data.data()) + 5) =
@@ -140,11 +140,11 @@ TEST(MessageParsingUtilsTest, InvalidFormat) {
   EXPECT_FALSE(success);
 }
 
-TEST(MessageParsingUtilsTest, RequestMessage) {
+TEST(MessageParsingUtilsTest, AckMessage) {
   size_t data_size = kTotalHeaderBytes / sizeof(float);
   std::vector<float> data(data_size, 1.0f);
   PacketInfo packet_info = kPacketInfo;
-  packet_info.has_audio = false;
+  packet_info.message_type = MessageType::kAck;
   PopulateHeader(reinterpret_cast<char*>(data.data()),
                  data.size() * sizeof(float), packet_info);
 
@@ -153,7 +153,7 @@ TEST(MessageParsingUtilsTest, RequestMessage) {
       ReadHeader(reinterpret_cast<char*>(data.data()) + sizeof(uint16_t),
                  data_size * sizeof(float) - sizeof(uint16_t), &info);
   EXPECT_TRUE(success);
-  EXPECT_FALSE(info.has_audio);
+  EXPECT_EQ(info.message_type, MessageType::kAck);
   EXPECT_EQ(info.stream_info.stream_type, kStreamInfo.stream_type);
   EXPECT_EQ(info.stream_info.num_channels, kStreamInfo.num_channels);
   EXPECT_EQ(info.stream_info.sample_format, kStreamInfo.sample_format);

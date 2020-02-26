@@ -37,9 +37,9 @@ bool InitializeVulkanFunctionPointers(
     const base::FilePath& path,
     VulkanFunctionPointers* vulkan_function_pointers) {
   base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ =
-      base::LoadNativeLibrary(path, &native_library_load_error);
-  return vulkan_function_pointers->vulkan_loader_library_;
+  vulkan_function_pointers->set_vulkan_loader_library(
+      base::LoadNativeLibrary(path, &native_library_load_error));
+  return vulkan_function_pointers->vulkan_loader_library();
 }
 
 }  // namespace

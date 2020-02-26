@@ -41,7 +41,7 @@ void ExoTestBase::TearDown() {
 
 viz::SurfaceManager* ExoTestBase::GetSurfaceManager() {
   return static_cast<ui::InProcessContextFactory*>(
-             aura::Env::GetInstance()->context_factory_private())
+             aura::Env::GetInstance()->context_factory())
       ->GetFrameSinkManager()
       ->surface_manager();
 }

@@ -22,6 +22,16 @@
     box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
   }
 
+  #promo {
+    border: none;
+    bottom: 16px;
+    height: 35px;
+    left: 0;
+    position: fixed;
+    right: 0;
+    width: 100%;
+  }
+
   #customizeButton {
     border: none;
     border-radius: calc(0.5 * var(--cr-button-height));
@@ -64,7 +74,7 @@
   <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
       title="$i18n{voiceSearchButtonLabel}">
   </button>
-  <ntp-most-visited dark$="[[theme_.isDark]]"
+  <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]"
       style="--icon-background-color:
             [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];
           --tile-title-color:
@@ -83,6 +93,8 @@
       </ntp-voice-search-overlay>
     </template>
   </dom-if>
+  <iframe id="promo" src="chrome-untrusted://new-tab-page/promo"
+      hidden$="[[!promoLoaded_]]"></iframe>
   <cr-button id="customizeButton" on-click="onCustomizeClick_">
     <div id="customizeIcon"></div>
     $i18n{customizeButton}

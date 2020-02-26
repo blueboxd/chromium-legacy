@@ -128,6 +128,13 @@ class ASH_EXPORT ShelfLayoutManager
   // Updates the auto-hide state for mouse events.
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, aura::Window* target);
 
+  // Shows or hides contextual nudges for shelf gestures, depending on the shelf
+  // state.
+  void UpdateContextualNudges();
+
+  // Hides any visible contextual nudge for shelf gestures.
+  void HideContextualNudges();
+
   // Called by AutoHideEventHandler to process the gesture events when shelf is
   // auto hide.
   void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,

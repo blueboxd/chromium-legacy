@@ -395,6 +395,10 @@ gfx::Tween::Type ShelfConfig::DimAnimationTween() const {
   return gfx::Tween::LINEAR;
 }
 
+gfx::Size ShelfConfig::DragHandleSize() const {
+  return gfx::Size(80, 4);
+}
+
 void ShelfConfig::UpdateConfigForAccessibilityState() {
   UpdateConfig(is_app_list_visible_);
 }

@@ -53,6 +53,9 @@ using net::IOBuffer;
 using net::TestCompletionCallback;
 using net::WrappedIOBuffer;
 
+// TODO(crbug.com/1055677): Move out tests that rely on
+// ServiceWorkerRegistry and put them in a separate unittest file.
+
 namespace content {
 namespace service_worker_storage_unittest {
 
@@ -77,6 +80,14 @@ const uint8_t kTestPublicKey[] = {
 void StatusCallback(base::OnceClosure quit_closure,
                     base::Optional<blink::ServiceWorkerStatusCode>* result,
                     blink::ServiceWorkerStatusCode status) {
+  *result = status;
+  std::move(quit_closure).Run();
+}
+
+void DatabaseStatusCallback(
+    base::OnceClosure quit_closure,
+    base::Optional<ServiceWorkerDatabase::Status>* result,
+    ServiceWorkerDatabase::Status status) {
   *result = status;
   std::move(quit_closure).Run();
 }
@@ -465,7 +476,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration> registration) {
     base::RunLoop loop;
     base::Optional<blink::ServiceWorkerStatusCode> result;
-    storage()->UpdateLastUpdateCheckTime(
+    registry()->UpdateLastUpdateCheckTime(
         registration->id(), registration->scope().GetOrigin(),
         registration->last_update_check(),
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
@@ -1519,12 +1530,12 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
 
   base::RunLoop run_loop;
-  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::Optional<ServiceWorkerDatabase::Status> status;
   storage()->DeleteAndStartOver(
-      base::BindOnce(&StatusCallback, run_loop.QuitClosure(), &status));
+      base::BindOnce(&DatabaseStatusCallback, run_loop.QuitClosure(), &status));
   run_loop.Run();
 
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, *status);
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk, *status);
   EXPECT_TRUE(storage()->IsDisabled());
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
@@ -1544,12 +1555,12 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   ASSERT_TRUE(base::PathExists(file_path));
 
   base::RunLoop run_loop;
-  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::Optional<ServiceWorkerDatabase::Status> status;
   storage()->DeleteAndStartOver(
-      base::BindOnce(&StatusCallback, run_loop.QuitClosure(), &status));
+      base::BindOnce(&DatabaseStatusCallback, run_loop.QuitClosure(), &status));
   run_loop.Run();
 
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, *status);
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk, *status);
   EXPECT_TRUE(storage()->IsDisabled());
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
@@ -1570,19 +1581,19 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   ASSERT_TRUE(base::PathExists(file_path));
 
   base::RunLoop run_loop;
-  base::Optional<blink::ServiceWorkerStatusCode> status;
+  base::Optional<ServiceWorkerDatabase::Status> status;
   storage()->DeleteAndStartOver(
-      base::BindOnce(&StatusCallback, run_loop.QuitClosure(), &status));
+      base::BindOnce(&DatabaseStatusCallback, run_loop.QuitClosure(), &status));
   run_loop.Run();
 
 #if defined(OS_WIN)
   // On Windows, deleting the directory containing an opened file should fail.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed, *status);
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kErrorIOError, *status);
   EXPECT_TRUE(storage()->IsDisabled());
   EXPECT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
   EXPECT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
 #else
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, *status);
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk, *status);
   EXPECT_TRUE(storage()->IsDisabled());
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));

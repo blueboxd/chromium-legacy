@@ -753,7 +753,8 @@ Document::Document(const DocumentInit& initializer,
       is_for_external_handler_(initializer.IsForExternalHandler()),
       isolated_world_csp_map_(
           MakeGarbageCollected<
-              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
+      permission_service_(this->ToExecutionContext()) {
   // TODO(crbug.com/1029822): SecurityContextInit will eventually not be
   // passed to the Document constructor. These will need to move.
   security_initializer.ApplyPendingDataToDocument(*this);
@@ -6041,10 +6042,10 @@ net::SiteForCookies Document::SiteForCookies() const {
 
 mojom::blink::PermissionService* Document::GetPermissionService(
     ExecutionContext* execution_context) {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     execution_context->GetBrowserInterfaceBroker().GetInterface(
         permission_service_.BindNewPipeAndPassReceiver(
-            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+            execution_context->GetTaskRunner(TaskType::kPermission)));
     permission_service_.set_disconnect_handler(WTF::Bind(
         &Document::PermissionServiceConnectionError, WrapWeakPersistent(this)));
   }
@@ -8210,6 +8211,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_activation_observer_);
   visitor->Trace(form_to_pending_submission_);
+  visitor->Trace(permission_service_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);

@@ -4,6 +4,8 @@
 
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 
+#include <utility>
+
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/media_app_page_handler.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
@@ -25,7 +27,8 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("pwa.html", IDR_MEDIA_APP_PWA_HTML);
   source->AddResourcePath("manifest.json", IDR_MEDIA_APP_MANIFEST);
   source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
-  source->AddResourcePath("browser_proxy.js", IDR_MEDIA_APP_BROWSER_PROXY_JS);
+  source->AddResourcePath("mojo_api_bootstrap.js",
+                          IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
   source->AddResourcePath("media_app.mojom-lite.js",
                           IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
 
@@ -63,11 +66,9 @@ void MediaAppUI::BindInterface(
 }
 
 void MediaAppUI::CreatePageHandler(
-    mojo::PendingRemote<media_app_ui::mojom::Page> page,
     mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver) {
-  DCHECK(page);
-  page_handler_ = std::make_unique<MediaAppPageHandler>(this, std::move(page),
-                                                        std::move(receiver));
+  page_handler_ =
+      std::make_unique<MediaAppPageHandler>(this, std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(MediaAppUI)

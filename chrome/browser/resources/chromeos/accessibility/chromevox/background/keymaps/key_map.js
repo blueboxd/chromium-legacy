@@ -394,7 +394,7 @@ KeyMap = class {
  * @type {string}
  * @const
  */
-KeyMap.KEYMAP_PATH = 'background/keymaps/';
+KeyMap.KEYMAP_PATH = 'chromevox/background/keymaps/';
 
 
 /**

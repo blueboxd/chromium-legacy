@@ -267,8 +267,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void DestroyCompositor();
   void DestroyDispatcher();
 
-  // If frame_sink_id is not passed in, one will be grabbed from
-  // ContextFactoryPrivate.
+  // If frame_sink_id is not passed in, one will be grabbed from ContextFactory.
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,

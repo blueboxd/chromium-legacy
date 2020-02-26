@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -34,8 +33,6 @@
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/public/browser/storage_usage_info.h"
-#include "content/public/common/content_switches.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -118,7 +115,6 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       io_task_runner_(io_task_runner),
       clock_(clock) {
   IDB_TRACE("init");
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
   quota_manager_proxy->RegisterClient(
@@ -628,7 +624,6 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
 void IndexedDBContextImpl::Shutdown() {
   // Important: This function is NOT called on the IDB Task Runner. All variable
   // access must be thread-safe.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_incognito())
     return;
 

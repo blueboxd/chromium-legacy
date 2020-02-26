@@ -1622,8 +1622,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 #define AccessibilityInputDateWithPopupOpenMultiple_TestFile \
   FILE_PATH_LITERAL("input-date-with-popup-open-multiple.html")
 #endif
+// Flaky on all platforms. http://crbug.com/1055764
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityInputDateWithPopupOpenMultiple) {
+                       DISABLED_AccessibilityInputDateWithPopupOpenMultiple) {
   RunHtmlTest(AccessibilityInputDateWithPopupOpenMultiple_TestFile);
 }
 
@@ -2304,7 +2305,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAllCommitted) {
 // in the past.
 //
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, XmlInIframeCrash) {
+// Flaky on all platforms. http://crbug.com/1055764
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_XmlInIframeCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("xml-in-iframe-crash.html"));
 }
 

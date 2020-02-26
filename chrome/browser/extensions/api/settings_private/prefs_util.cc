@@ -247,6 +247,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kDnsOverHttpsMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kDnsOverHttpsTemplates] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 
   // Sync and personalization page.
   (*s_whitelist)[::prefs::kSafeBrowsingEnabled] =

@@ -8,6 +8,7 @@
 #include "ash/ambient/model/photo_model.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -27,7 +28,8 @@ class PhotoModelObserver;
 
 // Class to handle all ambient mode functionalities.
 class ASH_EXPORT AmbientController : public views::WidgetObserver,
-                                     public AmbientModeStateObserver {
+                                     public AmbientModeStateObserver,
+                                     public SessionObserver {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -39,6 +41,9 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
 
   // AmbientModeStateObserver:
   void OnAmbientModeEnabled(bool enabled) override;
+
+  // SessionObserver:
+  void OnLockStateChanged(bool locked) override;
 
   void Toggle();
 

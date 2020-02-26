@@ -41,7 +41,7 @@ UserActivityController::UserActivityController() {
       power_manager_client, detector,
       video_observer_idle_notifier.InitWithNewPipeAndPassReceiver());
   aura::Env::GetInstance()
-      ->context_factory_private()
+      ->context_factory()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer_idle_notifier));
 
@@ -53,7 +53,7 @@ UserActivityController::UserActivityController() {
       video_observer_user_logger.InitWithNewPipeAndPassReceiver(),
       chromeos::ChromeUserManager::Get(), &smart_dim_model_);
   aura::Env::GetInstance()
-      ->context_factory_private()
+      ->context_factory()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer_user_logger));
 }

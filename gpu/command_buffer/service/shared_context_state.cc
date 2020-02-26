@@ -316,10 +316,16 @@ bool SharedContextState::InitializeGL(
 
   // Swiftshader GL and Vulkan report supporting external objects extensions,
   // but they don't.
+  bool supports_memory_object =
+      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd ||
+      gl::g_current_gl_driver->ext.b_GL_ANGLE_memory_object_fuchsia;
+  bool supports_semaphore =
+      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd ||
+      gl::g_current_gl_driver->ext.b_GL_ANGLE_semaphore_fuchsia;
+
   support_vulkan_external_object_ =
       !gl::g_current_gl_version->is_swiftshader && is_native_vulkan &&
-      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd &&
-      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd;
+      supports_memory_object && supports_semaphore;
 
   return true;
 }

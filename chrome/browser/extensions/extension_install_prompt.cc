@@ -174,6 +174,12 @@ base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
           IDS_EXTENSION_DELEGATED_INSTALL_PROMPT_TITLE,
           base::UTF8ToUTF16(extension_->name()),
           base::UTF8ToUTF16(delegated_username_));
+    case EXTENSION_REQUEST_PROMPT:
+      id = IDS_EXTENSION_REQUEST_PROMPT_TITLE;
+      break;
+    case EXTENSION_PENDING_REQUEST_PROMPT:
+      id = IDS_EXTENSION_PENDING_REQUEST_PROMPT_TITLE;
+      break;
     case UNSET_PROMPT_TYPE:
     case NUM_PROMPT_TYPES:
       NOTREACHED();
@@ -190,6 +196,12 @@ int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
       !ShouldDisplayRevokeButton()) {
     return ui::DIALOG_BUTTON_CANCEL;
   }
+
+  // Extension pending request dialog doesn't have confirm button because there
+  // is no user action required.
+  if (type_ == EXTENSION_PENDING_REQUEST_PROMPT)
+    return ui::DIALOG_BUTTON_CANCEL;
+
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
@@ -246,6 +258,12 @@ base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
     case DELEGATED_PERMISSIONS_PROMPT:
       id = IDS_EXTENSION_PROMPT_INSTALL_BUTTON;
       break;
+    case EXTENSION_REQUEST_PROMPT:
+      id = IDS_EXTENSION_INSTALL_PROMPT_REQUEST_BUTTON;
+      break;
+    case EXTENSION_PENDING_REQUEST_PROMPT:
+      // Pending request prompt doesn't have accept button.
+      break;
     case UNSET_PROMPT_TYPE:
     case NUM_PROMPT_TYPES:
       NOTREACHED();
@@ -272,6 +290,8 @@ base::string16 ExtensionInstallPrompt::Prompt::GetAbortButtonLabel() const {
       id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON;
       break;
     case POST_INSTALL_PERMISSIONS_PROMPT:
+    case EXTENSION_REQUEST_PROMPT:
+    case EXTENSION_PENDING_REQUEST_PROMPT:
       id = IDS_CLOSE;
       break;
     case UNSET_PROMPT_TYPE:
@@ -290,6 +310,8 @@ base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
     case EXTERNAL_INSTALL_PROMPT:
     case REMOTE_INSTALL_PROMPT:
     case DELEGATED_PERMISSIONS_PROMPT:
+    case EXTENSION_REQUEST_PROMPT:
+    case EXTENSION_PENDING_REQUEST_PROMPT:
       id = IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO;
       break;
     case RE_ENABLE_PROMPT:

@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
@@ -22,7 +23,11 @@ namespace safe_browsing {
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return real_time_lookup_enabled_ &&
          RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-             resource_type_);
+             resource_type_) &&
+         // TODO(crbug.com/1054978): PDF loading issue when full url lookup is
+         // enabled.
+         !base::EndsWith(url.path_piece(), ".pdf",
+                         base::CompareCase::INSENSITIVE_ASCII);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(

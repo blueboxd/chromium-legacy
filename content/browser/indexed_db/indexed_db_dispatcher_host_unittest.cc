@@ -16,11 +16,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
@@ -29,10 +29,6 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -175,22 +171,21 @@ class TestIndexedDBObserver : public storage::mojom::IndexedDBObserver {
 class IndexedDBDispatcherHostTest : public testing::Test {
  public:
   IndexedDBDispatcherHostTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        special_storage_policy_(
+      : special_storage_policy_(
             base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_(base::MakeRefCounted<storage::MockQuotaManager>(
             false /*is_incognito*/,
-            browser_context_.GetPath(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+            CreateAndReturnTempDir(&temp_dir_),
+            task_environment_.GetMainThreadTaskRunner(),
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
-            CreateAndReturnTempDir(&temp_dir_),
+            temp_dir_.GetPath(),
             special_storage_policy_,
             quota_manager_->proxy(),
             base::DefaultClock::GetInstance(),
-            ChromeBlobStorageContext::GetRemoteFor(&browser_context_),
-            /*native_file_system_context=*/mojo::NullRemote(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+            mojo::NullRemote(),
+            mojo::NullRemote(),
+            task_environment_.GetMainThreadTaskRunner(),
             nullptr)),
         host_(new IndexedDBDispatcherHost(kFakeProcessId, context_impl_),
               base::OnTaskRunnerDeleter(context_impl_->IDBTaskRunner())) {}
@@ -212,7 +207,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     host_.reset();
     context_impl_ = nullptr;
     quota_manager_ = nullptr;
-    RunAllTasksUntilIdle();
+    task_environment_.RunUntilIdle();
     // File are leaked if this doesn't return true.
     ASSERT_TRUE(temp_dir_.Delete());
   }
@@ -231,9 +226,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
-  TestBrowserContext browser_context_;
-
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManager> quota_manager_;

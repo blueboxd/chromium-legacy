@@ -12,7 +12,6 @@
 
 namespace ui {
 class ContextFactory;
-class ContextFactoryPrivate;
 class TestContextFactories;
 }  // namespace ui
 
@@ -34,9 +33,7 @@ class PlatformTestHelper {
   // Simulate an OS-level destruction of the native window held by |widget|.
   virtual void SimulateNativeDestroy(Widget* widget);
 
-  virtual void InitializeContextFactory(
-      ui::ContextFactory** factory,
-      ui::ContextFactoryPrivate** factory_private);
+  virtual ui::ContextFactory* InitializeContextFactory();
 
  private:
   std::unique_ptr<ui::TestContextFactories> context_factories_;

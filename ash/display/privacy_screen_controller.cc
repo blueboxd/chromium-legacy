@@ -54,6 +54,14 @@ void PrivacyScreenController::SetEnabled(bool enabled) {
   }
 }
 
+void PrivacyScreenController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PrivacyScreenController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void PrivacyScreenController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   active_user_pref_service_ = pref_service;
@@ -84,8 +92,12 @@ void PrivacyScreenController::OnDisplayModeChanged(
 
 void PrivacyScreenController::OnEnabledPrefChanged() {
   if (IsSupported()) {
+    const bool is_enabled = GetEnabled();
     Shell::Get()->display_configurator()->SetPrivacyScreenOnInternalDisplay(
-        GetEnabled());
+        is_enabled);
+
+    for (Observer& observer : observers_)
+      observer.OnPrivacyScreenSettingChanged(is_enabled);
   }
 }
 

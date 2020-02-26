@@ -1623,10 +1623,6 @@ extern const char kTabFreezeDescription[];
 extern const char kWebUIA11yEnhancementsName[];
 extern const char kWebUIA11yEnhancementsDescription[];
 
-// Only used in branded builds.
-extern const char kGoogleBrandedContextMenuName[];
-extern const char kGoogleBrandedContextMenuDescription[];
-
 extern const char kSyncSetupFriendlySettingsName[];
 extern const char kSyncSetupFriendlySettingsDescription[];
 

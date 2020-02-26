@@ -92,14 +92,17 @@ public class VariationsSeedLoader {
     public static final String APP_SEED_REQUEST_STATE_HISTOGRAM_NAME =
             "Variations.AppSeedRequestState";
     @VisibleForTesting
+    public static final String DOWNLOAD_JOB_FETCH_RESULT_HISTOGRAM_NAME =
+            "Variations.WebViewDownloadJobFetchResult";
+    @VisibleForTesting
     public static final String DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME =
-            "Variations.DownloadJobFetchTime2";
+            "Variations.WebViewDownloadJobFetchTime2";
     @VisibleForTesting
     public static final String DOWNLOAD_JOB_INTERVAL_HISTOGRAM_NAME =
-            "Variations.DownloadJobInterval";
+            "Variations.WebViewDownloadJobInterval";
     @VisibleForTesting
     public static final String DOWNLOAD_JOB_QUEUE_TIME_HISTOGRAM_NAME =
-            "Variations.DownloadJobQueueTime";
+            "Variations.WebViewDownloadJobQueueTime";
     private static final String SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME =
             "Variations.SeedLoadBlockingTime";
     // This metric is also written by VariationsSeedStore::LoadSeed and is used by other platforms.
@@ -328,6 +331,12 @@ public class VariationsSeedLoader {
                 recordMinuteHistogram(DOWNLOAD_JOB_QUEUE_TIME_HISTOGRAM_NAME,
                         TimeUnit.MILLISECONDS.toMinutes(metrics.getJobQueueTime()),
                         TimeUnit.DAYS.toMinutes(30));
+            }
+            if (metrics.hasSeedFetchResult()) {
+                // This metric stores the same enum as Variations.FirstRun.SeedFetchResult, but is
+                // used for all WebView seed requests rather than just the first-run request.
+                RecordHistogram.recordSparseHistogram(
+                        DOWNLOAD_JOB_FETCH_RESULT_HISTOGRAM_NAME, metrics.getSeedFetchResult());
             }
             if (metrics.hasSeedFetchTime()) {
                 // Newer versions of Android limit job execution time to 10 minutes. Set the max

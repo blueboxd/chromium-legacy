@@ -181,10 +181,8 @@ Window::~Window() {
   // If SetEmbedFrameSinkId() was called by client code, then we assume client
   // code is taking care of invalidating.
   if (frame_sink_id_.is_valid() && !embeds_external_client_) {
-    auto* context_factory_private =
-        Env::GetInstance()->context_factory_private();
-    auto* host_frame_sink_manager =
-        context_factory_private->GetHostFrameSinkManager();
+    auto* context_factory = Env::GetInstance()->context_factory();
+    auto* host_frame_sink_manager = context_factory->GetHostFrameSinkManager();
     host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
@@ -1147,12 +1145,11 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   // this function be called.
   DCHECK(!embeds_external_client_);
 
-  auto* context_factory_private = Env::GetInstance()->context_factory_private();
-  auto* host_frame_sink_manager =
-      context_factory_private->GetHostFrameSinkManager();
+  auto* context_factory = Env::GetInstance()->context_factory();
+  auto* host_frame_sink_manager = context_factory->GetHostFrameSinkManager();
 
   if (!frame_sink_id_.is_valid()) {
-    auto frame_sink_id = context_factory_private->AllocateFrameSinkId();
+    auto frame_sink_id = context_factory->AllocateFrameSinkId();
     host_frame_sink_manager->RegisterFrameSinkId(
         frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
     SetEmbedFrameSinkIdImpl(frame_sink_id);

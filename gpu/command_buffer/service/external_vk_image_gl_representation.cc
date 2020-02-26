@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_util.h"
 
 #define GL_LAYOUT_GENERAL_EXT 0x958D
 #define GL_LAYOUT_COLOR_ATTACHMENT_EXT 0x958E
@@ -23,6 +24,11 @@
 #define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
 
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
+
+#if defined(OS_FUCHSIA)
+#define GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE 0x93AE
+#define GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE 0x93AF
+#endif
 
 namespace gpu {
 
@@ -182,10 +188,7 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
     SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
-#if defined(OS_FUCHSIA)
-  NOTIMPLEMENTED_LOG_ONCE();
-  return 0;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   if (handle.vk_handle_type() !=
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) {
     DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
@@ -200,7 +203,21 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
                                 fd.release());
 
   return gl_semaphore;
-#else  // !defined(OS_FUCHSIA) && !defined(OS_LINUX) && !defined(OS_ANDROID)
+#elif defined(OS_FUCHSIA)
+  if (handle.vk_handle_type() !=
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA) {
+    DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
+                << handle.vk_handle_type();
+    return 0;
+  }
+  zx::event event = handle.TakeHandle();
+  gl::GLApi* api = gl::g_current_gl_context;
+  GLuint gl_semaphore;
+  api->glGenSemaphoresEXTFn(1, &gl_semaphore);
+  api->glImportSemaphoreZirconHandleANGLEFn(
+      gl_semaphore, GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE, event.release());
+  return gl_semaphore;
+#else  // !defined(OS_LINUX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #error Unsupported OS
 #endif
 }

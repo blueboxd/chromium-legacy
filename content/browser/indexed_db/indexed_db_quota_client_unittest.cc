@@ -16,16 +16,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_utils.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,27 +47,25 @@ class IndexedDBQuotaClientTest : public testing::Test {
         kOriginB(url::Origin::Create(GURL("http://host:8000"))),
         kOriginOther(url::Origin::Create(GURL("http://other"))),
         usage_(0) {
-    browser_context_.reset(new TestBrowserContext());
-
+    CreateTempDir();
     auto quota_manager = base::MakeRefCounted<storage::MockQuotaManager>(
-        /*in_memory=*/false, browser_context_->GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
-        browser_context_->GetSpecialStoragePolicy());
+        /*in_memory=*/false, temp_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr);
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        browser_context_->GetPath(),
-        browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
+        temp_dir_.GetPath(), nullptr, quota_manager->proxy(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),
         base::SequencedTaskRunnerHandle::Get());
     base::RunLoop().RunUntilIdle();
-    setup_temp_dir();
+    SetupTempDir();
   }
 
-  void setup_temp_dir() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  void CreateTempDir() { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+
+  void SetupTempDir() {
     base::FilePath indexeddb_dir =
         temp_dir_.GetPath().Append(IndexedDBContextImpl::kIndexedDBDirectory);
     ASSERT_TRUE(base::CreateDirectory(indexeddb_dir));
@@ -78,9 +73,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   ~IndexedDBQuotaClientTest() override {
-    RunAllTasksUntilIdle();
+    base::RunLoop().RunUntilIdle();
     idb_context_ = nullptr;
-    browser_context_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -179,12 +173,11 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   int64_t usage_;
   std::set<url::Origin> origins_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
-  std::unique_ptr<TestBrowserContext> browser_context_;
   blink::mojom::QuotaStatusCode delete_status_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_{this};
 

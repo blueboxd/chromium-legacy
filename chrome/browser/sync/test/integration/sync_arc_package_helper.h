@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/app.mojom-forward.h"
 #include "components/sync/protocol/sync.pb.h"
 
 class Profile;

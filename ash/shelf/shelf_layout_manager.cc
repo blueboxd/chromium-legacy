@@ -26,6 +26,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -583,6 +584,25 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
   }
 }
 
+void ShelfLayoutManager::UpdateContextualNudges() {
+  const bool in_app_shelf = ShelfConfig::Get()->is_in_app();
+  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
+
+  if (in_app_shelf && in_tablet_mode) {
+    if (contextual_tooltip::ShouldShowNudge(
+            Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
+            contextual_tooltip::TooltipType::kDragHandle)) {
+      shelf_widget_->ShowDragHandleNudge();
+    }
+  } else {
+    shelf_widget_->HideDragHandleNudge();
+  }
+}
+
+void ShelfLayoutManager::HideContextualNudges() {
+  shelf_widget_->HideDragHandleNudge();
+}
+
 void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
     ui::GestureEvent* event,
     aura::Window* target) {
@@ -1010,6 +1030,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
   const bool was_locked = state_.IsScreenLocked();
   state_.session_state = state;
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  HideContextualNudges();
   if (was_adding_user != state_.IsAddingSecondaryUser()) {
     UpdateShelfVisibilityAfterLoginUIChange();
     return;
@@ -1069,14 +1090,17 @@ float ShelfLayoutManager::GetOpacity() const {
 
 void ShelfLayoutManager::OnShelfConfigUpdated() {
   LayoutShelf(/*animate=*/true);
+  UpdateContextualNudges();
 }
 
 void ShelfLayoutManager::OnTabletModeStarted() {
   LayoutShelf(/*animate=*/true);
+  UpdateContextualNudges();
 }
 
 void ShelfLayoutManager::OnTabletModeEnded() {
   LayoutShelf(/*animate=*/true);
+  UpdateContextualNudges();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1967,7 +1991,6 @@ bool ShelfLayoutManager::StartGestureDrag(
 
   if (Shell::Get()->app_list_controller()->IsVisible())
     return true;
-
   return StartShelfDrag(
       gesture_in_screen,
       gfx::Vector2dF(gesture_in_screen.details().scroll_x_hint(),
@@ -2263,6 +2286,13 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
   if (chromeos::switches::ShouldShowShelfHotseat() &&
       Shell::Get()->IsInTabletMode()) {
+    if (features::AreContextualNudgesEnabled() &&
+        window_drag_result == ShelfWindowDragResult::kGoToHomeScreen) {
+      contextual_tooltip::HandleGesturePerformed(
+          Shell::Get()->session_controller()->GetActivePrefService(),
+          contextual_tooltip::TooltipType::kDragHandle);
+    }
+
     base::Optional<InAppShelfGestures> gesture_to_record =
         CalculateHotseatGestureToRecord(window_drag_result,
                                         transitioned_from_overview_to_home,

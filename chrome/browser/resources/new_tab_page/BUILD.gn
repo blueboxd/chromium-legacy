@@ -32,6 +32,7 @@ js_library("app") {
     ":browser_proxy",
     ":most_visited",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:event_tracker.m",
   ]
 }
 

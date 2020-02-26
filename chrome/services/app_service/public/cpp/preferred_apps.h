@@ -46,9 +46,12 @@ class PreferredApps {
   static bool VerifyPreferredApps(base::Value* dict);
 
   // Add a preferred app for an |intent_filter| for |preferred_apps|.
-  static bool AddPreferredApp(const std::string& app_id,
-                              const apps::mojom::IntentFilterPtr& intent_filter,
-                              base::Value* preferred_apps);
+  // Returns the preferred app and their corresponding |intent_filters| that are
+  // replaced by this action.
+  static apps::mojom::ReplacedAppPreferencesPtr AddPreferredApp(
+      const std::string& app_id,
+      const apps::mojom::IntentFilterPtr& intent_filter,
+      base::Value* preferred_apps);
 
   // Delete a preferred app for an |intent_filter| for |preferred_apps|.
   static bool DeletePreferredApp(
@@ -62,9 +65,12 @@ class PreferredApps {
 
   void Init(std::unique_ptr<base::Value> preferred_apps);
 
-  // Add a preferred app for an |intent_filter|.
-  bool AddPreferredApp(const std::string& app_id,
-                       const apps::mojom::IntentFilterPtr& intent_filter);
+  // Add a preferred app for an |intent_filter|, and returns a group of
+  // |app_ids| that is no longer preferred app of their corresponding
+  // |intent_filters|.
+  apps::mojom::ReplacedAppPreferencesPtr AddPreferredApp(
+      const std::string& app_id,
+      const apps::mojom::IntentFilterPtr& intent_filter);
 
   // Delete a preferred app for an |intent_filter|.
   bool DeletePreferredApp(const std::string& app_id,

@@ -45,14 +45,11 @@ void PlatformTestHelper::SimulateNativeDestroy(Widget* widget) {
 }
 #endif
 
-void PlatformTestHelper::InitializeContextFactory(
-    ui::ContextFactory** context_factory,
-    ui::ContextFactoryPrivate** context_factory_private) {
+ui::ContextFactory* PlatformTestHelper::InitializeContextFactory() {
   const bool enable_pixel_output = false;
   context_factories_ =
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
-  *context_factory = context_factories_->GetContextFactory();
-  *context_factory_private = context_factories_->GetContextFactoryPrivate();
+  return context_factories_->GetContextFactory();
 }
 
 }  // namespace views

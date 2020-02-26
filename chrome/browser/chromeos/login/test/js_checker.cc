@@ -131,17 +131,6 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
   return std::make_unique<TestPredicateWaiter>(predicate);
 }
 
-std::unique_ptr<TestConditionWaiter> JSChecker::CreateAttributePresenceWaiter(
-    const std::string& attribute,
-    bool presence,
-    std::initializer_list<base::StringPiece> element_ids) {
-  std::string condition = ElementHasAttributeCondition(attribute, element_ids);
-  if (!presence) {
-    condition = "!(" + condition + ")";
-  }
-  return CreateWaiter(condition);
-}
-
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
     bool visibility,
     std::initializer_list<base::StringPiece> element_ids) {

@@ -34,6 +34,7 @@
 // <include src="arc_terms_of_service.js">
 // <include src="oobe_enable_kiosk.js">
 // <include src="oobe_reset.js">
+// <include src="oobe_reset_confirmation_overlay.js">
 // <include src="encryption_migration.js">
 // <include src="oobe_supervision_transition.js">
 // <include src="sync_consent.js">

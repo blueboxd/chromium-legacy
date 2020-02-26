@@ -3707,6 +3707,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_attributes(LONG offset,
 IFACEMETHODIMP AXPlatformNodeWin::Navigate(
     NavigateDirection direction,
     IRawElementProviderFragment** element_provider) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_NAVIGATE);
   UIA_VALIDATE_CALL_1_ARG(element_provider);
 
   *element_provider = nullptr;

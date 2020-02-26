@@ -1,0 +1,16 @@
+<html>
+<body>
+
+<script>
+    let frame = document.createElement('iframe');
+    frame.srcdoc = '';
+    document.body.appendChild(frame);
+
+    // The fetch below will fail eventually, but the request will reach the
+    // browser.
+    frame.contentWindow.fetch('subresources/xhr_target.txt')
+      .catch((error) => {});
+</script>
+
+</body>
+</html>

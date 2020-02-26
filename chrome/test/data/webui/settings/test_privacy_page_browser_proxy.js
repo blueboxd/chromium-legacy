@@ -11,6 +11,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'setMetricsReportingEnabled',
       'showManageSSLCertificates',
       'setBlockAutoplayEnabled',
+      'getSecureDnsResolverList',
       'getSecureDnsSetting',
     ]);
 
@@ -26,7 +27,14 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
      */
     this.secureDnsSetting = {
       mode: 'secure',
+      templates: [],
     };
+
+    /**
+     * @type {!Array<!ResolverOption>}
+     * @private
+     */
+    this.resolverList_;
   }
 
   /** @override */
@@ -53,6 +61,21 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   /** @override */
   setBlockAutoplayEnabled(enabled) {
     this.methodCalled('setBlockAutoplayEnabled', enabled);
+  }
+
+  /**
+   * Sets the resolver list that will be returned when getSecureDnsResolverList
+   * is called.
+   * @param {!Array<!ResolverOption>} resolverList
+   */
+  setResolverList(resolverList) {
+    this.resolverList_ = resolverList;
+  }
+
+  /** @override */
+  getSecureDnsResolverList() {
+    this.methodCalled('getSecureDnsResolverList');
+    return Promise.resolve(this.resolverList_);
   }
 
   /** @override */

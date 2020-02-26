@@ -213,6 +213,31 @@ ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
   return api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
 }
 
+// Requests extension by adding the id into the pending list in Profile Prefs if
+// available. Returns |kRequestPending| if the request has been added
+// successfully. Otherwise, returns the initial extension install status.
+ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
+                                                 Profile* profile) {
+  ExtensionInstallStatus status =
+      GetWebstoreExtensionInstallStatus(id, profile);
+  if (status != kCanRequest)
+    return status;
+
+  DictionaryPrefUpdate pending_requests_update(
+      profile->GetPrefs(), prefs::kCloudExtensionRequestIds);
+  DCHECK(!pending_requests_update->FindKey(id));
+  base::Value request_data(base::Value::Type::DICTIONARY);
+  request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
+                      ::util::TimeToValue(base::Time::Now()));
+  pending_requests_update->SetKey(id, std::move(request_data));
+  // Query the new extension install status again. It should be changed from
+  // kCanRequest to kRequestPending if the id has been added into pending list
+  // successfully.
+  status = GetWebstoreExtensionInstallStatus(id, profile);
+  DCHECK_EQ(kRequestPending, status);
+  return status;
+}
+
 }  // namespace
 
 // static
@@ -326,7 +351,10 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   bool allow =
       ExtensionSystem::Get(profile)->management_policy()->UserMayInstall(
           dummy_extension_.get(), &policy_error);
-  if (!allow) {
+  ExtensionInstallStatus install_status =
+      GetWebstoreExtensionInstallStatus(id, profile);
+  if (!allow && install_status != kCanRequest &&
+      install_status != kRequestPending) {
     bool blocked_for_child = false;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     // If the installation was blocked because the user is a child, we send a
@@ -362,13 +390,26 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
-  install_prompt_->ShowDialog(
-      base::Bind(&WebstorePrivateBeginInstallWithManifest3Function::
-                     OnInstallPromptDone,
-                 this),
-      dummy_extension_.get(), &icon_,
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-  // Control flow finishes up in OnInstallPromptDone.
+  if (install_status == kCanRequest || install_status == kRequestPending) {
+    install_prompt_->ShowDialog(
+        base::BindRepeating(&WebstorePrivateBeginInstallWithManifest3Function::
+                                OnRequestPromptDone,
+                            this),
+        dummy_extension_.get(), &icon_,
+        std::make_unique<ExtensionInstallPrompt::Prompt>(
+            install_status == kCanRequest
+                ? ExtensionInstallPrompt::EXTENSION_REQUEST_PROMPT
+                : ExtensionInstallPrompt::EXTENSION_PENDING_REQUEST_PROMPT),
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+  } else {
+    install_prompt_->ShowDialog(
+        base::BindRepeating(&WebstorePrivateBeginInstallWithManifest3Function::
+                                OnInstallPromptDone,
+                            this),
+        dummy_extension_.get(), &icon_,
+        ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+  }
+  // Control flow finishes up in OnInstallPromptDone or OnRequestPromptDone.
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
@@ -404,6 +445,25 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
   Release();
 }
 
+void WebstorePrivateBeginInstallWithManifest3Function::OnRequestPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  switch (result) {
+    case ExtensionInstallPrompt::Result::ACCEPTED:
+      AddExtensionToPendingList(details().id, chrome_details_.GetProfile());
+      break;
+    case ExtensionInstallPrompt::Result::USER_CANCELED:
+    case ExtensionInstallPrompt::Result::ABORTED:
+      break;
+    case ExtensionInstallPrompt::Result::ACCEPTED_AND_OPTION_CHECKED:
+      NOTREACHED();
+  }
+
+  Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
+                        kWebstoreUserCancelledError));
+  // Matches the AddRef in Run().
+  Release();
+}
+
 void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
   // This gets cleared in CrxInstaller::ConfirmInstall(). TODO(asargent) - in
   // the future we may also want to add time-based expiration, where a whitelist
@@ -430,7 +490,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
   // specific histogram here.
   ExtensionService::RecordPermissionMessagesHistogram(
       dummy_extension_.get(), "WebStoreInstall");
-
   Respond(BuildResponse(api::webstore_private::RESULT_SUCCESS, std::string()));
 }
 
@@ -824,31 +883,11 @@ WebstorePrivateRequestExtensionFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   ExtensionInstallStatus status =
-      GetWebstoreExtensionInstallStatus(extension_id, profile);
-  if (status == kCanRequest) {
-    AddExtensionToPendingList(extension_id);
-    // Query the new extension install status again. It should be changed from
-    // kCanRequest to kRequestPending if the id has been added into pending list
-    // successfully.
-    status = GetWebstoreExtensionInstallStatus(extension_id, profile);
-    DCHECK_EQ(kRequestPending, status);
-  }
+      AddExtensionToPendingList(extension_id, profile);
 
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
   return RespondNow(OneArgument(RequestExtension::Results::Create(api_status)));
-}
-
-void WebstorePrivateRequestExtensionFunction::AddExtensionToPendingList(
-    const ExtensionId& id) {
-  DictionaryPrefUpdate pending_requests_update(
-      Profile::FromBrowserContext(browser_context())->GetPrefs(),
-      prefs::kCloudExtensionRequestIds);
-  DCHECK(!pending_requests_update->FindKey(id));
-  base::Value request_data(base::Value::Type::DICTIONARY);
-  request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
-                      ::util::TimeToValue(base::Time::Now()));
-  pending_requests_update->SetKey(id, std::move(request_data));
 }
 
 }  // namespace extensions

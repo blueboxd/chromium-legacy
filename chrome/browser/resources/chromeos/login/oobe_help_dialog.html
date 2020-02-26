@@ -18,34 +18,30 @@ The dialog provides two properties that can be set directly from HTML.
 
   Alternatively, one can set their own title and content into the 'title'
   and 'content' slots.
-
-  Buttons are optional and go into the 'buttons' slot. If none are specified,
-  a default button with the text 'Close' will be shown. Users might want to
-  trigger some action on their side by using 'on-close=myMethod'.
 -->
 <dom-module id="oobe-help-dialog">
   <template>
     <link rel="stylesheet" href="oobe_fonts.css">
     <link rel="stylesheet" href="oobe_help_dialog.css">
-    <dialog id="helpDialog" part="dialog" aria-labelledby="helpDialogTitle">
+    <dialog id="help-dialog" part="dialog" aria-labelledby="help-dialog-title">
       <!-- Title -->
-      <div id="helpDialogTitle">
-        <slot name="title">[[i18nDynamic(locale, titleKey)]]</slot>
+      <div id="help-dialog-title">
+        <slot name="title">
+            <h1 class="fallback">[[i18nDynamic(locale, titleKey)]]</h1>
+        </slot>
       </div>
       <!-- Content to be shown -->
-      <div id="contentContainer"
+      <div id="content-container"
           class="flex-grow layout vertical not-resizable">
         <slot name="content">
-          [[i18nDynamic(locale, contentKey)]]
+            <h1>[[i18nDynamic(locale, contentKey)]]</h1>
         </slot>
       </div>
       <!-- Close Button -->
-      <div id="buttonContainer" class="layout horizontal">
-        <slot name="buttons">
-          <oobe-text-button inverse id="closeButton" on-click="hideDialog"
+      <div id="button-container" class="layout horizontal">
+        <oobe-text-button inverse id="closeButton" on-click="hideDialog"
             text-key="oobeModalDialogClose">
-          </oobe-text-button>
-        </slot>
+        </oobe-text-button>
       </div>
     </dialog>
   </template>

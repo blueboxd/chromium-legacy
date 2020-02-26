@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -41,9 +42,8 @@ constexpr base::ProcessId kProducerPid = 1234;
 class ThreadedPerfettoService : public mojom::TracingSessionClient {
  public:
   ThreadedPerfettoService()
-      : task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::WithBaseSyncPrimitives(),
              base::TaskPriority::BEST_EFFORT})) {
     perfetto_service_ = std::make_unique<PerfettoService>(task_runner_);

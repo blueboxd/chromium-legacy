@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -570,8 +571,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 
 // Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
-  auto sequenced_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto sequenced_task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
 
   // Since we cannot use StartFetchAndWait(), which runs a nested RunLoop owned
   // by the Delegate, in the ThreadPool, this test is split into two Callbacks,

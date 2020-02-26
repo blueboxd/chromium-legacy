@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -109,9 +110,8 @@ void CPUFreqMonitorDelegate::RecordFrequency(unsigned int cpu_id,
 
 scoped_refptr<SingleThreadTaskRunner>
 CPUFreqMonitorDelegate::CreateTaskRunner() {
-  return base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+  return base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::BEST_EFFORT},
       base::SingleThreadTaskRunnerThreadMode::SHARED);
 }

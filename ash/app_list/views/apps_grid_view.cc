@@ -257,10 +257,6 @@ bool IsOEMFolderItem(AppListItem* item) {
              AppListFolderItem::FOLDER_TYPE_OEM;
 }
 
-int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
-  return compositor ? compositor->activated_frame_count() : 0;
-}
-
 }  // namespace
 
 std::string GridIndex::ToString() const {
@@ -335,7 +331,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
     : folder_delegate_(folder_delegate),
       contents_view_(contents_view),
       page_flip_delay_in_ms_(kPageFlipDelayInMsFullscreen),
-      pagination_animation_start_frame_number_(0),
       view_structure_(this) {
   DCHECK(contents_view_);
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
@@ -368,6 +363,12 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
           : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
       IsTabletMode());
   bounds_animator_->AddObserver(this);
+
+  pagination_metrics_reporter_ =
+      std::make_unique<PaginationTransitionAnimationReporter>();
+  pagination_metrics_recorder_ =
+      std::make_unique<AppListAnimationMetricsRecorder>(
+          pagination_metrics_reporter_.get());
 }
 
 AppsGridView::~AppsGridView() {
@@ -2793,8 +2794,6 @@ void AppsGridView::TransitionStarting() {
 
   MaybeCreateGradientMask();
   CancelContextMenusOnCurrentPage();
-  pagination_animation_start_frame_number_ =
-      GetCompositorActivatedFrameCount(layer()->GetCompositor());
 }
 
 void AppsGridView::TransitionStarted() {
@@ -2802,6 +2801,10 @@ void AppsGridView::TransitionStarted() {
           pagination_model_.selected_page()) > 1) {
     Layout();
   }
+
+  pagination_metrics_recorder_->OnAnimationStart(
+      pagination_model_.GetTransitionAnimationSlideDuration(),
+      GetWidget()->GetCompositor());
 }
 
 void AppsGridView::TransitionChanged() {
@@ -2842,21 +2845,9 @@ void AppsGridView::TransitionChanged() {
 }
 
 void AppsGridView::TransitionEnded() {
-  const base::TimeDelta duration =
-      pagination_model_.GetTransitionAnimationSlideDuration();
+  pagination_metrics_reporter_->set_is_tablet_mode(IsTabletMode());
+  pagination_metrics_recorder_->OnAnimationEnd(GetWidget()->GetCompositor());
 
-  ui::Compositor* compositor = layer()->GetCompositor();
-  // Do not record animation smoothness if |compositor| is nullptr.
-  if (!compositor)
-    return;
-
-  const int end_frame_number = GetCompositorActivatedFrameCount(compositor);
-  if (end_frame_number > pagination_animation_start_frame_number_ &&
-      !duration.is_zero()) {
-    RecordPaginationAnimationSmoothness(
-        end_frame_number - pagination_animation_start_frame_number_, duration,
-        compositor->refresh_rate(), IsTabletMode());
-  }
   // Gradient mask is no longer necessary once transition is finished.
   if (layer()->layer_mask_layer())
     layer()->SetMaskLayer(nullptr);

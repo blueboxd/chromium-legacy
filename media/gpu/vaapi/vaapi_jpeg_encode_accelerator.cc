@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
@@ -462,9 +463,8 @@ VaapiJpegEncodeAccelerator::Initialize(
     return PLATFORM_FAILURE;
   }
 
-  encoder_task_runner_ =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                          base::TaskPriority::USER_BLOCKING});
+  encoder_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   if (!encoder_task_runner_) {
     VLOGF(1) << "Failed to create encoder task runner.";
     return THREAD_CREATION_FAILED;

@@ -39,7 +39,14 @@ class PersistedAppInfo {
 
   ~PersistedAppInfo();
 
-  void UpdateAppActivityPreference(base::Value* dict) const;
+  // Updates the dictionary to contain the information stored in this class.
+  // If |replace_activity| is true, then completely replaces the list keyed by
+  // |kActiveTimesKey| in the dicationary. Otherwise, appends the values in
+  // |active_running_time_|.
+  void UpdateAppActivityPreference(base::Value* dict,
+                                   bool replace_activity) const;
+
+  void RemoveActiveTimeEarlierThan(base::Time timestamp);
 
   const AppId& app_id() const { return app_id_; }
   AppState app_state() const { return app_state_; }

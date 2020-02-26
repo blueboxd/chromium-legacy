@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
@@ -99,9 +100,8 @@ void ContentVerifyJob::DidGetContentHashOnIO(
   if (test_observer)
     test_observer->JobStarted(extension_id_, relative_path_);
   // Build |hash_reader_|.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ContentHashReader::Create, relative_path_, content_hash),
       base::BindOnce(&ContentVerifyJob::OnHashesReady, this));
 }

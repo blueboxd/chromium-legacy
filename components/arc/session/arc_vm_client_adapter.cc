@@ -28,6 +28,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -306,10 +307,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     // Save the parameters for the later call to UpgradeArc.
     start_params_ = std::move(params);
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(
             []() { return GetSystemPropertyInt("cros_debug") == 1; }),
         base::BindOnce(&ArcVmClientAdapter::OnIsDevMode,
@@ -434,10 +433,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
     // TODO(pliard): Export host-side /data to the VM, and remove the call. Note
     // that ArcSessionImpl checks low disk conditions before calling UpgradeArc.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
         base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
@@ -486,10 +483,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "Disk image for arcvm ready. status=" << response.status()
             << ", disk=" << response.disk_path();
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&FileSystemStatus::GetFileSystemStatusBlocking),
         base::BindOnce(&ArcVmClientAdapter::OnFileSystemStatus,
                        weak_factory_.GetWeakPtr(), std::move(params),

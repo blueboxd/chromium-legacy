@@ -20,6 +20,7 @@
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/chromecast_buildflags.h"
@@ -604,8 +605,8 @@ void NetworkService::GetNetworkList(
   auto networks = std::make_unique<net::NetworkInterfaceList>();
   auto* raw_networks = networks.get();
   // net::GetNetworkList may block depending on platform.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&net::GetNetworkList, raw_networks, policy),
       base::BindOnce(&OnGetNetworkList, std::move(networks),
                      std::move(callback)));

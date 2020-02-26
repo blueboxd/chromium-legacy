@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
@@ -103,7 +104,7 @@ struct MemoryMetricsLogger::State : public base::RefCountedThreadSafe<State> {
 MemoryMetricsLogger::MemoryMetricsLogger()
     : state_(base::MakeRefCounted<State>()) {
   g_instance = this;
-  state_->task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  state_->task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   state_->task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&MemoryMetricsLogger::RecordMemoryMetricsAfterDelay,

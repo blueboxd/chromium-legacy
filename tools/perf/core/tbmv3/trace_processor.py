@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 import subprocess
 
 from collections import namedtuple
 
+from core.results_processor.perfetto_binary_roller import binary_deps_manager
 from py_utils import tempfile_ext
 from tracing.value import histogram_set
 
@@ -16,12 +18,6 @@ TP_BINARY_NAME = 'trace_processor_shell'
 EXPORT_JSON_QUERY_TEMPLATE = 'select export_json(%s)\n'
 METRICS_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                              'metrics'))
-_TP_NOT_SUPPLIED_ERROR_MSG = """
-Proto trace format selected but trace processor executable is not supplied.
-Either pass --legacy-json-trace-format flag to force using the json format,
-or build the trace_processor_shell target and supply the path to the binary
-via the --trace-processor-path flag.
-"""
 
 MetricFiles = namedtuple('MetricFiles', ('sql', 'proto', 'config'))
 
@@ -31,12 +27,15 @@ def _SqlString(s):
   return "'%s'" % s.replace("'", "''")
 
 
-def _CheckTraceProcessor(trace_processor_path):
+def _EnsureTraceProcessor(trace_processor_path):
   if trace_processor_path is None:
-    raise RuntimeError(_TP_NOT_SUPPLIED_ERROR_MSG)
+    trace_processor_path = binary_deps_manager.FetchHostBinary(TP_BINARY_NAME)
+    logging.info('Trace processor binary downloaded to %s',
+                 trace_processor_path)
   if not os.path.isfile(trace_processor_path):
     raise RuntimeError("Can't find trace processor executable at %s" %
                        trace_processor_path)
+  return trace_processor_path
 
 
 def _RunTraceProcessor(*args):
@@ -95,7 +94,7 @@ def RunMetric(trace_processor_path, trace_file, metric_name):
   Returns:
     A HistogramSet with metric results.
   """
-  _CheckTraceProcessor(trace_processor_path)
+  trace_processor_path = _EnsureTraceProcessor(trace_processor_path)
   metric_files = _CreateMetricFiles(metric_name)
   output = _RunTraceProcessor(
       trace_processor_path,
@@ -131,7 +130,7 @@ def ConvertProtoTraceToJson(trace_processor_path, proto_file, json_path):
   Returns:
     Output path.
   """
-  _CheckTraceProcessor(trace_processor_path)
+  trace_processor_path = _EnsureTraceProcessor(trace_processor_path)
   with tempfile_ext.NamedTemporaryFile() as query_file:
     query_file.write(EXPORT_JSON_QUERY_TEMPLATE % _SqlString(json_path))
     query_file.close()

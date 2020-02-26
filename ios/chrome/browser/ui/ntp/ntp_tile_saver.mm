@@ -8,6 +8,7 @@
 #include "base/hash/md5.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/ntp_tiles/ntp_tile.h"
@@ -127,9 +128,8 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& most_visited_data,
   }
   UpdateTileList(most_visited_data);
 
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ClearOutdatedIcons, most_visited_data,
                      favicons_directory),
       base::BindOnce(
@@ -208,10 +208,9 @@ void UpdateSingleFavicon(const GURL& site_url,
             [imageData writeToURL:fileURL atomically:YES];
           });
 
-          base::PostTask(FROM_HERE,
-                         {base::ThreadPool(), base::MayBlock(),
-                          base::TaskPriority::BEST_EFFORT},
-                         std::move(writeImage));
+          base::ThreadPool::PostTask(
+              FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+              std::move(writeImage));
         } else {
           NSDictionary* tiles = ReadSavedMostVisited();
           NTPTile* tile = [tiles objectForKey:siteNSURL];
@@ -234,10 +233,9 @@ void UpdateSingleFavicon(const GURL& site_url,
             [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
           });
 
-          base::PostTask(FROM_HERE,
-                         {base::ThreadPool(), base::MayBlock(),
-                          base::TaskPriority::BEST_EFFORT},
-                         std::move(removeImage));
+          base::ThreadPool::PostTask(
+              FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+              std::move(removeImage));
         }
       };
 

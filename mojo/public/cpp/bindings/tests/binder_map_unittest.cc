@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -117,7 +118,7 @@ TEST_F(BinderMapTest, CorrectSequence) {
   GenericPendingReceiver receiver2(remote2.BindNewPipeAndPassReceiver());
 
   auto task_runner1 = base::SequencedTaskRunnerHandle::Get();
-  auto task_runner2 = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto task_runner2 = base::ThreadPool::CreateSequencedTaskRunner({});
 
   TestInterface1Impl impl1;
   std::unique_ptr<TestInterface2Impl> impl2;

@@ -217,13 +217,9 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
   }
 
   OmniboxResultView* result = result_view_at(line);
-  result->Invalidate();
-
-  if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
-    result->ShowKeyword(IsSelectedIndex(line) &&
-                        model_->selected_line_state() ==
-                            OmniboxPopupModel::KEYWORD);
-  }
+  result->ApplyThemeAndRefreshIcons();
+  result->ShowKeyword(IsSelectedIndex(line) && model_->selected_line_state() ==
+                                                   OmniboxPopupModel::KEYWORD);
 }
 
 void OmniboxPopupContentsView::OnSelectionStateChanged(size_t line) {

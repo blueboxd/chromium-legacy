@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/components/nearby/multi_thread_executor_impl.h"
+#include "base/task/thread_pool.h"
 
 namespace chromeos {
 
@@ -10,7 +11,7 @@ namespace nearby {
 
 MultiThreadExecutorImpl::MultiThreadExecutorImpl()
     : SubmittableExecutorBase(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
+          base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 MultiThreadExecutorImpl::~MultiThreadExecutorImpl() = default;
 

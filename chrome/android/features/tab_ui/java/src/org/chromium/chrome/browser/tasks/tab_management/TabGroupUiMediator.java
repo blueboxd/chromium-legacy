@@ -79,7 +79,7 @@ public class TabGroupUiMediator {
         void resetGridWithListOfTabs(List<Tab> tabs);
     }
 
-    private final PropertyModel mToolbarPropertyModel;
+    private final PropertyModel mModel;
     private final TabModelObserver mTabModelObserver;
     private final ResetHandler mResetHandler;
     private final TabModelSelector mTabModelSelector;
@@ -100,12 +100,12 @@ public class TabGroupUiMediator {
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
-            ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
-            TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
-            OverviewModeBehavior overviewModeBehavior, ThemeColorProvider themeColorProvider,
+            ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
+            TabCreatorManager tabCreatorManager, OverviewModeBehavior overviewModeBehavior,
+            ThemeColorProvider themeColorProvider,
             @Nullable TabGridDialogMediator.DialogController dialogController) {
         mResetHandler = resetHandler;
-        mToolbarPropertyModel = toolbarPropertyModel;
+        mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mOverviewModeBehavior = overviewModeBehavior;
@@ -215,10 +215,9 @@ public class TabGroupUiMediator {
                  true))
                 .addTabGroupObserver(mTabGroupModelFilterObserver);
 
-        mThemeColorObserver = (color, shouldAnimate)
-                -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, color);
-        mTintObserver = (tint,
-                useLight) -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.TINT, tint);
+        mThemeColorObserver =
+                (color, shouldAnimate) -> mModel.set(TabGroupUiProperties.PRIMARY_COLOR, color);
+        mTintObserver = (tint, useLight) -> mModel.set(TabGroupUiProperties.TINT, tint);
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
@@ -227,7 +226,7 @@ public class TabGroupUiMediator {
         mThemeColorProvider.addTintObserver(mTintObserver);
 
         setupToolbarClickHandlers();
-        mToolbarPropertyModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
+        mModel.set(TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE, true);
         Tab tab = mTabModelSelector.getCurrentTab();
         if (tab != null) {
             resetTabStripWithRelatedTabsForId(tab.getId());
@@ -235,27 +234,24 @@ public class TabGroupUiMediator {
     }
 
     void setupLeftButtonDrawable(int drawableId) {
-        mToolbarPropertyModel.set(
-                TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, drawableId);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, drawableId);
     }
 
     void setupLeftButtonOnClickListener(View.OnClickListener listener) {
-        mToolbarPropertyModel.set(
-                TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, listener);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, listener);
     }
 
     private void setupToolbarClickHandlers() {
-        mToolbarPropertyModel.set(
-                TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, view -> {
-                    Tab currentTab = mTabModelSelector.getCurrentTab();
-                    if (currentTab == null) return;
-                    mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-                    if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
-                        RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
-                    }
-                });
-        mToolbarPropertyModel.set(
-                TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, view -> {
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, view -> {
+            Tab currentTab = mTabModelSelector.getCurrentTab();
+            if (currentTab == null) return;
+            mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
+            if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
+            }
+        });
+        mModel.set(
+                TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, view -> {
                     Tab currentTab = mTabModelSelector.getCurrentTab();
                     List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
                                                     .getCurrentTabModelFilter()

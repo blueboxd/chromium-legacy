@@ -38,6 +38,14 @@ enum class ResultType {
   kUnitConversionResult = 13668,
 };
 
+// The predicted intent of the request.
+enum class IntentType {
+  kUnknown = 0,
+  kUnit = 1,
+  kDictionary = 2,
+  kTranslation = 3
+};
+
 enum class QuickAnswerUiElementType {
   kUnknown = 0,
   kText = 1,

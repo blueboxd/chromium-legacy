@@ -23,6 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
@@ -97,9 +98,9 @@ scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
   if (g_task_runner_for_testing)
     return scoped_refptr<base::TaskRunner>(g_task_runner_for_testing);
 
-  return base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                 base::TaskPriority::BEST_EFFORT,
-                                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  return base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 }  // namespace

@@ -23,6 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -520,8 +521,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
-  crash_reporter_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  crash_reporter_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   crash_reporter_runner_->PostTask(
       FROM_HERE,

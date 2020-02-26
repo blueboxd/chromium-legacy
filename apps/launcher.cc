@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -156,9 +157,9 @@ class PlatformAppPathLauncher
   }
 
   void LaunchWithRelativePath(const base::FilePath& current_directory) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+        {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&PlatformAppPathLauncher::MakePathAbsolute, this,
                        current_directory));

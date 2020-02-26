@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -408,9 +409,9 @@ void PasswordProtectionRequest::CollectVisualFeatures() {
 
 void PasswordProtectionRequest::OnScreenshotTaken(const SkBitmap& screenshot) {
   // Do the feature extraction on a worker thread, to avoid blocking the UI.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ExtractVisualFeatures, screenshot),
       base::BindOnce(&PasswordProtectionRequest::OnVisualFeatureCollectionDone,

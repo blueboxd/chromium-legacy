@@ -157,12 +157,6 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
     @Override
     public void onClick(View v) {
-        if (mGroup != null) {
-            for (RadioButtonWithDescription button : mGroup) {
-                button.setChecked(false);
-            }
-        }
-
         setChecked(true);
 
         if (mButtonCheckedStateChangedListener != null) {
@@ -215,13 +209,36 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
     /**
      * Sets the checked status.
+     *
+     * If the radio button is inside a radio button group and going to be checked, the rest of the
+     * radio buttons in the group will be set to unchecked.
+     *
+     * @param checked Whether this radio button will be checked.
      */
     public void setChecked(boolean checked) {
-        mRadioButton.setChecked(checked);
+        setCheckedWithNoFocusChange(checked);
         // Retain focus on RadioButtonWithDescription after radio button is checked.
         // Otherwise focus is lost. This is required for Bluetooth keyboard navigation.
         // See: crbug.com/936143
         if (checked) requestFocus();
+    }
+
+    /**
+     * Set the checked status for this radio button without updating the focus.
+     *
+     * If the radio button is inside a radio button group and going to be checked, the rest of the
+     * radio buttons in the group will be set to unchecked.
+     *
+     * In most cases, caller should use {@link #setChecked(boolean)} to handle the focus as well.
+     * @param checked Whether this radio button will be checked.
+     */
+    protected void setCheckedWithNoFocusChange(boolean checked) {
+        if (mGroup != null && checked) {
+            for (RadioButtonWithDescription button : mGroup) {
+                if (button != this) button.setCheckedWithNoFocusChange(false);
+            }
+        }
+        mRadioButton.setChecked(checked);
     }
 
     public void setOnCheckedChangeListener(ButtonCheckedStateChangedListener listener) {

@@ -181,12 +181,6 @@ public final class RadioButtonGroupHomepagePreference
         // the switch), ignore this update.
         if (mPreferenceValues.mCustomizedText.equals(newText.toString())) return;
 
-        if (mChromeNTP.isChecked()) {
-            // TODO(crbug.com/1048863): Remove after enhancing RadioButtonWithDescription#setChecked
-            mChromeNTP.setChecked(false);
-            mCustomUri.setChecked(true);
-        }
-
         mPreferenceValues.mCheckedOption = HomepageOption.ENTRY_CUSTOM_URI;
         mPreferenceValues.mCustomizedText = newText.toString();
         callChangeListener(mPreferenceValues);
@@ -208,8 +202,11 @@ public final class RadioButtonGroupHomepagePreference
             // should be checked.
             mCustomUri.setPrimaryText(value.mCustomizedText);
 
-            mChromeNTP.setChecked(value.mCheckedOption == HomepageOption.ENTRY_CHROME_NTP);
-            mCustomUri.setChecked(value.mCheckedOption == HomepageOption.ENTRY_CUSTOM_URI);
+            if (value.mCheckedOption == HomepageOption.ENTRY_CHROME_NTP) {
+                mChromeNTP.setChecked(true);
+            } else {
+                mCustomUri.setChecked(true);
+            }
 
             mChromeNTP.setVisibility(value.mIsNTPOptionVisible ? View.VISIBLE : View.GONE);
             mCustomUri.setVisibility(value.mIsCustomizedOptionVisible ? View.VISIBLE : View.GONE);

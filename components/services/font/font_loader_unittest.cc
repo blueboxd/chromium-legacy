@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/cpp/font_loader.h"
@@ -58,9 +59,9 @@ std::string GetPostscriptNameFromFile(base::File& font_file) {
 
 mojo::PendingRemote<mojom::FontService> ConnectToBackgroundFontService() {
   mojo::PendingRemote<mojom::FontService> remote;
-  base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                   base::WithBaseSyncPrimitives(),
-                                   base::TaskPriority::USER_BLOCKING})
+  base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::USER_BLOCKING})
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      [](mojo::PendingReceiver<mojom::FontService> receiver) {

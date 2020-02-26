@@ -9,6 +9,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
@@ -137,8 +138,8 @@ void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!offload_task_runner_) {
-    offload_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING});
+    offload_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskPriority::USER_BLOCKING});
   }
 
   offload_task_runner_->PostTask(

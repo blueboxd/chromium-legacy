@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -34,7 +35,7 @@ scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
   // ThreadPoolInstance themselves.
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cronet");
 
-  return base::CreateSingleThreadTaskRunner({base::ThreadPool()});
+  return base::ThreadPool::CreateSingleThreadTaskRunner({});
 }
 
 base::SingleThreadTaskRunner* InitTaskRunner() {

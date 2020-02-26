@@ -7,6 +7,10 @@
 #include "ash/public/cpp/update_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_required_timer.h"
@@ -98,10 +102,14 @@ void RelaunchNotificationControllerPlatformImpl::
     RefreshRelaunchRequiredTitle() {
   // SystemTrayClient may not exist in unit tests.
   if (SystemTrayClient::Get()) {
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     SystemTrayClient::Get()->SetUpdateNotificationState(
         ash::NotificationStyle::kAdminRequired,
         relaunch_required_timer_->GetWindowTitle(),
-        l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_BODY));
+        l10n_util::GetStringFUTF16(
+            IDS_RELAUNCH_REQUIRED_BODY,
+            base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain())));
   }
 }
 

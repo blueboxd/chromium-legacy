@@ -43,7 +43,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
                                               TabGroupUiMediator.TabGroupUiController {
     static final String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
-    private final PropertyModel mTabStripToolbarModel;
+    private final PropertyModel mModel;
     private final ThemeColorProvider mThemeColorProvider;
     private final PropertyModelChangeProcessor mModelChangeProcessor;
     private final ViewGroup mTabListContainerView;
@@ -59,14 +59,14 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     public TabGroupUiCoordinator(ViewGroup parentView, ThemeColorProvider themeColorProvider) {
         mContext = parentView.getContext();
         mThemeColorProvider = themeColorProvider;
-        mTabStripToolbarModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
+        mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
         TabGroupUiToolbarView toolbarView =
                 (TabGroupUiToolbarView) LayoutInflater.from(mContext).inflate(
                         R.layout.bottom_tab_strip_toolbar, parentView, false);
         mTabListContainerView = toolbarView.getViewContainer();
         parentView.addView(toolbarView);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                mTabStripToolbarModel, toolbarView, TabGroupUiToolbarViewBinder::bind);
+                mModel, toolbarView, TabGroupUiViewBinder::bind);
     }
 
     /**
@@ -104,9 +104,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
             mTabGridDialogCoordinator = null;
         }
 
-        mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
-                tabModelSelector, activity,
-                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider,
+        mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
+                activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),
+                mThemeColorProvider,
                 isTabGroupsUiImprovementsEnabled ? mTabGridDialogCoordinator.getDialogController()
                                                  : null);
 

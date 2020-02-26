@@ -65,6 +65,7 @@
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
+#include "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -284,6 +285,24 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   [self hideAutosigninNotification];
 }
 
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  DCHECK_EQ(_webState, webState);
+  if (!navigation->HasCommitted() || navigation->IsSameDocument())
+    return;
+
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+    return;
+
+  // On non-iOS platforms navigations initiated by link click are excluded from
+  // navigations which might be form submssions. On iOS there is no easy way to
+  // check that the navigation is link initiated, so it is skipped. It should
+  // not be so important since it is unlikely that the user clicks on a link
+  // after filling password form w/o submitting it.
+  self.passwordManager->DidNavigateMainFrame(
+      /*form_may_be_submitted=*/navigation->IsRendererInitiated());
+}
+
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
   // Clear per-page state.
@@ -297,10 +316,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   if (!web::UrlHasWebScheme(pageURL))
     return;
-
-  // Notify the password manager that the page loaded so it can clear its own
-  // per-page state.
-  self.passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/true);
 
   if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.

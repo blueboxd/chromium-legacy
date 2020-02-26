@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_journal_mutation.h"
 #include "components/feed/core/feed_journal_operation.h"
@@ -38,9 +39,8 @@ FeedJournalDatabase::FeedJournalDatabase(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_folder)
     : database_status_(InitStatus::kNotInitialized),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       storage_database_(proto_database_provider->GetDB<JournalStorageProto>(
           leveldb_proto::ProtoDbType::FEED_JOURNAL_DATABASE,
           database_folder.AppendASCII(kJournalDatabaseFolder),

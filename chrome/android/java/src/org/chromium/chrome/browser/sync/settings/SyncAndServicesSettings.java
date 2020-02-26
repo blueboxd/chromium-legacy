@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
@@ -310,9 +309,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         mProfileSyncService.addSyncStateChangedListener(this);
         mSigninPreference.registerForUpdates();
 
-        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
-        // instead.
-        if (!mIsFromSigninScreen || ChromeSigninController.get().isSignedIn()) {
+        if (!mIsFromSigninScreen
+                || IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) {
             return;
         }
 
@@ -483,10 +481,11 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         }
 
         if (mCurrentSyncError == SyncError.AUTH_ERROR) {
-            // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use
-            // IdentityManager instead.
             AccountManagerFacade.get().updateCredentials(
-                    ChromeSigninController.get().getSignedInUser(), getActivity(), null);
+                    CoreAccountInfo.getAndroidAccountFrom(IdentityServicesProvider.get()
+                                                                  .getIdentityManager()
+                                                                  .getPrimaryAccountInfo()),
+                    getActivity(), null);
             return;
         }
 
@@ -500,9 +499,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         }
 
         if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
-            // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use
-            // IdentityManager instead.
-            final Account account = ChromeSigninController.get().getSignedInUser();
+            final Account account = CoreAccountInfo.getAndroidAccountFrom(
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
             IdentityServicesProvider.get().getSigninManager().signOut(
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
@@ -567,9 +565,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
         }
 
-        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
-        // instead.
-        if (!ChromeSigninController.get().isSignedIn()) {
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) {
             getPreferenceScreen().removePreference(mManageYourGoogleAccount);
             getPreferenceScreen().removePreference(mSyncCategory);
             return;

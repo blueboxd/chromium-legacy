@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
@@ -47,8 +48,8 @@ void TestInstaller::Install(const base::FilePath& unpack_path,
 
 void TestInstaller::InstallComplete(Callback callback,
                                     const Result& result) const {
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(std::move(callback), result));
+  base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                             base::BindOnce(std::move(callback), result));
 }
 
 bool TestInstaller::GetInstalledFile(const std::string& file,

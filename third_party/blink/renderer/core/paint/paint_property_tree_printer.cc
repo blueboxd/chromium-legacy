@@ -54,7 +54,7 @@ class FrameViewPropertyTreePrinter
     for (const auto* fragment = &object.FirstFragment(); fragment;
          fragment = fragment->NextFragment()) {
       if (const auto* properties = fragment->PaintProperties())
-        Traits::AddObjectPaintProperties(object, *properties, *this);
+        Traits::AddObjectPaintProperties(*properties, *this);
     }
     for (const auto* child = object.SlowFirstChild(); child;
          child = child->NextSibling()) {
@@ -75,7 +75,6 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
     printer.AddNode(visual_viewport.GetScrollTranslationNode());
   }
   static void AddObjectPaintProperties(
-      const LayoutObject& object,
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
     printer.AddNode(properties.PaintOffsetTranslation());
@@ -95,7 +94,6 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
       const VisualViewport& visual_viewport,
       PropertyTreePrinter<ClipPaintPropertyNode>& printer) {}
   static void AddObjectPaintProperties(
-      const LayoutObject& object,
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<ClipPaintPropertyNode>& printer) {
     printer.AddNode(properties.FragmentClip());
@@ -118,7 +116,6 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
       PropertyTreePrinter<EffectPaintPropertyNode>& printer) {}
 
   static void AddObjectPaintProperties(
-      const LayoutObject& object,
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<EffectPaintPropertyNode>& printer) {
     printer.AddNode(properties.Effect());
@@ -141,7 +138,6 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
   }
 
   static void AddObjectPaintProperties(
-      const LayoutObject& object,
       const ObjectPaintProperties& properties,
       PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
     printer.AddNode(properties.Scroll());

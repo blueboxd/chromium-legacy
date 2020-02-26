@@ -1274,6 +1274,7 @@ class SAMLPolicyTest : public SamlTest {
 
   void ShowGAIALoginForm();
   void ShowSAMLInterstitial();
+  void ClickBackOnSAMLInterstitialPage();
   void ClickNextOnSAMLInterstitialPage();
   void LogInWithSAML(const std::string& user_id,
                      const std::string& auth_sid_cookie,
@@ -1468,6 +1469,10 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"gaia-signin", "saml-interstitial"})
       ->Wait();
+}
+
+void SAMLPolicyTest::ClickBackOnSAMLInterstitialPage() {
+  test::OobeJS().TapOnPath({"gaia-signin", "interstitial-back"});
 }
 
 void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
@@ -1706,6 +1711,12 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
       kTestAuthLSIDCookie1);
   SetLoginBehaviorPolicyToSAMLInterstitial();
   WaitForSigninScreen();
+
+  ShowSAMLInterstitial();
+  ClickBackOnSAMLInterstitialPage();
+  // Back button should hide OOBE dialog.
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   ShowSAMLInterstitial();
   ClickNextOnSAMLInterstitialPage();

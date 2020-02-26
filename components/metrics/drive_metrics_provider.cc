@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 
@@ -32,9 +33,9 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 void DriveMetricsProvider::AsyncInit(base::OnceClosure done_callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DriveMetricsProvider::GetDriveMetricsOnBackgroundThread,
                      local_state_path_key_),

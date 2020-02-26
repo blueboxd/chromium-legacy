@@ -2281,7 +2281,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
           display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
   // Gesture tap at the home button.
-  views::View* home_button = ash::ShelfTestApi::Create()->GetHomeButton();
+  views::View* home_button = ash::ShelfTestApi().GetHomeButton();
   ui::test::EventGenerator event_generator(controller->GetRootWindow());
   event_generator.GestureTapAt(home_button->GetBoundsInScreen().CenterPoint());
 

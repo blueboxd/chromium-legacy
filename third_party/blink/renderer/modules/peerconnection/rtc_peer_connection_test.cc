@@ -379,10 +379,17 @@ static const char* kOfferSdpPlanBMultipleAudioTracks =
 
 class RTCPeerConnectionTest : public testing::Test {
  public:
-  RTCPeerConnection* CreatePC(V8TestingScope& scope,
-                              const String& sdpSemantics = String()) {
+  RTCPeerConnection* CreatePC(
+      V8TestingScope& scope,
+      const String& sdpSemantics = String(),
+      bool force_encoded_audio_insertable_streams = false,
+      bool force_encoded_video_insertable_streams = false) {
     RTCConfiguration* config = RTCConfiguration::Create();
     config->setSdpSemantics(sdpSemantics);
+    config->setForceEncodedAudioInsertableStreams(
+        force_encoded_audio_insertable_streams);
+    config->setForceEncodedVideoInsertableStreams(
+        force_encoded_video_insertable_streams);
     RTCIceServer* ice_server = RTCIceServer::Create();
     ice_server->setUrl("stun:fake.stun.url");
     HeapVector<Member<RTCIceServer>> ice_servers;
@@ -641,6 +648,21 @@ TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnspecified) {
   ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
   sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
   ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+}
+
+TEST_F(RTCPeerConnectionTest, CheckInsertableStreamsConfig) {
+  for (bool force_encoded_audio_insertable_streams : {true, false}) {
+    for (bool force_encoded_video_insertable_streams : {true, false}) {
+      V8TestingScope scope;
+      Persistent<RTCPeerConnection> pc =
+          CreatePC(scope, String(), force_encoded_audio_insertable_streams,
+                   force_encoded_video_insertable_streams);
+      EXPECT_EQ(pc->force_encoded_audio_insertable_streams(),
+                force_encoded_audio_insertable_streams);
+      EXPECT_EQ(pc->force_encoded_video_insertable_streams(),
+                force_encoded_video_insertable_streams);
+    }
+  }
 }
 
 enum class AsyncOperationAction {

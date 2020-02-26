@@ -17,6 +17,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -38,8 +39,8 @@ class SessionChangeObserver::WtsRegistrationNotificationManager {
         base::IgnoreResult(&WTSRegisterSessionNotification),
         gfx::SingletonHwnd::GetInstance()->hwnd(), NOTIFY_FOR_THIS_SESSION);
 
-    base::CreateCOMSTATaskRunner({base::ThreadPool()})
-        ->PostTask(FROM_HERE, std::move(wts_register));
+    base::ThreadPool::CreateCOMSTATaskRunner({})->PostTask(
+        FROM_HERE, std::move(wts_register));
   }
 
   ~WtsRegistrationNotificationManager() { RemoveSingletonHwndObserver(); }

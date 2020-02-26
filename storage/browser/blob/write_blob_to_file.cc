@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -237,10 +238,8 @@ void HandleModifiedTimeOnBlobFileWriteComplete(
     // Special Case 1: Success but no bytes were written, so just create
     // an empty file (LocalFileStreamWriter only creates a file
     // if data is actually written).
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::ThreadPool()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(CreateEmptyFileAndMaybeSetModifiedTime,
                        std::move(file_path), last_modified, flush_on_write),
         std::move(callback));
@@ -248,10 +247,8 @@ void HandleModifiedTimeOnBlobFileWriteComplete(
   } else if (success && last_modified) {
     // Special Case 2: Success and |last_modified| needs to be set. Set
     // that before reporting write completion.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::ThreadPool()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(
             [](int64_t bytes_written, base::FilePath file_path,
                base::Optional<base::Time> last_modified) {
@@ -307,10 +304,8 @@ void WriteConstructedBlobToFile(
         return;
       }
 
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::ThreadPool()},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(CopyFileAndMaybeWriteTimeModified, item.path(),
                          item.expected_modification_time(), file_path,
                          item.offset(), optional_size, last_modified,
@@ -323,8 +318,8 @@ void WriteConstructedBlobToFile(
   // If not, copy the BlobReader and FileStreamWriter.
   std::unique_ptr<FileStreamWriter> writer =
       FileStreamWriter::CreateForLocalFile(
-          base::CreateTaskRunner({base::MayBlock(), base::ThreadPool(),
-                                  base::TaskPriority::USER_VISIBLE})
+          base::ThreadPool::CreateTaskRunner(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
               .get(),
           file_path, /*initial_offset=*/0,
           FileStreamWriter::CREATE_NEW_FILE_ALWAYS);

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -151,7 +152,7 @@ class StorageAreaImplTest : public testing::Test,
     base::RunLoop loop;
     db_ = AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "StorageAreaImplTest",
-        base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
         base::BindLambdaForTesting(
             [&](leveldb::Status status) { loop.Quit(); }));
     loop.Run();

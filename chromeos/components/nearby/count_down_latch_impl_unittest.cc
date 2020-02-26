@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -39,8 +40,8 @@ class CountDownLatchImplTest : public testing::Test {
   base::UnguessableToken PostAwaitTask(
       const base::Optional<base::TimeDelta>& timeout_millis) {
     base::UnguessableToken unique_task_id = base::UnguessableToken::Create();
-    base::PostTask(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&CountDownLatchImplTest::AwaitTask,
                        base::Unretained(this), timeout_millis, unique_task_id));
     return unique_task_id;

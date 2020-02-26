@@ -1454,6 +1454,24 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED" desc="The text shown in the tray menu when the virtual keyboard is enabled.">
         On-screen keyboard enabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_LABEL" desc="The label text shown under the privacy screen menu button.">
+        Privacy screen
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_SUBLABEL" desc="The sublabel text under the privacy screen menu button when the feature is toggled off.">
+        Off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_SUBLABEL" desc="The sublabel text under the privacy screen menu button when the feature is toggled on.">
+        On
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP" desc="The tooltip text for the privacy screen menu button.">
+        Toggle privacy screen. <ph name="STATE_TEXT">$1<ex>Privacy screen is on.</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_ON_STATE" desc="The tooltip text for the privacy screen menu button indicating the feature is on.">
+        Privacy screen is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_OFF_STATE" desc="The tooltip text for the privacy screen menu button indicating the feature is off.">
+        Privacy screen is off.
+      </message>
 
       <!-- Status tray networking strings. -->
       <message name="IDS_ASH_STATUS_TRAY_MOBILE_SCANNING" desc="Message when scanning for mobile networks">

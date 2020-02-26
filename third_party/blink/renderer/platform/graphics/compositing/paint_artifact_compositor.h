@@ -167,6 +167,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // going to be removed from its frame.
   void WillBeRemovedFromFrame();
 
+  std::unique_ptr<JSONArray> GetPendingLayersAsJSON(
+      const PaintArtifact* = nullptr) const;
+
   std::unique_ptr<JSONObject> GetLayersAsJSON(
       LayerTreeFlags,
       const PaintArtifact* = nullptr) const;
@@ -251,6 +254,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     static FloatRect UniteRectsKnownToBeOpaque(const FloatRect&,
                                                const FloatRect&);
     FloatRect MapRectKnownToBeOpaque(const PropertyTreeState&) const;
+
+    std::unique_ptr<JSONObject> ToJSON(const PaintArtifact* = nullptr) const;
 
     FloatRect VisualRectForOverlapTesting() const;
 

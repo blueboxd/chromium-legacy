@@ -19,6 +19,7 @@ class SequencedTaskRunner;
 
 namespace policy {
 class BrowserPolicyConnector;
+class PolicyService;
 }
 
 namespace sync_preferences {
@@ -38,12 +39,15 @@ std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<PrefRegistry>& pref_registry,
+    policy::PolicyService* policy_service,
     policy::BrowserPolicyConnector* policy_connector);
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
-    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry);
+    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
+    policy::PolicyService* policy_service,
+    policy::BrowserPolicyConnector* policy_connector);
 
 // Creates an incognito copy of |pref_service| that shares most prefs but uses
 // a fresh non-persistent overlay for the user pref store.

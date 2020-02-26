@@ -24,6 +24,7 @@
 // <include src="network_select_login.js">
 // <include src="update_required_card.js">
 // <include src="offline_ad_login.js">
+// <include src="checking_downloading_update.js">
 // <include src="active_directory_password_change.js">
 // <include src="oobe_a11y_option.js">
 // <include src="oobe_adb_sideloading_screen.js">

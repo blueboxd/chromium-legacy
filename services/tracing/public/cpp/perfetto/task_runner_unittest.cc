@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,9 +96,8 @@ class PerfettoTaskRunnerTest : public testing::Test {
   }
 
   scoped_refptr<base::SequencedTaskRunner> CreateNewTaskrunner() {
-    return base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock()},
-        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+    return base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::MayBlock()}, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   }
   void SetTaskExpectations(base::OnceClosure on_complete,
                            size_t expected_tasks,

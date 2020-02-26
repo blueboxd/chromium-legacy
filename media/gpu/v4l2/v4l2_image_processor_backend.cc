@@ -22,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/gpu/chromeos/fourcc.h"
@@ -124,8 +125,8 @@ V4L2ImageProcessorBackend::V4L2ImageProcessorBackend(
       num_buffers_(num_buffers),
       // We poll V4L2 device on this task runner, which blocks the task runner.
       // Therefore we use dedicated SingleThreadTaskRunner here.
-      poll_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool()},
+      poll_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   DVLOGF(2);
   DETACH_FROM_SEQUENCE(poll_sequence_checker_);

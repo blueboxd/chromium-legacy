@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -692,10 +693,8 @@ class URLLoader::FileOpenerForUpload {
   // |opened_files| vector onto a sequence that can block so it gets destroyed
   // there.
   static void PostCloseFiles(std::vector<base::File> opened_files) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
         base::BindOnce(base::DoNothing::Once<std::vector<base::File>>(),
                        std::move(opened_files)));
   }
@@ -777,8 +776,8 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   url_request_->set_upload(CreateUploadDataStream(
       request.request_body.get(), opened_files, task_runner.get()));
 

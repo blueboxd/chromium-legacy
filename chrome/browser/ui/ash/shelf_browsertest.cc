@@ -37,5 +37,5 @@ IN_PROC_BROWSER_TEST_F(ShelfGuestSessionBrowserTest, ShelfAlignment) {
   EXPECT_EQ(ash::ShelfAlignment::kBottom, alignment);
 
   // Check the locked state, which is not exposed via prefs.
-  EXPECT_FALSE(ash::ShelfTestApi::Create()->IsAlignmentBottomLocked());
+  EXPECT_FALSE(ash::ShelfTestApi().IsAlignmentBottomLocked());
 }

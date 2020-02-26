@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_context_builder.h"
 
 #include "base/run_loop.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
@@ -183,8 +184,8 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
           scoped_temp_dir.GetPath().Append(
               FILE_PATH_LITERAL("ReportingAndNelStore")),
           base::ThreadTaskRunnerHandle::Get(),
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(),
                net::GetReportingAndNelStoreBackgroundSequencePriority(),
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
 

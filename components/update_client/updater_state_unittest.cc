@@ -75,7 +75,12 @@ TEST_F(UpdaterStateTest, Serialize) {
   updater_state.last_autoupdate_started_ =
       base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(15);
   attributes = updater_state.BuildAttributes();
-  EXPECT_STREQ("408", attributes.at("laststarted").c_str());
+  EXPECT_STREQ("336", attributes.at("laststarted").c_str());
+
+  updater_state.last_autoupdate_started_ =
+      base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(58);
+  attributes = updater_state.BuildAttributes();
+  EXPECT_STREQ("1344", attributes.at("laststarted").c_str());
 
   updater_state.last_autoupdate_started_ =
       base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(90);
@@ -90,7 +95,7 @@ TEST_F(UpdaterStateTest, Serialize) {
   updater_state.last_checked_ =
       base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(15);
   attributes = updater_state.BuildAttributes();
-  EXPECT_STREQ("408", attributes.at("lastchecked").c_str());
+  EXPECT_STREQ("336", attributes.at("lastchecked").c_str());
 
   updater_state.last_checked_ =
       base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(90);

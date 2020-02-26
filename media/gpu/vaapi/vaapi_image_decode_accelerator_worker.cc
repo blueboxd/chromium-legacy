@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
 
+#include "base/task/thread_pool.h"
 #include "string.h"
 
 #include <utility>
@@ -150,7 +151,7 @@ VaapiImageDecodeAcceleratorWorker::Create() {
 VaapiImageDecodeAcceleratorWorker::VaapiImageDecodeAcceleratorWorker(
     VaapiImageDecoderVector decoders) {
   DETACH_FROM_SEQUENCE(io_sequence_checker_);
-  decoder_task_runner_ = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  decoder_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
   DCHECK(decoder_task_runner_);
 
   DCHECK(!decoders.empty());

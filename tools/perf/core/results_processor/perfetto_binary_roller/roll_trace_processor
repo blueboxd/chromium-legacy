@@ -1,0 +1,20 @@
+#!/usr/bin/env vpython
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+from core import path_util
+path_util.AddPyUtilsToPath()
+path_util.AddTracingToPath()
+
+from core.results_processor.perfetto_binary_roller import binary_deps_manager
+from core.tbmv3 import trace_processor
+
+
+if __name__ == '__main__':
+  binary_deps_manager.SwitchBinaryToLatestVersion(
+      trace_processor.TP_BINARY_NAME)

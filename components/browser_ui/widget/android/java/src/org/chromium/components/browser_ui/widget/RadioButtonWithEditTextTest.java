@@ -229,10 +229,14 @@ public class RadioButtonWithEditTextTest extends DummyUiActivityTestCase {
         Assert.assertFalse("Cursor in EditText should be visible", mEditText.isCursorVisible());
         assertIsKeyboardShowing(false);
 
-        // Click to show keyboard
+        // Click EditText to show keyboard and checked the radio button.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mRadioButtonWithEditText.setChecked(false); });
         TouchCommon.singleClickView(mEditText);
         Assert.assertTrue("Cursor in EditText should be visible", mEditText.isCursorVisible());
         assertIsKeyboardShowing(true);
+        Assert.assertTrue("RadioButton should be checked after EditText gains focus.",
+                mRadioButtonWithEditText.isChecked());
 
         // Test editor action
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);

@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
@@ -658,10 +659,9 @@ void ClientCertResolver::ResolveNetworks(
 
   VLOG(2) << "Start task for resolving client cert patterns.";
   resolve_task_running_ = true;
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FindCertificateMatches,
                      NetworkCertLoader::CloneNetworkCertList(
                          NetworkCertLoader::Get()->client_certs()),

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_content_mutation.h"
 #include "components/feed/core/feed_content_operation.h"
@@ -53,9 +54,8 @@ FeedContentDatabase::FeedContentDatabase(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_folder)
     : database_status_(InitStatus::kNotInitialized),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       storage_database_(proto_database_provider->GetDB<ContentStorageProto>(
           leveldb_proto::ProtoDbType::FEED_CONTENT_DATABASE,
           database_folder.AppendASCII(kContentDatabaseFolder),

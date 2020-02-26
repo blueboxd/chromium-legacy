@@ -23,9 +23,11 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/overview_test_api.h"
+#include "ash/public/cpp/scrollable_shelf_info.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -4033,6 +4035,47 @@ ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
 
   controller->PinAppWithID(params->app_id);
   return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetScrollableShelfInfoForStateFunction
+////////////////////////////////////////////////////////////////////////////////
+AutotestPrivateGetScrollableShelfInfoForStateFunction::
+    AutotestPrivateGetScrollableShelfInfoForStateFunction() = default;
+AutotestPrivateGetScrollableShelfInfoForStateFunction::
+    ~AutotestPrivateGetScrollableShelfInfoForStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetScrollableShelfInfoForStateFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetScrollableShelfInfoForStateFunction";
+  std::unique_ptr<api::autotest_private::GetScrollableShelfInfoForState::Params>
+      params(
+          api::autotest_private::GetScrollableShelfInfoForState::Params::Create(
+              *args_));
+
+  ash::ShelfTestApi shelf_test_api;
+
+  ash::ScrollableShelfState state;
+
+  if (params->state.scroll_distance)
+    state.scroll_distance = *params->state.scroll_distance;
+
+  ash::ScrollableShelfInfo fetched_info =
+      shelf_test_api.GetScrollableShelfInfoForState(state);
+
+  api::autotest_private::ScrollableShelfInfo info;
+  info.main_axis_offset = fetched_info.main_axis_offset;
+  info.page_offset = fetched_info.page_offset;
+  info.left_arrow_bounds = ToBoundsDictionary(fetched_info.left_arrow_bounds);
+  info.right_arrow_bounds = ToBoundsDictionary(fetched_info.right_arrow_bounds);
+  info.is_animating = fetched_info.is_animating;
+
+  if (params->state.scroll_distance) {
+    info.target_main_axis_offset =
+        std::make_unique<double>(fetched_info.target_main_axis_offset);
+  }
+
+  return RespondNow(OneArgument(info.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

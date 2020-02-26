@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/pending_flush.h"
@@ -40,7 +41,7 @@ class KeyValueStoreImpl : public base::RefCountedThreadSafe<KeyValueStoreImpl>,
                           public mojom::KeyValueStore {
  public:
   KeyValueStoreImpl()
-      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})) {}
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
 
   void Bind(PendingReceiver<mojom::KeyValueStore> receiver) {
     task_runner_->PostTask(
@@ -65,7 +66,7 @@ class KeyValueStoreImpl : public base::RefCountedThreadSafe<KeyValueStoreImpl>,
   class WriterImpl : public mojom::Writer {
    public:
     WriterImpl(KeyValueStoreImpl* key_value_store)
-        : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
+        : task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
           key_value_store_(key_value_store) {}
     ~WriterImpl() override = default;
 

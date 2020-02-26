@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
@@ -219,9 +218,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      * from this state.
      */
     private void updateSyncPreferences() {
-        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
-        // instead.
-        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        String signedInAccountName = CoreAccountInfo.getEmailFrom(
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
         if (signedInAccountName == null) {
             // May happen if account is removed from the device while this screen is shown.
             getActivity().finish();

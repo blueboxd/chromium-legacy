@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/android/jni_headers/PaintPreviewUtils_jni.h"
 #include "components/paint_preview/browser/file_manager.h"
@@ -114,15 +115,15 @@ void OnCaptured(base::TimeTicks start_time,
   base::UmaHistogramBoolean("Browser.PaintPreview.CaptureExperiment.Success",
                             success);
   if (!success) {
-    base::PostTask(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&CleanupOnFailure, root_dir, std::move(finished)));
     return;
   }
 
   CaptureMetrics result = {0, time_delta, source_id};
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CompressAndMeasureSize, root_dir, url, std::move(proto),
                      result, std::move(finished), keep_zip));
 }
@@ -181,8 +182,8 @@ void Capture(content::WebContents* contents,
                                  .AppendASCII(kPaintPreviewDir)
                                  .AppendASCII(kCaptureTestDir);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CreateDirectoryForURL, root_path,
                      contents->GetLastCommittedURL()),
       base::BindOnce(&InitiateCapture, base::Unretained(contents),

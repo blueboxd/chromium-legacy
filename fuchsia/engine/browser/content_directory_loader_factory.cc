@@ -22,6 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -341,9 +342,8 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
 }  // namespace
 
 ContentDirectoryLoaderFactory::ContentDirectoryLoaderFactory()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 ContentDirectoryLoaderFactory::~ContentDirectoryLoaderFactory() {}

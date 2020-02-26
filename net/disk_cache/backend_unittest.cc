@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -4330,8 +4331,8 @@ TEST_F(DiskCacheBackendTest, DISABLED_SimpleCachePrioritizedEntryOrder) {
   // priority order.
   disk_cache::SimpleBackendImpl* simple_cache =
       static_cast<disk_cache::SimpleBackendImpl*>(cache_.get());
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_VISIBLE, base::MayBlock()});
   simple_cache->SetTaskRunnerForTesting(task_runner);
 
   // Create three entries. Priority order is 3, 1, 2 because 3 has the highest
@@ -4422,8 +4423,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheFIFOEntryOrder) {
   // priority order.
   disk_cache::SimpleBackendImpl* simple_cache =
       static_cast<disk_cache::SimpleBackendImpl*>(cache_.get());
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_VISIBLE, base::MayBlock()});
   simple_cache->SetTaskRunnerForTesting(task_runner);
 
   // Create three entries. If their priority was honored, they'd run in order

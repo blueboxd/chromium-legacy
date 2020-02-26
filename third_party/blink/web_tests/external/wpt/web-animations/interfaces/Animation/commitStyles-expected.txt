@@ -7,6 +7,7 @@ PASS Commits values calculated mid-interval
 PASS Commits variable references as their computed values
 PASS Commits custom variables
 PASS Commits em units as pixel values
+PASS Commits transforms
 PASS Commits the intermediate value of an animation in the middle of stack
 PASS Commit composites on top of the underlying value
 PASS Triggers mutation observers when updating style

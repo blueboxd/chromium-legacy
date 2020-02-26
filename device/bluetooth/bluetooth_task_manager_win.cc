@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
@@ -268,8 +269,8 @@ void BluetoothTaskManagerWin::RemoveObserver(Observer* observer) {
 
 void BluetoothTaskManagerWin::Initialize() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  InitializeWithBluetoothTaskRunner(base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  InitializeWithBluetoothTaskRunner(base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 }
 

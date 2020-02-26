@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -40,8 +41,8 @@ void ActivateAffiliationBasedMatching(
   //
   // Task priority is USER_VISIBLE, because AffiliationService-related tasks
   // block obtaining credentials from PasswordStore, hence password autofill.
-  static auto backend_task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  static auto backend_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   // The PasswordStore is so far the only consumer of the AffiliationService,
   // therefore the service is owned by the AffiliatedMatchHelper, which in turn

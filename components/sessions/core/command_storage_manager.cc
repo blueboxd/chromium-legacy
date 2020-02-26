@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sessions/core/command_storage_backend.h"
@@ -185,9 +186,8 @@ CommandStorageManager::CommandStorageManager(
 // static
 scoped_refptr<base::SequencedTaskRunner>
 CommandStorageManager::CreateDefaultBackendTaskRunner() {
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
 base::CancelableTaskTracker::TaskId

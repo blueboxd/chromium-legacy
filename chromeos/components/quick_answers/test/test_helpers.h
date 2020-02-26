@@ -7,6 +7,7 @@
 
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/result_loader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -26,6 +27,20 @@ class MockQuickAnswersDelegate
   MOCK_METHOD1(OnRequestPreprocessFinish, void(const QuickAnswersRequest&));
   MOCK_METHOD1(OnEligibilityChanged, void(bool));
   MOCK_METHOD0(OnNetworkError, void());
+};
+
+class MockResultLoaderDelegate : public ResultLoader::ResultLoaderDelegate {
+ public:
+  MockResultLoaderDelegate();
+
+  MockResultLoaderDelegate(const MockResultLoaderDelegate&) = delete;
+  MockResultLoaderDelegate& operator=(const MockResultLoaderDelegate&) = delete;
+
+  ~MockResultLoaderDelegate() override;
+
+  // ResultLoader::ResultLoaderDelegate:
+  MOCK_METHOD0(OnNetworkError, void());
+  MOCK_METHOD1(OnQuickAnswerReceived, void(std::unique_ptr<QuickAnswer>));
 };
 
 MATCHER_P(QuickAnswerEqual, quick_answer, "") {

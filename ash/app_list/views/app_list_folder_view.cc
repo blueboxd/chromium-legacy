@@ -56,10 +56,6 @@ constexpr int kIndexChildItems = 2;
 constexpr int kIndexFolderHeader = 3;
 constexpr int kIndexPageSwitcher = 4;
 
-int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
-  return compositor ? compositor->activated_frame_count() : 0;
-}
-
 // Transit from the background of the folder item's icon to the opened
 // folder's background when opening the folder. Transit the other way when
 // closing the folder.
@@ -476,6 +472,12 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
           contents_view_->app_list_view()->is_tablet_mode()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
+  show_hide_metrics_reporter_ =
+      std::make_unique<FolderShowHideAnimationReporter>();
+  show_hide_metrics_recorder_ =
+      std::make_unique<AppListAnimationMetricsRecorder>(
+          show_hide_metrics_reporter_.get());
+
   model_->AddObserver(this);
 }
 
@@ -502,8 +504,9 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
 void AppListFolderView::ScheduleShowHideAnimation(bool show,
                                                   bool hide_for_reparent) {
   CreateOpenOrCloseFolderAccessibilityEvent(show);
-  animation_start_frame_number_ =
-      GetCompositorActivatedFrameCount(GetCompositor());
+  show_hide_metrics_recorder_->OnAnimationStart(
+      GetAppListConfig().folder_transition_in_duration(),
+      GetWidget()->GetCompositor());
 
   hide_for_reparent_ = hide_for_reparent;
 
@@ -666,25 +669,7 @@ AppListItemView* AppListFolderView::GetActivatedFolderItemView() {
 }
 
 void AppListFolderView::RecordAnimationSmoothness() {
-  ui::Compositor* compositor = GetCompositor();
-  // Do not record animation smoothness if |compositor| is nullptr.
-  if (!compositor)
-    return;
-  // Do not record if the start frame number doesn't exist; either animation is
-  // not scheduled or the record happens.
-  if (!animation_start_frame_number_.has_value())
-    return;
-
-  const int end_frame_number = GetCompositorActivatedFrameCount(compositor);
-  if (end_frame_number > *animation_start_frame_number_) {
-    RecordFolderShowHideAnimationSmoothness(
-        end_frame_number - *animation_start_frame_number_,
-        GetAppListConfig().folder_transition_in_duration(),
-        compositor->refresh_rate());
-  }
-  // Resets the frame number so that further invocation won't record the
-  // metrics.
-  animation_start_frame_number_.reset();
+  show_hide_metrics_recorder_->OnAnimationEnd(GetWidget()->GetCompositor());
 }
 
 void AppListFolderView::OnTabletModeChanged(bool started) {

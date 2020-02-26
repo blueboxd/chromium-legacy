@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -26,8 +27,9 @@ class LockImplTest : public testing::Test {
  protected:
   LockImplTest()
       : lock_(std::make_unique<LockImpl>()),
-        different_thread_task_runner_(base::CreateSingleThreadTaskRunner(
-            {base::ThreadPool(), base::MayBlock()})) {}
+        different_thread_task_runner_(
+            base::ThreadPool::CreateSingleThreadTaskRunner(
+                {base::MayBlock()})) {}
 
   // testing::Test
   void SetUp() override {

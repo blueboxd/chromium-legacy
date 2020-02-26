@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -84,8 +85,8 @@ void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
   std::unique_ptr<std::string> mime_type_from_extension(new std::string);
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
-  base::PostTaskAndReply(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
                      mime_type_from_extension_ptr),
       base::BindOnce(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
@@ -126,8 +127,8 @@ void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
   std::unique_ptr<std::string> sniffed_mime_type(
       new std::string(kMimeTypeApplicationOctetStream));
   std::string* const sniffed_mime_type_ptr = sniffed_mime_type.get();
-  base::PostTaskAndReply(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SniffMimeType, local_path, sniffed_mime_type_ptr),
       base::BindOnce(&OnSniffMimeTypeForNativeLocalPathCompleted,
                      std::move(sniffed_mime_type), std::move(callback)));
@@ -158,8 +159,8 @@ void GetMimeTypeForLocalPath(
   std::unique_ptr<std::string> mime_type_from_extension(new std::string);
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
-  base::PostTaskAndReply(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
                      mime_type_from_extension_ptr),
       base::BindOnce(&OnGetMimeTypeFromFileForNativeLocalPathCompleted,

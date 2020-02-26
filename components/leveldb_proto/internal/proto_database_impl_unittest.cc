@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
@@ -156,7 +157,7 @@ class ProtoDatabaseImplTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(shared_db_temp_dir_.CreateUniqueTempDir());
     test_task_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     shared_db_ = base::WrapRefCounted(new SharedProtoDatabase(
         kDefaultClientName, shared_db_temp_dir_.GetPath()));
   }

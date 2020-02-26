@@ -46,7 +46,7 @@ class ReaderModeIconView : public PageActionIconView,
   // GetBubble() is required by PageActionIconView; however, the icon
   // intentionally does not display a bubble when activated.
   views::BubbleDialogDelegateView* GetBubble() const override;
-  void OnExecuting(PageActionIconView::ExecuteSource execute_source) override {}
+  void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
 
   void OnResult(const dom_distiller::DistillabilityResult& result) override;
 

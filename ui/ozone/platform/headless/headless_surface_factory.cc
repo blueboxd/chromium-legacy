@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -85,10 +86,10 @@ class FileSurface : public SurfaceOzoneCanvas {
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
     if (surface_->getCanvas()->readPixels(bitmap, 0, 0)) {
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                     base::BindOnce(&WriteDataToFile, base_path_, bitmap));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          base::BindOnce(&WriteDataToFile, base_path_, bitmap));
     }
   }
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
@@ -122,10 +123,10 @@ class FileGLSurface : public GLSurfaceEglReadback {
     if (!bitmap.writePixels(pixmap))
       return false;
 
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::MayBlock(),
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   base::BindOnce(&WriteDataToFile, location_, bitmap));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(&WriteDataToFile, location_, bitmap));
     return true;
   }
 

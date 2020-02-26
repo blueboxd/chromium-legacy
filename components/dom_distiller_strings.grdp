@@ -46,15 +46,6 @@
   <message name="IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT" desc="The text to show in place of reading list article content if there is no data found.">
     No data found.
   </message>
-  <message name="IDS_DOM_DISTILLER_QUALITY_QUESTION" desc="Question to ask the user about whether the text from a web page was extracted correctly.">
-    Was the text extracted correctly?
-  </message>
-  <message name="IDS_DOM_DISTILLER_QUALITY_ANSWER_YES" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is yes.">
-    Yes
-  </message>
-  <message name="IDS_DOM_DISTILLER_QUALITY_ANSWER_NO" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is no.">
-    No
-  </message>
   <message name="IDS_DOM_DISTILLER_WEBUI_TITLE" desc="The title to show on the DOM Distiller debug page.">
     DOM Distiller
   </message>

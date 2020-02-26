@@ -10,6 +10,8 @@ source_set("quick_answers") {
     "quick_answers_consents.h",
     "quick_answers_model.cc",
     "quick_answers_model.h",
+    "result_loader.cc",
+    "result_loader.h",
     "search_result_loader.cc",
     "search_result_loader.h",
     "search_result_parsers/definition_result_parser.cc",

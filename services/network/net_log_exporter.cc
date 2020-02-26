@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
@@ -60,10 +61,9 @@ void NetLogExporter::Start(base::File destination,
   static_assert(kUnlimitedFileSize == net::FileNetLogObserver::kNoLimit,
                 "Inconsistent unbounded size constants");
   if (max_file_size != kUnlimitedFileSize) {
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&NetLogExporter::CreateScratchDir,
                        scratch_dir_create_handler_for_tests_),
 
@@ -112,10 +112,9 @@ void NetLogExporter::CloseFileOffThread(base::File file) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (file.IsValid()) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce([](base::File f) { f.Close(); }, std::move(file)));
   }
 }
@@ -148,17 +147,17 @@ void NetLogExporter::StartWithScratchDirOrCleanup(
   } else if (!scratch_dir_path.empty()) {
     // An NetLogExporter got destroyed while it was trying to create a scratch
     // dir.
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::MayBlock(),
-                    base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                   base::BindOnce(
-                       [](const base::FilePath& dir) {
-                         // The delete is non-recursive (2nd argument
-                         // false) since the only time this is invoked
-                         // the directory is expected to be empty.
-                         base::DeleteFile(dir, false);
-                       },
-                       scratch_dir_path));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+        base::BindOnce(
+            [](const base::FilePath& dir) {
+              // The delete is non-recursive (2nd argument
+              // false) since the only time this is invoked
+              // the directory is expected to be empty.
+              base::DeleteFile(dir, false);
+            },
+            scratch_dir_path));
   }
 }
 

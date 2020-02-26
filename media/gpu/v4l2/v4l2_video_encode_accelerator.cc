@@ -26,6 +26,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -167,8 +168,8 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       // performance is affected.
       // TODO(akahuang): Remove WithBaseSyncPrimitives() after replacing poll
       // thread by V4L2DevicePoller.
-      encoder_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::WithBaseSyncPrimitives()},
+      encoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::WithBaseSyncPrimitives()},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DETACH_FROM_SEQUENCE(encoder_sequence_checker_);

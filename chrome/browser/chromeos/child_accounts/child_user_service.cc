@@ -64,7 +64,7 @@ void ChildUserService::ResumeWebActivity(const std::string& app_id) {
 
 app_time::AppActivityReportInterface::ReportParams
 ChildUserService::GenerateAppActivityReport(
-    enterprise_management::ChildStatusReportRequest* report) const {
+    enterprise_management::ChildStatusReportRequest* report) {
   DCHECK(app_time_controller_);
   return app_time_controller_->app_registry()->GenerateAppActivityReport(
       report);
@@ -73,7 +73,7 @@ ChildUserService::GenerateAppActivityReport(
 void ChildUserService::AppActivityReportSubmitted(
     base::Time report_generation_timestamp) {
   DCHECK(app_time_controller_);
-  app_time_controller_->app_registry()->CleanRegistry(
+  app_time_controller_->app_registry()->OnSuccessfullyReported(
       report_generation_timestamp);
 }
 
@@ -104,7 +104,10 @@ base::TimeDelta ChildUserService::GetWebTimeLimit() const {
 }
 
 void ChildUserService::Shutdown() {
-  app_time_controller_.reset();
+  if (app_time_controller_) {
+    app_time_controller_->app_registry()->SaveAppActivity();
+    app_time_controller_.reset();
+  }
 }
 
 }  // namespace chromeos

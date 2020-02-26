@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
@@ -162,9 +163,9 @@ void UnzipWithFilter(mojo::PendingRemote<mojom::Unzipper> unzipper,
   DCHECK(!result_callback.is_null());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   background_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&DoUnzipWithFilter, std::move(unzipper), zip_path,

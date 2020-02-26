@@ -88,6 +88,9 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   }
   Profile& profile() { return profile_; }
 
+  void CreateAppActivityForApp(const AppId& app_id,
+                               base::TimeDelta activity_length);
+
  private:
   TestingProfile profile_;
   AppTimeNotificationDelegateMock notification_delegate_mock_;
@@ -133,6 +136,15 @@ void AppActivityRegistryTest::ReInitializeRegistry() {
 
   registry_test_ =
       std::make_unique<AppActivityRegistry::TestApi>(registry_.get());
+}
+
+void AppActivityRegistryTest::CreateAppActivityForApp(
+    const AppId& app_id,
+    base::TimeDelta activity_length) {
+  auto* app_window = CreateWindowForApp(app_id);
+  registry().OnAppActive(app_id, app_window, base::Time::Now());
+  task_environment().FastForwardBy(activity_length);
+  registry().OnAppInactive(app_id, app_window, base::Time::Now());
 }
 
 TEST_F(AppActivityRegistryTest, RunningActiveTimeCheck) {
@@ -668,6 +680,66 @@ TEST_F(AppActivityRegistryTest, RestoredApplicationInformation) {
     } else {
       EXPECT_TRUE(app_info.active_times().size() == 0);
     }
+  }
+}
+
+TEST_F(AppActivityRegistryTest, RemoveUninstalledApplications) {
+  CreateAppActivityForApp(kApp1, base::TimeDelta::FromHours(1));
+  CreateAppActivityForApp(kApp2, base::TimeDelta::FromHours(1));
+
+  // App1 has been uninstalled.
+  registry().OnAppUninstalled(kApp1);
+  task_environment().FastForwardBy(base::TimeDelta::FromMinutes(10));
+
+  // Removes kApp1 and cleans up ActiveTimes list in user pref.
+  registry().OnSuccessfullyReported(base::Time::Now());
+
+  // Now let's test that the app activity are stored appropriately.
+  const base::Value* value =
+      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+
+  const std::vector<PersistedAppInfo> app_infos =
+      PersistedAppInfo::PersistedAppInfosFromList(
+          value,
+          /* include_app_activity_array */ true);
+
+  // Two apps left. They are Chrome, and kApp2.
+  EXPECT_EQ(app_infos.size(), 2u);
+  for (const auto& entry : app_infos) {
+    EXPECT_EQ(entry.active_times().size(), 0u);
+    EXPECT_NE(entry.app_id(), kApp1);
+  }
+}
+
+TEST_F(AppActivityRegistryTest, RemoveOldEntries) {
+  base::Time start_time = base::Time::Now();
+
+  CreateAppActivityForApp(kApp1, base::TimeDelta::FromHours(1));
+  CreateAppActivityForApp(kApp2, base::TimeDelta::FromHours(1));
+
+  profile().GetPrefs()->SetInt64(
+      prefs::kPerAppTimeLimitsLastSuccessfulReportTime,
+      start_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  task_environment().FastForwardBy(base::TimeDelta::FromDays(30));
+
+  // Now let's recreate AppActivityRegistry. Its state should be restored.
+  ReInitializeRegistry();
+
+  // Now let's test that the app activity are stored appropriately.
+  const base::Value* value =
+      profile().GetPrefs()->GetList(prefs::kPerAppTimeLimitsAppActivities);
+
+  const std::vector<PersistedAppInfo> app_infos =
+      PersistedAppInfo::PersistedAppInfosFromList(
+          value,
+          /* include_app_activity_array */ true);
+
+  // The app activities have been cleared.
+  for (const auto& app_info : app_infos) {
+    const std::vector<AppActivity::ActiveTime>& active_time =
+        app_info.active_times();
+    EXPECT_EQ(active_time.size(), 0u);
   }
 }
 

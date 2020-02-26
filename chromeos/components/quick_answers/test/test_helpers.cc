@@ -10,5 +10,8 @@ namespace quick_answers {
 MockQuickAnswersDelegate::MockQuickAnswersDelegate() = default;
 MockQuickAnswersDelegate::~MockQuickAnswersDelegate() = default;
 
+MockResultLoaderDelegate::MockResultLoaderDelegate() = default;
+MockResultLoaderDelegate::~MockResultLoaderDelegate() = default;
+
 }  // namespace quick_answers
 }  // namespace chromeos

@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
@@ -66,7 +67,7 @@ class BlobRegistryImplTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<BlobStorageContext>(
         data_dir_.GetPath(), data_dir_.GetPath(),
-        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
+        base::ThreadPool::CreateTaskRunner({base::MayBlock()}));
     auto storage_policy = base::MakeRefCounted<MockSpecialStoragePolicy>();
     file_system_context_ = base::MakeRefCounted<FileSystemContext>(
         base::ThreadTaskRunnerHandle::Get().get(),
@@ -149,8 +150,8 @@ class BlobRegistryImplTest : public testing::Test {
   mojo::PendingRemote<blink::mojom::BytesProvider> CreateBytesProvider(
       const std::string& bytes) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ = base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()});
+      bytes_provider_runner_ =
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     }
     mojo::PendingRemote<blink::mojom::BytesProvider> result;
     auto provider = std::make_unique<MockBytesProvider>(
@@ -166,8 +167,8 @@ class BlobRegistryImplTest : public testing::Test {
       const std::string& bytes,
       mojo::PendingReceiver<blink::mojom::BytesProvider> receiver) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ = base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()});
+      bytes_provider_runner_ =
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     }
     auto provider = std::make_unique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,

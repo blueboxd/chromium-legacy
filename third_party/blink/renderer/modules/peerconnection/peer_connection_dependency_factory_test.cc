@@ -25,8 +25,9 @@ TEST_F(PeerConnectionDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
   MockRTCPeerConnectionHandlerClient client_jsep;
   std::unique_ptr<RTCPeerConnectionHandlerPlatform> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(
-          &client_jsep,
-          blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
+          &client_jsep, blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+          /*force_encoded_audio_insertable_streams=*/false,
+          /*force_encoded_video_insertable_streams=*/false));
   EXPECT_TRUE(pc_handler);
 }
 

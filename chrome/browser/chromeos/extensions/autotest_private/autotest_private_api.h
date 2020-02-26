@@ -1174,6 +1174,18 @@ class AutotestPrivatePinShelfIconFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetScrollableShelfInfoForStateFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateGetScrollableShelfInfoForStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getScrollableShelfInfoForState",
+                             AUTOTESTPRIVATE_GETSCROLLABLESHELFINFOFORSTATE)
+
+ private:
+  ~AutotestPrivateGetScrollableShelfInfoForStateFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

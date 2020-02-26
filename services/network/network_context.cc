@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
@@ -1778,9 +1779,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::ThreadTaskRunnerHandle::Get();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             net::GetCookieStoreBackgroundSequencePriority(),
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     net::CookieCryptoDelegate* crypto_delegate = nullptr;
@@ -1817,9 +1817,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (base::FeatureList::IsEnabled(features::kTrustTokens)) {
     if (params_->trust_token_path) {
       SQLiteTrustTokenPersister::CreateForFilePath(
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
-               kTrustTokenDatabaseTaskPriority,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), kTrustTokenDatabaseTaskPriority,
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
           *params_->trust_token_path, kTrustTokenWriteBufferingWindow,
           base::BindOnce(&NetworkContext::FinishConstructingTrustTokenStore,
@@ -1894,12 +1893,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   std::unique_ptr<PrefService> pref_service;
   if (params_->http_server_properties_path) {
-    scoped_refptr<JsonPrefStore> json_pref_store(
-        new JsonPrefStore(*params_->http_server_properties_path, nullptr,
-                          base::CreateSequencedTaskRunner(
-                              {base::ThreadPool(), base::MayBlock(),
-                               base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                               base::TaskPriority::BEST_EFFORT})));
+    scoped_refptr<JsonPrefStore> json_pref_store(new JsonPrefStore(
+        *params_->http_server_properties_path, nullptr,
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+             base::TaskPriority::BEST_EFFORT})));
     PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(json_pref_store);
     pref_service_factory.set_async(true);
@@ -1951,8 +1949,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::ThreadTaskRunnerHandle::Get();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(),
              net::GetReportingAndNelStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     std::unique_ptr<net::SQLitePersistentReportingAndNelStore> sqlite_store(

@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -52,9 +53,9 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
     defined(OFFICIAL_BUILD)
   // On Android the unwinder initialization requires file reading before
   // initializing shim. So, post task on background thread.
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce([]() {
         bool can_unwind =

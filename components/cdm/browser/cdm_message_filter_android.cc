@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/cdm/common/cdm_messages_android.h"
 #include "content/public/browser/android/android_overlay_provider.h"
 #include "ipc/ipc_message_macros.h"
@@ -140,9 +141,8 @@ CdmMessageFilterAndroid::CdmMessageFilterAndroid(
     bool can_persist_data,
     bool force_to_support_secure_codecs)
     : BrowserMessageFilter(EncryptedMediaMsgStart),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       can_persist_data_(can_persist_data),
       force_to_support_secure_codecs_(force_to_support_secure_codecs) {}
 

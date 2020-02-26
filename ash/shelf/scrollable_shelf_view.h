@@ -103,7 +103,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   ScrollArrowView* left_arrow() { return left_arrow_; }
+  const ScrollArrowView* left_arrow() const { return left_arrow_; }
   ScrollArrowView* right_arrow() { return right_arrow_; }
+  const ScrollArrowView* right_arrow() const { return right_arrow_; }
 
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
@@ -134,6 +136,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   static constexpr int KScrollOffsetThreshold = 20;
 
  private:
+  friend class ShelfTestApi;
+
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;
   class DragIconDropAnimationDelegate;
@@ -303,6 +307,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // previous page is shown.
   float CalculatePageScrollingOffset(bool forward,
                                      LayoutStrategy layout_strategy) const;
+
+  // Calculates the absolute value of page scroll distance.
+  float CalculatePageScrollingOffsetInAbs(LayoutStrategy layout_strategy) const;
+
+  // Calculates the target offset on the main axis after scrolling by
+  // |scroll_distance| while the offset before scroll is |start_offset|.
+  float CalculateTargetOffsetAfterScroll(float start_offset,
+                                         float scroll_distance) const;
 
   // Calculates the bounds of the gradient zone before/after the shelf
   // container.

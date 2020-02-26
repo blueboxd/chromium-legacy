@@ -32,9 +32,9 @@ static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
 static const int kTranslationCacheInitializationDelayMs = 20;
 
 void CloseBaseFile(base::File file) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(base::DoNothing::Once<base::File>(), std::move(file)));
 }
@@ -162,9 +162,8 @@ void PnaclHost::Init() {
 // and re-initializing file task runner.
 void PnaclHost::InitForTest(base::FilePath temp_dir, bool in_memory) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  file_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE});
+  file_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   disk_cache_.reset(new PnaclTranslationCache());
   cache_state_ = CacheInitializing;
   temp_dir_ = temp_dir;
@@ -376,9 +375,8 @@ void PnaclHost::CheckCacheQueryReady(
   pt->got_nexe_fd = false;
   FileProxy* proxy(new FileProxy(std::move(file), this));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&FileProxy::Write, base::Unretained(proxy),
                      pt->nexe_read_buffer),
       base::BindOnce(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
@@ -451,9 +449,8 @@ void PnaclHost::TranslationFinished(int render_process_id,
     entry->second.nexe_fd = NULL;
     entry->second.got_nexe_fd = false;
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&PnaclHost::CopyFileToBuffer, Passed(&file)),
         base::BindOnce(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
                        id));

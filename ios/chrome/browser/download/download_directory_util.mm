@@ -11,6 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -47,8 +48,7 @@ bool GetDownloadsDirectory(base::FilePath* directory_path) {
 void DeleteDownloadsDirectory() {
   // If downloads manager's flag is enabled, keeps downloads folder.
   if (!base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads))
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&DeleteDownloadsDirectorySync));
 }

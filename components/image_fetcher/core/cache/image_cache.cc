@@ -12,6 +12,7 @@
 #include "base/hash/sha1.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -143,11 +144,11 @@ void ImageCache::OnDependencyInitialized() {
       ImageFetcherEvent::kCacheStartupEvictionStarted);
 
   // Once all the queued requests are taken care of, run eviction.
-  base::PostTaskAndReply(FROM_HERE,
-                         {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
-                         base::BindOnce(OnStartupEvictionQueued),
-                         base::BindOnce(&ImageCache::RunEvictionOnStartup,
-                                        weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(OnStartupEvictionQueued),
+      base::BindOnce(&ImageCache::RunEvictionOnStartup,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImageCache::SaveImageImpl(const std::string& url,

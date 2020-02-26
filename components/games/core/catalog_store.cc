@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 
 namespace games {
@@ -16,10 +17,8 @@ CatalogStore::CatalogStore()
 
 CatalogStore::CatalogStore(std::unique_ptr<DataFilesParser> data_files_parser)
     : data_files_parser_(std::move(data_files_parser)),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})) {
-}
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {}
 
 CatalogStore::~CatalogStore() = default;
 

@@ -16,6 +16,7 @@
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_job_factory.h"
 
+class BrowserStatePolicyConnector;
 class ChromeBrowserStateIOData;
 class PrefProxyConfigTracker;
 class PrefService;
@@ -74,6 +75,10 @@ class ChromeBrowserState : public web::BrowserState {
   // Destroys the OffTheRecord ChromeBrowserState that is associated with this
   // ChromeBrowserState, if one exists.
   virtual void DestroyOffTheRecordChromeBrowserState() = 0;
+
+  // Retrieves a pointer to the BrowserStatePolicyConnector that manages policy
+  // for this BrowserState. May return nullptr if policy is disabled.
+  virtual BrowserStatePolicyConnector* GetPolicyConnector() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences.
   virtual PrefService* GetPrefs() = 0;

@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -1491,8 +1492,8 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   // deleting startup registry and setting the producer.
   auto wait_for_start_tracing = std::make_unique<base::WaitableEvent>();
   base::WaitableEvent* wait_ptr = wait_for_start_tracing.get();
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](std::unique_ptr<base::WaitableEvent> wait_for_start_tracing) {
             // This event can be hit anytime before startup registry is

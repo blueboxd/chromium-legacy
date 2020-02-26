@@ -4,6 +4,10 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
@@ -781,6 +785,25 @@ TEST_F(ProcessMemoryMetricsEmitterTest, ReceiveProcessInfoSecond) {
   std::vector<MetricMap> expected_entries;
   expected_entries.push_back(expected_metrics);
   CheckMemoryUkmEntryMetrics(expected_entries);
+}
+
+TEST_F(ProcessMemoryMetricsEmitterTest, GlobalDumpFailed) {
+  GlobalMemoryDumpPtr global_dump(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  MetricMap expected_metrics = GetExpectedRendererMetrics();
+  AddPageMetrics(expected_metrics);
+  PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid201);
+
+  scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+      new ProcessMemoryMetricsEmitterFake(test_ukm_recorder_));
+  emitter->ReceivedMemoryDump(
+      false, GlobalMemoryDump::MoveFrom(std::move(global_dump)));
+  emitter->ReceivedProcessInfos(GetProcessInfo(test_ukm_recorder_));
+
+  // Should not record any metrics since the memory dump failed, and don't
+  // crash.
+  auto entries = test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(entries.size(), 0u);
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, ProcessInfoHasTwoURLs) {

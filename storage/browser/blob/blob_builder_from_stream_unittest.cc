@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -53,7 +54,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<BlobStorageContext>(
         data_dir_.GetPath(), data_dir_.GetPath(),
-        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
+        base::ThreadPool::CreateTaskRunner({base::MayBlock()}));
 
     limits_.max_ipc_memory_size = kTestBlobStorageMaxBytesDataItemSize;
     limits_.max_shared_memory_size = kTestBlobStorageMaxBytesDataItemSize;

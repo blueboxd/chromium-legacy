@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/cookies/system_cookie_store.h"
@@ -46,8 +47,8 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
   return scoped_refptr<net::SQLitePersistentCookieStore>(
       new net::SQLitePersistentCookieStore(
           path, base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT}),
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           restore_old_session_cookies, crypto_delegate));
 }
 

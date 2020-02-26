@@ -415,8 +415,6 @@ Polymer({
           eventName, authenticatorEventListeners[eventName].bind(this));
     }
 
-    this.$['signin-back-button'].addEventListener(
-        'click', this.onBackButtonClicked_.bind(this));
     this.$['offline-gaia'].addEventListener(
         'offline-gaia-cancel', this.cancel.bind(this));
 
@@ -1327,8 +1325,7 @@ Polymer({
 
     // TODO(crbug.com/470893): Figure out whether/which of these exit conditions
     // are useful.
-    if (this.screenMode_ == AuthMode.SAML_INTERSTITIAL ||
-        this.isWhitelistErrorShown_ || this.authCompleted_) {
+    if (this.isWhitelistErrorShown_ || this.authCompleted_) {
       return;
     }
 

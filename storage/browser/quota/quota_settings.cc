@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "storage/browser/quota/quota_device_info_helper.h"
@@ -152,9 +153,9 @@ void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
                                QuotaDeviceInfoHelper* device_info_helper,
                                OptionalQuotaSettingsCallback callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CalculateNominalDynamicSettings, partition_path,
                      is_incognito, base::Unretained(device_info_helper)),

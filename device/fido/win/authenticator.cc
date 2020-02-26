@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -65,9 +66,8 @@ void WinWebAuthnApiAuthenticator::MakeCredential(
   }
   is_pending_ = true;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&AuthenticatorMakeCredentialBlocking, win_api_,
                      current_window_, cancellation_id_, std::move(request)),
       base::BindOnce(&WinWebAuthnApiAuthenticator::MakeCredentialDone,
@@ -108,9 +108,8 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
 
   is_pending_ = true;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&AuthenticatorGetAssertionBlocking, win_api_,
                      current_window_, cancellation_id_, std::move(request)),
       base::BindOnce(&WinWebAuthnApiAuthenticator::GetAssertionDone,

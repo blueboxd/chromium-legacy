@@ -81,6 +81,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * ID of the localized string for update cancellation message.
+     */
+    cancelHint: {
+      type: String,
+      value: 'cancelUpdateHint',
+    },
   },
 
   onBeforeShow() {
@@ -88,33 +96,6 @@ Polymer({
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
-    // 'indeterminate' paper-progress will recalculate styles on every frame
-    // wnen OOBE is loaded (even when another screen is open).
-    // So we make it 'indeterminate' only right before screen is shown, and
-    // make it hidden when its container dialog is hidden.
-    this.$['checking-progress'].indeterminate = true;
-  },
-
-  /**
-   * This updates "Cancel Update" message.
-   */
-  setCancelHint(message) {
-    this.$.checkingForUpdateCancelHint.textContent = message;
-    this.$.updatingCancelHint.textContent = message;
-  },
-
-  /**
-   * Calculates visibility of UI element. Returns true if element is hidden.
-   * @param {Boolean} isAllowed Element flag that marks it visible.
-   * @param {Boolean} updateCompleted If update is completed and all
-   * intermediate status elements are hidden.
-   */
-  isNotAllowedOrUpdateCompleted_(isAllowed, updateCompleted) {
-    return !isAllowed || updateCompleted;
-  },
-
-  hideUpdatingScreen_(checkingForUpdate, requiresPermissionForCellular) {
-    return checkingForUpdate || requiresPermissionForCellular;
   },
 
   onBackClicked_() {

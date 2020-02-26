@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -921,9 +922,8 @@ FFmpegDemuxer::FFmpegDemuxer(
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
       // the BlockingUrlProtocol to handle hops to the render thread for network
       // reads and seeks.
-      blocking_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_BLOCKING})),
+      blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
       data_source_(data_source),
       media_log_(media_log),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),

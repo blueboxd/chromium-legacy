@@ -24,18 +24,60 @@
 </head>
 <body>
   <header><h1>$i18n{crashesTitle}</h1></header>
+
   <div id="crashUploadStatus" hidden>
     <a is="action-link" role="button" id="uploadCrashes">
       $i18n{uploadCrashesLinkText}
     </a>
   </div>
+
   <div id="disabledMode" hidden>
     <h2>$i18n{disabledHeader}</h2>
     <p>$i18nRaw{disabledMessage}</p>
   </div>
+
   <div id="crashesInfo">
-    <h2 id="countBanner"></h2>
-    <div id="crashList"></div>
+    <h2 id="countBanner">
+      <span id="crashesCount"></span>
+
+      <label>
+        <input type="checkbox" id="showDevDetails">
+        $i18n{showDeveloperDetails}
+      </label>
+    </h2>
+
+    <div id="crashList">
+      <template>
+        <div class="crashRow">
+          <h3 class="captureTime"></h3>
+          <table class="crashDetail">
+            <tr class="status">
+              <td>$i18n{crashStatus}</td>
+              <td class="value"></td>
+            </tr>
+            <tr class="uploadId">
+              <td>$i18n{uploadId}</td>
+              <td class="value"></td>
+            </tr>
+            <tr class="uploadTime">
+              <td>$i18n{uploadTime}</td>
+              <td class="value"></td>
+            </tr>
+            <tr class="localId devDetail">
+              <td>$i18n{localId}</td>
+              <td class="value"></td>
+            </tr>
+            <tr class="fileSize">
+              <td>$i18n{fileSize}</td>
+              <td class="value"></td>
+            </tr>
+          </table>
+          <button class="sendNow">$i18n{uploadNowLinkText}</button>
+          <button class="fileBug">$i18n{bugLinkText}</button>
+        </div>
+      </template>
+    </div>
+
     <p id="noCrashes" hidden>$i18n{noCrashesMessage}</p>
   </div>
   <script src="chrome://resources/js/jstemplate_compiled.js"></script>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/dns/host_resolver_manager.h"
+#include "base/task/thread_pool.h"
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
@@ -2705,8 +2706,8 @@ HostResolverManager::HostResolverManager(
 
   DCHECK_GE(dispatcher_->num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
 
-  proc_task_runner_ = base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), priority_mode.Get(),
+  proc_task_runner_ = base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), priority_mode.Get(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
 #if defined(OS_WIN)
@@ -3594,10 +3595,9 @@ bool HostResolverManager::IsGloballyReachable(const IPAddress& dest,
 void HostResolverManager::RunLoopbackProbeJob() {
   // Run this asynchronously as it can take 40-100ms and should not block
   // initialization.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&HaveOnlyLoopbackAddresses),
       base::BindOnce(&HostResolverManager::SetHaveOnlyLoopbackAddresses,
                      weak_ptr_factory_.GetWeakPtr()));

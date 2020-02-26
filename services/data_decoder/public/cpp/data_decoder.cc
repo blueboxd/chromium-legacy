@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
@@ -105,7 +106,7 @@ class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
 void BindInProcessService(
     mojo::PendingReceiver<mojom::DataDecoderService> receiver) {
   static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
-      task_runner{base::CreateSequencedTaskRunner({base::ThreadPool()})};
+      task_runner{base::ThreadPool::CreateSequencedTaskRunner({})};
   if (!(*task_runner)->RunsTasksInCurrentSequence()) {
     (*task_runner)
         ->PostTask(FROM_HERE,

@@ -13,6 +13,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
@@ -58,6 +59,14 @@ void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
 
 void PaintArtifactCompositor::WillBeRemovedFromFrame() {
   root_layer_->RemoveAllChildren();
+}
+
+std::unique_ptr<JSONArray> PaintArtifactCompositor::GetPendingLayersAsJSON(
+    const PaintArtifact* paint_artifact) const {
+  std::unique_ptr<JSONArray> result = std::make_unique<JSONArray>();
+  for (const PendingLayer& pending_layer : pending_layers_)
+    result->PushObject(pending_layer.ToJSON(paint_artifact));
+  return result;
 }
 
 // Get a JSON representation of what layers exist for this PAC.  Note that
@@ -475,6 +484,30 @@ FloatRect PaintArtifactCompositor::PendingLayer::MapRectKnownToBeOpaque(
   GeometryMapper::LocalToAncestorVisualRect(property_tree_state, new_state,
                                             float_clip_rect);
   return float_clip_rect.IsTight() ? float_clip_rect.Rect() : FloatRect();
+}
+
+std::unique_ptr<JSONObject> PaintArtifactCompositor::PendingLayer::ToJSON(
+    const PaintArtifact* paint_artifact) const {
+  std::unique_ptr<JSONObject> result = std::make_unique<JSONObject>();
+  result->SetArray("bounds", RectAsJSONArray(bounds));
+  result->SetArray("rect_known_to_be_opaque",
+                   RectAsJSONArray(rect_known_to_be_opaque));
+  result->SetObject("property_tree_state", property_tree_state.ToJSON());
+  result->SetArray("offset_of_decomposited_transforms",
+                   PointAsJSONArray(offset_of_decomposited_transforms));
+  std::unique_ptr<JSONArray> chunks = std::make_unique<JSONArray>();
+  for (wtf_size_t chunk_index : paint_chunk_indices) {
+    if (paint_artifact) {
+      StringBuilder sb;
+      sb.AppendFormat("index=%i ", chunk_index);
+      sb.Append(paint_artifact->PaintChunks()[chunk_index].ToString());
+      chunks->PushString(sb.ToString());
+    } else {
+      chunks->PushInteger(chunk_index);
+    }
+  }
+  result->SetArray("paint_chunks", std::move(chunks));
+  return result;
 }
 
 FloatRect PaintArtifactCompositor::PendingLayer::VisualRectForOverlapTesting()

@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
@@ -44,8 +45,8 @@ class DirectoryTestHelper::BlockingState {
 };
 
 DirectoryTestHelper::DirectoryTestHelper()
-    : blocking_state_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {}
+    : blocking_state_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {}
 
 DirectoryTestHelper::~DirectoryTestHelper() = default;
 

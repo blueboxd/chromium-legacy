@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -27,12 +28,12 @@ void SerialWorker::WorkNow() {
       // PostTaskAndReply fails to post task back to the original
       // task runner. In this case the callback is not destroyed, and the
       // weak reference allows SerialWorker instance to be deleted.
-      base::PostTaskAndReply(FROM_HERE,
-                             {base::ThreadPool(), base::MayBlock(),
-                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                             base::BindOnce(&SerialWorker::DoWork, this),
-                             base::BindOnce(&SerialWorker::OnWorkJobFinished,
-                                            weak_factory_.GetWeakPtr()));
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          base::BindOnce(&SerialWorker::DoWork, this),
+          base::BindOnce(&SerialWorker::OnWorkJobFinished,
+                         weak_factory_.GetWeakPtr()));
       state_ = WORKING;
       return;
     case WORKING:

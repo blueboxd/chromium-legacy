@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -132,9 +133,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   if (self) {
     _readingListModel = readingListModel;
     _bookmarkModel = bookmarkModel;
-    _taskRunner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::BEST_EFFORT});
+    _taskRunner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self

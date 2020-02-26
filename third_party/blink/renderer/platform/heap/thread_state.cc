@@ -953,7 +953,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       "BlinkGC.TimeForGlobalWeakProcessing",
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 
-  base::TimeDelta marking_duration = event.marking_time();
+  base::TimeDelta marking_duration = event.foreground_marking_time();
   constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
   if (base::TimeTicks::IsHighResolution() &&
       (event.object_size_in_bytes_before_sweeping >

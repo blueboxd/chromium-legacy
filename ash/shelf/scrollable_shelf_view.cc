@@ -864,13 +864,11 @@ void ScrollableShelfView::Layout() {
 
   // Layout |left_arrow_| if it should show.
   left_arrow_->SetVisible(!left_arrow_bounds.IsEmpty());
-  if (left_arrow_->GetVisible())
-    left_arrow_->SetBoundsRect(left_arrow_bounds);
+  left_arrow_->SetBoundsRect(left_arrow_bounds);
 
   // Layout |right_arrow_| if it should show.
   right_arrow_->SetVisible(!right_arrow_bounds.IsEmpty());
-  if (right_arrow_->GetVisible())
-    right_arrow_->SetBoundsRect(right_arrow_bounds);
+  right_arrow_->SetBoundsRect(right_arrow_bounds);
 
   // Layer::Clone(), which may be triggered by screen rotation, does not copy
   // the mask layer. So we may need to reset the mask layer.
@@ -1036,14 +1034,11 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
     if (!page_scroll_distance)
       break;
 
-    main_axis_offset_after_scroll += page_scroll_distance;
-    main_axis_offset_after_scroll = CalculateClampedScrollOffset(
-        main_axis_offset_after_scroll, GetSpaceForIcons());
+    main_axis_offset_after_scroll = CalculateTargetOffsetAfterScroll(
+        main_axis_offset_after_scroll, page_scroll_distance);
     layout_strategy_after_scroll = CalculateLayoutStrategy(
         main_axis_offset_after_scroll, GetSpaceForIcons(),
         /*use_target_bounds= =*/false);
-    main_axis_offset_after_scroll = CalculateScrollDistanceAfterAdjustment(
-        main_axis_offset_after_scroll, layout_strategy_after_scroll);
     visible_space_after_scroll =
         GetMirroredRect(CalculateVisibleSpace(layout_strategy_after_scroll));
     rect_after_scroll = rect_after_adjustment;
@@ -1636,10 +1631,20 @@ float ScrollableShelfView::CalculatePageScrollingOffset(
   if (invalid)
     return 0;
 
+  float offset = CalculatePageScrollingOffsetInAbs(layout_strategy);
+
+  if (!forward)
+    offset = -offset;
+
+  return offset;
+}
+
+float ScrollableShelfView::CalculatePageScrollingOffsetInAbs(
+    LayoutStrategy layout_strategy) const {
   // Implement the arrow button handler in the same way with the gesture
   // scrolling. The key is to calculate the suitable scroll distance.
 
-  float offset;
+  float offset = 0.f;
 
   // The available space for icons excluding the area taken by arrow button(s).
   int space_excluding_arrow;
@@ -1671,12 +1676,26 @@ float ScrollableShelfView::CalculatePageScrollingOffset(
     }
   }
 
-  DCHECK_GT(offset, 0);
-
-  if (!forward)
-    offset = -offset;
+  DCHECK_GE(offset, 0);
 
   return offset;
+}
+
+float ScrollableShelfView::CalculateTargetOffsetAfterScroll(
+    float start_offset,
+    float scroll_distance) const {
+  float target_offset = start_offset;
+
+  target_offset += scroll_distance;
+  target_offset =
+      CalculateClampedScrollOffset(target_offset, GetSpaceForIcons());
+  LayoutStrategy layout_strategy_after_scroll =
+      CalculateLayoutStrategy(target_offset, GetSpaceForIcons(),
+                              /*use_target_bounds= =*/false);
+  target_offset = CalculateScrollDistanceAfterAdjustment(
+      target_offset, layout_strategy_after_scroll);
+
+  return target_offset;
 }
 
 ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()

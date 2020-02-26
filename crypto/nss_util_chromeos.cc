@@ -29,6 +29,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
@@ -206,10 +207,9 @@ class ChromeOSTokenManager {
     std::unique_ptr<TPMModuleAndSlot> tpm_args(
         new TPMModuleAndSlot(chaps_module_));
     TPMModuleAndSlot* tpm_args_ptr = tpm_args.get();
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ChromeOSTokenManager::InitializeTPMTokenInThreadPool,
                        system_slot_id, tpm_args_ptr),
         base::BindOnce(
@@ -360,10 +360,9 @@ class ChromeOSTokenManager {
     std::unique_ptr<TPMModuleAndSlot> tpm_args(
         new TPMModuleAndSlot(chaps_module_));
     TPMModuleAndSlot* tpm_args_ptr = tpm_args.get();
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ChromeOSTokenManager::InitializeTPMTokenInThreadPool,
                        slot_id, tpm_args_ptr),
         base::BindOnce(&ChromeOSTokenManager::OnInitializedTPMForChromeOSUser,

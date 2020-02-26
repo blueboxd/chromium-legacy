@@ -10,6 +10,7 @@
 #include "base/big_endian.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "chromecast/media/audio/capture_service/message_parsing_utils.h"
 #include "chromecast/media/audio/capture_service/packet_header.h"
@@ -60,8 +61,8 @@ class CaptureServiceReceiverTest : public ::testing::Test {
                   kStreamInfo.sample_rate,
                   kStreamInfo.num_channels,
                   kStreamInfo.frames_per_buffer) {
-    receiver_.SetTaskRunnerForTest(base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING}));
+    receiver_.SetTaskRunnerForTest(base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskPriority::USER_BLOCKING}));
   }
   ~CaptureServiceReceiverTest() override = default;
 

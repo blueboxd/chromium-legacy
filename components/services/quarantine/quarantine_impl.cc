@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "components/services/quarantine/quarantine.h"
@@ -30,13 +31,13 @@ namespace {
 
 #if defined(OS_WIN)
 scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-  return base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  return base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 #else   // OS_WIN
 scoped_refptr<base::TaskRunner> GetTaskRunner() {
-  return base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  return base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 #endif  // OS_WIN
 

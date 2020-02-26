@@ -49,6 +49,14 @@ String PropertyTreeState::ToTreeString() const {
 
 #endif
 
+std::unique_ptr<JSONObject> PropertyTreeState::ToJSON() const {
+  std::unique_ptr<JSONObject> result = std::make_unique<JSONObject>();
+  result->SetObject("transform", transform_->ToJSON());
+  result->SetObject("clip", clip_->ToJSON());
+  result->SetObject("effect", effect_->ToJSON());
+  return result;
+}
+
 size_t PropertyTreeState::CacheMemoryUsageInBytes() const {
   return Clip().CacheMemoryUsageInBytes() +
          Transform().CacheMemoryUsageInBytes();

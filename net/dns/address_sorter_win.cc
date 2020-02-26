@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -44,11 +45,11 @@ class AddressSorterWin : public AddressSorter {
    public:
     static void Start(const AddressList& list, CallbackType callback) {
       auto job = base::WrapRefCounted(new Job(list, std::move(callback)));
-      base::PostTaskAndReply(FROM_HERE,
-                             {base::ThreadPool(), base::MayBlock(),
-                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                             base::BindOnce(&Job::Run, job),
-                             base::BindOnce(&Job::OnComplete, job));
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          base::BindOnce(&Job::Run, job),
+          base::BindOnce(&Job::OnComplete, job));
     }
 
    private:

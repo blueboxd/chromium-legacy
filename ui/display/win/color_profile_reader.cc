@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ui/display/win/display_info.h"
 #include "ui/gfx/icc_profile.h"
 
@@ -67,9 +68,8 @@ void ColorProfileReader::UpdateIfNeeded() {
   // Enumerate device profile paths on a background thread.  When this
   // completes it will run another task on a background thread to read
   // the profiles.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &ColorProfileReader::BuildDeviceToPathMapOnBackgroundThread),
       base::BindOnce(&ColorProfileReader::BuildDeviceToPathMapCompleted,
@@ -97,9 +97,8 @@ void ColorProfileReader::BuildDeviceToPathMapCompleted(
 
   device_to_path_map_ = new_device_to_path_map;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ColorProfileReader::ReadProfilesOnBackgroundThread,
                      new_device_to_path_map),
       base::BindOnce(&ColorProfileReader::ReadProfilesCompleted,

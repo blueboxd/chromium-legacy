@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.base.ViewUtils;
@@ -162,9 +162,10 @@ public class SignInPreference
             return;
         }
 
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
-        if (accountName != null) {
-            setupSignedIn(accountName);
+        CoreAccountInfo accountInfo =
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+        if (accountInfo != null) {
+            setupSignedIn(accountInfo.getEmail());
             return;
         }
 

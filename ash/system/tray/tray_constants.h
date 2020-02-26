@@ -168,6 +168,7 @@ constexpr int kUnifiedFeaturePodLabelFontSize = 13;
 constexpr int kUnifiedFeaturePodSubLabelFontSize = 12;
 constexpr int kUnifiedFeaturePodInterLabelPadding = 2;
 constexpr int kUnifiedFeaturePodArrowSpacing = 4;
+constexpr int kUnifiedFeaturePodMinimumHorizontalMargin = 4;
 constexpr int kUnifiedFeaturePodItemsInRow = 3;
 constexpr int kUnifiedFeaturePodMaxRows = 3;
 constexpr int kUnifiedFeaturePodMinRows = 1;

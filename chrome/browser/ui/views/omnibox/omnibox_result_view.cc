@@ -173,7 +173,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
     }
   }
 
-  Invalidate();
+  ApplyThemeAndRefreshIcons();
   InvalidateLayout();
 }
 
@@ -184,7 +184,7 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
     animation_->Hide();
 }
 
-void OmniboxResultView::Invalidate(bool force_reapply_styles) {
+void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   bool high_contrast =
       GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
@@ -324,8 +324,8 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {
-  // The new icon will be fetched during Invalidate().
-  Invalidate();
+  // The new icon will be fetched during ApplyThemeAndRefreshIcons().
+  ApplyThemeAndRefreshIcons();
 }
 
 void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
@@ -591,7 +591,7 @@ void OmniboxResultView::OnThemeChanged() {
                                 vector_icons::kCloseRoundedIcon,
                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                 GetColor(OmniboxPart::RESULTS_ICON));
-  Invalidate(true);
+  ApplyThemeAndRefreshIcons(true);
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
@@ -637,7 +637,7 @@ gfx::Image OmniboxResultView::GetIcon() const {
 
 void OmniboxResultView::UpdateHoverState() {
   UpdateRemoveSuggestionVisibility();
-  Invalidate();
+  ApplyThemeAndRefreshIcons();
 }
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,

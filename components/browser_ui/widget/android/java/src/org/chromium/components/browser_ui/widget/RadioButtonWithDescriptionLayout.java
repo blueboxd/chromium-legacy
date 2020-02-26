@@ -172,10 +172,7 @@ public final class RadioButtonWithDescriptionLayout
      */
     @VisibleForTesting
     void selectChildAtIndexForTesting(int childIndex) {
-        int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            RadioButtonWithDescription b = (RadioButtonWithDescription) getChildAt(i);
-            b.setChecked(i == childIndex);
-        }
+        RadioButtonWithDescription b = (RadioButtonWithDescription) getChildAt(childIndex);
+        b.setChecked(true);
     }
 }

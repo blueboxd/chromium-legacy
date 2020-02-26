@@ -38,6 +38,7 @@ include_rules = [
     "+base/sys_byteorder.h",
     "+base/system/sys_info.h",
     "+base/task/post_task.h",
+    "+base/task/thread_pool.h",
     "+base/template_util.h",
     "+base/test/metrics/histogram_tester.h",
     "+base/test/mock_callback.h",

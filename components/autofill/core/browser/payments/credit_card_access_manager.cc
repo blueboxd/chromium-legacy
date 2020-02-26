@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -316,8 +317,7 @@ void CreditCardAccessManager::FetchCreditCard(
 
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
-    auto task_runner =
-        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()});
+    auto task_runner = base::ThreadPool::CreateTaskRunner({base::MayBlock()});
     cancelable_authenticate_task_tracker_.PostTaskAndReplyWithResult(
         task_runner.get(), FROM_HERE,
         base::BindOnce(&WaitForEvent, &ready_to_start_authentication_),

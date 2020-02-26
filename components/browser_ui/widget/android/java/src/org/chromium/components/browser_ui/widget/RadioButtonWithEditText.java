@@ -113,13 +113,7 @@ public class RadioButtonWithEditText extends RadioButtonWithDescription {
         });
 
         // Handle touches beside the Edit text
-        mEditText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                mEditText.setCursorVisible(true);
-            } else {
-                releaseFocusForEditText();
-            }
-        });
+        mEditText.setOnFocusChangeListener((v, hasFocus) -> { onEditTextFocusChanged(hasFocus); });
     }
 
     @Override
@@ -151,6 +145,16 @@ public class RadioButtonWithEditText extends RadioButtonWithDescription {
     public void setChecked(boolean checked) {
         super.setChecked(checked);
         mEditText.clearFocus();
+    }
+
+    private void onEditTextFocusChanged(boolean hasFocus) {
+        if (hasFocus) {
+            setCheckedWithNoFocusChange(true);
+            mEditText.setCursorVisible(true);
+        } else {
+            mEditText.setCursorVisible(false);
+            KeyboardVisibilityDelegate.getInstance().hideKeyboard(mEditText);
+        }
     }
 
     /**
@@ -189,13 +193,5 @@ public class RadioButtonWithEditText extends RadioButtonWithDescription {
      */
     public void setHint(int hintId) {
         mEditText.setHint(hintId);
-    }
-
-    /**
-     * Handle focus when the edit text is selected
-     */
-    private void releaseFocusForEditText() {
-        mEditText.setCursorVisible(false);
-        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mEditText);
     }
 }

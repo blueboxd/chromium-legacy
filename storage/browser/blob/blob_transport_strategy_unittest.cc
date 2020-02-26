@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/core/embedder/embedder.h"
@@ -56,7 +57,7 @@ class BlobTransportStrategyTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     bytes_provider_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     mock_time_ = base::Time::Now();
 
     limits_.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "crypto/sha2.h"
 
 namespace network {
@@ -82,8 +83,8 @@ void LegacyTLSConfigDistributor::OnNewLegacyTLSConfig(
   std::string config_string(reinterpret_cast<const char*>(config.data()),
                             config.size());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&LegacyTLSExperimentConfig::Parse,
                      std::move(config_string)),
       base::BindOnce(

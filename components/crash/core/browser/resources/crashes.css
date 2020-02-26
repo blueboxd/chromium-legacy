@@ -29,13 +29,19 @@ html[dir=rtl] h1 {
   border-radius: 2px;
   font-size: 100%;
   padding: 4px;
+
+  display: flex;
+}
+
+#countBanner #crashesCount {
+  flex: 2;
 }
 
 #crashList h3 {
   font-size: 100%;
 }
 
-#crashList > div > * {
+.crashRow > * {
   margin: 0.75em 0;
 }
 
@@ -43,8 +49,28 @@ html[dir=rtl] h1 {
   color: #666;
 }
 
-#crashList > div:not(:last-child) {
+.crashRow {
+  padding-bottom: 0.75em;
+}
+
+.crashRow:not(:last-child) {
   border-bottom: 1px solid #bbb;
+}
+
+#crashList .crashRow .devDetail {
+  display: none;
+}
+
+#crashList.showingDevDetails .crashRow .devDetail {
+  display: table-row;
+}
+
+.crashDetail {
+  margin: 10px 0;
+}
+
+.crashDetail td {
+  padding: 0 4px;
 }
 
 #disabledMode h2 {

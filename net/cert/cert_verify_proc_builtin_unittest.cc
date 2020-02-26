@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_proc.h"
@@ -102,10 +103,9 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
               CertVerifyResult* verify_result,
               CompletionOnceCallback callback) {
     verify_result->DetachFromSequence();
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&VerifyOnWorkerThread, verify_proc_, std::move(cert),
                        hostname, flags, additional_trust_anchors,
                        verify_result),

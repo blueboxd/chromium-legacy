@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
@@ -451,10 +452,9 @@ void FakeSessionManagerClient::RetrievePolicy(
         GetStubPolicyFilePath(descriptor, nullptr /* key_path */);
     DCHECK(!policy_path.empty());
 
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&GetFileContent, policy_path),
         base::BindOnce(std::move(callback),
                        RetrievePolicyResponseType::SUCCESS));
@@ -536,10 +536,9 @@ void FakeSessionManagerClient::StorePolicy(
     if (response.has_new_public_key())
       files_to_store[key_path] = response.new_public_key();
 
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(StoreFiles, std::move(files_to_store)),
         base::BindOnce(std::move(callback), true /* success */));
   } else {
@@ -551,9 +550,9 @@ void FakeSessionManagerClient::StorePolicy(
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskAndReply(
+        base::ThreadPool::PostTaskAndReply(
             FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
+            {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
@@ -598,10 +597,9 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
     CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
     const base::FilePath state_keys_path =
         owner_key_path.DirName().AppendASCII(kStubStateKeysFileName);
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ReadCreateStateKeysStub, state_keys_path),
         std::move(callback));
   } else {

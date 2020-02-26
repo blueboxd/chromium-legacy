@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -687,12 +688,12 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   }
   LoadKeymapCallback reply_callback = base::BindOnce(
       &XkbKeyboardLayoutEngine::OnKeymapLoaded, weak_ptr_factory_.GetWeakPtr());
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&LoadKeymap, layout_name,
-                                base::ThreadTaskRunnerHandle::Get(),
-                                std::move(reply_callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&LoadKeymap, layout_name,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(reply_callback)));
 #else
   NOTIMPLEMENTED();
 #endif  // defined(OS_CHROMEOS)

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -101,9 +102,9 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     base::ScopedFD Start() {
       DCHECK(!pipe_reader_.get());
       DCHECK(!data_.has_value());
-      pipe_reader_ =
-          std::make_unique<chromeos::PipeReader>(base::CreateTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
+      pipe_reader_ = std::make_unique<chromeos::PipeReader>(
+          base::ThreadPool::CreateTaskRunner(
+              {base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
       return pipe_reader_->StartIO(base::BindOnce(

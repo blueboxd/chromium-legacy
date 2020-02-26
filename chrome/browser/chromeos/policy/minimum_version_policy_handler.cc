@@ -6,26 +6,20 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
-#include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 
 using MinimumVersionRequirement =
     policy::MinimumVersionPolicyHandler::MinimumVersionRequirement;
 
 namespace policy {
 
-namespace {
-
-constexpr char kChromeVersion[] = "chrome_version";
-constexpr char kWarningPeriod[] = "warning_period";
-constexpr char KEolWarningPeriod[] = "eol_warning_period";
-
-}  // namespace
+const char MinimumVersionPolicyHandler::kChromeVersion[] = "chrome_version";
+const char MinimumVersionPolicyHandler::kWarningPeriod[] = "warning_period";
+const char MinimumVersionPolicyHandler::KEolWarningPeriod[] =
+    "eol_warning_period";
 
 MinimumVersionRequirement::MinimumVersionRequirement(
     const base::Version version,
@@ -67,8 +61,9 @@ int MinimumVersionRequirement::Compare(
 }
 
 MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
+    Delegate* delegate,
     chromeos::CrosSettings* cros_settings)
-    : cros_settings_(cros_settings) {
+    : delegate_(delegate), cros_settings_(cros_settings) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kMinimumChromeVersionEnforced,
       base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
@@ -89,7 +84,7 @@ void MinimumVersionPolicyHandler::RemoveObserver(Observer* observer) {
 
 bool MinimumVersionPolicyHandler::CurrentVersionSatisfies(
     const MinimumVersionRequirement& requirement) const {
-  return version_info::GetVersion().CompareTo(requirement.version()) >= 0;
+  return delegate_->GetCurrentVersion().CompareTo(requirement.version()) >= 0;
 }
 
 void MinimumVersionPolicyHandler::NotifyMinimumVersionStateChanged() {
@@ -98,11 +93,8 @@ void MinimumVersionPolicyHandler::NotifyMinimumVersionStateChanged() {
 }
 
 bool MinimumVersionPolicyHandler::IsPolicyApplicable() {
-  bool device_managed = g_browser_process->platform_part()
-                            ->browser_policy_connector_chromeos()
-                            ->IsEnterpriseManaged();
-  bool is_kiosk = user_manager::UserManager::IsInitialized() &&
-                  user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp();
+  bool device_managed = delegate_->IsEnterpriseManaged();
+  bool is_kiosk = delegate_->IsKioskMode();
   return device_managed && !is_kiosk;
 }
 
@@ -158,7 +150,8 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
       requirements_met_ = false;
       NotifyMinimumVersionStateChanged();
     }
-  } else {
+  } else if (state_) {
+    // Reset the state if the policy is already applied.
     Reset();
     NotifyMinimumVersionStateChanged();
   }

@@ -544,17 +544,6 @@ var defaultTests = [
     });
   },
 
-  function pinShelfIcon() {
-    chrome.autotestPrivate.getAllInstalledApps(
-        chrome.test.callbackPass(apps => {
-          apps.forEach(app => {
-            chrome.autotestPrivate.pinShelfIcon(app.appId,
-              chrome.test.callbackPass());
-          });
-        })
-    );
-  },
-
   function waitForPrimaryDisplayRotation() {
     var displayId = "-1";
     chrome.system.display.getInfo(function(info) {
@@ -1017,23 +1006,51 @@ var splitviewLeftSnappedTests = [
   }
 ];
 
-var startStopTracingTests = [
-  function startStopTracing() {
-    chrome.autotestPrivate.startTracing({}, function() {
+var startStopTracingTests = [function startStopTracing() {
+  chrome.autotestPrivate.startTracing({}, function() {
+    chrome.test.assertNoLastError();
+    chrome.autotestPrivate.stopTracing(function(trace) {
       chrome.test.assertNoLastError();
-      chrome.autotestPrivate.stopTracing(function (trace) {
-        chrome.test.assertNoLastError();
-        chrome.test.assertTrue(trace.length > 0);
-        try {
-          chrome.test.assertTrue(JSON.parse(trace) instanceof Object);
-          chrome.test.succeed();
-        } catch (e) {
-          chrome.test.fail('stopTracing callback returned invalid JSON');
-        }
-      });
+      chrome.test.assertTrue(trace.length > 0);
+      try {
+        chrome.test.assertTrue(JSON.parse(trace) instanceof Object);
+        chrome.test.succeed();
+      } catch (e) {
+        chrome.test.fail('stopTracing callback returned invalid JSON');
+      }
     });
+  });
+}];
+
+var scrollableShelfTests = [
+  function fetchScrollableShelfInfoWithoutScroll() {
+    chrome.autotestPrivate.getScrollableShelfInfoForState(
+        {}, chrome.test.callbackPass(info => {
+          chrome.test.assertEq(0, info.mainAxisOffset);
+          chrome.test.assertEq(0, info.rightArrowBounds.width);
+          chrome.test.assertFalse(info.hasOwnProperty('targetMainAxisOffset'));
+        }));
+  },
+
+  function fetchScrolableShelfInfoWithScroll() {
+    chrome.autotestPrivate.getScrollableShelfInfoForState(
+        {'scrollDistance': 10}, chrome.test.callbackPass(info => {
+          chrome.test.assertEq(0, info.mainAxisOffset);
+          chrome.test.assertEq(0, info.rightArrowBounds.width);
+          chrome.test.assertTrue(info.hasOwnProperty('targetMainAxisOffset'));
+        }));
+  },
+
+  function pinShelfIcon() {
+    chrome.autotestPrivate.getAllInstalledApps(
+        chrome.test.callbackPass(apps => {
+          apps.forEach(app => {
+            chrome.autotestPrivate.pinShelfIcon(
+                app.appId, chrome.test.callbackPass());
+          });
+        }));
   }
-]
+];
 
 var test_suites = {
   'default': defaultTests,
@@ -1044,6 +1061,7 @@ var test_suites = {
   'overviewDrag': overviewDragTests,
   'splitviewLeftSnapped': splitviewLeftSnappedTests,
   'startStopTracing': startStopTracingTests,
+  'scrollableShelf': scrollableShelfTests,
 };
 
 chrome.test.getConfig(function(config) {

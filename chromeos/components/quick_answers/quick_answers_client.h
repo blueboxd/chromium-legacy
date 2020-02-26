@@ -10,7 +10,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "chromeos/components/quick_answers/search_result_loader.h"
+#include "chromeos/components/quick_answers/result_loader.h"
 
 namespace network {
 namespace mojom {
@@ -23,11 +23,11 @@ namespace quick_answers {
 
 struct QuickAnswer;
 struct QuickAnswersRequest;
+enum class IntentType;
 
 // Quick answers client to load and parse quick answer results.
-class QuickAnswersClient
-    : public ash::AssistantStateObserver,
-      public SearchResultLoader::SearchResultLoaderDelegate {
+class QuickAnswersClient : public ash::AssistantStateObserver,
+                           public ResultLoader::ResultLoaderDelegate {
  public:
   // A delegate interface for the QuickAnswersClient.
   class QuickAnswersDelegate {
@@ -55,18 +55,19 @@ class QuickAnswersClient
     virtual ~QuickAnswersDelegate() = default;
   };
 
-  // Method that can be used in tests to change the search result loader
-  // returned by |CreateSearchResultLoader| in tests.
-  using SearchResultLoaderFactoryCallback =
-      base::RepeatingCallback<std::unique_ptr<SearchResultLoader>()>;
+  // Method that can be used in tests to change the result loader returned by
+  // |CreateResultLoader| in tests.
+  using ResultLoaderFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<ResultLoader>()>;
 
   QuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
                      ash::AssistantState* assistant_state,
                      QuickAnswersDelegate* delegate);
-  ~QuickAnswersClient() override;
 
   QuickAnswersClient(const QuickAnswersClient&) = delete;
   QuickAnswersClient& operator=(const QuickAnswersClient&) = delete;
+
+  ~QuickAnswersClient() override;
 
   // AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(
@@ -76,7 +77,7 @@ class QuickAnswersClient
   void OnLocaleChanged(const std::string& locale) override;
   void OnAssistantStateDestroyed() override;
 
-  // SearchResultLoaderDelegate:
+  // ResultLoaderDelegate:
   void OnNetworkError() override;
   void OnQuickAnswerReceived(
       std::unique_ptr<QuickAnswer> quick_answer) override;
@@ -84,19 +85,19 @@ class QuickAnswersClient
   // Send a quick answer request. Virtual for testing.
   virtual void SendRequest(const QuickAnswersRequest& quick_answers_request);
 
-  static void SetSearchResultLoaderFactoryForTesting(
-      SearchResultLoaderFactoryCallback* factory);
+  static void SetResultLoaderFactoryForTesting(
+      ResultLoaderFactoryCallback* factory);
 
  private:
-  // Creates a |SearchResultLoader| instance.
-  std::unique_ptr<SearchResultLoader> CreateSearchResultLoader();
+  // Creates a |ResultLoader| instance.
+  std::unique_ptr<ResultLoader> CreateResultLoader(IntentType intent_type);
 
   void NotifyEligibilityChanged();
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
   ash::AssistantState* assistant_state_ = nullptr;
   QuickAnswersDelegate* delegate_ = nullptr;
-  std::unique_ptr<SearchResultLoader> search_result_loader_;
+  std::unique_ptr<ResultLoader> result_loader_;
   bool assistant_enabled_ = false;
   bool assistant_context_enabled_ = false;
   bool locale_supported_ = false;

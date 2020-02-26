@@ -5,6 +5,9 @@
 const DeviceLogUI = (function() {
   'use strict';
 
+  // List of log levels in priority order.
+  const logLevels = ['Debug', 'Event', 'User', 'Error'];
+
   /**
    * Creates a tag for the log level.
    *
@@ -43,8 +46,9 @@ const DeviceLogUI = (function() {
    */
   const createLogEntryText = function(logEntry) {
     const level = logEntry['level'];
-    const levelCheckbox = 'log-level-' + level.toLowerCase();
-    if ($(levelCheckbox) && !$(levelCheckbox).checked) {
+    const levelIndex = logLevels.indexOf(level);
+    const levelSelectIndex = logLevels.indexOf($('log-level-select').value);
+    if (levelIndex < levelSelectIndex) {
       return null;
     }
 
@@ -120,6 +124,14 @@ const DeviceLogUI = (function() {
     requestLog();
   };
 
+  const clearLogTypes = function() {
+    const checkboxes = document.querySelectorAll(
+        '#log-checkbox-container input[type="checkbox"]');
+    for (let i = 0; i < checkboxes.length; ++i) {
+      checkboxes[i].checked = false;
+    }
+  };
+
   /**
    * Sets refresh rate if the interval is found in the url.
    */
@@ -134,24 +146,26 @@ const DeviceLogUI = (function() {
    * Gets log information from WebUI.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    // Show all levels except 'debug' by default.
-    $('log-level-error').checked = true;
-    $('log-level-user').checked = true;
-    $('log-level-event').checked = true;
-    $('log-level-debug').checked = false;
+    // Show all levels except 'Debug' by default.
+    $('log-level-select').value = 'Event';
+    $('log-level-select').onchange = requestLog;
 
     // Show all types by default.
     let checkboxes = document.querySelectorAll(
-        '#log-checkbox-container input[type="checkbox"][id*="log-type"]');
+        '#log-checkbox-container input[type="checkbox"]');
     for (let i = 0; i < checkboxes.length; ++i) {
       checkboxes[i].checked = true;
     }
 
     $('log-fileinfo').checked = false;
+    $('log-fileinfo').onclick = requestLog;
     $('log-timedetail').checked = false;
+    $('log-timedetail').onclick = requestLog;
 
     $('log-refresh').onclick = requestLog;
     $('log-clear').onclick = clearLog;
+    $('log-clear-types').onclick = clearLogTypes;
+
     checkboxes = document.querySelectorAll(
         '#log-checkbox-container input[type="checkbox"]');
     for (let i = 0; i < checkboxes.length; ++i) {

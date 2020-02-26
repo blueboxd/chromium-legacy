@@ -26,6 +26,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -172,6 +173,7 @@ public class ShareImageFileUtilsTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1056176")
     public void clipboardUriDoNotClearTest() throws TimeoutException, IOException {
         generateAnImageToClipboard();
         generateAnImageToClipboard();
@@ -185,6 +187,7 @@ public class ShareImageFileUtilsTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1056176")
     public void clearEverythingIfNoClipboardImageTest() throws TimeoutException, IOException {
         generateAnImageToClipboard();
         generateAnImageToClipboard();

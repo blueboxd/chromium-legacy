@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "media/base/limits.h"
 #include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
@@ -145,9 +146,8 @@ void AudioProcessor::StartEchoCancellationDump(base::File file) {
   if (!audio_processing_) {
     // The destructor of File is blocking. Post it to a task runner to avoid
     // blocking the main thread.
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
         base::BindOnce([](base::File) {}, std::move(file)));
     return;
   }

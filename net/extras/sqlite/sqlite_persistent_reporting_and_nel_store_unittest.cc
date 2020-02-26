@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
@@ -217,7 +218,7 @@ class SQLitePersistentReportingAndNelStoreTest
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 };
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {

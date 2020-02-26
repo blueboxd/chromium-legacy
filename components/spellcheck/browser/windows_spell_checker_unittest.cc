@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/win/windows_version.h"
@@ -34,7 +35,7 @@ class WindowsSpellCheckerTest : public testing::Test {
           spellcheck::kWinUseBrowserSpellChecker);
 
       win_spell_checker_ = std::make_unique<WindowsSpellChecker>(
-          base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()}));
+          base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
 
       win_spell_checker_->CreateSpellChecker(
           "en-US", base::BindOnce(

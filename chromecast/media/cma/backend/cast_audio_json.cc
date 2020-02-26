@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 
@@ -70,8 +71,8 @@ base::FilePath CastAudioJson::GetFilePathForTuning() {
 CastAudioJsonProviderImpl::CastAudioJsonProviderImpl() {
   if (base::ThreadPoolInstance::Get()) {
     cast_audio_watcher_ = base::SequenceBound<FileWatcher>(
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::LOWEST}));
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::LOWEST}));
   }
 }
 

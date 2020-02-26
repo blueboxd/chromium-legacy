@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -117,8 +118,8 @@ constexpr size_t BlobBytesProvider::kMaxConsolidatedItemSizeInBytes;
 // static
 BlobBytesProvider* BlobBytesProvider::CreateAndBind(
     mojo::PendingReceiver<mojom::blink::BytesProvider> receiver) {
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   auto provider = base::WrapUnique(new BlobBytesProvider(task_runner));
   auto* result = provider.get();
   // TODO(mek): Consider binding BytesProvider on the IPC thread instead, only

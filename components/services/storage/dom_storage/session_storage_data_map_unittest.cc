@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
@@ -73,7 +74,7 @@ class SessionStorageDataMapTest : public testing::Test {
     base::RunLoop loop;
     database_ = AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageDataMapTest",
-        base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
         base::BindLambdaForTesting([&](leveldb::Status status) {
           ASSERT_TRUE(status.ok());
           loop.Quit();

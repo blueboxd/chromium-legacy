@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -50,12 +51,12 @@ scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
   // logged-in user, while the process as a whole runs as SYSTEM. Since user
   // impersonation is per-thread on Windows, we need a dedicated thread to
   // ensure that no other code is accidentally run with the wrong privileges.
-  return base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  return base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 #else
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 #endif
 }
 

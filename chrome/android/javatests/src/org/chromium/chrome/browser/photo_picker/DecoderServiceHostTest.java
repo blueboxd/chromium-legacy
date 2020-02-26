@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.List;
@@ -101,6 +102,16 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         onDecodedCallback.waitForCallback(callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
+    private void decodeImage(DecoderServiceHost host, Uri uri, @PickerBitmap.TileTypes int fileType,
+            int width, boolean fullWidth, DecoderServiceHost.ImagesDecodedCallback callback) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> host.decodeImage(uri, fileType, width, fullWidth, callback));
+    }
+
+    private void cancelDecodeImage(DecoderServiceHost host, String filePath) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> host.cancelDecodeImage(filePath));
+    }
+
     @Test
     @LargeTest
     public void testDecodingOrder() throws Throwable {
@@ -116,12 +127,12 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + video2));
         File file3 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
 
-        host.decodeImage(
-                Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10, /*fullWidth=*/false, this);
-        host.decodeImage(
-                Uri.fromFile(file2), PickerBitmap.TileTypes.VIDEO, 10, /*fullWidth=*/false, this);
-        host.decodeImage(
-                Uri.fromFile(file3), PickerBitmap.TileTypes.PICTURE, 10, /*fullWidth=*/false, this);
+        decodeImage(host, Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10,
+                /*fullWidth=*/false, this);
+        decodeImage(host, Uri.fromFile(file2), PickerBitmap.TileTypes.VIDEO, 10,
+                /*fullWidth=*/false, this);
+        decodeImage(host, Uri.fromFile(file3), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
 
         // First decoding result should be first frame of video 1. Even though still images take
         // priority over video decoding, video 1 will be the only item in the queue when the first
@@ -180,8 +191,8 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         File file2 = new File(UrlUtils.getIsolatedTestFilePath(filePath + jpg1));
 
         // Thumbnail photo. 100 x 100 -> 10 x 10.
-        host.decodeImage(
-                Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 10, /*fullWidth=*/false, this);
+        decodeImage(host, Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
         waitForThumbnailDecode();
         Assert.assertTrue(mLastDecodedPath.contains(jpg1));
         Assert.assertEquals(false, mLastIsVideo);
@@ -192,8 +203,8 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertEquals(10, mLastInitialFrame.getHeight());
 
         // Full-width photo. 100 x 100 -> 200 x 200.
-        host.decodeImage(
-                Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 200, /*fullWidth=*/true, this);
+        decodeImage(host, Uri.fromFile(file2), PickerBitmap.TileTypes.PICTURE, 200,
+                /*fullWidth=*/true, this);
         waitForThumbnailDecode();
         Assert.assertTrue(mLastDecodedPath.contains(jpg1));
         Assert.assertEquals(false, mLastIsVideo);
@@ -204,8 +215,8 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertEquals(200, mLastInitialFrame.getHeight());
 
         // Thumbnail video. 1920 x 1080 -> 10 x 10.
-        host.decodeImage(
-                Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10, /*fullWidth=*/false, this);
+        decodeImage(host, Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 10,
+                /*fullWidth=*/false, this);
         waitForThumbnailDecode(); // Initial frame.
         Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
@@ -224,8 +235,8 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         Assert.assertEquals(10, mLastInitialFrame.getHeight());
 
         // Full-width video. 1920 x 1080 -> 2000 x 1125.
-        host.decodeImage(
-                Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 2000, /*fullWidth=*/true, this);
+        decodeImage(host, Uri.fromFile(file1), PickerBitmap.TileTypes.VIDEO, 2000,
+                /*fullWidth=*/true, this);
         waitForThumbnailDecode(); // Initial frame.
         Assert.assertTrue(mLastDecodedPath.contains(video1));
         Assert.assertEquals(true, mLastIsVideo);
@@ -262,15 +273,15 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         String yellowPath = UrlUtils.getIsolatedTestFilePath(filePath + yellow);
         String redPath = UrlUtils.getIsolatedTestFilePath(filePath + red);
 
-        host.decodeImage(Uri.fromFile(new File(greenPath)), PickerBitmap.TileTypes.PICTURE, 10,
+        decodeImage(host, Uri.fromFile(new File(greenPath)), PickerBitmap.TileTypes.PICTURE, 10,
                 /*fullWidth=*/false, this);
-        host.decodeImage(Uri.fromFile(new File(yellowPath)), PickerBitmap.TileTypes.PICTURE, 10,
+        decodeImage(host, Uri.fromFile(new File(yellowPath)), PickerBitmap.TileTypes.PICTURE, 10,
                 /*fullWidth=*/false, this);
 
         // Now add and subsequently remove the request.
-        host.decodeImage(Uri.fromFile(new File(redPath)), PickerBitmap.TileTypes.PICTURE, 10,
+        decodeImage(host, Uri.fromFile(new File(redPath)), PickerBitmap.TileTypes.PICTURE, 10,
                 /*fullWidth=*/false, this);
-        host.cancelDecodeImage(redPath);
+        cancelDecodeImage(host, redPath);
 
         // First decoding result should be the green image.
         waitForThumbnailDecode();

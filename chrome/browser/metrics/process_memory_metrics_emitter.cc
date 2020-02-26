@@ -4,6 +4,10 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include <set>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
@@ -757,6 +761,9 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 
   if (memory_dump_in_progress_ || get_process_urls_in_progress_)
     return;
+  // The memory dump can be done, yet |global_dump_| not set if:
+  // - Process metrics collection fails first.
+  // - Process Infos arrive later.
   if (!global_dump_)
     return;
 
@@ -909,6 +916,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     // processes.
     per_tab_metrics.RecordPmfs(GetUkmRecorder());
   }
+
+  global_dump_ = nullptr;
 }
 
 namespace {

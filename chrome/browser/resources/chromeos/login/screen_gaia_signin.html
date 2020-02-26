@@ -39,7 +39,9 @@
           slot="bottom-buttons" class="relative flex layout horizontal">
         <div id="buttons-container" class="flex layout horizontal center">
           <oobe-back-button id="signin-back-button"
-              disabled="[[!navigationEnabled_]]"></oobe-back-button>
+              disabled="[[!navigationEnabled_]]"
+              on-click="onBackButtonClicked_">
+          </oobe-back-button>
           <div class="flex">
           </div>
           <oobe-text-button id="secondary-action-button"
@@ -91,7 +93,11 @@
           </a>
         </p>
       </div>
-      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <oobe-back-button id="interstitial-back" on-tap="onBackButtonClicked_">
+        </oobe-back-button>
+        <div class="flex">
+        </div>
         <oobe-next-button on-tap="onSamlInterstitialNext_"
             id="interstitial-next" class="focus-on-show"></oobe-next-button>
       </div>

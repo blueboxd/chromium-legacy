@@ -90,7 +90,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   RTCPeerConnectionHandler(
       RTCPeerConnectionHandlerClient* client,
       blink::PeerConnectionDependencyFactory* dependency_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      bool force_encoded_audio_insertable_streams,
+      bool force_encoded_video_insertable_streams);
   ~RTCPeerConnectionHandler() override;
 
   // Initialize method only used for unit test.
@@ -196,6 +198,14 @@ class MODULES_EXPORT RTCPeerConnectionHandler
 
   // WebRTC event log fragments sent back from PeerConnection land here.
   void OnWebRtcEventLogWrite(const WTF::Vector<uint8_t>& output);
+
+  bool force_encoded_audio_insertable_streams() {
+    return force_encoded_audio_insertable_streams_;
+  }
+
+  bool force_encoded_video_insertable_streams() {
+    return force_encoded_video_insertable_streams_;
+  }
 
  protected:
   webrtc::PeerConnectionInterface* native_peer_connection() {
@@ -403,6 +413,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   // used when constructing the PeerConnection carry over when
   // SetConfiguration is called.
   webrtc::PeerConnectionInterface::RTCConfiguration configuration_;
+  bool force_encoded_audio_insertable_streams_;
+  bool force_encoded_video_insertable_streams_;
 
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.  We only check

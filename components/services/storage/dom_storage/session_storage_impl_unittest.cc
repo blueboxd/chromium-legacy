@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
@@ -152,9 +153,8 @@ class SessionStorageImplTest : public testing::Test {
   SessionStorageImpl::BackingMode backing_mode_ =
       SessionStorageImpl::BackingMode::kRestoreDiskState;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_{
-      base::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::ThreadPool(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})};
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})};
   SessionStorageImpl* session_storage_ = nullptr;
   mojo::Remote<mojom::SessionStorageControl> remote_session_storage_;
 

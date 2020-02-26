@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/feed_journal_mutation.h"
@@ -63,9 +64,8 @@ class FeedJournalDatabaseTest : public testing::Test {
     auto storage_db =
         std::make_unique<FakeDB<JournalStorageProto>>(&journal_db_storage_);
 
-    task_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::USER_VISIBLE});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
     journal_db_ = storage_db.get();
     feed_db_ = std::make_unique<FeedJournalDatabase>(std::move(storage_db),

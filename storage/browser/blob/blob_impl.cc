@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -212,10 +213,8 @@ void BlobImpl::CaptureSnapshot(CaptureSnapshotCallback callback) {
           uint64_t size;
           base::Optional<base::Time> time;
         };
-        base::PostTaskAndReplyWithResult(
-            FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::USER_VISIBLE},
+        base::ThreadPool::PostTaskAndReplyWithResult(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
             base::BindOnce(
                 [](const base::FilePath& path) {
                   base::File::Info info;

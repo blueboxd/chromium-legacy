@@ -1506,6 +1506,7 @@ enum HistogramValue {
   PASSWORDSPRIVATE_ISOPTEDINFORACCOUNTSTORAGE = 1443,
   AUTOTESTPRIVATE_PINSHELFICON = 1444,
   AUTOTESTPRIVATE_WAITFOROVERVIEWSTATE = 1445,
+  AUTOTESTPRIVATE_GETSCROLLABLESHELFINFOFORSTATE = 1446,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

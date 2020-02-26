@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -65,11 +66,11 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
                      base::BindRepeating(&SerialIoHandler::OnPathOpenError,
                                          this, task_runner)));
 #else
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&SerialIoHandler::StartOpen, this,
-                                base::ThreadTaskRunnerHandle::Get()));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&SerialIoHandler::StartOpen, this,
+                     base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -165,10 +166,9 @@ void SerialIoHandler::Close(base::OnceClosure callback) {
   if (file_.IsValid()) {
     CancelRead(mojom::SerialReceiveError::DISCONNECTED);
     CancelWrite(mojom::SerialSendError::DISCONNECTED);
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&SerialIoHandler::DoClose, std::move(file_)),
         std::move(callback));
   }

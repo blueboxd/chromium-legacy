@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -109,11 +110,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
-// There is no need to update the table view when other view controllers
-// are obscuring the table view. Bookkeeping is based on |-viewWillAppear:|
-// and |-viewWillDisappear methods. Note that the |Did| methods are not reliably
-// called (e.g., edge case in multitasking).
-@property(nonatomic, assign) BOOL updatesTableView;
 // The service that manages the recently closed tabs
 @property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 // The sync state.
@@ -158,19 +154,26 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  self.updatesTableView = YES;
-  // The table view might get stale while hidden, so we need to forcibly refresh
-  // it here.
-  [self loadModel];
-  [self.tableView reloadData];
+  if (!self.preventUpdates) {
+    // The table view might get stale while hidden, so we need to forcibly
+    // refresh it here.
+    [self loadModel];
+    [self.tableView reloadData];
+  }
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    self.preventUpdates = NO;
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.updatesTableView = NO;
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    self.preventUpdates = YES;
+  }
   [super viewWillDisappear:animated];
 }
 
 #pragma mark - Setters & Getters
+
 // Some RecentTabs services depend on objects not present in the OffTheRecord
 // BrowserState, in order to prevent crashes set |_browserState| to
 // |browserState|->OriginalChromeBrowserState. While doing this check if
@@ -180,6 +183,18 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     _browserState = browserState->GetOriginalChromeBrowserState();
     _incognito = browserState->IsOffTheRecord();
   }
+}
+
+- (void)setPreventUpdates:(BOOL)preventUpdates {
+  if (_preventUpdates == preventUpdates)
+    return;
+
+  _preventUpdates = preventUpdates;
+
+  if (preventUpdates || !base::FeatureList::IsEnabled(kContainedBVC))
+    return;
+  [self loadModel];
+  [self.tableView reloadData];
 }
 
 #pragma mark - TableViewModel
@@ -551,7 +566,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       SessionSyncServiceFactory::GetForBrowserState(self.browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
 
-  if (self.updatesTableView) {
+  if (!self.preventUpdates) {
     // Update the TableView and TableViewModel sections to match the new
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
@@ -575,6 +590,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Table updates must happen before |sessionState| gets updated, since some
   // table updates rely on knowing the previous state.
   self.sessionState = newSessionState;
+
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
     [self.signinPromoViewMediator signinPromoViewIsRemoved];
     self.signinPromoViewMediator.consumer = nil;
@@ -583,7 +599,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)refreshRecentlyClosedTabs {
-  if (!self.updatesTableView)
+  if (self.preventUpdates)
     return;
 
   [self.tableView performBatchUpdates:^{

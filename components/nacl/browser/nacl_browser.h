@@ -15,6 +15,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
@@ -206,8 +207,8 @@ class NaClBrowser {
   base::circular_deque<base::Time> crash_times_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };

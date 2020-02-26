@@ -20,6 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
@@ -283,9 +284,8 @@ void ConvertAndSaveGreyImage(NSString* session_id,
     _cacheDirectory = cacheDirectory;
     _snapshotsScale = snapshotsScale;
 
-    _taskRunner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::USER_VISIBLE});
+    _taskRunner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
     _observers = [SnapshotCacheObservers observers];
     _markedIDs = [[NSMutableSet alloc] init];

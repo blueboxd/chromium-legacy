@@ -48,8 +48,8 @@ import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.superviseduser.FilteringBehavior;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SignoutReason;
 
 import java.util.List;
@@ -164,7 +164,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
 
-        mSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        mSignedInAccountName = CoreAccountInfo.getEmailFrom(
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
         if (mSignedInAccountName == null) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
             // user is signed out, exit the fragment.
@@ -368,7 +369,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public void onSignOutClicked(boolean forceWipeUserData) {
         // In case the user reached this fragment without being signed in, we guard the sign out so
         // we do not hit a native crash.
-        if (!ChromeSigninController.get().isSignedIn()) return;
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return;
 
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
         IdentityServicesProvider.get().getSigninManager().signOut(

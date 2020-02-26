@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -155,9 +156,8 @@ class ClientMixin : public ClientInterface {
     //
     // However the better place to focus on is de-duplication and caching on the
     // proxy service side (which currently caches but doesn't de-duplicate).
-    return base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
          base::TaskPriority::USER_VISIBLE});
   }
 

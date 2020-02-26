@@ -212,6 +212,11 @@ gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
                      label_width + extra_space_for_arrow + GetInsets().width());
   }
 
+  // Make sure there is sufficient margin around the label.
+  int horizontal_margin = width - label_->GetPreferredSize().width();
+  if (horizontal_margin < 2 * kUnifiedFeaturePodMinimumHorizontalMargin)
+    width += 2 * kUnifiedFeaturePodMinimumHorizontalMargin - horizontal_margin;
+
   int height = label_->GetPreferredSize().height() + GetInsets().height();
   if (sub_label_->GetVisible()) {
     height += kUnifiedFeaturePodInterLabelPadding +
@@ -294,8 +299,7 @@ void FeaturePodLabelButton::OnEnabledChanged() {
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Size preferred_size = child->GetPreferredSize();
-  int child_width =
-      std::min(kUnifiedFeaturePodLabelWidth, preferred_size.width());
+  int child_width = preferred_size.width();
   child->SetBounds(
       contents_bounds.x() + (contents_bounds.width() - child_width) / 2, y,
       child_width, preferred_size.height());

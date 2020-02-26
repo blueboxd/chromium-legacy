@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -103,8 +104,8 @@ class WebDataServiceTest : public testing::Test {
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded; it's also possible the various uses of this below
     // should each use their own sequences instead of sharing this one.
-    auto db_task_runner = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock()});
+    auto db_task_runner =
+        base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_task_runner);
     wdbs_->AddTable(std::make_unique<AutofillTable>());

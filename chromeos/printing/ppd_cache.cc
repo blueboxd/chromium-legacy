@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -177,14 +178,14 @@ class PpdCacheImpl : public PpdCache {
 
 // static
 scoped_refptr<PpdCache> PpdCache::Create(const base::FilePath& cache_base_dir) {
-  return scoped_refptr<PpdCache>(new PpdCacheImpl(
-      cache_base_dir,
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
+  return scoped_refptr<PpdCache>(
+      new PpdCacheImpl(cache_base_dir,
+                       base::ThreadPool::CreateSequencedTaskRunner(
+                           {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+                       base::ThreadPool::CreateSequencedTaskRunner(
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
 }
 
 scoped_refptr<PpdCache> PpdCache::CreateForTesting(

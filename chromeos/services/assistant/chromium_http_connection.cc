@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/header_util.h"
@@ -45,7 +46,7 @@ ChromiumHttpConnection::ChromiumHttpConnection(
     std::unique_ptr<PendingSharedURLLoaderFactory> pending_url_loader_factory,
     Delegate* delegate)
     : delegate_(delegate),
-      task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
       pending_url_loader_factory_(std::move(pending_url_loader_factory)) {
   DCHECK(delegate_);
   DCHECK(pending_url_loader_factory_);

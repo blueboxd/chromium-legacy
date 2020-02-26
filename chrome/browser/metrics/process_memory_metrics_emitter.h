@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_PROCESS_MEMORY_METRICS_EMITTER_H_
 #define CHROME_BROWSER_METRICS_PROCESS_MEMORY_METRICS_EMITTER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"

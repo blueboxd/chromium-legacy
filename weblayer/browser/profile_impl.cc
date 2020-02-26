@@ -220,9 +220,9 @@ content::BrowserContext* ProfileImpl::GetBrowserContext() {
 bool ProfileImpl::DeleteDataFromDisk(base::OnceClosure done_callback) {
   if (num_browser_impl_ > 0)
     return false;
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&NukeProfileFromDisk, name_, data_path_),
       std::move(done_callback));
@@ -311,9 +311,9 @@ static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
 static void JNI_ProfileImpl_EnumerateAllProfileNames(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ListProfileNames),
       base::BindOnce(&PassFilePathsToJavaCallback,

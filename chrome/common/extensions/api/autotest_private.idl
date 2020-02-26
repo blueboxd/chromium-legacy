@@ -428,6 +428,23 @@ namespace autotestPrivate {
     boolean pressed;
   };
 
+  // Mapped to ScrollableShelfState in ash/public/cpp/scrollable_shelf_info.h.
+  dictionary ScrollableShelfState {
+    double? scrollDistance;
+  };
+
+  // Mapped to ScrollableShelfInfo in ash/public/cpp/scrollable_shelf_info.h.
+  // |targetMainAxisOffset| is set when ScrollableShelfState used in query
+  // specifies the scroll distance.
+  dictionary ScrollableShelfInfo {
+    double mainAxisOffset;
+    double pageOffset;
+    double? targetMainAxisOffset;
+    Bounds leftArrowBounds;
+    Bounds rightArrowBounds;
+    boolean isAnimating;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
@@ -445,6 +462,9 @@ namespace autotestPrivate {
   callback AcceleratorCallback = void (boolean success);
 
   callback DesksCallback = void (boolean success);
+
+  callback GetScrollableShelfInfoForStateCallback = void (
+      ScrollableShelfInfo info);
 
   dictionary TraceConfig {
     // The recording mode of the trace. Possible options are:
@@ -917,6 +937,12 @@ namespace autotestPrivate {
     // |enable|: whether enabled touch mode.
     // |callback|: called when action performed.
     static void setArcTouchMode(boolean enabled, VoidCallback callback);
+
+    // Fetches ui information of scrollable shelf view for the given shelf
+    // state. This function does not change scrollable shelf.
+    static void getScrollableShelfInfoForState(
+        ScrollableShelfState state,
+        GetScrollableShelfInfoForStateCallback callback);
   };
 
   interface Events {

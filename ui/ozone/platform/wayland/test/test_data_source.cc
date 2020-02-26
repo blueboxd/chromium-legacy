@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 
@@ -63,8 +64,8 @@ const struct wl_data_source_interface kTestDataSourceImpl = {
 
 TestDataSource::TestDataSource(wl_resource* resource)
     : ServerObject(resource),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {}
+      task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {}
 
 TestDataSource::~TestDataSource() {}
 

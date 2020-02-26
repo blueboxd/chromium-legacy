@@ -63,6 +63,12 @@ void OffTheRecordChromeBrowserStateImpl::
   NOTREACHED();
 }
 
+BrowserStatePolicyConnector*
+OffTheRecordChromeBrowserStateImpl::GetPolicyConnector() {
+  // Forward the call to the original (non-OTR) browser state.
+  return GetOriginalChromeBrowserState()->GetPolicyConnector();
+}
+
 PrefService* OffTheRecordChromeBrowserStateImpl::GetPrefs() {
   return prefs_;
 }

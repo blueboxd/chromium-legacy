@@ -28,11 +28,11 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.StopSource;
@@ -145,7 +145,7 @@ public class SyncSettingsUtils {
      * Return a short summary of the current sync status.
      */
     public static String getSyncStatusSummary(Context context) {
-        if (!ChromeSigninController.get().isSignedIn()) return "";
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return "";
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
@@ -180,7 +180,6 @@ public class SyncSettingsUtils {
             return res.getString(R.string.sync_error_generic);
         }
 
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
         boolean syncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (syncEnabled) {
             if (!profileSyncService.isSyncActive()) {
@@ -206,7 +205,7 @@ public class SyncSettingsUtils {
      * Returns an icon that represents the current sync state.
      */
     public static @Nullable Drawable getSyncStatusIcon(Context context) {
-        if (!ChromeSigninController.get().isSignedIn()) return null;
+        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return null;
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
@@ -309,7 +308,7 @@ public class SyncSettingsUtils {
      * @param activity The activity to use for starting the intent.
      */
     public static void openGoogleMyAccount(Activity activity) {
-        assert ChromeSigninController.get().isSignedIn();
+        assert IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount();
         RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
         openCustomTabWithURL(activity, MY_ACCOUNT_URL);
     }

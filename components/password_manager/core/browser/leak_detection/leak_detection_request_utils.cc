@@ -12,6 +12,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
@@ -127,9 +128,9 @@ AnalyzeResponseResult CheckIfCredentialWasLeaked(
 void PrepareSingleLeakRequestData(const std::string& username,
                                   const std::string& password,
                                   SingleLeakRequestDataCallback callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrepareLookupSingleLeakData, username, password),
       std::move(callback));
@@ -151,9 +152,9 @@ void PrepareSingleLeakRequestData(
 void AnalyzeResponse(std::unique_ptr<SingleLookupResponse> response,
                      const std::string& encryption_key,
                      SingleLeakResponseAnalysisCallback callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CheckIfCredentialWasLeaked, std::move(response),
                      encryption_key),

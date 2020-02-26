@@ -1,0 +1,107 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<!--
+  UI for checking and downloading updates as part of the update process.
+  'indeterminate' paper-progress will recalculate styles on every frame
+  when OOBE is loaded (even when another screen is open).
+  So we make it 'indeterminate' only when the checking for updates dialog is
+  shown, and make set to false when dialog is hidden.
+
+  Example:
+      <checking-downloading-update> </checking-downloading-update>
+
+  Attributes:
+    'checkingForUpdate' - Whether the screen is currently checking for updates.
+                          Shows the checking for updates dialog and hides the
+                          downloading dialog.
+    'progressValue' - Progress bar percent value.
+    'estimatedTimeLeft' - Time left for the update to complete download.
+    'estimatedTimeLeftShown' - True if estimatedTimeLeft is to be shown.
+    'progressMessage' - Message informing update status.
+    'progressMessageShown' - True if progressMessage is to be shown.
+    'updateCompleted' - True if update is completed and probably manual action
+                        is required.
+    'cancelAllowed' - True if update cancellation is allowed.
+    'checkingForUpdatesMsg' - ID of localized string shown while checking for
+                              updates.
+    'cancelHint' - ID of the localized string for update cancellation message.
+-->
+
+<dom-module id="checking-downloading-update">
+  <template>
+    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="checking_downloading_update.css">
+    <oobe-dialog hidden="[[!checkingForUpdate]]"
+        title-key="checkingForUpdates"
+        aria-live="polite" id="checking-for-updates-dialog" footer-shrinkable
+        full-screen-dialog>
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+      </hd-iron-icon>
+      <div slot="subtitle" class="update-subtitle" id="checkingForUpdatesMsg">
+        [[i18nDynamic(locale, checkingForUpdatesMsg)]]
+      </div>
+      <div slot="subtitle" class="update-subtitle" hidden="[[!cancelAllowed]]"
+          id="checkingForUpdateCancelHint">
+        [[i18nDynamic(locale, cancelHint)]]
+      </div>
+      <paper-progress slot="progress" id="checking-progress"
+          indeterminate="[[checkingForUpdate]]">
+      </paper-progress>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/updating_1x.svg 1x,
+                    images/2x/updating_2x.svg 2x">
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog footer-shrinkable id="updating-dialog"
+        title-key="updatingScreenTitle"
+        hidden="[[checkingForUpdate]]"
+        aria-live="polite" full-screen-dialog>
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+      </hd-iron-icon>
+      <div slot="subtitle" class="update-subtitle"
+          hidden="[[updateCompleted]]">
+        [[i18nDynamic(locale, 'installingUpdateDesc')]]
+      </div>
+      <div slot="subtitle" class="update-subtitle" id="updatingCancelHint"
+          hidden="[[isNotAllowedOrUpdateCompleted_(cancelAllowed,
+                                                   updateCompleted)]]">
+        [[i18nDynamic(locale, cancelHint)]]
+      </div>
+      <div id="update-complete-msg" slot="subtitle" class="update-subtitle"
+          hidden="[[!updateCompleted]]">
+        [[i18nDynamic(locale, 'updateCompeletedMsg')]]
+      </div>
+      <paper-progress id="updating-progress" slot="progress" min="0" max="100"
+          value="[[progressValue]]" hidden="[[updateCompleted]]">
+      </paper-progress>
+      <div slot="footer" class="flex layout vertical">
+        <div id="estimated-time-left" class="progress-message"
+            hidden="[[isNotAllowedOrUpdateCompleted_(estimatedTimeLeftShown,
+                                                     updateCompleted)]]">
+          [[estimatedTimeLeft]]
+        </div>
+        <div id="progress-message" class="progress-message"
+            hidden="[[isNotAllowedOrUpdateCompleted_(progressMessageShown,
+                                                     updateCompleted)]]">
+          [[progressMessage]]
+        </div>
+        <div class="flex layout vertical center-justified center">
+          <img class="update-illustration oobe-illustration"
+              srcset="images/1x/updating_1x.svg 1x,
+                      images/2x/updating_2x.svg 2x">
+        </div>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -320,8 +320,8 @@ void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   if (UsingDefaultTheme()) {
     scoped_refptr<CustomThemeSupplier> supplier;
     if (theme_helper_.ShouldUseIncreasedContrastThemeSupplier(observed_theme)) {
-      supplier = base::MakeRefCounted<IncreasedContrastThemeSupplier>(
-          observed_theme->ShouldUseDarkColors());
+      supplier =
+          base::MakeRefCounted<IncreasedContrastThemeSupplier>(observed_theme);
     }
     SwapThemeSupplier(supplier);
   }
@@ -356,8 +356,7 @@ void ThemeService::UseDefaultTheme() {
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   if (theme_helper_.ShouldUseIncreasedContrastThemeSupplier(native_theme)) {
-    SetCustomDefaultTheme(new IncreasedContrastThemeSupplier(
-        native_theme->ShouldUseDarkColors()));
+    SetCustomDefaultTheme(new IncreasedContrastThemeSupplier(native_theme));
     // Early return here because SetCustomDefaultTheme does ClearAllThemeData
     // and NotifyThemeChanged when it needs to. Without this return, the
     // IncreasedContrastThemeSupplier would get immediately removed if this

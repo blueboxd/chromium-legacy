@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/import/csv_password_sequence.h"
 
@@ -63,9 +64,8 @@ void PasswordImporter::Import(const base::FilePath& path,
                               CompletionCallback completion) {
   // Posting with USER_VISIBLE priority, because the result of the import is
   // visible to the user in the password settings page.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ReadFileToString, path),
       base::BindOnce(&ParsePasswords, std::move(completion)));
 }

@@ -4,20 +4,20 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE;
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID;
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.PRIMARY_COLOR;
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.TINT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.TINT;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * ViewBinder for TabGroupUiToolbar.
+ * ViewBinder for TabGroupUi component.
  */
-class TabGroupUiToolbarViewBinder {
+class TabGroupUiViewBinder {
     /**
      * Binds the given model to the given view, updating the payload in propertyKey.
      *

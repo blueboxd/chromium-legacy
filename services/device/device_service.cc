@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -134,8 +135,9 @@ DeviceService::DeviceService(
   serial_port_manager_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 #else
   // On other platforms it must be allowed to do blocking IO.
-  serial_port_manager_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  serial_port_manager_task_runner_ =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 #endif
 #endif
   // Ensure that the battery backend is initialized now; otherwise it may end up

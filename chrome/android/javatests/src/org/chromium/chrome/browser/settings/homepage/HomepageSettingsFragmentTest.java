@@ -538,9 +538,12 @@ public class HomepageSettingsFragmentTest {
         Assert.assertTrue(ASSERT_HOMEPAGE_MANAGER_SETTINGS,
                 NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
 
-        // Update the text box.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mCustomUriRadioButton.setPrimaryText(TEST_URL_FOO));
+        // Update the text box. To do this, request focus for customized radio button so that the
+        // checked option will be changed.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mCustomUriRadioButton.requestFocus();
+            mCustomUriRadioButton.setPrimaryText(TEST_URL_FOO);
+        });
 
         // Radio Button should switched to customized homepage.
         Assert.assertFalse(

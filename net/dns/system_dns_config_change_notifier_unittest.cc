@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_hosts.h"
@@ -35,8 +36,8 @@ class SystemDnsConfigChangeNotifierTest : public TestWithTaskEnvironment {
   // Set up a change notifier, owned on a dedicated blockable task runner, with
   // a faked underlying DnsConfigService.
   SystemDnsConfigChangeNotifierTest()
-      : notifier_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock()})) {
+      : notifier_task_runner_(
+            base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {
     auto test_service = std::make_unique<TestDnsConfigService>();
     notifier_task_runner_->PostTask(
         FROM_HERE,

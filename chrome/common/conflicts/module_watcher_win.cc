@@ -12,18 +12,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_handle.h"
 
@@ -114,11 +111,6 @@ constexpr wchar_t kNtDll[] = L"ntdll.dll";
 constexpr char kLdrRegisterDllNotification[] = "LdrRegisterDllNotification";
 constexpr char kLdrUnregisterDllNotification[] = "LdrUnregisterDllNotification";
 
-// It is currently estimated that around 10 DLLs are loaded in a background
-// sequence in Chrome. This number was chosen so that on average 1% of launches
-// will cause a process dump.
-constexpr int kMaxBackgroundLoadedDllCount = 1000;
-
 // Helper function for converting a UNICODE_STRING to a FilePath.
 base::FilePath ToFilePath(const UNICODE_STRING* str) {
   return base::FilePath(
@@ -139,15 +131,13 @@ void OnModuleEvent(ModuleWatcher::ModuleEventType event_type,
 
 // static
 std::unique_ptr<ModuleWatcher> ModuleWatcher::Create(
-    OnModuleEventCallback callback,
-    bool report_background_loaded_modules) {
+    OnModuleEventCallback callback) {
   {
     base::AutoLock lock(g_module_watcher_lock.Get());
     // If a ModuleWatcher already exists then bail out.
     if (g_module_watcher_instance)
       return nullptr;
-    g_module_watcher_instance =
-        new ModuleWatcher(report_background_loaded_modules);
+    g_module_watcher_instance = new ModuleWatcher();
   }
 
   // Initialization mustn't occur while holding |g_module_watcher_lock|.
@@ -156,8 +146,6 @@ std::unique_ptr<ModuleWatcher> ModuleWatcher::Create(
 }
 
 ModuleWatcher::~ModuleWatcher() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Done before acquiring |g_module_watcher_lock|.
   UnregisterDllNotificationCallback();
 
@@ -168,17 +156,10 @@ ModuleWatcher::~ModuleWatcher() {
   g_module_watcher_instance = nullptr;
 }
 
-ModuleWatcher::ModuleWatcher(bool report_background_loaded_modules)
-    : report_background_loaded_modules_(report_background_loaded_modules),
-      background_loaded_dll_count_(0),
-      num_background_loaded_dll_report_(
-          base::RandInt(0, kMaxBackgroundLoadedDllCount)),
-      weak_ptr_factory_(this) {}
+ModuleWatcher::ModuleWatcher() {}
 
 // Initializes the ModuleWatcher instance.
 void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   callback_ = std::move(callback);
   RegisterDllNotificationCallback();
 
@@ -245,18 +226,13 @@ void ModuleWatcher::EnumerateAlreadyLoadedModules(
   }
 }
 
-void ModuleWatcher::DumpOnBackgroundLoadedModule() {
-  if (!report_background_loaded_modules_ ||
-      base::PlatformThread::GetCurrentThreadPriority() !=
-          base::ThreadPriority::BACKGROUND) {
-    return;
-  }
-
-  if (background_loaded_dll_count_++ == num_background_loaded_dll_report_) {
-    // DLL loaded on a thread with background priority. This can cause jank on
-    // the UI thread if it tries to acquire the loader lock.
-    base::debug::DumpWithoutCrashing();
-  }
+// static
+ModuleWatcher::OnModuleEventCallback ModuleWatcher::GetCallbackForContext(
+    void* context) {
+  base::AutoLock lock(g_module_watcher_lock.Get());
+  if (context != g_module_watcher_instance)
+    return OnModuleEventCallback();
+  return g_module_watcher_instance->callback_;
 }
 
 // static
@@ -264,16 +240,7 @@ void __stdcall ModuleWatcher::LoaderNotificationCallback(
     unsigned long notification_reason,
     const LDR_DLL_NOTIFICATION_DATA* notification_data,
     void* context) {
-  OnModuleEventCallback callback;
-  {
-    base::AutoLock lock(g_module_watcher_lock.Get());
-    if (context == g_module_watcher_instance) {
-      callback = g_module_watcher_instance->callback_;
-
-      g_module_watcher_instance->DumpOnBackgroundLoadedModule();
-    }
-  }
-
+  auto callback = GetCallbackForContext(context);
   if (!callback)
     return;
 
@@ -295,7 +262,5 @@ void __stdcall ModuleWatcher::LoaderNotificationCallback(
 }
 
 void ModuleWatcher::RunCallback(const ModuleEvent& event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   callback_.Run(event);
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings.notifications;
+package org.chromium.chrome.browser.notifications.settings;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -38,10 +38,10 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
- * Tests for the NotificationsSettings.
+ * Tests for the NotificationSettings.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class NotificationsSettingsTest {
+public class NotificationSettingsTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
     private SettingsActivity mActivity;
@@ -52,8 +52,7 @@ public class NotificationsSettingsTest {
     @Before
     public void setUp() {
         mActivity = SettingsActivityTest.startSettingsActivity(
-                InstrumentationRegistry.getInstrumentation(),
-                NotificationsSettings.class.getName());
+                InstrumentationRegistry.getInstrumentation(), NotificationSettings.class.getName());
     }
 
     // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
@@ -69,7 +68,7 @@ public class NotificationsSettingsTest {
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) mActivity.getMainFragment();
         final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsSettings.PREF_SUGGESTIONS);
+                NotificationSettings.PREF_SUGGESTIONS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure the toggle reflects the state correctly.
@@ -105,7 +104,7 @@ public class NotificationsSettingsTest {
 
         PreferenceFragmentCompat fragment = (PreferenceFragmentCompat) mActivity.getMainFragment();
         ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsSettings.PREF_SUGGESTIONS);
+                NotificationSettings.PREF_SUGGESTIONS);
 
         Assert.assertFalse(toggle.isEnabled());
         Assert.assertFalse(toggle.isChecked());
@@ -126,7 +125,7 @@ public class NotificationsSettingsTest {
             PreferenceFragmentCompat fragment =
                     (PreferenceFragmentCompat) mActivity.getMainFragment();
             Preference fromWebsites =
-                    fragment.findPreference(NotificationsSettings.PREF_FROM_WEBSITES);
+                    fragment.findPreference(NotificationSettings.PREF_FROM_WEBSITES);
 
             fromWebsites.performClick();
         });
@@ -157,7 +156,7 @@ public class NotificationsSettingsTest {
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) mActivity.getMainFragment();
         final Preference fromWebsites =
-                fragment.findPreference(NotificationsSettings.PREF_FROM_WEBSITES);
+                fragment.findPreference(NotificationSettings.PREF_FROM_WEBSITES);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.NOTIFICATIONS, false);

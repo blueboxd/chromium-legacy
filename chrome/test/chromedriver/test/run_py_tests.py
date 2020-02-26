@@ -3286,19 +3286,20 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
     size = self._driver.GetWindowRect()
 
     script_size = self._driver.ExecuteScript(
-      "return [window.outerWidth * window.devicePixelRatio,"
-      "window.outerHeight * window.devicePixelRatio, 0, 0]")
+        'return [window.outerWidth, window.outerHeight, 0, 0]')
     self.assertEquals(size, script_size)
 
     script_inner = self._driver.ExecuteScript(
-      "return [window.innerWidth, window.innerHeight]")
-    self.assertLessEqual(script_inner[0], size[0])
-    self.assertLessEqual(script_inner[1], size[1])
-    # Sanity check: screen dimensions in the range 2-20000px
+        'return [window.innerWidth * visualViewport.scale, '
+        'window.innerHeight * visualViewport.scale]')
+    # Subtract inner size by 1 to compensate for rounding errors.
+    self.assertLessEqual(script_inner[0] - 1, size[0])
+    self.assertLessEqual(script_inner[1] - 1, size[1])
+    # Sanity check: screen dimensions in the range 20-20000px
     self.assertLessEqual(size[0], 20000)
     self.assertLessEqual(size[1], 20000)
-    self.assertGreaterEqual(size[0], 2)
-    self.assertGreaterEqual(size[1], 2)
+    self.assertGreaterEqual(size[0], 20)
+    self.assertGreaterEqual(size[1], 20)
 
 class ChromeDownloadDirTest(ChromeDriverBaseTest):
 

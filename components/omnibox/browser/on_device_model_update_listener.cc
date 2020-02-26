@@ -7,6 +7,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 
@@ -41,8 +42,8 @@ OnDeviceModelUpdateListener* OnDeviceModelUpdateListener::GetInstance() {
 }
 
 OnDeviceModelUpdateListener::OnDeviceModelUpdateListener()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()})) {}
 
 OnDeviceModelUpdateListener::~OnDeviceModelUpdateListener() = default;

@@ -130,52 +130,6 @@ TEST_F(ActiveTimeTest, MergeActiveTimesTest) {
   EXPECT_EQ(merged_time5->active_to(), time3);
 }
 
-TEST_F(AppActivityTest, RemoveActiveTimes) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
-  AppActivity activity(AppState::kAvailable);
-
-  // Time interval that will be removed.
-  base::Time start = base::Time::Now();
-  activity.SetAppActive(start);
-  task_environment.FastForwardBy(base::TimeDelta::FromMinutes(10));
-  base::Time end = base::Time::Now();
-  activity.SetAppInactive(end);
-  const AppActivity::ActiveTime to_remove(start, end);
-
-  // Time interval that will be trimmed.
-  start = base::Time::Now();
-  activity.SetAppActive(start);
-  task_environment.FastForwardBy(base::TimeDelta::FromMinutes(5));
-  const base::Time report_time = base::Time::Now();
-  task_environment.FastForwardBy(base::TimeDelta::FromMinutes(5));
-  end = base::Time::Now();
-  activity.SetAppInactive(end);
-  const AppActivity::ActiveTime to_trim(start, end);
-
-  // Time interval that will be kept.
-  start = base::Time::Now();
-  activity.SetAppActive(start);
-  task_environment.FastForwardBy(base::TimeDelta::FromMinutes(10));
-  end = base::Time::Now();
-  activity.SetAppInactive(end);
-  const AppActivity::ActiveTime to_keep(start, end);
-
-  EXPECT_EQ(3u, activity.active_times().size());
-  EXPECT_TRUE(base::Contains(activity.active_times(), to_remove));
-  EXPECT_TRUE(base::Contains(activity.active_times(), to_trim));
-  EXPECT_TRUE(base::Contains(activity.active_times(), to_keep));
-
-  activity.RemoveActiveTimeEarlierThan(report_time);
-
-  EXPECT_EQ(2u, activity.active_times().size());
-  EXPECT_FALSE(base::Contains(activity.active_times(), to_remove));
-  EXPECT_TRUE(base::Contains(activity.active_times(), to_keep));
-
-  const AppActivity::ActiveTime trimmed(report_time, to_trim.active_to());
-  EXPECT_TRUE(base::Contains(activity.active_times(), trimmed));
-}
-
 // TODO(agawronska) : Add more tests for app activity.
 
 }  // namespace app_time

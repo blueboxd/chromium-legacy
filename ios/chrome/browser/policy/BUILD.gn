@@ -6,14 +6,21 @@ source_set("policy") {
   sources = [
     "browser_policy_connector_ios.h",
     "browser_policy_connector_ios.mm",
+    "browser_state_policy_connector.h",
+    "browser_state_policy_connector.mm",
+    "browser_state_policy_connector_factory.h",
+    "browser_state_policy_connector_factory.mm",
     "configuration_policy_handler_list_factory.h",
     "configuration_policy_handler_list_factory.mm",
+    "schema_registry_factory.h",
+    "schema_registry_factory.mm",
   ]
 
   deps = [
     "//base",
     "//components/policy:generated",
     "//components/policy/core/common",
+    "//ios/chrome/browser/browser_state",
     "//services/network/public/cpp",
   ]
 

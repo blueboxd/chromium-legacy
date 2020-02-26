@@ -79,6 +79,7 @@ class PLATFORM_EXPORT PropertyTreeState {
   // Dumps the tree from this state up to the root as a string.
   String ToTreeString() const;
 #endif
+  std::unique_ptr<JSONObject> ToJSON() const;
 
   // Returns memory usage of the transform & clip caches of this state plus
   // ancestors.

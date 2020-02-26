@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/no_destructor.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "net/http/http_util.h"
 
@@ -49,9 +50,8 @@ std::unique_ptr<LocaleChangeSubscription> RegisterLocaleChangeCallback(
 
 #if defined(OS_ANDROID)
 static void JNI_LocaleChangedBroadcastReceiver_LocaleChanged(JNIEnv* env) {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce([]() {
         // Passing an empty |pref_locale| means the Android system locale will
         // be used (base::android::GetDefaultLocaleString()).

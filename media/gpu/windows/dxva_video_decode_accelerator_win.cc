@@ -1321,15 +1321,22 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
 
 // static
 void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
-  for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs)
-    ::LoadLibrary(mfdll);
-  ::LoadLibrary(L"dxva2.dll");
+  for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs) {
+    if (!::LoadLibrary(mfdll))
+      PLOG(ERROR) << "DXVAVDA fatal error: could not LoadLibrary: " << mfdll;
+  }
+
+  if (!::LoadLibrary(L"dxva2.dll"))
+    PLOG(ERROR) << "DXVAVDA fatal error: could not LoadLibrary: dxva2.dll";
 
   if (base::win::GetVersion() >= base::win::Version::WIN8) {
-    LoadLibrary(L"msvproc.dll");
+    if (!LoadLibrary(L"msvproc.dll"))
+      PLOG(ERROR) << "DXVAVDA fatal error: could not LoadLibrary: msvproc.dll";
   } else {
 #if defined(ENABLE_DX11_FOR_WIN7)
-    LoadLibrary(L"mshtmlmedia.dll");
+    if (!LoadLibrary(L"mshtmlmedia.dll"))
+      PLOG(ERROR)
+          << "DXVAVDA fatal error: could not LoadLibrary: mshtmlmedia.dll";
 #endif
   }
 }

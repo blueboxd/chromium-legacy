@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
@@ -60,7 +61,7 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
     leveldb_database_ = AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
         base::DoNothing());
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());

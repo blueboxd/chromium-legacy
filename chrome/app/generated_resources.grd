@@ -9529,28 +9529,31 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DEVICE_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
         Add a query param in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;
       </message>
-      <message name="IDS_DEVICE_LOG_REFRESH" desc="Button to refresh device log">
+      <message name="IDS_DEVICE_LOG_REFRESH" desc="Button to refresh device log entries">
         Refresh
       </message>
-      <message name="IDS_DEVICE_LOG_CLEAR" desc="Button to clear device log">
+      <message name="IDS_DEVICE_LOG_CLEAR" desc="Button to clear device log entries">
         Clear
+      </message>
+      <message name="IDS_DEVICE_LOG_CLEAR_TYPES" desc="Button to clear device type checkboxes">
+        Clear Types
       </message>
       <message name="IDS_DEVICE_LOG_NO_ENTRIES" desc="Text shown when device log is empty">
         No log entries
       </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
-        Show:
+      <message name="IDS_DEVICE_LOG_LEVEL_LABEL" desc="Label for the logging level select dropdown">
+        Log Level:
       </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_ERROR" desc="Error logging level checkbox">
+      <message name="IDS_DEVICE_LOG_LEVEL_ERROR" desc="Error logging level label">
         Error
       </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_USER" desc="User logging level checkbox">
+      <message name="IDS_DEVICE_LOG_LEVEL_USER" desc="User logging level label">
         User
       </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_EVENT" desc="Event logging level checkbox">
+      <message name="IDS_DEVICE_LOG_LEVEL_EVENT" desc="Event logging level label">
         Event
       </message>
-      <message name="IDS_DEVICE_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
+      <message name="IDS_DEVICE_LOG_LEVEL_DEBUG" desc="Debug logging level label">
         Debug
       </message>
       <message name="IDS_DEVICE_LOG_TYPE_LOGIN" desc="Checkbox to enable showing events of type LOGIN">

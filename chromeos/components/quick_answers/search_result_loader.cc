@@ -8,10 +8,8 @@
 
 #include "base/json/json_writer.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
-#include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
-#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -20,28 +18,7 @@ namespace quick_answers {
 namespace {
 
 using base::Value;
-using network::ResourceRequest;
 using network::mojom::URLLoaderFactory;
-
-// TODO(llin): Update the policy detail after finalizing on the consent check.
-constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
-    net::DefineNetworkTrafficAnnotation("quick_answers_loader", R"(
-          semantics: {
-            sender: "ChromeOS Quick Answers"
-            description:
-              "ChromeOS requests quick answers based on the currently selected "
-              "text."
-            trigger:
-              "Right click to trigger context menu."
-            destination: GOOGLE_OWNED_SERVICE
-          }
-          policy: {
-            cookies_allowed: YES
-            setting:
-              "Quick Answers can be enabled/disabled in Chrome Settings and is "
-              "subject to eligibility requirements. The user may also "
-              "separately opt out of sharing screen context with Assistant."
-          })");
 
 constexpr base::StringPiece kSearchEndpoint =
     "https://www.google.com/httpservice/web/KnowledgeApiService/Search?"
@@ -89,8 +66,16 @@ std::string BuildSearchRequestPayload(const std::string& selected_text) {
 
   return request_payload_str;
 }
+}  // namespace
 
-GURL BuildRequestUrl(const std::string& selected_text) {
+SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
+                                       ResultLoaderDelegate* delegate)
+    : ResultLoader(url_loader_factory, delegate) {}
+
+SearchResultLoader::~SearchResultLoader() = default;
+
+GURL SearchResultLoader::BuildRequestUrl(
+    const std::string& selected_text) const {
   GURL result = GURL(kSearchEndpoint);
 
   // Add encoded request payload.
@@ -98,59 +83,13 @@ GURL BuildRequestUrl(const std::string& selected_text) {
       result, kPayloadParam, BuildSearchRequestPayload(selected_text));
   return result;
 }
-}  // namespace
 
-SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
-                                       SearchResultLoaderDelegate* delegate)
-    : network_loader_factory_(url_loader_factory), delegate_(delegate) {}
-
-SearchResultLoader::~SearchResultLoader() = default;
-
-void SearchResultLoader::Fetch(const std::string& selected_text) {
-  DCHECK(network_loader_factory_);
-  DCHECK(!selected_text.empty());
-
-  // Load the resource.
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = BuildRequestUrl(selected_text);
-  loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                             kNetworkTrafficAnnotationTag);
-
-  fetch_start_time_ = base::TimeTicks::Now();
-  loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      network_loader_factory_,
-      base::BindOnce(&SearchResultLoader::OnSimpleURLLoaderComplete,
-                     base::Unretained(this)));
-}
-
-void SearchResultLoader::OnSimpleURLLoaderComplete(
-    std::unique_ptr<std::string> response_body) {
-  base::TimeDelta duration = base::TimeTicks::Now() - fetch_start_time_;
-
-  if (!response_body || loader_->NetError() != net::OK ||
-      !loader_->ResponseInfo() || !loader_->ResponseInfo()->headers) {
-    RecordLoadingStatus(LoadStatus::kNetworkError, duration);
-    delegate_->OnNetworkError();
-    return;
-  }
-
+void SearchResultLoader::ProcessResponse(
+    std::unique_ptr<std::string> response_body,
+    ResponseParserCallback complete_callback) {
   search_response_parser_ =
-      std::make_unique<SearchResponseParser>(base::BindOnce(
-          &SearchResultLoader::OnResultParserComplete, base::Unretained(this)));
+      std::make_unique<SearchResponseParser>(std::move(complete_callback));
   search_response_parser_->ProcessResponse(std::move(response_body));
-}
-
-void SearchResultLoader::OnResultParserComplete(
-    std::unique_ptr<QuickAnswer> quick_answer) {
-  // Record quick answer result.
-  base::TimeDelta duration = base::TimeTicks::Now() - fetch_start_time_;
-  if (!quick_answer) {
-    RecordLoadingStatus(LoadStatus::kNoResult, duration);
-  } else {
-    RecordLoadingStatus(LoadStatus::kSuccess, duration);
-    RecordResult(quick_answer->result_type, duration);
-  }
-  delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 
 }  // namespace quick_answers

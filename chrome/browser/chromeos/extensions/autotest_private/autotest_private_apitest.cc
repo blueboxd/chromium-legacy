@@ -116,6 +116,12 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
 }
 
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ScrollableShelfAPITest) {
+  ASSERT_TRUE(
+      RunComponentExtensionTestWithArg("autotest_private", "scrollableShelf"))
+      << message_;
+}
+
 class AutotestPrivateApiOverviewTest : public AutotestPrivateApiTest {
  public:
   AutotestPrivateApiOverviewTest() = default;

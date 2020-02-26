@@ -2792,6 +2792,9 @@ if (enable_java_templates) {
       }
       if (use_java_goma) {
         args += [ "--gomacc-path=$goma_dir/gomacc" ]
+
+        # Override the default action_pool when goma is enabled.
+        pool = "//build/config/android:goma_javac_pool"
       }
       if (defined(invoker.srcjar_filearg)) {
         args += [ "--java-srcjars=${invoker.srcjar_filearg}" ]

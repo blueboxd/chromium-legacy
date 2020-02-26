@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
@@ -98,8 +99,8 @@ HttpBridge::HttpBridge(
       pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       network_task_runner_(g_io_capable_task_runner_for_tests.Get()
                                ? g_io_capable_task_runner_for_tests.Get()
-                               : base::CreateSequencedTaskRunner(
-                                     {base::ThreadPool(), base::MayBlock()})),
+                               : base::ThreadPool::CreateSequencedTaskRunner(
+                                     {base::MayBlock()})),
       network_time_update_callback_(network_time_update_callback) {}
 
 HttpBridge::~HttpBridge() {}

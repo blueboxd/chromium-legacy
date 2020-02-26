@@ -18,6 +18,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/components/drivefs/drivefs_util.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
@@ -110,10 +111,8 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
     } else {
       // Default implementation: just search for a file name.
       callback_ = std::move(callback);
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(&SearchQuery::SearchFiles, drive_fs_->mount_path()),
           base::BindOnce(&SearchQuery::GetMetadata,
                          weak_ptr_factory_.GetWeakPtr()));

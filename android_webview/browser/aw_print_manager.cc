@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -127,9 +128,9 @@ void AwPrintManager::OnDidPrintDocument(
 
   DCHECK(pdf_writing_done_callback_);
   base::PostTaskAndReplyWithResult(
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                              base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce(&SaveDataToFd, fd_, number_pages_, data),
       base::BindOnce(&AwPrintManager::OnDidPrintDocumentWritingDone,

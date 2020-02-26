@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -171,7 +172,7 @@ class FtlMessagingClientTest : public testing::Test {
 
 void FtlMessagingClientTest::SetUp() {
   server_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<Messaging::AsyncService>());
   FtlGrpcContext::SetChannelForTesting(server_->CreateInProcessChannel());

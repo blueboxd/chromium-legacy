@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
@@ -248,6 +249,8 @@ public class DecoderServiceHost
      */
     public void decodeImage(Uri uri, @PickerBitmap.TileTypes int fileType, int width,
             boolean fullWidth, ImagesDecodedCallback callback) {
+        ThreadUtils.assertOnUiThread();
+
         DecoderServiceParams params = new DecoderServiceParams(
                 uri, width, fullWidth, fileType, /*firstFrame=*/true, callback);
         mPendingRequests.add(params);
@@ -409,7 +412,7 @@ public class DecoderServiceHost
         });
     }
 
-    public void closeRequestWithError(String filePath) {
+    private void closeRequestWithError(String filePath) {
         closeRequest(filePath, false, false, null, null, -1, 1.0f);
     }
 
@@ -424,7 +427,7 @@ public class DecoderServiceHost
      * @param decodeTime The length of time it took to decode the bitmaps.
      * @param ratio The ratio of the images (>1.0=portrait, <1.0=landscape).
      */
-    public void closeRequest(String filePath, boolean isVideo, boolean fullWidth,
+    private void closeRequest(String filePath, boolean isVideo, boolean fullWidth,
             @Nullable List<Bitmap> bitmaps, String videoDuration, long decodeTime, float ratio) {
         // If this assert triggers, it means that simultaneous requests have been sent for
         // decoding, which should not happen.
@@ -541,6 +544,8 @@ public class DecoderServiceHost
      * @param filePath The path to the image to cancel decoding.
      */
     public void cancelDecodeImage(String filePath) {
+        ThreadUtils.assertOnUiThread();
+
         // It is important not to null out only pending requests and not mProcessingRequest, because
         // it is used as a signal to see if the decoder is busy.
         Iterator it = mPendingRequests.iterator();

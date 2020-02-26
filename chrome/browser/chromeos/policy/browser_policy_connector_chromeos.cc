@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wilco_dtc_configuration_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/hostname_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
 #include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/device_scheduled_update_checker.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
@@ -230,8 +231,12 @@ void BrowserPolicyConnectorChromeOS::Init(
   hostname_handler_ =
       std::make_unique<HostnameHandler>(chromeos::CrosSettings::Get());
 
+  minimum_version_policy_handler_delegate_ =
+      std::make_unique<MinimumVersionPolicyHandlerDelegateImpl>();
+
   minimum_version_policy_handler_ =
       std::make_unique<MinimumVersionPolicyHandler>(
+          minimum_version_policy_handler_delegate_.get(),
           chromeos::CrosSettings::Get());
 
   device_dock_mac_address_source_handler_ =

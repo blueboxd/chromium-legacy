@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -73,9 +74,8 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
     return false;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&File::DoRead, base::Unretained(this), buffer, buffer_len,
                      offset),
       base::BindOnce(&File::OnOperationComplete, this, callback));
@@ -102,9 +102,8 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
   // finish before it reads from the network again.
   // TODO(fdoray): Consider removing this from the critical path of network
   // requests and changing the priority to BACKGROUND.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&File::DoWrite, base::Unretained(this), buffer, buffer_len,
                      offset),
       base::BindOnce(&File::OnOperationComplete, this, callback));

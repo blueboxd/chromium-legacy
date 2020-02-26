@@ -277,7 +277,7 @@ public class TabGroupUiMediatorUnitTest {
 
         mResetHandlerInOrder = inOrder(mResetHandler);
         mVisibilityControllerInOrder = inOrder(mVisibilityController);
-        mModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
+        mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
     }
 
     @After
@@ -311,7 +311,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab2);
 
         View.OnClickListener listener =
-                mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER);
+                mModel.get(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER);
         assertThat(listener, instanceOf(View.OnClickListener.class));
 
         listener.onClick(mView);
@@ -324,7 +324,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab1);
 
         View.OnClickListener listener =
-                mModel.get(TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER);
+                mModel.get(TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER);
         assertThat(listener, instanceOf(View.OnClickListener.class));
 
         listener.onClick(mView);
@@ -676,22 +676,22 @@ public class TabGroupUiMediatorUnitTest {
     @Test
     public void themeColorChange() {
         initAndAssertProperties(mTab1);
-        mModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, -1);
+        mModel.set(TabGroupUiProperties.PRIMARY_COLOR, -1);
 
         mThemeColorObserverArgumentCaptor.getValue().onThemeColorChanged(1, false);
 
-        assertThat(mModel.get(TabStripToolbarViewProperties.PRIMARY_COLOR), equalTo(1));
+        assertThat(mModel.get(TabGroupUiProperties.PRIMARY_COLOR), equalTo(1));
     }
 
     @Test
     public void tintChange() {
         initAndAssertProperties(mTab1);
-        mModel.set(TabStripToolbarViewProperties.TINT, null);
+        mModel.set(TabGroupUiProperties.TINT, null);
         ColorStateList colorStateList = mock(ColorStateList.class);
 
         mTintObserverArgumentCaptor.getValue().onTintChanged(colorStateList, true);
 
-        assertThat(mModel.get(TabStripToolbarViewProperties.TINT), equalTo(colorStateList));
+        assertThat(mModel.get(TabGroupUiProperties.TINT), equalTo(colorStateList));
     }
 
     @Test
@@ -744,12 +744,11 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab3);
         int drawableId = 321;
 
-        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, 0);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, 0);
 
         mTabGroupUiMediator.setupLeftButtonDrawable(drawableId);
 
-        assertThat(mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID),
-                equalTo(drawableId));
+        assertThat(mModel.get(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID), equalTo(drawableId));
     }
 
     @Test
@@ -757,11 +756,11 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab3);
         View.OnClickListener listener = v -> {};
 
-        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, null);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, null);
 
         mTabGroupUiMediator.setupLeftButtonOnClickListener(listener);
 
-        assertThat(mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER),
-                equalTo(listener));
+        assertThat(
+                mModel.get(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER), equalTo(listener));
     }
 }

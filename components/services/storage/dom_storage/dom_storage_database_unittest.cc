@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,9 +65,8 @@ std::string MakePrefixedKey(base::StringPiece prefix, base::StringPiece key) {
 class StorageServiceDomStorageDatabaseTest : public testing::Test {
  public:
   StorageServiceDomStorageDatabaseTest()
-      : blocking_task_runner_(base::CreateSequencedTaskRunner(
-            {base::MayBlock(), base::ThreadPool(),
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {}
+      : blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {}
 
  protected:
   // Helper for tests to block on the result of an OpenInMemory call.

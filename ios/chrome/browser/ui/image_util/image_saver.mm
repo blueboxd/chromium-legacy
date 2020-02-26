@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/strings/grit/components_strings.h"
@@ -124,9 +125,9 @@
 - (void)saveImage:(NSData*)data
     withFileExtension:(NSString*)fileExtension
            completion:(void (^)(BOOL, NSError*))completion {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(^{
         base::ScopedBlockingCall scoped_blocking_call(
@@ -151,10 +152,9 @@
                   creationRequestForAssetFromImageAtFileURL:fileURL];
             }
             completionHandler:^(BOOL success, NSError* error) {
-              base::PostTask(
+              base::ThreadPool::PostTask(
                   FROM_HERE,
-                  {base::ThreadPool(), base::MayBlock(),
-                   base::TaskPriority::BEST_EFFORT,
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                   base::BindOnce(^{
                     base::ScopedBlockingCall scoped_blocking_call(

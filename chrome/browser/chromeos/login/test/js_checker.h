@@ -133,6 +133,10 @@ class JSChecker {
       const std::string& attribute,
       std::initializer_list<base::StringPiece> element_ids);
 
+  // Expect that the indicated UI element has particular text content.
+  void ExpectElementText(const std::string& content,
+                         std::initializer_list<base::StringPiece> element_ids);
+
   // Fires a native 'click' event on the indicated UI element. Prefer using
   // native 'click' event as it works on both polymer and native UI elements.
   void ClickOnPath(std::initializer_list<base::StringPiece> element_ids);

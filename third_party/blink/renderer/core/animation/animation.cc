@@ -2129,7 +2129,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
   // 2. If, after applying any pending style changes, target is not being
   //    rendered, throw an "InvalidStateError" DOMException and abort these
   //    steps.
-  target->GetDocument().UpdateStyleAndLayoutTreeForNode(target);
+  target->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   if (!target->GetLayoutObject()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Target element is not rendered.");
@@ -2173,7 +2173,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
 
     CSSPropertyRef ref(property.GetCSSPropertyName(), target->GetDocument());
     const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
-       *style, nullptr, false);
+        *style, target->GetLayoutObject(), false);
     inline_style->setProperty(target->GetDocument().ToExecutionContext(),
                               property.GetCSSPropertyName().ToAtomicString(),
                               value->CssText(), "", ASSERT_NO_EXCEPTION);

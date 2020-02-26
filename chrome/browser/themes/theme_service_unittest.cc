@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/test_native_theme.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -184,6 +185,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   }
 
  protected:
+  ui::TestNativeTheme native_theme_;
   extensions::ExtensionRegistry* registry_ = nullptr;
   ThemeService* theme_service_ = nullptr;
 };
@@ -460,12 +462,13 @@ TEST_F(ThemeServiceTest, UseDefaultTheme_DisableExtensionTest) {
 TEST_F(ThemeServiceTest, OmniboxContrast) {
   using TP = ThemeProperties;
   for (bool dark : {false, true}) {
+    native_theme_.SetDarkMode(dark);
     for (bool high_contrast : {false, true}) {
       set_theme_supplier(
           theme_service_,
-          high_contrast
-              ? base::MakeRefCounted<IncreasedContrastThemeSupplier>(dark)
-              : nullptr);
+          high_contrast ? base::MakeRefCounted<IncreasedContrastThemeSupplier>(
+                              &native_theme_)
+                        : nullptr);
       constexpr int contrasting_ids[][2] = {
           {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},

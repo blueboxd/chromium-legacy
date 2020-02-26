@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "components/reading_list/core/reading_list_entry.h"
@@ -283,9 +284,9 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
           .DirName();
 
   base::FilePath offline_path = entry->DistilledPath();
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetOfflineData, offline_root, offline_path),
       base::BindOnce(&OfflinePageTabHelper::LoadData, base::Unretained(this),

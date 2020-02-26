@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +27,7 @@ class MockBlob : public FakeBlob {
   static void Create(File* file, base::Time modified_time) {
     mojo::PendingRemote<mojom::blink::Blob> remote;
     PostCrossThreadTask(
-        *base::CreateSingleThreadTaskRunner({base::ThreadPool()}), FROM_HERE,
+        *base::ThreadPool::CreateSingleThreadTaskRunner({}), FROM_HERE,
         CrossThreadBindOnce(
             [](const String& uuid,
                mojo::PendingReceiver<mojom::blink::Blob> receiver,

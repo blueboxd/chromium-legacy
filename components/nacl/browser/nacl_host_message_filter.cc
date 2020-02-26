@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -205,9 +206,9 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
 
   // Process a list of resource file URLs in
   // |launch_params.resource_files_to_prefetch|.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
                      safe_launch_params, reply_msg, permissions,

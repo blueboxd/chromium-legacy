@@ -34,6 +34,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -559,8 +560,8 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     scoped_refptr<ContentVerifier> content_verifier =
         extension_info_map_->content_verifier();
-    base::PostTaskAndReply(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ReadResourceFilePathAndLastModifiedTime, resource,
                        directory_path, base::Unretained(read_file_path),
                        base::Unretained(last_modified_time)),

@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
@@ -234,10 +235,10 @@ LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
       version_(0),
       store_birthday_(0),
       persistent_file_(persistent_file),
-      writer_(persistent_file_,
-              base::CreateSequencedTaskRunner(
-                  {base::ThreadPool(), base::MayBlock(),
-                   base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      writer_(
+          persistent_file_,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       observer_for_tests_(nullptr) {
   DCHECK(!persistent_file_.empty());
   Init();

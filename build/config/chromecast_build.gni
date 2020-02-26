@@ -66,14 +66,16 @@ if (enable_cast_renderer) {
   }
 
   cast_mojo_media_host = "gpu"
-} else if (is_android && !is_cast_audio_only) {
+} else if (is_android) {
   # On Android, all the enabled mojo media services run in the process specified
   # by "cast_mojo_media_host".
   cast_mojo_media_services = [
     "cdm",
     "audio_decoder",
-    "video_decoder",
   ]
+  if (!is_cast_audio_only) {
+    cast_mojo_media_services += [ "video_decoder" ]
+  }
 
   cast_mojo_media_host = "gpu"
 }

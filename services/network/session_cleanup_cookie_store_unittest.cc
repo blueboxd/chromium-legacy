@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -55,7 +56,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
   CanonicalCookieVector CreateAndLoad() {
     auto sqlite_store = base::MakeRefCounted<net::SQLitePersistentCookieStore>(
         temp_dir_.GetPath().Append(kTestCookiesFilename),
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
         background_task_runner_, true, nullptr);
     store_ =
         base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store.get());
@@ -86,7 +87,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionCleanupCookieStore> store_;
   net::RecordingBoundTestNetLog net_log_;

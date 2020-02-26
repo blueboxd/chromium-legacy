@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/persistent_system_profile.h"
@@ -168,9 +169,9 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
       }
     }
     // Schedule the creation of a "spare" file for use on the next run.
-    base::PostDelayedTask(
+    base::ThreadPool::PostDelayedTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::LOWEST,
+        {base::MayBlock(), base::TaskPriority::LOWEST,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(
                            &base::GlobalHistogramAllocator::CreateSpareFile),
@@ -211,9 +212,9 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
   allocator->CreateTrackingHistograms(kBrowserMetricsName);
 
 #if defined(OS_WIN)
-  base::PostDelayedTask(
+  base::ThreadPool::PostDelayedTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::LOWEST,
+      {base::MayBlock(), base::TaskPriority::LOWEST,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DeleteOldWindowsTempFiles, std::move(metrics_dir)),
       kDeleteOldWindowsTempFilesDelay);

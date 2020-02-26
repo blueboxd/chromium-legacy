@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -81,9 +82,9 @@ ServiceProcessLauncher::ServiceProcessLauncher(
       service_path_(service_path.empty()
                         ? base::CommandLine::ForCurrentProcess()->GetProgram()
                         : service_path),
-      background_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::WithBaseSyncPrimitives(), base::MayBlock()})) {}
+      background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
+           base::MayBlock()})) {}
 
 ServiceProcessLauncher::~ServiceProcessLauncher() {
   // We don't really need to wait for the process to be joined, as long as it

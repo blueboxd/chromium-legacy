@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -628,9 +629,8 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
   // activated by this seed. To do this, first get the Chrome version to do a
   // simulation with, which must be done on a background thread, and then do the
   // actual simulation on the UI thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       client_->GetVersionForSimulationCallback(),
       base::BindOnce(&VariationsService::PerformSimulationWithVersion,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));

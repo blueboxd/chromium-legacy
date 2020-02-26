@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -160,7 +161,7 @@ class BlobBuilderFromStream::WritePipeToFileHelper
       base::FilePath file_path,
       uint64_t max_file_size,
       DoneCallback callback) {
-    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
+    base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(
@@ -177,7 +178,7 @@ class BlobBuilderFromStream::WritePipeToFileHelper
       base::File file,
       uint64_t max_file_size,
       DoneCallback callback) {
-    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
+    base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&WritePipeToFileHelper::CreateAndStartOnFileSequence,

@@ -24,10 +24,29 @@ namespace policy {
 // checks if respective requirement is met.
 class MinimumVersionPolicyHandler {
  public:
+  static const char kChromeVersion[];
+  static const char kWarningPeriod[];
+  static const char KEolWarningPeriod[];
+
   class Observer {
    public:
     virtual void OnMinimumVersionStateChanged() = 0;
     virtual ~Observer() = default;
+  };
+
+  // Delegate of MinimumVersionPolicyHandler to handle the external
+  // dependencies.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Check if the user is logged in as any kiosk app.
+    virtual bool IsKioskMode() const = 0;
+
+    // Check if the device is enterprise managed.
+    virtual bool IsEnterpriseManaged() const = 0;
+
+    virtual const base::Version& GetCurrentVersion() const = 0;
   };
 
   class MinimumVersionRequirement {
@@ -60,7 +79,8 @@ class MinimumVersionPolicyHandler {
     base::TimeDelta eol_warning_time_;
   };
 
-  explicit MinimumVersionPolicyHandler(chromeos::CrosSettings* cros_settings);
+  explicit MinimumVersionPolicyHandler(Delegate* delegate,
+                                       chromeos::CrosSettings* cros_settings);
   ~MinimumVersionPolicyHandler();
 
   void AddObserver(Observer* observer);
@@ -81,6 +101,11 @@ class MinimumVersionPolicyHandler {
   bool IsPolicyApplicable();
 
   void Reset();
+
+  // This delegate instance is owned by the owner of
+  // MinimumVersionPolicyHandler. The owner is responsible to make sure that the
+  // delegate lives throughout the life of the policy handler.
+  Delegate* delegate_;
 
   // This represents the current minimum version requirement.
   // It is chosen as one of the configurations specified in the policy. It is

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/blockfile/in_flight_io.h"
 #include "net/disk_cache/disk_cache.h"
@@ -121,10 +122,10 @@ void FileInFlightIO::PostRead(disk_cache::File *file, void* buf, size_t buf_len,
       new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
   file->AddRef();  // Balanced on OnOperationComplete()
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&FileBackgroundIO::Read, operation.get()));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&FileBackgroundIO::Read, operation.get()));
   OnOperationPosted(operation.get());
 }
 
@@ -135,10 +136,10 @@ void FileInFlightIO::PostWrite(disk_cache::File* file, const void* buf,
       new FileBackgroundIO(file, buf, buf_len, offset, callback, this));
   file->AddRef();  // Balanced on OnOperationComplete()
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&FileBackgroundIO::Write, operation.get()));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&FileBackgroundIO::Write, operation.get()));
   OnOperationPosted(operation.get());
 }
 

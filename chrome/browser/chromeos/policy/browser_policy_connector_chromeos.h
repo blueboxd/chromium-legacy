@@ -50,6 +50,7 @@ class DeviceWiFiAllowedHandler;
 struct EnrollmentConfig;
 class HostnameHandler;
 class MinimumVersionPolicyHandler;
+class MinimumVersionPolicyHandlerDelegateImpl;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 class TPMAutoUpdateModePolicyHandler;
@@ -250,6 +251,8 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
   std::unique_ptr<HostnameHandler> hostname_handler_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
+  std::unique_ptr<MinimumVersionPolicyHandlerDelegateImpl>
+      minimum_version_policy_handler_delegate_;
   std::unique_ptr<DeviceDockMacAddressHandler>
       device_dock_mac_address_source_handler_;
   std::unique_ptr<DeviceWiFiAllowedHandler> device_wifi_allowed_handler_;

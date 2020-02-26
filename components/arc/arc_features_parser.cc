@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "components/arc/arc_util.h"
@@ -146,9 +147,8 @@ void ArcFeaturesParser::GetArcFeatures(
     base::OnceCallback<void(base::Optional<ArcFeatures>)> callback) {
   const auto* json_file =
       arc::IsArcVmEnabled() ? kArcVmFeaturesJsonFile : kArcFeaturesJsonFile;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadOnFileThread, base::FilePath(json_file)),
       std::move(callback));
 }

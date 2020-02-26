@@ -43,6 +43,7 @@
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,6 +62,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
+using base::SysUTF8ToNSString;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordFormManager;
 using password_manager::PasswordStoreConsumer;
@@ -328,6 +330,43 @@ class PasswordControllerTest : public ChromeWebTest {
              withUsername:[OCMArg any]
                  password:[OCMArg any]
         completionHandler:[OCMArg any]];
+  }
+
+  void SimulateUserTyping(const std::string& form_name,
+                          const std::string& field_identifier,
+                          const std::string& typed_value,
+                          const std::string& main_frame_id) {
+    __block BOOL completion_handler_called = NO;
+    [passwordController_
+        checkIfSuggestionsAvailableForForm:SysUTF8ToNSString(form_name)
+                           fieldIdentifier:SysUTF8ToNSString(field_identifier)
+                                 fieldType:@"not_important"
+                                      type:@"text"
+                                typedValue:SysUTF8ToNSString(typed_value)
+                                   frameID:SysUTF8ToNSString(main_frame_id)
+                               isMainFrame:YES
+                            hasUserGesture:YES
+                                  webState:web_state()
+                         completionHandler:^(BOOL success) {
+                           completion_handler_called = YES;
+                         }];
+    // Wait until the expected handler is called.
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+      return completion_handler_called;
+    }));
+  }
+
+  void LoadHtmlWithRendererInitiatedNavigation(NSString* html,
+                                               GURL gurl = GURL()) {
+    web::FakeNavigationContext context;
+    context.SetHasCommitted(true);
+    context.SetIsSameDocument(false);
+    context.SetIsRendererInitiated(true);
+    [passwordController_ webState:web_state() didFinishNavigation:&context];
+    if (gurl.is_empty())
+      LoadHtml(html);
+    else
+      LoadHtml(html, gurl);
   }
 
   // SuggestionController for testing.
@@ -1525,7 +1564,8 @@ TEST_F(PasswordControllerTest, ShowingSavingPromptOnSuccessfulSubmission) {
       @"document.getElementsByName('username')[0].value = 'user1';"
        "document.getElementsByName('password')[0].value = 'password1';"
        "document.getElementById('submit_button').click();");
-  LoadHtml(SysUTF8ToNSString("<html><body>Success</body></html>"));
+  LoadHtmlWithRendererInitiatedNavigation(
+      SysUTF8ToNSString("<html><body>Success</body></html>"));
   EXPECT_EQ("https://chromium.test/",
             form_manager_to_save->GetPendingCredentials().signon_realm);
   EXPECT_EQ(ASCIIToUTF16("user1"),
@@ -1558,7 +1598,8 @@ TEST_F(PasswordControllerTest, NotShowingSavingPromptWithoutSubmission) {
   ExecuteJavaScript(
       @"document.getElementsByName('username')[0].value = 'user1';"
        "document.getElementsByName('password')[0].value = 'password1';");
-  LoadHtml(SysUTF8ToNSString("<html><body>New page</body></html>"));
+  LoadHtmlWithRendererInitiatedNavigation(
+      SysUTF8ToNSString("<html><body>New page</body></html>"));
 }
 
 // Tests that the user is not prompted to save or update password on a
@@ -1583,7 +1624,8 @@ TEST_F(PasswordControllerTest, NotShowingSavingPromptWhileSavingIsDisabled) {
       @"document.getElementsByName('username')[0].value = 'user1';"
        "document.getElementsByName('password')[0].value = 'password1';"
        "document.getElementById('submit_button').click();");
-  LoadHtml(SysUTF8ToNSString("<html><body>Success</body></html>"));
+  LoadHtmlWithRendererInitiatedNavigation(
+      SysUTF8ToNSString("<html><body>Success</body></html>"));
 }
 
 // Tests that the user is prompted to update password on a succesful
@@ -1591,9 +1633,7 @@ TEST_F(PasswordControllerTest, NotShowingSavingPromptWhileSavingIsDisabled) {
 // username in the store.
 TEST_F(PasswordControllerTest, ShowingUpdatePromptOnSuccessfulSubmission) {
   PasswordForm form(MakeSimpleForm());
-  ON_CALL(*store_, GetLogins(_, _))
-      .WillByDefault(WithArg<1>(InvokeConsumer(form)));
-
+  ON_CALL(*store_, GetLogins).WillByDefault(WithArg<1>(InvokeConsumer(form)));
   const char* kHtml = {"<html><body>"
                        "<form name='login_form' id='login_form'>"
                        "  <input type='text' name='Username'>"
@@ -1611,8 +1651,9 @@ TEST_F(PasswordControllerTest, ShowingUpdatePromptOnSuccessfulSubmission) {
       @"document.getElementsByName('Username')[0].value = 'googleuser';"
        "document.getElementsByName('Passwd')[0].value = 'new_password';"
        "document.getElementById('submit_button').click();");
-  LoadHtml(SysUTF8ToNSString("<html><body>Success</body></html>"),
-           GURL("http://www.google.com/a/Login"));
+  LoadHtmlWithRendererInitiatedNavigation(
+      SysUTF8ToNSString("<html><body>Success</body></html>"),
+      GURL("http://www.google.com/a/Login"));
   EXPECT_EQ("http://www.google.com/",
             form_manager_to_save->GetPendingCredentials().signon_realm);
   EXPECT_EQ(ASCIIToUTF16("googleuser"),
@@ -1624,4 +1665,93 @@ TEST_F(PasswordControllerTest, ShowingUpdatePromptOnSuccessfulSubmission) {
       static_cast<PasswordFormManager*>(form_manager_to_save.get());
   EXPECT_TRUE(form_manager->is_submitted());
   EXPECT_TRUE(form_manager->IsPasswordUpdate());
+}
+
+TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
+  constexpr char kHtml[] = "<html><body>"
+                           "<form name='login_form' id='login_form'>"
+                           "  <input type='text' name='username'>"
+                           "  <input type='password' name='pw'>"
+                           "</form>"
+                           "</body></html>";
+
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  for (bool has_commited : {false, true}) {
+    for (bool is_same_document : {false, true}) {
+      for (bool is_renderer_initiated : {false, true}) {
+        SCOPED_TRACE(testing::Message("has_commited = ")
+                     << has_commited << " is_same_document=" << is_same_document
+                     << " is_renderer_initiated=" << is_renderer_initiated);
+        LoadHtml(SysUTF8ToNSString(kHtml));
+        std::string main_frame_id = web::GetMainWebFrameId(web_state());
+
+        SimulateUserTyping("login_form", "username", "user1", main_frame_id);
+        SimulateUserTyping("login_form", "pw", "password1", main_frame_id);
+
+        bool prompt_should_be_shown =
+            has_commited && !is_same_document && is_renderer_initiated;
+
+        std::unique_ptr<PasswordFormManagerForUI> form_manager;
+        if (prompt_should_be_shown) {
+          EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
+              .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager)));
+        } else {
+          EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
+              .Times(0);
+        }
+
+        web::FakeNavigationContext context;
+        context.SetHasCommitted(has_commited);
+        context.SetIsSameDocument(is_same_document);
+        context.SetIsRendererInitiated(is_renderer_initiated);
+        [passwordController_ webState:web_state() didFinishNavigation:&context];
+
+        // Simulate a successful submission by loading the landing page without
+        // a form.
+        LoadHtml(
+            SysUTF8ToNSString("<html><body>Login success page</body></html>"));
+
+        if (prompt_should_be_shown) {
+          ASSERT_TRUE(form_manager);
+          EXPECT_EQ(ASCIIToUTF16("user1"),
+                    form_manager->GetPendingCredentials().username_value);
+          EXPECT_EQ(ASCIIToUTF16("password1"),
+                    form_manager->GetPendingCredentials().password_value);
+        }
+        testing::Mock::VerifyAndClearExpectations(weak_client_);
+      }
+    }
+  }
+}
+
+TEST_F(PasswordControllerTest, NoSavingOnNavigateMainFrameFailedSubmission) {
+  constexpr char kHtml[] = "<html><body>"
+                           "<form name='login_form' id='login_form'>"
+                           "  <input type='text' name='username'>"
+                           "  <input type='password' name='pw'>"
+                           "</form>"
+                           "</body></html>";
+
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  LoadHtml(SysUTF8ToNSString(kHtml));
+
+  std::string main_frame_id = web::GetMainWebFrameId(web_state());
+
+  SimulateUserTyping("login_form", "username", "user1", main_frame_id);
+  SimulateUserTyping("login_form", "pw", "password1", main_frame_id);
+
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+
+  web::FakeNavigationContext context;
+  context.SetHasCommitted(true);
+  context.SetIsSameDocument(false);
+  context.SetIsRendererInitiated(true);
+  [passwordController_ webState:web_state() didFinishNavigation:&context];
+
+  // Simulate a failed submission by loading the same form again.
+  LoadHtml(SysUTF8ToNSString(kHtml));
 }

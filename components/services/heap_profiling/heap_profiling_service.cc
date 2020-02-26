@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/services/heap_profiling/connection_manager.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -118,9 +119,8 @@ mojo::PendingRemote<mojom::ProfilingService> LaunchService(
     mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper>
         helper) {
   mojo::PendingRemote<mojom::ProfilingService> remote;
-  auto task_runner = base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-       base::WithBaseSyncPrimitives()},
+  auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives()},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   task_runner->PostTask(
       FROM_HERE,

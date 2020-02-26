@@ -816,9 +816,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // True if it is the end gesture from shelf dragging.
   bool is_end_gesture_ = false;
 
-  // The compositor frame number when animation starts.
-  int pagination_animation_start_frame_number_;
-
   // view structure used only for non-folder.
   PagedViewStructure view_structure_;
 
@@ -845,6 +842,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // If true, Layout() does nothing. See where set for details.
   bool ignore_layout_ = false;
+
+  // Records smoothness of pagination animation.
+  std::unique_ptr<AppListAnimationMetricsRecorder> pagination_metrics_recorder_;
+  std::unique_ptr<PaginationTransitionAnimationReporter>
+      pagination_metrics_reporter_;
 
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

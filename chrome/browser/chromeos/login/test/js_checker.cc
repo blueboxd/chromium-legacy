@@ -274,6 +274,14 @@ void JSChecker::ExpectHasNoAttribute(
   ExpectFalse(ElementHasAttributeCondition(attribute, element_ids));
 }
 
+void JSChecker::ExpectElementText(
+    const std::string& content,
+    std::initializer_list<base::StringPiece> element_ids) {
+  const std::string element_path = GetOobeElementPath(element_ids);
+  const std::string expression = element_path + ".textContent.trim()";
+  ExpectEQ(expression, content);
+}
+
 void JSChecker::ClickOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);

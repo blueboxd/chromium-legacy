@@ -28,6 +28,11 @@ class BrowserPolicyConnectorIOS : public policy::BrowserPolicyConnector {
 
   ~BrowserPolicyConnectorIOS() override;
 
+  // Returns the platform provider used by this BrowserPolicyConnectorIOS. Can
+  // be overridden for testing via
+  // BrowserPolicyConnectorBase::SetPolicyProviderForTesting().
+  policy::ConfigurationPolicyProvider* GetPlatformProvider();
+
   // BrowserPolicyConnector.
   void Init(PrefService* local_state,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
@@ -42,7 +47,6 @@ class BrowserPolicyConnectorIOS : public policy::BrowserPolicyConnector {
 
  private:
   std::unique_ptr<policy::ConfigurationPolicyProvider> CreatePlatformProvider();
-  policy::ConfigurationPolicyProvider* GetPlatformProvider();
 
   // Owned by base class.
   policy::ConfigurationPolicyProvider* platform_provider_ = nullptr;

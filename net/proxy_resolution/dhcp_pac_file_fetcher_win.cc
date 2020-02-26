@@ -13,6 +13,7 @@
 #include "base/memory/free_deleter.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -182,9 +183,9 @@ class TaskRunnerWithCap : public base::TaskRunner {
   }
 
   const scoped_refptr<base::TaskRunner> task_runner_ =
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-                              base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+           base::TaskPriority::USER_VISIBLE});
 
   // Synchronizes access to members below.
   base::Lock lock_;

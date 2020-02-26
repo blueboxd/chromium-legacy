@@ -147,6 +147,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1056176")
     @Feature({"Browser"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testSearchWithGoogleLensFiresIntent() throws Throwable {
@@ -164,6 +165,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1056176")
     @Feature({"Browser"})
     @CommandLineFlags.Add({"enable-features="
                     + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",

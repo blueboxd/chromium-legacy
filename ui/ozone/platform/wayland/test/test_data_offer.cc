@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 
 namespace wl {
@@ -65,8 +66,8 @@ const struct wl_data_offer_interface kTestDataOfferImpl = {
 
 TestDataOffer::TestDataOffer(wl_resource* resource)
     : ServerObject(resource),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
+      task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       write_data_weak_ptr_factory_(this) {}
 
 TestDataOffer::~TestDataOffer() {}

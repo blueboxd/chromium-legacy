@@ -33,6 +33,9 @@ class WebStateList;
 @property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
 // WebStateList for tabs restored by this object.
 @property(nonatomic, assign) WebStateList* webStateList;
+// Whether the updates of the RecentTabs should be ignored. Setting this to NO
+// would trigger a reload of the TableView.
+@property(nonatomic, assign) BOOL preventUpdates;
 
 // Delegate to present the tab UI.
 @property(nonatomic, weak) id<RecentTabsPresentationDelegate>

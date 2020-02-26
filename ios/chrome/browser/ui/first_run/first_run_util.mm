@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -143,9 +144,8 @@ BOOL FixOrphanWord(UILabel* label) {
 void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
                                            BOOL sign_in_attempted,
                                            BOOL has_sso_account) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CreateSentinel));
   RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
                                 has_sso_account);

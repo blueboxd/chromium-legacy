@@ -11,6 +11,10 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
+namespace policy {
+class SchemaRegistry;
+}
+
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -33,6 +37,7 @@ class ChromeBrowserStateImpl : public ChromeBrowserState {
   ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
+  BrowserStatePolicyConnector* GetPolicyConnector() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;
@@ -71,8 +76,13 @@ class ChromeBrowserStateImpl : public ChromeBrowserState {
   //  that the declaration occurs AFTER things it depends on as destruction
   //  happens in reverse order of declaration.
 
-  // Keep |prefs_| on top for destruction order because |io_data_| and others
-  // store pointers to |prefs_| and shall be destructed first.
+  // |policy_connector_| and its associated |policy_schema_registry_| must
+  // outlive |prefs_|.
+  std::unique_ptr<policy::SchemaRegistry> policy_schema_registry_;
+  std::unique_ptr<BrowserStatePolicyConnector> policy_connector_;
+
+  // Keep |prefs_| above the rest for destruction order because |io_data_| and
+  // others store pointers to |prefs_| and shall be destructed first.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> otr_prefs_;

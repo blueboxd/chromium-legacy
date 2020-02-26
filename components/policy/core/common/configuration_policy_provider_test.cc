@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/extension_policy_migrator.h"
@@ -205,7 +206,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
 
   provider_.reset(test_harness_->CreateProvider(
       &schema_registry_,
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})));
   provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.

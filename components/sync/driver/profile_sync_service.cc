@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -474,8 +475,8 @@ void ProfileSyncService::InitializeBackendTaskRunnerIfNeeded() {
 
   if (base::FeatureList::IsEnabled(
           switches::kProfileSyncServiceUsesThreadPool)) {
-    backend_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    backend_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   } else {
     // The thread where all the sync operations happen. This thread is kept

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "url/gurl.h"
 
@@ -114,10 +115,9 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   }
   mounted_paths_.insert(mounted_path);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PerformFakeMount, source_path, mounted_path, type),
       base::BindOnce(&FakeCrosDisksClient::DidMount,
                      weak_ptr_factory_.GetWeakPtr(), source_path, type,
@@ -149,9 +149,9 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
 
   // Remove the dummy mounted directory if it exists.
   if (mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path))) {
-    base::PostTaskAndReply(
+    base::ThreadPool::PostTaskAndReply(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        base::FilePath::FromUTF8Unsafe(device_path),

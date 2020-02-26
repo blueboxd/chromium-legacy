@@ -58,7 +58,9 @@ class OmniboxResultView : public views::View,
 
   void ShowKeyword(bool show_keyword);
 
-  void Invalidate(bool force_reapply_styles = false);
+  // Applies the current theme to the current text and widget colors.
+  // Also refreshes the icons which may need to be re-colored as well.
+  void ApplyThemeAndRefreshIcons(bool force_reapply_styles = false);
 
   // Invoked when this result view has been selected or unselected.
   void OnSelectionStateChanged();

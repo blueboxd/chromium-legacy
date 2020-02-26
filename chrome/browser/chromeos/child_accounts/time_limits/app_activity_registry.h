@@ -12,6 +12,7 @@
 #include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
@@ -23,10 +24,6 @@ class Window;
 namespace enterprise_management {
 class ChildStatusReportRequest;
 }  // namespace enterprise_management
-
-namespace base {
-class OneShotTimer;
-}  // namespace base
 
 class PrefRegistrySimple;
 class Profile;
@@ -124,12 +121,11 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
   AppActivityReportInterface::ReportParams GenerateAppActivityReport(
-      enterprise_management::ChildStatusReportRequest* report) const;
+      enterprise_management::ChildStatusReportRequest* report);
 
-  // Removes data older than |timestamp| from the registry.
-  // Removes entries for uninstalled apps if there is no more relevant activity
-  // data left.
-  void CleanRegistry(base::Time timestamp);
+  // Application activities earlier than |timestamp| have been reported. Clear
+  // entries earlier than |timestamp|.
+  void OnSuccessfullyReported(base::Time timestamp);
 
   // Updates time limits for all installed apps.
   // Apps not present in |app_limits| are treated as they do not have limit set.
@@ -151,6 +147,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Whitelisted applications changed. Called by AppTimeController.
   void OnTimeLimitWhitelistChanged(
       const AppTimeLimitsWhitelistPolicyWrapper& wrapper);
+
+  // Saves app activity into user preference.
+  void SaveAppActivity();
 
  private:
   // Bundles detailed data stored for a specific app.
@@ -184,6 +183,11 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     // preceding notifications.
     std::unique_ptr<base::OneShotTimer> app_limit_timer;
   };
+
+  // Removes data older than |timestamp| from the registry.
+  // Removes entries for uninstalled apps if there is no more relevant activity
+  // data left.
+  void CleanRegistry(base::Time timestamp);
 
   // Adds an ap to the registry if it does not exist.
   void Add(const AppId& app_id);
@@ -225,8 +229,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   PersistedAppInfo GetPersistedAppInfoForApp(const AppId& app_id,
                                              base::Time timestamp);
 
-  // Saves app activity into user preference.
-  void SaveAppActivity();
+  // Returns true if the last successfully reported time is earlier than 30 days
+  // from base::Time::Now();
+  bool ShouldCleanUpStoredPref();
 
   Profile* const profile_;
 
@@ -244,6 +249,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Newly installed applications which have not yet been added to the user
   // pref.
   std::vector<AppId> newly_installed_apps_;
+
+  // Repeating timer to trigger saving app activity to pref service.
+  base::RepeatingTimer save_data_to_pref_service_;
 };
 
 }  // namespace app_time

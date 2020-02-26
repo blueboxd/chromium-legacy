@@ -7,6 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chromeos/printing/ppd_provider.h"
 
 namespace chromeos {
@@ -21,9 +22,9 @@ class PpdProviderImpl : public PpdProvider {
                   const base::Version& current_version,
                   const PpdProvider::Options& options)
       : browser_locale_(browser_locale),
-        file_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         version_(current_version),
         options_(options) {}
 

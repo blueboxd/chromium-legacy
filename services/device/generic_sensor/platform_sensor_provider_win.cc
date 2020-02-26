@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
@@ -22,8 +23,8 @@
 namespace device {
 
 PlatformSensorProviderWin::PlatformSensorProviderWin()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})) {}
+    : com_sta_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::TaskPriority::USER_VISIBLE})) {}
 
 PlatformSensorProviderWin::~PlatformSensorProviderWin() = default;
 

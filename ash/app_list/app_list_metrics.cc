@@ -12,22 +12,11 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 
 namespace ash {
 
 namespace {
-
-int CalculateAnimationSmoothness(int actual_frames,
-                                 base::TimeDelta ideal_duration,
-                                 float refresh_rate) {
-  int smoothness = 100;
-  const int ideal_frames = refresh_rate * ideal_duration.InSecondsF();
-  if (ideal_frames > actual_frames)
-    smoothness = 100 * actual_frames / ideal_frames;
-  return smoothness;
-}
 
 // These constants affect logging, and  should not be changed without
 // deprecating the following UMA histograms:
@@ -103,31 +92,6 @@ enum class ApplistSearchResultOpenedSource {
   kFullscreenTablet = 2,
   kMaxApplistSearchResultOpenedSource = 3,
 };
-
-void RecordFolderShowHideAnimationSmoothness(int actual_frames,
-                                             base::TimeDelta ideal_duration,
-                                             float refresh_rate) {
-  const int smoothness =
-      CalculateAnimationSmoothness(actual_frames, ideal_duration, refresh_rate);
-  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, smoothness);
-}
-
-void RecordPaginationAnimationSmoothness(int actual_frames,
-                                         base::TimeDelta ideal_duration,
-                                         float refresh_rate,
-                                         bool is_tablet_mode) {
-  const int smoothness =
-      CalculateAnimationSmoothness(actual_frames, ideal_duration, refresh_rate);
-  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
-                           smoothness);
-  if (is_tablet_mode) {
-    UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
-                             smoothness);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
-  }
-}
 
 void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
                                                 bool is_tablet_mode) {
@@ -344,6 +308,63 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   }
   NOTREACHED();
   return false;
+}
+
+FolderShowHideAnimationReporter::FolderShowHideAnimationReporter() = default;
+
+FolderShowHideAnimationReporter::~FolderShowHideAnimationReporter() = default;
+
+void FolderShowHideAnimationReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, value);
+}
+
+PaginationTransitionAnimationReporter::PaginationTransitionAnimationReporter() =
+    default;
+
+PaginationTransitionAnimationReporter::
+    ~PaginationTransitionAnimationReporter() = default;
+
+void PaginationTransitionAnimationReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness, value);
+
+  if (is_tablet_mode_) {
+    UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
+                             value);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(
+        kPaginationTransitionAnimationSmoothnessInClamshell, value);
+  }
+}
+
+AppListAnimationMetricsRecorder::AppListAnimationMetricsRecorder(
+    ui::AnimationMetricsReporter* reporter)
+    : ui::AnimationMetricsRecorder(reporter) {}
+
+AppListAnimationMetricsRecorder::~AppListAnimationMetricsRecorder() = default;
+
+void AppListAnimationMetricsRecorder::OnAnimationStart(
+    base::TimeDelta expected_duration,
+    ui::Compositor* compositor) {
+  if (!compositor)
+    return;
+
+  animation_started_ = true;
+  ui::AnimationMetricsRecorder::OnAnimationStart(
+      compositor->activated_frame_count(), base::TimeTicks::Now(),
+      expected_duration);
+}
+
+void AppListAnimationMetricsRecorder::OnAnimationEnd(
+    ui::Compositor* compositor) {
+  if (!animation_started_)
+    return;
+
+  animation_started_ = false;
+
+  if (!compositor)
+    return;
+  ui::AnimationMetricsRecorder::OnAnimationEnd(
+      compositor->activated_frame_count(), compositor->refresh_rate());
 }
 
 }  // namespace ash

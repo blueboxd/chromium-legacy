@@ -60,9 +60,9 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
     def __init__(self, json5_file_paths, output_dir):
         super(MakeQualifiedNamesWriter, self).__init__(None, output_dir)
         self._input_files = copy.copy(json5_file_paths)
-        assert (len(json5_file_paths) <= 3, \
-            'MakeQualifiedNamesWriter requires at most 3 in files, got %d.' %
-            len(json5_file_paths))
+        assert len(json5_file_paths) <= 3, \
+            'MakeQualifiedNamesWriter requires at most 3 in files, got %d.' % \
+            len(json5_file_paths)
 
         # Input files are in a strict order with more optional files *first*:
         # 1) ARIA properties

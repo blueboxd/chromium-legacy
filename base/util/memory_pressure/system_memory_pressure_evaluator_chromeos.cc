@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -293,10 +294,9 @@ void SystemMemoryPressureEvaluator::ScheduleEarlyCheck() {
 void SystemMemoryPressureEvaluator::ScheduleWaitForKernelNotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(kernel_waiting_callback_),
       base::BindOnce(&SystemMemoryPressureEvaluator::HandleKernelNotification,
                      weak_ptr_factory_.GetWeakPtr()));

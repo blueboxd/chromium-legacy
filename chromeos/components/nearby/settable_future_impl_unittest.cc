@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -49,9 +50,10 @@ class SettableFutureImplTest : public testing::Test {
 
   base::UnguessableToken PostGetAsyncResult() {
     base::UnguessableToken id = base::UnguessableToken::Create();
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&SettableFutureImplTest::GetAsyncResult,
-                                  base::Unretained(this), id));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&SettableFutureImplTest::GetAsyncResult,
+                       base::Unretained(this), id));
     return id;
   }
 

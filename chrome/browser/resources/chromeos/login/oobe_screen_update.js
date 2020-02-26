@@ -38,8 +38,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Cancels the screen.
      */
     cancel() {
-      $('oobe-update-md')
-          .setCancelHint(loadTimeData.getString('cancelledUpdateMessage'));
+      $('oobe-update-md').cancelHint = 'cancelledUpdateMessage';
       this.send(
           login.Screen.CALLBACK_USER_ACTED, USER_ACTION_CANCEL_UPDATE_SHORTCUT);
     },

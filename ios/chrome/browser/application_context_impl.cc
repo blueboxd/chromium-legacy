@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/component_updater/component_updater_service.h"
@@ -416,9 +417,14 @@ void ApplicationContextImpl::CreateLocalState() {
   // Register local state preferences.
   RegisterLocalStatePrefs(pref_registry.get());
 
-  local_state_ =
-      ::CreateLocalState(local_state_path, local_state_task_runner_.get(),
-                         pref_registry, GetBrowserPolicyConnector());
+  policy::BrowserPolicyConnector* browser_policy_connector =
+      GetBrowserPolicyConnector();
+  policy::PolicyService* policy_service =
+      browser_policy_connector ? browser_policy_connector->GetPolicyService()
+                               : nullptr;
+  local_state_ = ::CreateLocalState(
+      local_state_path, local_state_task_runner_.get(), pref_registry,
+      policy_service, browser_policy_connector);
   DCHECK(local_state_);
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
@@ -444,9 +450,8 @@ void ApplicationContextImpl::CreateGCMDriver() {
   CHECK(base::PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(

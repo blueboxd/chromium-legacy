@@ -51,8 +51,6 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
     InfobarModalTransitionDriver* modalTransitionDriver;
 // Readwrite redefinition.
 @property(nonatomic, assign, readwrite) BOOL bannerWasPresented;
-// YES if the banner is currently being dismissed.
-@property(nonatomic, assign) BOOL bannerIsBeingDismissed;
 // Completion block used to dismiss the banner after a set period of time. This
 // needs to be created by dispatch_block_create() since it may get cancelled.
 @property(nonatomic, copy) dispatch_block_t dismissBannerBlock;
@@ -444,24 +442,12 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   // Make sure the banner is completely presented before trying to dismiss it.
   [self.bannerTransitionDriver completePresentationTransitionIfRunning];
 
-  // The banner dismiss can be triggered concurrently due to different events
-  // like swiping it up, entering the TabSwitcher, presenting another VC or the
-  // InfobarDelelgate being destroyed. Trying to dismiss it twice might cause a
-  // UIKit crash on iOS12.
-  if (!self.bannerIsBeingDismissed &&
-      self.baseViewController.presentedViewController &&
+  if (self.baseViewController.presentedViewController &&
       self.baseViewController.presentedViewController ==
           self.bannerViewController) {
-    self.bannerIsBeingDismissed = YES;
     [self infobarBannerWillBeDismissed:userInitiated];
-    __weak __typeof(self) weakSelf = self;
-    [self.baseViewController
-        dismissViewControllerAnimated:YES
-                           completion:^{
-                             weakSelf.bannerIsBeingDismissed = NO;
-                             if (completion)
-                               completion();
-                           }];
+    [self.baseViewController dismissViewControllerAnimated:animated
+                                                completion:completion];
   } else if (completion) {
     completion();
   }

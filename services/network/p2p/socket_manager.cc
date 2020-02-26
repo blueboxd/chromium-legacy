@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -152,9 +153,8 @@ P2PSocketManager::P2PSocketManager(
     net::URLRequestContext* url_request_context)
     : delete_callback_(std::move(delete_callback)),
       url_request_context_(url_request_context),
-      network_list_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      network_list_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       trusted_socket_manager_client_(std::move(trusted_socket_manager_client)),
       trusted_socket_manager_receiver_(
           this,

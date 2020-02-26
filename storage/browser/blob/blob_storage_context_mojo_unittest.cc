@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -76,8 +77,8 @@ class BlobStorageContextMojoTest : public testing::Test {
 
   void SetUpOnDiskContext() {
     if (!file_runner_) {
-      file_runner_ = base::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::ThreadPool()});
+      file_runner_ =
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     }
     context_ = std::make_unique<BlobStorageContext>(
         temp_dir_.GetPath(), temp_dir_.GetPath(), file_runner_);

@@ -37,10 +37,10 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Tests for {@link TabGroupUiToolbarViewBinder}.
+ * Tests for {@link TabGroupUiViewBinder}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
+public class TabGroupUiViewBinderTest extends DummyUiActivityTestCase {
     private ImageView mLeftButton;
     private ImageView mRightButton;
     private ViewGroup mContainerView;
@@ -62,9 +62,8 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         mContainerView = toolbarView.findViewById(R.id.toolbar_container_view);
         mMainContent = toolbarView.findViewById(R.id.main_content);
 
-        mModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
-        mMCP = PropertyModelChangeProcessor.create(
-                mModel, toolbarView, TabGroupUiToolbarViewBinder::bind);
+        mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
+        mMCP = PropertyModelChangeProcessor.create(mModel, toolbarView, TabGroupUiViewBinder::bind);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         mLeftButton.performClick();
         assertFalse(leftButtonClicked.get());
 
-        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER,
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER,
                 (View view) -> leftButtonClicked.set(true));
 
         mLeftButton.performClick();
@@ -98,7 +97,7 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         mRightButton.performClick();
         assertFalse(rightButtonClicked.get());
 
-        mModel.set(TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER,
+        mModel.set(TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER,
                 (View view) -> rightButtonClicked.set(true));
 
         mRightButton.performClick();
@@ -113,10 +112,10 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         mContainerView.addView(contentView);
         contentView.setVisibility(View.GONE);
 
-        mModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
+        mModel.set(TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE, true);
         assertEquals(View.VISIBLE, contentView.getVisibility());
 
-        mModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, false);
+        mModel.set(TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE, false);
         assertEquals(View.INVISIBLE, contentView.getVisibility());
     }
 
@@ -127,9 +126,9 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         int expandLessDrawableId = R.drawable.ic_expand_less_black_24dp;
         int expandMoreDrawableId = R.drawable.ic_expand_more_black_24dp;
 
-        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, expandLessDrawableId);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, expandLessDrawableId);
         Drawable expandLessDrawable = mLeftButton.getDrawable();
-        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, expandMoreDrawableId);
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, expandMoreDrawableId);
         Drawable expandMoreDrawable = mLeftButton.getDrawable();
 
         assertNotEquals(expandLessDrawable, expandMoreDrawable);
@@ -145,7 +144,7 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         Assert.assertNotEquals(tint, mLeftButton.getImageTintList());
         Assert.assertNotEquals(tint, mRightButton.getImageTintList());
 
-        mModel.set(TabStripToolbarViewProperties.TINT, tint);
+        mModel.set(TabGroupUiProperties.TINT, tint);
 
         Assert.assertEquals(tint, mLeftButton.getImageTintList());
         Assert.assertEquals(tint, mRightButton.getImageTintList());
@@ -158,9 +157,9 @@ public class TabGroupUiToolbarViewBinderTest extends DummyUiActivityTestCase {
         int colorGrey = R.color.modern_grey_300;
         int colorBlue = R.color.modern_blue_300;
 
-        mModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, colorGrey);
+        mModel.set(TabGroupUiProperties.PRIMARY_COLOR, colorGrey);
         int greyDrawableId = ((ColorDrawable) mMainContent.getBackground()).getColor();
-        mModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, colorBlue);
+        mModel.set(TabGroupUiProperties.PRIMARY_COLOR, colorBlue);
         int blueDrawableId = ((ColorDrawable) mMainContent.getBackground()).getColor();
 
         assertNotEquals(greyDrawableId, blueDrawableId);

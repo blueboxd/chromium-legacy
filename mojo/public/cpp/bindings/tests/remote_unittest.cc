@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -261,7 +262,7 @@ TEST_P(EndToEndRemoteTest, EndToEnd) {
 }
 
 TEST_P(EndToEndRemoteTest, EndToEndOnSequence) {
-  RunTest(base::CreateSequencedTaskRunner({base::ThreadPool()}));
+  RunTest(base::ThreadPool::CreateSequencedTaskRunner({}));
 }
 
 TEST_P(RemoteTest, Movable) {
@@ -880,8 +881,7 @@ TEST_P(RemoteTest, SharedRemote) {
 
   // Send a message on |thread_safe_remote| from a different sequence.
   auto main_task_runner = base::SequencedTaskRunnerHandle::Get();
-  auto sender_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto sender_task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   sender_task_runner->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&] {
         shared_remote->Add(
@@ -898,7 +898,7 @@ TEST_P(RemoteTest, SharedRemote) {
 
 TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSequencedTaskRunner({});
 
   PendingRemote<math::Calculator> remote;
   auto receiver = remote.InitWithNewPipeAndPassReceiver();
@@ -942,7 +942,7 @@ TEST_P(RemoteTest, SharedRemoteDisconnectCallback) {
   MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
 
   const scoped_refptr<base::SequencedTaskRunner> main_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSequencedTaskRunner({});
   SharedRemote<math::Calculator> shared_remote(std::move(remote),
                                                main_task_runner);
 
@@ -994,8 +994,8 @@ TEST_P(RemoteTest, SharedRemoteSyncOnlyBlocksCallingSequence) {
   // See https://crbug.com/1016022.
 
   const scoped_refptr<base::SequencedTaskRunner> bound_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::WithBaseSyncPrimitives()});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::WithBaseSyncPrimitives()});
 
   PendingRemote<mojom::SharedRemoteSyncTest> pending_remote;
   auto receiver = pending_remote.InitWithNewPipeAndPassReceiver();

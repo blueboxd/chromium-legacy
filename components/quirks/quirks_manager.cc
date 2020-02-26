@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -62,8 +63,7 @@ QuirksManager::QuirksManager(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : waiting_for_login_(true),
       delegate_(std::move(delegate)),
-      task_runner_(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})),
+      task_runner_(base::ThreadPool::CreateTaskRunner({base::MayBlock()})),
       local_state_(local_state),
       url_loader_factory_(std::move(url_loader_factory)) {}
 

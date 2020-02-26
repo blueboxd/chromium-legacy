@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -44,8 +45,8 @@ class PrinterCapabilitiesTest : public testing::Test {
   void SetUp() override {
     test_backend_ = base::MakeRefCounted<TestPrintBackend>();
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
-    blocking_task_runner_ = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock()});
+    blocking_task_runner_ =
+        base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()});
     disallow_blocking_ = std::make_unique<base::ScopedDisallowBlocking>();
   }
 

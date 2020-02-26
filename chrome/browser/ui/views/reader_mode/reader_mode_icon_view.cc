@@ -8,6 +8,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/dom_distiller/core/uma_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
@@ -96,6 +97,17 @@ const char* ReaderModeIconView::GetClassName() const {
 // activates the icon to explain what Reader Mode is.
 views::BubbleDialogDelegateView* ReaderModeIconView::GetBubble() const {
   return nullptr;
+}
+
+void ReaderModeIconView::OnExecuting(
+    PageActionIconView::ExecuteSource execute_source) {
+  if (active()) {
+    dom_distiller::UMAHelper::RecordReaderModeExit(
+        dom_distiller::UMAHelper::ReaderModeEntryPoint::kOmniboxIcon);
+  } else {
+    dom_distiller::UMAHelper::RecordReaderModeEntry(
+        dom_distiller::UMAHelper::ReaderModeEntryPoint::kOmniboxIcon);
+  }
 }
 
 void ReaderModeIconView::OnResult(

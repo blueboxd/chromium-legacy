@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -87,9 +88,8 @@ class ConsumerHost::StreamWriter {
   using Slice = std::string;
 
   static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-    return base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                            base::WithBaseSyncPrimitives(),
-                                            base::TaskPriority::BEST_EFFORT});
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT});
   }
 
   StreamWriter(mojo::ScopedDataPipeProducerHandle stream,

@@ -23,6 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -149,8 +150,8 @@ class OCSPRequestSessionDelegateURLLoaderTest : public ::testing::Test {
   // returns the nth one.
   scoped_refptr<base::SequencedTaskRunner> worker_thread(size_t n) {
     while (worker_threads_.size() <= n) {
-      worker_threads_.push_back(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()}));
+      worker_threads_.push_back(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
     }
     return worker_threads_[n];
   }

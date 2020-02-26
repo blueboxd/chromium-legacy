@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/local_storage_impl.h"
@@ -57,9 +58,8 @@ void PartitionImpl::BindSessionStorageControl(
   // This object deletes itself on disconnection.
   session_storage_ = new SessionStorageImpl(
       path_.value_or(base::FilePath()),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       base::SequencedTaskRunnerHandle::Get(),
 #if defined(OS_ANDROID)
       // On Android there is no support for session storage restoring, and since
@@ -78,9 +78,8 @@ void PartitionImpl::BindLocalStorageControl(
   // This object deletes itself on disconnection.
   local_storage_ = new LocalStorageImpl(
       path_.value_or(base::FilePath()), base::SequencedTaskRunnerHandle::Get(),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       std::move(receiver));
 }
 

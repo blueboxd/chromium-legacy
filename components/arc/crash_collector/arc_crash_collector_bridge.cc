@@ -16,6 +16,7 @@
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -97,8 +98,8 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
 
 void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
                                         mojo::ScopedHandle pipe) {
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::WithBaseSyncPrimitives()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunCrashReporter, type, device_, board_, cpu_abi_,
                      fingerprint_,
                      mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD()));

@@ -23,8 +23,8 @@ constexpr char kAddressRegex[] =
     "^\\d+\\s[A-z]+\\s[A-z]+, ([A-z]|\\s)+, [A-z]{2}\\s[0-9]{5}";
 constexpr char kDirectionQueryRewriteTemplate[] = "Direction to %s";
 
-QuickAnswersClient::SearchResultLoaderFactoryCallback*
-    g_testing_search_result_factory_callback = nullptr;
+QuickAnswersClient::ResultLoaderFactoryCallback*
+    g_testing_result_factory_callback = nullptr;
 
 const QuickAnswersRequest PreprocessRequest(
     const QuickAnswersRequest& request) {
@@ -45,9 +45,9 @@ const QuickAnswersRequest PreprocessRequest(
 }  // namespace
 
 // static
-void QuickAnswersClient::SetSearchResultLoaderFactoryForTesting(
-    SearchResultLoaderFactoryCallback* factory) {
-  g_testing_search_result_factory_callback = factory;
+void QuickAnswersClient::SetResultLoaderFactoryForTesting(
+    ResultLoaderFactoryCallback* factory) {
+  g_testing_result_factory_callback = factory;
 }
 
 QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
@@ -100,14 +100,14 @@ void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
   RecordSelectedTextLength(quick_answers_request.selected_text.length());
 
-  search_result_loader_ = CreateSearchResultLoader();
-
   // Preprocess the request.
   auto& processed_request = PreprocessRequest(quick_answers_request);
   delegate_->OnRequestPreprocessFinish(processed_request);
 
+  // TODO(llin): predict user intent based on the request.
+  result_loader_ = CreateResultLoader(IntentType::kUnknown);
   // Load and parse search result.
-  search_result_loader_->Fetch(processed_request.selected_text);
+  result_loader_->Fetch(processed_request.selected_text);
 }
 
 void QuickAnswersClient::NotifyEligibilityChanged() {
@@ -123,11 +123,11 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
   }
 }
 
-std::unique_ptr<SearchResultLoader>
-QuickAnswersClient::CreateSearchResultLoader() {
-  if (g_testing_search_result_factory_callback)
-    return g_testing_search_result_factory_callback->Run();
-  return std::make_unique<SearchResultLoader>(url_loader_factory_, this);
+std::unique_ptr<ResultLoader> QuickAnswersClient::CreateResultLoader(
+    IntentType intent_type) {
+  if (g_testing_result_factory_callback)
+    return g_testing_result_factory_callback->Run();
+  return ResultLoader::Create(intent_type, url_loader_factory_, this);
 }
 
 void QuickAnswersClient::OnNetworkError() {

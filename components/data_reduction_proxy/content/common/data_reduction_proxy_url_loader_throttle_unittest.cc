@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -160,7 +161,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
       (net::HttpRequestHeaders()), manager.get());
   throttle->DetachFromCurrentSequence();
 
-  auto task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   task_runner->DeleteSoon(FROM_HERE, throttle.release());
 }
 

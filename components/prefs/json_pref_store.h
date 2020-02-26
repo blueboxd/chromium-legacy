@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/prefs_export.h"
@@ -67,9 +68,8 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   JsonPrefStore(const base::FilePath& pref_filename,
                 std::unique_ptr<PrefFilter> pref_filter = nullptr,
                 scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-                    base::CreateSequencedTaskRunner(
-                        {base::ThreadPool(), base::MayBlock(),
-                         base::TaskPriority::USER_VISIBLE,
+                    base::ThreadPool::CreateSequencedTaskRunner(
+                        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
   // PrefStore overrides:

@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -261,9 +262,9 @@ void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
   // How frequently the financial ping thread should check
   // the shutdown condition?
   const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
-  base::PostDelayedTask(FROM_HERE,
-                        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
-                        base::BindOnce(&ShutdownCheck, event), kInterval);
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&ShutdownCheck, event), kInterval);
 }
 #endif
 
@@ -391,16 +392,15 @@ FinancialPing::PingResponse FinancialPing::PingServer(const char* request,
 
   base::subtle::Release_Store(&g_cancelShutdownCheck, 0);
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
-                 base::BindOnce(&ShutdownCheck, event));
+  base::ThreadPool::PostTask(FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+                             base::BindOnce(&ShutdownCheck, event));
 
   // PingRlzServer must be run in a separate sequence so that the TimedWait()
   // call below does not block the URL fetch response from being handled by
   // the URL delegate.
   scoped_refptr<base::SequencedTaskRunner> background_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::BEST_EFFORT}));
   background_runner->PostTask(FROM_HERE,
                               base::BindOnce(&PingRlzServer, url, event));

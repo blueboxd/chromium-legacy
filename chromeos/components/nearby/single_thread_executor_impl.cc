@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include "chromeos/components/nearby/single_thread_executor_impl.h"
+#include "base/task/thread_pool.h"
 
 namespace chromeos {
 
 namespace nearby {
 
 SingleThreadExecutorImpl::SingleThreadExecutorImpl()
-    : SubmittableExecutorBase(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {}
+    : SubmittableExecutorBase(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {}
 
 SingleThreadExecutorImpl::~SingleThreadExecutorImpl() = default;
 

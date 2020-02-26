@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -156,9 +157,8 @@ AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
   // shutdown. This is important to prevent an access race when the destructor
   // of |storage| accesses an ObserverList that lives on the current sequence.
   // https://crbug.com/829122
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &CreateAddressValidator, std::move(source),
           DeleteOnTaskRunnerStorageUniquePtr(

@@ -295,7 +295,7 @@ bool ChildStatusCollector::GetAppActivity(
     return false;
   }
 
-  const chromeos::app_time::AppActivityReportInterface* app_activity_reporting =
+  chromeos::app_time::AppActivityReportInterface* app_activity_reporting =
       chromeos::app_time::AppActivityReportInterface::Get(profile_);
   DCHECK(app_activity_reporting);
 

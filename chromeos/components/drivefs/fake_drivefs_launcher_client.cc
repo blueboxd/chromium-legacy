@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
@@ -57,9 +58,8 @@ FakeDriveFsLauncherClient::FakeDriveFsLauncherClient(
     const base::FilePath& socket_path)
     : chroot_path_(chroot_path),
       socket_path_(chroot_path_.Append(socket_path)) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConnectAsync, launcher_.BindNewPipeAndPassReceiver(),
                      socket_path_.value()));
 

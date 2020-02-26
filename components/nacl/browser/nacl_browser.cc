@@ -283,8 +283,8 @@ void NaClBrowser::EnsureIrtAvailable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
-    auto task_runner = base::CreateTaskRunner(
-        {base::ThreadPool(), base::MayBlock(), kUserBlocking,
+    auto task_runner = base::ThreadPool::CreateTaskRunner(
+        {base::MayBlock(), kUserBlocking,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     std::unique_ptr<base::FileProxy> file_proxy(
         new base::FileProxy(task_runner.get()));
@@ -377,10 +377,8 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // We can get away not giving this a sequence ID because this is the first
       // task and further file access will not occur until after we get a
       // response.
-      base::PostTaskAndReply(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(ReadCache, validation_cache_file_path_, data),
           base::BindOnce(&NaClBrowser::OnValidationCacheLoaded,
                          base::Unretained(this), base::Owned(data)));

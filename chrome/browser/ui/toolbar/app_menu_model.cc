@@ -57,6 +57,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/dom_distiller/core/uma_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -422,6 +423,17 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
                                    delta);
       }
       LogMenuAction(MENU_ACTION_DISTILL_PAGE);
+      if (dom_distiller::url_utils::IsDistilledPage(
+              browser()
+                  ->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetLastCommittedURL())) {
+        dom_distiller::UMAHelper::RecordReaderModeExit(
+            dom_distiller::UMAHelper::ReaderModeEntryPoint::kMenuOption);
+      } else {
+        dom_distiller::UMAHelper::RecordReaderModeEntry(
+            dom_distiller::UMAHelper::ReaderModeEntryPoint::kMenuOption);
+      }
       break;
     case IDC_SAVE_PAGE:
       if (!uma_action_recorded_)

@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -37,7 +38,7 @@ class GetPrefValueHelper
  public:
   GetPrefValueHelper()
       : value_(false),
-        task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})) {}
+        task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
 
   void Init(const std::string& pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs);

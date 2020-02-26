@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -80,15 +81,14 @@ bool DownloadManagerDelegateImpl::DetermineDownloadTarget(
   base::FilePath default_download_path;
   GetSaveDir(browser_context, nullptr, &default_download_path);
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-                  base::TaskPriority::USER_VISIBLE},
-                 base::BindOnce(GenerateFilename, item->GetURL(),
-                                item->GetContentDisposition(),
-                                item->GetSuggestedFilename(),
-                                item->GetMimeType(), default_download_path,
-                                std::move(filename_determined_callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(
+          GenerateFilename, item->GetURL(), item->GetContentDisposition(),
+          item->GetSuggestedFilename(), item->GetMimeType(),
+          default_download_path, std::move(filename_determined_callback)));
   return true;
 }
 

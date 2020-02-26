@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_gdi_object.h"
@@ -110,8 +111,8 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
        // event hooks will happen on the same thread, as required by Windows,
        // and the task runner will have a message loop to call
        // EventHookCallback.
-      update_occlusion_task_runner_(base::CreateCOMSTATaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
+      update_occlusion_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(),
            // This may be needed to determine that a window is no longer
            // occluded.
            base::TaskPriority::USER_VISIBLE,

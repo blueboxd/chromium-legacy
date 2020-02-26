@@ -134,6 +134,8 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCPeerConnection(ExecutionContext*,
                     webrtc::PeerConnectionInterface::RTCConfiguration,
                     bool sdp_semantics_specified,
+                    bool force_encoded_audio_insertable_streams,
+                    bool force_encoded_video_insertable_streams,
                     MediaConstraints,
                     ExceptionState&);
   ~RTCPeerConnection() override;
@@ -399,6 +401,14 @@ class MODULES_EXPORT RTCPeerConnection final
 
   webrtc::SdpSemantics sdp_semantics() { return sdp_semantics_; }
 
+  bool force_encoded_audio_insertable_streams() {
+    return force_encoded_audio_insertable_streams_;
+  }
+
+  bool force_encoded_video_insertable_streams() {
+    return force_encoded_video_insertable_streams_;
+  }
+
   void Trace(Visitor*) override;
 
   base::TimeTicks WebRtcTimestampToBlinkTimestamp(
@@ -623,6 +633,10 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // Blink and WebRTC timestamp diff.
   const base::TimeDelta blink_webrtc_time_diff_;
+
+  // Insertable streams.
+  bool force_encoded_audio_insertable_streams_;
+  bool force_encoded_video_insertable_streams_;
 };
 
 }  // namespace blink

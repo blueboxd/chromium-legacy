@@ -46,21 +46,6 @@ constexpr char kValidResponse[] = R"()]}'
   }
 )";
 
-class MockSearchResultLoaderDelegate
-    : public SearchResultLoader::SearchResultLoaderDelegate {
- public:
-  MockSearchResultLoaderDelegate() = default;
-
-  MockSearchResultLoaderDelegate(const MockSearchResultLoaderDelegate&) =
-      delete;
-  MockSearchResultLoaderDelegate& operator=(
-      const MockSearchResultLoaderDelegate&) = delete;
-
-  // SearchResultLoader::SearchResultLoaderDelegate:
-  MOCK_METHOD0(OnNetworkError, void());
-  MOCK_METHOD1(OnQuickAnswerReceived, void(std::unique_ptr<QuickAnswer>));
-};
-
 }  // namespace
 
 class SearchResultLoaderTest : public testing::Test {
@@ -72,7 +57,7 @@ class SearchResultLoaderTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    mock_delegate_ = std::make_unique<MockSearchResultLoaderDelegate>();
+    mock_delegate_ = std::make_unique<MockResultLoaderDelegate>();
     loader_ = std::make_unique<SearchResultLoader>(&test_url_loader_factory_,
                                                    mock_delegate_.get());
   }
@@ -81,7 +66,7 @@ class SearchResultLoaderTest : public testing::Test {
 
  protected:
   std::unique_ptr<SearchResultLoader> loader_;
-  std::unique_ptr<MockSearchResultLoaderDelegate> mock_delegate_;
+  std::unique_ptr<MockResultLoaderDelegate> mock_delegate_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   network::TestURLLoaderFactory test_url_loader_factory_;

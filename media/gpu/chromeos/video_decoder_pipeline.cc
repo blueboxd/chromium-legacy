@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
@@ -92,9 +93,8 @@ VideoDecoderPipeline::VideoDecoderPipeline(
     gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     GetCreateVDFunctionsCB get_create_vd_functions_cb)
     : client_task_runner_(std::move(client_task_runner)),
-      decoder_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::USER_VISIBLE},
+      decoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       main_frame_pool_(std::move(frame_pool)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),

@@ -13,6 +13,7 @@
 #include "base/task/common/checked_lock_impl.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local.h"
@@ -139,9 +140,8 @@ scoped_refptr<base::SequencedTaskRunner>
 PerfettoTaskRunner::GetOrCreateTaskRunner() {
   if (!task_runner_) {
     DCHECK(base::ThreadPoolInstance::Get());
-    task_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::USER_BLOCKING});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   }
 
   return task_runner_;

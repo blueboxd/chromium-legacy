@@ -24,16 +24,29 @@ namespace quick_answers {
 
 namespace {
 
-class MockSearchResultLoader : public SearchResultLoader {
+class TestResultLoader : public ResultLoader {
  public:
-  MockSearchResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
-                         SearchResultLoaderDelegate* delegate)
-      : SearchResultLoader(url_loader_factory, delegate) {}
+  TestResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
+                   ResultLoaderDelegate* delegate)
+      : ResultLoader(url_loader_factory, delegate) {}
+  // ResultLoader:
+  GURL BuildRequestUrl(const std::string& selected_text) const override {
+    return GURL();
+  }
+  void ProcessResponse(std::unique_ptr<std::string> response_body,
+                       ResponseParserCallback complete_callback) override {}
+};
 
-  MockSearchResultLoader(const MockSearchResultLoader&) = delete;
-  MockSearchResultLoader& operator=(const MockSearchResultLoader&) = delete;
+class MockResultLoader : public TestResultLoader {
+ public:
+  MockResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
+                   ResultLoaderDelegate* delegate)
+      : TestResultLoader(url_loader_factory, delegate) {}
 
-  // SearchResultLoader:
+  MockResultLoader(const MockResultLoader&) = delete;
+  MockResultLoader& operator=(const MockResultLoader&) = delete;
+
+  // TestResultLoader:
   MOCK_METHOD1(Fetch, void(const std::string&));
 };
 
@@ -55,13 +68,12 @@ class QuickAnswersClientTest : public testing::Test {
                                                    assistant_state_.get(),
                                                    mock_delegate_.get());
 
-    search_result_loader_factory_callback_ =
-        base::BindRepeating(&QuickAnswersClientTest::CreateSearchResultLoader,
-                            base::Unretained(this));
+    result_loader_factory_callback_ = base::BindRepeating(
+        &QuickAnswersClientTest::CreateResultLoader, base::Unretained(this));
   }
 
   void TearDown() override {
-    QuickAnswersClient::SetSearchResultLoaderFactoryForTesting(nullptr);
+    QuickAnswersClient::SetResultLoaderFactoryForTesting(nullptr);
     client_.reset();
   }
 
@@ -77,18 +89,18 @@ class QuickAnswersClientTest : public testing::Test {
     client_->OnLocaleChanged(locale);
   }
 
-  std::unique_ptr<SearchResultLoader> CreateSearchResultLoader() {
-    return std::move(mock_search_result_loader_);
+  std::unique_ptr<ResultLoader> CreateResultLoader() {
+    return std::move(mock_result_loader_);
   }
 
   std::unique_ptr<QuickAnswersClient> client_;
   std::unique_ptr<MockQuickAnswersDelegate> mock_delegate_;
-  std::unique_ptr<MockSearchResultLoader> mock_search_result_loader_;
+  std::unique_ptr<MockResultLoader> mock_result_loader_;
   std::unique_ptr<ash::AssistantState> assistant_state_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  QuickAnswersClient::SearchResultLoaderFactoryCallback
-      search_result_loader_factory_callback_;
+  QuickAnswersClient::ResultLoaderFactoryCallback
+      result_loader_factory_callback_;
 };
 
 TEST_F(QuickAnswersClientTest, FeatureEligible) {
@@ -208,11 +220,11 @@ TEST_F(QuickAnswersClientTest, SendRequest) {
       std::make_unique<QuickAnswersRequest>();
   quick_answers_request->selected_text = "sel";
 
-  mock_search_result_loader_ = std::make_unique<MockSearchResultLoader>(
-      &test_url_loader_factory_, nullptr);
-  EXPECT_CALL(*mock_search_result_loader_, Fetch(::testing::Eq("sel")));
-  QuickAnswersClient::SetSearchResultLoaderFactoryForTesting(
-      &search_result_loader_factory_callback_);
+  mock_result_loader_ =
+      std::make_unique<MockResultLoader>(&test_url_loader_factory_, nullptr);
+  EXPECT_CALL(*mock_result_loader_, Fetch(::testing::Eq("sel")));
+  QuickAnswersClient::SetResultLoaderFactoryForTesting(
+      &result_loader_factory_callback_);
   EXPECT_CALL(*mock_delegate_,
               OnRequestPreprocessFinish(
                   QuickAnswersRequestEqual(*quick_answers_request)));

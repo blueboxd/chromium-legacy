@@ -212,9 +212,6 @@ class AppActivity {
   // saved in user preference.
   std::vector<ActiveTime> TakeActiveTimes();
 
-  // TODO(yilkal) remove the following method.
-  void RemoveActiveTimeEarlierThan(base::Time timestamp);
-
   bool is_active() const { return is_active_; }
   AppState app_state() const { return app_state_; }
   const std::vector<ActiveTime>& active_times() const { return active_times_; }

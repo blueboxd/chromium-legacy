@@ -8,6 +8,7 @@
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -95,8 +96,8 @@ void AwBrowserProcess::CreateSafeBrowsingUIManager() {
 
 void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   safe_browsing_whitelist_manager_ =

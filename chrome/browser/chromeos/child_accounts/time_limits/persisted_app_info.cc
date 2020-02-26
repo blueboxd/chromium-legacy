@@ -213,7 +213,9 @@ PersistedAppInfo& PersistedAppInfo::operator=(PersistedAppInfo&& info) {
 
 PersistedAppInfo::~PersistedAppInfo() = default;
 
-void PersistedAppInfo::UpdateAppActivityPreference(base::Value* dict) const {
+void PersistedAppInfo::UpdateAppActivityPreference(
+    base::Value* dict,
+    bool replace_activity) const {
   DCHECK(!!dict && dict->is_dict());
 
   dict->SetKey(kAppInfoKey, policy::AppIdToDict(app_id_));
@@ -221,6 +223,16 @@ void PersistedAppInfo::UpdateAppActivityPreference(base::Value* dict) const {
   dict->SetStringKey(
       kRunningActiveTimeKey,
       base::NumberToString(active_running_time().InMicroseconds()));
+
+  if (replace_activity) {
+    base::Value active_times_value(base::Value::Type::LIST);
+    for (const auto& entry : active_times_) {
+      active_times_value.Append(AppActivityToDict(entry));
+    }
+
+    dict->SetPath(kActiveTimesKey, std::move(active_times_value));
+    return;
+  }
 
   base::Value* value = dict->FindListKey(kActiveTimesKey);
   if (!value || !value->is_list()) {
@@ -253,6 +265,21 @@ void PersistedAppInfo::UpdateAppActivityPreference(base::Value* dict) const {
 
   for (size_t i = start_index; i < active_times_.size(); i++) {
     value->Append(AppActivityToDict(active_times_[i]));
+  }
+}
+
+void PersistedAppInfo::RemoveActiveTimeEarlierThan(base::Time timestamp) {
+  std::vector<AppActivity::ActiveTime> active_times = std::move(active_times_);
+
+  // |active_times_| is empty now. Populate it with active times later than
+  // |timestamp|.
+  for (auto& entry : active_times) {
+    if (entry.IsLaterThan(timestamp)) {
+      active_times_.push_back(entry);
+    } else if (entry.Contains(timestamp)) {
+      entry.set_active_from(timestamp);
+      active_times_.push_back(entry);
+    }
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/capture/video/create_video_capture_device_factory.h"
@@ -39,9 +40,8 @@ namespace video_capture {
 class VideoCaptureServiceImpl::GpuDependenciesContext {
  public:
   GpuDependenciesContext() {
-    gpu_io_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-         base::MayBlock()});
+    gpu_io_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
   }
 
   ~GpuDependenciesContext() {

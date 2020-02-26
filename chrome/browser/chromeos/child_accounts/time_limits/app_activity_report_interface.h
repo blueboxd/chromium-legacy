@@ -41,7 +41,7 @@ class AppActivityReportInterface {
   // Populates child status |report| with collected app activity.
   // Returns whether any data were populated.
   virtual ReportParams GenerateAppActivityReport(
-      enterprise_management::ChildStatusReportRequest* report) const = 0;
+      enterprise_management::ChildStatusReportRequest* report) = 0;
 
   // Clears the stored app activity older than |report_generation_timestamp|.
   // Should be called when child status report was successfully submitted.

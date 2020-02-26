@@ -948,8 +948,13 @@ const char kPerAppTimeLimitsAppActivities[] =
 const char kPerAppTimeLimitsLastResetTime[] =
     "child_user.per_app_time_limits.last_reset_time";
 
-// Dictionary pref containing the per-app time limits configuration for child
-// user. Controlled by PerAppTimeLimits policy.
+// Int64 to specify the last timestamp the app activity has been successfully
+// reported.
+const char kPerAppTimeLimitsLastSuccessfulReportTime[] =
+    "child_user.per_app_time_limits.last_successful_report_time";
+
+// Dictionary pref containing the per-app time limits configuration for
+// child user. Controlled by PerAppTimeLimits policy.
 const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 
 // Dictionary pref containing the whitelisted urls, schemes and applications

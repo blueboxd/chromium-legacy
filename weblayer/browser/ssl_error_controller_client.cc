@@ -5,6 +5,7 @@
 #include "weblayer/browser/ssl_error_controller_client.h"
 
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/security_interstitials/content/utils.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -62,9 +63,8 @@ bool SSLErrorControllerClient::CanLaunchDateAndTimeSettings() {
 void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&security_interstitials::LaunchDateAndTimeSettings));
 }
 

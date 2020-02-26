@@ -4,11 +4,19 @@
 
 #include "chrome/browser/themes/increased_contrast_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "ui/native_theme/native_theme.h"
 
 IncreasedContrastThemeSupplier::IncreasedContrastThemeSupplier(
-    bool is_dark_mode)
-    : CustomThemeSupplier(INCREASED_CONTRAST), is_dark_mode_(is_dark_mode) {}
-IncreasedContrastThemeSupplier::~IncreasedContrastThemeSupplier() {}
+    ui::NativeTheme* native_theme)
+    : CustomThemeSupplier(INCREASED_CONTRAST),
+      native_theme_(native_theme),
+      is_dark_mode_(native_theme->ShouldUseDarkColors()) {
+  native_theme->AddObserver(this);
+}
+
+IncreasedContrastThemeSupplier::~IncreasedContrastThemeSupplier() {
+  native_theme_->RemoveObserver(this);
+}
 
 // TODO(ellyjones): Follow up with a11y designers about these color choices.
 bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
@@ -52,4 +60,9 @@ bool IncreasedContrastThemeSupplier::GetColor(int id, SkColor* color) const {
 
 bool IncreasedContrastThemeSupplier::CanUseIncognitoColors() const {
   return false;
+}
+
+void IncreasedContrastThemeSupplier::OnNativeThemeUpdated(
+    ui::NativeTheme* native_theme) {
+  is_dark_mode_ = native_theme->ShouldUseDarkColors();
 }

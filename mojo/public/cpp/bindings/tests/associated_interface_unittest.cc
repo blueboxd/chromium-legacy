@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -210,7 +211,7 @@ TEST_F(AssociatedInterfaceTest, InterfacesAtBothEnds) {
 class TestSender {
  public:
   TestSender()
-      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
         next_sender_(nullptr),
         max_value_to_send_(-1) {}
 
@@ -257,7 +258,7 @@ class TestSender {
 class TestReceiver {
  public:
   TestReceiver()
-      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
         expected_calls_(0) {}
 
   void SetUp(PendingAssociatedReceiver<IntegerSender> receiver0,
@@ -957,8 +958,7 @@ TEST_F(AssociatedInterfaceTest, SharedAssociatedRemote) {
   // Test the thread safe pointer can be used from another thread.
   base::RunLoop run_loop;
 
-  auto sender_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto sender_task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto quit_closure = run_loop.QuitClosure();
   sender_task_runner->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&] {
@@ -982,7 +982,7 @@ struct ForwarderTestContext {
 
 TEST_F(AssociatedInterfaceTest, SharedAssociatedRemoteWithTaskRunner) {
   const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSequencedTaskRunner({});
 
   ForwarderTestContext* context = new ForwarderTestContext();
   PendingAssociatedRemote<IntegerSender> pending_remote;

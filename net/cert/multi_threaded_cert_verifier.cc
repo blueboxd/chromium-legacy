@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/net_errors.h"
@@ -114,10 +115,9 @@ void InternalRequest::Start(const scoped_refptr<CertVerifyProc>& verify_proc,
     flags &= ~CertVerifyProc::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   }
   DCHECK(config.crl_set);
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, params.certificate(),
                      params.hostname(), params.ocsp_response(),
                      params.sct_list(), flags, config.crl_set,

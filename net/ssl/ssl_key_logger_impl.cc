@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
 
 namespace net {
@@ -43,9 +44,8 @@ class SSLKeyLoggerImpl::Core
     // waiting to flush these to disk, but some buggy antiviruses point this at
     // a pipe and hang, so we avoid blocking shutdown. If writing to a real
     // file, writes should complete quickly enough that this does not matter.
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
 
   void SetFile(base::File file) {

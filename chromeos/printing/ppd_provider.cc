@@ -29,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -449,9 +450,9 @@ class PpdProviderImpl : public PpdProvider {
       : browser_locale_(browser_locale),
         loader_factory_(loader_factory),
         ppd_cache_(ppd_cache),
-        disk_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        disk_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         version_(current_version),
         options_(options) {}
 

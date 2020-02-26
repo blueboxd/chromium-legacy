@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_snapshot.h"
@@ -248,9 +249,9 @@ void DrmDisplayHostManager::ProcessEvent() {
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
-          base::PostTask(
+          base::ThreadPool::PostTask(
               FROM_HERE,
-              {base::ThreadPool(), base::MayBlock(),
+              {base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
               base::BindOnce(
                   &OpenDeviceAsync, event.path,

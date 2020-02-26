@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -65,7 +66,7 @@ TEST(StorageControllerTest, CacheLimit) {
 
   StorageController::DomStorageConnection connection;
   PostCrossThreadTask(
-      *base::CreateSequencedTaskRunner({base::ThreadPool()}), FROM_HERE,
+      *base::ThreadPool::CreateSequencedTaskRunner({}), FROM_HERE,
       CrossThreadBindOnce(
           [](mojo::PendingReceiver<mojom::blink::DomStorage> receiver) {
             mojo::MakeSelfOwnedReceiver(std::make_unique<MockDomStorage>(),
@@ -116,7 +117,7 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   Persistent<FakeAreaSource> source_area =
       MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
-  auto task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
 
   auto mock_dom_storage = std::make_unique<MockDomStorage>();
   MockDomStorage* dom_storage_ptr = mock_dom_storage.get();

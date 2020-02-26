@@ -1057,7 +1057,9 @@ class RTCPeerConnectionHandler::Observer
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     RTCPeerConnectionHandlerClient* client,
     blink::PeerConnectionDependencyFactory* dependency_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool force_encoded_audio_insertable_streams,
+    bool force_encoded_video_insertable_streams)
     : initialize_called_(false),
       client_(client),
       is_closed_(false),
@@ -1066,6 +1068,10 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
           base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
               dependency_factory_,
               task_runner)),
+      force_encoded_audio_insertable_streams_(
+          force_encoded_audio_insertable_streams),
+      force_encoded_video_insertable_streams_(
+          force_encoded_video_insertable_streams),
       task_runner_(std::move(task_runner)) {
   CHECK(client_);
 

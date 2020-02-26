@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,9 +41,8 @@ void ClearIOSSnapshots(base::OnceClosure callback) {
   // list of snapshots stored on the device can't be obtained programmatically.
   std::vector<base::FilePath> snapshots_paths;
   GetSnapshotsPaths(&snapshots_paths);
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteAllFiles, std::move(snapshots_paths)),
       std::move(callback));
 }

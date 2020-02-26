@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
@@ -131,7 +132,7 @@ URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
           request,
           network_delegate,
           file_path,
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
+          base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 URLRequestMockHTTPJob::~URLRequestMockHTTPJob() = default;
 
@@ -158,9 +159,8 @@ void URLRequestMockHTTPJob::OnReadComplete(net::IOBuffer* buffer, int result) {
 
 // Public virtual version.
 void URLRequestMockHTTPJob::Start() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&DoFileIO, file_path_),
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&DoFileIO, file_path_),
       base::BindOnce(&URLRequestMockHTTPJob::SetHeadersAndStart,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -40,11 +40,11 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
                     const base::FilePath& pref_filename,
                     base::SequencedTaskRunner* pref_io_task_runner,
+                    policy::PolicyService* policy_service,
                     policy::BrowserPolicyConnector* policy_connector) {
-  if (policy_connector) {
+  if (policy_service || policy_connector) {
     DCHECK(IsEnterprisePolicyEnabled());
-    policy::PolicyService* policy_service =
-        policy_connector->GetPolicyService();
+    DCHECK(policy_service && policy_connector);
     factory->SetManagedPolicies(policy_service, policy_connector);
     factory->SetRecommendedPolicies(policy_service, policy_connector);
   }
@@ -63,9 +63,10 @@ std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     const scoped_refptr<PrefRegistry>& pref_registry,
+    policy::PolicyService* policy_service,
     policy::BrowserPolicyConnector* policy_connector) {
   sync_preferences::PrefServiceSyncableFactory factory;
-  PrepareFactory(&factory, pref_filename, pref_io_task_runner,
+  PrepareFactory(&factory, pref_filename, pref_io_task_runner, policy_service,
                  policy_connector);
   return factory.Create(pref_registry.get());
 }
@@ -73,7 +74,9 @@ std::unique_ptr<PrefService> CreateLocalState(
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
     const base::FilePath& browser_state_path,
     base::SequencedTaskRunner* pref_io_task_runner,
-    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry) {
+    const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
+    policy::PolicyService* policy_service,
+    policy::BrowserPolicyConnector* policy_connector) {
   // chrome_prefs::CreateProfilePrefs uses ProfilePrefStoreManager to create
   // the preference store however since Chrome on iOS does not need to track
   // preference modifications (as applications are sand-boxed), it can use a
@@ -81,7 +84,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
   // on platforms that do not track preference modifications).
   sync_preferences::PrefServiceSyncableFactory factory;
   PrepareFactory(&factory, browser_state_path.Append(kPreferencesFilename),
-                 pref_io_task_runner, nullptr);
+                 pref_io_task_runner, policy_service, policy_connector);
   std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   return pref_service;

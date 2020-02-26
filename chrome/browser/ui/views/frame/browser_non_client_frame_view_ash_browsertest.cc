@@ -137,7 +137,7 @@ void EndOverview() {
 }
 
 bool IsShelfVisible() {
-  return ash::ShelfTestApi::Create()->IsVisible();
+  return ash::ShelfTestApi().IsVisible();
 }
 
 BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "services/device/device_service.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -50,11 +51,10 @@ std::unique_ptr<DeviceService> CreateTestDeviceService(
 }  // namespace
 
 DeviceServiceTestBase::DeviceServiceTestBase()
-    : file_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT})),
-      io_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
+    : file_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+      io_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::TaskPriority::USER_VISIBLE})),
       network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()) {}
 

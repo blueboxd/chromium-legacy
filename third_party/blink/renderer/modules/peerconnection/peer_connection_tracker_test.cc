@@ -123,7 +123,9 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
       : RTCPeerConnectionHandler(
             &client_,
             &dependency_factory_,
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            /*force_encoded_audio_insertable_streams=*/false,
+            /*force_encoded_video_insertable_streams=*/false) {}
   MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:

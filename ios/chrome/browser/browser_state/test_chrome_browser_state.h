@@ -48,6 +48,7 @@ class TestChromeBrowserState : public ChromeBrowserState {
   bool HasOffTheRecordChromeBrowserState() const override;
   ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
+  BrowserStatePolicyConnector* GetPolicyConnector() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;

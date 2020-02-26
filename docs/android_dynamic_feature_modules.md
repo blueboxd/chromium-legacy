@@ -171,7 +171,7 @@ $ adb shell dumpsys package org.chromium.chrome | grep splits
 ```
 
 
-### Adding java code
+### Adding Java code
 
 To make Foo useful, let's add some Java code to it. This section will walk you
 through the required steps.
@@ -506,8 +506,17 @@ foo_module_desc = {
     "//chrome/android/features/foo/internal:native",
     "//chrome/android/modules/foo/internal:native",
   ]
+  load_native_on_get_impl = true
 }
 ```
+
+If `load_native_on_get_impl` is set to `true` then Chrome automatically loads
+Foo DFM's native libraries and PAK file resources when `FooModule.getImpl()` is
+called for the first time. The loading requires Chrome's main native libraries
+to be loaded. If you wish to call `FooModule.getImpl()` earlier than that, then
+you'd need to set `load_native_on_get_impl` to `false`, and manage native
+libraries / resources loading yourself (potentially, on start-up and on install,
+or on use).
 
 #### Calling feature module native code from base the module
 
@@ -634,6 +643,74 @@ public class FooImpl implements Foo {
     }
 }
 ```
+
+### Adding non-string native resources
+
+This section describes how to add non-string native resources to Foo DFM.
+Key ideas:
+
+* The compiled resource file shipped with the DFM is `foo_resourcess.pak`.
+* At run time, native resources need to be loaded before use. Also, DFM native
+  resources can only be used from the Browser process.
+
+#### Creating PAK file
+
+Two ways to create `foo_resourcess.pak` (using GRIT) are:
+
+1. (Preferred) Use `foo_resourcess.grd` to refer to individual files (e.g.,
+  images, HTML, JS, or CSS) and assigns resource text IDs. `foo_resourcess.pak`
+  must have an entry in `/tools/gritsettings/resource_ids.spec`.
+1. Combine existing .pak files via `repack` rules in GN build files. This is
+  done by the DevUI DFM, which aggregates resources from many DevUI pages.
+
+#### Loading PAK file
+
+At runtime, `foo_resources.pak` needs to be loaded (memory-mapped) before any of
+its resource gets used. Alternatives to do this are:
+
+1. (Simplest) Specify native resources (with native libraries if any exist) to
+  be automatically loaded on first call to `FooModule.getImpl()`. This behavior
+  is specified via `load_native_on_get_impl = true` in `foo_module_desc`.
+1. In Java code, call `FooModule.ensureNativeLoaded()`.
+1. In C++ code, use JNI to call `FooModule.ensureNativeLoaded()`. The code to do
+  this can be placed in a helper class, which can also have JNI calls to
+  `FooModule.isInstalled()` and `FooModule.installModule()`.
+
+#### Cautionary notes
+
+Compiling `foo_resources.pak` auto-generates `foo_resources.h`, which defines
+textual resource IDs, e.g., `IDR_FOO_HTML`. C++ code then uses these IDs to get
+resource bytes. Unfortunately, this behavior is fragile: If `IDR_FOO_HTML` is
+accessed before the Foo DFM is (a) installed, or (b) loaded, then runtime error
+ensues! Some mitigation strategies are as follows:
+
+* (Ideal) Access Foo DFM's native resources only from code in Foo DFM's native
+  libraries. So by the time that `IDR_FOO_HTML` is accessed, everything is
+  already in place! This isn't always possible; henceforth we assume that
+  `IDR_FOO_HTML` is accessed by code in the base DFM.
+* Before accessing IDR_FOO_HTML, ensure Foo DFM is installed and loaded. The
+  latter can use `FooModule.ensureNativeLoaded()` (needs to be called from
+  Browser thread).
+* Use inclusion of `foo_resources.h` to restrict availability of `IDR_FOO_HTML`.
+  Only C++ files dedicated to "DFM-gated code" (code that runs only when its DFM
+  is installed and loaded) should include `foo_resources.h`.
+
+#### Associating native resources with DFM
+
+Here are the main GN changes to specify PAK files and default loading behavior
+for a DFM's native resources:
+
+```gn
+foo_module_desc = {
+  ...
+  paks = [ "$root_gen_dir/chrome/android/features/foo/internal/foo_resourcess.pak" ]
+  pak_deps = [ "//chrome/android/features/foo/internal:foo_paks" ]
+  load_native_on_get_impl = true
+}
+```
+
+Note that `load_native_on_get_impl` specifies both native libraries and native
+resources.
 
 
 ### Module install

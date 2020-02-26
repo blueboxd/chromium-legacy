@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
@@ -221,9 +222,8 @@ void ExternalFileRemoverImpl::RemoveFiles(
   const NSInteger kMinimumAgeInDays = 30;
   NSInteger age_in_days = all_files ? 0 : kMinimumAgeInDays;
 
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RemoveFilesWithOptions, referenced_files, age_in_days),
       base::Bind(&RunCallback, base::Passed(&closure_runner)));
 }

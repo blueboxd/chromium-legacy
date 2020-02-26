@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 
 namespace android_webview {
 
@@ -26,8 +27,8 @@ constexpr size_t kInterval3m = 2;
 
 AwAttachingToWindowRecorder::AwAttachingToWindowRecorder()
     : created_time_(base::TimeTicks::Now()),
-      thread_pool_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      thread_pool_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DETACH_FROM_SEQUENCE(thread_pool_sequence_checker_);
 }

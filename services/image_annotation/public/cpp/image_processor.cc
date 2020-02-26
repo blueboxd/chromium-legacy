@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/image_annotation/image_annotation_metrics.h"
@@ -79,9 +80,8 @@ constexpr int ImageProcessor::kJpgQuality;
 
 ImageProcessor::ImageProcessor(base::RepeatingCallback<SkBitmap()> get_pixels)
     : get_pixels_(std::move(get_pixels)),
-      background_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})) {}
+      background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {}
 
 ImageProcessor::~ImageProcessor() = default;
 

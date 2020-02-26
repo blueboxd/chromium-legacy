@@ -84,6 +84,7 @@
   "translate-android-manual-trigger",
   "ui-disable-partial-swap",
   "ui-slow-animations",
+  "unsafely-treat-insecure-origin-as-secure",
   "update-menu-item-custom-summary",
   "use-angle",
   "use-fake-device-for-media-stream",

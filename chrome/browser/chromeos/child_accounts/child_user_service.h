@@ -64,7 +64,7 @@ class ChildUserService : public KeyedService,
 
   // app_time::AppActivityReportInterface:
   app_time::AppActivityReportInterface::ReportParams GenerateAppActivityReport(
-      enterprise_management::ChildStatusReportRequest* report) const override;
+      enterprise_management::ChildStatusReportRequest* report) override;
   void AppActivityReportSubmitted(
       base::Time report_generation_timestamp) override;
 

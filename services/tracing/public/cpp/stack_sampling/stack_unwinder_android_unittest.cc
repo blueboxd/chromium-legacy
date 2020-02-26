@@ -9,6 +9,7 @@
 #include "base/profiler/stack_buffer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/trace_event/cfi_backtrace_android.h"
 #include "services/tracing/jni_headers/UnwindTestHelper_jni.h"
@@ -61,8 +62,8 @@ TEST_F(StackUnwinderTest, UnwindCurrentThread) {
 
 TEST_F(StackUnwinderTest, UnwindOtherThread) {
   base::WaitableEvent unwind_finished_event;
-  auto task_runner = base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      base::WaitableEvent* unwind_finished_event,
@@ -106,8 +107,8 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
 }
 
 TEST_F(StackUnwinderTest, UnwindOtherThreadOnJNICall) {
-  auto task_runner = base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      uintptr_t test_pc) {

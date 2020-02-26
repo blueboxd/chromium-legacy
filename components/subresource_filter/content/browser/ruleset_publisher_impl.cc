@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
@@ -46,9 +47,8 @@ void CloseFile(base::File) {}
 void CloseFileOnFileThread(base::File* file) {
   if (!file->IsValid())
     return;
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&CloseFile, std::move(*file)));
 }
 

@@ -70,6 +70,17 @@ void CanMakePaymentEvent::respondWith(ScriptState* script_state,
   }
 }
 
+const String& CanMakePaymentEvent::currency() const {
+  return currency_;
+}
+
+void CanMakePaymentEvent::respondWithMinimalUI(
+    ScriptState* script_state,
+    ScriptPromise script_promise,
+    ExceptionState& exception_state) {
+  respondWith(script_state, script_promise, exception_state);
+}
+
 void CanMakePaymentEvent::Trace(Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(modifiers_);
@@ -91,6 +102,7 @@ CanMakePaymentEvent::CanMakePaymentEvent(
       modifiers_(initializer->hasModifiers()
                      ? initializer->modifiers()
                      : HeapVector<Member<PaymentDetailsModifier>>()),
+      currency_(initializer->currency()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink

@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
@@ -176,9 +177,10 @@ void GetReadonlyPnaclFd(
     const std::string& filename,
     bool is_executable,
     IPC::Message* reply_msg) {
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&DoOpenPnaclFile, nacl_host_message_filter,
-                                filename, is_executable, reply_msg));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&DoOpenPnaclFile, nacl_host_message_filter, filename,
+                     is_executable, reply_msg));
 }
 
 // This function is security sensitive.  Be sure to check with a security
@@ -253,8 +255,8 @@ void OpenNaClExecutable(
   // The URL is part of the current app. Now query the extension system for the
   // file path and convert that to a file descriptor. This should be done on a
   // blocking pool thread.
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&DoOpenNaClExecutableOnThreadPool,
                      nacl_host_message_filter, file_url,
                      enable_validation_caching, map_url_callback, reply_msg));

@@ -3607,7 +3607,10 @@
   {
     "name": "unsafely-treat-insecure-origin-as-secure",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 82
+    // This flag is supported for bypassing security restrictions on HTTP pages,
+    // and is required for Android/ChromeOS devices where setting commandline
+    // flags is difficult or impossible.
+    "expiry_milestone": -1
   },
   {
     "name": "update-menu-item-custom-summary",

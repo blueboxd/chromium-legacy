@@ -11,9 +11,9 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * {@link PropertyKey} list for the toolbar view on tabstrip.
+ * {@link PropertyKey} list for the TabGroupUi.
  */
-class TabStripToolbarViewProperties {
+class TabGroupUiProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> LEFT_BUTTON_ON_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();

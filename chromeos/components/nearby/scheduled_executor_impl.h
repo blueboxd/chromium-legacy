@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/nearby/library/atomic_boolean.h"
@@ -30,8 +31,7 @@ class ScheduledExecutorImpl : public location::nearby::ScheduledExecutor {
  public:
   ScheduledExecutorImpl(
       scoped_refptr<base::SequencedTaskRunner> timer_task_runner =
-          base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                           base::MayBlock()}));
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   ~ScheduledExecutorImpl() override;
 
  private:

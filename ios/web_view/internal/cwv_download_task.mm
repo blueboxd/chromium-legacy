@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #import "ios/web/public/download/download_task.h"
 #include "ios/web/public/download/download_task_observer.h"
 #include "ios/web_view/internal/cwv_web_view_internal.h"
@@ -101,8 +102,8 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 
 - (void)startDownloadToLocalFileAtPath:(NSString*)path {
   scoped_refptr<base::SequencedTaskRunner> taskRunner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   __block auto writer = std::make_unique<net::URLFetcherFileWriter>(
       taskRunner, base::FilePath(base::SysNSStringToUTF8(path)));
 

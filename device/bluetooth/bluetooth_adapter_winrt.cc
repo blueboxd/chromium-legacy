@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/core_winrt_util.h"
@@ -665,9 +666,8 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
 
   // Some of the initialization work requires loading libraries and should not
   // be run on the browser main thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BluetoothAdapterWinrt::PerformSlowInitTasks),
       base::BindOnce(&BluetoothAdapterWinrt::CompleteInitAgile,
                      weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));

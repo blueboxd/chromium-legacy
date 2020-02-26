@@ -303,7 +303,7 @@
       other {Update within # seconds}}
   </message>
   <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    Your organization requires an update to this device
+    <ph name="organization_name">$1<ex>google.com</ex></ph> requires an update to this device
   </message>
 
   <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a device restart is recommended for an update.">

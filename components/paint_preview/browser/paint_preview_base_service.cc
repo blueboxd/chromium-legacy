@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/compositor_utils.h"
@@ -72,9 +73,8 @@ void PaintPreviewBaseService::GetCapturedPaintPreviewProto(
 void PaintPreviewBaseService::GetCapturedPaintPreviewProtoFromFile(
     const base::FilePath& file_path,
     OnReadProtoCallback onReadProtoCallback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReadProtoFromFile, file_path),
       base::BindOnce(std::move(onReadProtoCallback)));
 }

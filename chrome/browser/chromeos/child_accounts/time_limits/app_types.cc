@@ -249,22 +249,5 @@ std::vector<AppActivity::ActiveTime> AppActivity::TakeActiveTimes() {
   return std::move(active_times_);
 }
 
-void AppActivity::RemoveActiveTimeEarlierThan(base::Time timestamp) {
-  for (auto active_time = active_times_.begin();
-       active_time != active_times_.end();) {
-    if (active_time->IsEarlierThan(timestamp)) {
-      active_time = active_times_.erase(active_time);
-      continue;
-    }
-    if (active_time->IsLaterThan(timestamp)) {
-      ++active_time;
-      continue;
-    }
-    DCHECK(active_time->Contains(timestamp));
-    active_time->set_active_from(timestamp);
-    ++active_time;
-  }
-}
-
 }  // namespace app_time
 }  // namespace chromeos

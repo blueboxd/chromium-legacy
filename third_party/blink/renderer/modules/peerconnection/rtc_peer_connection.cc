@@ -689,7 +689,9 @@ RTCPeerConnection* RTCPeerConnection::Create(
 
   RTCPeerConnection* peer_connection = MakeGarbageCollected<RTCPeerConnection>(
       context, std::move(configuration), rtc_configuration->hasSdpSemantics(),
-      constraints, exception_state);
+      rtc_configuration->forceEncodedAudioInsertableStreams(),
+      rtc_configuration->forceEncodedVideoInsertableStreams(), constraints,
+      exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -728,6 +730,8 @@ RTCPeerConnection::RTCPeerConnection(
     ExecutionContext* context,
     webrtc::PeerConnectionInterface::RTCConfiguration configuration,
     bool sdp_semantics_specified,
+    bool force_encoded_audio_insertable_streams,
+    bool force_encoded_video_insertable_streams,
     MediaConstraints constraints,
     ExceptionState& exception_state)
     : ExecutionContextLifecycleObserver(context),
@@ -745,7 +749,11 @@ RTCPeerConnection::RTCPeerConnection(
       sdp_semantics_specified_(sdp_semantics_specified),
       blink_webrtc_time_diff_(
           base::TimeTicks::Now() - base::TimeTicks() -
-          base::TimeDelta::FromMicroseconds(rtc::TimeMicros())) {
+          base::TimeDelta::FromMicroseconds(rtc::TimeMicros())),
+      force_encoded_audio_insertable_streams_(
+          force_encoded_audio_insertable_streams),
+      force_encoded_video_insertable_streams_(
+          force_encoded_video_insertable_streams) {
   Document* document = Document::From(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
@@ -777,7 +785,9 @@ RTCPeerConnection::RTCPeerConnection(
     peer_handler_ =
         PeerConnectionDependencyFactory::GetInstance()
             ->CreateRTCPeerConnectionHandler(
-                this, document->GetTaskRunner(TaskType::kInternalMedia));
+                this, document->GetTaskRunner(TaskType::kInternalMedia),
+                force_encoded_audio_insertable_streams_,
+                force_encoded_video_insertable_streams_);
   }
 
   if (!peer_handler_) {

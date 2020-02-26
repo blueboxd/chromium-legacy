@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
@@ -143,9 +144,8 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(), chrome::kDateTimeSubPage);
 #else
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&security_interstitials::LaunchDateAndTimeSettings));
 #endif
 }

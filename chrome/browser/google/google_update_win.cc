@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -391,11 +392,11 @@ UpdateCheckDriver::UpdateCheckDriver(
     bool install_update_if_possible,
     gfx::AcceleratedWidget elevation_window,
     const base::WeakPtr<UpdateCheckDelegate>& delegate)
-    : task_runner_(g_update_driver_task_runner
-                       ? g_update_driver_task_runner
-                       : base::CreateCOMSTATaskRunner(
-                             {base::ThreadPool(), base::MayBlock(),
-                              base::TaskPriority::USER_VISIBLE})),
+    : task_runner_(
+          g_update_driver_task_runner
+              ? g_update_driver_task_runner
+              : base::ThreadPool::CreateCOMSTATaskRunner(
+                    {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       result_runner_(base::SequencedTaskRunnerHandle::Get()),
       locale_(locale),
       install_update_if_possible_(install_update_if_possible),

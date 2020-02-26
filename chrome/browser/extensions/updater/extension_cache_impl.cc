@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
@@ -33,8 +34,8 @@ ExtensionCacheImpl::ExtensionCacheImpl(
           delegate->GetCacheDir(),
           delegate->GetMaximumCacheSize(),
           delegate->GetMaximumCacheAge(),
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(), task_priority,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), task_priority,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))) {
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,

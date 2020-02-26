@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -112,9 +113,8 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   if (!InstallUtil::IsPerUserInstall()) {
     content::BrowserThread::PostBestEffortTask(
         FROM_HERE,
-        base::CreateTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+        base::ThreadPool::CreateTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
         base::BindOnce(&InstallUtil::TriggerActiveSetupCommand));
   }

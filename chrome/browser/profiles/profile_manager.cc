@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/value_conversions.h"
@@ -912,9 +913,9 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   // This uses a separate loop, because deleting the profile from the
   // ProfileInfoCache will modify indices.
   for (const base::FilePath& profile_path : profiles_to_delete) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&NukeProfileFromDisk, profile_path));
 
@@ -940,10 +941,9 @@ void ProfileManager::CleanUpDeletedProfiles() {
       if (base::PathExists(profile_path)) {
         LOG(WARNING) << "Files of a deleted profile still exist after restart. "
                         "Cleaning up now.";
-        base::PostTaskAndReply(
+        base::ThreadPool::PostTaskAndReply(
             FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
             base::BindOnce(&NukeProfileFromDisk, profile_path),
             base::BindOnce(&ProfileCleanedUp, &value));
@@ -1338,9 +1338,9 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 #endif
 
   // Log the profile size after a reasonable startup delay.
-  base::PostDelayedTask(
+  base::ThreadPool::PostDelayedTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
       base::TimeDelta::FromSeconds(112));
@@ -1555,9 +1555,9 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
   } else {
     // We failed to load the profile, but it's safe to delete a not yet loaded
     // Profile from disk.
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&NukeProfileFromDisk, profile_dir));
   }

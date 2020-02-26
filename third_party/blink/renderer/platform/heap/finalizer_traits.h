@@ -91,8 +91,6 @@ struct FinalizerTrait {
 };
 
 class HeapAllocator;
-template <typename Table>
-class HeapHashTableBacking;
 
 template <typename T, typename U, typename V>
 struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
@@ -133,17 +131,6 @@ struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
       inlineCapacity && VectorTraits<T>::kNeedsDestruction;
   static void Finalize(void* obj) {
     internal::FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename Table>
-struct FinalizerTrait<HeapHashTableBacking<Table>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer =
-      !std::is_trivially_destructible<typename Table::ValueType>::value;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<HeapHashTableBacking<Table>,
                                  kNonTrivialFinalizer>::Finalize(obj);
   }
 };

@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -442,9 +443,9 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
       web_ui()->GetWebContents()->GetBrowserContext());
   std::string json_policies =
       policy::DictionaryPolicyConversions(std::move(client)).ToJSON();
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(DumpPolicyLogs, policies_path, json_policies),
       base::BindOnce(&NetInternalsMessageHandler::OnDumpPolicyLogsCompleted,

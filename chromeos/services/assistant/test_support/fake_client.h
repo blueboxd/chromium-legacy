@@ -57,9 +57,6 @@ class FakeClient : public mojom::Client {
   void RequestAudioDecoderFactory(
       mojo::PendingReceiver<mojom::AssistantAudioDecoderFactory> receiver)
       override {}
-  void RequestIdentityAccessor(
-      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
-      override {}
   void RequestAudioFocusManager(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManager> receiver)
       override {}

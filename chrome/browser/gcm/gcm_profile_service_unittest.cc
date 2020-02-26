@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -72,9 +73,8 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   return std::make_unique<gcm::GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),

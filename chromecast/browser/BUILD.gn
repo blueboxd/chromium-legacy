@@ -473,6 +473,7 @@ cast_source_set("public") {
   deps = [
     "//base",
     "//chromecast/graphics",
+    "//chromecast/ui:back_gesture_router",
     "//chromecast/ui/mojom",
     "//content/public/common",
     "//ui/events",

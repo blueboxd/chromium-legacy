@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -134,8 +135,8 @@ ThumbnailCache::ThumbnailCache(size_t default_cache_size,
                                bool use_approximation_thumbnail,
                                bool save_jpeg_thumbnails,
                                double jpeg_aspect_ratio)
-    : file_sequenced_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
+    : file_sequenced_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       jpeg_aspect_ratio_(jpeg_aspect_ratio),
       compression_queue_max_size_(compression_queue_max_size),
       write_queue_max_size_(write_queue_max_size),
@@ -428,9 +429,9 @@ void ThumbnailCache::SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap) {
       base::Bind(&ThumbnailCache::WriteJpegThumbnailIfNecessary,
                  weak_factory_.GetWeakPtr(), tab_id);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailCache::JpegProcessingTask, jpeg_aspect_ratio_,
                      bitmap, post_jpeg_compression_task));
@@ -456,11 +457,12 @@ void ThumbnailCache::CompressThumbnailIfNecessary(TabId tab_id,
   gfx::Size encoded_size = GetEncodedSize(
       raw_data_size, ui_resource_provider_->SupportsETC1NonPowerOfTwo());
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&ThumbnailCache::CompressionTask, bitmap,
-                                encoded_size, post_compression_task));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&ThumbnailCache::CompressionTask, bitmap, encoded_size,
+                     post_compression_task));
 
   if (save_jpeg_thumbnails_) {
     SaveAsJpeg(tab_id, bitmap);
@@ -881,10 +883,10 @@ void ThumbnailCache::ReadTask(
   }
 
   if (decompress) {
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::TaskPriority::USER_VISIBLE},
-                   base::BindOnce(post_read_task, std::move(compressed_data),
-                                  scale, content_size));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(post_read_task, std::move(compressed_data), scale,
+                       content_size));
   } else {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(post_read_task, std::move(compressed_data),

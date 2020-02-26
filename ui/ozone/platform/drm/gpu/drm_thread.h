@@ -84,6 +84,7 @@ class DrmThread : public base::Thread,
   // DrmThreadProxy (on GPU)thread) is the client for these methods.
   void CreateBuffer(gfx::AcceleratedWidget widget,
                     const gfx::Size& size,
+                    const gfx::Size& framebuffer_size,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     uint32_t flags,

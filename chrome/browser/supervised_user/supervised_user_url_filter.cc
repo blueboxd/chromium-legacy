@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
@@ -214,9 +215,8 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
-      blocking_task_runner_(base::CreateTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      blocking_task_runner_(base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {

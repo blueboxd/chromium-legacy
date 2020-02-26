@@ -18,13 +18,31 @@ namespace ash {
 // The implementation of contextual nudge tooltip bubbles.
 class ASH_EXPORT ContextualNudge : public views::BubbleDialogDelegateView {
  public:
-  ContextualNudge(views::View* anchor, const base::string16& text);
+  // Indicates whether the nudge should be shown below or above the anchor.
+  enum class Position { kBottom, kTop };
+
+  // |anchor| - The view to which the nudge bubble should be anchored. May be
+  //     nullptr, in which case anchor bounds should be provided using
+  //     UpdateAnchorRect().
+  // |parent_window| - if set, the window that should parent the nudge native
+  //     window. If not set, the shelf container in the anchor view's root
+  //     window will be used.
+  // |text| - The nudge text.
+  // |position| - The nudge position relative to the anchor rectangle.
+  ContextualNudge(views::View* anchor,
+                  aura::Window* parent_window,
+                  const base::string16& text,
+                  Position position);
   ~ContextualNudge() override;
 
   ContextualNudge(const ContextualNudge&) = delete;
   ContextualNudge& operator=(const ContextualNudge&) = delete;
 
   views::Label* label() { return label_; }
+
+  // Sets the nudge bubble anchor rect - should be used to set the anchor rect
+  // if no valid anchor was passed to the nudge bubble.
+  void UpdateAnchorRect(const gfx::Rect& rect);
 
   // BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;

@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/download/deferred_client_wrapper.h"
@@ -171,8 +172,8 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
           key->GetPath().Append(chrome::kDownloadServiceStorageDirname);
     }
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::BEST_EFFORT});
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
     std::unique_ptr<download::TaskScheduler> task_scheduler;
 #if defined(OS_ANDROID)

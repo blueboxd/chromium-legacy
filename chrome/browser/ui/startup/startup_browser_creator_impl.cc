@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -249,13 +250,13 @@ void RecordLaunchModeHistogram(LaunchMode mode) {
       (mode = GetLaunchModeFast()) == LM_TO_BE_DECIDED) {
     // The mode couldn't be determined with a fast path. Perform a more
     // expensive evaluation out of the critical startup path.
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   base::BindOnce([]() {
-                     base::UmaHistogramSparse(kLaunchModesHistogram,
-                                              GetLaunchModeSlow());
-                   }));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce([]() {
+          base::UmaHistogramSparse(kLaunchModesHistogram, GetLaunchModeSlow());
+        }));
   } else {
     base::UmaHistogramSparse(kLaunchModesHistogram, mode);
   }

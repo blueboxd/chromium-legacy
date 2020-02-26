@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -654,9 +655,8 @@ void ThemeService::BuildFromExtension(const extensions::Extension* extension,
   building_extension_id_ = extension->id();
   scoped_refptr<BrowserThemePack> pack(
       new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
-  auto task_runner =
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                              base::TaskPriority::USER_BLOCKING});
+  auto task_runner = base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   build_extension_task_tracker_.PostTaskAndReply(
       task_runner.get(), FROM_HERE,
       base::Bind(&BrowserThemePack::BuildFromExtension,

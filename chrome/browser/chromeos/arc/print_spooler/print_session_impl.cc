@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_util.h"
@@ -251,8 +252,8 @@ PrintSessionImpl::~PrintSessionImpl() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&DeletePrintDocument, file_path));
+  base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                             base::BindOnce(&DeletePrintDocument, file_path));
 }
 
 void PrintSessionImpl::CreatePreviewDocument(
@@ -284,8 +285,8 @@ void PrintSessionImpl::OnPreviewDocumentCreated(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ReadPreviewDocument, std::move(preview_document),
                      static_cast<size_t>(data_size)),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentRead,

@@ -9,6 +9,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
@@ -98,7 +99,7 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
   base::win::ScopedHandle request_write_handle_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 };
 
 }  // namespace chrome_cleaner

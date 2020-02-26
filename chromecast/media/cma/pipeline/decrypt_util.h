@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 
 namespace chromecast {
 namespace media {

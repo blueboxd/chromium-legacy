@@ -22,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/android/chrome_jni_headers/PasswordUIView_jni.h"
 #include "chrome/browser/android/password_editing_bridge.h"
@@ -175,9 +176,8 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
   // but still long enough not to block the UI thread. The main concern here is
   // not to avoid the background computation if |this| is about to be deleted
   // but to simply avoid use after free from the background task runner.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(
           &PasswordUIViewAndroid::ObtainAndSerializePasswords,
           base::Unretained(this),

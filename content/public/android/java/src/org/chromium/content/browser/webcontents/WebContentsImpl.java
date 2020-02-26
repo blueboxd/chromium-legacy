@@ -560,6 +560,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 mNativeWebContentsAndroid, WebContentsImpl.this);
     }
 
+    @Override
+    public boolean isFullscreenForCurrentTab() {
+        checkNotDestroyed();
+        return WebContentsImplJni.get().isFullscreenForCurrentTab(
+                mNativeWebContentsAndroid, WebContentsImpl.this);
+    }
 
     @Override
     public void exitFullscreen() {
@@ -1062,6 +1068,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         void setAudioMuted(long nativeWebContentsAndroid, WebContentsImpl caller, boolean mute);
         boolean isShowingInterstitialPage(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean focusLocationBarByDefault(long nativeWebContentsAndroid, WebContentsImpl caller);
+        boolean isFullscreenForCurrentTab(long nativeWebContentsAndroid, WebContentsImpl caller);
         void exitFullscreen(long nativeWebContentsAndroid, WebContentsImpl caller);
         void scrollFocusedEditableNodeIntoView(
                 long nativeWebContentsAndroid, WebContentsImpl caller);

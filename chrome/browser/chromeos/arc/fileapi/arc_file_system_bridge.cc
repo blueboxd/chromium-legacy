@@ -16,6 +16,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
@@ -320,8 +321,8 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&OpenDriveFSFileToRead, fs_path), std::move(callback));
 }
 

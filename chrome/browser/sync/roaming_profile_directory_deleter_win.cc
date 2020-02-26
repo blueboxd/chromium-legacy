@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/chrome_paths_internal.h"
 
 namespace {
@@ -60,9 +61,9 @@ void DeleteRoamingUserDataDirectory() {
 }  // namespace
 
 void DeleteRoamingUserDataDirectoryLater() {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&DeleteRoamingUserDataDirectory));
 }

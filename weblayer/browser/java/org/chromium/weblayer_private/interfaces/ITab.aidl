@@ -35,4 +35,6 @@ interface ITab {
 
   boolean setFindInPageCallbackClient(IFindInPageCallbackClient client) = 8;
   void findInPage(in String searchText, boolean forward) = 9;
+
+  void dismissTabModalOverlay() = 10;
 }

@@ -22,6 +22,7 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -80,8 +81,7 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
 }
 
 BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux()
-    : task_runner_(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
+    : task_runner_(base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 BrowserDMTokenStorageLinux::~BrowserDMTokenStorageLinux() {}
 

@@ -12,7 +12,10 @@ component("device_event_log") {
 
   defines = [ "DEVICE_EVENT_LOG_IMPLEMENTATION" ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//third_party/icu",
+  ]
 }
 
 source_set("unit_tests") {
@@ -24,5 +27,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
+    "//third_party/icu",
   ]
 }

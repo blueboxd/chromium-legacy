@@ -31,6 +31,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -391,10 +392,9 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
         // task.
-        base::PostTask(
+        base::ThreadPool::PostTask(
             FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
                            event.module_path, event.module_size));
@@ -582,8 +582,8 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
-        base::CreateTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+        base::ThreadPool::CreateTaskRunner(
+            {base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::MayBlock()})
             .get());
@@ -632,7 +632,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   if (base::win::OSInfo::GetInstance()->version() >=
       base::win::Version::WIN10) {
     AfterStartupTaskUtils::PostTask(
-        FROM_HERE, base::CreateSequencedTaskRunner({base::ThreadPool()}),
+        FROM_HERE, base::ThreadPool::CreateSequencedTaskRunner({}),
         base::BindOnce(&DelayedRecordProcessorMetrics));
   }
 }

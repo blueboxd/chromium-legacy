@@ -28,6 +28,7 @@ class StartSurfaceToolbarCoordinator {
     private final StartSurfaceToolbarMediator mToolbarMediator;
     private final ViewStub mStub;
     private final PropertyModel mPropertyModel;
+    private PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private StartSurfaceToolbarView mView;
     private TabModelSelector mTabModelSelector;
     private IncognitoSwitchCoordinator mIncognitoSwitchCoordinator;
@@ -37,8 +38,11 @@ class StartSurfaceToolbarCoordinator {
         mPropertyModel =
                 new PropertyModel.Builder(StartSurfaceToolbarProperties.ALL_KEYS)
                         .with(StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE, true)
+                        .with(StartSurfaceToolbarProperties.IN_START_SURFACE_MODE, false)
                         .with(StartSurfaceToolbarProperties.MENU_IS_VISIBLE, true)
+                        .with(StartSurfaceToolbarProperties.IS_VISIBLE, true)
                         .build();
+
         mToolbarMediator = new StartSurfaceToolbarMediator(mPropertyModel);
     }
 
@@ -72,6 +76,7 @@ class StartSurfaceToolbarCoordinator {
         mTabModelSelector = selector;
         mToolbarMediator.setTabModelSelector(selector);
     }
+
     /**
      * Called when Start Surface mode is entered or exited.
      * @param inStartSurfaceMode Whether or not start surface mode should be shown or hidden.
@@ -165,7 +170,7 @@ class StartSurfaceToolbarCoordinator {
     private void inflate() {
         mStub.setLayoutResource(R.layout.start_top_toolbar);
         mView = (StartSurfaceToolbarView) mStub.inflate();
-        PropertyModelChangeProcessor.create(
+        mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 mPropertyModel, mView, StartSurfaceToolbarViewBinder::bind);
 
         if (IncognitoUtils.isIncognitoModeEnabled()) {

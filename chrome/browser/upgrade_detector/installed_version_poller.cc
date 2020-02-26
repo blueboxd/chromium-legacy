@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/browser/upgrade_detector/get_installed_version.h"
 #include "chrome/common/chrome_switches.h"
@@ -135,11 +136,10 @@ void InstalledVersionPoller::Poll() {
   // Run the version getter in the background. Get the result back via a weak
   // pointer so that the result is dropped on the floor should this instance be
   // destroyed while polling.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock(),
-       base::ThreadPool()},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(get_installed_version_),
       base::BindOnce(&InstalledVersionPoller::OnInstalledVersion,
                      weak_ptr_factory_.GetWeakPtr()));

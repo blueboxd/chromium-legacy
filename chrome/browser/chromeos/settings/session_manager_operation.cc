@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/net/nss_context.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -89,9 +90,9 @@ void SessionManagerOperation::ReportResult(
 
 void SessionManagerOperation::EnsurePublicKey(const base::Closure& callback) {
   if (force_key_load_ || !public_key_ || !public_key_->is_loaded()) {
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&SessionManagerOperation::LoadPublicKey, owner_key_util_,
                        force_key_load_ ? nullptr : public_key_),
@@ -162,9 +163,8 @@ void SessionManagerOperation::ValidateDeviceSettings(
   }
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   std::unique_ptr<policy::DeviceCloudPolicyValidator> validator =

@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/metrics/perf/cpu_identity.h"
 #include "chrome/browser/metrics/perf/process_type_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
@@ -251,9 +252,9 @@ void PerfCollector::SetUp() {
       std::make_unique<chromeos::DebugDaemonClientProvider>();
 
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&PerfCollector::ParseCPUFrequencies, task_runner,
                      weak_factory_.GetWeakPtr()));
@@ -427,9 +428,8 @@ void PerfCollector::ParseOutputProtoIfValid(
                   sampled_profile->mutable_cpu_max_frequency_mhz()));
   }
 
-  bool posted = base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  bool posted = base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&OnCollectProcessTypes, sampled_profile.get()),
       base::BindOnce(&PerfCollector::SaveSerializedPerfProto,
                      weak_factory_.GetWeakPtr(), std::move(sampled_profile),

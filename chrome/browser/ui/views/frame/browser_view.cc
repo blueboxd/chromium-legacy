@@ -157,6 +157,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -2721,6 +2722,46 @@ void BrowserView::OnThemeChanged() {
   MaybeShowInvertBubbleView(this);
 }
 
+bool BrowserView::GetDropFormats(
+    int* formats,
+    std::set<ui::ClipboardFormatType>* format_types) {
+  const bool parent_result =
+      views::ClientView::GetDropFormats(formats, format_types);
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (webui_tab_strip_) {
+    WebUITabStripContainerView::GetDropFormatsForView(formats, format_types);
+    return true;
+  } else {
+    return parent_result;
+  }
+#else
+  return parent_result;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+}
+
+bool BrowserView::AreDropTypesRequired() {
+  return true;
+}
+
+bool BrowserView::CanDrop(const ui::OSExchangeData& data) {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (!webui_tab_strip_)
+    return false;
+  return WebUITabStripContainerView::IsDraggedTab(data);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+}
+
+void BrowserView::OnDragEntered(const ui::DropTargetEvent& event) {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (!webui_tab_strip_)
+    return;
+  if (WebUITabStripContainerView::IsDraggedTab(event.data()))
+    webui_tab_strip_->OpenForTabDrag();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ui::AcceleratorTarget overrides:
 
@@ -2758,7 +2799,7 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
           std::make_unique<WebUITabStripContainerView>(
               browser_.get(), contents_container_, top_container_));
       loading_bar_ = top_container_->AddChildView(
-          std::make_unique<TopContainerLoadingBar>());
+          std::make_unique<TopContainerLoadingBar>(browser_.get()));
       loading_bar_->SetWebContents(GetActiveWebContents());
     }
   } else if (webui_tab_strip_) {

@@ -242,6 +242,7 @@ void CardUnmaskPromptViews::AddedToWidget() {
 }
 
 void CardUnmaskPromptViews::OnThemeChanged() {
+  views::BubbleDialogDelegateView::OnThemeChanged();
   SkColor bg_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   overlay_->SetBackground(views::CreateSolidBackground(bg_color));

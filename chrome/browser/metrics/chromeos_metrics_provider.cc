@@ -21,6 +21,7 @@
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -205,9 +206,9 @@ void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
     base::OnceClosure callback) {
   // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetFullHardwareClassOnBackgroundThread),

@@ -29,6 +29,8 @@ class CORE_EXPORT InspectorAuditsAgent final
   protocol::Response enable() override;
   protocol::Response disable() override;
 
+  void Restore() override;
+
   protocol::Response getEncodedResponse(
       const String& request_id,
       const String& encoding,
@@ -39,6 +41,7 @@ class CORE_EXPORT InspectorAuditsAgent final
       int* out_encoded_size) override;
 
  private:
+  void InnerEnable();
   Member<InspectorIssueStorage> inspector_issue_storage_;
   InspectorAgentState::Boolean enabled_;
   Member<InspectorNetworkAgent> network_agent_;

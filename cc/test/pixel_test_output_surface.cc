@@ -21,9 +21,9 @@ namespace cc {
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
-    bool flipped_output_surface)
+    viz::SurfaceOrigin origin)
     : OutputSurface(std::move(context_provider)) {
-  capabilities_.flipped_output_surface = flipped_output_surface;
+  capabilities_.output_surface_origin = origin;
   capabilities_.supports_stencil = true;
 }
 

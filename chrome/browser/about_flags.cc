@@ -407,25 +407,6 @@ const FeatureEntry::Choice kForceUpdateMenuTypeChoices[] = {
     {flag_descriptions::kUpdateMenuTypeInlineUpdateInstallFailed,
      switches::kForceUpdateMenuType, "inline_update_install_failed"},
 };
-
-const FeatureEntry::FeatureParam kCCTModuleCache_ZeroMinutes[] = {
-    {"cct_module_cache_time_limit_ms", "0"}};
-const FeatureEntry::FeatureParam kCCTModuleCache_OneMinute[] = {
-    {"cct_module_cache_time_limit_ms", "60000"}};
-const FeatureEntry::FeatureParam kCCTModuleCache_FiveMinutes[] = {
-    {"cct_module_cache_time_limit_ms", "300000"}};
-const FeatureEntry::FeatureParam kCCTModuleCache_ThirtyMinutes[] = {
-    {"cct_module_cache_time_limit_ms", "1800000"}};
-const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
-    {"0 minutes", kCCTModuleCache_ZeroMinutes,
-     base::size(kCCTModuleCache_ZeroMinutes), nullptr},
-    {"1 minute", kCCTModuleCache_OneMinute,
-     base::size(kCCTModuleCache_OneMinute), nullptr},
-    {"5 minutes", kCCTModuleCache_FiveMinutes,
-     base::size(kCCTModuleCache_FiveMinutes), nullptr},
-    {"30 minutes", kCCTModuleCache_ThirtyMinutes,
-     base::size(kCCTModuleCache_ThirtyMinutes), nullptr},
-};
 #else  // !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kReaderModeOfferInSettings[] = {
     {switches::kReaderModeDiscoverabilityParamName,
@@ -3587,31 +3568,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"cct-incognito", flag_descriptions::kCCTIncognitoName,
      flag_descriptions::kCCTIncognitoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
-    {"cct-module", flag_descriptions::kCCTModuleName,
-     flag_descriptions::kCCTModuleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},
-    {"cct-module-cache", flag_descriptions::kCCTModuleCacheName,
-     flag_descriptions::kCCTModuleCacheDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCCTModuleCache,
-                                    kCCTModuleCacheVariations,
-                                    "CCTModule")},
-    {"cct-module-custom-header", flag_descriptions::kCCTModuleCustomHeaderName,
-     flag_descriptions::kCCTModuleCustomHeaderDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleCustomHeader)},
-    {"cct-module-custom-request-header",
-     flag_descriptions::kCCTModuleCustomRequestHeaderName,
-     flag_descriptions::kCCTModuleCustomRequestHeaderDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleCustomRequestHeader)},
-    {"cct-module-dex-loading", flag_descriptions::kCCTModuleDexLoadingName,
-     flag_descriptions::kCCTModuleDexLoadingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleDexLoading)},
-    {"cct-module-post-message", flag_descriptions::kCCTModulePostMessageName,
-     flag_descriptions::kCCTModulePostMessageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModulePostMessage)},
-    {"cct-module-use-intent-extras",
-     flag_descriptions::kCCTModuleUseIntentExtrasName,
-     flag_descriptions::kCCTModuleUseIntentExtrasDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleUseIntentExtras)},
 #endif
 
 #if !defined(OS_ANDROID)

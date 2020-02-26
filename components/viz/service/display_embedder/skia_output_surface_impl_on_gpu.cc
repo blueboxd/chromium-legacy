@@ -1011,7 +1011,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
 
   if (frame.sub_buffer_rect) {
     if (capabilities().supports_post_sub_buffer) {
-      if (!capabilities().flipped_output_surface) {
+      if (capabilities().output_surface_origin == SurfaceOrigin::kBottomLeft) {
         frame.sub_buffer_rect->set_y(size_.height() -
                                      frame.sub_buffer_rect->y() -
                                      frame.sub_buffer_rect->height());
@@ -1026,11 +1026,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
       output_device_->CommitOverlayPlanes(buffer_presented_callback_,
                                           std::move(frame.latency_info));
     } else {
-      // Full swap can only be used to simulate PostSubBuffer(), if the buffer
-      // content is preserved after presenting.
-      DCHECK(capabilities().preserve_buffer_content);
-      output_device_->SwapBuffers(buffer_presented_callback_,
-                                  std::move(frame.latency_info));
+      NOTREACHED();
     }
   } else {
     output_device_->SwapBuffers(buffer_presented_callback_,
@@ -1232,7 +1228,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
-    bool flipped = from_fbo0 ? !capabilities().flipped_output_surface : false;
+    bool flipped = from_fbo0 && capabilities().output_surface_origin ==
+                                    SurfaceOrigin::kBottomLeft;
     // readback_offset is in window co-ordinate space and must take into account
     // flipping.
     if (flipped) {
@@ -1444,7 +1441,7 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   // Check that we're using an offscreen surface.
   DCHECK(dependency_->IsOffscreen());
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-      context_state_, capabilities.flipped_output_surface,
+      context_state_, capabilities.output_surface_origin,
       renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
       did_swap_buffer_complete_callback_);
 }
@@ -1503,7 +1500,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       return false;
 
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, true /* flipped */,
+        context_state_, SurfaceOrigin::kTopLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1558,7 +1555,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, false /* flipped */,
+        context_state_, SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1598,7 +1595,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, false /* flipped */,
+        context_state_, SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;

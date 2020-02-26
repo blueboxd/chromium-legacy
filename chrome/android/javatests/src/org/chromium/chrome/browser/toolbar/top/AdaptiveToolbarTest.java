@@ -68,21 +68,22 @@ public class AdaptiveToolbarTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
     }
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     private void setupFlagsAndLaunchActivity(
             boolean isBottomToolbarEnabled, boolean isGridTabSwitcherEnabled) {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(isGridTabSwitcherEnabled);
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(isBottomToolbarEnabled);
+        CachedFeatureFlags.setForTesting(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, isGridTabSwitcherEnabled);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, isBottomToolbarEnabled);
         mActivityTestRule.startMainActivityOnBlankPage();
         CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
                                             .getTabModelSelector()

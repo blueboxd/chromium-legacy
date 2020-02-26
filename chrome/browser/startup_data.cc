@@ -5,6 +5,7 @@
 #include "chrome/browser/startup_data.h"
 
 #include "base/files/file_path.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/common/channel_info.h"
@@ -167,9 +168,8 @@ void StartupData::CreateServicesInternal() {
   }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-           base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
 
   policy::ChromeBrowserPolicyConnector* browser_policy_connector =
       chrome_feature_list_creator_->browser_policy_connector();

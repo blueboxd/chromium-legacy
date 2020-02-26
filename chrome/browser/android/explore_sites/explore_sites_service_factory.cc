@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
@@ -74,7 +75,7 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   base::FilePath store_path =
       profile->GetPath().Append(kExploreSitesStoreDirname);
   auto explore_sites_store =

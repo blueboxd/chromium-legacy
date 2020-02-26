@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
@@ -114,9 +115,9 @@ void OnChromeCleanerFetched(
     ChromeCleanerControllerDelegate::FetchedCallback fetched_callback,
     base::FilePath downloaded_path,
     ChromeCleanerFetchStatus fetch_status) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(VerifyAndRenameDownloadedCleaner, downloaded_path,
                      fetch_status),

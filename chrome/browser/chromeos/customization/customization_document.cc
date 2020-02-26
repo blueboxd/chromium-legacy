@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -550,10 +551,8 @@ void ServicesCustomizationDocument::StartFetching() {
   if (url_.is_valid()) {
     load_started_ = true;
     if (url_.SchemeIsFile()) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock()},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
           base::BindOnce(&ReadFileInBackground, base::FilePath(url_.path())),
           base::BindOnce(&ServicesCustomizationDocument::OnManifestRead,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -876,9 +875,8 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
       std::move(applying));
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(check_file_exists), std::move(on_checked_closure));
 }
 

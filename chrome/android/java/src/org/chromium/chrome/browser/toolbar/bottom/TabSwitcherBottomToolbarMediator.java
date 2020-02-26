@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 /**
  * This class is responsible for reacting to events from the outside world, interacting with other
@@ -43,7 +43,7 @@ class TabSwitcherBottomToolbarMediator implements ThemeColorObserver {
         // When GridTabSwitcher is enabled, show the original top toolbar instead of showing the
         // bottom toolbar on top.
         mModel.set(TabSwitcherBottomToolbarModel.SHOW_ON_TOP,
-                showOnTop && !CachedFeatureFlags.isGridTabSwitcherEnabled());
+                showOnTop && !TabUiFeatureUtilities.isGridTabSwitcherEnabled());
     }
 
     /**

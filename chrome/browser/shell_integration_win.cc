@@ -31,6 +31,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -757,9 +758,9 @@ void MigrateTaskbarPins() {
   // BEST_EFFORT means it will be scheduled after higher-priority tasks, but
   // MUST_USE_FOREGROUND means that when it is scheduled it will run in the
   // foregound.
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
-                                base::TaskPriority::BEST_EFFORT,
-                                base::ThreadPolicy::MUST_USE_FOREGROUND})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::ThreadPolicy::MUST_USE_FOREGROUND})
       ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
                                            taskbar_path, implicit_apps_path));
 }

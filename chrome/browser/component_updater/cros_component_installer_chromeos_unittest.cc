@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -153,11 +154,12 @@ class TestUpdater : public OnDemandUpdater {
     if (!installer)
       return false;
 
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&update_client::CrxInstaller::Install,
-                                  installer, unpacked_path, "", nullptr,
-                                  base::BindOnce(&WrapInstallerCallback,
-                                                 std::move(callback))));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(
+            &update_client::CrxInstaller::Install, installer, unpacked_path, "",
+            nullptr,
+            base::BindOnce(&WrapInstallerCallback, std::move(callback))));
     return true;
   }
 

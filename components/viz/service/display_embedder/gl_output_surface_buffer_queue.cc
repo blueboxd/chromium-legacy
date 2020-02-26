@@ -31,7 +31,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
       buffer_queue_(std::move(buffer_queue)) {
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
-  capabilities_.flipped_output_surface = true;
+  capabilities_.output_surface_origin = SurfaceOrigin::kTopLeft;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
   // more closely with the previous surfaced behavior.
   // With a surface, swap buffer ack used to return early, before actually

@@ -196,7 +196,7 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
           gpu::kGpuFeatureStatusEnabled;
     } else {
-      DLOG(ERROR) << "Failed to create Vulkan context provider.";
+      DLOG(WARNING) << "Failed to create Vulkan context provider.";
     }
   }
 #endif
@@ -209,7 +209,7 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
           gpu::kGpuFeatureStatusEnabled;
     } else {
-      DLOG(ERROR) << "Failed to create Dawn context provider.";
+      DLOG(WARNING) << "Failed to create Dawn context provider.";
     }
   }
 #endif

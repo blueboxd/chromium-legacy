@@ -312,10 +312,12 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   }
 }
 
-void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
-                                      const base::string16& description,
-                                      const base::string16& clickable_text,
-                                      base::RepeatingClosure action) {
+void ProfileMenuViewBase::SetSyncInfo(
+    const gfx::ImageSkia& icon,
+    const base::string16& description,
+    const base::string16& clickable_text,
+    SyncInfoContainerBackgroundState sync_background_state,
+    base::RepeatingClosure action) {
   constexpr int kIconSize = 16;
   const int kDescriptionIconSpacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -324,6 +326,9 @@ void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
   constexpr int kBorderThickness = 1;
   const int kBorderCornerRadius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+
+  sync_background_state_ = sync_background_state;
+  UpdateSyncInfoContainerBackground();
 
   sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   sync_info_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -373,12 +378,6 @@ void ProfileMenuViewBase::SetSyncInfo(const gfx::ImageSkia& icon,
   views::Button* button = sync_info_container_->AddChildView(
       views::MdTextButton::CreateSecondaryUiBlueButton(this, clickable_text));
   RegisterClickAction(button, std::move(action));
-}
-
-void ProfileMenuViewBase::SetSyncInfoBackgroundColor(SkColor bg_color) {
-  sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
-      bg_color, views::LayoutProvider::Get()->GetCornerRadiusMetric(
-                    views::EMPHASIS_HIGH)));
 }
 
 void ProfileMenuViewBase::AddShortcutFeatureButton(
@@ -547,6 +546,7 @@ void ProfileMenuViewBase::OnThemeChanged() {
   views::BubbleDialogDelegateView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
+  UpdateSyncInfoContainerBackground();
 }
 
 bool ProfileMenuViewBase::HandleContextMenu(
@@ -669,6 +669,29 @@ void ProfileMenuViewBase::RegisterClickAction(views::View* clickable_view,
                                               base::RepeatingClosure action) {
   DCHECK(click_actions_.count(clickable_view) == 0);
   click_actions_[clickable_view] = std::move(action);
+}
+
+void ProfileMenuViewBase::UpdateSyncInfoContainerBackground() {
+  ui::NativeTheme::ColorId bg_color;
+  SkAlpha alpha = 16;
+  switch (sync_background_state_) {
+    case SyncInfoContainerBackgroundState::kNoError:
+      sync_info_container_->SetBackground(nullptr);
+      return;
+    case SyncInfoContainerBackgroundState::kPaused:
+      bg_color = ui::NativeTheme::kColorId_ProminentButtonColor;
+      break;
+    case SyncInfoContainerBackgroundState::kError:
+      bg_color = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      break;
+    case SyncInfoContainerBackgroundState::kNoPrimaryAccount:
+      bg_color = ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
+      alpha = SK_AlphaOPAQUE;
+  }
+  sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
+      SkColorSetA(GetNativeTheme()->GetSystemColor(bg_color), alpha),
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(
+          views::EMPHASIS_HIGH)));
 }
 
 void ProfileMenuViewBase::FocusButtonOnKeyboardOpen() {

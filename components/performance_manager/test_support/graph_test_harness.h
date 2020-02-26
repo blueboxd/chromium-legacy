@@ -19,6 +19,7 @@
 #include "components/performance_manager/graph/system_node_impl.h"
 #include "components/performance_manager/graph/worker_node_impl.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -193,7 +194,7 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
-  // Optional constructor for directly configuring the TaskEnvironment.
+  // Optional constructor for directly configuring the BrowserTaskEnvironment.
   template <class... ArgTypes>
   explicit GraphTestHarness(ArgTypes... args) : task_env_(args...) {}
 
@@ -223,11 +224,11 @@ class GraphTestHarness : public ::testing::Test {
  protected:
   void AdvanceClock(base::TimeDelta delta) { task_env_.FastForwardBy(delta); }
 
-  base::test::TaskEnvironment& task_env() { return task_env_; }
+  content::BrowserTaskEnvironment& task_env() { return task_env_; }
   TestGraphImpl* graph() { return &graph_; }
 
  private:
-  base::test::TaskEnvironment task_env_;
+  content::BrowserTaskEnvironment task_env_;
   TestGraphImpl graph_;
 };
 

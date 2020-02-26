@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -32,9 +33,9 @@ SandboxedZipAnalyzer::SandboxedZipAnalyzer(
 void SandboxedZipAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
 }

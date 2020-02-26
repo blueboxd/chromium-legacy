@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
@@ -303,7 +304,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
         boolean isMenuGroupTabsVisible =
-                CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout();
         boolean isMenuGroupTabsEnabled = mTabModelSelector.getTabModelFilterProvider()
                                                  .getCurrentTabModelFilter()

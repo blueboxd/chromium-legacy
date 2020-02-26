@@ -60,13 +60,14 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
 scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
     scoped_refptr<DrmDevice> drm,
     const GbmBuffer* buffer,
+    const gfx::Size& framebuffer_size,
     std::vector<uint64_t> preferred_modifiers) {
-  gfx::Size size = buffer->GetSize();
+  DCHECK(gfx::Rect(buffer->GetSize()).Contains(gfx::Rect(framebuffer_size)));
   AddFramebufferParams params;
   params.format = buffer->GetFormat();
   params.modifier = buffer->GetFormatModifier();
-  params.width = size.width();
-  params.height = size.height();
+  params.width = framebuffer_size.width();
+  params.height = framebuffer_size.height();
   params.num_planes = buffer->GetNumPlanes();
   params.preferred_modifiers = preferred_modifiers;
   for (size_t i = 0; i < params.num_planes; ++i) {

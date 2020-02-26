@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_launch_from_native.h"
@@ -83,9 +84,8 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 // TODO(https://crbug.com/806451): On OSX EnsureProcessTerminated() may
 // block, so we have to post a task on the blocking pool.
 #if defined(OS_MACOSX)
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));
 #else
     base::EnsureProcessTerminated(std::move(process_));
@@ -164,9 +164,10 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
   read_file_ = read_file.GetPlatformFile();
 #endif
 
-  scoped_refptr<base::TaskRunner> task_runner(base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  scoped_refptr<base::TaskRunner> task_runner(
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   read_stream_.reset(new net::FileStream(std::move(read_file), task_runner));
   write_stream_.reset(new net::FileStream(std::move(write_file), task_runner));

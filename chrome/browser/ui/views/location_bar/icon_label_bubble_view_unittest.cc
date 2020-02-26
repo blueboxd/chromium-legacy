@@ -146,9 +146,9 @@ class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
     ChromeViewsTestBase::SetUp();
     gfx::FontList font_list;
 
-    CreateWidget();
-    generator_ =
-        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
+    widget_ = CreateTestWidget();
+    generator_ = std::make_unique<ui::test::EventGenerator>(
+        GetRootWindow(widget_.get()));
     view_ = new TestIconLabelBubbleView(font_list, this);
     view_->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
     widget_->SetContentsView(view_);
@@ -158,8 +158,7 @@ class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
 
   void TearDown() override {
     generator_.reset();
-    if (widget_ && !widget_->IsClosed())
-      widget_->Close();
+    widget_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -185,16 +184,6 @@ class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
   }
 
  private:
-  void CreateWidget() {
-    DCHECK(!widget_);
-
-    widget_ = new views::Widget;
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(std::move(params));
-  }
-
   void Reset(bool icon_visible) {
     view_->SetLabelVisible(true);
     SetValue(0);
@@ -276,7 +265,7 @@ class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
     return view_->GetImageView()->bounds();
   }
 
-  views::Widget* widget_ = nullptr;
+  std::unique_ptr<views::Widget> widget_;
   TestIconLabelBubbleView* view_ = nullptr;
   TestInkDrop* ink_drop_ = nullptr;
   std::unique_ptr<ui::test::EventGenerator> generator_;
@@ -427,7 +416,7 @@ TEST_F(IconLabelBubbleViewTest,
   EXPECT_TRUE(view()->IsLabelVisible());
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 // Verifies IconLabelBubbleView::CalculatePreferredSize() doesn't crash when
 // there is a widget but no compositor.
 using IconLabelBubbleViewCrashTest = IconLabelBubbleViewTestBase;
@@ -435,16 +424,12 @@ using IconLabelBubbleViewCrashTest = IconLabelBubbleViewTestBase;
 TEST_F(IconLabelBubbleViewCrashTest,
        GetPreferredSizeDoesntCrashWhenNoCompositor) {
   gfx::FontList font_list;
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  views::Widget widget;
-  widget.Init(std::move(params));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
   IconLabelBubbleView* icon_label_bubble_view =
       new TestIconLabelBubbleView(font_list, this);
   icon_label_bubble_view->SetLabel(base::ASCIIToUTF16("x"));
-  widget.GetContentsView()->AddChildView(icon_label_bubble_view);
-  aura::Window* widget_native_view = widget.GetNativeView();
+  widget->SetContentsView(icon_label_bubble_view);
+  aura::Window* widget_native_view = widget->GetNativeView();
   // Remove the window from its parent. This means GetWidget() in
   // IconLabelBubbleView will return non-null, but GetWidget()->GetCompositor()
   // will return null.

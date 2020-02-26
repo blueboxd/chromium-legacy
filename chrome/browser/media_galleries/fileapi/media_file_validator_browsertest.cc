@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -86,10 +87,11 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                 bool expected_result) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&MediaFileValidatorTest::SetupBlocking,
-                                  base::Unretained(this), filename, content,
-                                  expected_result));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&MediaFileValidatorTest::SetupBlocking,
+                       base::Unretained(this), filename, content,
+                       expected_result));
     run_loop.Run();
   }
 
@@ -99,8 +101,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                         const base::FilePath& source, bool expected_result) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::PostTask(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&MediaFileValidatorTest::SetupFromFileBlocking,
                        base::Unretained(this), filename, source,
                        expected_result));
@@ -128,7 +130,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
     file_system_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     additional_providers.push_back(
         std::make_unique<storage::TestFileSystemBackend>(
             file_system_runner_.get(), src_path));

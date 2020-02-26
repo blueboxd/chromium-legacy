@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -125,8 +126,8 @@ PersistentIncidentState ComputeIncidentState(const Incident& incident) {
 
 // Returns a task runner for blocking tasks in the background.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return base::CreateTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+  return base::ThreadPool::CreateTaskRunner(
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()});
 }
 

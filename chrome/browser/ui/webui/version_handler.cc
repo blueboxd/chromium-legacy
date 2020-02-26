@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -142,9 +143,8 @@ void VersionHandler::HandleRequestPathInfo(const base::ListValue* args) {
   // OnGotFilePaths.
   base::string16* exec_path_buffer = new base::string16;
   base::string16* profile_path_buffer = new base::string16;
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&GetFilePaths, Profile::FromWebUI(web_ui())->GetPath(),
                      base::Unretained(exec_path_buffer),
                      base::Unretained(profile_path_buffer)),

@@ -1348,6 +1348,7 @@
     'machines': {
       'android-kitkat-arm-rel-swarming': {
         'mixins': [
+          'chromium-template-pool',
           'kitkat',
           'hammerhead',
         ],
@@ -1360,6 +1361,9 @@
         'os_type': 'android',
       },
       'android-marshmallow-arm64-rel-swarming': {
+        'mixins': [
+          'chromium-template-pool',
+        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
         },
@@ -1378,17 +1382,24 @@
       'linux-rel-swarming': {
         'mixins': [
           'linux-xenial',
+          'chromium-template-pool',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
       'mac-rel-swarming': {
+        'mixins': [
+          'chromium-template-pool',
+        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
       },
       'win-rel-swarming': {
+        'mixins': [
+          'chromium-template-pool',
+        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },

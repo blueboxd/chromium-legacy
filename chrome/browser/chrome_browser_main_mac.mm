@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
@@ -59,9 +60,9 @@ void EnsureMetadataNeverIndexFileOnFileThread(
 }
 
 void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }

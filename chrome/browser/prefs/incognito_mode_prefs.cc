@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -199,8 +200,8 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
 #if defined(OS_WIN)
 // static
 void IncognitoModePrefs::InitializePlatformParentalControls() {
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
       ->PostTask(FROM_HERE, base::BindOnce(base::IgnoreResult(
                                 &PlatformParentalControlsValue::GetInstance)));
 }

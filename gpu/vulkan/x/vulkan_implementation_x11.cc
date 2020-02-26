@@ -129,11 +129,6 @@ VulkanImplementationX11::GetRequiredDeviceExtensions() {
   return extensions;
 }
 
-std::vector<const char*>
-VulkanImplementationX11::GetOptionalDeviceExtensions() {
-  return {};
-}
-
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {
   NOTREACHED();
   return VK_NULL_HANDLE;

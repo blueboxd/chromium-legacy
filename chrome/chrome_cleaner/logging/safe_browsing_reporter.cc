@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -271,12 +272,12 @@ SafeBrowsingReporter::SafeBrowsingReporter(
       done_callback_runner_(done_callback_runner),
       done_callback_(done_callback) {
   DCHECK(done_callback_runner);
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                 base::BindRepeating(&SafeBrowsingReporter::UploadWithRetry,
-                                     base::Owned(this), serialized_report,
-                                     traffic_annotation));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindRepeating(&SafeBrowsingReporter::UploadWithRetry,
+                          base::Owned(this), serialized_report,
+                          traffic_annotation));
 }
 
 void SafeBrowsingReporter::UploadWithRetry(

@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
@@ -533,10 +534,9 @@ void VolumeManager::Initialize() {
                Volume::CreateForDownloads(localVolume));
 
   // Asyncrhonously record the disk usage for the downloads path
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RecordDownloadsDiskUsageStats, std::move(localVolume)));
 

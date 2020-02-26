@@ -92,7 +92,7 @@ public class StartSurfaceLayoutPerfTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityFromLauncher();
 

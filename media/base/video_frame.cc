@@ -732,8 +732,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 
   if (frame->storage_type() == STORAGE_SHMEM) {
     DCHECK(frame->shm_region_ && frame->shm_region_->IsValid());
-    wrapping_frame->BackWithSharedMemory(frame->shm_region_,
-                                         frame->shared_memory_offset());
+    wrapping_frame->BackWithSharedMemory(frame->shm_region_);
   }
 
   wrapping_frame->wrapped_frame_ = std::move(frame);
@@ -941,8 +940,7 @@ void VideoFrame::HashFrameForTesting(base::MD5Context* context,
   }
 }
 
-void VideoFrame::BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region,
-                                      size_t offset) {
+void VideoFrame::BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region) {
   DCHECK(!shm_region_);
   DCHECK(!owned_shm_region_.IsValid());
   // Either we should be backing a frame created with WrapExternal*, or we are
@@ -953,13 +951,11 @@ void VideoFrame::BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region,
   DCHECK(region && region->IsValid());
   storage_type_ = STORAGE_SHMEM;
   shm_region_ = region;
-  shared_memory_offset_ = offset;
 }
 
 void VideoFrame::BackWithOwnedSharedMemory(
     base::UnsafeSharedMemoryRegion region,
-    base::WritableSharedMemoryMapping mapping,
-    size_t offset) {
+    base::WritableSharedMemoryMapping mapping) {
   DCHECK(!shm_region_);
   DCHECK(!owned_shm_region_.IsValid());
   // We should be backing a frame created with WrapExternal*. We cannot be
@@ -969,7 +965,6 @@ void VideoFrame::BackWithOwnedSharedMemory(
   owned_shm_region_ = std::move(region);
   shm_region_ = &owned_shm_region_;
   owned_shm_mapping_ = std::move(mapping);
-  shared_memory_offset_ = offset;
 }
 
 bool VideoFrame::IsMappable() const {

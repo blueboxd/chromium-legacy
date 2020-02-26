@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
@@ -242,9 +243,8 @@ bool CrOSComponentInstaller::Unload(const std::string& name) {
 }
 
 void CrOSComponentInstaller::RegisterInstalled() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(GetInstalled),
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(GetInstalled),
       base::BindOnce(&CrOSComponentInstaller::RegisterN,
                      base::Unretained(this)));
 }

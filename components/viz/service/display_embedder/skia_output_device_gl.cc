@@ -44,7 +44,9 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
       gl_surface_(std::move(gl_surface)) {
   // Only BufferQueue should support async swap.
   DCHECK(!gl_surface_->SupportsAsyncSwap());
-  capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
+  capabilities_.output_surface_origin = gl_surface_->FlipsVertically()
+                                            ? SurfaceOrigin::kTopLeft
+                                            : SurfaceOrigin::kBottomLeft;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces) {

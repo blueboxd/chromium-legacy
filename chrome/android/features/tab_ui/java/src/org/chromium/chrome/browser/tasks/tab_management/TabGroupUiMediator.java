@@ -14,7 +14,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -246,7 +246,7 @@ public class TabGroupUiMediator {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab == null) return;
             mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+            if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
             }
         });
@@ -280,8 +280,8 @@ public class TabGroupUiMediator {
             mIsTabGroupUiVisible = true;
         }
         boolean isDuetTabStripIntegrationEnabled =
-                CachedFeatureFlags.isDuetTabStripIntegrationAndroidEnabled()
-                && CachedFeatureFlags.isBottomToolbarEnabled();
+                TabUiFeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
+                && BottomToolbarConfiguration.isBottomToolbarEnabled();
         assert (mVisibilityController == null) == isDuetTabStripIntegrationEnabled;
         if (isDuetTabStripIntegrationEnabled) return;
         mVisibilityController.setBottomControlsVisible(mIsTabGroupUiVisible);

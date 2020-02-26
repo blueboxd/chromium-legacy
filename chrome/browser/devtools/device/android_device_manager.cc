@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
@@ -541,10 +542,10 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
   if (!thread_)
     return;
   // Shut down thread on a thread other than UI so it can join a thread.
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-                  base::TaskPriority::BEST_EFFORT},
-                 base::BindOnce(&HandlerThread::StopThread, thread_));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&HandlerThread::StopThread, thread_));
 }
 
 // static

@@ -10,6 +10,10 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 // Mock TabStripModelDelegate.
 class TestTabStripModelDelegate : public TabStripModelDelegate {
  public:
@@ -37,6 +41,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
   bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
+  bool ShouldDisplayFavicon(content::WebContents* web_contents) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

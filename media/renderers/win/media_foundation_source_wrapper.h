@@ -52,46 +52,52 @@ class MediaFoundationSourceWrapper
   //       threads and the calls are serialized
 
   // IMFMediaSource
-  IFACEMETHOD(GetCharacteristics)(DWORD* characteristics);
-  IFACEMETHOD(CreatePresentationDescriptor)
-  (IMFPresentationDescriptor** presentation_descriptor_out);
-  IFACEMETHOD(Start)
-  (IMFPresentationDescriptor* presentation_descriptor,
-   const GUID* guid_time_format,
-   const PROPVARIANT* start_position);
-  IFACEMETHOD(Stop)();
-  IFACEMETHOD(Pause)();
-  IFACEMETHOD(Shutdown)();
+  IFACEMETHODIMP GetCharacteristics(DWORD* characteristics) override;
+  IFACEMETHODIMP CreatePresentationDescriptor(
+      IMFPresentationDescriptor** presentation_descriptor_out) override;
+  IFACEMETHODIMP Start(IMFPresentationDescriptor* presentation_descriptor,
+                       const GUID* guid_time_format,
+                       const PROPVARIANT* start_position) override;
+  IFACEMETHODIMP Stop() override;
+  IFACEMETHODIMP Pause() override;
+  IFACEMETHODIMP Shutdown() override;
 
   // IMFMediaEventGenerator
   // Note: IMFMediaSource inherits IMFMediaEventGenerator.
-  IFACEMETHOD(GetEvent)(DWORD flags, IMFMediaEvent** event_out);
-  IFACEMETHOD(BeginGetEvent)(IMFAsyncCallback* callback, IUnknown* state);
-  IFACEMETHOD(EndGetEvent)(IMFAsyncResult* result, IMFMediaEvent** event_out);
-  IFACEMETHOD(QueueEvent)
-  (MediaEventType type,
-   REFGUID extended_type,
-   HRESULT status,
-   const PROPVARIANT* value);
+  IFACEMETHODIMP GetEvent(DWORD flags, IMFMediaEvent** event_out) override;
+  IFACEMETHODIMP BeginGetEvent(IMFAsyncCallback* callback,
+                               IUnknown* state) override;
+  IFACEMETHODIMP EndGetEvent(IMFAsyncResult* result,
+                             IMFMediaEvent** event_out) override;
+  IFACEMETHODIMP QueueEvent(MediaEventType type,
+                            REFGUID extended_type,
+                            HRESULT status,
+                            const PROPVARIANT* value) override;
 
   // IMFTrustedInput
-  IFACEMETHOD(GetInputTrustAuthority)
-  (DWORD stream_id, REFIID riid, IUnknown** object_out);
+  IFACEMETHODIMP GetInputTrustAuthority(DWORD stream_id,
+                                        REFIID riid,
+                                        IUnknown** object_out) override;
 
   // IMFGetService
-  IFACEMETHOD(GetService)(REFGUID guid_service, REFIID riid, LPVOID* result);
+  IFACEMETHODIMP GetService(REFGUID guid_service,
+                            REFIID riid,
+                            LPVOID* result) override;
 
   // IMFRateSupport
-  IFACEMETHOD(GetSlowestRate)
-  (MFRATE_DIRECTION direction, BOOL supports_thinning, float* rate);
-  IFACEMETHOD(GetFastestRate)
-  (MFRATE_DIRECTION direction, BOOL supports_thinning, float* rate);
-  IFACEMETHOD(IsRateSupported)
-  (BOOL supports_thinning, float new_rate, float* supported_rate);
+  IFACEMETHODIMP GetSlowestRate(MFRATE_DIRECTION direction,
+                                BOOL supports_thinning,
+                                float* rate) override;
+  IFACEMETHODIMP GetFastestRate(MFRATE_DIRECTION direction,
+                                BOOL supports_thinning,
+                                float* rate) override;
+  IFACEMETHODIMP IsRateSupported(BOOL supports_thinning,
+                                 float new_rate,
+                                 float* supported_rate) override;
 
   // IMFRateControl
-  IFACEMETHOD(SetRate)(BOOL supports_thinning, float rate);
-  IFACEMETHOD(GetRate)(BOOL* supports_thinning, float* rate);
+  IFACEMETHODIMP SetRate(BOOL supports_thinning, float rate) override;
+  IFACEMETHODIMP GetRate(BOOL* supports_thinning, float* rate) override;
 
   // Number of streams from |media_streams_|. Can be invoked from Chromium
   // thread or MF threadpool thread.

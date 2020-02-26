@@ -19,6 +19,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/metrics/serialization/metric_sample.h"
@@ -176,9 +177,8 @@ void ExternalMetrics::CollectEventsAndReschedule() {
 }
 
 void ExternalMetrics::ScheduleCollector() {
-  base::PostDelayedTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&chromeos::ExternalMetrics::CollectEventsAndReschedule,
                      this),
       collection_interval_);

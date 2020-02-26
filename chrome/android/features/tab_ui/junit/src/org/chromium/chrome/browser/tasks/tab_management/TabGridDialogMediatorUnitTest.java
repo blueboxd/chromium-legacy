@@ -146,7 +146,7 @@ public class TabGridDialogMediatorUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
         List<Tab> tabs1 = new ArrayList<>(Arrays.asList(mTab1));
@@ -192,7 +192,7 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(mEditable).when(mTitleTextView).getText();
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mEditable).toString();
 
-        if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) {
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             mTabSelectionEditorController = null;
         }
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
@@ -222,7 +222,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void setupTabGroupsContinuation_flagEnabled() {
-        assertThat(CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
+        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
         // Setup editable title.
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(),
                 instanceOf(KeyboardVisibilityDelegate.KeyboardVisibilityListener.class));
@@ -243,7 +243,7 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void setupTabGroupsContinuation_flagDisabled() {
-        assertThat(CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
+        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
 
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(), equalTo(null));
         assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER), equalTo(null));

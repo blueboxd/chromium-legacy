@@ -20,6 +20,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_graphics_jank_detector.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
@@ -550,9 +551,8 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
           ? GetLastTracingModelPath(profile)
           : GetModelPathFromTitle(profile, active_task_title_);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data), mode_,
                      active_task_title_, active_task_icon_png_, timestamp_,
                      std::move(system_stat_colletor_), tracing_time_min_,
@@ -576,9 +576,8 @@ void ArcGraphicsTracingHandler::HandleReady(const base::ListValue* args) {
   if (mode_ != ArcGraphicsTracingMode::kFull)
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&MaybeLoadLastGraphicsModel,
                      GetLastTracingModelPath(Profile::FromWebUI(web_ui()))),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
@@ -616,9 +615,8 @@ void ArcGraphicsTracingHandler::HandleLoadFromText(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadGraphicsModel,
                      std::move(args->GetList()[0].GetString())),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,

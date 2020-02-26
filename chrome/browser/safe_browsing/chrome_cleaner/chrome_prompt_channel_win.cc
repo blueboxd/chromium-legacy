@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/unguessable_token.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_types.h"
@@ -407,10 +408,9 @@ void ChromePromptChannel::ConnectToCleaner(
   // other end of the pipe closes or CloseHandles is called. When that happens
   // the next call to ::ReadFile will return an error and
   // ServiceChromePromptRequests will return.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ServiceChromePromptRequests, weak_factory_.GetWeakPtr(),
                      task_runner_, request_read_handle_.Get(),
                      std::move(cleaner_process),

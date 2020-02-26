@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -121,9 +122,9 @@ void OutdatedUpgradeBubbleView::OnDialogAccepted() {
     }
 
     // Re-enable updates by shelling out to setup.exe asynchronously.
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
         base::BindOnce(&google_update::ElevateIfNeededToReenableUpdates));
 #endif  // defined(OS_WIN)

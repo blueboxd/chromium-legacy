@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/common/chrome_constants.h"
@@ -222,8 +223,8 @@ int SpellcheckCustomDictionary::Change::Sanitize(
 
 SpellcheckCustomDictionary::SpellcheckCustomDictionary(
     const base::FilePath& dictionary_directory_name)
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
+    : task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       custom_dictionary_path_(
           dictionary_directory_name.Append(chrome::kCustomDictionaryFileName)),
       is_loaded_(false) {}

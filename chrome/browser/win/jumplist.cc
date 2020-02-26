@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -221,14 +222,13 @@ void JumpList::Shutdown() {
 
 JumpList::JumpList(Profile* profile)
     : profile_(profile),
-      update_jumplist_task_runner_(base::CreateCOMSTATaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      update_jumplist_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      delete_jumplisticons_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
+      delete_jumplisticons_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
   // the observer list of the TabRestoreService class.

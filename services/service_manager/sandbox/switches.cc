@@ -31,6 +31,7 @@ const char kAudioSandbox[] = "audio";
 const char kSodaSandbox[] = "soda";
 
 #if defined(OS_WIN)
+const char kProxyResolverSandbox[] = "proxy_resolver";
 const char kXrCompositingSandbox[] = "xr_compositing";
 #endif  // OS_WIN
 

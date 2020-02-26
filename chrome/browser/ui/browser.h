@@ -528,6 +528,9 @@ class Browser : public TabStripModelObserver,
   void MoveTabsToExistingWindow(const std::vector<int> tab_indices,
                                 int browser_index);
 
+  // Returns whether favicon should be shown.
+  bool ShouldDisplayFavicon(content::WebContents* web_contents) const;
+
   /////////////////////////////////////////////////////////////////////////////
 
   // Called by Navigate() when a navigation has occurred in a tab in

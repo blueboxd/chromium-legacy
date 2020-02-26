@@ -25,6 +25,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -763,9 +764,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
   if (base::mac::AmIBundled()) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&RecordLastRunAppBundlePath));
   }

@@ -4156,28 +4156,37 @@
   </message>
 
   <!-- Strings for Oobe gesture navigation education screen -->
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_TITLE" desc="The title in the gesture navigation education intro screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_TITLE" desc="The title in the gesture navigation education intro OOBE screen shown on the first user login.">
     Introducing a new way to navigate with gestures
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_NEXT_BUTTON" desc="The label for the button which advances to the next page in the gesture navigation education intro screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_NEXT_BUTTON" desc="The label for the button which advances to the next page in the gesture navigation education intro OOBE screen shown on the first user login.">
     Get started
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_TITLE" desc="The title in the gesture navigation education home screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_GO_HOME" desc="The label for the home gesture item in the gesture list within the gesture navigation education intro OOBE screen shown on the first user login.">
+    Go home
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_SWITCH_APP" desc="The label for the switch app gesture item in the gesture list within the gesture navigation education intro OOBE screen shown on the first user login.">
+    Switch to another app
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_GO_BACK" desc="The label for the go back gesture item in the gesture list within the gesture navigation education intro OOBE screen shown on the first user login.">
+    Go back
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_TITLE" desc="The title in the gesture navigation education home OOBE screen shown on the first user login.">
     Go Home
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_DESCRIPTION" desc="The description for the gesture navigation education home screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_DESCRIPTION" desc="The description for the gesture navigation education home OOBE screen shown on the first user login.">
     To get to the Homescreen at any time, swipe up from the bottom.
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_TITLE" desc="The title in the gesture navigation education back screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_TITLE" desc="The title in the gesture navigation education back OOBE screen shown on the first user login.">
     Go Back
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_DESCRIPTION" desc="The description for the gesture navigation education back screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_DESCRIPTION" desc="The description for the gesture navigation education back OOBE screen shown on the first user login.">
     To return to the previous screen, swipe from the side.
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_TITLE" desc="The title in the gesture navigation education overview screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_TITLE" desc="The title in the gesture navigation education overview OOBE screen shown on the first user login.">
     Switch to open apps
   </message>
-  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_DESCRIPTION" desc="The description for the gesture navigation education overview screen.">
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_DESCRIPTION" desc="The description for the gesture navigation education overview OOBE screen shown on the first user login.">
     To see all open app windows, swipe up from the bottom and hold.
   </message>
 

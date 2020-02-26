@@ -80,6 +80,16 @@ public class PlayerFrameBitmapPainterTest {
         }
     }
 
+    private Bitmap[][] generateMockBitmapMatrix(int rows, int cols) {
+        Bitmap[][] matrix = new Bitmap[rows][cols];
+        for (int row = 0; row < matrix.length; ++row) {
+            for (int col = 0; col < matrix[row].length; ++col) {
+                matrix[row][col] = Mockito.mock(Bitmap.class);
+            }
+        }
+        return matrix;
+    }
+
     /**
      * Verifies no draw operations are performed on the canvas if the view port is invalid.
      */
@@ -87,7 +97,7 @@ public class PlayerFrameBitmapPainterTest {
     public void testDrawFaultyViewPort() {
         PlayerFrameBitmapPainter painter =
                 new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class));
-        painter.updateBitmapMatrix(new Bitmap[2][3]);
+        painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 3));
         painter.updateViewPort(0, 5, 10, -10);
 
         MockCanvas canvas = new MockCanvas();
@@ -116,7 +126,7 @@ public class PlayerFrameBitmapPainterTest {
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(0);
 
-        painter.updateBitmapMatrix(new Bitmap[2][1]);
+        painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 1));
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(2);
     }

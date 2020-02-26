@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 
@@ -37,8 +38,8 @@ constexpr base::TimeDelta kDefaultRefreshInterval =
 
 SystemMonitor::SystemMonitor(
     std::unique_ptr<MetricEvaluatorsHelper> metric_evaluators_helper)
-    : blocking_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
+    : blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       metric_evaluators_helper_(
           metric_evaluators_helper.release(),

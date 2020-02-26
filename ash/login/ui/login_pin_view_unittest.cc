@@ -66,9 +66,10 @@ TEST_F(LoginPinViewTest, ButtonsFireEvents) {
 
   // Verify pin button events are emitted with the correct value.
   for (int i = 0; i <= 9; ++i) {
-    test_api.GetButton(i)->RequestFocus();
+    test_api.GetButton(i)->GetFocusManager()->SetFocusedView(
+        test_api.GetButton(i));
     generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
-    EXPECT_TRUE(value_.has_value());
+    ASSERT_TRUE(value_.has_value());
     EXPECT_EQ(*value_, i);
     value_.reset();
   }
@@ -76,7 +77,8 @@ TEST_F(LoginPinViewTest, ButtonsFireEvents) {
   // Verify backspace events are emitted.
   EXPECT_EQ(0, backspace_);
   test_api.GetBackspaceButton()->SetEnabled(true);
-  test_api.GetBackspaceButton()->RequestFocus();
+  test_api.GetBackspaceButton()->GetFocusManager()->SetFocusedView(
+      test_api.GetBackspaceButton());
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   EXPECT_EQ(1, backspace_);
 
@@ -233,7 +235,8 @@ TEST_F(LoginPinViewTest, BackButtonEnter) {
   EXPECT_FALSE(test_api.GetBackButton()->GetVisible());
 
   view_->SetBackButtonVisible(true);
-  test_api.GetBackButton()->RequestFocus();
+  test_api.GetBackButton()->GetFocusManager()->SetFocusedView(
+      test_api.GetBackButton());
   EXPECT_EQ(0, back_);
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   EXPECT_EQ(1, back_);

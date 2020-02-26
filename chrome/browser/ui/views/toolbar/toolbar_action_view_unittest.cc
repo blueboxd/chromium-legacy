@@ -107,25 +107,19 @@ class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
-
-    widget_ = new views::Widget;
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(std::move(params));
+    widget_ = CreateTestWidget();
   }
 
   void TearDown() override {
-    if (!widget_->IsClosed())
-      widget_->Close();
+    widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
-  views::Widget* widget() { return widget_; }
+  views::Widget* widget() { return widget_.get(); }
 
  private:
   // The widget managed by this test.
-  views::Widget* widget_;
+  std::unique_ptr<views::Widget> widget_;
 };
 
 // A MenuButton subclass that provides access to some MenuButton internals.

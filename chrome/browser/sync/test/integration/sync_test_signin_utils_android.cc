@@ -16,12 +16,12 @@ namespace sync_test_signin_utils_android {
 
 void SetUpTestAccountAndSignIn() {
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindLambdaForTesting([&]() {
-                   Java_SyncTestSigninUtils_setUpTestAccountAndSignIn(
-                       base::android::AttachCurrentThread());
-                   run_loop.Quit();
-                 }));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()}, base::BindLambdaForTesting([&]() {
+        Java_SyncTestSigninUtils_setUpTestAccountAndSignIn(
+            base::android::AttachCurrentThread());
+        run_loop.Quit();
+      }));
   run_loop.Run();
 }
 
@@ -32,12 +32,12 @@ void SetUpAuthForTest() {
 
 void TearDownAuthForTest() {
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindLambdaForTesting([&]() {
-                   Java_SyncTestSigninUtils_tearDownAuthForTest(
-                       base::android::AttachCurrentThread());
-                   run_loop.Quit();
-                 }));
+  base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                             base::BindLambdaForTesting([&]() {
+                               Java_SyncTestSigninUtils_tearDownAuthForTest(
+                                   base::android::AttachCurrentThread());
+                               run_loop.Quit();
+                             }));
   run_loop.Run();
 }
 

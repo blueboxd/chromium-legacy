@@ -100,16 +100,6 @@ int CountBrowsersFor(Profile* profile) {
   return browser_count;
 }
 
-SkColor GetSyncErrorBackgroundColor(bool sync_paused) {
-  constexpr int kAlpha = 16;
-  ui::NativeTheme::ColorId base_color_id =
-      sync_paused ? ui::NativeTheme::kColorId_ProminentButtonColor
-                  : ui::NativeTheme::kColorId_AlertSeverityHigh;
-  SkColor base_color =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(base_color_id);
-  return SkColorSetA(base_color, kAlpha);
-}
-
 bool IsSyncPaused(Profile* profile) {
   int unused;
   return sync_ui_util::GetMessagesForAvatarSyncError(
@@ -463,6 +453,7 @@ void ProfileMenuView::BuildSyncInfo() {
           GetSyncIcon(),
           /*description=*/base::string16(),
           l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_SYNC_SETTINGS_BUTTON),
+          SyncInfoContainerBackgroundState::kNoError,
           base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
                               base::Unretained(this)));
     } else {
@@ -481,9 +472,10 @@ void ProfileMenuView::BuildSyncInfo() {
       SetSyncInfo(
           GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
           l10n_util::GetStringUTF16(button_string_id),
+          sync_paused ? SyncInfoContainerBackgroundState::kPaused
+                      : SyncInfoContainerBackgroundState::kError,
           base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                               base::Unretained(this), error));
-      SetSyncInfoBackgroundColor(GetSyncErrorBackgroundColor(sync_paused));
     }
     return;
   }
@@ -500,19 +492,17 @@ void ProfileMenuView::BuildSyncInfo() {
         GetSyncIcon(),
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+        SyncInfoContainerBackgroundState::kNoPrimaryAccount,
         base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
                             base::Unretained(this), account_info.value()));
   } else {
     SetSyncInfo(/*icon=*/gfx::ImageSkia(),
                 l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
                 l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+                SyncInfoContainerBackgroundState::kNoPrimaryAccount,
                 base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                                     base::Unretained(this)));
   }
-
-  SetSyncInfoBackgroundColor(
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor));
 }
 
 void ProfileMenuView::BuildFeatureButtons() {

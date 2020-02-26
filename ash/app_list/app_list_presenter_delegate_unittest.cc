@@ -1230,10 +1230,11 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
+// Flaky test: crbug/1056302
 // Tests that app list understands shelf rounded corners state while animating
 // out and in, and that it keeps getting notified of shelf state changes if
 // close animation is interrupted by another show request.
-TEST_F(AppListPresenterDelegateTest, AppListShownWhileClosing) {
+TEST_F(AppListPresenterDelegateTest, DISABLED_AppListShownWhileClosing) {
   auto window = CreateTestWindow();
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 

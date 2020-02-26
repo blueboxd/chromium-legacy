@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -322,10 +323,9 @@ void DevToolsDataSource::StartFileRequest(const std::string& path,
   base::FilePath full_path = base_path.AppendASCII(path);
   CHECK(base_path.IsParent(full_path));
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::ThreadPool(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
       base::BindOnce(ReadFileForDevTools, std::move(full_path)),
       std::move(callback));

@@ -37,6 +37,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -607,9 +608,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     }
 
     // Call out to the blocking pool to sample disk volume info.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(volume_info_fetcher, mount_points),
         base::BindOnce(&DeviceStatusCollectorState::OnVolumeInfoReceived,
                        this));
@@ -619,9 +619,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void SampleCPUTempInfo(
       const DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
     // Call out to the blocking pool to sample CPU temp.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(cpu_temp_fetcher),
         base::BindOnce(&DeviceStatusCollectorState::OnCPUTempInfoReceived,
                        this));
@@ -650,9 +649,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher) {
     // Call out to the blocking pool to read disklifetimeestimation.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(emmc_lifetime_fetcher),
         base::BindOnce(&DeviceStatusCollectorState::OnEMMCLifetimeReceived,
                        this));
@@ -662,9 +660,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
           stateful_partition_info_fetcher) {
     // Call out to the blocking pool to read stateful partition information.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(stateful_partition_info_fetcher),
         base::BindOnce(
             &DeviceStatusCollectorState::OnStatefulPartitionInfoReceived,
@@ -1004,16 +1001,14 @@ DeviceStatusCollector::DeviceStatusCollector(
   UpdateReportingSettings();
 
   // Get the OS, firmware, and TPM version info.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&chromeos::version_loader::GetVersion,
                      chromeos::version_loader::VERSION_FULL),
       base::BindOnce(&DeviceStatusCollector::OnOSVersion,
                      weak_factory_.GetWeakPtr()));
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadFirmwareVersion),
       base::BindOnce(&DeviceStatusCollector::OnOSFirmware,
                      weak_factory_.GetWeakPtr()));
@@ -1202,9 +1197,8 @@ void DeviceStatusCollector::SampleResourceUsage() {
     return;
 
   // Call out to the blocking pool to sample CPU stats.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(cpu_statistics_fetcher_),
       base::BindOnce(&DeviceStatusCollector::ReceiveCPUStatistics,
                      weak_factory_.GetWeakPtr()));
@@ -1283,9 +1277,8 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
                            weak_factory_.GetWeakPtr(), std::move(sample),
                            SamplingProbeResultCallback()));
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
         base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
                        weak_factory_.GetWeakPtr(), std::move(sample),
@@ -1362,9 +1355,8 @@ void DeviceStatusCollector::SampleDischargeRate(
     }
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InvokeCpuTempFetcher, cpu_temp_fetcher_),
       base::BindOnce(&DeviceStatusCollector::ReceiveCPUTemperature,
                      weak_factory_.GetWeakPtr(), std::move(sample),

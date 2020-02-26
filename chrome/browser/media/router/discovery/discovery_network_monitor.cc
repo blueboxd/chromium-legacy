@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"
@@ -96,8 +97,8 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
     : network_id_(kNetworkIdDisconnected),
       observers_(new base::ObserverListThreadSafe<Observer>(
           base::ObserverListPolicy::EXISTING_ONLY)),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       network_info_function_(strategy),
       metric_observer_(std::make_unique<DiscoveryNetworkMonitorMetricObserver>(

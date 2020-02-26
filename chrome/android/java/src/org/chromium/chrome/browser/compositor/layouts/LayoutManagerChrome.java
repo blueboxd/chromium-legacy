@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -34,7 +33,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -89,7 +90,7 @@ public class LayoutManagerChrome
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
             if (startSurface != null) {
-                assert CachedFeatureFlags.isGridTabSwitcherEnabled();
+                assert TabUiFeatureUtilities.isGridTabSwitcherEnabled();
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 assert tabManagementDelegate != null;
@@ -158,7 +159,7 @@ public class LayoutManagerChrome
      * @param manager The {@link ToolbarManager} for accessing toolbar textures.
      */
     public void setToolbarManager(ToolbarManager manager) {
-        if (CachedFeatureFlags.isBottomToolbarEnabled()) {
+        if (BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             manager.getBottomToolbarCoordinator().setToolbarSwipeLayout(mToolbarSwipeLayout);
         }
     }

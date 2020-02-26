@@ -8,6 +8,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,8 +61,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   base::FilePath database_dir(
       context->GetPath().Append(FILE_PATH_LITERAL("Articles")));

@@ -9,6 +9,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
@@ -54,8 +55,8 @@ std::unique_ptr<KeyedService> CreateNotificationScheduleService(
     return std::make_unique<NoopNotificationScheduleService>();
 
   auto config = SchedulerConfig::Create();
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   client_registrar->RegisterClient(SchedulerClientType::kWebUI,
                                    std::make_unique<WebUIClient>());
 

@@ -51,6 +51,9 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "content/public/common/drop_data.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_handler.h"
@@ -278,9 +281,46 @@ WebUITabStripContainerView::~WebUITabStripContainerView() {
   delete tab_counter_;
 }
 
+// static
 bool WebUITabStripContainerView::UseTouchableTabStrip() {
   return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
          ui::MaterialDesignController::touch_ui();
+}
+
+// static
+void WebUITabStripContainerView::GetDropFormatsForView(
+    int* formats,
+    std::set<ui::ClipboardFormatType>* format_types) {
+  *formats |= ui::OSExchangeData::PICKLED_DATA;
+  format_types->insert(ui::ClipboardFormatType::GetWebCustomDataType());
+}
+
+// static
+bool WebUITabStripContainerView::IsDraggedTab(const ui::OSExchangeData& data) {
+  base::Pickle pickle;
+  if (data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                          &pickle)) {
+    base::string16 result;
+    ui::ReadCustomDataForType(pickle.data(), pickle.size(),
+                              base::ASCIIToUTF16(kWebUITabIdDataType), &result);
+    if (result.size())
+      return true;
+    ui::ReadCustomDataForType(pickle.data(), pickle.size(),
+                              base::ASCIIToUTF16(kWebUITabGroupIdDataType),
+                              &result);
+    if (result.size())
+      return true;
+  }
+
+  return false;
+}
+
+void WebUITabStripContainerView::OpenForTabDrag() {
+  if (GetVisible() && !animation_.IsClosing())
+    return;
+
+  RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTabDraggedIntoWindow);
+  SetContainerTargetVisibility(true);
 }
 
 views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {

@@ -21,7 +21,7 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDeviceOffscreen(context_state,
-                                true /* flipped */,
+                                SurfaceOrigin::kTopLeft,
                                 true /* has_alpha */,
                                 memory_tracker,
                                 did_swap_buffer_complete_callback),
@@ -35,7 +35,7 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
   support_rendr_ = ui::QueryRenderSupport(display_);
 
   // |capabilities_| should be set by SkiaOutputDeviceOffscreen.
-  DCHECK(capabilities_.flipped_output_surface);
+  DCHECK_EQ(capabilities_.output_surface_origin, SurfaceOrigin::kTopLeft);
   DCHECK(capabilities_.supports_post_sub_buffer);
 }
 

@@ -353,33 +353,6 @@ TEST(VideoFrame, WrapSharedMemory) {
   EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
 }
 
-// Create a frame that wraps shared memory with an offset.
-TEST(VideoFrame, WrapUnsafeSharedMemoryWithOffset) {
-  const size_t kOffset = 64;
-  const size_t kDataSize = 2 * 256 * 256;
-  base::UnsafeSharedMemoryRegion region =
-      base::UnsafeSharedMemoryRegion::Create(kDataSize + kOffset);
-  ASSERT_TRUE(region.IsValid());
-  base::WritableSharedMemoryMapping mapping = region.Map();
-  ASSERT_TRUE(mapping.IsValid());
-  gfx::Size coded_size(256, 256);
-  gfx::Rect visible_rect(coded_size);
-  CreateTestY16Frame(
-      coded_size, visible_rect,
-      mapping.GetMemoryAsSpan<uint8_t>().subspan(kOffset).data());
-  auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  auto frame = VideoFrame::WrapExternalData(
-      media::PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
-      mapping.GetMemoryAsSpan<uint8_t>().subspan(kOffset).data(), kDataSize,
-      timestamp);
-  frame->BackWithSharedMemory(&region, kOffset);
-
-  EXPECT_EQ(frame->coded_size(), coded_size);
-  EXPECT_EQ(frame->visible_rect(), visible_rect);
-  EXPECT_EQ(frame->timestamp(), timestamp);
-  EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
-}
-
 TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
   gfx::Size coded_size = gfx::Size(256, 256);
   gfx::Rect visible_rect(coded_size);

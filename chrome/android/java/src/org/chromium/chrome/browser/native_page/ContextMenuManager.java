@@ -15,8 +15,8 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -246,7 +246,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     protected @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
         switch (id) {
             case ContextMenuItemId.OPEN_IN_NEW_TAB:
-                return CachedFeatureFlags.isTabGroupsAndroidEnabled()
+                return TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                         ? R.string.contextmenu_open_in_new_tab_group
                         : R.string.contextmenu_open_in_new_tab;
             case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:

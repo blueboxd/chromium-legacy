@@ -483,7 +483,7 @@ HRESULT MediaFoundationStreamWrapper::TransformSample(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::GetMediaSource(
+HRESULT MediaFoundationStreamWrapper::GetMediaSource(
     IMFMediaSource** media_source_out) {
   DVLOG(2) << __func__ << ": this=" << this;
   DCHECK(!task_runner_->RunsTasksInCurrentSequence());
@@ -497,7 +497,7 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::GetMediaSource(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::GetStreamDescriptor(
+HRESULT MediaFoundationStreamWrapper::GetStreamDescriptor(
     IMFStreamDescriptor** stream_descriptor_out) {
   DVLOG(2) << __func__ << ": this=" << this;
 
@@ -509,7 +509,7 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::GetStreamDescriptor(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::RequestSample(IUnknown* token) {
+HRESULT MediaFoundationStreamWrapper::RequestSample(IUnknown* token) {
   DVLOG(3) << __func__ << ". this=" << this;
   DCHECK(!task_runner_->RunsTasksInCurrentSequence());
 
@@ -525,9 +525,8 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::RequestSample(IUnknown* token) {
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::GetEvent(
-    DWORD flags,
-    IMFMediaEvent** event_out) {
+HRESULT MediaFoundationStreamWrapper::GetEvent(DWORD flags,
+                                               IMFMediaEvent** event_out) {
   DVLOG(3) << __func__ << ". this=" << this;
   DCHECK(mf_media_event_queue_);
 
@@ -535,9 +534,8 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::GetEvent(
   return mf_media_event_queue_->GetEvent(flags, event_out);
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::BeginGetEvent(
-    IMFAsyncCallback* callback,
-    IUnknown* state) {
+HRESULT MediaFoundationStreamWrapper::BeginGetEvent(IMFAsyncCallback* callback,
+                                                    IUnknown* state) {
   DVLOG(3) << __func__ << ". this=" << this;
   DCHECK(mf_media_event_queue_);
 
@@ -545,9 +543,8 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::BeginGetEvent(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::EndGetEvent(
-    IMFAsyncResult* result,
-    IMFMediaEvent** event_out) {
+HRESULT MediaFoundationStreamWrapper::EndGetEvent(IMFAsyncResult* result,
+                                                  IMFMediaEvent** event_out) {
   DVLOG(3) << __func__ << ". this=" << this;
   DCHECK(mf_media_event_queue_);
 
@@ -555,11 +552,10 @@ IFACEMETHODIMP MediaFoundationStreamWrapper::EndGetEvent(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationStreamWrapper::QueueEvent(
-    MediaEventType type,
-    REFGUID extended_type,
-    HRESULT status,
-    const PROPVARIANT* value) {
+HRESULT MediaFoundationStreamWrapper::QueueEvent(MediaEventType type,
+                                                 REFGUID extended_type,
+                                                 HRESULT status,
+                                                 const PROPVARIANT* value) {
   DVLOG(3) << __func__ << ". this=" << this;
   DCHECK(mf_media_event_queue_);
 

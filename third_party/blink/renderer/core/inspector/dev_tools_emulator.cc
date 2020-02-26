@@ -421,15 +421,19 @@ TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
   return transform;
 }
 
-void DevToolsEmulator::OverrideVisibleRect(const IntSize& viewport_size,
-                                           IntRect* visible_rect) const {
-  if (!viewport_override_)
+void DevToolsEmulator::OverrideVisibleRect(
+    const IntSize& viewport_size,
+    IntRect* visible_rect_in_frame) const {
+  WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
+  if (!viewport_override_ || !frame)
     return;
 
   FloatSize scaled_viewport_size(viewport_size);
   scaled_viewport_size.Scale(1. / viewport_override_->scale);
-  *visible_rect = EnclosingIntRect(
+  IntRect visible_rect_in_document = EnclosingIntRect(
       FloatRect(viewport_override_->position, scaled_viewport_size));
+  *visible_rect_in_frame =
+      frame->GetFrameView()->DocumentToFrame(visible_rect_in_document);
 }
 
 float DevToolsEmulator::InputEventsScaleForEmulation() {

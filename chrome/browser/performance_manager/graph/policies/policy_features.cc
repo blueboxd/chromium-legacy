@@ -89,5 +89,8 @@ const base::Feature kUrgentDiscardingFromPerformanceManager{
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kHighPMFMemoryPressureSignals{
+    "HighPMFMemoryPressureSignals", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace performance_manager

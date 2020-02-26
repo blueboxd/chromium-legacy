@@ -26,6 +26,11 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#endif
+
+#if defined(OS_FUCHSIA)
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -316,16 +321,45 @@ bool SharedContextState::InitializeGL(
 
   // Swiftshader GL and Vulkan report supporting external objects extensions,
   // but they don't.
-  bool supports_memory_object =
+  bool gl_supports_memory_object =
       gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd ||
       gl::g_current_gl_driver->ext.b_GL_ANGLE_memory_object_fuchsia;
-  bool supports_semaphore =
+  bool gl_supports_semaphore =
       gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd ||
       gl::g_current_gl_driver->ext.b_GL_ANGLE_semaphore_fuchsia;
+  bool vk_supports_external_memory = false;
+  bool vk_supports_external_semaphore = false;
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (vk_context_provider_) {
+    const auto& extensions =
+        vk_context_provider_->GetDeviceQueue()->enabled_extensions();
+#if !defined(OS_FUCHSIA)
+    vk_supports_external_memory =
+        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    vk_supports_external_semaphore =
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+#else
+    vk_supports_external_memory =
+        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions,
+                          VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME);
+    vk_supports_external_semaphore =
+        gfx::HasExtension(extensions,
+                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
+        gfx::HasExtension(extensions,
+                          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+#endif
+  }
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 
   support_vulkan_external_object_ =
       !gl::g_current_gl_version->is_swiftshader && is_native_vulkan &&
-      supports_memory_object && supports_semaphore;
+      gl_supports_memory_object && gl_supports_semaphore &&
+      vk_supports_external_memory && vk_supports_external_semaphore;
 
   return true;
 }

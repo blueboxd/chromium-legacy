@@ -21,6 +21,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -95,9 +96,8 @@ scoped_refptr<SandboxChildProcess> SetupSandboxedChildProcess() {
 // Execute |closure| on a different sequence since it could block and we don't
 // want to block on the Mojo thread.
 void InvokeOnOtherSequence(base::OnceClosure closure) {
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::WithBaseSyncPrimitives()},
-                 std::move(closure));
+  base::ThreadPool::PostTask(FROM_HERE, {base::WithBaseSyncPrimitives()},
+                             std::move(closure));
 }
 
 }  // namespace

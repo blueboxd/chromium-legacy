@@ -87,20 +87,22 @@ class MediaFoundationStreamWrapper
 
   // IMFMediaStream implementation - it is in general running in MF threadpool
   // thread.
-  IFACEMETHOD(GetMediaSource)(IMFMediaSource** media_source_out);
-  IFACEMETHOD(GetStreamDescriptor)(IMFStreamDescriptor** stream_descriptor_out);
-  IFACEMETHOD(RequestSample)(IUnknown* token);
+  IFACEMETHODIMP GetMediaSource(IMFMediaSource** media_source_out) override;
+  IFACEMETHODIMP GetStreamDescriptor(
+      IMFStreamDescriptor** stream_descriptor_out) override;
+  IFACEMETHODIMP RequestSample(IUnknown* token) override;
 
   // IMFMediaEventGenerator implementation - IMFMediaStream derives from
   // IMFMediaEventGenerator.
-  IFACEMETHOD(GetEvent)(DWORD flags, IMFMediaEvent** event_out);
-  IFACEMETHOD(BeginGetEvent)(IMFAsyncCallback* callback, IUnknown* state);
-  IFACEMETHOD(EndGetEvent)(IMFAsyncResult* result, IMFMediaEvent** event_out);
-  IFACEMETHOD(QueueEvent)
-  (MediaEventType type,
-   REFGUID extended_type,
-   HRESULT status,
-   const PROPVARIANT* value);
+  IFACEMETHODIMP GetEvent(DWORD flags, IMFMediaEvent** event_out) override;
+  IFACEMETHODIMP BeginGetEvent(IMFAsyncCallback* callback,
+                               IUnknown* state) override;
+  IFACEMETHODIMP EndGetEvent(IMFAsyncResult* result,
+                             IMFMediaEvent** event_out) override;
+  IFACEMETHODIMP QueueEvent(MediaEventType type,
+                            REFGUID extended_type,
+                            HRESULT status,
+                            const PROPVARIANT* value) override;
 
   GUID GetLastKeyId() const;
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,9 +34,9 @@ SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
 void SandboxedDMGAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
 }

@@ -27,7 +27,9 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
-  capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
+  capabilities_.output_surface_origin = gl_surface_->FlipsVertically()
+                                            ? SurfaceOrigin::kTopLeft
+                                            : SurfaceOrigin::kBottomLeft;
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
 
   DCHECK(context_state_->gr_context());

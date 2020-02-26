@@ -503,6 +503,7 @@ struct SSLSocketDataProvider {
   scoped_refptr<X509Certificate> expected_client_cert;
   base::Optional<HostPortPair> expected_host_and_port;
   base::Optional<NetworkIsolationKey> expected_network_isolation_key;
+  base::Optional<bool> expected_disable_legacy_crypto;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;

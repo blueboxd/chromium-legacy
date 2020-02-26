@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,8 +43,9 @@ void SymlinkSetUp(const base::CommandLine& command_line,
   settings.log_file_path = log_path.value().c_str();
   if (!logging::InitLogging(settings)) {
     DLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
     return;
   }
   g_chrome_logging_redirected = true;
@@ -95,8 +97,8 @@ void RedirectChromeLogging(const base::CommandLine& command_line) {
   const base::FilePath log_path = GetSessionLogFile(command_line);
 
   // Always force a new symlink when redirecting.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SetUpSymlinkIfNeeded, log_path, true),
       base::BindOnce(&SymlinkSetUp, command_line, log_path));
 }

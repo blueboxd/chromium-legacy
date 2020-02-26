@@ -22,6 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_context.h"
@@ -339,8 +340,8 @@ class DownloadMetadataManager::ManagerContext
 // DownloadMetadataManager -----------------------------------------------------
 
 DownloadMetadataManager::DownloadMetadataManager()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})) {}
 

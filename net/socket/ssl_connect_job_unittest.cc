@@ -12,9 +12,12 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
+#include "net/base/features.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -41,11 +44,16 @@
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_legacy_crypto_fallback.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_certificate_data.h"
+#include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 namespace {
@@ -483,7 +491,7 @@ TEST_F(SSLConnectJobTest, DirectCertError) {
 TEST_F(SSLConnectJobTest, DirectSSLError) {
   StaticSocketDataProvider data;
   socket_factory_.AddSocketDataProvider(&data);
-  SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  SSLSocketDataProvider ssl(ASYNC, ERR_BAD_SSL_CLIENT_AUTH_CERT);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   TestConnectJobDelegate test_delegate;
@@ -491,13 +499,200 @@ TEST_F(SSLConnectJobTest, DirectSSLError) {
       CreateConnectJob(&test_delegate);
 
   test_delegate.StartJobExpectingResult(ssl_connect_job.get(),
-                                        ERR_SSL_PROTOCOL_ERROR,
+                                        ERR_BAD_SSL_CLIENT_AUTH_CERT,
                                         false /* expect_sync_result */);
   ConnectionAttempts connection_attempts =
       ssl_connect_job->GetConnectionAttempts();
   ASSERT_EQ(1u, connection_attempts.size());
   EXPECT_THAT(connection_attempts[0].result,
-              test::IsError(ERR_SSL_PROTOCOL_ERROR));
+              test::IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
+}
+
+// Test that the legacy crypto fallback is triggered on applicable error codes.
+TEST_F(SSLConnectJobTest, DirectLegacyCryptoFallback) {
+  for (Error error :
+       {ERR_CONNECTION_CLOSED, ERR_CONNECTION_RESET, ERR_SSL_PROTOCOL_ERROR,
+        ERR_SSL_VERSION_OR_CIPHER_MISMATCH}) {
+    SCOPED_TRACE(error);
+
+    for (bool second_attempt_ok : {true, false}) {
+      SCOPED_TRACE(second_attempt_ok);
+
+      StaticSocketDataProvider data;
+      socket_factory_.AddSocketDataProvider(&data);
+      SSLSocketDataProvider ssl(ASYNC, error);
+      socket_factory_.AddSSLSocketDataProvider(&ssl);
+      ssl.expected_disable_legacy_crypto = true;
+
+      Error error2 = second_attempt_ok ? OK : error;
+      StaticSocketDataProvider data2;
+      socket_factory_.AddSocketDataProvider(&data2);
+      SSLSocketDataProvider ssl2(ASYNC, error2);
+      socket_factory_.AddSSLSocketDataProvider(&ssl2);
+      ssl2.expected_disable_legacy_crypto = false;
+
+      TestConnectJobDelegate test_delegate;
+      std::unique_ptr<ConnectJob> ssl_connect_job =
+          CreateConnectJob(&test_delegate);
+
+      test_delegate.StartJobExpectingResult(ssl_connect_job.get(), error2,
+                                            /*expect_sync_result=*/false);
+      ConnectionAttempts connection_attempts =
+          ssl_connect_job->GetConnectionAttempts();
+      if (second_attempt_ok) {
+        ASSERT_EQ(1u, connection_attempts.size());
+        EXPECT_THAT(connection_attempts[0].result, test::IsError(error));
+      } else {
+        ASSERT_EQ(2u, connection_attempts.size());
+        EXPECT_THAT(connection_attempts[0].result, test::IsError(error));
+        EXPECT_THAT(connection_attempts[1].result, test::IsError(error));
+      }
+    }
+  }
+}
+
+// Test that the feature flag disables the legacy crypto fallback.
+TEST_F(SSLConnectJobTest, LegacyCryptoFallbackDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kTLSLegacyCryptoFallbackForMetrics);
+  for (Error error :
+       {ERR_CONNECTION_CLOSED, ERR_CONNECTION_RESET, ERR_SSL_PROTOCOL_ERROR,
+        ERR_SSL_VERSION_OR_CIPHER_MISMATCH}) {
+    SCOPED_TRACE(error);
+
+    StaticSocketDataProvider data;
+    socket_factory_.AddSocketDataProvider(&data);
+    SSLSocketDataProvider ssl(ASYNC, error);
+    socket_factory_.AddSSLSocketDataProvider(&ssl);
+    ssl.expected_disable_legacy_crypto = false;
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> ssl_connect_job =
+        CreateConnectJob(&test_delegate);
+
+    test_delegate.StartJobExpectingResult(ssl_connect_job.get(), error,
+                                          /*expect_sync_result=*/false);
+    ConnectionAttempts connection_attempts =
+        ssl_connect_job->GetConnectionAttempts();
+    ASSERT_EQ(1u, connection_attempts.size());
+    EXPECT_THAT(connection_attempts[0].result, test::IsError(error));
+  }
+}
+
+TEST_F(SSLConnectJobTest, LegacyCryptoFallbackHistograms) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> sha1_leaf =
+      ImportCertFromFile(certs_dir, "sha1_leaf.pem");
+  ASSERT_TRUE(sha1_leaf);
+
+  scoped_refptr<X509Certificate> ok_cert =
+      ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_TRUE(ok_cert);
+
+  // Make a copy of |ok_cert| with an unused |sha1_leaf| in the intermediate
+  // list.
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  for (const auto& cert : ok_cert->intermediate_buffers()) {
+    intermediates.push_back(bssl::UpRef(cert));
+  }
+  intermediates.push_back(bssl::UpRef(sha1_leaf->cert_buffer()));
+  scoped_refptr<X509Certificate> ok_with_unused_sha1 =
+      X509Certificate::CreateFromBuffer(bssl::UpRef(ok_cert->cert_buffer()),
+                                        std::move(intermediates));
+  ASSERT_TRUE(ok_with_unused_sha1);
+
+  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  const uint16_t kModernCipher = 0xc02f;
+  // TLS_RSA_WITH_3DES_EDE_CBC_SHA
+  const uint16_t k3DESCipher = 0x000a;
+
+  struct HistogramTest {
+    SSLLegacyCryptoFallback expected;
+    Error first_attempt;
+    uint16_t cipher_suite;
+    uint16_t peer_signature_algorithm;
+    scoped_refptr<X509Certificate> unverified_cert;
+  };
+
+  const HistogramTest kHistogramTests[] = {
+      // Connections not using the fallback map to kNoFallback.
+      {SSLLegacyCryptoFallback::kNoFallback, OK, kModernCipher,
+       SSL_SIGN_RSA_PSS_RSAE_SHA256, ok_cert},
+      {SSLLegacyCryptoFallback::kNoFallback, OK, kModernCipher,
+       SSL_SIGN_RSA_PSS_RSAE_SHA256, sha1_leaf},
+      {SSLLegacyCryptoFallback::kNoFallback, OK, kModernCipher,
+       SSL_SIGN_RSA_PSS_RSAE_SHA256, ok_with_unused_sha1},
+
+      // Connections using 3DES map to kUsed3DES or kSentSHA1CertAndUsed3DES.
+      // Note our only supported 3DES cipher suite does not include a server
+      // signature, so |peer_signature_algorithm| would always be zero.
+      {SSLLegacyCryptoFallback::kUsed3DES, ERR_SSL_PROTOCOL_ERROR, k3DESCipher,
+       0, ok_cert},
+      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsed3DES,
+       ERR_SSL_PROTOCOL_ERROR, k3DESCipher, 0, sha1_leaf},
+      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsed3DES,
+       ERR_SSL_PROTOCOL_ERROR, k3DESCipher, 0, ok_with_unused_sha1},
+
+      // Connections using SHA-1 map to kUsedSHA1 or kSentSHA1CertAndUsedSHA1.
+      {SSLLegacyCryptoFallback::kUsedSHA1, ERR_SSL_PROTOCOL_ERROR,
+       kModernCipher, SSL_SIGN_RSA_PKCS1_SHA1, ok_cert},
+      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsedSHA1,
+       ERR_SSL_PROTOCOL_ERROR, kModernCipher, SSL_SIGN_RSA_PKCS1_SHA1,
+       sha1_leaf},
+      {SSLLegacyCryptoFallback::kSentSHA1CertAndUsedSHA1,
+       ERR_SSL_PROTOCOL_ERROR, kModernCipher, SSL_SIGN_RSA_PKCS1_SHA1,
+       ok_with_unused_sha1},
+
+      // Connections using neither map to kUnknownReason or kSentSHA1Cert.
+      {SSLLegacyCryptoFallback::kUnknownReason, ERR_SSL_PROTOCOL_ERROR,
+       kModernCipher, SSL_SIGN_RSA_PSS_RSAE_SHA256, ok_cert},
+      {SSLLegacyCryptoFallback::kSentSHA1Cert, ERR_SSL_PROTOCOL_ERROR,
+       kModernCipher, SSL_SIGN_RSA_PSS_RSAE_SHA256, sha1_leaf},
+      {SSLLegacyCryptoFallback::kSentSHA1Cert, ERR_SSL_PROTOCOL_ERROR,
+       kModernCipher, SSL_SIGN_RSA_PSS_RSAE_SHA256, ok_with_unused_sha1},
+  };
+  for (size_t i = 0; i < base::size(kHistogramTests); i++) {
+    SCOPED_TRACE(i);
+    const auto& test = kHistogramTests[i];
+
+    base::HistogramTester tester;
+
+    SSLInfo ssl_info;
+    SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
+                                  &ssl_info.connection_status);
+    SSLConnectionStatusSetCipherSuite(test.cipher_suite,
+                                      &ssl_info.connection_status);
+    ssl_info.peer_signature_algorithm = test.peer_signature_algorithm;
+    ssl_info.unverified_cert = test.unverified_cert;
+
+    StaticSocketDataProvider data;
+    socket_factory_.AddSocketDataProvider(&data);
+    SSLSocketDataProvider ssl(ASYNC, test.first_attempt);
+    socket_factory_.AddSSLSocketDataProvider(&ssl);
+    ssl.expected_disable_legacy_crypto = true;
+
+    StaticSocketDataProvider data2;
+    SSLSocketDataProvider ssl2(ASYNC, OK);
+    if (test.first_attempt != OK) {
+      socket_factory_.AddSocketDataProvider(&data2);
+      socket_factory_.AddSSLSocketDataProvider(&ssl2);
+      ssl2.ssl_info = ssl_info;
+      ssl2.expected_disable_legacy_crypto = false;
+    } else {
+      ssl.ssl_info = ssl_info;
+    }
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> ssl_connect_job =
+        CreateConnectJob(&test_delegate);
+
+    test_delegate.StartJobExpectingResult(ssl_connect_job.get(), OK,
+                                          /*expect_sync_result=*/false);
+
+    tester.ExpectUniqueSample("Net.SSLLegacyCryptoFallback", test.expected, 1);
+  }
 }
 
 TEST_F(SSLConnectJobTest, DirectWithNPN) {

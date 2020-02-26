@@ -12,3 +12,13 @@ void ChromeViewsTestBase::SetUp() {
   set_views_delegate(std::make_unique<ChromeTestViewsDelegate>());
   views::ViewsTestBase::SetUp();
 }
+
+std::unique_ptr<views::Widget> ChromeViewsTestBase::CreateTestWidget(
+    views::Widget::InitParams::Type type) {
+  auto widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params = CreateParams(type);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 400, 400);
+  widget->Init(std::move(params));
+  return widget;
+}

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "url/gurl.h"
 
 namespace {
@@ -69,9 +70,9 @@ size_t SupervisedUserBlacklist::GetEntryCount() const {
 
 void SupervisedUserBlacklist::ReadFromFile(const base::FilePath& path,
                                            const base::Closure& done_callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ReadFromBinaryFileOnFileThread, path),
       base::BindOnce(&SupervisedUserBlacklist::OnReadFromFileCompleted,

@@ -167,12 +167,7 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     // The bubble needs the parent as an anchor.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(params));
+    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();
 
     mock_model_ = new MockTranslateBubbleModel(

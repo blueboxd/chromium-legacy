@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -156,9 +157,8 @@ ChildStatusCollector::ChildStatusCollector(
   UpdateReportingSettings();
 
   // Get the OS version.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&chromeos::version_loader::GetVersion,
                      chromeos::version_loader::VERSION_FULL),
       base::BindOnce(&ChildStatusCollector::OnOSVersion,

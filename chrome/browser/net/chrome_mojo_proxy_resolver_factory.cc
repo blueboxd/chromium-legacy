@@ -24,6 +24,10 @@
 #include "services/strings/grit/services_strings.h"
 #endif
 
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/sandbox_type.h"
+#endif
+
 namespace {
 
 proxy_resolver::mojom::ProxyResolverFactory* GetProxyResolverFactory() {
@@ -50,6 +54,9 @@ proxy_resolver::mojom::ProxyResolverFactory* GetProxyResolverFactory() {
             .WithChildFlags(content::ChildProcessHost::CHILD_RENDERER)
 #endif
             .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
+#if defined(OS_WIN)
+            .WithSandboxType(service_manager::SandboxType::kProxyResolver)
+#endif
             .Pass());
 
     // The service will report itself idle once there are no more bound

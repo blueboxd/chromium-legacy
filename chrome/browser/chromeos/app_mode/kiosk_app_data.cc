@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
@@ -81,9 +82,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
       : client_(client),
         crx_file_(crx_file),
         success_(false),
-        task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+        task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() {

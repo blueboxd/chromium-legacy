@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -210,9 +211,8 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     base::nix::DesktopEnvironment desktop)
     : SelectFileDialogImpl(listener, std::move(policy)),
       desktop_(desktop),
-      pipe_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
+      pipe_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||

@@ -338,7 +338,7 @@ class TabGridViewBinder {
                     TabUiColorProvider.getThumbnailPlaceHolderColorResource(isIncognito));
         }
 
-        if (CachedFeatureFlags.isTabGroupsAndroidEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
             ViewCompat.setBackgroundTintList(backgroundView,
                     TabUiColorProvider.getHoveredCardBackgroundTintList(
                             backgroundView.getContext(), isIncognito));

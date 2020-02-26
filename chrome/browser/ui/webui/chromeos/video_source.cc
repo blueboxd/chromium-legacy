@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -55,8 +56,8 @@ void VideoLoaded(content::URLDataSource::GotDataCallback got_data_callback,
 }  // namespace
 
 VideoSource::VideoSource() {
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -78,9 +79,8 @@ void VideoSource::StartDataRequest(
 
   const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath video_path = asset_dir.AppendASCII(path);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::PathExists, video_path),
       base::BindOnce(&VideoSource::StartDataRequestAfterPathExists,
                      weak_factory_.GetWeakPtr(), video_path,

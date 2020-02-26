@@ -2595,6 +2595,21 @@
             ]
         }
     ],
+    "IOSReloadSadTab": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReloadSadTab"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSSSLCommittedInterstitials": [
         {
             "platforms": [
@@ -3214,26 +3229,6 @@
             ]
         }
     ],
-    "NTPZeroPrefixSuggestions": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NtpRealbox",
-                        "NtpRealboxMatchOmniboxTheme",
-                        "OmniboxSuggestionTransparencyOptions"
-                    ]
-                }
-            ]
-        }
-    ],
     "NativeNotifications": [
         {
             "platforms": [
@@ -3498,6 +3493,8 @@
                         "ZeroSuggestVariant:7:*": "RemoteNoUrl,Local"
                     },
                     "enable_features": [
+                        "NtpRealbox",
+                        "NtpRealboxMatchOmniboxTheme",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxEnableClipboardProviderTextSuggestions",
@@ -3506,6 +3503,7 @@
                         "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
+                        "OmniboxSuggestionTransparencyOptions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox"
                     ]

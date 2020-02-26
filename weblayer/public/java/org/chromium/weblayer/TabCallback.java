@@ -30,4 +30,14 @@ public abstract class TabCallback {
      * Added in M82.
      */
     public void showContextMenu(ContextMenuParams params) {}
+
+    /**
+     * Triggered when a tab's contents have been rendered inactive due to a modal overlay, or active
+     * due to the dismissal of a modal overlay (dialog/bubble/popup).
+     *
+     * @param isTabModalShowing true when a dialog is blocking interaction with the web contents.
+     *
+     * @since 82
+     */
+    public void onTabModalStateChanged(boolean isTabModalShowing) {}
 }

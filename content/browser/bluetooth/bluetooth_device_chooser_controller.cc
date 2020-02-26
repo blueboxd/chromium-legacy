@@ -194,7 +194,7 @@ void StopDiscoverySession(
   // Nothing goes wrong if the discovery session fails to stop, and we don't
   // need to wait for it before letting the user's script proceed, so we ignore
   // the results here.
-  discovery_session->Stop(base::DoNothing(), base::DoNothing());
+  discovery_session->Stop();
 }
 
 UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {

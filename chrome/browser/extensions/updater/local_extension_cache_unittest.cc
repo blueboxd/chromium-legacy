@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/test/browser_task_environment.h"
@@ -122,7 +123,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -170,7 +171,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -207,7 +208,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -243,7 +244,7 @@ TEST_F(LocalExtensionCacheTest, Complex) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -310,7 +311,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;

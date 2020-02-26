@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
@@ -102,9 +103,8 @@ void OnCustomizedDefaultWallpaperDecoded(
   wallpaper->image().EnsureRepsForSupportedScales();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
@@ -132,9 +132,8 @@ void SetCustomizedDefaultWallpaperAfterCheck(
     // Either resized images do not exist or cached version is incorrect.
     // Need to start decoding again.
     scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::USER_BLOCKING,
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     user_image_loader::StartWithFilePath(
         task_runner, file_path, ImageDecoder::ROBUST_JPEG_CODEC,
@@ -169,9 +168,8 @@ void StartSettingCustomizedDefaultWallpaper(const GURL& wallpaper_url,
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,

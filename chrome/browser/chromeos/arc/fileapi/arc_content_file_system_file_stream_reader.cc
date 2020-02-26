@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,9 +47,8 @@ ArcContentFileSystemFileStreamReader::ArcContentFileSystemFileStreamReader(
     const GURL& arc_url,
     int64_t offset)
     : arc_url_(arc_url), offset_(offset) {
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 ArcContentFileSystemFileStreamReader::~ArcContentFileSystemFileStreamReader() {

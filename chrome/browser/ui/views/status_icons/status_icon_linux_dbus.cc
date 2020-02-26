@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/dbus/menu/menu.h"
 #include "components/dbus/properties/dbus_properties.h"
@@ -184,9 +185,8 @@ base::FilePath WriteIconFile(size_t icon_file_id,
 
 StatusIconLinuxDbus::StatusIconLinuxDbus()
     : should_write_icon_to_file_(ShouldWriteIconToFile()),
-      icon_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      icon_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   dbus::Bus::Options bus_options;

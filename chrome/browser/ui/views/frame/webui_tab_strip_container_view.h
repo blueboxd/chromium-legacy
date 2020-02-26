@@ -55,6 +55,14 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
 
   static bool UseTouchableTabStrip();
 
+  // For drag-and-drop support:
+  static void GetDropFormatsForView(
+      int* formats,
+      std::set<ui::ClipboardFormatType>* format_types);
+  static bool IsDraggedTab(const ui::OSExchangeData& data);
+
+  void OpenForTabDrag();
+
   views::NativeViewHost* GetNativeViewHost();
 
   // Control buttons. Each must only be called once.

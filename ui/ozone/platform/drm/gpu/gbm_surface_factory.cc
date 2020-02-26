@@ -214,9 +214,9 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;
 
-  drm_thread_proxy_->CreateBuffer(widget, size, format, usage,
-                                  GbmPixmap::kFlagNoModifiers, &buffer,
-                                  &framebuffer);
+  drm_thread_proxy_->CreateBuffer(widget, size, /*framebuffer_size=*/size,
+                                  format, usage, GbmPixmap::kFlagNoModifiers,
+                                  &buffer, &framebuffer);
   if (!buffer)
     return nullptr;
 
@@ -286,11 +286,17 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    base::Optional<gfx::Size> framebuffer_size) {
+  if (framebuffer_size &&
+      !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size))) {
+    return nullptr;
+  }
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;
-  drm_thread_proxy_->CreateBuffer(widget, size, format, usage, 0 /* flags */,
-                                  &buffer, &framebuffer);
+  drm_thread_proxy_->CreateBuffer(
+      widget, size, framebuffer_size ? *framebuffer_size : size, format, usage,
+      0 /* flags */, &buffer, &framebuffer);
   if (!buffer)
     return nullptr;
   return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),

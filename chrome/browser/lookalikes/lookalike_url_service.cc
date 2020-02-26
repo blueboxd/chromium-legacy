@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -143,9 +144,9 @@ bool LookalikeUrlService::EngagedSitesNeedUpdating() {
 
 void LookalikeUrlService::ForceUpdateEngagedSites(
     EngagedSitesCallback callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+      {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &SiteEngagementService::GetAllDetailsInBackground, clock_->Now(),

@@ -68,7 +68,7 @@ void MediaFoundationSourceWrapper::DetachResource() {
   }
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetCharacteristics(
+HRESULT MediaFoundationSourceWrapper::GetCharacteristics(
     DWORD* characteristics) {
   DVLOG(3) << __func__ << ": this=" << this;
 
@@ -108,7 +108,7 @@ HRESULT MediaFoundationSourceWrapper::SelectDefaultStreams(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::CreatePresentationDescriptor(
+HRESULT MediaFoundationSourceWrapper::CreatePresentationDescriptor(
     IMFPresentationDescriptor** presentation_descriptor_out) {
   DVLOG(2) << __func__ << ": this=" << this;
 
@@ -137,7 +137,7 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::CreatePresentationDescriptor(
 }
 
 // https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nf-mfidl-imfmediasource-start
-IFACEMETHODIMP MediaFoundationSourceWrapper::Start(
+HRESULT MediaFoundationSourceWrapper::Start(
     IMFPresentationDescriptor* presentation_descriptor,
     const GUID* guid_time_format,
     const PROPVARIANT* start_position) {
@@ -231,7 +231,7 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::Start(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::Stop() {
+HRESULT MediaFoundationSourceWrapper::Stop() {
   DVLOG(2) << __func__ << ": this=" << this;
 
   if (state_ == State::kShutdown) {
@@ -251,7 +251,7 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::Stop() {
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::Pause() {
+HRESULT MediaFoundationSourceWrapper::Pause() {
   DVLOG(2) << __func__ << ": this=" << this;
 
   if (state_ == State::kShutdown) {
@@ -277,7 +277,7 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::Pause() {
 
 // After this method is called, methods on the media source and all of its
 // media streams return MF_E_SHUTDOWN (except for IUnknown methods).
-IFACEMETHODIMP MediaFoundationSourceWrapper::Shutdown() {
+HRESULT MediaFoundationSourceWrapper::Shutdown() {
   DVLOG(1) << __func__ << ": this=" << this;
 
   for (auto stream : media_streams_) {
@@ -287,62 +287,52 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::Shutdown() {
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetEvent(
-    DWORD flags,
-    IMFMediaEvent** event_out) {
+// TODO(frankli): In MediaFoundationSourceWrapper::XxxEvent methods below,
+// investigate why MediaFoundationSourceWrapper is not being destructed
+// when we return MF_E_SHUTDOWN if |state_| is State::kShutdown.
+// https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfmediaeventgenerator-queueevent
+// indicates the object can return MF_E_SHUTDOWN.
+//
+HRESULT MediaFoundationSourceWrapper::GetEvent(DWORD flags,
+                                               IMFMediaEvent** event_out) {
   DVLOG(3) << __func__ << ": this=" << this;
+  DCHECK(mf_media_event_queue_);
 
-  if (state_ == State::kShutdown) {
-    DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
-    return MF_E_SHUTDOWN;
-  }
   // Not tracing hr to avoid the noise from MF_E_NO_EVENTS_AVAILABLE.
   return mf_media_event_queue_->GetEvent(flags, event_out);
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::BeginGetEvent(
-    IMFAsyncCallback* callback,
-    IUnknown* state) {
+HRESULT MediaFoundationSourceWrapper::BeginGetEvent(IMFAsyncCallback* callback,
+                                                    IUnknown* state) {
   DVLOG(3) << __func__ << ": this=" << this;
+  DCHECK(mf_media_event_queue_);
 
-  if (state_ == State::kShutdown) {
-    DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
-    return MF_E_SHUTDOWN;
-  }
   RETURN_IF_FAILED(mf_media_event_queue_->BeginGetEvent(callback, state));
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::EndGetEvent(
-    IMFAsyncResult* result,
-    IMFMediaEvent** event_out) {
+HRESULT MediaFoundationSourceWrapper::EndGetEvent(IMFAsyncResult* result,
+                                                  IMFMediaEvent** event_out) {
   DVLOG(3) << __func__ << ": this=" << this;
+  DCHECK(mf_media_event_queue_);
 
-  if (state_ == State::kShutdown) {
-    DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
-    return MF_E_SHUTDOWN;
-  }
   RETURN_IF_FAILED(mf_media_event_queue_->EndGetEvent(result, event_out));
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::QueueEvent(
-    MediaEventType type,
-    REFGUID extended_type,
-    HRESULT status,
-    const PROPVARIANT* value) {
+HRESULT MediaFoundationSourceWrapper::QueueEvent(MediaEventType type,
+                                                 REFGUID extended_type,
+                                                 HRESULT status,
+                                                 const PROPVARIANT* value) {
   DVLOG(3) << __func__ << ": this=" << this;
+  DCHECK(mf_media_event_queue_);
 
-  if (state_ == State::kShutdown) {
-    DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN, type=" << type;
-    return MF_E_SHUTDOWN;
-  }
   RETURN_IF_FAILED(mf_media_event_queue_->QueueEventParamVar(
       type, extended_type, status, value));
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetInputTrustAuthority(
+HRESULT MediaFoundationSourceWrapper::GetInputTrustAuthority(
     DWORD stream_id,
     REFIID riid,
     IUnknown** object_out) {
@@ -369,9 +359,9 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::GetInputTrustAuthority(
   return S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetService(REFGUID guid_service,
-                                                        REFIID riid,
-                                                        LPVOID* result) {
+HRESULT MediaFoundationSourceWrapper::GetService(REFGUID guid_service,
+                                                 REFIID riid,
+                                                 LPVOID* result) {
   DVLOG(3) << __func__ << ": this=" << this;
   DCHECK(result);
 
@@ -380,10 +370,9 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::GetService(REFGUID guid_service,
   return QueryInterface(riid, result);
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetSlowestRate(
-    MFRATE_DIRECTION direction,
-    BOOL supports_thinning,
-    float* rate) {
+HRESULT MediaFoundationSourceWrapper::GetSlowestRate(MFRATE_DIRECTION direction,
+                                                     BOOL supports_thinning,
+                                                     float* rate) {
   DVLOG(2) << __func__ << ": this=" << this;
   DCHECK(rate);
 
@@ -394,10 +383,9 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::GetSlowestRate(
   return state_ == State::kShutdown ? MF_E_SHUTDOWN : S_OK;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetFastestRate(
-    MFRATE_DIRECTION direction,
-    BOOL supports_thinning,
-    float* rate) {
+HRESULT MediaFoundationSourceWrapper::GetFastestRate(MFRATE_DIRECTION direction,
+                                                     BOOL supports_thinning,
+                                                     float* rate) {
   DVLOG(2) << __func__ << ": this=" << this;
   DCHECK(rate);
 
@@ -413,10 +401,9 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::GetFastestRate(
   return hr;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::IsRateSupported(
-    BOOL supports_thinning,
-    float new_rate,
-    float* supported_rate) {
+HRESULT MediaFoundationSourceWrapper::IsRateSupported(BOOL supports_thinning,
+                                                      float new_rate,
+                                                      float* supported_rate) {
   DVLOG(2) << __func__ << ": this=" << this;
 
   if (state_ == State::kShutdown)
@@ -454,8 +441,8 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::IsRateSupported(
   return hr;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::SetRate(BOOL supports_thinning,
-                                                     float rate) {
+HRESULT MediaFoundationSourceWrapper::SetRate(BOOL supports_thinning,
+                                              float rate) {
   DVLOG(2) << __func__ << ": this=" << this;
 
   if (state_ == State::kShutdown)
@@ -471,8 +458,8 @@ IFACEMETHODIMP MediaFoundationSourceWrapper::SetRate(BOOL supports_thinning,
   return hr;
 }
 
-IFACEMETHODIMP MediaFoundationSourceWrapper::GetRate(BOOL* supports_thinning,
-                                                     float* rate) {
+HRESULT MediaFoundationSourceWrapper::GetRate(BOOL* supports_thinning,
+                                              float* rate) {
   DVLOG(2) << __func__ << ": this=" << this;
 
   *supports_thinning = FALSE;

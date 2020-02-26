@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -157,9 +158,8 @@ void ArcWallpaperService::SetDefaultWallpaper() {
 void ArcWallpaperService::GetWallpaper(GetWallpaperCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   gfx::ImageSkia image = WallpaperControllerClient::Get()->GetWallpaperImage();
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&EncodeImagePng, image), std::move(callback));
 }
 

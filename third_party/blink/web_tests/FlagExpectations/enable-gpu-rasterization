@@ -11,3 +11,10 @@ crbug.com/1026375 [ Win ] media/video-controls-hide-after-touch-on-control.html 
 crbug.com/1026375 [ Win ] media/video-controls-hide-on-move-outside-controls.html [ Failure Pass ]
 crbug.com/1026375 [ Win ] media/video-controls-visibility-multimodal-touch-after-mouse.html [ Failure Pass ]
 crbug.com/1026375 [ Win ] media/video-persistence.html [ Failure Pass ]
+
+# Needs Rebaseline
+crbug.com/993384 [ Win ] animations/missing-values-last-keyframe.html [ Failure Pass ]
+crbug.com/993384 [ Win ] css3/filters/effect-reference-colorspace.html [ Failure Pass ]
+crbug.com/993384 [ Linux ] css3/filters/effect-reference-colorspace.html [ Failure Pass ]
+crbug.com/993384 [ Win ] css3/filters/effect-reference-subregion.html [ Failure Pass ]
+crbug.com/993384 [ Linux ] css3/filters/effect-reference-subregion.html [ Failure Pass ]

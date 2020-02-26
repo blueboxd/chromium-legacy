@@ -14,6 +14,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -492,10 +493,8 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
 
     if (item_->HasSupportedImageMimeType()) {
       base::FilePath file_path = item_->GetFullPath();
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(&ReadNotificationImage, file_path),
           base::BindOnce(&DownloadItemNotification::OnImageLoaded,
                          weak_factory_.GetWeakPtr()));
@@ -545,9 +544,8 @@ void DownloadItemNotification::OnImageDecoded(const SkBitmap& decoded_bitmap) {
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CropImage, decoded_bitmap),
       base::BindOnce(&DownloadItemNotification::OnImageCropped,
                      weak_factory_.GetWeakPtr()));

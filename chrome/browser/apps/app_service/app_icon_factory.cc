@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
@@ -175,9 +176,8 @@ void RunCallbackWithCompressedDataFromExtension(
   }
 
   // Try and load data from the resource file.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
       base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
                      default_icon_resource, is_placeholder_icon,
@@ -215,10 +215,8 @@ void RunCallbackWithImageSkia(int size_hint_in_dip,
     }
 
     processed_image.MakeThreadSafe();
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&EncodeImage, processed_image),
         base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
                        default_icon_resource, is_placeholder_icon, icon_effects,
@@ -447,10 +445,8 @@ void LoadIconFromFileWithFallback(
 
     case apps::mojom::IconCompression::kUncompressed:
     case apps::mojom::IconCompression::kCompressed: {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
           base::BindOnce(&RunCallbackWithFallback, size_hint_in_dip,
                          is_placeholder_icon, icon_effects, icon_compression,

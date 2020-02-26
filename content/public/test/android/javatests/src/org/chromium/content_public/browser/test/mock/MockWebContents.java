@@ -162,6 +162,11 @@ public class MockWebContents implements WebContents {
     public void setFocus(boolean hasFocus) {}
 
     @Override
+    public boolean isFullscreenForCurrentTab() {
+        return false;
+    }
+
+    @Override
     public void exitFullscreen() {}
 
     @Override

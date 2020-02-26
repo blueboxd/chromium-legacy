@@ -31,6 +31,7 @@
 #include "base/strings/string16.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -710,9 +711,9 @@ void UserSessionManager::InitRlz(Profile* profile) {
         base::Bind(&UserSessionManager::InitRlz, AsWeakPtr(), profile));
     return;
   }
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CollectRlzParams),
       base::BindOnce(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));

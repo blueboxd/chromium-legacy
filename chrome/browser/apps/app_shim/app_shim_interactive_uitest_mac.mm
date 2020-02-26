@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -441,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     // final request to close the window is posted to this thread's queue.
     GetFirstAppWindow()->GetBaseWindow()->Close();
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(
             [](base::Process* shim_process) {
               base::ScopedAllowBaseSyncPrimitivesForTesting

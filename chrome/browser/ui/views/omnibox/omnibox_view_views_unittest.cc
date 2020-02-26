@@ -298,12 +298,7 @@ void OmniboxViewViewsTest::SetUp() {
   util_ = std::make_unique<TemplateURLServiceFactoryTestUtil>(profile_.get());
 
   // We need a widget so OmniboxView can be correctly focused and unfocused.
-  widget_ = std::make_unique<views::Widget>();
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 400, 80);
-  widget_->Init(std::move(params));
+  widget_ = CreateTestWidget();
   widget_->Show();
 
 #if defined(OS_CHROMEOS)
@@ -1181,12 +1176,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
 
   // Create a different Widget that will take focus away from the test widget
   // containing our test Omnibox.
-  auto other_widget = std::make_unique<views::Widget>();
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  other_widget->Init(std::move(params));
+  std::unique_ptr<views::Widget> other_widget = CreateTestWidget();
   other_widget->Show();
   ExpectFullUrlDisplayed();
 

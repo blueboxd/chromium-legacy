@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
@@ -123,8 +124,8 @@ DownloadProtectionService::DownloadProtectionService(
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
           url_loader_factory_,
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
               .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate),
       weak_ptr_factory_(this) {

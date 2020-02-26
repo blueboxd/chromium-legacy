@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -129,8 +130,8 @@ void TraceCrashServiceUploader::DoUpload(
   progress_callback_ = progress_callback;
   done_callback_ = std::move(done_callback);
 
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
                      base::Unretained(this), file_contents, upload_mode,
                      upload_url_, std::move(metadata)));

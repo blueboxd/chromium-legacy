@@ -22,6 +22,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -42,13 +43,13 @@ public class StatusBarColorControllerTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
     }
 
     /**

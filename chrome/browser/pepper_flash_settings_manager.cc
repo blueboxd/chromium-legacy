@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -438,9 +439,8 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
   }
 
 #if defined(OS_CHROMEOS)
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&Core::DeauthorizeContentLicensesAsync, this, request_id,
                      browser_context_path_));
 #else

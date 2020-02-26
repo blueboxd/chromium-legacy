@@ -155,7 +155,7 @@ public class StartSurfaceLayoutTest {
     @Before
     public void setUp() {
         // After setUp, Chrome is launched and has one NTP.
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -185,8 +185,8 @@ public class StartSurfaceLayoutTest {
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test
@@ -726,7 +726,7 @@ public class StartSurfaceLayoutTest {
                     ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForUndoableClosedTab() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
 
         // Restart Chrome to have Group.
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
@@ -752,7 +752,7 @@ public class StartSurfaceLayoutTest {
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdatedNotCrashing_ForTabNotInCurrentModel() throws Exception {
         // clang-format on
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
 
         // Restart Chrome to have Group.
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());

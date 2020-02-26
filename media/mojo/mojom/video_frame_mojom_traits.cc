@@ -48,16 +48,18 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     mojo::ScopedSharedBufferHandle dup = mojo_frame->Handle().Clone(
         mojo::SharedBufferHandle::AccessMode::READ_WRITE);
     DCHECK(dup.is_valid());
+    size_t num_planes = media::VideoFrame::NumPlanes(mojo_frame->format());
+    std::vector<uint32_t> offsets(num_planes);
+    std::vector<int32_t> strides(num_planes);
+    for (size_t i = 0; i < num_planes; ++i) {
+      offsets[i] = mojo_frame->PlaneOffset(i);
+      strides[i] = mojo_frame->stride(i);
+    }
 
     return media::mojom::VideoFrameData::NewSharedBufferData(
         media::mojom::SharedBufferVideoFrameData::New(
-            std::move(dup), mojo_frame->MappedSize(),
-            mojo_frame->stride(media::VideoFrame::kYPlane),
-            mojo_frame->stride(media::VideoFrame::kUPlane),
-            mojo_frame->stride(media::VideoFrame::kVPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kYPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kUPlane),
-            mojo_frame->PlaneOffset(media::VideoFrame::kVPlane)));
+            std::move(dup), mojo_frame->MappedSize(), std::move(strides),
+            std::move(offsets)));
   }
 
 #if defined(OS_LINUX)
@@ -151,16 +153,18 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     media::mojom::SharedBufferVideoFrameDataDataView shared_buffer_data;
     data.GetSharedBufferDataDataView(&shared_buffer_data);
 
-    // TODO(sandersd): Conversion from uint64_t to size_t could cause
-    // corruption. Platform-dependent types should be removed from the
-    // implementation (limiting to 32-bit offsets is fine).
+    std::vector<int32_t> strides;
+    if (!shared_buffer_data.ReadStrides(&strides))
+      return false;
+
+    std::vector<uint32_t> offsets;
+    if (!shared_buffer_data.ReadOffsets(&offsets))
+      return false;
     frame = media::MojoSharedBufferVideoFrame::Create(
         format, coded_size, visible_rect, natural_size,
         shared_buffer_data.TakeFrameData(),
-        shared_buffer_data.frame_data_size(), shared_buffer_data.y_offset(),
-        shared_buffer_data.u_offset(), shared_buffer_data.v_offset(),
-        shared_buffer_data.y_stride(), shared_buffer_data.u_stride(),
-        shared_buffer_data.v_stride(), timestamp);
+        shared_buffer_data.frame_data_size(), std::move(offsets),
+        std::move(strides), timestamp);
 #if defined(OS_LINUX)
   } else if (data.is_dmabuf_data()) {
     media::mojom::DmabufVideoFrameDataDataView dmabuf_data;

@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -578,9 +579,9 @@ void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
   DCHECK(blacklist_state_ == BlacklistLoadState::NOT_LOADED);
   blacklist_state_ = BlacklistLoadState::LOAD_STARTED;
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&base::PathExists, path),
       base::BindOnce(&SupervisedUserService::OnBlacklistFileChecked,

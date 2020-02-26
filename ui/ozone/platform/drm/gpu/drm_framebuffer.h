@@ -45,6 +45,7 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
   static scoped_refptr<DrmFramebuffer> AddFramebuffer(
       scoped_refptr<DrmDevice> drm_device,
       const GbmBuffer* buffer,
+      const gfx::Size& framebuffer_size,
       std::vector<uint64_t> preferred_modifiers = std::vector<uint64_t>());
 
   DrmFramebuffer(scoped_refptr<DrmDevice> drm_device,

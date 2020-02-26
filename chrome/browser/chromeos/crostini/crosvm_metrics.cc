@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crosvm_process_list.h"
 
 namespace crostini {
@@ -33,9 +34,8 @@ constexpr base::TimeDelta kCrosvmMetricsInterval =
 }  // namespace
 
 CrosvmMetrics::CrosvmMetrics()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       page_size_(sysconf(_SC_PAGESIZE)) {}
 

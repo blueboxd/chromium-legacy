@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -43,9 +44,9 @@ void InterventionPolicyDatabase::InitializeDatabaseWithProtoFile(
     const base::Version& version,
     std::unique_ptr<base::DictionaryValue> manifest) {
   // TODO(sebmarchand): Validate the version and the manifest?
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(
           &InterventionPolicyDatabase::ReadDatabaseFromProtoFileOnSequence,

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -368,9 +369,8 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
   // It is enough to only verify access to the first path, as multiple
   // file selection is only supported if all files are in the same
   // directory.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,

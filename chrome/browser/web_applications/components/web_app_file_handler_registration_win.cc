@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -192,17 +193,16 @@ void ReRegisterFileHandlersWithOs(
     const std::set<base::string16>& file_extensions,
     const base::string16& prog_id,
     const base::string16& app_name_extension) {
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(IgnoreResult(&base::DeleteFile),
-                                ShellUtil::GetApplicationPathForProgId(prog_id),
-                                /*recursively=*/false));
-  ShellUtil::DeleteFileAssociations(prog_id);
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(IgnoreResult(&base::DeleteFile),
+                     ShellUtil::GetApplicationPathForProgId(prog_id),
+                     /*recursively=*/false));
+  ShellUtil::DeleteFileAssociations(prog_id);
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&RegisterFileHandlersWithOsTask, app_id, app_name,
                      profile_path, file_extensions, app_name_extension));
 }
@@ -227,12 +227,12 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                  std::inserter(file_extensions16, file_extensions16.end()),
                  [](const std::string& ext) { return base::UTF8ToUTF16(ext); });
 
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                 base::BindOnce(&RegisterFileHandlersWithOsTask, app_id,
-                                app_name, profile->GetPath(), file_extensions16,
-                                app_name_extension));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&RegisterFileHandlersWithOsTask, app_id, app_name,
+                     profile->GetPath(), file_extensions16,
+                     app_name_extension));
   // If there's another profile that needs its name changed, reregister it.
   if (!only_profile_with_app_installed.empty()) {
     ReRegisterFileHandlersWithOs(
@@ -256,10 +256,9 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
   // Need to delete the hardlink file as well, since extension uninstall
   // by default doesn't remove the web application directory.
   if (!app_specific_launcher_path.empty()) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(IgnoreResult(&base::DeleteFile),
                        app_specific_launcher_path, /*recursively=*/false));
   }

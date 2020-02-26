@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/OfflinePageBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
@@ -776,9 +777,8 @@ void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
   }
 
   ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
       base::BindOnce(&OfflinePageBridge::GetSizeAndComputeDigestDone,
                      weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
@@ -812,9 +812,8 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ArchiveValidator::ValidateFile, offline_page->file_path,
                      offline_page->file_size, offline_page->digest),
       base::BindOnce(&ValidateFileCallback, launch_location, j_callback_obj,

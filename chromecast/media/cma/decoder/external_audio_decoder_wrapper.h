@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chromecast/media/cma/decoder/cast_audio_decoder.h"
+#include "chromecast/media/api/cast_audio_decoder.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/external_audio_decoder.h"
 

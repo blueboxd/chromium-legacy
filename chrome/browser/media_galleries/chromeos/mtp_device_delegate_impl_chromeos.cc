@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
@@ -379,9 +380,8 @@ void CloseFileDescriptor(const int file_descriptor) {
 
 // Deletes a temporary file |file_path|.
 void DeleteTemporaryFile(const base::FilePath& file_path) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(base::DeleteFile), file_path,
                      false /* not recursive*/));
 }
@@ -679,9 +679,9 @@ void MTPDeviceDelegateImplLinux::CopyFileLocal(
   DCHECK(!device_file_path.empty());
 
   // Create a temporary file for creating a copy of source file on local.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(create_temporary_file_callback),
       base::BindOnce(
@@ -1509,9 +1509,8 @@ void MTPDeviceDelegateImplLinux::OnGetDestFileInfoErrorToCopyFileFromLocal(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&OpenFileDescriptor, source_file_path, O_RDONLY),
       base::BindOnce(
           &MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal,
@@ -1742,10 +1741,8 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
   const base::Closure closure = base::Bind(&CloseFileDescriptor,
                                            source_file_descriptor);
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      closure);
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, closure);
 
   success_callback.Run();
   NotifyFileChange(file_path.DirName(),
@@ -1772,10 +1769,8 @@ void MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError(
   const base::Closure closure = base::Bind(&CloseFileDescriptor,
                                            source_file_descriptor);
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      closure);
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT}, closure);
 
   error_callback.Run(error);
   PendingRequestDone();

@@ -29,6 +29,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -677,9 +678,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // after AssistantStateClient.
   assistant_client_ = std::make_unique<AssistantClientImpl>();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::BindOnce(&ChromeOSVersionCallback));
 

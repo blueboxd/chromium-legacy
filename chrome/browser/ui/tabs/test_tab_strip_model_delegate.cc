@@ -77,3 +77,8 @@ bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
   return false;
 }
+
+bool TestTabStripModelDelegate::ShouldDisplayFavicon(
+    content::WebContents* web_contents) const {
+  return true;
+}

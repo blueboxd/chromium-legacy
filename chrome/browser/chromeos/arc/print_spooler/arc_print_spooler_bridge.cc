@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_util.h"
 #include "chrome/browser/chromeos/arc/print_spooler/print_session_impl.h"
@@ -78,8 +79,8 @@ void ArcPrintSpoolerBridge::StartPrintInCustomTab(
     mojom::PrintSessionInstancePtr instance,
     StartPrintInCustomTabCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SavePrintDocument, std::move(scoped_handle)),
       base::BindOnce(&ArcPrintSpoolerBridge::OnPrintDocumentSaved,
                      weak_ptr_factory_.GetWeakPtr(), task_id, surface_id,

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,9 +54,8 @@ void ComputeSpaceNeedToBeFreedAfterGetMetadata(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
                      file_info.size),
       std::move(callback));

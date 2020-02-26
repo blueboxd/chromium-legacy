@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -295,7 +296,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRelatedTabs_noProvider_groupDisabled_single() {
         doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
         List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
@@ -306,7 +307,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRelatedTabs_noProvider_groupDisabled_group() {
         doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, TAB1_ID);
@@ -323,7 +324,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRelatedTabs_noProvider_single() {
         doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
 
         PseudoTab tab1 = PseudoTab.fromTabId(TAB1_ID);
         List<PseudoTab> related = PseudoTab.getRelatedTabs(tab1, mTabModelFilterProvider);
@@ -334,7 +335,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRelatedTabs_noProvider_group() {
         doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, TAB1_ID);
@@ -350,7 +351,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRelatedTabs_noProvider_badGroup() {
         doReturn(null).when(mTabModelFilterProvider).getTabModelFilter(anyBoolean());
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
 
         TabAttributeCache.setRootIdForTesting(TAB1_ID, TAB1_ID);
         TabAttributeCache.setRootIdForTesting(TAB2_ID, Tab.INVALID_TAB_ID);

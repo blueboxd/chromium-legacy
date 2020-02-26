@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 
 import java.util.Arrays;
@@ -48,6 +49,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST);
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
+        CachedFeatureFlags.cacheNativeFlags(TabUiFeatureUtilities.getFeaturesToCache());
         CachedFeatureFlags.cacheAdditionalNativeFlags();
 
         List<CachedFieldTrialParameter> fieldTrialsToCache =

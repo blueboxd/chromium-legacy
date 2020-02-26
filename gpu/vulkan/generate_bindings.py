@@ -291,13 +291,7 @@ def WriteFunctionDeclarations(file, functions):
   WriteFunctions(file, functions, template)
 
 def WriteTemplateMethods(file, functions):
-  template = Template('''
-template <typename ... Types>
-NO_SANITIZE("cfi-icall")
-auto ${name}Fn(Types ... args) -> decltype(${name}Fn_(args...)) {
-  return ${name}Fn_(args...);
-}
-''')
+  template = Template('  DEFINE_METHOD(${name})\n')
   WriteFunctions(file, functions, template)
 
 def WriteMacros(file, functions):
@@ -402,6 +396,14 @@ class VulkanFunctionPointers {
 
   file.write("""
  public:
+#define DEFINE_METHOD(name)                \
+  template <typename... Types>             \
+  NO_SANITIZE("cfi-icall")                 \
+  auto name ## Fn(Types... args)           \
+      -> decltype(name ## Fn_(args...)) {  \
+    return name ## Fn_(args...);           \
+  }
+
   // Unassociated functions
 """)
   WriteTemplateMethods(file, [{'functions': [ 'vkGetInstanceProcAddr' ,
@@ -423,6 +425,7 @@ class VulkanFunctionPointers {
   WriteTemplateMethods(file, VULKAN_DEVICE_FUNCTIONS)
 
   file.write("""\
+#undef DEFINE_METHOD
 };
 
 }  // namespace gpu
@@ -450,8 +453,7 @@ class VulkanFunctionPointers {
 
   file.write("""\
 
-#endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
-""")
+#endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_""")
 
 def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
                                        functions):

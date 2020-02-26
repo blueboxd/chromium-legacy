@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,7 +18,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/button_test_api.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
 
 using media_session::mojom::MediaPlaybackState;
@@ -50,7 +50,7 @@ class MockMediaNotificationContainerObserver
 
 }  // anonymous namespace
 
-class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
+class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
  public:
   MediaNotificationContainerImplViewTest() : screen_override_(&fake_screen_) {}
   ~MediaNotificationContainerImplViewTest() override = default;
@@ -59,29 +59,25 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(400, 300);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(std::move(params));
+    widget_ = CreateTestWidget();
 
     auto notification_container =
         std::make_unique<MediaNotificationContainerImplView>(
             kTestNotificationId, nullptr);
     notification_container_ = notification_container.get();
-    widget_.SetContentsView(notification_container.release());
+    widget_->SetContentsView(notification_container.release());
 
     observer_ = std::make_unique<MockMediaNotificationContainerObserver>();
     notification_container_->AddObserver(observer_.get());
 
     SimulateMediaSessionData();
 
-    widget_.Show();
+    widget_->Show();
   }
 
   void TearDown() override {
     notification_container_->RemoveObserver(observer_.get());
-    widget_.Close();
+    widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -143,7 +139,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
     ui::KeyboardCode button_press_keycode = ui::VKEY_RETURN;
 #endif  // defined(OS_MACOSX)
 
-    ui::test::EventGenerator generator(GetRootWindow(&widget_));
+    ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
     generator.PressKey(button_press_keycode, 0);
   }
 
@@ -233,7 +229,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
     return notification_container()->GetDismissButtonForTesting();
   }
 
-  views::Widget widget_;
+  std::unique_ptr<views::Widget> widget_;
   MediaNotificationContainerImplView* notification_container_ = nullptr;
   std::unique_ptr<MockMediaNotificationContainerObserver> observer_;
 
@@ -421,6 +417,7 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   // |OnContainerDraggedOut()| notification.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _));
-  SimulateMouseDrag(gfx::Vector2d(300, 300));
+  SimulateMouseDrag(
+      notification_container()->bounds().bottom_right().OffsetFromOrigin());
   testing::Mock::VerifyAndClearExpectations(&observer());
 }

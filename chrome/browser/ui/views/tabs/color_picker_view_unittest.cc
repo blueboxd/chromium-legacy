@@ -31,12 +31,7 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
-    views::Widget::InitParams widget_params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    widget_params.ownership =
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_ = std::make_unique<views::Widget>();
-    widget_->Init(std::move(widget_params));
+    widget_ = CreateTestWidget();
 
     color_picker_ =
         new ColorPickerView(kTestColors, SK_ColorWHITE, SK_ColorCYAN,
@@ -97,12 +92,7 @@ TEST_F(ColorPickerViewTest, NoColorSelectedByDefaultIfNotMatching) {
 TEST_F(ColorPickerViewTest, ColorSelectedByDefaultIfMatching) {
   SkColor initial_color = SK_ColorRED;
 
-  views::Widget::InitParams widget_params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  widget_params.ownership =
-      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
-  widget->Init(std::move(widget_params));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   ColorPickerView* color_picker =
       new ColorPickerView(kTestColors, SK_ColorWHITE, initial_color,
@@ -114,8 +104,6 @@ TEST_F(ColorPickerViewTest, ColorSelectedByDefaultIfMatching) {
   EXPECT_TRUE(color_picker->GetSelectedElement().has_value());
   // Expect the index to match that of SK_ColorRED in kTestColors.
   EXPECT_EQ(color_picker->GetSelectedElement().value(), 0);
-
-  widget.reset();
 }
 
 TEST_F(ColorPickerViewTest, ClickingSelectsColor) {

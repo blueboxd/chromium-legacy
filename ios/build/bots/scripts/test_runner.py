@@ -273,58 +273,6 @@ def print_process_output(proc,
   return out
 
 
-def xcode_select(xcode_app_path):
-  """Switch the default Xcode system-wide to `xcode_app_path`.
-
-  Raises subprocess.CalledProcessError on failure.
-  To be mocked in tests.
-  """
-  subprocess.check_call([
-      'sudo',
-      'xcode-select',
-      '-switch',
-      xcode_app_path,
-  ])
-
-
-def install_xcode(xcode_build_version, mac_toolchain_cmd, xcode_app_path):
-  """Installs the requested Xcode build version.
-
-  Args:
-    xcode_build_version: (string) Xcode build version to install.
-    mac_toolchain_cmd: (string) Path to mac_toolchain command to install Xcode.
-    See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
-    xcode_app_path: (string) Path to install the contents of Xcode.app.
-
-  Returns:
-    True if installation was successful. False otherwise.
-  """
-  try:
-    if not mac_toolchain_cmd:
-      raise MacToolchainNotFoundError(mac_toolchain_cmd)
-    # Guard against incorrect install paths. On swarming, this path
-    # should be a requested named cache, and it must exist.
-    if not os.path.exists(xcode_app_path):
-      raise XcodePathNotFoundError(xcode_app_path)
-
-    subprocess.check_call([
-      mac_toolchain_cmd, 'install',
-      '-kind', 'ios',
-      '-xcode-version', xcode_build_version.lower(),
-      '-output-dir', xcode_app_path,
-    ])
-    xcode_select(xcode_app_path)
-  except subprocess.CalledProcessError as e:
-    # Flush buffers to ensure correct output ordering.
-    sys.stdout.flush()
-    sys.stderr.write('Xcode build version %s failed to install: %s\n' % (
-        xcode_build_version, e))
-    sys.stderr.flush()
-    return False
-
-  return True
-
-
 def get_current_xcode_info():
   """Returns the current Xcode path, version, and build number.
 
@@ -389,31 +337,25 @@ class TestRunner(object):
   def __init__(
     self,
     app_path,
-    xcode_build_version,
     out_dir,
     env_vars=None,
-    mac_toolchain='',
     retries=None,
     shards=None,
     test_args=None,
     test_cases=None,
-    xcode_path='',
     xctest=False,
   ):
     """Initializes a new instance of this class.
 
     Args:
       app_path: Path to the compiled .app to run.
-      xcode_build_version: Xcode build version to install before running tests.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
-      mac_toolchain: Command to run `mac_toolchain` tool.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
-      xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
     Raises:
@@ -425,9 +367,6 @@ class TestRunner(object):
     app_path = os.path.abspath(app_path)
     if not os.path.exists(app_path):
       raise AppNotFoundError(app_path)
-
-    if not install_xcode(xcode_build_version, mac_toolchain, xcode_path):
-      raise XcodeVersionNotFoundError(xcode_build_version)
 
     xcode_info = get_current_xcode_info()
     LOGGER.info('Using Xcode version %s build %s at %s',
@@ -746,24 +685,20 @@ class TestRunner(object):
 
 
 class SimulatorTestRunner(TestRunner):
-  """Class for running tests on iossim."""
+  """Class for running tests on iOS Simulators."""
 
   def __init__(
       self,
       app_path,
-      iossim_path,
       platform,
       version,
-      xcode_build_version,
       out_dir,
       env_vars=None,
-      mac_toolchain='',
       retries=None,
       shards=None,
       test_args=None,
       test_cases=None,
       wpr_tools_path='',
-      xcode_path='',
       use_clang_coverage=False,
       xctest=False,
   ):
@@ -771,15 +706,12 @@ class SimulatorTestRunner(TestRunner):
 
     Args:
       app_path: Path to the compiled .app or .ipa to run.
-      iossim_path: Path to the compiled iossim binary to use.
       platform: Name of the platform to simulate. Supported values can be found
-        by running "iossim -l". e.g. "iPhone 5s", "iPad Retina".
+        by running "xcrun simctl list". e.g. "iPhone 5s", "iPad Retina".
       version: Version of iOS the platform should be running. Supported values
-        can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
-      xcode_build_version: Xcode build version to install before running tests.
+        can be found by running "xcrun simctl list". e.g. "9.3", "8.2", "7.1".
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
-      mac_toolchain: Command to run `mac_toolchain` tool.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
@@ -787,7 +719,6 @@ class SimulatorTestRunner(TestRunner):
         include all tests.
       use_clang_coverage: Whether code coverage is enabled in this run.
       wpr_tools_path: Path to pre-installed WPR-related tools
-      xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
     Raises:
@@ -798,23 +729,14 @@ class SimulatorTestRunner(TestRunner):
     """
     super(SimulatorTestRunner, self).__init__(
         app_path,
-        xcode_build_version,
         out_dir,
         env_vars=env_vars,
-        mac_toolchain=mac_toolchain,
         retries=retries,
         test_args=test_args,
         test_cases=test_cases,
-        xcode_path=xcode_path,
         xctest=xctest,
     )
-
-    iossim_path = os.path.abspath(iossim_path)
-    if not os.path.exists(iossim_path):
-      raise SimulatorNotFoundError(iossim_path)
-
     self.homedir = ''
-    self.iossim_path = iossim_path
     self.platform = platform
     self.start_time = None
     self.version = version
@@ -997,26 +919,21 @@ class DeviceTestRunner(TestRunner):
   def __init__(
     self,
     app_path,
-    xcode_build_version,
     out_dir,
     env_vars=None,
-    mac_toolchain='',
     restart=False,
     retries=None,
     shards=None,
     test_args=None,
     test_cases=None,
     xctest=False,
-    xcode_path='',
   ):
     """Initializes a new instance of this class.
 
     Args:
       app_path: Path to the compiled .app to run.
-      xcode_build_version: Xcode build version to install before running tests.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
-      mac_toolchain: Command to run `mac_toolchain` tool.
       restart: Whether or not restart device when test app crashes on startup.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
@@ -1024,7 +941,6 @@ class DeviceTestRunner(TestRunner):
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
       xctest: Whether or not this is an XCTest.
-      xcode_path: Path to Xcode.app folder where its contents will be installed.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
@@ -1034,15 +950,12 @@ class DeviceTestRunner(TestRunner):
     """
     super(DeviceTestRunner, self).__init__(
       app_path,
-      xcode_build_version,
       out_dir,
       env_vars=env_vars,
       retries=retries,
       test_args=test_args,
       test_cases=test_cases,
       xctest=xctest,
-      mac_toolchain=mac_toolchain,
-      xcode_path=xcode_path,
     )
 
     self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()

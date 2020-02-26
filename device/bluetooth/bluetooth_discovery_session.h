@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -70,8 +71,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   // to call this method to end a discovery session, instead of relying on the
   // destructor, so that they can be notified of the result via the callback
   // arguments.
-  virtual void Stop(const base::Closure& callback,
-                    const ErrorCallback& error_callback);
+  virtual void Stop(base::Closure callback = base::DoNothing(),
+                    ErrorCallback error_callback = base::DoNothing());
 
   virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
 

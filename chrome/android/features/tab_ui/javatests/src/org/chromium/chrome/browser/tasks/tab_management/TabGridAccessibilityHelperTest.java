@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -86,7 +87,7 @@ public class TabGridAccessibilityHelperTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
@@ -99,7 +100,7 @@ public class TabGridAccessibilityHelperTest {
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }

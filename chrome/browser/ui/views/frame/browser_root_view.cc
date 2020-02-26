@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -166,10 +167,8 @@ void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
                                           ->tab_strip_model()
                                           ->GetActiveWebContents()
                                           ->GetMainFrame();
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&FindURLMimeType, url),
           base::BindOnce(&OnFindURLMimeType, url, rfh->GetProcess()->GetID(),
                          rfh->GetRoutingID(),

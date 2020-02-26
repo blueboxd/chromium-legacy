@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -135,9 +136,8 @@ void CustomizationWallpaperDownloader::Start() {
   base::OnceClosure on_created_closure = base::BindOnce(
       &CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
       weak_factory_.GetWeakPtr(), std::move(success));
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(mkdir_closure), std::move(on_created_closure));
 }
 
@@ -172,9 +172,8 @@ void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
   base::OnceClosure on_rename_closure =
       base::BindOnce(&CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
                      weak_factory_.GetWeakPtr(), std::move(success));
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(rename_closure), std::move(on_rename_closure));
 }
 

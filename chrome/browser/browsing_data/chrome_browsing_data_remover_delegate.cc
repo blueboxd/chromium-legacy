@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
@@ -511,10 +512,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         data_manager->Refresh();
     }
 
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(
             &webrtc_logging::DeleteOldAndRecentWebRtcLogFiles,
             webrtc_logging::TextLogList::
@@ -523,10 +522,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         CreateTaskCompletionClosure(TracingDataType::kWebrtcLogs));
 
 #if defined(OS_ANDROID)
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&ClearPrecacheInBackground, profile_),
         CreateTaskCompletionClosure(TracingDataType::kPrecache));
 

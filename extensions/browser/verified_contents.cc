@@ -194,7 +194,7 @@ bool VerifiedContents::HasTreeHashRoot(
 
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
-  return TreeHashRootEqualsImpl(
+  return TreeHashRootEqualsForCanonicalPath(
       content_verifier_utils::CanonicalizeRelativePath(relative_path),
       expected);
 }
@@ -333,7 +333,7 @@ bool VerifiedContents::VerifySignature(const std::string& protected_value,
   return true;
 }
 
-bool VerifiedContents::TreeHashRootEqualsImpl(
+bool VerifiedContents::TreeHashRootEqualsForCanonicalPath(
     const content_verifier_utils::CanonicalRelativePath&
         canonical_relative_path,
     const std::string& expected) const {

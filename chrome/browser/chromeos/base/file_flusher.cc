@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -81,9 +82,8 @@ void FileFlusher::Job::Start() {
     return;
   }
 
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&FileFlusher::Job::FlushAsync, base::Unretained(this)),
       base::Bind(&FileFlusher::Job::FinishOnUIThread, base::Unretained(this)));
 }

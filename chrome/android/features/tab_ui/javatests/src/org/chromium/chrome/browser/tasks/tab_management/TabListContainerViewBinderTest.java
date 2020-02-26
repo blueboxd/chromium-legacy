@@ -95,7 +95,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mRecyclerView = getActivity().findViewById(R.id.tab_list_view); });
@@ -265,7 +265,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         mMCP.destroy();
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
         super.tearDownTest();
     }
 }

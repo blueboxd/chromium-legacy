@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
@@ -38,9 +39,8 @@ void AppShimListener::Init() {
   // If running the shim triggers Chrome startup, the user must wait for the
   // socket to be set up before the shim will be usable. This also requires
   // IO, so use MayBlock() with USER_VISIBLE.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&AppShimListener::InitOnBackgroundThread, this));
 }
 
@@ -61,9 +61,9 @@ AppShimListener::~AppShimListener() {
     base::FilePath version_path =
         user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
 
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), version_path,
                        false));

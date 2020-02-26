@@ -23,6 +23,8 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
     case SandboxType::kXrCompositing:
       return !base::FeatureList::IsEnabled(
           service_manager::features::kXRSandbox);
+    case SandboxType::kProxyResolver:
+      return false;
 #endif
     case SandboxType::kAudio:
       return !IsAudioSandboxEnabled();
@@ -86,6 +88,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kAudio:
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
+    case SandboxType::kProxyResolver:
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
@@ -171,6 +174,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
       return switches::kXrCompositingSandbox;
+    case SandboxType::kProxyResolver:
+      return switches::kProxyResolverSandbox;
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
@@ -215,6 +220,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #if defined(OS_WIN)
   if (sandbox_string == switches::kXrCompositingSandbox)
     return SandboxType::kXrCompositing;
+  if (sandbox_string == switches::kProxyResolverSandbox)
+    return SandboxType::kProxyResolver;
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SandboxType::kAudio;

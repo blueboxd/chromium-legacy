@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -275,9 +276,8 @@ void CreateConfigurationPolicyProvider(
           account_id, policy_key_dir, is_active_directory);
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<CloudExternalDataManager> external_data_manager(
       new UserCloudExternalDataManager(

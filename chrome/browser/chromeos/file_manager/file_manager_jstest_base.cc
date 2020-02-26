@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -46,10 +47,8 @@ class TestFilesDataSource : public content::URLDataSource {
       const content::WebContents::Getter& wc_getter,
       content::URLDataSource::GotDataCallback callback) override {
     const std::string path = content::URLDataSource::URLToRequestPath(url);
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
         base::BindOnce(&TestFilesDataSource::ReadFile, base::Unretained(this),
                        path, std::move(callback)));
   }

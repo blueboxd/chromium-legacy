@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -45,9 +46,9 @@ void PrecompilePhoneNumberRegexesAsync() {
   if (!base::FeatureList::IsEnabled(kClickToCallUI))
     return;
   constexpr auto kParseDelay = base::TimeDelta::FromSeconds(15);
-  base::PostDelayedTask(FROM_HERE,
-                        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                        base::BindOnce(&PrecompilePhoneNumberRegexes),
-                        kParseDelay);
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&PrecompilePhoneNumberRegexes), kParseDelay);
 }

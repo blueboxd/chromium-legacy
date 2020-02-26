@@ -290,12 +290,8 @@ struct SharedBufferVideoFrameData {
 
   // Stride and offsets for each plane. Offsets are relative to the start
   // of |frame_data|.
-  int32 y_stride;
-  int32 u_stride;
-  int32 v_stride;
-  uint64 y_offset;
-  uint64 u_offset;
-  uint64 v_offset;
+  array<int32> strides;
+  array<uint32> offsets;
 };
 
 // This defines video frame data stored in dmabuf.

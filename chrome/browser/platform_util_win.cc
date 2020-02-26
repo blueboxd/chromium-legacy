@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
@@ -113,8 +114,8 @@ void OpenExternalOnWorkerThread(const GURL& url) {
 }  // namespace
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&ShowItemInFolderOnWorkerThread, full_path));
 }
@@ -141,8 +142,8 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
 void OpenExternal(Profile* profile, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
       ->PostTask(FROM_HERE, base::BindOnce(&OpenExternalOnWorkerThread, url));
 }
 

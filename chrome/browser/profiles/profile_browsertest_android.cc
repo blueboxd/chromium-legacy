@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_constants.h"
@@ -70,7 +71,7 @@ class FileDestructionWatcher {
   void WaitForDestruction() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!watcher_);
-    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
+    base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&FileDestructionWatcher::StartWatchingPath,
                                   base::Unretained(this)));

@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/browser/win/ui_automation_util.h"
@@ -356,8 +357,8 @@ AutomationController::AutomationController(std::unique_ptr<Delegate> delegate) {
   ui::win::CreateATLModuleIfNeeded();
 
   // Create the task runner on which the automation client lives.
-  automation_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+  automation_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // Initialize the context on the automation task runner.

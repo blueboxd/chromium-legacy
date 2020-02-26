@@ -1285,27 +1285,6 @@ extern const char kBackgroundTaskComponentUpdateDescription[];
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];
 
-extern const char kCCTModuleName[];
-extern const char kCCTModuleDescription[];
-
-extern const char kCCTModuleCacheName[];
-extern const char kCCTModuleCacheDescription[];
-
-extern const char kCCTModuleCustomHeaderName[];
-extern const char kCCTModuleCustomHeaderDescription[];
-
-extern const char kCCTModuleCustomRequestHeaderName[];
-extern const char kCCTModuleCustomRequestHeaderDescription[];
-
-extern const char kCCTModuleDexLoadingName[];
-extern const char kCCTModuleDexLoadingDescription[];
-
-extern const char kCCTModulePostMessageName[];
-extern const char kCCTModulePostMessageDescription[];
-
-extern const char kCCTModuleUseIntentExtrasName[];
-extern const char kCCTModuleUseIntentExtrasDescription[];
-
 extern const char kCCTTargetTranslateLanguageName[];
 extern const char kCCTTargetTranslateLanguageDescription[];
 

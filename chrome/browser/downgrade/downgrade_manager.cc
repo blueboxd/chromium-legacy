@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
@@ -262,9 +263,8 @@ void DowngradeManager::DeleteMovedUserDataSoon(
   // available via base/task/post_task.h.
   content::BrowserThread::PostBestEffortTask(
       FROM_HERE,
-      base::CreateTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::BindOnce(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
 }

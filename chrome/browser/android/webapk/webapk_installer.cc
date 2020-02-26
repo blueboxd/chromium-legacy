@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
@@ -374,9 +375,9 @@ std::unique_ptr<std::string> ReadFileInBackground(const base::FilePath& file) {
 
 // Returns task runner for running background tasks.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                 base::TaskPriority::BEST_EFFORT,
-                                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  return base::ThreadPool::CreateTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 }  // anonymous namespace

@@ -30,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
@@ -224,8 +225,8 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
 }
 
 BrowserDMTokenStorageWin::BrowserDMTokenStorageWin()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {}
+    : com_sta_task_runner_(
+          base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})) {}
 
 BrowserDMTokenStorageWin::~BrowserDMTokenStorageWin() {}
 

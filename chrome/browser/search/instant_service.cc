@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
@@ -499,9 +500,8 @@ void InstantService::SetBackgroundToLocalResource() {
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),
       base::BindOnce(&InstantService::SetBackgroundToLocalResource,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -912,8 +912,8 @@ void InstantService::UpdateCustomBackgroundColorAsync(
   // Calculate the bitmap color asynchronously as it is slow (1-2 seconds for
   // the thumbnail). However, prefs should be updated on the main thread.
   if (!fetched_image.IsEmpty()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
         base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
                        weak_ptr_factory_.GetWeakPtr(), timestamp));
@@ -972,9 +972,8 @@ bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
 void InstantService::RemoveLocalBackgroundImageCopy() {
   base::FilePath path = profile_->GetPath().AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
 }
 

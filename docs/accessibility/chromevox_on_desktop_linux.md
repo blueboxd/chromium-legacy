@@ -79,29 +79,15 @@ If you want speech, you just need to copy the speech synthesis data files to
 /usr/share like it would be on a Chrome OS device:
 
 ```
-sudo git clone https://chromium.googlesource.com/chromiumos/platform/assets /usr/share/chromeos-assets
+gsutil ls gs://chromeos-localmirror/distfiles/googletts*
 ```
 
-Change the permissions:
+Pick the latest version and
 
 ```
-sudo find /usr/share/chromeos-assets -type f -exec chmod 644 {} \;
-sudo find /usr/share/chromeos-assets -type d -exec chmod 755 {} \;
-```
-
-Next, unzip the NaCl executables. You only need to do the one for your host
-architecture:
-
-```
-PATTS_DIR=/usr/share/chromeos-assets/speech_synthesis/patts
-sudo unzip $PATTS_DIR/tts_service_x86_64.nexe.zip -d $PATTS_DIR
-```
-
-You may need to update permissions for the unzipped files within within
-speech_synthesis/patts:
-
-```
-sudo find $PATTS_DIR -type f -exec chmod 755 {} \;
+gsutil cp gs://chromeos-localmirror/distfiles/googletts-13.1.tar.xz /usr/share/chromeos-assets/speech_synthesis/patts/
+tar xvf /usr/share/chromeos-assets/speech_synthesis/patts/googletts-13.1.tar.xz
+rm /usr/share/chromeos-assets/speech_synthesis/patts/googletts-13.1.tar.xz
 ```
 
 **Be sure to check permissions of /usr/share/chromeos-assets, some users report

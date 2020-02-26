@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -138,8 +139,8 @@ TEST_F(ExternalCacheImplTest, Basic) {
   base::FilePath cache_dir(CreateCacheDir(false));
   ExternalCacheImpl external_cache(
       cache_dir, url_loader_factory(),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-      this, true, false);
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}), this,
+      true, false);
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
@@ -260,8 +261,8 @@ TEST_F(ExternalCacheImplTest, PreserveInstalled) {
   base::FilePath cache_dir(CreateCacheDir(false));
   ExternalCacheImpl external_cache(
       cache_dir, url_loader_factory(),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
-      this, true, false);
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}), this,
+      true, false);
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));

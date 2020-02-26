@@ -60,6 +60,9 @@ class PlayerFrameBitmapPainter {
         for (int row = rowStart; row < rowEnd; row++) {
             for (int col = colStart; col < colEnd; col++) {
                 Bitmap tileBitmap = mBitmapMatrix[row][col];
+                if (tileBitmap == null) {
+                    continue;
+                }
 
                 // Calculate the portion of this tileBitmap that is visible in mViewPort.
                 int bitmapLeft = Math.max(mViewPort.left - (col * tileWidth), 0);

@@ -194,6 +194,27 @@ public class Tab {
         }
     }
 
+    /**
+     * Dismisses any active tab modal overlays.
+     *
+     * This has no effect if no tab modal dialog is currently displayed.
+     *
+     * See also {@link TabCallback#onTabModalStateChanged}.
+     *
+     * @since 82
+     */
+    public void dismissTabModalOverlay() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.dismissTabModalOverlay();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void setNewTabCallback(@Nullable NewTabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mNewTabCallback = callback;
@@ -288,6 +309,14 @@ public class Tab {
                     ObjectWrapper.unwrap(titleOrAltText, String.class));
             for (TabCallback callback : mCallbacks) {
                 callback.showContextMenu(params);
+            }
+        }
+
+        @Override
+        public void onTabModalStateChanged(boolean isTabModalShowing) {
+            StrictModeWorkaround.apply();
+            for (TabCallback callback : mCallbacks) {
+                callback.onTabModalStateChanged(isTabModalShowing);
             }
         }
     }

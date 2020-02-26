@@ -7,19 +7,15 @@ package org.chromium.chrome.browser.flags;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +203,6 @@ public class CachedFeatureFlags {
      */
     public static void cacheAdditionalNativeFlags() {
         cacheNetworkServiceWarmUpEnabled();
-        cacheNativeTabSwitcherUiFlags();
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceVariation();
 
@@ -248,39 +243,6 @@ public class CachedFeatureFlags {
                 parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
     }
 
-    /**
-     * @return Whether or not the bottom toolbar is enabled.
-     */
-    public static boolean isBottomToolbarEnabled() {
-        // TODO(crbug.com/944228): TabGroupsAndroid and ChromeDuet are incompatible for now.
-        return isEnabled(ChromeFeatureList.CHROME_DUET)
-                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext())
-                && (isDuetTabStripIntegrationAndroidEnabled() || !isTabGroupsAndroidEnabled());
-    }
-
-    /**
-     * Set whether the bottom toolbar is enabled for tests. Reset to null at the end of tests.
-     */
-    @VisibleForTesting
-    public static void setIsBottomToolbarEnabledForTesting(Boolean enabled) {
-        setForTesting(ChromeFeatureList.CHROME_DUET, enabled);
-    }
-
-    /**
-     * @return Whether or not the adaptive toolbar is enabled.
-     */
-    public static boolean isAdaptiveToolbarEnabled() {
-        return isEnabled(ChromeFeatureList.CHROME_DUET_ADAPTIVE) && isBottomToolbarEnabled();
-    }
-
-    /**
-     * @return Whether or not the labeled bottom toolbar is enabled.
-     */
-    public static boolean isLabeledBottomToolbarEnabled() {
-        return isEnabled(ChromeFeatureList.CHROME_DUET_LABELED) && isBottomToolbarEnabled();
-    }
-
     public static boolean isCommandLineOnNonRootedEnabled() {
         return isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
     }
@@ -307,16 +269,6 @@ public class CachedFeatureFlags {
         return isEnabled(ChromeFeatureList.PAINT_PREVIEW_TEST);
     }
 
-    @VisibleForTesting
-    static void cacheNativeTabSwitcherUiFlags() {
-        if (isEligibleForTabUiExperiments() && !DeviceClassManager.enableAccessibilityLayout()) {
-            List<String> featuresToCache = Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                    ChromeFeatureList.TAB_GROUPS_ANDROID,
-                    ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID);
-            cacheNativeFlags(featuresToCache);
-        }
-    }
-
     /**
      * @return Whether the Start Surface SinglePane is enabled.
      */
@@ -327,100 +279,12 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * @return Whether the Grid Tab Switcher UI is enabled and available for use.
-     */
-    public static boolean isGridTabSwitcherEnabled() {
-        // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
-        // changing that setting while Chrome is alive.
-        // Having Tab Groups or Start implies Grid Tab Switcher.
-        return !(isTabGroupsAndroidContinuationChromeFlagEnabled() && SysUtils.isLowEndDevice())
-                && isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
-                && TabUiFeatureUtilities.isTabManagementModuleSupported()
-                || isTabGroupsAndroidEnabled() || isStartSurfaceEnabled();
-    }
-
-    /**
-     * Toggles whether the Grid Tab Switcher is enabled for testing. Should be reset back to
-     * null after the test has finished.
-     */
-    @VisibleForTesting
-    public static void setGridTabSwitcherEnabledForTesting(@Nullable Boolean enabled) {
-        setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, enabled);
-    }
-
-    /**
-     * @return Whether the tab group feature is enabled and available for use.
-     */
-    public static boolean isTabGroupsAndroidEnabled() {
-        return isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
-                && TabUiFeatureUtilities.isTabManagementModuleSupported();
-    }
-
-    /**
-     * Toggles whether the Tab Group is enabled for testing. Should be reset back to null after the
-     * test has finished.
-     */
-    @VisibleForTesting
-    public static void setTabGroupsAndroidEnabledForTesting(@Nullable Boolean available) {
-        setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, available);
-    }
-
-    /**
      * Toggles whether the StartSurface is enabled for testing. Should be reset back to null after
      * the test has finished.
      */
     @VisibleForTesting
     public static void setStartSurfaceEnabledForTesting(@Nullable Boolean isEnabled) {
         setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, isEnabled);
-    }
-
-    /**
-     * Toggles whether the Duet-TabStrip integration is enabled for testing. Should be reset back to
-     * null after the test has finished. Notice that TabGroup should also be turned on in order to
-     * really get the feature.
-     */
-    @VisibleForTesting
-    public static void setDuetTabStripIntegrationAndroidEnabledForTesting(
-            @Nullable Boolean isEnabled) {
-        setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, isEnabled);
-    }
-
-    private static boolean isEligibleForTabUiExperiments() {
-        return (isTabGroupsAndroidContinuationChromeFlagEnabled() || !SysUtils.isLowEndDevice())
-                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext());
-    }
-
-    /**
-     * @return Whether the tab group ui improvement feature is enabled and available for use.
-     */
-    public static boolean isTabGroupsAndroidUiImprovementsEnabled() {
-        return isTabGroupsAndroidEnabled()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID);
-    }
-
-    /**
-     * @return Whether the tab group continuation feature is enabled and available for use.
-     */
-    public static boolean isTabGroupsAndroidContinuationEnabled() {
-        return isTabGroupsAndroidEnabled() && isTabGroupsAndroidContinuationChromeFlagEnabled();
-    }
-
-    /**
-     * @return Whether the tab group continuation Chrome flag is enabled.
-     */
-    public static boolean isTabGroupsAndroidContinuationChromeFlagEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
-    }
-
-    /**
-     * @return Whether the tab strip and duet integration feature is enabled and available for use.
-     */
-    public static boolean isDuetTabStripIntegrationAndroidEnabled() {
-        return isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
-                && isEnabled(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID)
-                && TabUiFeatureUtilities.isTabManagementModuleSupported();
     }
 
     /**
@@ -557,6 +421,12 @@ public class CachedFeatureFlags {
         Map<String, Boolean> swapped = sDefaults;
         sDefaults = testDefaults;
         return swapped;
+    }
+
+    @Deprecated
+    public static boolean isBottomToolbarEnabled() {
+        // TODO(crbug.com/1012975): Remove this when downstream calls BottomToolbarConfiguration.
+        return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 
     @NativeMethods

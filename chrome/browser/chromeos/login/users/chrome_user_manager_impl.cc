@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -1545,9 +1546,8 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
     const std::string& locale,
     base::OnceClosure on_resolved_callback,
     std::string* out_resolved_locale) const {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(ResolveLocale, locale,
                      base::Unretained(out_resolved_locale)),
       std::move(on_resolved_callback));

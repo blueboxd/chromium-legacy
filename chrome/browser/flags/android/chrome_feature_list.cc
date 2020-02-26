@@ -110,13 +110,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTClientDataHeader,
     &kCCTExternalLinkHandling,
     &kCCTIncognito,
-    &kCCTModule,
-    &kCCTModuleCache,
-    &kCCTModuleCustomHeader,
-    &kCCTModuleCustomRequestHeader,
-    &kCCTModuleDexLoading,
-    &kCCTModulePostMessage,
-    &kCCTModuleUseIntentExtras,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTReportParallelRequestStatus,
@@ -323,26 +316,6 @@ const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
 
 const base::Feature kCCTIncognito{"CCTIncognito",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModule{"CCTModule", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModuleCache{"CCTModuleCache",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModuleCustomHeader{"CCTModuleCustomHeader",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModuleCustomRequestHeader{
-    "CCTModuleCustomRequestHeader", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModuleDexLoading{"CCTModuleDexLoading",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModulePostMessage{"CCTModulePostMessage",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCCTModuleUseIntentExtras{
-    "CCTModuleUseIntentExtras", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

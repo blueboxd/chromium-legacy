@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import_status_tracker.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
@@ -172,8 +173,8 @@ void CrostiniUpgrader::StartPrechecks() {
   pmc_observer_.Add(pmc);
   pmc->RequestStatusUpdate();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(&CrostiniUpgrader::OnAvailableDiskSpace,

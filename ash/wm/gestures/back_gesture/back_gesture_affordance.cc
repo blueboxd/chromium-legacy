@@ -21,6 +21,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -90,10 +91,11 @@ constexpr float kMaxYMovement = 8.f;
 class AffordanceView : public views::View {
  public:
   AffordanceView() {
-    SetPaintToLayer(ui::LAYER_TEXTURED);
+    SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   }
-
+  AffordanceView(AffordanceView&) = delete;
+  AffordanceView& operator=(AffordanceView&) = delete;
   ~AffordanceView() override = default;
 
   // Schedule painting on given |affordance_progress|, |complete_progress| and
@@ -174,8 +176,6 @@ class AffordanceView : public views::View {
   float complete_progress_ = 0.f;
   BackGestureAffordance::State state_ = BackGestureAffordance::State::DRAGGING;
   float x_offset_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(AffordanceView);
 };
 
 gfx::Rect GetSplitViewDividerBoundsInScreen(const gfx::Point& location) {
@@ -299,9 +299,14 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
   params.name = "BackGestureAffordance";
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.parent = window_util::GetRootWindowAt(location)->GetChildById(
-      kShellWindowId_AlwaysOnTopContainer);
+      kShellWindowId_OverlayContainer);
+
   affordance_widget_->Init(std::move(params));
   affordance_widget_->SetContentsView(new AffordanceView());
+  // We've got our own custom show/hide animation, so the default is unneeded.
+  ::wm::SetWindowVisibilityAnimationTransition(
+      affordance_widget_->GetNativeWindow(), ::wm::ANIMATE_NONE);
+
   const gfx::Rect widget_bounds =
       GetAffordanceBounds(location, dragged_from_splitview_divider_);
   affordance_widget_->SetBounds(widget_bounds);

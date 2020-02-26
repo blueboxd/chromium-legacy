@@ -14,11 +14,17 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
+#include "third_party/icu/source/i18n/unicode/timezone.h"
+#endif
 
 namespace device_event_log {
 
@@ -35,6 +41,12 @@ const char* kLogTypeHidDesc = "HID";
 const char* kLogTypeMemoryDesc = "Memory";
 const char* kLogTypePrinterDesc = "Printer";
 const char* kLogTypeFidoDesc = "FIDO";
+
+enum class ShowTime {
+  kNone,
+  kTimeWithMs,
+  kUnix,
+};
 
 std::string GetLogTypeString(LogType type) {
   switch (type) {
@@ -102,19 +114,49 @@ std::string TimeWithMillieconds(const base::Time& time) {
                             exploded.millisecond);
 }
 
+#if defined(OS_POSIX)
+std::string UnixTime(const base::Time& time) {
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+  // See note in DateAndTimeWithMicroseconds.
+  int usecs = static_cast<int>(fmod(time.ToDoubleT() * 1000000, 1000000));
+  std::unique_ptr<icu::TimeZone> tz(icu::TimeZone::createDefault());
+  int32_t offset_ms = tz->getRawOffset();
+  char sign = offset_ms > 0 ? '+' : '-';
+  int timezone_hours = std::abs(offset_ms) / (60 * 60 * 1000);
+  // This format is consistent with the date/time format in /var/log/messages
+  // and /var/log/net.log, e.g: 2020-01-23T01:23:45.678901-07:00.
+  return base::StringPrintf(
+      "%04d-%02d-%02dT%02d:%02d:%02d.%06d%c%02d:00", exploded.year,
+      exploded.month, exploded.day_of_month, exploded.hour, exploded.minute,
+      exploded.second, usecs, sign, timezone_hours);
+}
+#endif
+
 std::string LogEntryToString(const DeviceEventLogImpl::LogEntry& log_entry,
-                             bool show_time,
+                             ShowTime show_time,
                              bool show_file,
                              bool show_type,
                              bool show_level) {
   std::string line;
-  if (show_time)
+  if (show_time == ShowTime::kTimeWithMs)
     line += "[" + TimeWithMillieconds(log_entry.time) + "] ";
+#if defined(OS_POSIX)
+  if (show_time == ShowTime::kUnix)
+    line += UnixTime(log_entry.time) + " ";
+#endif
   if (show_type)
     line += GetLogTypeString(log_entry.log_type) + ": ";
   if (show_level) {
     const char* kLevelDesc[] = {"ERROR", "USER", "EVENT", "DEBUG"};
-    line += base::StringPrintf("%s: ", kLevelDesc[log_entry.log_level]);
+    line += std::string(kLevelDesc[log_entry.log_level]);
+#if defined(OS_POSIX)
+    if (show_time == ShowTime::kUnix) {
+      // Format the level consistently with /var/log/messages.
+      line += base::StringPrintf(" chrome[%d]", base::GetCurrentProcId());
+    }
+#endif
+    line += ": ";
   }
   if (show_file) {
     line += base::StringPrintf("%s:%d ", log_entry.file.c_str(),
@@ -152,7 +194,7 @@ void SendLogEntryToVLogOrErrorLog(
     const DeviceEventLogImpl::LogEntry& log_entry) {
   if (log_entry.log_level != LOG_LEVEL_ERROR && !VLOG_IS_ON(1))
     return;
-  const bool show_time = true;
+  const ShowTime show_time = ShowTime::kTimeWithMs;
   const bool show_file = true;
   const bool show_type = true;
   const bool show_level = log_entry.log_level != LOG_LEVEL_ERROR;
@@ -184,13 +226,13 @@ bool LogEntryMatchesTypes(const DeviceEventLogImpl::LogEntry& entry,
 }
 
 void GetFormat(const std::string& format_string,
-               bool* show_time,
+               ShowTime* show_time,
                bool* show_file,
                bool* show_type,
                bool* show_level,
                bool* format_json) {
   base::StringTokenizer tokens(format_string, ",");
-  *show_time = false;
+  *show_time = ShowTime::kNone;
   *show_file = false;
   *show_type = false;
   *show_level = false;
@@ -198,7 +240,14 @@ void GetFormat(const std::string& format_string,
   while (tokens.GetNext()) {
     std::string tok(tokens.token());
     if (tok == "time")
-      *show_time = true;
+      *show_time = ShowTime::kTimeWithMs;
+    if (tok == "unixtime") {
+#if defined(OS_POSIX)
+      *show_time = ShowTime::kUnix;
+#else
+      *show_time = ShowTime::kTimeWithMs;
+#endif
+    }
     if (tok == "file")
       *show_file = true;
     if (tok == "type")
@@ -331,7 +380,8 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   if (entries_.empty())
     return "No Log Entries.";
 
-  bool show_time, show_file, show_type, show_level, format_json;
+  ShowTime show_time;
+  bool show_file, show_type, show_level, format_json;
   GetFormat(format, &show_time, &show_file, &show_type, &show_level,
             &format_json);
 

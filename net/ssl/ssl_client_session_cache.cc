@@ -23,6 +23,12 @@ bool IsTLS13(const SSL_SESSION* session) {
   return SSL_SESSION_get_protocol_version(session) >= TLS1_3_VERSION;
 }
 
+// Returns a tuple of references to fields of |key|, for comparison purposes.
+auto TieKeyFields(const SSLClientSessionCache::Key& key) {
+  return std::tie(key.server, key.dest_ip_addr, key.network_isolation_key,
+                  key.privacy_mode, key.disable_legacy_crypto);
+}
+
 }  // namespace
 
 SSLClientSessionCache::Key::Key() = default;
@@ -35,15 +41,11 @@ SSLClientSessionCache::Key& SSLClientSessionCache::Key::operator=(Key&& other) =
     default;
 
 bool SSLClientSessionCache::Key::operator==(const Key& other) const {
-  return std::tie(server, dest_ip_addr, network_isolation_key, privacy_mode) ==
-         std::tie(other.server, other.dest_ip_addr, other.network_isolation_key,
-                  other.privacy_mode);
+  return TieKeyFields(*this) == TieKeyFields(other);
 }
 
 bool SSLClientSessionCache::Key::operator<(const Key& other) const {
-  return std::tie(server, dest_ip_addr, network_isolation_key, privacy_mode) <
-         std::tie(other.server, other.dest_ip_addr, other.network_isolation_key,
-                  other.privacy_mode);
+  return TieKeyFields(*this) < TieKeyFields(other);
 }
 
 SSLClientSessionCache::SSLClientSessionCache(const Config& config)

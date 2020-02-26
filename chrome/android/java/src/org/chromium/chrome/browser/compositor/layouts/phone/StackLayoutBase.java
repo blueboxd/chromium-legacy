@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -49,6 +48,7 @@ import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -609,7 +609,7 @@ public abstract class StackLayoutBase extends Layout {
 
     @Override
     public void attachViews(ViewGroup container) {
-        if (CachedFeatureFlags.isBottomToolbarEnabled()) {
+        if (BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             // In practice, the "container view" is used for animation. When Duet is enabled, the
             // container is placed behind the bottom toolbar since it is persistent.
             ViewGroup compositorViewHolder = container.findViewById(R.id.compositor_view_holder);

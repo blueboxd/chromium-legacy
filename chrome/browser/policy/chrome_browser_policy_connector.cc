@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
@@ -149,8 +150,8 @@ std::unique_ptr<ConfigurationPolicyProvider>
 ChromeBrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   std::unique_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT}),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
       kRegistryChromePolicyKey));
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
@@ -165,8 +166,8 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
       base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
 #endif
   auto loader = std::make_unique<PolicyLoaderMac>(
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT}),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
       policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
       new MacPreferences(), bundle_id);
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
@@ -175,8 +176,8 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   base::FilePath config_dir_path;
   if (base::PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::BEST_EFFORT}),
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
         config_dir_path, POLICY_SCOPE_MACHINE));
     return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                  std::move(loader));

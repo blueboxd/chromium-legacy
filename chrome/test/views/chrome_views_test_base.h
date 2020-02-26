@@ -39,6 +39,10 @@ class ChromeViewsTestBase : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override;
 
+  std::unique_ptr<views::Widget> CreateTestWidget(
+      views::Widget::InitParams::Type type =
+          views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+
  protected:
   // Use this protected member directly to drive tasks posted within a
   // ChromeViewsTestBase-based test.

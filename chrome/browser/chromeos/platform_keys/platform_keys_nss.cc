@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -460,9 +461,9 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&GenerateRSAKeyOnWorkerThread, std::move(state)));
 }
@@ -554,9 +555,9 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SignRSAOnWorkerThread, std::move(state)));
 }
@@ -624,9 +625,9 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FilterCertificatesOnWorkerThread, std::move(state)));
 }

@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -84,9 +85,8 @@ void TerminalSource::StartDataRequest(
   if (base::EndsWith(reparsed, ".html", base::CompareCase::INSENSITIVE_ASCII))
     replacements_["themeColor"] = GetThemeColorFromPrefs();
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFile, file_path, std::move(callback)));
 }
 

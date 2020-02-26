@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
@@ -69,10 +70,9 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
   if (!password_delegate_factory_.is_null())
     password_delegate = password_delegate_factory_.Run(request->host_and_port);
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
                      base::Unretained(this), password_delegate,
                      base::Unretained(request), std::move(additional_certs)),

@@ -4997,11 +4997,11 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .Translate(100, 150)
       .Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  // Page scroll and scale are irrelevant for visible rect.
+  // Scale is irrelevant for visible rect.
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+    EXPECT_EQ(IntRect(50 - 100, 55 - 150, 50, 75), visible_rect);
   }
 
   // Transform adapts to scroll changes.
@@ -5014,11 +5014,11 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .Translate(50, 55)
       .Scale(1. / 1.5f);
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
-  // Visible rect doesn't change.
+  // Visible rect adapts to scroll change.
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 50, 75), visible_rect);
   }
 
   // Transform adapts to page scale changes.
@@ -5033,7 +5033,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
-    EXPECT_EQ(IntRect(50, 55, 50, 75), visible_rect);  // Was modified.
+    EXPECT_EQ(IntRect(50 - 50, 55 - 55, 50, 75), visible_rect);
   }
 }
 

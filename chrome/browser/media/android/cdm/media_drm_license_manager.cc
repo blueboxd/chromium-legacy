@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/unguessable_token.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -58,8 +59,8 @@ void ClearMediaDrmLicenses(
   // Create a single thread task runner for MediaDrmBridge, for posting Java
   // callbacks immediately to avoid rentrancy issues.
   // TODO(yucliu): Remove task runner from MediaDrmBridge in this case.
-  base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()})
+  base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskPriority::USER_VISIBLE, base::MayBlock()})
       ->PostTaskAndReply(FROM_HERE,
                          base::BindOnce(&ClearMediaDrmLicensesBlocking,
                                         std::move(no_license_origin_ids)),

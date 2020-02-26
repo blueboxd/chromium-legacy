@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -112,8 +113,8 @@ ArcServiceLauncher::ArcServiceLauncher(
   g_arc_service_launcher = this;
 
   // Write kIsArcVm file to be 1 or 0.
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce([](const base::FilePath& filename, const char* data,
                         int size) { base::WriteFile(filename, data, size); },
                      base::FilePath(kIsArcVm),

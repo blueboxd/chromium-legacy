@@ -20,6 +20,11 @@ import org.gradle.maven.MavenPomArtifact
 class ChromiumDepGraph {
     final def dependencies = new HashMap<String, DependencyDescription>()
 
+    // Override to use the lower version of the library when
+    // resolving which library version to use.
+    final def LOWER_VERSION_OVERRIDE = [
+         'com_google_guava_listenablefuture',
+    ]
     // Some libraries don't properly fill their POM with the appropriate licensing information.
     // It is provided here from manual lookups. Note that licenseUrl must provide textual content
     // rather than be an html page.
@@ -195,7 +200,13 @@ class ChromiumDepGraph {
     private void collectDependenciesInternal(ResolvedDependency dependency) {
         def id = makeModuleId(dependency.module)
         if (dependencies.containsKey(id)) {
-            if (dependencies.get(id).version <= dependency.module.id.version) return
+            if (id in LOWER_VERSION_OVERRIDE &&
+                   dependencies.get(id).version <= dependency.module.id.version) {
+                return
+            }
+            // Use largest version for version conflict resolution. See crbug.com/1040958
+            // https://docs.gradle.org/current/userguide/dependency_resolution.html#sec:version-conflict
+            if (dependencies.get(id).version >= dependency.module.id.version) return
         }
 
         def childModules = []

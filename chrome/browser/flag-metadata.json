@@ -399,41 +399,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "cct-module",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-cache",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-custom-header",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-custom-request-header",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-dex-loading",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-post-message",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "cct-module-use-intent-extras",
-    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "cct-target-translate-language",
     "owners": [ "amalova" ],
     "expiry_milestone": 76

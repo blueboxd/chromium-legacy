@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -929,9 +930,8 @@ void CrostiniRegistryService::RemoveAppData(const std::string& app_id) {
   retry_icon_requests_.erase(app_id);
 
   // Remove local data on filesystem for the icons.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteIconFolderFromFileThread, GetAppPath(app_id)));
 }
 
@@ -1040,9 +1040,8 @@ void CrostiniRegistryService::OnContainerAppIcon(
     return;
   // Now install the icon that we received.
   const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
       base::BindOnce(&CrostiniRegistryService::OnIconInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));

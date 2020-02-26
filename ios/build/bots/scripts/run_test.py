@@ -31,69 +31,6 @@ class UnitTest(unittest.TestCase):
     runner.parse_args(cmd)
     self.assertTrue(runner.args.app == './foo-Runner.app')
 
-  def test_parse_args_iossim_platform_version(self):
-    """
-    iossim, platforma and version should all be set.
-    missing iossim
-    """
-    test_cases = [
-        {
-            'error':
-                2,
-            'cmd': [
-                '--platform',
-                'iPhone X',
-                '--version',
-                '13.2.2',
-
-                # Required
-                '--xcode-build-version',
-                '123abc',
-                '--out-dir',
-                'some/dir'
-            ],
-        },
-        {
-            'error':
-                2,
-            'cmd': [
-                '--iossim',
-                'path/to/iossim',
-                '--version',
-                '13.2.2',
-
-                # Required
-                '--xcode-build-version',
-                '123abc',
-                '--out-dir',
-                'some/dir'
-            ],
-        },
-        {
-            'error':
-                2,
-            'cmd': [
-                '--iossim',
-                'path/to/iossim',
-                '--platform',
-                'iPhone X',
-
-                # Required
-                '--xcode-build-version',
-                '123abc',
-                '--out-dir',
-                'some/dir'
-            ],
-        },
-    ]
-
-    runner = run.Runner()
-    for test_case in test_cases:
-      with self.assertRaises(SystemExit) as ctx:
-        runner.parse_args(test_case['cmd'])
-        self.assertTrue(re.match('must specify all or none of *', ctx.message))
-        self.assertEqual(ctx.exception.code, test_case['error'])
-
   def test_parse_args_xcode_parallelization_requirements(self):
     """
     xcode parallelization set requires both platform and version

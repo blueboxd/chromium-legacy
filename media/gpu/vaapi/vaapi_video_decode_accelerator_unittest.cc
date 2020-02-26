@@ -234,14 +234,14 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     EXPECT_CALL(*mock_decoder_, Decode())
         .WillOnce(Return(AcceleratedVideoDecoder::kConfigChange));
 
+    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
+    EXPECT_CALL(*mock_decoder_, GetVisibleRect())
+        .WillOnce(Return(gfx::Rect(picture_size)));
     EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
         .WillOnce(Return(num_pictures));
-    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
     const size_t kNumReferenceFrames = num_pictures / 2;
     EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
         .WillOnce(Return(kNumReferenceFrames));
-    EXPECT_CALL(*mock_decoder_, GetVisibleRect())
-        .WillOnce(Return(gfx::Rect(picture_size)));
     EXPECT_CALL(*mock_decoder_, GetProfile())
         .WillOnce(Return(GetParam().video_codec));
     EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContext());

@@ -42,13 +42,13 @@ public class BottomToolbarWithStartSurfaceTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
     }
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
     }
 

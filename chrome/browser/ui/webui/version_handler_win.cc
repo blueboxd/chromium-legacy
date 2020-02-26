@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/webui/version_util_win.h"
 #include "content/public/browser/web_ui.h"
@@ -20,9 +21,8 @@ void VersionHandlerWindows::HandleRequestVersionInfo(
   VersionHandler::HandleRequestVersionInfo(args);
 
   // Start the asynchronous load of the versions.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&version_utils::win::GetFullWindowsVersion),
       base::BindOnce(&VersionHandlerWindows::OnVersion,
                      weak_factory_.GetWeakPtr()));

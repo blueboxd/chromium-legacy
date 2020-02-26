@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -101,8 +102,8 @@ void SetOverlayIcon(HWND hwnd,
 void PostSetOverlayIcon(HWND hwnd,
                         std::unique_ptr<SkBitmap> bitmap,
                         const std::string& alt_text) {
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
       ->PostTask(FROM_HERE, base::BindOnce(&SetOverlayIcon, hwnd,
                                            base::Passed(&bitmap), alt_text));
 }

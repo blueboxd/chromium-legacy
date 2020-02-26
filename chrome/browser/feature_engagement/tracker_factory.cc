@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -44,8 +45,8 @@ KeyedService* TrackerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   base::FilePath storage_dir = profile->GetPath().Append(
       chrome::kFeatureEngagementTrackerStorageDirname);

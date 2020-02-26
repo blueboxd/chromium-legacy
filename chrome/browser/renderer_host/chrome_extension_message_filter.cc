@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
@@ -159,8 +160,8 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
   }
 
   // This blocks tab loading. Priority is inherited from the calling context.
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(
           &ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync, this,
           paths_to_load, extension_id, default_locale,

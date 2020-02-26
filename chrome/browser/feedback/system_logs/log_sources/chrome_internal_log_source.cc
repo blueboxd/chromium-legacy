@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -308,10 +309,8 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
           [](std::unique_ptr<SystemLogsResponse> response,
              SysLogsSourceCallback callback) {
             SystemLogsResponse* response_ptr = response.get();
-            base::PostTaskAndReply(
-                FROM_HERE,
-                {base::ThreadPool(), base::MayBlock(),
-                 base::TaskPriority::BEST_EFFORT},
+            base::ThreadPool::PostTaskAndReply(
+                FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                 base::BindOnce(&PopulateEntriesAsync, response_ptr),
                 base::BindOnce(std::move(callback), std::move(response)));
           },

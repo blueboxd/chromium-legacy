@@ -34,6 +34,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -208,35 +209,27 @@ class ChromeOSTermsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == chrome::kOemEulaURLPath) {
       // Load local OEM EULA from the disk.
-      base::PostTaskAndReply(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ChromeOSTermsHandler::LoadOemEulaFileAsync, this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else if (path_ == chrome::kArcTermsURLPath) {
       // Load ARC++ terms from the file.
-      base::PostTaskAndReply(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ChromeOSTermsHandler::LoadArcTermsFileAsync, this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else if (path_ == chrome::kArcPrivacyPolicyURLPath) {
       // Load ARC++ privacy policy from the file.
-      base::PostTaskAndReply(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ChromeOSTermsHandler::LoadArcPrivacyPolicyFileAsync,
                          this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else {
       // Load local ChromeOS terms from the file.
-      base::PostTaskAndReply(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ChromeOSTermsHandler::LoadEulaFileAsync, this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     }
@@ -395,9 +388,8 @@ class ChromeOSCreditsHandler
       return;
     }
     // Load local Chrome OS credits from the disk.
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&ChromeOSCreditsHandler::LoadCreditsFileAsync, this),
         base::Bind(&ChromeOSCreditsHandler::ResponseOnUIThread, this));
   }
@@ -477,9 +469,8 @@ class CrostiniCreditsHandler
 
   void LoadCredits(base::FilePath path) {
     // Load crostini credits from the disk.
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&CrostiniCreditsHandler::LoadCrostiniCreditsFileAsync,
                        this, std::move(path)),
         base::BindOnce(&CrostiniCreditsHandler::ResponseOnUIThread, this));

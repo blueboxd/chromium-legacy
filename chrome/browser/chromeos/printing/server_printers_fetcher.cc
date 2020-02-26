@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/device_event_log/device_event_log.h"
@@ -50,8 +51,8 @@ class ServerPrintersFetcher::PrivateImplementation
         server_url_(server_url),
         server_name_(server_name),
         callback_(std::move(cb)),
-        task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
+        task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
     CHECK(base::SequencedTaskRunnerHandle::IsSet());
     task_runner_for_callback_ = base::SequencedTaskRunnerHandle::Get();

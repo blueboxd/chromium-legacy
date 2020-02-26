@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -264,8 +265,8 @@ void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
 scoped_refptr<base::SequencedTaskRunner>
 ExternalRegistryLoader::GetOrCreateTaskRunner() {
   if (!task_runner_.get()) {
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(),  // Requires I/O for registry.
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {// Requires I/O for registry.
          base::MayBlock(),
 
          // Inherit priority.

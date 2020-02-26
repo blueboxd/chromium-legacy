@@ -16,7 +16,6 @@ import "mojo/public/mojom/base/time.mojom";
 import "services/audio/public/mojom/stream_factory.mojom";
 import "services/device/public/mojom/battery_monitor.mojom";
 import "services/device/public/mojom/wake_lock_provider.mojom";
-import "services/identity/public/mojom/identity_accessor.mojom";
 import "services/media_session/public/mojom/audio_focus.mojom";
 import "services/media_session/public/mojom/media_controller.mojom";
 import "ui/accessibility/mojom/ax_assistant_structure.mojom";
@@ -324,10 +323,6 @@ interface Client {
   // service, via the browser.
   RequestAudioDecoderFactory(
       pending_receiver<AssistantAudioDecoderFactory> receiver);
-
-  // Requests an IdentityAccessor from the browser for a signed-in user.
-  RequestIdentityAccessor(
-      pending_receiver<identity.mojom.IdentityAccessor> receiver);
 
   // Requests a connection to the Media Session service's AudioFocusManager from
   // the browser.

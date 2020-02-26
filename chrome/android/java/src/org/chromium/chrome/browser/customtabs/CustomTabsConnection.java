@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -56,8 +55,6 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChainedTasks;
@@ -217,7 +214,6 @@ public class CustomTabsConnection {
 
     private volatile ChainedTasks mWarmupTasks;
 
-    private @Nullable ModuleLoader mModuleLoader;
     /**
      * <strong>DO NOT CALL</strong>
      * Public to be instanciable from {@link ChromeApplication}. This is however
@@ -987,11 +983,6 @@ public class CustomTabsConnection {
         return mClientManager.shouldHideDomainForSession(session);
     }
 
-    /** @see ClientManager#shouldHideTopBarOnModuleManagedUrlsForSession(CustomTabsSessionToken) */
-    public boolean shouldHideTopBarOnModuleManagedUrlsForSession(CustomTabsSessionToken session) {
-        return mClientManager.shouldHideTopBarOnModuleManagedUrlsForSession(session);
-    }
-
     /** @see ClientManager#shouldSpeculateLoadOnCellularForSession(CustomTabsSessionToken) */
     public boolean shouldSpeculateLoadOnCellularForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldSpeculateLoadOnCellularForSession(session);
@@ -1030,11 +1021,6 @@ public class CustomTabsConnection {
     @VisibleForTesting
     void setCanUseHiddenTabForSession(CustomTabsSessionToken session, boolean value) {
         mClientManager.setCanUseHiddenTab(session, value);
-    }
-
-    @VisibleForTesting
-    void setHideCCTTopBarOnModuleManagedUrls(CustomTabsSessionToken session, boolean value) {
-        mClientManager.setHideCCTTopBarOnModuleManagedUrls(session, value);
     }
 
     /**
@@ -1396,7 +1382,6 @@ public class CustomTabsConnection {
         if (ChromeApplication.isSevereMemorySignal(level)) {
             getInstance().mClientManager.cleanupUnusedSessions();
         }
-        if (getInstance().mModuleLoader != null) getInstance().mModuleLoader.onTrimMemory(level);
     }
 
     @VisibleForTesting
@@ -1530,32 +1515,6 @@ public class CustomTabsConnection {
 
     static void recordSpeculationStatusSwapTabNotMatched() {
         recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED);
-    }
-
-    public ModuleLoader getModuleLoader(ComponentName componentName, @Nullable String assetName) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
-            assetName = null;
-        }
-
-        if (mModuleLoader != null) {
-            boolean isComponentNameChanged =
-                    !componentName.equals(mModuleLoader.getComponentName());
-            boolean isAssetNameChanged =
-                    !TextUtils.equals(assetName, mModuleLoader.getDexAssetName());
-            ModuleLoader.ModuleApkVersion newModuleApkVersion =
-                    ModuleLoader.ModuleApkVersion.getModuleVersion(componentName.getPackageName());
-            boolean isModuleVersionChanged =
-                    !mModuleLoader.getModuleApkVersion().equals(newModuleApkVersion);
-
-            if (isComponentNameChanged || isAssetNameChanged || isModuleVersionChanged) {
-                mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
-                mModuleLoader = null;
-            }
-        }
-
-        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName, assetName);
-
-        return mModuleLoader;
     }
 
     @CalledByNative

@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -464,9 +465,8 @@ void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(
       &GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent,
       weak_factory_.GetWeakPtr(), context, partition_name,
       base::Owned(version.release()), base::Owned(consent.release()));
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       std::move(get_version_and_consent), std::move(load_gaia));
 }
 

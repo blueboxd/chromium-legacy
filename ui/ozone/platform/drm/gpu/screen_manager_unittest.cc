@@ -188,7 +188,7 @@ class ScreenManagerTest : public testing::Test {
       modifiers.push_back(format_modifier);
     auto buffer = drm_->gbm_device()->CreateBufferWithModifiers(
         format, size, GBM_BO_USE_SCANOUT, modifiers);
-    return DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), modifiers);
+    return DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), size, modifiers);
   }
 
  protected:

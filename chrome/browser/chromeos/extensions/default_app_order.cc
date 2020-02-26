@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
@@ -156,10 +157,8 @@ ExternalLoader::ExternalLoader(bool async)
   loader_instance = this;
 
   if (async) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ExternalLoader::Load, base::Unretained(this)));
   } else {
     Load();

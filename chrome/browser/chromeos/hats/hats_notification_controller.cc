@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -90,9 +91,8 @@ HatsNotificationController::HatsNotificationController(Profile* profile)
     : profile_(profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&IsNewDevice),
       base::BindOnce(&HatsNotificationController::Initialize,
                      weak_pointer_factory_.GetWeakPtr()));

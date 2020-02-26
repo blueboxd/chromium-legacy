@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -600,9 +601,8 @@ void AboutHandler::HandleGetVersionInfo(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&GetVersionInfo),
       base::BindOnce(&AboutHandler::OnGetVersionInfoReady,
                      weak_factory_.GetWeakPtr(), callback_id));
@@ -619,9 +619,8 @@ void AboutHandler::HandleGetRegulatoryInfo(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&FindRegulatoryLabelDir),
       base::BindOnce(&AboutHandler::OnRegulatoryLabelDirFound,
                      weak_factory_.GetWeakPtr(), callback_id));
@@ -811,9 +810,8 @@ void AboutHandler::OnRegulatoryLabelDirFound(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReadRegulatoryLabelText, label_dir_path),
       base::BindOnce(&AboutHandler::OnRegulatoryLabelTextRead,
                      weak_factory_.GetWeakPtr(), callback_id, label_dir_path));

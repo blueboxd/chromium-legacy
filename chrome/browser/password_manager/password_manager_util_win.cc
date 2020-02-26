@@ -28,6 +28,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/win_util.h"
@@ -339,9 +340,8 @@ void GetOsPasswordStatus() {
   PasswordCheckPrefs* prefs_weak = prefs.get();
   OsPasswordStatus* status_weak = status.get();
   // This task calls ::LogonUser(), hence MayBlock().
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
       base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
                  base::Passed(&status)));

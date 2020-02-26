@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/decoder/cast_audio_decoder.h"
+#include "chromecast/media/api/cast_audio_decoder.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -18,8 +18,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_logging.h"
 #include "chromecast/media/cma/decoder/external_audio_decoder_wrapper.h"

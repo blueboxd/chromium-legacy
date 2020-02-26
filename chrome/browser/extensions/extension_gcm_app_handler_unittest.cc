@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -228,9 +229,8 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     scoped_refptr<base::SequencedTaskRunner> io_thread =
         base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
     return std::make_unique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(),
         base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),

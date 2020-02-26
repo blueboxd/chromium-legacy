@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 #include "chrome/chrome_cleaner/engines/common/engine_digest_verifier.h"
 #include "chrome/chrome_cleaner/os/digest_verifier.h"
@@ -70,8 +71,8 @@ void CleanerEngineRequestsImpl::SandboxDeleteFilePostReboot(
 void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryKey(
     const String16EmbeddedNulls& key,
     SandboxNtDeleteRegistryKeyCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::NtDeleteRegistryKey,
                      base::Unretained(this), key),
       std::move(result_callback));
@@ -88,8 +89,8 @@ void CleanerEngineRequestsImpl::SandboxNtDeleteRegistryValue(
     const String16EmbeddedNulls& key,
     const String16EmbeddedNulls& value_name,
     SandboxNtDeleteRegistryValueCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::NtDeleteRegistryValue,
                      base::Unretained(this), key, value_name),
       std::move(result_callback));
@@ -108,8 +109,8 @@ void CleanerEngineRequestsImpl::SandboxNtChangeRegistryValue(
     const String16EmbeddedNulls& value_name,
     const String16EmbeddedNulls& new_value,
     SandboxNtChangeRegistryValueCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::NtChangeRegistryValue,
                      base::Unretained(this), key, value_name, new_value),
       std::move(result_callback));
@@ -130,8 +131,8 @@ bool CleanerEngineRequestsImpl::NtChangeRegistryValue(
 void CleanerEngineRequestsImpl::SandboxDeleteService(
     const base::string16& name,
     SandboxDeleteServiceCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::DeleteService,
                      base::Unretained(this), name),
       std::move(result_callback));
@@ -146,8 +147,8 @@ bool CleanerEngineRequestsImpl::DeleteService(const base::string16& name) {
 void CleanerEngineRequestsImpl::SandboxDeleteTask(
     const base::string16& name,
     SandboxDeleteServiceCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::DeleteTask,
                      base::Unretained(this), name),
       std::move(result_callback));
@@ -162,8 +163,8 @@ bool CleanerEngineRequestsImpl::DeleteTask(const base::string16& name) {
 void CleanerEngineRequestsImpl::SandboxTerminateProcess(
     uint32_t process_id,
     SandboxTerminateProcessCallback result_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CleanerEngineRequestsImpl::TerminateProcess,
                      base::Unretained(this), process_id),
       std::move(result_callback));

@@ -19,7 +19,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -87,9 +86,9 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         mMergeThreshold = mergeThreshold;
         mUngroupThreshold = ungroupThreshold;
         mProfile = profile;
-        boolean isTabGroupEnabled = CachedFeatureFlags.isTabGroupsAndroidEnabled();
+        boolean isTabGroupEnabled = TabUiFeatureUtilities.isTabGroupsAndroidEnabled();
         boolean isTabGroupUiImprovementEnabled =
-                CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled();
+                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
         boolean isMRUEnabledInTabSwitcher =
                 TabSwitcherMediator.isShowingTabsInMRUOrder() && mActionsOnAllRelatedTabs;
         // Only enable drag for users with group disabled, or with group and group ui improvement
@@ -190,7 +189,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             RecordUserAction.record("TabGrid.Drag.Start." + mComponentName);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             mIsSwipingToDismiss = false;
-            if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
 
@@ -298,7 +297,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         }
         mCurrentActionState = actionState;
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
-            if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) return;
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return;
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
                     recyclerView, viewHolder.itemView, dX, dY, mMergeThreshold);

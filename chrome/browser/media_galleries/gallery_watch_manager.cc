@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
@@ -188,9 +189,8 @@ GalleryWatchManager::NotificationInfo::~NotificationInfo() {
 
 GalleryWatchManager::GalleryWatchManager()
     : storage_monitor_observed_(false),
-      watch_manager_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})) {
+      watch_manager_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   watch_manager_.reset(new FileWatchManager(base::Bind(
       &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr())));

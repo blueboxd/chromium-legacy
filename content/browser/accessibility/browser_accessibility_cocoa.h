@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
@@ -74,6 +75,8 @@ struct AXTextEdit {
 // left) to the primary NSScreen coordinate system (with the origin in the lower
 // left).
 - (NSRect)rectInScreen:(gfx::Rect)rect;
+
+- (void)getTreeItemDescendantNodeIds:(std::vector<int32_t>*)tree_item_ids;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

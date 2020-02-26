@@ -24,6 +24,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
@@ -472,8 +473,8 @@ class InstallAppController : public ui::ProgressWndEvents,
 // https:crbug.com/1014298
 InstallAppController::InstallAppController()
     : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      ui_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+      ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       app_name_(kAppNameChrome),
@@ -496,9 +497,9 @@ int InstallAppController::InstallApp(const std::string& app_id) {
   // since such code requires accessing the file system. Once this task
   // completes, the reply initializes the UI code on the UI thread, and then,
   // it invokes |DoInstallApp| on the main updater thread.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           [](const std::string& app_id) {
@@ -741,9 +742,9 @@ int SetupUpdater() {
 
   base::RunLoop runloop;
   int setup_result = 0;
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce([]() { return Setup(false); }),
       base::BindOnce(

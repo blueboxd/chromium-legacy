@@ -56,8 +56,6 @@ struct DefaultThreadingTrait<T, true> {
 };
 
 class HeapAllocator;
-template <typename Table>
-class HeapHashTableBacking;
 template <typename T>
 class Member;
 template <typename T>
@@ -126,18 +124,6 @@ template <typename T, typename U, typename V>
 struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
   static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
-};
-
-template <typename Table>
-struct ThreadingTrait<HeapHashTableBacking<Table>> {
-  STATIC_ONLY(ThreadingTrait);
-  using Key = typename Table::KeyType;
-  using Value = typename Table::ValueType;
-  static const ThreadAffinity kAffinity =
-      (ThreadingTrait<Key>::Affinity == kMainThreadOnly) &&
-              (ThreadingTrait<Value>::Affinity == kMainThreadOnly)
-          ? kMainThreadOnly
-          : kAnyThread;
 };
 
 template <typename T, typename U, typename V, typename W, typename X>

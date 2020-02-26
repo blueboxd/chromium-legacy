@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -218,9 +219,8 @@ bool BootTimesRecorder::Stats::UptimeDouble(double* result) const {
 }
 
 void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BootTimesRecorder::Stats::RecordStatsAsync,
                      base::Owned(new Stats(*this)), name));
 }
@@ -228,9 +228,8 @@ void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
 void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const std::string& name,
     const base::Closure& callback) const {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
                  base::Owned(new Stats(*this)), name),
       callback);
@@ -348,9 +347,8 @@ void BootTimesRecorder::LoginDone(bool is_user_new) {
         content::NotificationService::AllSources());
   }
   // Don't swamp the background thread right away.
-  base::PostDelayedTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&WriteTimes, kLoginTimes,
                      (is_user_new ? kUmaLoginNewUser : kUmaLogin),
                      kUmaLoginPrefix, login_time_markers_),

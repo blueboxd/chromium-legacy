@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_util.h"
@@ -265,8 +266,8 @@ void ArcFileSystemWatcherService::FileSystemWatcher::OnFilePathChanged(
 void ArcFileSystemWatcherService::FileSystemWatcher::DelayBuildTimestampMap() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(outstanding_task_);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&BuildTimestampMapCallback, cros_dir_, android_dir_),
       base::BindOnce(&FileSystemWatcher::OnBuildTimestampMap,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -306,8 +307,8 @@ ArcFileSystemWatcherService::ArcFileSystemWatcherService(
     ArcBridgeService* bridge_service)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      file_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {
+      file_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   arc_bridge_service_->file_system()->AddObserver(this);
 }

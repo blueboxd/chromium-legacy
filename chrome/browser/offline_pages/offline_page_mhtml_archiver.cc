@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/archive_validator.h"
@@ -30,9 +31,8 @@ namespace offline_pages {
 namespace {
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
                      false /* recursive */),
       callback);
@@ -44,9 +44,8 @@ void DeleteFileOnFileThread(const base::FilePath& file_path,
 void ComputeDigestOnFileThread(
     const base::FilePath& file_path,
     base::OnceCallback<void(const std::string&)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ArchiveValidator::ComputeDigest, file_path),
       std::move(callback));
 }

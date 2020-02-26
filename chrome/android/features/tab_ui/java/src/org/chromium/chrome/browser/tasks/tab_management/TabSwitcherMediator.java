@@ -372,7 +372,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                 if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
                     // Only log when you switch a tab page directly from tab switcher.
-                    if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+                    if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                             || getRelatedTabs(tab.getId()).size() == 1) {
                         RecordUserAction.record(
                                 "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -394,7 +394,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 RecordUserAction.record("MobileTabSwitched");
             }
             // Only log when you switch a tab page directly from tab switcher.
-            if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                     || getRelatedTabs(tab.getId()).size() == 1) {
                 RecordUserAction.record(
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -607,7 +607,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     @Nullable
     public TabListMediator.TabActionListener openTabGridDialog(Tab tab) {
-        if (!CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) return null;
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
         assert getRelatedTabs(tab.getId()).size() != 1;
         assert mTabGridDialogController != null;
@@ -630,7 +630,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Nullable
     TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
         if (!ableToCreateGroup(tab)
-                || CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+                || TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             return null;
         }
 
@@ -645,13 +645,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     private boolean ableToCreateGroup(Tab tab) {
-        return CachedFeatureFlags.isTabGroupsAndroidEnabled()
+        return TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() == 1;
     }
 
     private boolean ableToOpenDialog(Tab tab) {
-        return CachedFeatureFlags.isTabGroupsAndroidEnabled()
+        return TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() != 1;
     }

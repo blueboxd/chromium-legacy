@@ -528,7 +528,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testStartSurfaceLayoutDisabled() {
         // clang-format on
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -546,7 +546,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
     public void testStartSurfaceLayoutEnabled_Grid() {
         // clang-format on
-        CachedFeatureFlags.setGridTabSwitcherEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -573,7 +573,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
             @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
             public void
             testStartSurfaceLayoutEnabled_List() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         launchedChromeAndEnterTabSwitcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

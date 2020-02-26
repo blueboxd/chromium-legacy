@@ -13,7 +13,6 @@ import android.view.ViewStub;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -66,7 +65,7 @@ public class TabSwitcherBottomToolbarCoordinator {
         View toolbar = root.findViewById(R.id.bottom_toolbar_buttons);
         ViewGroup.LayoutParams params = toolbar.getLayoutParams();
         params.height = root.getResources().getDimensionPixelOffset(
-                CachedFeatureFlags.isLabeledBottomToolbarEnabled()
+                BottomToolbarConfiguration.isLabeledBottomToolbarEnabled()
                         ? R.dimen.labeled_bottom_toolbar_height
                         : R.dimen.bottom_toolbar_height);
 

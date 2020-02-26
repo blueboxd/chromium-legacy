@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
@@ -243,9 +244,8 @@ void StorageHandler::UpdateSizeStat() {
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&GetSizeStatBlocking, my_files_path, total_size,
                  available_size),
       base::Bind(&StorageHandler::OnGetSizeStat, weak_ptr_factory_.GetWeakPtr(),
@@ -281,9 +281,8 @@ void StorageHandler::UpdateMyFilesSize() {
   const base::FilePath android_files_path =
       base::FilePath(file_manager::util::GetAndroidFilesPath());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&StorageHandler::ComputeLocalFilesSize,
                      base::Unretained(this), my_files_path, android_files_path),
       base::BindOnce(&StorageHandler::OnGetMyFilesSize,
@@ -393,9 +392,8 @@ void StorageHandler::UpdateAppsSize() {
   const base::FilePath extensions_path =
       profile_->GetPath().AppendASCII("Extensions");
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&base::ComputeDirectorySize, extensions_path),
       base::BindOnce(&StorageHandler::OnGetAppsSize,
                      weak_ptr_factory_.GetWeakPtr()));

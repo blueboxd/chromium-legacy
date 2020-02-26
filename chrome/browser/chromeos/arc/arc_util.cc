@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -582,9 +583,9 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
   }
 
   // Otherwise, check the underlying filesystem.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&IsArcCompatibleFilesystem, profile_path),
       base::BindOnce(&StoreCompatibilityCheckResult, account_id,

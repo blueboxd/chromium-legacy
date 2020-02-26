@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -274,8 +275,8 @@ void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& image) {
         base::BindOnce(&RemoteCopyMessageHandler::WriteImageAndShowNotification,
                        base::Unretained(this), image));
     timer_ = base::ElapsedTimer();
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ResizeImage, image, resized_width, resized_height),
         resize_callback_.callback());
   } else {

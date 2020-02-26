@@ -70,7 +70,6 @@ class VULKAN_EXPORT VulkanImplementation {
       uint32_t queue_family_index) = 0;
 
   virtual std::vector<const char*> GetRequiredDeviceExtensions() = 0;
-  virtual std::vector<const char*> GetOptionalDeviceExtensions() = 0;
 
   // Creates a VkFence that is exportable to a gfx::GpuFence.
   virtual VkFence CreateVkFenceForGpuFence(VkDevice vk_device) = 0;

@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -220,10 +221,9 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
  public:
   BulkPrintersCalculatorImpl()
       : restrictions_(base::MakeRefCounted<Restrictions>()),
-        restrictions_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
-  }
+        restrictions_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   BulkPrintersCalculatorImpl(const BulkPrintersCalculatorImpl&) = delete;
   BulkPrintersCalculatorImpl& operator=(const BulkPrintersCalculatorImpl&) =

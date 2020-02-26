@@ -36,6 +36,7 @@ class PlayerFrameView extends FrameLayout {
     PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
             PlayerFrameViewDelegate playerFrameViewDelegate) {
         super(context);
+        setWillNotDraw(false);
         mDelegate = playerFrameViewDelegate;
         mBitmapPainter = new PlayerFrameBitmapPainter(this::invalidate);
         mGestureDetector =

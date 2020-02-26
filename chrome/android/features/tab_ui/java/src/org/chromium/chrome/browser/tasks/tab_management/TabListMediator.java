@@ -39,7 +39,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -401,7 +400,7 @@ class TabListMediator {
 
         @Override
         public void onUrlUpdated(Tab tab) {
-            if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) return;
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) return;
             int index = mModel.indexFromId(tab.getId());
 
             if (index == TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
@@ -777,7 +776,7 @@ class TabListMediator {
             }
         };
 
-        if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGroupTitleEditor = new TabGroupTitleEditor(mTabModelSelector) {
                 @Override
                 protected void updateTabGroupTitle(Tab tab, String title) {
@@ -1105,7 +1104,7 @@ class TabListMediator {
      * @param helper The {@link TabGridAccessibilityHelper} used to setup accessibility support.
      */
     void setupAccessibilityDelegate(TabGridAccessibilityHelper helper) {
-        if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) {
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             return;
         }
         mAccessibilityDelegate = new View.AccessibilityDelegate() {
@@ -1280,7 +1279,7 @@ class TabListMediator {
 
     private String getLastSearchTerm(Tab tab) {
         assert TabUiFeatureUtilities.isSearchTermChipEnabled();
-        if (mActionsOnAllRelatedTabs && CachedFeatureFlags.isTabGroupsAndroidEnabled()
+        if (mActionsOnAllRelatedTabs && TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && getRelatedTabsForId(tab.getId()).size() > 1) {
             return null;
         }
@@ -1303,7 +1302,7 @@ class TabListMediator {
         if (SearchTermChipUtils.sIsSearchChipAdaptiveIconEnabledForTesting != null) {
             return SearchTermChipUtils.sIsSearchChipAdaptiveIconEnabledForTesting;
         }
-        if (!CachedFeatureFlags.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
+        if (!TabUiFeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
                 || !TabUiFeatureUtilities.isSearchTermChipEnabled()
                 || !ChromeFeatureList
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
@@ -1315,7 +1314,7 @@ class TabListMediator {
     }
 
     private String getUrlForTab(Tab tab) {
-        if (!CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()) return "";
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) return "";
         if (!mActionsOnAllRelatedTabs) return tab.getUrlString();
 
         List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());

@@ -392,8 +392,8 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     return DrmOverlayPlane::Error();
   }
 
-  scoped_refptr<DrmFramebuffer> framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm, buffer.get(), modifiers);
+  scoped_refptr<DrmFramebuffer> framebuffer = DrmFramebuffer::AddFramebuffer(
+      drm, buffer.get(), buffer->GetSize(), modifiers);
   if (!framebuffer) {
     LOG(ERROR) << "Failed to add framebuffer for scanout buffer";
     return DrmOverlayPlane::Error();

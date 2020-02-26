@@ -31,6 +31,7 @@ cast_source_set("backend") {
   ]
 
   public_deps = [
+    "//chromecast/media/api",
     "//chromecast/public",
     "//chromecast/public/media",
   ]
@@ -156,6 +157,7 @@ cast_source_set("for_mixer_audio") {
     ":volume_map",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/api",
     "//chromecast/media/audio:processing",
     "//chromecast/media/audio/mixer_service:common",
     "//chromecast/media/audio/mixer_service:control_connection",

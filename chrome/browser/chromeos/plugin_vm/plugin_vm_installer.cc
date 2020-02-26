@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
@@ -323,9 +324,8 @@ void PluginVmInstaller::OnConciergeAvailable(bool success) {
              "signals are connected";
   GetConciergeClient()->AddDiskImageObserver(this);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&PluginVmInstaller::PrepareFD, base::Unretained(this)),
       base::BindOnce(&PluginVmInstaller::OnFDPrepared,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -667,10 +667,8 @@ void PluginVmInstaller::RemoveTemporaryPluginVmImageArchiveIfExists() {
         weak_ptr_factory_.GetWeakPtr()));
   } else {
     if (!downloaded_plugin_vm_image_archive_.empty()) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-           base::MayBlock()},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
           base::BindOnce(&base::DeleteFile, downloaded_plugin_vm_image_archive_,
                          false /* recursive */),
           base::BindOnce(

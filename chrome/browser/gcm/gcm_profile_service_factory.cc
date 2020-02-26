@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -132,9 +133,8 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
     return testing_factory.Run(context).release();
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   std::unique_ptr<GCMProfileService> service = nullptr;
 #if defined(OS_ANDROID)

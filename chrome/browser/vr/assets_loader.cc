@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
@@ -268,9 +269,8 @@ void AssetsLoader::LoadInternal(
     OnAssetsLoadedCallback on_loaded) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(component_ready_);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&AssetsLoader::LoadAssetsTask, task_runner,
                      component_version_, component_install_dir_,
                      std::move(on_loaded)));

@@ -61,7 +61,7 @@ public class WebLayerTabModalPresenter extends TabModalPresenter {
         TabImpl tab = mBrowserView.getTab();
         WebContents webContents = tab.getWebContents();
         if (restricted) {
-            webContents.exitFullscreen();
+            if (webContents.isFullscreenForCurrentTab()) webContents.exitFullscreen();
 
             if (webContents.getMainFrame().areInputEventsIgnored()) {
                 tab.setBrowserControlsVisibilityConstraint(
@@ -69,9 +69,6 @@ public class WebLayerTabModalPresenter extends TabModalPresenter {
             }
 
             saveOrRestoreTextSelection(webContents, true);
-
-            // TODO(estade): inform the embedder of modal dialog so it can restrict access to
-            // browser controls and unfocus any UI (e.g., Chrome unfocuses the omnibox).
         } else {
             tab.setBrowserControlsVisibilityConstraint(
                     ImplControlsVisibilityReason.TAB_MODAL_DIALOG, BrowserControlsState.BOTH);

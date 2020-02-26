@@ -254,7 +254,7 @@ public class TabListMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
 
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, false);
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(false);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE, TAB1_URL);
@@ -334,7 +334,7 @@ public class TabListMediatorUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, null);
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         TabAttributeCache.clearAllForTesting();
@@ -2216,7 +2216,7 @@ public class TabListMediatorUnitTest {
         } else if (type == TabListMediatorType.TAB_STRIP) {
             uiType = TabProperties.UiType.STRIP;
         }
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, true);
 
         TabListMediator.SearchTermChipUtils.setIsSearchChipAdaptiveIconEnabledForTesting(false);
         mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,

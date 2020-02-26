@@ -39,6 +39,11 @@ class OutputSurfaceClient;
 class OutputSurfaceFrame;
 class SkiaOutputSurface;
 
+enum class SurfaceOrigin {
+  kTopLeft,
+  kBottomLeft,
+};
+
 // This class represents a platform-independent API for presenting
 // buffers to display via GPU or software compositing. Implementations
 // can provide platform-specific behaviour.
@@ -57,8 +62,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // Whether this output surface renders to the default OpenGL zero
     // framebuffer or to an offscreen framebuffer.
     bool uses_default_gl_framebuffer = true;
-    // Whether this OutputSurface is flipped or not.
-    bool flipped_output_surface = false;
+    // Where (0,0) is on this OutputSurface.
+    SurfaceOrigin output_surface_origin = SurfaceOrigin::kBottomLeft;
     // Whether this OutputSurface supports stencil operations or not.
     // Note: HasExternalStencilTest() must return false when an output surface
     // has been configured for stencil usage.

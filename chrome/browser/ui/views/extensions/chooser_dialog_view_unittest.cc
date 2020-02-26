@@ -29,18 +29,14 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
 #if defined(OS_MACOSX)
     // We need a native view parent for the dialog to avoid a DCHECK
     // on Mac.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.bounds = gfx::Rect(10, 11, 200, 200);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    parent_widget_.Init(std::move(params));
+    parent_widget_ = CreateTestWidget();
 
     widget_ = views::DialogDelegate::CreateDialogWidget(
-        dialog_, GetContext(), parent_widget_.GetNativeView());
+        dialog_, GetContext(), parent_widget_->GetNativeView());
     widget_->SetVisibilityChangedAnimationsEnabled(false);
     // Necessary for Mac. On other platforms this happens in the focus
     // manager, but it's disabled for Mac due to crbug.com/650859.
-    parent_widget_.Activate();
+    parent_widget_->Activate();
     widget_->Activate();
 #else
     widget_ = views::DialogDelegate::CreateDialogWidget(dialog_, GetContext(),
@@ -56,7 +52,7 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
   void TearDown() override {
     widget_->Close();
 #if defined(OS_MACOSX)
-    parent_widget_.Close();
+    parent_widget_.reset();
 #endif
     ChromeViewsTestBase::TearDown();
   }
@@ -84,7 +80,7 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
 
  private:
 #if defined(OS_MACOSX)
-  views::Widget parent_widget_;
+  std::unique_ptr<views::Widget> parent_widget_;
 #endif
   views::Widget* widget_ = nullptr;
 

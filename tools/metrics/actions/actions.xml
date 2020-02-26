@@ -5173,6 +5173,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CustomTabs.CloseButtonClicked.GoToModuleManagedUrl">
+  <obsolete>Deprecated as of February 2020, this feature was removed.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
 </action>

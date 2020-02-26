@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_handle.h"
@@ -72,7 +73,7 @@ class ChromePromptChannelTest : public ::testing::Test {
 
   void SetUp() override {
     auto task_runner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
     channel_ = ChromePromptChannelPtr(
         new ChromePromptChannel(
             /*on_connection_closed=*/run_loop_.QuitClosure(),

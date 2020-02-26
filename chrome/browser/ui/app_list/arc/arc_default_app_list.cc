@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -199,9 +200,8 @@ void ArcDefaultAppList::OnPropertyFilesExpanded(bool result) {
   const char* source_dir = arc::IsArcVmEnabled()
                                ? arc::kGeneratedPropertyFilesPathVm
                                : arc::kGeneratedPropertyFilesPath;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&GetBoardName,
                      base::FilePath(source_dir).Append("build.prop")),
       base::BindOnce(&ArcDefaultAppList::LoadDefaultApps,
@@ -237,10 +237,8 @@ void ArcDefaultAppList::LoadDefaultApps(std::string board_name) {
 
   // Once ready OnAppsReady is called.
   for (const auto& source : sources) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ReadAppsFromFileThread, source),
         base::BindOnce(&ArcDefaultAppList::OnAppsRead,
                        weak_ptr_factory_.GetWeakPtr()));

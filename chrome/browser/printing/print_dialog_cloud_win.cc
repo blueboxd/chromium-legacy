@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -129,9 +130,8 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               const base::string16& print_ticket,
                               const std::string& file_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFile, path_to_file),
       base::BindOnce(&CreatePrintDialog, browser_context, print_job_title,
                      print_ticket, file_type));

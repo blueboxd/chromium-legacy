@@ -52,7 +52,8 @@ enum class BackGestureEndScenarioType {
   kOverviewAbort,
   kOverviewGoBack,
   kExitFullscreen,
-  kMaxValue = kExitFullscreen,
+  kShowShelfAndHotseat,
+  kMaxValue = kShowShelfAndHotseat,
 };
 
 // The end type of back gesture. Used to get the end scenario type.

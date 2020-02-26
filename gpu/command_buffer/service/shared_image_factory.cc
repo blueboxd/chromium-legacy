@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
@@ -33,7 +32,6 @@
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
-#include "gpu/vulkan/vulkan_device_queue.h"
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #elif defined(OS_CHROMEOS)
@@ -105,19 +103,9 @@ SharedImageFactory::SharedImageFactory(
   if (using_vulkan_) {
     external_vk_image_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);
-    const auto& enabled_extensions = context_state->vk_context_provider()
-                                         ->GetDeviceQueue()
-                                         ->enabled_extensions();
-    if (gfx::HasExtension(
-            enabled_extensions,
-            VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
-      interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-          workarounds, gpu_feature_info);
-    }
-  } else {
-    interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-        workarounds, gpu_feature_info);
   }
+  interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
+      workarounds, gpu_feature_info);
 #elif defined(OS_MACOSX)
   // OSX
   DCHECK(!using_vulkan_);
@@ -426,6 +414,10 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     return wrapped_sk_image_factory_.get();
 
   if (using_interop_factory) {
+    LOG_IF(ERROR, !interop_backing_factory_)
+        << "Unable to create SharedImage backing: GL / Vulkan interoperability "
+           "is not supported on this platform";
+
     // TODO(crbug.com/969114): Not all shared image factory implementations
     // support concurrent read/write usage.
     if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
@@ -439,21 +431,17 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     // interop if the format is not supported by the AHB backing factory.
     auto* ahb_backing_factory = static_cast<SharedImageBackingFactoryAHB*>(
         interop_backing_factory_.get());
-    if (ahb_backing_factory && ahb_backing_factory->IsFormatSupported(format))
-      return ahb_backing_factory;
-    if (share_between_threads) {
-      LOG(FATAL) << "ExternalVkImageFactory currently do not support "
-                    "cross-thread usage.";
+    if (!ahb_backing_factory->IsFormatSupported(format) &&
+        external_vk_image_factory_) {
+      if (share_between_threads) {
+        LOG(FATAL) << "ExternalVkImageFactory currently do not support "
+                      "cross-thread usage.";
+      }
+      *allow_legacy_mailbox = false;
+      return external_vk_image_factory_.get();
     }
-    *allow_legacy_mailbox = false;
-    return external_vk_image_factory_.get();
-#else   // defined(OS_ANDROID)
-    LOG_IF(ERROR, !interop_backing_factory_)
-        << "Unable to create SharedImage backing: GL / Vulkan interoperability "
-           "is not supported on this platform";
-
+#endif
     return interop_backing_factory_.get();
-#endif  // !defined(OS_ANDROID)
   }
 
   return gl_backing_factory_.get();

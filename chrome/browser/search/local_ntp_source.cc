@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -835,10 +836,8 @@ void LocalNtpSource::StartDataRequest(
   }
 
   if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
         base::BindOnce(&ServeBackgroundImageData, std::move(callback)));
     return;

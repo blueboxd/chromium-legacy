@@ -14,6 +14,7 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IN_START_SURFACE_MODE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
@@ -127,15 +128,15 @@ class StartSurfaceToolbarMediator {
     }
 
     void setStartSurfaceMode(boolean inStartSurfaceMode) {
-        mPropertyModel.set(IS_VISIBLE, inStartSurfaceMode);
-    }
-
-    void setIncognitoStateProvider(IncognitoStateProvider provider) {
-        mPropertyModel.set(INCOGNITO_STATE_PROVIDER, provider);
+        mPropertyModel.set(IN_START_SURFACE_MODE, inStartSurfaceMode);
     }
 
     void setStartSurfaceToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
         mPropertyModel.set(IS_VISIBLE, shouldShowStartSurfaceToolbar);
+    }
+
+    void setIncognitoStateProvider(IncognitoStateProvider provider) {
+        mPropertyModel.set(INCOGNITO_STATE_PROVIDER, provider);
     }
 
     void onAccessibilityStatusChanged(boolean enabled) {

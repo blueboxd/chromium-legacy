@@ -18,6 +18,7 @@
 #include "crypto/sha2.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_hash_tree.h"
+#include "extensions/browser/content_verifier/content_verifier_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/file_util.h"
 #include "net/base/load_flags.h"
@@ -324,18 +325,20 @@ std::set<base::FilePath> ContentHash::GetMismatchedComputedHashes(
   DCHECK(computed_hashes_data);
   if (source_type_ !=
       ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
-    return std::set<base::FilePath>();
+    return {};
   }
 
   std::set<base::FilePath> mismatched_hashes;
 
   for (const auto& resource_info : computed_hashes_data->items()) {
     const ComputedHashes::Data::HashInfo& hash_info = resource_info.second;
+    const content_verifier_utils::CanonicalRelativePath&
+        canonical_relative_path = resource_info.first;
 
     std::string root = ComputeTreeHashRoot(hash_info.hashes,
                                            block_size_ / crypto::kSHA256Length);
-    if (!verified_contents_->TreeHashRootEquals(hash_info.relative_unix_path,
-                                                root)) {
+    if (!verified_contents_->TreeHashRootEqualsForCanonicalPath(
+            canonical_relative_path, root)) {
       mismatched_hashes.insert(hash_info.relative_unix_path);
     }
   }

@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,9 +98,8 @@ std::unique_ptr<TwoPhaseUploader> FakeUploaderFactory::CreateTwoPhaseUploader(
 class DownloadFeedbackTest : public testing::Test {
  public:
   DownloadFeedbackTest()
-      : file_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT})),
+      : file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
         io_task_runner_(
             base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
         feedback_finish_called_(false) {

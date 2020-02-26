@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -110,14 +111,13 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     const std::string& language,
     content::BrowserContext* browser_context,
     SpellcheckService* spellcheck_service)
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
+    : task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       language_(language),
       use_browser_spellchecker_(false),
       browser_context_(browser_context),
       spellcheck_service_(spellcheck_service),
-      download_status_(DOWNLOAD_NONE) {
-}
+      download_status_(DOWNLOAD_NONE) {}
 
 SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
   if (dictionary_file_.file.IsValid()) {

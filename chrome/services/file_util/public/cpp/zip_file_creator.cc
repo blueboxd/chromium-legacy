@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,8 +49,8 @@ void ZipFileCreator::Start(
 
   // Note this class owns itself (it self-deletes when finished in ReportDone),
   // so it is safe to use base::Unretained(this).
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&OpenFileHandleAsync, dest_file_),
       base::BindOnce(&ZipFileCreator::CreateZipFile, base::Unretained(this),
                      std::move(service)));
@@ -70,9 +71,8 @@ void ZipFileCreator::CreateZipFile(
   }
 
   if (!directory_task_runner_) {
-    directory_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING,
+    directory_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 

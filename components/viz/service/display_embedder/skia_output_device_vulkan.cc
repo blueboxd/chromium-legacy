@@ -32,8 +32,16 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
                        did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       surface_handle_(surface_handle) {
-  capabilities_.flipped_output_surface = true;
-  capabilities_.supports_post_sub_buffer = false;
+  if (!CreateVulkanSurface()) {
+    LOG(ERROR) << "Failed to create vulkan surface.";
+  }
+  capabilities_.max_frames_pending = vulkan_surface_->image_count() - 1;
+  // Vulkan FIFO swap chain should return vk images in presenting order, so set
+  // preserve_buffer_content & supports_post_sub_buffer to true to let
+  // SkiaOutputBufferImpl to manager damages.
+  capabilities_.preserve_buffer_content = true;
+  capabilities_.output_surface_origin = SurfaceOrigin::kTopLeft;
+  capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_pre_transform = true;
 }
 
@@ -44,24 +52,27 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
     memory_type_tracker_->TrackMemFree(it->bytes_allocated);
   }
   sk_surface_size_pairs_.clear();
-  if (vulkan_surface_) {
+
+  if (!vulkan_surface_)
+    return;
+
 #if defined(OS_ANDROID)
-    if (base::SysInfo::IsLowEndDevice()) {
-      // For low end device, output surface will be destroyed when chrome goes
-      // into background. And a new output surface will be created when chrome
-      // goes to foreground again. The vulkan surface cannot be created
-      // successfully, if the old vulkan surface is not destroyed. To avoid the
-      // problem, we sync the device queue, and destroy the vulkan surface
-      // synchronously.
-      vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
-      vulkan_surface_->Destroy();
-      return;
-    }
-#endif
-    auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(vulkan_surface_));
+  if (base::SysInfo::IsLowEndDevice()) {
+    // For low end device, output surface will be destroyed when chrome goes
+    // into background. And a new output surface will be created when chrome
+    // goes to foreground again. The vulkan surface cannot be created
+    // successfully, if the old vulkan surface is not destroyed. To avoid the
+    // problem, we sync the device queue, and destroy the vulkan surface
+    // synchronously.
+    vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
+    vulkan_surface_->Destroy();
+    return;
   }
+#endif
+
+  auto* fence_helper = context_provider_->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+      std::move(vulkan_surface_));
 }
 
 bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
@@ -71,16 +82,11 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
                                      gfx::OverlayTransform transform) {
   DCHECK(!scoped_write_);
 
-  uint32_t generation = 0;
-  if (!vulkan_surface_) {
-    if (!CreateVulkanSurface())
-      return false;
-  } else {
-    generation = vulkan_surface_->swap_chain_generation();
-  }
+  if (!vulkan_surface_)
+    return false;
 
+  auto generation = vulkan_surface_->swap_chain_generation();
   vulkan_surface_->Reshape(size, transform);
-
   auto sk_color_space = color_space.ToSkColorSpace();
   if (vulkan_surface_->swap_chain_generation() != generation ||
       !SkColorSpace::Equals(sk_color_space.get(), sk_color_space_.get())) {
@@ -99,14 +105,30 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
 void SkiaOutputDeviceVulkan::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
+  PostSubBuffer(gfx::Rect(vulkan_surface_->image_size()), std::move(feedback),
+                std::move(latency_info));
+}
+
+void SkiaOutputDeviceVulkan::PostSubBuffer(
+    const gfx::Rect& rect,
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   // Reshape should have been called first.
   DCHECK(vulkan_surface_);
   DCHECK(!scoped_write_);
+#if DCHECK_IS_ON()
+  DCHECK_EQ(!rect.IsEmpty(), image_modified_);
+  image_modified_ = false;
+#endif
 
+  // TODO(penghuang): pass rect to vulkan swap chain and let swap chain use
+  // VK_KHR_incremental_present
   StartSwapBuffers(std::move(feedback));
   auto image_size = vulkan_surface_->image_size();
-  FinishSwapBuffers(vulkan_surface_->SwapBuffers(), image_size,
-                    std::move(latency_info));
+  gfx::SwapResult result = gfx::SwapResult::SWAP_ACK;
+  if (!rect.IsEmpty())
+    result = vulkan_surface_->SwapBuffers();
+  FinishSwapBuffers(result, image_size, std::move(latency_info));
 }
 
 SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
@@ -185,6 +207,9 @@ void SkiaOutputDeviceVulkan::EndPaint(const GrBackendSemaphore& semaphore) {
   if (semaphore.isInitialized())
     scoped_write_->SetEndSemaphore(semaphore.vkSemaphore());
   scoped_write_.reset();
+#if DCHECK_IS_ON()
+  image_modified_ = true;
+#endif
 }
 
 bool SkiaOutputDeviceVulkan::CreateVulkanSurface() {

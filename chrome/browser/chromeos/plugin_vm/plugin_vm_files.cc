@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,8 +52,9 @@ void EnsureDefaultSharedDirExists(
   base::FilePath dir =
       file_manager::util::GetMyFilesFolderForProfile(profile).Append(
           kPluginVmName);
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&EnsureDirExists, dir, std::move(callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&EnsureDirExists, dir, std::move(callback)));
 }
 
 }  // namespace plugin_vm

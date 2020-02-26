@@ -242,737 +242,157 @@ class VulkanFunctionPointers {
   PFN_vkQueuePresentKHR vkQueuePresentKHRFn_ = nullptr;
 
  public:
+#define DEFINE_METHOD(name)                                    \
+  template <typename... Types>                                 \
+  NO_SANITIZE("cfi-icall")                                     \
+  auto name##Fn(Types... args)->decltype(name##Fn_(args...)) { \
+    return name##Fn_(args...);                                 \
+  }
+
   // Unassociated functions
+  DEFINE_METHOD(vkGetInstanceProcAddr)
+  DEFINE_METHOD(vkEnumerateInstanceVersion)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetInstanceProcAddrFn(Types... args)
-      -> decltype(vkGetInstanceProcAddrFn_(args...)) {
-    return vkGetInstanceProcAddrFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumerateInstanceVersionFn(Types... args)
-      -> decltype(vkEnumerateInstanceVersionFn_(args...)) {
-    return vkEnumerateInstanceVersionFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateInstanceFn(Types... args)
-      -> decltype(vkCreateInstanceFn_(args...)) {
-    return vkCreateInstanceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumerateInstanceExtensionPropertiesFn(Types... args)
-      -> decltype(vkEnumerateInstanceExtensionPropertiesFn_(args...)) {
-    return vkEnumerateInstanceExtensionPropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumerateInstanceLayerPropertiesFn(Types... args)
-      -> decltype(vkEnumerateInstanceLayerPropertiesFn_(args...)) {
-    return vkEnumerateInstanceLayerPropertiesFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateInstance)
+  DEFINE_METHOD(vkEnumerateInstanceExtensionProperties)
+  DEFINE_METHOD(vkEnumerateInstanceLayerProperties)
 
   // Instance functions
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateDeviceFn(Types... args) -> decltype(vkCreateDeviceFn_(args...)) {
-    return vkCreateDeviceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyInstanceFn(Types... args)
-      -> decltype(vkDestroyInstanceFn_(args...)) {
-    return vkDestroyInstanceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumerateDeviceExtensionPropertiesFn(Types... args)
-      -> decltype(vkEnumerateDeviceExtensionPropertiesFn_(args...)) {
-    return vkEnumerateDeviceExtensionPropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumerateDeviceLayerPropertiesFn(Types... args)
-      -> decltype(vkEnumerateDeviceLayerPropertiesFn_(args...)) {
-    return vkEnumerateDeviceLayerPropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEnumeratePhysicalDevicesFn(Types... args)
-      -> decltype(vkEnumeratePhysicalDevicesFn_(args...)) {
-    return vkEnumeratePhysicalDevicesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetDeviceProcAddrFn(Types... args)
-      -> decltype(vkGetDeviceProcAddrFn_(args...)) {
-    return vkGetDeviceProcAddrFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceFeaturesFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceFeaturesFn_(args...)) {
-    return vkGetPhysicalDeviceFeaturesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceFormatPropertiesFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceFormatPropertiesFn_(args...)) {
-    return vkGetPhysicalDeviceFormatPropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceMemoryPropertiesFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceMemoryPropertiesFn_(args...)) {
-    return vkGetPhysicalDeviceMemoryPropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDevicePropertiesFn(Types... args)
-      -> decltype(vkGetPhysicalDevicePropertiesFn_(args...)) {
-    return vkGetPhysicalDevicePropertiesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceQueueFamilyPropertiesFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceQueueFamilyPropertiesFn_(args...)) {
-    return vkGetPhysicalDeviceQueueFamilyPropertiesFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateDevice)
+  DEFINE_METHOD(vkDestroyInstance)
+  DEFINE_METHOD(vkEnumerateDeviceExtensionProperties)
+  DEFINE_METHOD(vkEnumerateDeviceLayerProperties)
+  DEFINE_METHOD(vkEnumeratePhysicalDevices)
+  DEFINE_METHOD(vkGetDeviceProcAddr)
+  DEFINE_METHOD(vkGetPhysicalDeviceFeatures)
+  DEFINE_METHOD(vkGetPhysicalDeviceFormatProperties)
+  DEFINE_METHOD(vkGetPhysicalDeviceMemoryProperties)
+  DEFINE_METHOD(vkGetPhysicalDeviceProperties)
+  DEFINE_METHOD(vkGetPhysicalDeviceQueueFamilyProperties)
 
 #if DCHECK_IS_ON()
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateDebugReportCallbackEXTFn(Types... args)
-      -> decltype(vkCreateDebugReportCallbackEXTFn_(args...)) {
-    return vkCreateDebugReportCallbackEXTFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyDebugReportCallbackEXTFn(Types... args)
-      -> decltype(vkDestroyDebugReportCallbackEXTFn_(args...)) {
-    return vkDestroyDebugReportCallbackEXTFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateDebugReportCallbackEXT)
+  DEFINE_METHOD(vkDestroyDebugReportCallbackEXT)
 #endif  // DCHECK_IS_ON()
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroySurfaceKHRFn(Types... args)
-      -> decltype(vkDestroySurfaceKHRFn_(args...)) {
-    return vkDestroySurfaceKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn_(args...)) {
-    return vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceSurfaceFormatsKHRFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceSurfaceFormatsKHRFn_(args...)) {
-    return vkGetPhysicalDeviceSurfaceFormatsKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceSurfaceSupportKHRFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceSurfaceSupportKHRFn_(args...)) {
-    return vkGetPhysicalDeviceSurfaceSupportKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkDestroySurfaceKHR)
+  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceFormatsKHR)
+  DEFINE_METHOD(vkGetPhysicalDeviceSurfaceSupportKHR)
 
 #if defined(USE_VULKAN_XLIB)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateXlibSurfaceKHRFn(Types... args)
-      -> decltype(vkCreateXlibSurfaceKHRFn_(args...)) {
-    return vkCreateXlibSurfaceKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceXlibPresentationSupportKHRFn(Types... args)
-      -> decltype(vkGetPhysicalDeviceXlibPresentationSupportKHRFn_(args...)) {
-    return vkGetPhysicalDeviceXlibPresentationSupportKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateXlibSurfaceKHR)
+  DEFINE_METHOD(vkGetPhysicalDeviceXlibPresentationSupportKHR)
 #endif  // defined(USE_VULKAN_XLIB)
 
 #if defined(OS_ANDROID)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateAndroidSurfaceKHRFn(Types... args)
-      -> decltype(vkCreateAndroidSurfaceKHRFn_(args...)) {
-    return vkCreateAndroidSurfaceKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateAndroidSurfaceKHR)
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_FUCHSIA)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateImagePipeSurfaceFUCHSIAFn(Types... args)
-      -> decltype(vkCreateImagePipeSurfaceFUCHSIAFn_(args...)) {
-    return vkCreateImagePipeSurfaceFUCHSIAFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateImagePipeSurfaceFUCHSIA)
 #endif  // defined(OS_FUCHSIA)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceImageFormatProperties2Fn(Types... args)
-      -> decltype(vkGetPhysicalDeviceImageFormatProperties2Fn_(args...)) {
-    return vkGetPhysicalDeviceImageFormatProperties2Fn_(args...);
-  }
+  DEFINE_METHOD(vkGetPhysicalDeviceImageFormatProperties2)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetPhysicalDeviceFeatures2Fn(Types... args)
-      -> decltype(vkGetPhysicalDeviceFeatures2Fn_(args...)) {
-    return vkGetPhysicalDeviceFeatures2Fn_(args...);
-  }
+  DEFINE_METHOD(vkGetPhysicalDeviceFeatures2)
 
   // Device functions
+  DEFINE_METHOD(vkAllocateCommandBuffers)
+  DEFINE_METHOD(vkAllocateDescriptorSets)
+  DEFINE_METHOD(vkAllocateMemory)
+  DEFINE_METHOD(vkBeginCommandBuffer)
+  DEFINE_METHOD(vkBindBufferMemory)
+  DEFINE_METHOD(vkBindImageMemory)
+  DEFINE_METHOD(vkCmdBeginRenderPass)
+  DEFINE_METHOD(vkCmdCopyBufferToImage)
+  DEFINE_METHOD(vkCmdEndRenderPass)
+  DEFINE_METHOD(vkCmdExecuteCommands)
+  DEFINE_METHOD(vkCmdNextSubpass)
+  DEFINE_METHOD(vkCmdPipelineBarrier)
+  DEFINE_METHOD(vkCreateBuffer)
+  DEFINE_METHOD(vkCreateCommandPool)
+  DEFINE_METHOD(vkCreateDescriptorPool)
+  DEFINE_METHOD(vkCreateDescriptorSetLayout)
+  DEFINE_METHOD(vkCreateFence)
+  DEFINE_METHOD(vkCreateFramebuffer)
+  DEFINE_METHOD(vkCreateImage)
+  DEFINE_METHOD(vkCreateImageView)
+  DEFINE_METHOD(vkCreateRenderPass)
+  DEFINE_METHOD(vkCreateSampler)
+  DEFINE_METHOD(vkCreateSemaphore)
+  DEFINE_METHOD(vkCreateShaderModule)
+  DEFINE_METHOD(vkDestroyBuffer)
+  DEFINE_METHOD(vkDestroyCommandPool)
+  DEFINE_METHOD(vkDestroyDescriptorPool)
+  DEFINE_METHOD(vkDestroyDescriptorSetLayout)
+  DEFINE_METHOD(vkDestroyDevice)
+  DEFINE_METHOD(vkDestroyFence)
+  DEFINE_METHOD(vkDestroyFramebuffer)
+  DEFINE_METHOD(vkDestroyImage)
+  DEFINE_METHOD(vkDestroyImageView)
+  DEFINE_METHOD(vkDestroyRenderPass)
+  DEFINE_METHOD(vkDestroySampler)
+  DEFINE_METHOD(vkDestroySemaphore)
+  DEFINE_METHOD(vkDestroyShaderModule)
+  DEFINE_METHOD(vkDeviceWaitIdle)
+  DEFINE_METHOD(vkEndCommandBuffer)
+  DEFINE_METHOD(vkFreeCommandBuffers)
+  DEFINE_METHOD(vkFreeDescriptorSets)
+  DEFINE_METHOD(vkFreeMemory)
+  DEFINE_METHOD(vkGetBufferMemoryRequirements)
+  DEFINE_METHOD(vkGetDeviceQueue)
+  DEFINE_METHOD(vkGetFenceStatus)
+  DEFINE_METHOD(vkGetImageMemoryRequirements)
+  DEFINE_METHOD(vkMapMemory)
+  DEFINE_METHOD(vkQueueSubmit)
+  DEFINE_METHOD(vkQueueWaitIdle)
+  DEFINE_METHOD(vkResetCommandBuffer)
+  DEFINE_METHOD(vkResetFences)
+  DEFINE_METHOD(vkUnmapMemory)
+  DEFINE_METHOD(vkUpdateDescriptorSets)
+  DEFINE_METHOD(vkWaitForFences)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkAllocateCommandBuffersFn(Types... args)
-      -> decltype(vkAllocateCommandBuffersFn_(args...)) {
-    return vkAllocateCommandBuffersFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkAllocateDescriptorSetsFn(Types... args)
-      -> decltype(vkAllocateDescriptorSetsFn_(args...)) {
-    return vkAllocateDescriptorSetsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkAllocateMemoryFn(Types... args)
-      -> decltype(vkAllocateMemoryFn_(args...)) {
-    return vkAllocateMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkBeginCommandBufferFn(Types... args)
-      -> decltype(vkBeginCommandBufferFn_(args...)) {
-    return vkBeginCommandBufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkBindBufferMemoryFn(Types... args)
-      -> decltype(vkBindBufferMemoryFn_(args...)) {
-    return vkBindBufferMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkBindImageMemoryFn(Types... args)
-      -> decltype(vkBindImageMemoryFn_(args...)) {
-    return vkBindImageMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdBeginRenderPassFn(Types... args)
-      -> decltype(vkCmdBeginRenderPassFn_(args...)) {
-    return vkCmdBeginRenderPassFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdCopyBufferToImageFn(Types... args)
-      -> decltype(vkCmdCopyBufferToImageFn_(args...)) {
-    return vkCmdCopyBufferToImageFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdEndRenderPassFn(Types... args)
-      -> decltype(vkCmdEndRenderPassFn_(args...)) {
-    return vkCmdEndRenderPassFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdExecuteCommandsFn(Types... args)
-      -> decltype(vkCmdExecuteCommandsFn_(args...)) {
-    return vkCmdExecuteCommandsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdNextSubpassFn(Types... args)
-      -> decltype(vkCmdNextSubpassFn_(args...)) {
-    return vkCmdNextSubpassFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCmdPipelineBarrierFn(Types... args)
-      -> decltype(vkCmdPipelineBarrierFn_(args...)) {
-    return vkCmdPipelineBarrierFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateBufferFn(Types... args) -> decltype(vkCreateBufferFn_(args...)) {
-    return vkCreateBufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateCommandPoolFn(Types... args)
-      -> decltype(vkCreateCommandPoolFn_(args...)) {
-    return vkCreateCommandPoolFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateDescriptorPoolFn(Types... args)
-      -> decltype(vkCreateDescriptorPoolFn_(args...)) {
-    return vkCreateDescriptorPoolFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateDescriptorSetLayoutFn(Types... args)
-      -> decltype(vkCreateDescriptorSetLayoutFn_(args...)) {
-    return vkCreateDescriptorSetLayoutFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateFenceFn(Types... args) -> decltype(vkCreateFenceFn_(args...)) {
-    return vkCreateFenceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateFramebufferFn(Types... args)
-      -> decltype(vkCreateFramebufferFn_(args...)) {
-    return vkCreateFramebufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateImageFn(Types... args) -> decltype(vkCreateImageFn_(args...)) {
-    return vkCreateImageFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateImageViewFn(Types... args)
-      -> decltype(vkCreateImageViewFn_(args...)) {
-    return vkCreateImageViewFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateRenderPassFn(Types... args)
-      -> decltype(vkCreateRenderPassFn_(args...)) {
-    return vkCreateRenderPassFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateSamplerFn(Types... args)
-      -> decltype(vkCreateSamplerFn_(args...)) {
-    return vkCreateSamplerFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateSemaphoreFn(Types... args)
-      -> decltype(vkCreateSemaphoreFn_(args...)) {
-    return vkCreateSemaphoreFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateShaderModuleFn(Types... args)
-      -> decltype(vkCreateShaderModuleFn_(args...)) {
-    return vkCreateShaderModuleFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyBufferFn(Types... args)
-      -> decltype(vkDestroyBufferFn_(args...)) {
-    return vkDestroyBufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyCommandPoolFn(Types... args)
-      -> decltype(vkDestroyCommandPoolFn_(args...)) {
-    return vkDestroyCommandPoolFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyDescriptorPoolFn(Types... args)
-      -> decltype(vkDestroyDescriptorPoolFn_(args...)) {
-    return vkDestroyDescriptorPoolFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyDescriptorSetLayoutFn(Types... args)
-      -> decltype(vkDestroyDescriptorSetLayoutFn_(args...)) {
-    return vkDestroyDescriptorSetLayoutFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyDeviceFn(Types... args)
-      -> decltype(vkDestroyDeviceFn_(args...)) {
-    return vkDestroyDeviceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyFenceFn(Types... args) -> decltype(vkDestroyFenceFn_(args...)) {
-    return vkDestroyFenceFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyFramebufferFn(Types... args)
-      -> decltype(vkDestroyFramebufferFn_(args...)) {
-    return vkDestroyFramebufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyImageFn(Types... args) -> decltype(vkDestroyImageFn_(args...)) {
-    return vkDestroyImageFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyImageViewFn(Types... args)
-      -> decltype(vkDestroyImageViewFn_(args...)) {
-    return vkDestroyImageViewFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyRenderPassFn(Types... args)
-      -> decltype(vkDestroyRenderPassFn_(args...)) {
-    return vkDestroyRenderPassFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroySamplerFn(Types... args)
-      -> decltype(vkDestroySamplerFn_(args...)) {
-    return vkDestroySamplerFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroySemaphoreFn(Types... args)
-      -> decltype(vkDestroySemaphoreFn_(args...)) {
-    return vkDestroySemaphoreFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyShaderModuleFn(Types... args)
-      -> decltype(vkDestroyShaderModuleFn_(args...)) {
-    return vkDestroyShaderModuleFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDeviceWaitIdleFn(Types... args)
-      -> decltype(vkDeviceWaitIdleFn_(args...)) {
-    return vkDeviceWaitIdleFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkEndCommandBufferFn(Types... args)
-      -> decltype(vkEndCommandBufferFn_(args...)) {
-    return vkEndCommandBufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkFreeCommandBuffersFn(Types... args)
-      -> decltype(vkFreeCommandBuffersFn_(args...)) {
-    return vkFreeCommandBuffersFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkFreeDescriptorSetsFn(Types... args)
-      -> decltype(vkFreeDescriptorSetsFn_(args...)) {
-    return vkFreeDescriptorSetsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkFreeMemoryFn(Types... args) -> decltype(vkFreeMemoryFn_(args...)) {
-    return vkFreeMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetBufferMemoryRequirementsFn(Types... args)
-      -> decltype(vkGetBufferMemoryRequirementsFn_(args...)) {
-    return vkGetBufferMemoryRequirementsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetDeviceQueueFn(Types... args)
-      -> decltype(vkGetDeviceQueueFn_(args...)) {
-    return vkGetDeviceQueueFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetFenceStatusFn(Types... args)
-      -> decltype(vkGetFenceStatusFn_(args...)) {
-    return vkGetFenceStatusFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetImageMemoryRequirementsFn(Types... args)
-      -> decltype(vkGetImageMemoryRequirementsFn_(args...)) {
-    return vkGetImageMemoryRequirementsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkMapMemoryFn(Types... args) -> decltype(vkMapMemoryFn_(args...)) {
-    return vkMapMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkQueueSubmitFn(Types... args) -> decltype(vkQueueSubmitFn_(args...)) {
-    return vkQueueSubmitFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkQueueWaitIdleFn(Types... args)
-      -> decltype(vkQueueWaitIdleFn_(args...)) {
-    return vkQueueWaitIdleFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkResetCommandBufferFn(Types... args)
-      -> decltype(vkResetCommandBufferFn_(args...)) {
-    return vkResetCommandBufferFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkResetFencesFn(Types... args) -> decltype(vkResetFencesFn_(args...)) {
-    return vkResetFencesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkUnmapMemoryFn(Types... args) -> decltype(vkUnmapMemoryFn_(args...)) {
-    return vkUnmapMemoryFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkUpdateDescriptorSetsFn(Types... args)
-      -> decltype(vkUpdateDescriptorSetsFn_(args...)) {
-    return vkUpdateDescriptorSetsFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkWaitForFencesFn(Types... args)
-      -> decltype(vkWaitForFencesFn_(args...)) {
-    return vkWaitForFencesFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetDeviceQueue2Fn(Types... args)
-      -> decltype(vkGetDeviceQueue2Fn_(args...)) {
-    return vkGetDeviceQueue2Fn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetImageMemoryRequirements2Fn(Types... args)
-      -> decltype(vkGetImageMemoryRequirements2Fn_(args...)) {
-    return vkGetImageMemoryRequirements2Fn_(args...);
-  }
+  DEFINE_METHOD(vkGetDeviceQueue2)
+  DEFINE_METHOD(vkGetImageMemoryRequirements2)
 
 #if defined(OS_ANDROID)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetAndroidHardwareBufferPropertiesANDROIDFn(Types... args)
-      -> decltype(vkGetAndroidHardwareBufferPropertiesANDROIDFn_(args...)) {
-    return vkGetAndroidHardwareBufferPropertiesANDROIDFn_(args...);
-  }
+  DEFINE_METHOD(vkGetAndroidHardwareBufferPropertiesANDROID)
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetSemaphoreFdKHRFn(Types... args)
-      -> decltype(vkGetSemaphoreFdKHRFn_(args...)) {
-    return vkGetSemaphoreFdKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkImportSemaphoreFdKHRFn(Types... args)
-      -> decltype(vkImportSemaphoreFdKHRFn_(args...)) {
-    return vkImportSemaphoreFdKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkGetSemaphoreFdKHR)
+  DEFINE_METHOD(vkImportSemaphoreFdKHR)
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetMemoryFdKHRFn(Types... args)
-      -> decltype(vkGetMemoryFdKHRFn_(args...)) {
-    return vkGetMemoryFdKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetMemoryFdPropertiesKHRFn(Types... args)
-      -> decltype(vkGetMemoryFdPropertiesKHRFn_(args...)) {
-    return vkGetMemoryFdPropertiesKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkGetMemoryFdKHR)
+  DEFINE_METHOD(vkGetMemoryFdPropertiesKHR)
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_FUCHSIA)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkImportSemaphoreZirconHandleFUCHSIAFn(Types... args)
-      -> decltype(vkImportSemaphoreZirconHandleFUCHSIAFn_(args...)) {
-    return vkImportSemaphoreZirconHandleFUCHSIAFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetSemaphoreZirconHandleFUCHSIAFn(Types... args)
-      -> decltype(vkGetSemaphoreZirconHandleFUCHSIAFn_(args...)) {
-    return vkGetSemaphoreZirconHandleFUCHSIAFn_(args...);
-  }
+  DEFINE_METHOD(vkImportSemaphoreZirconHandleFUCHSIA)
+  DEFINE_METHOD(vkGetSemaphoreZirconHandleFUCHSIA)
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetMemoryZirconHandleFUCHSIAFn(Types... args)
-      -> decltype(vkGetMemoryZirconHandleFUCHSIAFn_(args...)) {
-    return vkGetMemoryZirconHandleFUCHSIAFn_(args...);
-  }
+  DEFINE_METHOD(vkGetMemoryZirconHandleFUCHSIA)
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateBufferCollectionFUCHSIAFn(Types... args)
-      -> decltype(vkCreateBufferCollectionFUCHSIAFn_(args...)) {
-    return vkCreateBufferCollectionFUCHSIAFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkSetBufferCollectionConstraintsFUCHSIAFn(Types... args)
-      -> decltype(vkSetBufferCollectionConstraintsFUCHSIAFn_(args...)) {
-    return vkSetBufferCollectionConstraintsFUCHSIAFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetBufferCollectionPropertiesFUCHSIAFn(Types... args)
-      -> decltype(vkGetBufferCollectionPropertiesFUCHSIAFn_(args...)) {
-    return vkGetBufferCollectionPropertiesFUCHSIAFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroyBufferCollectionFUCHSIAFn(Types... args)
-      -> decltype(vkDestroyBufferCollectionFUCHSIAFn_(args...)) {
-    return vkDestroyBufferCollectionFUCHSIAFn_(args...);
-  }
+  DEFINE_METHOD(vkCreateBufferCollectionFUCHSIA)
+  DEFINE_METHOD(vkSetBufferCollectionConstraintsFUCHSIA)
+  DEFINE_METHOD(vkGetBufferCollectionPropertiesFUCHSIA)
+  DEFINE_METHOD(vkDestroyBufferCollectionFUCHSIA)
 #endif  // defined(OS_FUCHSIA)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkAcquireNextImageKHRFn(Types... args)
-      -> decltype(vkAcquireNextImageKHRFn_(args...)) {
-    return vkAcquireNextImageKHRFn_(args...);
-  }
+  DEFINE_METHOD(vkAcquireNextImageKHR)
+  DEFINE_METHOD(vkCreateSwapchainKHR)
+  DEFINE_METHOD(vkDestroySwapchainKHR)
+  DEFINE_METHOD(vkGetSwapchainImagesKHR)
+  DEFINE_METHOD(vkQueuePresentKHR)
 
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkCreateSwapchainKHRFn(Types... args)
-      -> decltype(vkCreateSwapchainKHRFn_(args...)) {
-    return vkCreateSwapchainKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkDestroySwapchainKHRFn(Types... args)
-      -> decltype(vkDestroySwapchainKHRFn_(args...)) {
-    return vkDestroySwapchainKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkGetSwapchainImagesKHRFn(Types... args)
-      -> decltype(vkGetSwapchainImagesKHRFn_(args...)) {
-    return vkGetSwapchainImagesKHRFn_(args...);
-  }
-
-  template <typename... Types>
-  NO_SANITIZE("cfi-icall")
-  auto vkQueuePresentKHRFn(Types... args)
-      -> decltype(vkQueuePresentKHRFn_(args...)) {
-    return vkQueuePresentKHRFn_(args...);
-  }
+#undef DEFINE_METHOD
 };
 
 }  // namespace gpu

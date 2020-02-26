@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -443,10 +444,10 @@ void ChromeScreenshotGrabber::OnTookScreenshot(
 void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
     const base::FilePath& path,
     const FileCallback& callback) {
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                 base::BindOnce(EnsureLocalDirectoryExists, path, callback));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(EnsureLocalDirectoryExists, path, callback));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(

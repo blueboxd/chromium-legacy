@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -195,8 +196,8 @@ void DownloadCommands::CopyFileAsImageToClipboard() {
   base::FilePath file_path = model_->GetFullPath();
 
   if (!task_runner_) {
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
   ImageClipboardCopyManager::Start(file_path, task_runner_.get());

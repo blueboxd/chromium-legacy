@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
@@ -227,9 +228,8 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   std::string languages(AddSupportedInputMethodValues(
       preferred_languages_.GetValue(), preferred_languages_syncable,
       language::prefs::kPreferredLanguages));
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CheckAndResolveLocales, languages),
       base::BindOnce(&InputMethodSyncer::FinishMerge,
                      weak_factory_.GetWeakPtr()));

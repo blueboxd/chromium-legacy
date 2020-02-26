@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -58,7 +57,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                 activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
                 activity.getShareDelegateSupplier(),
-                CachedFeatureFlags.isTabGroupsAndroidContinuationEnabled()
+                TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
                         ? TabListCoordinator.TabListMode.LIST
                         : TabListCoordinator.TabListMode.GRID);

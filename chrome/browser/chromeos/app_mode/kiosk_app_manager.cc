@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -100,8 +101,8 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
   // TODO(eseckler): The ExternalCacheImpl that uses this TaskRunner seems to be
   // important during startup, which is why we cannot currently use the
   // BEST_EFFORT TaskPriority here.
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -383,10 +384,8 @@ void KioskAppManager::OnReadImmutableAttributes(
         status = CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE;
       } else if (!ownership_established_) {
         bool* owner_present = new bool(false);
-        base::PostTaskAndReply(
-            FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT},
+        base::ThreadPool::PostTaskAndReply(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
             base::BindOnce(&CheckOwnerFilePresence, owner_present),
             base::BindOnce(&KioskAppManager::OnOwnerFileChecked,
                            base::Unretained(this), std::move(callback),

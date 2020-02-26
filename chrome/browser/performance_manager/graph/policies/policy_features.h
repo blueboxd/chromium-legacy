@@ -86,6 +86,10 @@ extern const base::Feature kPageFreezingFromPerformanceManager;
 extern const base::Feature kUrgentDiscardingFromPerformanceManager;
 #endif
 
+// Feature that controls whether or not memory pressure signals will be emitted
+// when the total PMF is too high.
+extern const base::Feature kHighPMFMemoryPressureSignals;
+
 }  // namespace features
 }  // namespace performance_manager
 

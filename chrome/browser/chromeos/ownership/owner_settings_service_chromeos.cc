@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -116,9 +117,10 @@ void ContinueLoadPrivateKeyOnIOThread(
   // TODO(eseckler): It seems loading the key is important for the UsersPrivate
   // extension API to work correctly during startup, which is why we cannot
   // currently use the BEST_EFFORT TaskPriority here.
-  scoped_refptr<base::TaskRunner> task_runner = base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  scoped_refptr<base::TaskRunner> task_runner =
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&LoadPrivateKeyByPublicKeyOnWorkerThread, owner_key_util,
@@ -162,9 +164,10 @@ void DoesPrivateKeyExistAsync(
     std::move(callback).Run(false);
     return;
   }
-  scoped_refptr<base::TaskRunner> task_runner = base::CreateTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  scoped_refptr<base::TaskRunner> task_runner =
+      base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&DoesPrivateKeyExistAsyncHelper, owner_key_util),
@@ -728,7 +731,7 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
   has_pending_fixups_ = false;
 
   scoped_refptr<base::TaskRunner> task_runner =
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateTaskRunner({base::MayBlock()});
   bool rv = AssembleAndSignPolicyAsync(
       task_runner.get(), std::move(policy),
       base::BindOnce(&OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned,

@@ -21,7 +21,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -135,7 +134,7 @@ public class TabSwitcherCoordinator
                         -> mTabListCoordinator.removeSpecialListItem(
                                 TabProperties.UiType.MESSAGE, identifier));
 
-        if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
                     ((ChromeTabbedActivity) context).getCompositorViewHolder(), this, mMediator,
@@ -180,7 +179,7 @@ public class TabSwitcherCoordinator
                         NewTabTileViewBinder::bind);
             }
 
-            if (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+            if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                     && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
                 mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, container);
                 IphMessageService iphMessageService =
@@ -367,7 +366,7 @@ public class TabSwitcherCoordinator
 
     private boolean shouldRegisterMessageItemType() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
-                || (CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled()
+                || (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                         && !TabSwitcherMediator.isShowingTabsInMRUOrder());
     }
 

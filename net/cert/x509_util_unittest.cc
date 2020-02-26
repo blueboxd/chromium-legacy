@@ -797,6 +797,20 @@ TEST(X509UtilTest, SignatureVerifierInitWithCertificate) {
   }
 }
 
+TEST(X509UtilTest, HasSHA1Signature) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> sha1_leaf =
+      ImportCertFromFile(certs_dir, "sha1_leaf.pem");
+  ASSERT_TRUE(sha1_leaf);
+  EXPECT_TRUE(HasSHA1Signature(sha1_leaf->cert_buffer()));
+
+  scoped_refptr<X509Certificate> ok_cert =
+      ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_TRUE(ok_cert);
+  EXPECT_FALSE(HasSHA1Signature(ok_cert->cert_buffer()));
+}
+
 }  // namespace x509_util
 
 }  // namespace net

@@ -20,20 +20,8 @@ void DiscoverySession::IsActive(IsActiveCallback callback) {
 }
 
 void DiscoverySession::Stop(StopCallback callback) {
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  discovery_session_->Stop(
-      base::Bind(&DiscoverySession::OnStop, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback),
-      base::Bind(&DiscoverySession::OnStopError, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback));
-}
-
-void DiscoverySession::OnStop(StopCallback callback) {
+  discovery_session_->Stop();
   std::move(callback).Run(true /* success */);
-}
-
-void DiscoverySession::OnStopError(StopCallback callback) {
-  std::move(callback).Run(false /* success */);
 }
 
 }  // namespace bluetooth

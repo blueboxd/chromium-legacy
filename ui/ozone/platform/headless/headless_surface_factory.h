@@ -31,7 +31,8 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
       VkDevice vk_device,
       gfx::Size size,
       gfx::BufferFormat format,
-      gfx::BufferUsage usage) override;
+      gfx::BufferUsage usage,
+      base::Optional<gfx::Size> framebuffer_size = base::nullopt) override;
 
  private:
   void CheckBasePath() const;

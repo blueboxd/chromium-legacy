@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.usage_stats.SuspendedTab;
@@ -133,7 +134,7 @@ public class TabContentManager {
             String commandLineSwitch) {
         int val = -1;
         // TODO(crbug/959054): Convert this to Finch config.
-        if (CachedFeatureFlags.isGridTabSwitcherEnabled()) {
+        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
             // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
             // See crbug.com/959054 for more details.
             if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
@@ -186,7 +187,7 @@ public class TabContentManager {
 
         float thumbnailScale = 1.f;
         boolean useApproximationThumbnails;
-        boolean saveJpegThumbnails = CachedFeatureFlags.isGridTabSwitcherEnabled();
+        boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
         float deviceDensity = display.getDipScale();
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {

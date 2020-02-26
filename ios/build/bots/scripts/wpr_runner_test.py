@@ -51,7 +51,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
       wpr_runner.WprProxySimulatorTestRunner(
           'fake-app',
           'bad-host-app-path',
-          'fake-iossim',
           'replay-path',
           'platform',
           'os',
@@ -70,7 +69,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
       wpr_runner.WprProxySimulatorTestRunner(
           'fake-app',
           'fake-host-app',
-          'fake-iossim',
           'bad-replay-path',
           'platform',
           'os',
@@ -89,7 +87,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
       wpr_runner.WprProxySimulatorTestRunner(
           'fake-app',
           'fake-host-app',
-          'fake-iossim',
           'replay-path',
           'platform',
           'os',
@@ -104,7 +101,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
     tr = wpr_runner.WprProxySimulatorTestRunner(
         'fake-app',
         'fake-host-app',
-        'fake-iossim',
         'replay-path',
         'platform',
         'os',
@@ -160,7 +156,6 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
     tr = wpr_runner.WprProxySimulatorTestRunner(
         'fake-app',
         'fake-host-app',
-        'fake-iossim',
         'replay-path',
         'platform',
         'os',

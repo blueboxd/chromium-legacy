@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -209,9 +210,9 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   }
 
   // Now go do expensive memory lookups in a thread pool.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&MemoryDetails::CollectProcessData, this, child_info));
 }

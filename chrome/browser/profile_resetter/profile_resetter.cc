@@ -14,6 +14,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -324,8 +325,8 @@ void ProfileResetter::ResetPinnedTabs() {
 
 void ProfileResetter::ResetShortcuts() {
 #if defined(OS_WIN)
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
       ->PostTaskAndReply(FROM_HERE, base::Bind(&ResetShortcutsOnBlockingThread),
                          base::Bind(&ProfileResetter::MarkAsDone,
                                     weak_ptr_factory_.GetWeakPtr(), SHORTCUTS));

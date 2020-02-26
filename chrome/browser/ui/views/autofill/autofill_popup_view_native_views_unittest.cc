@@ -77,42 +77,33 @@ class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
-    CreateWidget();
-    generator_ =
-        std::make_unique<ui::test::EventGenerator>(GetRootWindow(&widget_));
+    widget_ = CreateTestWidget();
+    generator_ = std::make_unique<ui::test::EventGenerator>(
+        GetRootWindow(widget_.get()));
   }
 
   void TearDown() override {
     generator_.reset();
-    if (!widget_.IsClosed())
-      widget_.Close();
     view_.reset();
+    widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
   void CreateAndShowView(const std::vector<int>& ids) {
     autofill_popup_controller_.set_suggestions(ids);
     view_ = std::make_unique<autofill::AutofillPopupViewNativeViews>(
-        &autofill_popup_controller_, &widget_);
-    widget_.SetContentsView(view_.get());
+        &autofill_popup_controller_, widget_.get());
+    widget_->SetContentsView(view_.get());
 
-    widget_.Show();
+    widget_->Show();
   }
 
   autofill::AutofillPopupViewNativeViews* view() { return view_.get(); }
 
  protected:
-  void CreateWidget() {
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(std::move(params));
-  }
-
   std::unique_ptr<autofill::AutofillPopupViewNativeViews> view_;
   autofill::MockAutofillPopupController autofill_popup_controller_;
-  views::Widget widget_;
+  std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:

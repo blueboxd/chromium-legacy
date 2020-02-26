@@ -71,6 +71,9 @@ class ExtensionInstallPrompt {
     EXTENSION_REQUEST_PROMPT = 13,
     EXTENSION_PENDING_REQUEST_PROMPT = 14,
     NUM_PROMPT_TYPES = 15,
+    // WAIT! Are you adding a new prompt type? Does it *install an extension*?
+    // If not, please create a new dialog, rather than adding more functionality
+    // to this class - it's already too full.
   };
 
   // The last prompt type to display; only used for testing.

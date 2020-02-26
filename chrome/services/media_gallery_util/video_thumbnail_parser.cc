@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_codecs.h"
@@ -99,8 +100,8 @@ void ExtractVideoFrameOnMediaThread(
 VideoThumbnailParser::VideoThumbnailParser(
     std::unique_ptr<media::DataSource> source)
     : data_source_(std::move(source)),
-      media_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})) {}
+      media_task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})) {}
 
 VideoThumbnailParser::~VideoThumbnailParser() = default;
 

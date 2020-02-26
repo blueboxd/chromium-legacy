@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1163,9 +1164,9 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
   base::JSONWriter::WriteWithOptions(
       dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_policies);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&DoWritePoliciesToJSONFile, path, json_policies));
 }

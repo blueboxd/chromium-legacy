@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
@@ -114,8 +115,8 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
   auto global_callback =
       std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SandboxStatusExtension::ReadSandboxStatus, this),
       base::BindOnce(&SandboxStatusExtension::RunCallback, this,
                      base::Passed(&global_callback)));

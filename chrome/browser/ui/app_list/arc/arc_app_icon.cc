@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -275,9 +276,8 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
   if (path.empty())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(
           &ArcAppIcon::ReadOnFileThread, scale_factor, path,
           prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, descriptor)),

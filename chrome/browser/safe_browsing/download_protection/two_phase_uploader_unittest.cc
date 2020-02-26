@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
@@ -94,8 +95,8 @@ class TwoPhaseUploaderTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };

@@ -62,6 +62,13 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kMaxValue = kEditProfileButton,
   };
 
+  enum class SyncInfoContainerBackgroundState {
+    kNoError,
+    kPaused,
+    kError,
+    kNoPrimaryAccount,
+  };
+
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
   // call this function when the button is clicked and if the bubble isn't
@@ -96,8 +103,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetSyncInfo(const gfx::ImageSkia& icon,
                    const base::string16& description,
                    const base::string16& clickable_text,
+                   SyncInfoContainerBackgroundState background_state,
                    base::RepeatingClosure action);
-  void SetSyncInfoBackgroundColor(SkColor bg_color);
   void AddShortcutFeatureButton(const gfx::ImageSkia& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
@@ -173,6 +180,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void RegisterClickAction(views::View* clickable_view,
                            base::RepeatingClosure action);
 
+  void UpdateSyncInfoContainerBackground();
+
   Browser* const browser_;
 
   views::Button* const anchor_button_;
@@ -196,6 +205,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::Button* first_profile_button_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
+
+  SyncInfoContainerBackgroundState sync_background_state_ =
+      SyncInfoContainerBackgroundState::kNoError;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuViewBase);
 };

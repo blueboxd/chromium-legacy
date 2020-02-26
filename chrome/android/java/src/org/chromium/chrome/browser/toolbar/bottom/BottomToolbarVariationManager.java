@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,11 +42,11 @@ public class BottomToolbarVariationManager {
 
     /**
      * @return The currently enabled bottom toolbar variation.
-     *         Should be called after {@link CachedFeatureFlags#isBottomToolbarEnabled()}.
+     *         Should be called after {@link BottomToolbarConfiguration#isBottomToolbarEnabled()}.
      */
     private static @Variations String getVariation() {
         if (sVariation != null) return sVariation;
-        if (!CachedFeatureFlags.isBottomToolbarEnabled()) {
+        if (!BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             return Variations.HOME_SEARCH_TAB_SWITCHER;
         }
         sVariation = CachedFeatureFlags.getValue(BOTTOM_TOOLBAR_VARIATION);
@@ -60,7 +61,7 @@ public class BottomToolbarVariationManager {
      *         in the current variation.
      */
     public static boolean isShareButtonOnBottom() {
-        return CachedFeatureFlags.isBottomToolbarEnabled()
+        return BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && !getVariation().equals(Variations.HOME_SEARCH_TAB_SWITCHER);
     }
 
@@ -69,7 +70,7 @@ public class BottomToolbarVariationManager {
      *         in portrait mode in the current variation.
      */
     public static boolean isNewTabButtonOnBottom() {
-        return CachedFeatureFlags.isBottomToolbarEnabled()
+        return BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && getVariation().equals(Variations.NEW_TAB_SEARCH_SHARE);
     }
 
@@ -90,7 +91,7 @@ public class BottomToolbarVariationManager {
     public static boolean shouldBottomToolbarBeVisibleInOverviewMode() {
         return (getVariation().equals(Variations.NEW_TAB_SEARCH_SHARE)
                        && !CachedFeatureFlags.isStartSurfaceEnabled())
-                || ((!CachedFeatureFlags.isGridTabSwitcherEnabled()
+                || ((!TabUiFeatureUtilities.isGridTabSwitcherEnabled()
                             || !IncognitoUtils.isIncognitoModeEnabled())
                         && getVariation().equals(Variations.HOME_SEARCH_TAB_SWITCHER));
     }
@@ -100,7 +101,7 @@ public class BottomToolbarVariationManager {
      *         in current variation.
      */
     public static boolean isHomeButtonOnBottom() {
-        return CachedFeatureFlags.isBottomToolbarEnabled()
+        return BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && !getVariation().equals(Variations.NEW_TAB_SEARCH_SHARE);
     }
 
@@ -109,7 +110,7 @@ public class BottomToolbarVariationManager {
      *         of portrait mode in current variation.
      */
     public static boolean isTabSwitcherOnBottom() {
-        return CachedFeatureFlags.isBottomToolbarEnabled()
+        return BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && getVariation().equals(Variations.HOME_SEARCH_TAB_SWITCHER);
     }
 

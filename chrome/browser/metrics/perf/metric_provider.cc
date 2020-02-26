@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -38,8 +39,8 @@ MetricProvider::MetricProvider(std::unique_ptr<MetricCollector> collector)
       // times when the system is not busy. The work performed on the dedicated
       // sequence is short and infrequent. Expensive parsing operations are
       // executed asynchronously on the thread pool.
-      collector_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
+      collector_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_VISIBLE})),
       metric_collector_(std::move(collector)),
       weak_factory_(this) {
   metric_collector_->set_profile_done_callback(base::BindRepeating(

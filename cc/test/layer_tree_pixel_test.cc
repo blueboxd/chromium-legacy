@@ -110,9 +110,9 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     gpu::ContextResult result = display_context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
-    bool flipped_output_surface = false;
+    viz::SurfaceOrigin surface_origin = viz::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
-        std::move(display_context_provider), flipped_output_surface);
+        std::move(display_context_provider), surface_origin);
   } else {
     EXPECT_EQ(RENDERER_SOFTWARE, renderer_type_);
     display_output_surface = std::make_unique<PixelTestOutputSurface>(

@@ -54,11 +54,7 @@ class SendTabToSelfBubbleViewImplTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     // Create an anchor for the bubble.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(params));
+    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
 
     profile_ = std::make_unique<TestingProfile>();
     controller_ = std::make_unique<SendTabToSelfBubbleControllerMock>();

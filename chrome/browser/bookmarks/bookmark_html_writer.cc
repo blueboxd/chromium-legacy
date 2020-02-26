@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -486,9 +487,8 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &Writer::DoWrite,
           base::MakeRefCounted<Writer>(

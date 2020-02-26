@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -169,8 +170,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (feature.equals("twopanes")) {
             // Do not enable two panes when the bottom bar is enabled since it will
             // overlap the two panes' bottom bar.
-            return CachedFeatureFlags.isBottomToolbarEnabled() ? SurfaceMode.SINGLE_PANE
-                                                               : SurfaceMode.TWO_PANES;
+            return BottomToolbarConfiguration.isBottomToolbarEnabled() ? SurfaceMode.SINGLE_PANE
+                                                                       : SurfaceMode.TWO_PANES;
         }
 
         if (feature.equals("single")) return SurfaceMode.SINGLE_PANE;

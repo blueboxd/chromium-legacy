@@ -76,7 +76,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    base::Optional<gfx::Size> framebuffer_size) {
   return nullptr;
 }
 

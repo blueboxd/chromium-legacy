@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
@@ -445,10 +446,9 @@ void EnrollmentHandlerChromeOS::StartOfflineDemoEnrollmentFlow() {
   skip_robot_auth_ = true;
   SetStep(STEP_POLICY_FETCH);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ReadFileToOptionalString,
                      enrollment_config_.offline_policy_path),
       base::BindOnce(&EnrollmentHandlerChromeOS::OnOfflinePolicyBlobLoaded,

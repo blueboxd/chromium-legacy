@@ -591,7 +591,7 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
 
   // If we don't have any bound clients, clean things up.
   if (scanning_clients_.empty()) {
-    discovery_session_->Stop(base::DoNothing(), base::DoNothing());
+    discovery_session_->Stop();
     discovery_session_ = nullptr;
     return;
   }

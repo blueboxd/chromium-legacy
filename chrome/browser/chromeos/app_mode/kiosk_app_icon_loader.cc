@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,9 +77,8 @@ KioskAppIconLoader::~KioskAppIconLoader() = default;
 
 void KioskAppIconLoader::Start(const base::FilePath& icon_path) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&LoadOnBlockingPool, icon_path, task_runner,

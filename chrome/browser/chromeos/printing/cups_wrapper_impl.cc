@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "printing/backend/cups_printer.h"
@@ -26,9 +27,8 @@ class CupsWrapperImpl : public CupsWrapper {
  public:
   CupsWrapperImpl()
       : backend_(std::make_unique<Backend>()),
-        backend_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+        backend_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   ~CupsWrapperImpl() override {

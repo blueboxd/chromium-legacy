@@ -20,6 +20,7 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
@@ -153,9 +154,8 @@ bool IsLBSExtensionEnabled(Profile* profile) {
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
     : BrowserSwitcherService(profile),
-      sequenced_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   UpdateAllCacheFiles();
 }

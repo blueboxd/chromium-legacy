@@ -80,13 +80,6 @@ ActionTracker::ActionTracker(content::BrowserContext* browser_context)
 }
 
 ActionTracker::~ActionTracker() {
-  // Sanity check that only rules corresponding to the unknown tab ID remain.
-  DCHECK(std::all_of(
-      rules_tracked_.begin(), rules_tracked_.end(),
-      [](const std::pair<const ExtensionTabIdKey, TrackedInfo>& key_value) {
-        return key_value.first.secondary_id == extension_misc::kUnknownTabId;
-      }));
-
   DCHECK(pending_navigation_actions_.empty());
 }
 

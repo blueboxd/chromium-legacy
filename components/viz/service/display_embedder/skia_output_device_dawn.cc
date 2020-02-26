@@ -57,9 +57,9 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
   CreateSwapChainImplementation();
   wgpu::SwapChainDescriptor desc;
   desc.implementation = reinterpret_cast<int64_t>(&swap_chain_implementation_);
-  wgpu::Instance instance = context_provider_->GetInstance();
-  wgpu::Surface surface = instance.CreateSurface(nullptr);
-  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(surface, &desc);
+  // TODO(sgilhuly): Use a wgpu::Surface in this call once the Surface-based
+  // SwapChain API is ready.
+  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(nullptr, &desc);
   if (!swap_chain_)
     return false;
   swap_chain_.Configure(kSwapChainFormat, kUsage, size_.width(),

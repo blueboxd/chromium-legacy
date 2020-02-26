@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -879,8 +880,8 @@ void CrostiniManager::MaybeUpgradeCrostini() {
     // |component_manager| may be nullptr in unit tests.
     return;
   }
-  base::PostTaskAndReply(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(CrostiniManager::CheckPathsAndComponents),
       base::BindOnce(&CrostiniManager::MaybeUpgradeCrostiniAfterChecks,
                      weak_ptr_factory_.GetWeakPtr()));

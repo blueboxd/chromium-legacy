@@ -83,9 +83,6 @@ class AssistantClientImpl : public ash::AssistantClient,
       mojo::PendingReceiver<
           chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver)
       override;
-  void RequestIdentityAccessor(
-      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
-      override;
   void RequestAudioFocusManager(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManager> receiver)
       override;

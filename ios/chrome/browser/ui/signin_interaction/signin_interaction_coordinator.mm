@@ -111,7 +111,9 @@
   __weak SigninInteractionCoordinator* weakSelf = self;
   self.coordinator.signinCompletion =
       ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
-        completion(signinResult == SigninCoordinatorResultSuccess);
+        if (completion) {
+          completion(signinResult == SigninCoordinatorResultSuccess);
+        }
         [weakSelf.coordinator stop];
         weakSelf.coordinator = nil;
       };

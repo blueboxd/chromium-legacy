@@ -40,12 +40,13 @@
 // Otherwise, the app will be activated instead of (re)launched.
 // Will wait until app is activated or launched, and fail the test if it
 // fails to do so.
-// |relaunchPolicy| controls relaunch manners.
+// |configuration| sets features, variations and relaunch manners.
+// If you're trying to call this method in |-setUp()|, please put it in
+// |-launchAppForTestMethod()| instead for better efficiency.
 - (void)ensureAppLaunchedWithConfiguration:
     (AppLaunchConfiguration)configuration;
 
-// See ensureAppLaunchedWithFeaturesEnabled:disabled:variations:
-// triggerVariations:relaunchPolicy: for details.
+// See ensureAppLaunchedWithConfiguration: for details.
 - (void)ensureAppLaunchedWithFeaturesEnabled:
             (std::vector<base::Feature>)featuresEnabled
                                     disabled:(std::vector<base::Feature>)

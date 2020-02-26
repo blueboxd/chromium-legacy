@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -147,9 +148,9 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
 class PrintServersProviderImpl : public PrintServersProvider {
  public:
   PrintServersProviderImpl()
-      : task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }
 

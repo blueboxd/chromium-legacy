@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 
@@ -32,7 +33,8 @@ TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
   data.crashed_status = contents->GetCrashedStatus();
   data.incognito = contents->GetBrowserContext()->IsOffTheRecord();
   data.pinned = model->IsTabPinned(index);
-  data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
+  data.show_icon =
+      data.pinned || model->delegate()->ShouldDisplayFavicon(contents);
   data.blocked = model->IsTabBlocked(index);
   data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
   data.alert_state = chrome::GetTabAlertStatesForContents(contents);

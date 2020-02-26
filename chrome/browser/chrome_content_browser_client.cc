@@ -3565,6 +3565,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPrintCompositor:
     case service_manager::SandboxType::kAudio:
     case service_manager::SandboxType::kSoda:
+    case service_manager::SandboxType::kProxyResolver:
       // Should never reach here.
       CHECK(0);
       return base::string16();

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/browser_process.h"
 #include "components/prefs/pref_service.h"
@@ -102,9 +103,9 @@ void KioskAppDataBase::SaveIcon(const SkBitmap& icon,
 
   const base::FilePath icon_path =
       cache_dir.AppendASCII(app_id_).AddExtension(kIconFileExtension);
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&SaveIconToLocalOnBlockingPool, icon_path,
-                                std::move(image_data)));
+  base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                             base::BindOnce(&SaveIconToLocalOnBlockingPool,
+                                            icon_path, std::move(image_data)));
 
   icon_path_ = icon_path;
 }
@@ -120,9 +121,8 @@ void KioskAppDataBase::ClearCache() {
   dict_update->Remove(app_key, nullptr);
 
   if (!icon_path_.empty()) {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), icon_path_,
                        false));
   }

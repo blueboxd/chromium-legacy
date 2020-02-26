@@ -8,7 +8,7 @@
  * Enum to represent each page in the gesture navigation screen.
  * @enum {string}
  */
-const gesturePage = {
+const GesturePage = {
   INTRO: 'gestureIntro',
   HOME: 'gestureHome',
   BACK: 'gestureBack',
@@ -22,7 +22,7 @@ Polymer({
 
   properties: {
     /** @private */
-    currentPage_: {type: String, value: gesturePage.INTRO},
+    currentPage_: {type: String, value: GesturePage.INTRO},
   },
 
   /** @override */
@@ -37,7 +37,7 @@ Polymer({
    * Called before the screen is shown.
    */
   onBeforeShow() {
-    this.currentPage_ = gesturePage.INTRO;
+    this.currentPage_ = GesturePage.INTRO;
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -51,19 +51,35 @@ Polymer({
    */
   onNext_() {
     switch (this.currentPage_) {
-      case gesturePage.INTRO:
-        this.currentPage_ = gesturePage.HOME;
+      case GesturePage.INTRO:
+        this.setCurrentPage_(GesturePage.HOME);
         break;
-      case gesturePage.HOME:
-        this.currentPage_ = gesturePage.BACK;
+      case GesturePage.HOME:
+        this.setCurrentPage_(GesturePage.BACK);
         break;
-      case gesturePage.BACK:
-        this.currentPage_ = gesturePage.OVERVIEW;
+      case GesturePage.BACK:
+        this.setCurrentPage_(GesturePage.OVERVIEW);
         break;
-      case gesturePage.OVERVIEW:
+      case GesturePage.OVERVIEW:
+        // Exiting the last page in the sequence - stop the animation, and
+        // report exit. Keep the currentPage_ value so the UI does not get
+        // updated until the next screen is shown.
+        this.setPlayCurrentScreenAnimation(false);
         this.userActed('exit');
         break;
     }
+  },
+
+  /**
+   * Set the new page, making sure to stop the animation for the old page and
+   * start the animation for the new page.
+   * @param {GesturePage} newPage The target page.
+   * @private
+   */
+  setCurrentPage_(newPage) {
+    this.setPlayCurrentScreenAnimation(false);
+    this.currentPage_ = newPage;
+    this.setPlayCurrentScreenAnimation(true);
   },
 
   /**
@@ -72,6 +88,19 @@ Polymer({
    */
   isEqual_(currentPage_, page_) {
     return currentPage_ == page_;
+  },
+
+  /**
+   * This will play or stop the current screen's lottie animation.
+   * @param {boolean} enabled Whether the animation should play or not.
+   * @private
+   */
+  setPlayCurrentScreenAnimation(enabled) {
+    var animation =
+        this.$[this.currentPage_].querySelector('.gesture-animation');
+    if (animation) {
+      animation.setPlay(enabled);
+    }
   },
 });
 })();

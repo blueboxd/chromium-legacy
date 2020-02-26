@@ -488,19 +488,14 @@ TEST_F(IntersectionObserverTest, TrackedTargetBookkeeping) {
   Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
-  DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
-  IntersectionObserver* observer1 = IntersectionObserver::Create(
-      observer_init, *observer_delegate, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  observer1->observe(target, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  IntersectionObserver* observer2 = IntersectionObserver::Create(
-      observer_init, *observer_delegate, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  observer2->observe(target, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
+  IntersectionObserver* observer1 =
+      IntersectionObserver::Create(observer_init, *observer_delegate);
+  observer1->observe(target);
+  IntersectionObserver* observer2 =
+      IntersectionObserver::Create(observer_init, *observer_delegate);
+  observer2->observe(target);
 
   ElementIntersectionObserverData* target_data =
       target->IntersectionObserverData();
@@ -509,14 +504,17 @@ TEST_F(IntersectionObserverTest, TrackedTargetBookkeeping) {
       GetDocument().EnsureIntersectionObserverController();
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 2u);
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
-  observer1->unobserve(target, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
-  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 1u);
-  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
-  observer2->unobserve(target, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
+
+  target->remove();
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
-  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  GetDocument().body()->AppendChild(target);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 2u);
+
+  observer1->unobserve(target);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 1u);
+
+  observer2->unobserve(target);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
 }
 
 TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
@@ -544,15 +542,14 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   Persistent<IntersectionObserver> observer =
       IntersectionObserver::Create(observer_init, *observer_delegate);
 
-  // For an explicit-root observer, the root element is tracked, even when it
-  // has no observations.
+  // For an explicit-root observer, the root element is tracked only when it
+  // has observations and is connected. Target elements are not tracked.
   ElementIntersectionObserverData* root_data = root->IntersectionObserverData();
   ASSERT_TRUE(root_data);
   EXPECT_FALSE(root_data->IsEmpty());
-  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
 
-  // For an explicit-root observer, target elements are not tracked.
   observer->observe(target);
   ElementIntersectionObserverData* target_data =
       target->IntersectionObserverData();
@@ -561,9 +558,23 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
 
-  // The existing observation should keep the observer alive and active, even
-  // when there are no other references to the observer.
-  observer = nullptr;
+  // Root should not be tracked if it's not connected.
+  root->remove();
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  GetDocument().body()->AppendChild(root);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+
+  // Root should not be tracked if it has no observations.
+  observer->disconnect();
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  observer->observe(target);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+  observer->unobserve(target);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  observer->observe(target);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+
+  // The existing observation should keep the observer alive and active.
   // Flush any pending notifications, which hold a hard reference to the
   // observer and can prevent it from being gc'ed. The observation will be the
   // only thing keeping the observer alive.
@@ -578,8 +589,8 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
 
   // When the last observation is disconnected, as a result of the target being
-  // gc'ed, the observer should also get gc'ed and the root element should no
-  // longer be tracked.
+  // gc'ed, the root element should no longer be tracked after the next
+  // lifecycle update.
   target->remove();
   target = nullptr;
   target_data = nullptr;
@@ -590,9 +601,17 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   V8GCController::CollectAllGarbageForTesting(
       v8::Isolate::GetCurrent(),
       v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  EXPECT_TRUE(root_data->IsEmpty());
+  Compositor().BeginFrame();
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  // Removing the last reference to the observer should allow it to be dropeed
+  // from the root's ElementIntersectionObserverData.
+  observer = nullptr;
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  EXPECT_TRUE(root_data->IsEmpty());
 
   target = GetDocument().getElementById("target2");
   observer = IntersectionObserver::Create(observer_init, *observer_delegate);

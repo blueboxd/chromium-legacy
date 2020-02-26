@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -85,9 +86,8 @@ bool GoodiesDisplayer::Init() {
   const bool can_show = g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage);
   if (can_show) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&CheckGoodiesPrefAgainstOobeTimestamp),
         base::BindOnce(&UpdateGoodiesPrefCantShow));
   }

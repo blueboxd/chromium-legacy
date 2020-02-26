@@ -24,12 +24,24 @@ constexpr int kTooltipHeight = 18;
 // ash/tooltip/tooltip_controller.cc
 constexpr int kTooltipMaxWidth = 250;
 
+views::BubbleBorder::Arrow GetArrowForPosition(
+    ContextualNudge::Position position) {
+  switch (position) {
+    case ContextualNudge::Position::kTop:
+      return views::BubbleBorder::BOTTOM_CENTER;
+    case ContextualNudge::Position::kBottom:
+      return views::BubbleBorder::TOP_CENTER;
+  }
+}
+
 }  // namespace
 
 ContextualNudge::ContextualNudge(views::View* anchor,
-                                 const base::string16& text)
+                                 aura::Window* parent_window,
+                                 const base::string16& text,
+                                 Position position)
     : views::BubbleDialogDelegateView(anchor,
-                                      views::BubbleBorder::BOTTOM_CENTER,
+                                      GetArrowForPosition(position),
                                       views::BubbleBorder::NO_ASSETS) {
   set_color(SK_ColorTRANSPARENT);
   set_margins(gfx::Insets(0, 0));
@@ -40,9 +52,13 @@ ContextualNudge::ContextualNudge(views::View* anchor,
   set_shadow(views::BubbleBorder::NO_ASSETS);
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
-  set_parent_window(
-      anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
-          kShellWindowId_ShelfContainer));
+  if (parent_window) {
+    set_parent_window(parent_window);
+  } else if (anchor_widget()) {
+    set_parent_window(
+        anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
+            kShellWindowId_ShelfContainer));
+  }
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -61,6 +77,10 @@ ContextualNudge::ContextualNudge(views::View* anchor,
 }
 
 ContextualNudge::~ContextualNudge() = default;
+
+void ContextualNudge::UpdateAnchorRect(const gfx::Rect& rect) {
+  SetAnchorRect(rect);
+}
 
 gfx::Size ContextualNudge::CalculatePreferredSize() const {
   const gfx::Size size = BubbleDialogDelegateView::CalculatePreferredSize();

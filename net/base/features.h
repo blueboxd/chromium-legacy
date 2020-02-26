@@ -166,6 +166,11 @@ NET_EXPORT extern const base::Feature kLegacyTLSEnforced;
 // account the scheme of the site-for-cookies and the request/response url.
 NET_EXPORT extern const base::Feature kSchemefulSameSite;
 
+// When enabled, TLS connections will initially not offer 3DES and SHA-1 but
+// enable them on fallback. This is used to improve metrics around usage of
+// those algorithms. If disabled, the algorithms will always be offered.
+NET_EXPORT extern const base::Feature kTLSLegacyCryptoFallbackForMetrics;
+
 }  // namespace features
 }  // namespace net
 

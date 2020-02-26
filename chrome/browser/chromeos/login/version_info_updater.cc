@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -64,10 +65,8 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 
 void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&version_loader::GetVersion,
                        is_chrome_branded
                            ? version_loader::VERSION_SHORT_WITH_DATE

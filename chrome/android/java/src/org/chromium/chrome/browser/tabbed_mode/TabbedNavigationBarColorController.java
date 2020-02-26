@@ -23,12 +23,12 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
@@ -185,7 +185,7 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         if (ChromeFeatureList.isInitialized()
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                         || DeviceClassManager.enableAccessibilityLayout()
-                        || CachedFeatureFlags.isGridTabSwitcherEnabled())) {
+                        || TabUiFeatureUtilities.isGridTabSwitcherEnabled())) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;

@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 
@@ -15,8 +16,8 @@ namespace {
 // Creates a sequenced task runner to delete an instance of CustomThemeSupplier
 // on.
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunnerForDeletion() {
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 }
 
 }  // namespace

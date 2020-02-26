@@ -43,8 +43,8 @@ class IntersectionObserverController
 
   // The second argument indicates whether the Element is a target of any
   // observers for which observer->trackVisibility() is true.
-  void AddTrackedObserver(IntersectionObserver&, bool);
-  void AddTrackedObservation(IntersectionObservation&, bool);
+  void AddTrackedObserver(IntersectionObserver&);
+  void AddTrackedObservation(IntersectionObservation&);
   void RemoveTrackedObserver(IntersectionObserver&);
   void RemoveTrackedObservation(IntersectionObservation&);
 
@@ -56,20 +56,23 @@ class IntersectionObserverController
   }
 
   unsigned GetTrackedObserverCountForTesting() const {
-    return explicit_root_observers_.size();
+    return tracked_explicit_root_observers_.size();
   }
   unsigned GetTrackedObservationCountForTesting() const {
-    return implicit_root_observations_.size();
+    return tracked_implicit_root_observations_.size();
   }
 
  private:
   void PostTaskToDeliverNotifications();
 
  private:
-  // IntersectionObserver's with an explicit root in this document.
-  HeapHashSet<WeakMember<IntersectionObserver>> explicit_root_observers_;
-  // IntersectionObservations with an implicit root and target in this document.
-  HeapHashSet<WeakMember<IntersectionObservation>> implicit_root_observations_;
+  // IntersectionObserver's with a connected explicit root in this document.
+  HeapHashSet<WeakMember<IntersectionObserver>>
+      tracked_explicit_root_observers_;
+  // IntersectionObservations with an implicit root and connected target in this
+  // document.
+  HeapHashSet<WeakMember<IntersectionObservation>>
+      tracked_implicit_root_observations_;
   // IntersectionObservers for which this is the execution context of the
   // callback, and with unsent notifications.
   HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;

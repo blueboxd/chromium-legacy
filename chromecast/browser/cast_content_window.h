@@ -14,6 +14,7 @@
 #include "base/observer_list_types.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
+#include "chromecast/ui/back_gesture_router.h"
 #include "chromecast/ui/mojom/media_control_ui.mojom.h"
 #include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "ui/events/event.h"
@@ -215,6 +216,10 @@ class CastContentWindow {
 
   // Media control interface. Non-null on Aura platforms.
   virtual mojom::MediaControlUi* media_controls();
+
+  // Registers this as a delegate to BackGestureRouter.
+  virtual void RegisterBackGestureRouter(
+      ::chromecast::BackGestureRouter* gesture_router) {}
 
   // Observer interface:
   void AddObserver(Observer* observer);

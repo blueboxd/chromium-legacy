@@ -12,6 +12,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -143,9 +144,8 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
 namespace settings_utils {
 
 void ShowNetworkProxySettings(content::WebContents* web_contents) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&DetectAndStartProxyConfigUtil,
                      web_contents->GetRenderViewHost()->GetProcess()->GetID(),
                      web_contents->GetRenderViewHost()->GetRoutingID()));

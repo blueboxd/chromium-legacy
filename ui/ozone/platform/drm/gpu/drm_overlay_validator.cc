@@ -73,7 +73,8 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     *total_allocated_memory_size += buffer->GetPlaneSize(i);
 
   scoped_refptr<DrmFramebuffer> drm_framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get(), modifiers);
+      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get(),
+                                     buffer->GetSize(), modifiers);
   if (!drm_framebuffer)
     return nullptr;
 

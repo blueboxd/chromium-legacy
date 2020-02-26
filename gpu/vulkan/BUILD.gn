@@ -22,6 +22,12 @@ if (enable_vulkan) {
     if (use_vulkan_xlib) {
       defines = [ "USE_VULKAN_XLIB" ]
     }
+    if (is_android) {
+      defines = [ "VK_USE_PLATFORM_ANDROID_KHR" ]
+    }
+    if (is_fuchsia) {
+      defines = [ "VK_USE_PLATFORM_FUCHSIA" ]
+    }
   }
 
   jumbo_component("vulkan") {
@@ -57,9 +63,6 @@ if (enable_vulkan) {
     public_configs = [ ":vulkan_config" ]
 
     defines = [ "VULKAN_IMPLEMENTATION" ]
-    if (is_android) {
-      defines += [ "VK_USE_PLATFORM_ANDROID_KHR" ]
-    }
 
     all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 

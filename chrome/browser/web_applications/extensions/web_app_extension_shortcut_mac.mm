@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -109,9 +110,8 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(app_mode::kAppShimError))
     return false;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RecordAppShimErrorAndBuildShortcutInfo,
                      command_line.GetSwitchValuePath(app_mode::kAppShimError)),
       base::BindOnce(&RebuildAppAndLaunch));

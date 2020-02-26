@@ -326,6 +326,11 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
 
             @Override
+            public void onTabModalStateChanged(boolean isTabModalShowing) {
+                mMenuButton.setEnabled(!isTabModalShowing);
+            }
+
+            @Override
             public void showContextMenu(ContextMenuParams params) {
                 View weblayerView = getSupportFragmentManager().getFragments().get(0).getView();
                 weblayerView.setOnCreateContextMenuListener(new ContextMenuCreator(params));
@@ -433,6 +438,15 @@ public class WebLayerShellActivity extends FragmentActivity {
             return;
         }
         if (mBrowser != null) {
+            // The menu button is disabled only when there's a tab modal dialog. If this is the
+            // case, dismiss the overlay; if it works, consider the back press to have been handled.
+            if (!mMenuButton.isEnabled()) {
+                mBrowser.getActiveTab().dismissTabModalOverlay();
+                if (mMenuButton.isEnabled()) {
+                    return;
+                }
+            }
+
             NavigationController controller = mBrowser.getActiveTab().getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();

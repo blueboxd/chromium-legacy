@@ -16,7 +16,7 @@
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/decoder_buffer.h"

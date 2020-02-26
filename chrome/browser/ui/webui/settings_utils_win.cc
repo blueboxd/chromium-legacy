@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
@@ -109,10 +110,9 @@ void ShowNetworkProxySettings(content::WebContents* web_contents) {
         Profile::FromBrowserContext(web_contents->GetBrowserContext()),
         GURL("ms-settings:network-proxy"));
   } else {
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-                    base::MayBlock()},
-                   base::BindOnce(&OpenConnectionDialogCallback));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&OpenConnectionDialogCallback));
   }
 }
 

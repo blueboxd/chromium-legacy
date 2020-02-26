@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
@@ -40,8 +41,8 @@ void ImageLoaded(content::URLDataSource::GotDataCallback got_data_callback,
 }  // namespace
 
 ImageSource::ImageSource() {
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -64,9 +65,8 @@ void ImageSource::StartDataRequest(
 
   const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath image_path = asset_dir.AppendASCII(path);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::PathExists, image_path),
       base::BindOnce(&ImageSource::StartDataRequestAfterPathExists,
                      weak_factory_.GetWeakPtr(), image_path,

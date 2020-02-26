@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -303,9 +304,9 @@ ProfileNetworkContextService::CreateNetworkContext(
                                   &base_cache_path);
     base::FilePath media_cache_path =
         base_cache_path.Append(chrome::kMediaCacheDirname);
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
                        true /* recursive */));

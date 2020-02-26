@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
@@ -68,8 +69,8 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   base::DefaultClock* clock = base::DefaultClock::GetInstance();
 
   auto metadata_store =

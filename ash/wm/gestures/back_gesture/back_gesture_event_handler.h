@@ -33,6 +33,8 @@ class BackGestureEventHandler : public display::DisplayObserver,
   static constexpr int kStartGoingBackLeftEdgeInset = 16;
 
   BackGestureEventHandler();
+  BackGestureEventHandler(const BackGestureEventHandler&) = delete;
+  BackGestureEventHandler& operator=(const BackGestureEventHandler&) = delete;
   ~BackGestureEventHandler() override;
 
   // display::DisplayObserver:
@@ -58,6 +60,8 @@ class BackGestureEventHandler : public display::DisplayObserver,
   bool CanStartGoingBack(aura::Window* window,
                          const gfx::Point& screen_location);
 
+  void SendBackEvent(const gfx::Point& screen_location);
+
   // True if swiping from left edge to go to previous page is in progress.
   bool going_back_started_ = false;
 
@@ -77,7 +81,7 @@ class BackGestureEventHandler : public display::DisplayObserver,
   ui::PointerId first_touch_id_ = ui::kPointerIdUnknown;
 
   // Used to show the affordance while swiping from left edge to go to the
-  // previout page.
+  // previous page.
   std::unique_ptr<BackGestureAffordance> back_gesture_affordance_;
 
   // Used to decide when to show/hide the back gesture contextual nudge.
@@ -101,9 +105,6 @@ class BackGestureEventHandler : public display::DisplayObserver,
   // Start scenario type of the back gesture, used for related metrics.
   BackGestureStartScenarioType back_gesture_start_scenario_type_ =
       BackGestureStartScenarioType::kMaxValue;
-
-  BackGestureEventHandler(const BackGestureEventHandler&) = delete;
-  BackGestureEventHandler& operator=(const BackGestureEventHandler&) = delete;
 };
 
 }  // namespace ash

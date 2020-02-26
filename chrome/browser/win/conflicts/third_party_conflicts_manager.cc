@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
@@ -156,8 +157,8 @@ void ClearModuleBlacklistCacheMD5Digest() {
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
     ModuleDatabaseEventSource* module_database_event_source)
     : module_database_event_source_(module_database_event_source),
-      background_sequence_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      background_sequence_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       module_list_received_(false),

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
@@ -102,9 +103,8 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
   {
     base::RunLoop loop;
     base::string16 rlz_string;
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&GetAccessPointRlzInBackgroundThread,
                    rlz::RLZTracker::ChromeHomePage(), &rlz_string),
         loop.QuitClosure());

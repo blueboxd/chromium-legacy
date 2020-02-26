@@ -380,13 +380,6 @@
           'shards': 15,
           'expiration': 18000,
           'hard_timeout': 14400,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
-              'location': 'chrome/test/chromedriver/cipd',
-              'revision': 'JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C',
-            }
-          ]
         },
       },
     },
@@ -1860,6 +1853,16 @@
 
     # GPU gtests that test only Dawn
     'gpu_dawn_gtests': {
+      'dawn_end2end_no_spvc_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--no-use-spvc',
+          '--no-use-spvc-parser',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
       'dawn_end2end_skip_validation_tests': {
         'desktop_args': [
           '--use-gpu-in-tests',
@@ -1873,8 +1876,18 @@
         'desktop_args': [
           '--use-gpu-in-tests',
           # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0'
+          '--test-launcher-retry-limit=0',
         ],
+      },
+      'dawn_end2end_use_spvc_parser_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--use-spvc',
+          '--use-spvc-parser',
+        ],
+        'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_use_spvc_tests': {
         'desktop_args': [
@@ -1882,6 +1895,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-spvc',
+          '--no-use-spvc-parser',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -1908,6 +1922,16 @@
     # GPU gtests that test Dawn and integration with Chromium
     # These tests are run both on the CI and trybots which test DEPS Dawn.
     'gpu_dawn_integration_gtests': {
+      'dawn_end2end_no_spvc_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--no-use-spvc',
+          '--no-use-spvc-parser',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
       'dawn_end2end_skip_validation_tests': {
         'desktop_args': [
           '--use-gpu-in-tests',
@@ -1921,8 +1945,18 @@
         'desktop_args': [
           '--use-gpu-in-tests',
           # Dawn test retries deliberately disabled to prevent flakiness.
-          '--test-launcher-retry-limit=0'
+          '--test-launcher-retry-limit=0',
         ],
+      },
+      'dawn_end2end_use_spvc_parser_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--use-spvc',
+          '--use-spvc-parser',
+        ],
+        'test': 'dawn_end2end_tests',
       },
       'dawn_end2end_use_spvc_tests': {
         'desktop_args': [
@@ -1930,6 +1964,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-spvc',
+          '--no-use-spvc-parser',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -3310,13 +3345,6 @@
           'shards': 15,
           'expiration': 18000,
           'hard_timeout': 14400,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
-              'location': 'chrome/test/chromedriver/cipd',
-              'revision': 'JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C',
-            }
-          ]
         },
       },
     },
@@ -3367,13 +3395,6 @@
           'shards': 15,
           'expiration': 18000,
           'hard_timeout': 14400,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
-              'location': 'chrome/test/chromedriver/cipd',
-              'revision': 'JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C',
-            }
-          ]
         },
       },
     },

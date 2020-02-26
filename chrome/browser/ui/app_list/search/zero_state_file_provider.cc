@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -52,8 +53,8 @@ internal::ValidAndInvalidResults ValidateFiles(
 ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   auto* notifier =

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -78,9 +79,8 @@ const char kRateParamName[] = "sampling_rate_per_mille";
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GoogleUpdateSettings::StoreMetricsClientInfo,
                      client_info));
 }

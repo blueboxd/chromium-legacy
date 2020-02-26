@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "url/gurl.h"
 
@@ -90,9 +91,9 @@ void SupervisedUserSiteList::Load(const std::string& id,
                                   const base::FilePath& large_icon_path,
                                   const base::FilePath& path,
                                   const LoadedCallback& callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ReadFileOnBlockingThread, path),
       base::BindOnce(&SupervisedUserSiteList::OnJsonLoaded, id, title,

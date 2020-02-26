@@ -11,6 +11,7 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -43,8 +44,8 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   website_event_db_ = db_provider->GetDB<WebsiteEvent>(
       leveldb_proto::ProtoDbType::USAGE_STATS_WEBSITE_EVENT,

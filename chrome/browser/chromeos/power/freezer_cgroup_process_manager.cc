@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -157,9 +158,8 @@ class FreezerCgroupProcessManager::FileWorker {
 };
 
 FreezerCgroupProcessManager::FreezerCgroupProcessManager()
-    : file_thread_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock()})),
+    : file_thread_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
       file_worker_(new FileWorker(file_thread_)) {
   file_thread_->PostTask(
       FROM_HERE,

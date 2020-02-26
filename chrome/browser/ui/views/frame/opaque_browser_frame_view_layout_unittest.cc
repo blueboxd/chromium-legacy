@@ -101,8 +101,7 @@ class OpaqueBrowserFrameViewLayoutTest
     auto layout = std::make_unique<OpaqueBrowserFrameViewLayout>();
     layout->set_delegate(delegate_.get());
     layout->set_forced_window_caption_spacing_for_test(0);
-    widget_ = new views::Widget;
-    widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
+    widget_ = CreateTestWidget();
     root_view_ = widget_->GetRootView();
     root_view_->SetSize(gfx::Size(kWindowWidth, kWindowWidth));
     layout_manager_ = root_view_->SetLayoutManager(std::move(layout));
@@ -131,7 +130,7 @@ class OpaqueBrowserFrameViewLayoutTest
   }
 
   void TearDown() override {
-    widget_->CloseNow();
+    widget_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -336,8 +335,7 @@ class OpaqueBrowserFrameViewLayoutTest
     EXPECT_EQ(icon_size, title_bounds.height());
   }
 
-
-  views::Widget* widget_ = nullptr;
+  std::unique_ptr<views::Widget> widget_;
   views::View* root_view_ = nullptr;
   OpaqueBrowserFrameViewLayout* layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;

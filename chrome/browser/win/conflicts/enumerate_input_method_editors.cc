@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
@@ -116,9 +117,9 @@ const wchar_t kImeRegistryKey[] = L"SOFTWARE\\Microsoft\\CTF\\TIP";
 
 void EnumerateInputMethodEditors(OnImeEnumeratedCallback on_ime_enumerated,
                                  base::OnceClosure on_enumeration_finished) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&EnumerateImesOnBlockingSequence,
                      base::SequencedTaskRunnerHandle::Get(),

@@ -4762,7 +4762,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 10
+          "shards": 12
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"

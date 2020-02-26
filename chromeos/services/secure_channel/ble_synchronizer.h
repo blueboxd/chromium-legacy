@@ -82,7 +82,6 @@ class BleSynchronizer : public BleSynchronizerBase {
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnErrorStartingDiscoverySession();
   void OnDiscoverySessionStopped();
-  void OnErrorStoppingDiscoverySession();
 
   void ScheduleCommandCompletion();
   void CompleteCurrentCommand();

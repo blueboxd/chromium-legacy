@@ -270,11 +270,8 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;
   capabilities_.preserve_buffer_content = true;
-  // We expect origin of buffers is at top left, so set flipped_output_surface
-  // to true.
-  // TODO(penghuang): flipped_output_surface is confusing, change it to
-  // something like GrSurfaceOrigin.
-  capabilities_.flipped_output_surface = true;
+  // We expect origin of buffers is at top left.
+  capabilities_.output_surface_origin = SurfaceOrigin::kTopLeft;
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(

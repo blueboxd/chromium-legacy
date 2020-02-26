@@ -15,6 +15,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -302,8 +303,8 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
 void AppInstallEventLogger::AddForSetOfPackagesWithDiskSpaceInfo(
     const std::set<std::string>& packages,
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&AddDiskSpaceInfoToEvent, std::move(event)),
       base::BindOnce(&AppInstallEventLogger::AddForSetOfPackages,
                      weak_factory_.GetWeakPtr(), packages));

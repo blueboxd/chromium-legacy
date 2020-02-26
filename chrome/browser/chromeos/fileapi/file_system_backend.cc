@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -347,9 +348,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     return storage::FileSystemOperation::Create(
         url, context,
         std::make_unique<storage::FileSystemOperationContext>(
-            context, base::CreateSequencedTaskRunner(
-                         {base::ThreadPool(), base::MayBlock(),
-                          base::TaskPriority::USER_VISIBLE})
+            context, base::ThreadPool::CreateSequencedTaskRunner(
+                         {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
                          .get()));
   }
 
@@ -413,8 +413,8 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeSmbFs:
       return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForLocalFile(
-              base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                      base::TaskPriority::USER_VISIBLE})
+              base::ThreadPool::CreateTaskRunner(
+                  {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
                   .get(),
               url.path(), offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -450,8 +450,8 @@ FileSystemBackend::CreateFileStreamWriter(
     case storage::kFileSystemTypeDriveFs:
     case storage::kFileSystemTypeSmbFs:
       return storage::FileStreamWriter::CreateForLocalFile(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_VISIBLE})
+          base::ThreadPool::CreateTaskRunner(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
               .get(),
           url.path(), offset, storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:

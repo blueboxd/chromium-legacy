@@ -290,9 +290,6 @@ IntersectionObserver::IntersectionObserver(
       DCHECK(root->IsElementNode());
       To<Element>(root)->EnsureIntersectionObserverData().AddObserver(*this);
     }
-    root->GetDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedObserver(*this, track_visibility);
   }
 }
 
@@ -328,12 +325,16 @@ void IntersectionObserver::observe(Element* target,
       MakeGarbageCollected<IntersectionObservation>(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
+  if (root() && root()->isConnected()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObserver(*this);
+  }
   if (target->isConnected()) {
-    if (RootIsImplicit()) {
-      target->GetDocument()
-          .EnsureIntersectionObserverController()
-          .AddTrackedObservation(*observation, track_visibility_);
-    }
+    target->GetDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObservation(*observation);
     if (LocalFrameView* frame_view = target_frame->View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.
@@ -362,12 +363,24 @@ void IntersectionObserver::unobserve(Element* target,
 
   observation->Disconnect();
   observations_.erase(observation);
+  if (root() && root()->isConnected() && observations_.IsEmpty()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .RemoveTrackedObserver(*this);
+  }
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
   observations_.clear();
+  if (root() && root()->isConnected()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .RemoveTrackedObserver(*this);
+  }
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(

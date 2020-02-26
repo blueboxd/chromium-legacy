@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/skia_util.h"
@@ -68,9 +69,9 @@ bool ThumbnailImage::HasObserver(const Observer* observer) const {
 }
 
 void ThumbnailImage::AssignSkBitmap(SkBitmap bitmap) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailImage::CompressBitmap, std::move(bitmap)),
       base::BindOnce(&ThumbnailImage::AssignJPEGData,
@@ -106,9 +107,9 @@ bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
       async_operation_finished_callback_.Run();
     return false;
   }
-  return base::PostTaskAndReplyWithResult(
+  return base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailImage::UncompressImage, data_),
       base::BindOnce(&ThumbnailImage::NotifyUncompressedDataObservers,

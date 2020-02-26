@@ -3381,6 +3381,44 @@ TEST_F(SSLClientSocketTest, RequireECDHE) {
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
+TEST_F(SSLClientSocketTest, 3DES) {
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  // TLS_RSA_WITH_3DES_EDE_CBC_SHA
+  server_config.cipher_suite_for_testing = 0x000a;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLConfig config;
+  config.disable_legacy_crypto = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
+}
+
+TEST_F(SSLClientSocketTest, SHA1) {
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  // Disable RSA key exchange, to ensure the server does not pick a non-signing
+  // cipher.
+  server_config.require_ecdhe = true;
+  server_config.signature_algorithm_for_testing = SSL_SIGN_RSA_PKCS1_SHA1;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLConfig config;
+  config.disable_legacy_crypto = true;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_PROTOCOL_ERROR));
+}
+
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires ALPN, ECDHE, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;

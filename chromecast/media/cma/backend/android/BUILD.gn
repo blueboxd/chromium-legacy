@@ -33,6 +33,7 @@ cast_source_set("cast_media_android") {
     "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
+    "//chromecast/media/api",
     "//chromecast/media/cma/backend:null_video",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",

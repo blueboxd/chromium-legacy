@@ -123,6 +123,10 @@ class TabStripModelDelegate {
   // to close |contents|.
   virtual bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) = 0;
+
+  // Returns whether favicon should be shown.
+  virtual bool ShouldDisplayFavicon(
+      content::WebContents* web_contents) const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_

@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -730,8 +731,7 @@ DownloadTargetDeterminer::Result
   // IsAdobeReaderUpToDate() needs to be run with COM as it makes COM calls via
   // AssocQueryString() in IsAdobeReaderDefaultPDFViewer().
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
-          .get(),
+      base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}).get(),
       FROM_HERE, base::BindOnce(&::IsAdobeReaderUpToDate),
       base::BindOnce(
           &DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,

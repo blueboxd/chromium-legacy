@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -196,10 +197,10 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_ = std::make_unique<ServiceProcessPrefs>(
-      pref_path, base::CreateSequencedTaskRunner(
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
-                     .get());
+      pref_path,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+          .get());
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.

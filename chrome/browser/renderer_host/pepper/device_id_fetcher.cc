@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -124,9 +125,8 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
 #if defined(OS_CHROMEOS)
   // Try the legacy path first for ChromeOS. We pass the new salt in as well
   // in case the legacy id doesn't exist.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeviceIDFetcher::LegacyComputeAsync, this,
                      profile->GetPath(), salt));
 #else

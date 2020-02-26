@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -48,8 +49,8 @@ void AVScanningFileValidator::StartPostWriteValidation(
 
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
-                                    base::TaskPriority::USER_VISIBLE})
+      base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
           .get(),
       FROM_HERE, base::BindOnce(&ScanFile, dest_platform_path),
       std::move(result_callback));

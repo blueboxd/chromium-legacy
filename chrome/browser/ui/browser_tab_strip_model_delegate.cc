@@ -156,6 +156,11 @@ bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
   return browser_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 
+bool BrowserTabStripModelDelegate::ShouldDisplayFavicon(
+    content::WebContents* contents) const {
+  return browser_->ShouldDisplayFavicon(contents);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, private:
 

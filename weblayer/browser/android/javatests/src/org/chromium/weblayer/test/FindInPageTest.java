@@ -8,24 +8,25 @@ import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the behavior of FindInPageController and FindInPageCallback.
  */
 @RunWith(WebLayerJUnit4ClassRunner.class)
 public class FindInPageTest {
+    private static final int COUNTDOWN_TIMEOUT_SECONDS = 6;
+
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
@@ -57,7 +58,7 @@ public class FindInPageTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTab().getFindInPageController().find(text, forward); });
         try {
-            mCallback.mResultCountDown.await();
+            mCallback.mResultCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Assert.fail(e.toString());
         }
@@ -84,9 +85,8 @@ public class FindInPageTest {
         }));
     }
 
-    @Before
-    public void setUp() {
-        String url = mActivityTestRule.getTestDataURL("shakespeare.html");
+    public void setUp(String testPage) {
+        String url = mActivityTestRule.getTestDataURL(testPage);
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
         mCallback = new CallbackImpl();
@@ -98,6 +98,8 @@ public class FindInPageTest {
     @Test
     @SmallTest
     public void testBasic() {
+        setUp("shakespeare.html");
+
         // Search.
         searchFor("de");
         Assert.assertEquals(mCallback.mNumberOfMatches, 5);
@@ -135,20 +137,23 @@ public class FindInPageTest {
     @Test
     @SmallTest
     public void testHideOnNavigate() throws InterruptedException {
+        setUp("shakespeare.html");
+
         mCallback.mEndedCountDown = new CountDownLatch(1);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getTab().getNavigationController().navigate(Uri.parse("simple_page.html"));
         });
 
-        mCallback.mEndedCountDown.await();
+        mCallback.mEndedCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         verifyFindSessionInactive();
     }
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Timeout flaky crbug.com/1052802")
     public void testHideOnNewTab() throws InterruptedException {
+        setUp("new_tab.html");
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getBrowser().getActiveTab().setNewTabCallback(new NewTabCallbackImpl());
         });
@@ -158,6 +163,6 @@ public class FindInPageTest {
         // This touch creates a new tab.
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
 
-        mCallback.mEndedCountDown.await();
+        mCallback.mEndedCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 }

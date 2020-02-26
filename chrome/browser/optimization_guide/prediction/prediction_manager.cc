@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -170,9 +171,8 @@ PredictionManager::PredictionManager(
               profile_path.AddExtensionASCII(
                   optimization_guide::
                       kOptimizationGuidePredictionModelAndFeaturesStore),
-              base::CreateSequencedTaskRunner(
-                  {base::ThreadPool(), base::MayBlock(),
-                   base::TaskPriority::BEST_EFFORT})),
+              base::ThreadPool::CreateSequencedTaskRunner(
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
           top_host_provider,
           url_loader_factory,
           pref_service,

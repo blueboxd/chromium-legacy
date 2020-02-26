@@ -15,8 +15,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -31,8 +29,6 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface CustomTabActivityComponent extends BaseCustomTabActivityComponent {
     TrustedWebActivityCoordinator resolveTrustedWebActivityCoordinator();
-    DynamicModuleToolbarController resolveDynamicModuleToolbarController();
-    DynamicModuleCoordinator resolveDynamicModuleCoordinator();
 
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();

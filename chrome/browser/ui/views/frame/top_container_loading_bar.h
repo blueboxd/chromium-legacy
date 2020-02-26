@@ -11,6 +11,8 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/view.h"
 
+class Browser;
+
 class LoadingBarView : public views::View, public gfx::AnimationDelegate {
  public:
   LoadingBarView();
@@ -44,7 +46,7 @@ class LoadingBarView : public views::View, public gfx::AnimationDelegate {
 class TopContainerLoadingBar : public LoadingBarView,
                                public content::WebContentsObserver {
  public:
-  TopContainerLoadingBar();
+  explicit TopContainerLoadingBar(Browser*);
   TopContainerLoadingBar(const TopContainerLoadingBar&) = delete;
   TopContainerLoadingBar& operator=(const TopContainerLoadingBar&) = delete;
 
@@ -57,6 +59,7 @@ class TopContainerLoadingBar : public LoadingBarView,
   // content::WebContentsObserver:
   void LoadProgressChanged(double progress) override;
 
+  Browser* browser_;
   TabNetworkState network_state_ = TabNetworkState::kNone;
 };
 

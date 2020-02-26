@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -144,9 +145,8 @@ void DownloadItemRequest::OnDownloadDestroyed(
 }
 
 void DownloadItemRequest::ReadFile() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&GetFileContentsBlocking, item_->GetFullPath()),
       base::BindOnce(&DownloadItemRequest::OnGotFileContents,
                      weakptr_factory_.GetWeakPtr()));

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "extensions/browser/component_extension_resource_manager.h"
@@ -133,8 +134,8 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
     auto data = GetResource(resource_id, request.url.host());
 
     std::string* read_mime_type = new std::string;
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&net::GetMimeTypeFromFile, filename,
                        base::Unretained(read_mime_type)),
         base::BindOnce(&ResourceBundleFileLoader::OnMimeTypeRead,

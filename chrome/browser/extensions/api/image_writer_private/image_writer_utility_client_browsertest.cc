@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
@@ -41,8 +42,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_));
 
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ImageWriterUtilityClientTest::FillFile, image_,
                        pattern),
         run_loop.QuitClosure());
@@ -54,8 +55,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     device_ = image_.ReplaceExtension(FILE_PATH_LITERAL("out"));
 
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ImageWriterUtilityClientTest::FillFile, device_,
                        pattern),
         run_loop.QuitClosure());

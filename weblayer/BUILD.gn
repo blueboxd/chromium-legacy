@@ -238,6 +238,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/content_settings/core/browser",
     "//components/crash/content/app",
     "//components/crash/content/browser",
+    "//components/crash/core/common",
     "//components/embedder_support",
     "//components/find_in_page",
     "//components/keyed_service/content",

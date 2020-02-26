@@ -42,6 +42,12 @@ void GestureNavigationScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_GESTURE_NAVIGATION_INTRO_TITLE);
   builder->Add("gestureNavigationIntroNextButton",
                IDS_OOBE_GESTURE_NAVIGATION_INTRO_NEXT_BUTTON);
+  builder->Add("gestureNavigationIntroGoHomeItem",
+               IDS_OOBE_GESTURE_NAVIGATION_INTRO_GO_HOME);
+  builder->Add("gestureNavigationIntroSwitchAppItem",
+               IDS_OOBE_GESTURE_NAVIGATION_INTRO_SWITCH_APP);
+  builder->Add("gestureNavigationIntroGoBackItem",
+               IDS_OOBE_GESTURE_NAVIGATION_INTRO_GO_BACK);
   builder->Add("gestureNavigationHomeTitle",
                IDS_OOBE_GESTURE_NAVIGATION_HOME_TITLE);
   builder->Add("gestureNavigationHomeDescription",

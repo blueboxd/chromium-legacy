@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -93,9 +94,8 @@ void PrinterCapabilitiesProvider::OnPrinterInstalled(
 void PrinterCapabilitiesProvider::FetchCapabilities(
     const std::string& printer_id,
     GetPrinterCapabilitiesCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer_id),
       base::BindOnce(&PrinterCapabilitiesProvider::OnCapabilitiesFetched,
                      weak_ptr_factory_.GetWeakPtr(), printer_id,

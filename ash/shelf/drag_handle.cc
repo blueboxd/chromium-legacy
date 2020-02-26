@@ -128,8 +128,10 @@ void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
 
 void DragHandle::ShowDragHandleTooltip() {
   DCHECK(!drag_handle_nudge_);
-  drag_handle_nudge_ = new ContextualNudge(
-      this, l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE));
+  drag_handle_nudge_ =
+      new ContextualNudge(this, nullptr /*parent_window*/,
+                          l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
+                          ContextualNudge::Position::kTop);
   drag_handle_nudge_->GetWidget()->Show();
   drag_handle_nudge_->label()->layer()->SetOpacity(0.0f);
 

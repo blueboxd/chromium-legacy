@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_table_backing.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector_backing.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
@@ -46,16 +47,6 @@ template <typename T>
 struct IsAllowedInContainer<T, typename T::IsDisallowedInContainerMarker>
     : std::false_type {};
 
-template <typename Table>
-class HeapHashTableBacking {
-  DISALLOW_NEW();
-  IS_GARBAGE_COLLECTED_TYPE();
-
- public:
-  static void Finalize(void* pointer);
-  void FinalizeGarbageCollectedObject() { Finalize(this); }
-};
-
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
 class PLATFORM_EXPORT HeapAllocator {
@@ -90,16 +81,9 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename HashTable>
   static T* AllocateHashTableBacking(size_t size) {
-    uint32_t gc_info_index =
-        GCInfoTrait<HeapHashTableBacking<HashTable>>::Index();
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    const char* type_name =
-        WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HashTable>);
     return reinterpret_cast<T*>(
-        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
-            state, size, BlinkGC::kHashTableArenaIndex, gc_info_index,
-            type_name)));
+        MakeGarbageCollected<HeapHashTableBacking<HashTable>>(
+            size / sizeof(typename HashTable::ValueType)));
   }
   template <typename T, typename HashTable>
   static T* AllocateZeroedHashTableBacking(size_t size) {
@@ -395,23 +379,6 @@ class HeapListHashSetAllocator : public HeapAllocator {
     TraceListHashSetValue(visitor, node->value_);
   }
 };
-
-template <typename Table>
-void HeapHashTableBacking<Table>::Finalize(void* pointer) {
-  using Value = typename Table::ValueType;
-  static_assert(
-      !std::is_trivially_destructible<Value>::value,
-      "Finalization of trivially destructible classes should not happen.");
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
-  // Use the payload size as recorded by the heap to determine how many
-  // elements to finalize.
-  size_t length = header->PayloadSize() / sizeof(Value);
-  Value* table = reinterpret_cast<Value*>(pointer);
-  for (unsigned i = 0; i < length; ++i) {
-    if (!Table::IsEmptyOrDeletedBucket(table[i]))
-      table[i].~Value();
-  }
-}
 
 namespace internal {
 

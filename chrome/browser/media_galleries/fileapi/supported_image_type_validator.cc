@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
@@ -107,9 +108,8 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
   DCHECK(callback_.is_null());
   callback_ = std::move(result_callback);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReadOnFileThread, path_),
       base::BindOnce(&SupportedImageTypeValidator::OnFileOpen,
                      weak_factory_.GetWeakPtr()));

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -53,8 +54,8 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
     : button_(button) {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
-                                    base::TaskPriority::USER_BLOCKING})
+      base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
           .get(),
       FROM_HERE, base::BindOnce(&GetElevationIcon),
       base::BindOnce(&ElevationIconSetter::SetButtonIcon,

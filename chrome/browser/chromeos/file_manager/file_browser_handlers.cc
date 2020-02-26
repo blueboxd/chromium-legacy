@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
@@ -274,9 +275,8 @@ void FileBrowserHandlerExecutor::Execute(
   scoped_refptr<storage::FileSystemContext> file_system_context(
       util::GetFileSystemContextForExtensionId(profile_, extension_->id()));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SetupFileAccessPermissions, file_system_context,
                      extension_, file_urls),
       base::BindOnce(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,

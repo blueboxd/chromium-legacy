@@ -27,6 +27,7 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
+#include "ash/shelf/home_to_overview_nudge_controller.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -530,6 +531,12 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   SendA11yAlertForFullscreenWorkspaceState(window_state);
 }
 
+void ShelfLayoutManager::UpdateVisibilityStateForBackGesture() {
+  base::AutoReset<bool> back_gesture(&state_forced_by_back_gesture_, true);
+  SetState(SHELF_VISIBLE);
+  LayoutShelf(/*animate=*/true);
+}
+
 void ShelfLayoutManager::UpdateAutoHideState() {
   ShelfAutoHideState auto_hide_state =
       CalculateAutoHideState(state_.visibility_state);
@@ -585,6 +592,9 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
 }
 
 void ShelfLayoutManager::UpdateContextualNudges() {
+  if (!ash::features::AreContextualNudgesEnabled())
+    return;
+
   const bool in_app_shelf = ShelfConfig::Get()->is_in_app();
   const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
 
@@ -597,10 +607,29 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   } else {
     shelf_widget_->HideDragHandleNudge();
   }
+
+  // Create home to overview nudge controller if home to overview nudge is
+  // allowed by the current shelf state.
+  const bool allow_home_to_overview_nudge = in_tablet_mode && !in_app_shelf;
+  if (allow_home_to_overview_nudge && !home_to_overview_nudge_controller_) {
+    home_to_overview_nudge_controller_ =
+        std::make_unique<HomeToOverviewNudgeController>(
+            shelf_->hotseat_widget());
+  }
+  if (home_to_overview_nudge_controller_) {
+    home_to_overview_nudge_controller_->SetNudgeAllowedForCurrentShelf(
+        allow_home_to_overview_nudge);
+  }
 }
 
 void ShelfLayoutManager::HideContextualNudges() {
+  if (!ash::features::AreContextualNudgesEnabled())
+    return;
+
   shelf_widget_->HideDragHandleNudge();
+
+  if (home_to_overview_nudge_controller_)
+    home_to_overview_nudge_controller_->SetNudgeAllowedForCurrentShelf(false);
 }
 
 void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
@@ -1281,6 +1310,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
             return HotseatState::kHidden;
 
           if (in_overview)
+            return HotseatState::kExtended;
+
+          if (state_forced_by_back_gesture_)
             return HotseatState::kExtended;
 
           if (visibility_state == SHELF_AUTO_HIDE) {

@@ -32,6 +32,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
@@ -273,11 +274,11 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   DVLOG(1) << "Creating directory " << path.value();
   if (base::CreateDirectory(path)) {
     if (create_readme) {
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskPriority::BEST_EFFORT,
-                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                     base::BindOnce(&CreateProfileReadme, path));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          base::BindOnce(&CreateProfileReadme, path));
     }
     return GetCreationTimeForPath(path);
   }
@@ -331,9 +332,8 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
   // this profile are executed in expected order (what was previously assured by
   // the FILE thread).
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-           base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
   base::Time creation_time = base::Time::Now();
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
@@ -1506,9 +1506,8 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
 
 void ProfileImpl::InitializeDataReductionProxy() {
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<data_reduction_proxy::DataStore> store(
       new data_reduction_proxy::DataStoreImpl(GetPath()));

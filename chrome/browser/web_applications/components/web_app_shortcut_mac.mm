@@ -41,6 +41,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #import "chrome/browser/mac/dock.h"
@@ -527,9 +528,9 @@ void GetImageResourcesOnUIThread(
     (*result)[id] = ImageRepForGFXImage(image);
   }
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(std::move(io_task), std::move(result)));
 }

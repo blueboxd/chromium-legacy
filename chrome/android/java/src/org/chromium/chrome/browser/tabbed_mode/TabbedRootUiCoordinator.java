@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
@@ -30,7 +29,9 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
@@ -145,8 +146,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     protected void initializeToolbar() {
         super.initializeToolbar();
         if (!mActivity.isTablet()
-                && (CachedFeatureFlags.isBottomToolbarEnabled()
-                        || CachedFeatureFlags.isTabGroupsAndroidEnabled())) {
+                && (BottomToolbarConfiguration.isBottomToolbarEnabled()
+                        || TabUiFeatureUtilities.isTabGroupsAndroidEnabled())) {
             getToolbarManager().enableBottomToolbar();
         }
     }

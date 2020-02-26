@@ -470,6 +470,25 @@ bool SignatureVerifierInitWithCertificate(
       base::make_span(tbs.spki_tlv.UnsafeData(), tbs.spki_tlv.Length()));
 }
 
+bool HasSHA1Signature(const CRYPTO_BUFFER* cert_buffer) {
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
+  if (!ParseCertificate(der::Input(CRYPTO_BUFFER_data(cert_buffer),
+                                   CRYPTO_BUFFER_len(cert_buffer)),
+                        &tbs_certificate_tlv, &signature_algorithm_tlv,
+                        &signature_value, /*out_errors=*/nullptr)) {
+    return false;
+  }
+
+  std::unique_ptr<SignatureAlgorithm> signature_algorithm =
+      SignatureAlgorithm::Create(signature_algorithm_tlv, /*errors=*/nullptr);
+  if (!signature_algorithm)
+    return false;
+
+  return signature_algorithm->digest() == net::DigestAlgorithm::Sha1;
+}
+
 }  // namespace x509_util
 
 }  // namespace net

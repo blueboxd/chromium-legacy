@@ -328,14 +328,6 @@ class TabTest : public ChromeViewsTestBase {
 
   void SetupFakeClock(TabIcon* icon) { icon->clock_ = &fake_clock_; }
 
- protected:
-  void InitWidget(Widget* widget) {
-    Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds.SetRect(10, 20, 300, 400);
-    widget->Init(std::move(params));
-  }
-
  private:
   static gfx::Rect GetAlertIndicatorBounds(const Tab& tab) {
     if (!tab.alert_indicator_) {
@@ -365,13 +357,7 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
     parent_.AddChildView(tab_strip_);
     parent_.set_owned_by_client();
 
-    widget_ = std::make_unique<views::Widget>();
-    views::Widget::InitParams init_params =
-        CreateParams(views::Widget::InitParams::TYPE_POPUP);
-    init_params.ownership =
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    init_params.bounds = gfx::Rect(0, 0, 400, 400);
-    widget_->Init(std::move(init_params));
+    widget_ = CreateTestWidget();
     widget_->SetContentsView(&parent_);
   }
 
@@ -408,12 +394,11 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
 };
 
 TEST_F(TabTest, HitTestTopPixel) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   tab.SizeToPreferredSize();
 
   // Tabs are slanted, so a click halfway down the left edge won't hit it.
@@ -427,7 +412,7 @@ TEST_F(TabTest, HitTestTopPixel) {
 
   // Make sure top edge clicks still select the tab when the window is
   // maximized.
-  widget.Maximize();
+  widget->Maximize();
   EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
 
   // But clicks in the area above the slanted sides should still miss.
@@ -444,12 +429,11 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
       TabAlertState::PIP_PLAYING,
   };
 
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(16, 16);
@@ -504,12 +488,11 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   // tooltips are then disabled.
   if (base::FeatureList::IsEnabled(features::kTabHoverCards))
     return;
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   tab.SizeToPreferredSize();
 
   SkBitmap bitmap;
@@ -579,11 +562,10 @@ TEST_F(TabTest, CloseButtonLayout) {
 // Regression test for http://crbug.com/609701. Ensure TabCloseButton does not
 // get focus on right click.
 TEST_F(TabTest, CloseButtonFocus) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
 
   views::ImageButton* tab_close_button = GetCloseButton(tab);
 
@@ -599,12 +581,11 @@ TEST_F(TabTest, CloseButtonFocus) {
 // Tests expected changes to the ThrobberView state when the WebContents loading
 // state changes or the animation timer (usually in BrowserView) triggers.
 TEST_F(TabTest, LayeredThrobber) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   tab.SizeToPreferredSize();
 
   TabIcon* icon = GetTabIcon(tab);
@@ -707,14 +688,13 @@ TEST_F(TabTest, TitleHiddenWhenSmall) {
 }
 
 TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   for (bool is_active_tab : {false, true}) {
     FakeTabController controller;
     controller.set_active_tab(is_active_tab);
     Tab tab(&controller);
-    widget.GetContentsView()->AddChildView(&tab);
+    widget->SetContentsView(&tab);
     tab.SizeToPreferredSize();
 
     views::View* icon = GetTabIcon(tab);
@@ -727,13 +707,12 @@ TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
 }
 
 TEST_F(TabTest, SmallTabsHideCloseButton) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   controller.set_active_tab(false);
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   const int width = tab.tab_style()->GetContentsInsets().width() +
                     Tab::kMinimumContentsWidthForCloseButtons;
   tab.SetBounds(0, 0, width, 50);
@@ -750,13 +729,12 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
 }
 
 TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   controller.set_active_tab(true);
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   tab.SetBounds(0, 0, 200, 50);
   const views::View* close = GetCloseButton(tab);
   EXPECT_TRUE(close->GetVisible());
@@ -771,12 +749,11 @@ TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
 }
 
 TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
 
   tab.SizeToPreferredSize();
   const views::View* icon = GetTabIcon(tab);
@@ -793,13 +770,12 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
 }
 
 TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   FakeTabController controller;
   controller.set_active_tab(true);
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
   TabRendererData data;
   data.alert_state = {TabAlertState::AUDIO_PLAYING};
   tab.SetData(data);
@@ -840,11 +816,10 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
 
   // Create a tab inside a Widget, so it has a theme provider, so the call to
   // UpdateForegroundColors() below doesn't no-op.
-  Widget widget;
-  InitWidget(&widget);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
   FakeTabController controller;
   Tab tab(&controller);
-  widget.GetContentsView()->AddChildView(&tab);
+  widget->SetContentsView(&tab);
 
   for (const auto& colors : color_schemes) {
     controller.SetTabColors(colors.bg_active, colors.fg_active,

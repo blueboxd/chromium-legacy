@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -92,13 +93,12 @@ class GamesServiceBrowserTest : public PlatformBrowserTest {
     // restrictions (no blocking calls on the thread executing the tests).
     base::RunLoop run_loop;
     bool write_file_success = false;
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindLambdaForTesting([&]() {
-                     write_file_success =
-                         base::WriteFile(file_path, string_data.data(),
-                                         string_data.size()) != -1;
-                     run_loop.Quit();
-                   }));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()}, base::BindLambdaForTesting([&]() {
+          write_file_success = base::WriteFile(file_path, string_data.data(),
+                                               string_data.size()) != -1;
+          run_loop.Quit();
+        }));
     run_loop.Run();
 
     ASSERT_TRUE(write_file_success);

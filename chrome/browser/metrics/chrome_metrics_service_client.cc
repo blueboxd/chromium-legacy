@@ -30,6 +30,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -235,9 +236,9 @@ void RegisterOrRemovePreviousRunMetricsFile(
   } else {
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), metrics_file,
                        /*recursive=*/false));
@@ -289,13 +290,13 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     } else {
       // When metrics reporting is not enabled, any existing files should be
       // deleted in order to preserve user privacy.
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskPriority::BEST_EFFORT,
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                     base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                    std::move(browser_metrics_upload_dir),
-                                    /*recursive=*/true));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                         std::move(browser_metrics_upload_dir),
+                         /*recursive=*/true));
     }
   }
 
@@ -325,10 +326,9 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
               metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
               notification_helper::kNotificationHelperHistogramAllocatorName));
     } else {
-      base::PostTask(
+      base::ThreadPool::PostTask(
           FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          std::move(notification_helper_metrics_upload_dir),

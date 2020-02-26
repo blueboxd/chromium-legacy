@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 
@@ -41,9 +42,8 @@ void ScaleDownBitmap(int icon_size,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Scale down bitmap on another thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ScaleDownBitmapOnIOThread, icon_size, std::move(bitmap)),
       std::move(callback));
 }

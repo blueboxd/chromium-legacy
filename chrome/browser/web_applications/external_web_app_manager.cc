@@ -18,6 +18,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"
@@ -295,9 +296,9 @@ void ExternalWebAppManager::ScanForExternalWebApps(ScanCallback callback) {
   //
   // 2. In |callback|, forward the vector of ExternalInstallOptions on to the
   // pending_app_manager_, which can only be called on the UI thread.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile_)),
       std::move(callback));

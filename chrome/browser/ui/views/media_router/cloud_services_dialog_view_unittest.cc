@@ -29,12 +29,7 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
     browser_params.window = window_.get();
     browser_ = std::make_unique<Browser>(browser_params);
 
-    views::Widget::InitParams widget_params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    widget_params.ownership =
-        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(std::move(widget_params));
+    anchor_widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget_->Show();
   }
 

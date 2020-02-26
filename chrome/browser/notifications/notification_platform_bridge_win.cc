@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_hstring.h"
@@ -776,8 +777,8 @@ winui::Notifications::IToastNotifier*
     NotificationPlatformBridgeWinImpl::notifier_for_testing_ = nullptr;
 
 NotificationPlatformBridgeWin::NotificationPlatformBridgeWin() {
-  notification_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+  notification_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   impl_ = base::MakeRefCounted<NotificationPlatformBridgeWinImpl>(
       notification_task_runner_);

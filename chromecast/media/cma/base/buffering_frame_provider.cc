@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/buffering_state.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace chromecast {

@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1268,9 +1269,8 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
 
 void ArcSessionManager::ExpandPropertyFiles() {
   VLOG(1) << "Started expanding *.prop files";
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&arc::ExpandPropertyFiles, property_files_source_dir_,
                      property_files_dest_dir_),
       base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,

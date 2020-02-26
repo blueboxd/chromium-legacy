@@ -49,7 +49,7 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onDown(MotionEvent e) {
-        return false;
+        return true;
     }
 
     @Override

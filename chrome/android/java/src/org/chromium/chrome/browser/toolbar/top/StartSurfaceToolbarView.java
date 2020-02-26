@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
@@ -19,6 +20,8 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
@@ -26,6 +29,7 @@ import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IPH
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.util.ColorUtils;
 
@@ -40,9 +44,14 @@ class StartSurfaceToolbarView extends RelativeLayout {
     private int mPrimaryColor;
     private ColorStateList mLightIconTint;
     private ColorStateList mDarkIconTint;
+    private ViewPropertyAnimator mVisibilityAnimator;
 
     private Rect mLogoRect = new Rect();
     private Rect mViewRect = new Rect();
+
+    private boolean mShouldShow;
+    private boolean mInStartSurfaceMode;
+    private boolean mIsShowing;
 
     public StartSurfaceToolbarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -51,7 +60,6 @@ class StartSurfaceToolbarView extends RelativeLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
         mNewTabButton = findViewById(R.id.new_tab_button);
         mIncognitoSwitch = findViewById(R.id.incognito_switch);
         mMenuButton = findViewById(R.id.menu_button_wrapper);
@@ -222,6 +230,69 @@ class StartSurfaceToolbarView extends RelativeLayout {
             textBubble.addOnDismissListener(() -> { iphContainer.dismissedCallback.run(); });
         }
         textBubble.show();
+    }
+
+    /**
+     * Show or hide toolbar from tab.
+     * @param inStartSurfaceMode Whether or not toolbar should be shown or hidden.
+     * */
+    void setStartSurfaceMode(boolean inStartSurfaceMode) {
+        mInStartSurfaceMode = inStartSurfaceMode;
+        showStartSurfaceToolbar(mInStartSurfaceMode && mShouldShow, true);
+    }
+
+    /**
+     * Show or hide toolbar.
+     * @param shouldShowStartSurfaceToolbar Whether or not toolbar should be shown or hidden.
+     * */
+    void setToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
+        mShouldShow = shouldShowStartSurfaceToolbar;
+        showStartSurfaceToolbar(mInStartSurfaceMode && mShouldShow, false);
+    }
+
+    /**
+     * Start animation to show or hide toolbar.
+     * @param showStartSurfaceToolbar Whether or not toolbar should be shown or hidden.
+     * @param animateToTab Whether or not animation is from or to tab.
+     */
+    private void showStartSurfaceToolbar(boolean showStartSurfaceToolbar, boolean animateToTab) {
+        if (showStartSurfaceToolbar == mIsShowing) return;
+
+        if (mVisibilityAnimator != null) {
+            mVisibilityAnimator.cancel();
+            mVisibilityAnimator = null;
+        }
+
+        mIsShowing = showStartSurfaceToolbar;
+
+        if (DeviceClassManager.enableAccessibilityLayout()) {
+            finishAnimation(showStartSurfaceToolbar);
+            return;
+        }
+
+        setAlpha(showStartSurfaceToolbar ? 0.0f : 1.0f);
+        setVisibility(View.VISIBLE);
+
+        boolean showZoomingAnimation =
+                animateToTab && TabFeatureUtilities.isTabToGtsAnimationEnabled();
+        final long duration = showZoomingAnimation
+                ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
+                : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
+
+        mVisibilityAnimator =
+                animate()
+                        .alpha(showStartSurfaceToolbar ? 1.0f : 0.0f)
+                        .setDuration(duration)
+                        .setStartDelay(
+                                showZoomingAnimation && showStartSurfaceToolbar ? duration : 0)
+                        .setInterpolator(Interpolators.LINEAR_INTERPOLATOR)
+                        .withEndAction(() -> { finishAnimation(showStartSurfaceToolbar); });
+    }
+
+    private void finishAnimation(boolean showStartSurfaceToolbar) {
+        setAlpha(1.0f);
+        setVisibility(showStartSurfaceToolbar ? View.VISIBLE : View.GONE);
+        mVisibilityAnimator = null;
     }
 
     private void updatePrimaryColorAndTint(boolean isIncognito) {

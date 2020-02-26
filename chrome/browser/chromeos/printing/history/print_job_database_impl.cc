@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
@@ -44,8 +45,8 @@ PrintJobDatabaseImpl::PrintJobDatabaseImpl(
   auto print_job_database_path = profile_path.Append(kPrintJobDatabaseName);
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   database_ = database_provider->GetDB<printing::proto::PrintJobInfo>(
       leveldb_proto::ProtoDbType::PRINT_JOB_DATABASE, print_job_database_path,

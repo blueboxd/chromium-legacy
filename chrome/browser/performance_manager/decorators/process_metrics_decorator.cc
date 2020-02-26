@@ -48,11 +48,13 @@ void ProcessMetricsDecorator::StartTimer() {
   base::TimeDelta refresh_period = kDefaultRefreshTimerPeriod;
 
 #if !defined(OS_ANDROID)
-  // Bump the refresh frequency when urgent discarding is done from the graph as
-  // this relies on relatively fresh data.
+  // Bump the refresh frequency when urgent discarding is done from the graph or
+  // when emitting memory pressure signals on high PMF as these features relies
+  // on relatively fresh data.
   // TODO(sebmarchand): Measure the performance impact of this.
   if (base::FeatureList::IsEnabled(
-          features::kUrgentDiscardingFromPerformanceManager)) {
+          features::kUrgentDiscardingFromPerformanceManager) ||
+      base::FeatureList::IsEnabled(features::kHighPMFMemoryPressureSignals)) {
     refresh_period = kFastRefreshTimerPeriod;
   }
 #endif

@@ -394,6 +394,12 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    @Override
+    public void dismissTabModalOverlay() {
+        BrowserViewController controller = getViewController();
+        if (controller != null) controller.dismissTabModalOverlay();
+    }
+
     @CalledByNative
     private static RectF createRectF(float x, float y, float right, float bottom) {
         return new RectF(x, y, right, bottom);

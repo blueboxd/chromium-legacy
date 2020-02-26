@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -105,6 +106,8 @@ base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
   dict.SetIntKey("cipher_suite",
                  SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
+  dict.SetIntKey("key_exchange_group", ssl_info.key_exchange_group);
+  dict.SetIntKey("peer_signature_algorithm", ssl_info.peer_signature_algorithm);
 
   dict.SetStringKey("next_proto",
                     NextProtoToString(socket->GetNegotiatedProtocol()));
@@ -846,6 +849,8 @@ int SSLClientSocketImpl::Init() {
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA");
+  if (ssl_config_.disable_legacy_crypto)
+    command.append(":!3DES");
 
   // Remove any disabled ciphers.
   for (uint16_t id : context_->config().disabled_cipher_suites) {
@@ -859,6 +864,19 @@ int SSLClientSocketImpl::Init() {
   if (!SSL_set_strict_cipher_list(ssl_.get(), command.c_str())) {
     LOG(ERROR) << "SSL_set_cipher_list('" << command << "') failed";
     return ERR_UNEXPECTED;
+  }
+
+  if (ssl_config_.disable_legacy_crypto) {
+    static const uint16_t kVerifyPrefs[] = {
+        SSL_SIGN_ECDSA_SECP256R1_SHA256, SSL_SIGN_RSA_PSS_RSAE_SHA256,
+        SSL_SIGN_RSA_PKCS1_SHA256,       SSL_SIGN_ECDSA_SECP384R1_SHA384,
+        SSL_SIGN_RSA_PSS_RSAE_SHA384,    SSL_SIGN_RSA_PKCS1_SHA384,
+        SSL_SIGN_RSA_PSS_RSAE_SHA512,    SSL_SIGN_RSA_PKCS1_SHA512,
+    };
+    if (!SSL_set_verify_algorithm_prefs(ssl_.get(), kVerifyPrefs,
+                                        base::size(kVerifyPrefs))) {
+      return ERR_UNEXPECTED;
+    }
   }
 
   if (!ssl_config_.alpn_protos.empty()) {
@@ -1737,6 +1755,7 @@ SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
     key.network_isolation_key = ssl_config_.network_isolation_key;
   }
   key.privacy_mode = ssl_config_.privacy_mode;
+  key.disable_legacy_crypto = ssl_config_.disable_legacy_crypto;
   return key;
 }
 

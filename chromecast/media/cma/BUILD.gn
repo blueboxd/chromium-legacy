@@ -35,6 +35,7 @@ cast_source_set("test_support") {
   deps = [
     "//base",
     "//chromecast/common/mojom",
+    "//chromecast/media/api",
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//media:test_support",
@@ -70,6 +71,7 @@ cast_source_set("unittests") {
     "//chromecast/base",
     "//chromecast/media",
     "//chromecast/media:libcast_media",
+    "//chromecast/media/api",
     "//media",
     "//testing/gmock",
     "//testing/gtest",

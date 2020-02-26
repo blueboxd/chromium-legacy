@@ -191,13 +191,6 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
     return accessibility_helper_bridge_.get();
   }
 
-  views::Widget* CreateTestWidget() {
-    views::Widget* widget = new views::Widget();
-    widget->Init(
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS));
-    return widget;
-  }
-
   views::View* GetContentsView(ArcNotificationView* notification_view) {
     return notification_view->content_view_;
   }
@@ -587,7 +580,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
   notification_view->set_owned_by_client();
 
   // Prepare widget to hold it.
-  views::Widget* widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
   widget->widget_delegate()->SetCanActivate(false);
   widget->Deactivate();
   widget->SetContentsView(notification_view.get());
@@ -647,7 +640,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
   focus_stealer->set_owned_by_client();
 
   // Prepare a widget to hold them.
-  views::Widget* widget = CreateTestWidget();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
   widget->GetRootView()->AddChildView(notification_view.get());
   widget->GetRootView()->AddChildView(focus_stealer.get());
   widget->Show();

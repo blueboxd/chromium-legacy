@@ -13,6 +13,7 @@ import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-he
 suite('<history-list>', function() {
   let app;
   let element;
+  let testService;
   const TEST_HISTORY_RESULTS = [
     createHistoryEntry('2016-03-15', 'https://www.google.com'),
     createHistoryEntry('2016-03-14 10:00', 'https://www.example.com'),
@@ -24,7 +25,7 @@ suite('<history-list>', function() {
   setup(function() {
     window.history.replaceState({}, '', '/');
     PolymerTest.clearBody();
-    const testService = new TestBrowserService();
+    testService = new TestBrowserService();
     BrowserService.instance_ = testService;
     testService.setQueryResult({
       info: createHistoryInfo(),
@@ -135,5 +136,21 @@ suite('<history-list>', function() {
     assertDeepEquals(
         [false, false, false, false],
         element.historyData_.map(i => i.selected));
+  });
+
+  test('deleting last item will focus on new last item', async () => {
+    let focused;
+    await flushTasks();
+    flush();
+    const items = polymerSelectAll(element, 'history-item');
+    assertEquals(4, element.historyData_.length);
+    assertEquals(4, items.length);
+    items[3].$['menu-button'].click();
+    element.$$('#menuRemoveButton').click();
+    assertNotEquals(items[2].$['menu-button'], element.lastFocused_);
+    await testService.whenCalled('removeVisits');
+    await flushTasks();
+    assertEquals(3, element.historyData_.length);
+    assertEquals(items[2].$['menu-button'], element.lastFocused_);
   });
 });

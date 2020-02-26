@@ -1297,15 +1297,12 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   out->positions.resize(out->glyph_count);
   out->width = 0.0f;
 
-#if defined(OS_MACOSX)
-  // Mac 10.9 and 10.10 give a quirky offset for whitespace glyphs in RTL,
-  // which requires tests relying on the behavior of |glyph_width_for_test_|
-  // to also be given a zero x_offset, otherwise expectations get thrown off.
-  const bool force_zero_offset =
-      in.glyph_width_for_test > 0 && base::mac::IsAtMostOS10_10();
-#else
-  constexpr bool force_zero_offset = false;
-#endif
+  // Font on MAC like ".SF NS Text" may have a negative x_offset. Positive
+  // x_offset are also found on Windows (e.g. "Segoe UI"). It requires tests
+  // relying on the behavior of |glyph_width_for_test_| to also be given a zero
+  // x_offset, otherwise expectations get thrown off
+  // (see: http://crbug.com/1056220).
+  const bool force_zero_offset = in.glyph_width_for_test > 0;
   constexpr uint16_t kMissingGlyphId = 0;
 
   out->missing_glyph_count = 0;

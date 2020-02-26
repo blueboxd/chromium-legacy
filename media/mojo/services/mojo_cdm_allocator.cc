@@ -134,19 +134,17 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
         media::MojoSharedBufferVideoFrame::Create(
             ToMediaVideoFormat(Format()), frame_size, gfx::Rect(frame_size),
             natural_size, std::move(handle), buffer_size,
-            PlaneOffset(cdm::kYPlane), PlaneOffset(cdm::kUPlane),
-            PlaneOffset(cdm::kVPlane), Stride(cdm::kYPlane),
-            Stride(cdm::kUPlane), Stride(cdm::kVPlane),
+            {PlaneOffset(cdm::kYPlane), PlaneOffset(cdm::kUPlane),
+             PlaneOffset(cdm::kVPlane)},
+            {Stride(cdm::kYPlane), Stride(cdm::kUPlane), Stride(cdm::kVPlane)},
             base::TimeDelta::FromMicroseconds(Timestamp()));
-
-    frame->set_color_space(MediaColorSpace().ToGfxColorSpace());
 
     // |frame| could fail to be created if the memory can't be mapped into
     // this address space.
     if (frame) {
+      frame->set_color_space(MediaColorSpace().ToGfxColorSpace());
       frame->SetMojoSharedBufferDoneCB(std::move(mojo_shared_buffer_done_cb_));
     }
-
     return frame;
   }
 

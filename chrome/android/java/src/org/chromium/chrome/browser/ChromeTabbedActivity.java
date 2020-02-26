@@ -136,6 +136,7 @@ import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -576,7 +577,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                     //  enabled, and tab switcher is not shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (CachedFeatureFlags.isGridTabSwitcherEnabled()
+                    if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()
                             && !mOverviewModeController.overviewVisible()) {
                         if (getTabModelSelector().getTotalTabCount() == 0
                                 || (!getTabModelSelector().isIncognitoSelected()
@@ -621,7 +622,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
             if (isTablet()) {
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
-                if (CachedFeatureFlags.isGridTabSwitcherEnabled()) {
+                if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
@@ -661,7 +662,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                     }
                 }
 
-                if (isInOverviewMode() && !CachedFeatureFlags.isGridTabSwitcherEnabled()) {
+                if (isInOverviewMode() && !TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
                     hideOverview();
                 } else {
                     showOverview(OverviewModeState.SHOWING_TABSWITCHER);
@@ -979,7 +980,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
-            if (CachedFeatureFlags.isGridTabSwitcherEnabled() && !isTablet()) {
+            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled() && !isTablet()) {
                 mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
             }
@@ -1146,7 +1147,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
 
         // If the grid tab switcher is enabled and the tab switcher will be shown on start,
         //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
-        if (!(shouldShowTabSwitcherOnStart() && CachedFeatureFlags.isGridTabSwitcherEnabled())) {
+        if (!(shouldShowTabSwitcherOnStart() && TabUiFeatureUtilities.isGridTabSwitcherEnabled())) {
             String url = HomepageManager.getHomepageUri();
             if (TextUtils.isEmpty(url)) {
                 url = UrlConstants.NTP_URL;

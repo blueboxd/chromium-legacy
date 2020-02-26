@@ -173,7 +173,8 @@ void BluetoothEventRouter::StopDiscoverySession(
   }
   BLUETOOTH_LOG(USER) << "StopDiscoverySession: " << extension_id;
   device::BluetoothDiscoverySession* session = iter->second;
-  session->Stop(callback, error_callback);
+  session->Stop();
+  callback.Run();
 }
 
 void BluetoothEventRouter::SetDiscoveryFilter(

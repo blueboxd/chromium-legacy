@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_util.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -187,9 +188,8 @@ FileSystemScanner::FileSystemScanner(const base::FilePath& cros_dir,
       cros_dir_(cros_dir),
       android_dir_(android_dir),
       arc_bridge_service_(arc_bridge_service),
-      scan_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})),
+      scan_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       ctime_callback_(ctime_callback) {}
 
 FileSystemScanner::~FileSystemScanner() = default;

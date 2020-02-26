@@ -164,6 +164,15 @@
       },
     },
   },
+  # TODO(crbug.com/812428): Remove this mixin after all test pools have migrated
+  # to using templates.
+  'chromium-template-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.template',
+      },
+    },
+  },
   'code-coverage': {
     'isolate_coverage_data': True,
   },

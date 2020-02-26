@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
@@ -128,9 +129,8 @@ void HatsDialog::CreateAndShow(bool is_google_account) {
   if (!user_locale.length())
     user_locale = kDefaultProfileLocale;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetFormattedSiteContext, user_locale,
                      kDeviceInfoStopKeyword),
       base::BindOnce(&HatsDialog::Show, is_google_account));

@@ -2215,43 +2215,6 @@ const char kCCTIncognitoName[] = "Chrome Custom Tabs Incognito mode";
 const char kCCTIncognitoDescription[] =
     "Enables incognito mode for Chrome Custom Tabs, on Android.";
 
-const char kCCTModuleName[] = "Chrome Custom Tabs Module";
-const char kCCTModuleDescription[] =
-    "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";
-
-const char kCCTModuleCacheName[] = "Chrome Custom Tabs Module Cache";
-const char kCCTModuleCacheDescription[] =
-    "Enables a cache for dynamically loaded modules in Chrome Custom Tabs. "
-    "Under mild memory pressure the cache may be retained for some time";
-
-const char kCCTModuleCustomHeaderName[] =
-    "Chrome Custom Tabs Module Custom Header";
-const char kCCTModuleCustomHeaderDescription[] =
-    "Enables header customization by dynamically loaded modules in "
-    "Chrome Custom Tabs.";
-
-const char kCCTModuleCustomRequestHeaderName[] =
-    "Chrome Custom Tabs Module Custom Request Header";
-const char kCCTModuleCustomRequestHeaderDescription[] =
-    "Enables a custom request header for URLs managed by dynamically loaded "
-    "modules in Chrome Custom Tabs.";
-
-const char kCCTModuleDexLoadingName[] = "Chrome Custom Tabs Module Dex Loading";
-const char kCCTModuleDexLoadingDescription[] =
-    "Enables loading Chrome Custom Tabs module code from a dex file "
-    "provided by the module.";
-
-const char kCCTModulePostMessageName[] =
-    "Chrome Custom Tabs Module postMessage API";
-const char kCCTModulePostMessageDescription[] =
-    "Enables the postMessage API exposed to dynamically loaded modules in "
-    "Chrome Custom Tabs.";
-
-const char kCCTModuleUseIntentExtrasName[] =
-    "Chrome Custom Tabs Module Intent Extras Usage";
-const char kCCTModuleUseIntentExtrasDescription[] =
-    "Enables usage of Intent's extras in Chrome Custom Tabs Module";
-
 const char kCCTTargetTranslateLanguageName[] =
     "Chrome Custom Tabs Target Translate Language";
 const char kCCTTargetTranslateLanguageDescription[] =

@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -284,9 +285,8 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
       orphan_extension_cache_deletion_state_(NOT_STARTED),
       store_background_task_runner_(store_background_task_runner),
       extension_cache_task_runner_(extension_cache_task_runner),
-      resource_cache_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})),
+      resource_cache_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       url_loader_factory_(url_loader_factory),
       local_accounts_subscription_(cros_settings_->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccounts,

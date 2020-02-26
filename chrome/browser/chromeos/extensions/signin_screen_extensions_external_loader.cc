@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -59,9 +60,8 @@ SigninScreenExtensionsExternalLoader::SigninScreenExtensionsExternalLoader(
     : profile_(profile),
       external_cache_(GetExtensionsCachePath(),
                       g_browser_process->shared_url_loader_factory(),
-                      base::CreateSequencedTaskRunner(
-                          {base::ThreadPool(), base::MayBlock(),
-                           base::TaskPriority::USER_VISIBLE,
+                      base::ThreadPool::CreateSequencedTaskRunner(
+                          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
                       this,
                       /*always_check_updates=*/true,

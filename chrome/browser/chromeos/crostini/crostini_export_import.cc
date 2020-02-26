@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
@@ -260,8 +261,8 @@ void CrostiniExportImport::Start(
 
   switch (operation_data->type) {
     case ExportImportType::EXPORT:
-      base::PostTaskAndReply(
-          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::ThreadPool::PostTaskAndReply(
+          FROM_HERE, {base::MayBlock()},
           // Ensure file exists so that it can be shared.
           base::BindOnce(
               [](const base::FilePath& path) {
@@ -335,11 +336,10 @@ void CrostiniExportImport::OnExportComplete(
         // If a user requests to cancel, but the export completes before the
         // cancel can happen (|result| == SUCCESS), then removing the exported
         // file is functionally the same as a successful cancel.
-        base::PostTask(FROM_HERE,
-                       {base::ThreadPool(), base::MayBlock(),
-                        base::TaskPriority::BEST_EFFORT},
-                       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                      it->second->path(), false));
+        base::ThreadPool::PostTask(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                           it->second->path(), false));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -369,11 +369,10 @@ void CrostiniExportImport::OnExportComplete(
         // If a user requests to cancel, and the export is cancelled (|result|
         // == CONTAINER_EXPORT_IMPORT_CANCELLED), then the partially exported
         // file needs to be cleaned up.
-        base::PostTask(FROM_HERE,
-                       {base::ThreadPool(), base::MayBlock(),
-                        base::TaskPriority::BEST_EFFORT},
-                       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                      it->second->path(), false));
+        base::ThreadPool::PostTask(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                           it->second->path(), false));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -382,9 +381,8 @@ void CrostiniExportImport::OnExportComplete(
     }
   } else {
     LOG(ERROR) << "Error exporting " << int(result);
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        it->second->path(), false));
     switch (result) {

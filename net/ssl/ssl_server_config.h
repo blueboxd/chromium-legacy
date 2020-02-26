@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_config.h"
@@ -66,6 +67,16 @@ struct NET_EXPORT SSLServerConfig {
 
   // If true, causes only ECDHE cipher suites to be enabled.
   bool require_ecdhe;
+
+  // cipher_suite_for_testing, if set, causes the server to only support the
+  // specified cipher suite in TLS 1.2 and below. This should only be used in
+  // unit tests.
+  base::Optional<uint16_t> cipher_suite_for_testing;
+
+  // signature_algorithm_for_testing, if set, causes the server to only support
+  // the specified signature algorithm in TLS 1.2 and below. This should only be
+  // used in unit tests.
+  base::Optional<uint16_t> signature_algorithm_for_testing;
 
   // Sets the requirement for client certificates during handshake.
   ClientCertType client_cert_type;

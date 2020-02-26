@@ -21,7 +21,7 @@ constexpr SkColorType kSurfaceColorType = kRGBA_8888_SkColorType;
 
 SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     scoped_refptr<gpu::SharedContextState> context_state,
-    bool flipped,
+    SurfaceOrigin origin,
     bool has_alpha,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
@@ -30,7 +30,7 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
                        did_swap_buffer_complete_callback),
       context_state_(context_state),
       has_alpha_(has_alpha) {
-  capabilities_.flipped_output_surface = flipped;
+  capabilities_.output_surface_origin = origin;
   capabilities_.supports_post_sub_buffer = true;
 }
 
@@ -119,8 +119,9 @@ SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
   if (!sk_surface_) {
     sk_surface_ = SkSurface::MakeFromBackendTexture(
         context_state_->gr_context(), backend_texture_,
-        capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                             : kBottomLeft_GrSurfaceOrigin,
+        capabilities_.output_surface_origin == SurfaceOrigin::kTopLeft
+            ? kTopLeft_GrSurfaceOrigin
+            : kBottomLeft_GrSurfaceOrigin,
         0 /* sampleCount */, kSurfaceColorType, sk_color_space_,
         nullptr /* surfaceProps */);
   }

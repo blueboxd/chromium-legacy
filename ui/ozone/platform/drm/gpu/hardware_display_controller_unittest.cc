@@ -69,13 +69,14 @@ class HardwareDisplayControllerTest : public testing::Test {
   scoped_refptr<ui::DrmFramebuffer> CreateBuffer() {
     std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, kDefaultModeSize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get(),
+                                              kDefaultModeSize);
   }
 
   scoped_refptr<ui::DrmFramebuffer> CreateOverlayBuffer() {
     std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, kOverlaySize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), kOverlaySize);
   }
 
  protected:

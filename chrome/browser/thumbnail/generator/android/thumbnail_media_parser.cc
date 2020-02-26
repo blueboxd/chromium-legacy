@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/thumbnail/generator/android/local_media_data_source_factory.h"
@@ -59,8 +60,8 @@ ThumbnailMediaParser::ThumbnailMediaParser(const std::string& mime_type,
                                            const base::FilePath& file_path)
     : mime_type_(mime_type),
       file_path_(file_path),
-      file_task_runner_(base::CreateSingleThreadTaskRunner(
-          {base::ThreadPool(), base::MayBlock()})),
+      file_task_runner_(
+          base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()})),
       decode_done_(false) {}
 
 ThumbnailMediaParser::~ThumbnailMediaParser() = default;

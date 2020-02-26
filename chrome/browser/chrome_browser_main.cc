@@ -38,6 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -1279,9 +1280,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_WIN)
   // Write current executable path to |user_data_dir_| to inform Progressive Web
   // App launchers inside |user_data_dir_| which chrome.exe to launch from.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::UpdateChromeExePath, user_data_dir_));
 #endif
 
@@ -1456,9 +1456,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Verify that the profile is not on a network share and if so prepare to show
   // notification to the user.
   if (NetworkProfileBubble::ShouldCheckNetworkProfile(profile_)) {
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&NetworkProfileBubble::CheckNetworkProfile,
-                                  profile_->GetPath()));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&NetworkProfileBubble::CheckNetworkProfile,
+                       profile_->GetPath()));
   }
 #endif  // defined(OS_WIN)
 

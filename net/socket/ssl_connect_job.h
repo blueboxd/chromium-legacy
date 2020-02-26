@@ -151,6 +151,8 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
+  void ResetStateForRestart();
+
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<SSLSocketParams> params_;
@@ -163,6 +165,11 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
 
   // True once SSL negotiation has started.
   bool ssl_negotiation_started_;
+
+  // True if legacy crypto should be disabled for the job's current connection
+  // attempt. On error, the connection will be retried with legacy crypto
+  // enabled.
+  bool disable_legacy_crypto_with_fallback_;
 
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
 

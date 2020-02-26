@@ -26,6 +26,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -170,10 +171,9 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
     OnUserActivity(nullptr);
   }
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::MayBlock()},
+      {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&internal::GetSystemEventTimes),
       base::BindOnce(&AutomaticRebootManager::Init,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -220,11 +220,10 @@ void AutomaticRebootManager::UpdateStatusChanged(
     return;
   }
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&SaveUpdateRebootNeededUptime));
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::BindOnce(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
 

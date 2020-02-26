@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
@@ -171,9 +172,9 @@ class ProfileShortcutManagerTest : public testing::Test {
       const base::Location& location,
       const base::FilePath& shortcut_path,
       const base::win::ShortcutProperties& expected_properties) {
-    base::CreateCOMSTATaskRunner({base::ThreadPool()})
-        ->PostTask(location, base::Bind(&base::win::ValidateShortcut,
-                                        shortcut_path, expected_properties));
+    base::ThreadPool::CreateCOMSTATaskRunner({})->PostTask(
+        location, base::BindOnce(&base::win::ValidateShortcut, shortcut_path,
+                                 expected_properties));
     task_environment_.RunUntilIdle();
   }
 
@@ -266,8 +267,7 @@ class ProfileShortcutManagerTest : public testing::Test {
       ShellUtil::ShortcutLocation shortcut_location,
       const ShellUtil::ShortcutProperties& properties) {
     base::PostTaskAndReplyWithResult(
-        base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
-            .get(),
+        base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}).get(),
         location,
         base::BindOnce(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
                        properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),

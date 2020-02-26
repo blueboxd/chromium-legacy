@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_sync_worker.h"
@@ -45,9 +46,8 @@ class SyncEngineTest : public testing::Test,
 
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
         base::ThreadTaskRunnerHandle::Get();
-    worker_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    worker_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
     sync_engine_.reset(new drive_backend::SyncEngine(
         ui_task_runner.get(), worker_task_runner_.get(),

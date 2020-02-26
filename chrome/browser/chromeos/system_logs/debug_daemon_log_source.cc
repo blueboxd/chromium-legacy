@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -153,9 +154,8 @@ void DebugDaemonLogSource::GetLoggedInUsersLogFiles() {
 
   auto response = std::make_unique<SystemLogsResponse>();
   SystemLogsResponse* response_ptr = response.get();
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadUserLogFiles, profile_dirs, response_ptr),
       base::BindOnce(&DebugDaemonLogSource::MergeUserLogFilesResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(response)));

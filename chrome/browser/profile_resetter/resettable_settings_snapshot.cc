@@ -15,6 +15,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -137,8 +138,8 @@ void ResettableSettingsSnapshot::RequestShortcuts(
   cancellation_flag_ = new SharedCancellationFlag;
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
-                                    base::TaskPriority::USER_VISIBLE})
+      base::ThreadPool::CreateCOMSTATaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
           .get(),
       FROM_HERE, base::BindOnce(&GetChromeLaunchShortcuts, cancellation_flag_),
       base::BindOnce(&ResettableSettingsSnapshot::SetShortcutsAndReport,

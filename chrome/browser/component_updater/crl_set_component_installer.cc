@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
@@ -80,9 +81,8 @@ void CRLSetData::ConfigureNetworkService() {
   if (crl_set_path_.empty())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&LoadCRLSet, crl_set_path_),
       base::BindOnce(&CRLSetData::UpdateCRLSetOnUI, base::Unretained(this)));
 }

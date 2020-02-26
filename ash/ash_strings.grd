@@ -503,6 +503,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DRAG_HANDLE_NUDGE" desc="The text shown to users above the drag handle when the device is in tablet mode and showing the in-app shelf. Instructs them that they can transition to home screen by swiping up from the shelf.">
         Swipe up to go home
       </message>
+      <message name="IDS_ASH_HOME_TO_OVERVIEW_CONTEXTUAL_NUDGE" desc="Text shown to the user below shelf on the home screen in tablet mode, instructing them that they can transition to overview UI by swiping up from the shelf and holding.">
+        Swipe up and hold to see open apps
+      </message>
       <message name="IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED"
                desc="The label used in the notification used to indicate that, the shortcut for full-screen magnifier feature has been disabled.">
         the full-screen magnifier

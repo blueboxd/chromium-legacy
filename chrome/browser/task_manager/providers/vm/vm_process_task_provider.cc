@@ -10,6 +10,7 @@
 #include "base/process/process_iterator.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -192,9 +193,8 @@ struct VmProcessData {
 };
 
 VmProcessTaskProvider::VmProcessTaskProvider()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_VISIBLE})),
       refresh_timer_(
           FROM_HERE,

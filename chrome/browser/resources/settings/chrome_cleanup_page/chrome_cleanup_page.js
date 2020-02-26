@@ -253,7 +253,7 @@ cr.define('settings', function() {
     cardStateToComponentsMap_: null,
 
     /** @private {settings.ChromeCleanupOngoingAction} */
-    ongoingAction_: settings.ChromeCleanupOngoingAction.NONE,
+    ongoingAction_: ChromeCleanupOngoingAction.NONE,
 
     /**
      * If true, the scan offered view is rendered on state idle, regardless of
@@ -360,61 +360,52 @@ cr.define('settings', function() {
      * @private
      */
     onIdle_(idleReason) {
-      this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
+      this.ongoingAction_ = ChromeCleanupOngoingAction.NONE;
       this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
 
       // Ignore the idle reason and render the scan offered view if no
       // interaction happened on this tab.
       if (this.renderScanOfferedByDefault_) {
-        idleReason = settings.ChromeCleanupIdleReason.INITIAL;
+        idleReason = ChromeCleanupIdleReason.INITIAL;
       }
 
       switch (idleReason) {
-        case settings.ChromeCleanupIdleReason.INITIAL:
-          this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.SCANNING_OFFERED);
+        case ChromeCleanupIdleReason.INITIAL:
+          this.renderCleanupCard_(ChromeCleanerCardState.SCANNING_OFFERED);
           break;
 
-        case settings.ChromeCleanupIdleReason.SCANNING_FOUND_NOTHING:
-        case settings.ChromeCleanupIdleReason.REPORTER_FOUND_NOTHING:
+        case ChromeCleanupIdleReason.SCANNING_FOUND_NOTHING:
+        case ChromeCleanupIdleReason.REPORTER_FOUND_NOTHING:
           this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.SCANNING_FOUND_NOTHING);
+              ChromeCleanerCardState.SCANNING_FOUND_NOTHING);
           break;
 
-        case settings.ChromeCleanupIdleReason.SCANNING_FAILED:
-        case settings.ChromeCleanupIdleReason.REPORTER_FAILED:
-          this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.SCANNING_FAILED);
+        case ChromeCleanupIdleReason.SCANNING_FAILED:
+        case ChromeCleanupIdleReason.REPORTER_FAILED:
+          this.renderCleanupCard_(ChromeCleanerCardState.SCANNING_FAILED);
           break;
 
-        case settings.ChromeCleanupIdleReason.CONNECTION_LOST:
-          if (this.ongoingAction_ ==
-              settings.ChromeCleanupOngoingAction.SCANNING) {
-            this.renderCleanupCard_(
-                settings.ChromeCleanerCardState.SCANNING_FAILED);
+        case ChromeCleanupIdleReason.CONNECTION_LOST:
+          if (this.ongoingAction_ == ChromeCleanupOngoingAction.SCANNING) {
+            this.renderCleanupCard_(ChromeCleanerCardState.SCANNING_FAILED);
           } else {
-            assert(
-                this.ongoingAction_ ==
-                settings.ChromeCleanupOngoingAction.CLEANING);
-            this.renderCleanupCard_(
-                settings.ChromeCleanerCardState.CLEANING_FAILED);
+            assert(this.ongoingAction_ == ChromeCleanupOngoingAction.CLEANING);
+            this.renderCleanupCard_(ChromeCleanerCardState.CLEANING_FAILED);
           }
           break;
 
-        case settings.ChromeCleanupIdleReason.CLEANING_FAILED:
-        case settings.ChromeCleanupIdleReason.USER_DECLINED_CLEANUP:
-          this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.CLEANING_FAILED);
+        case ChromeCleanupIdleReason.CLEANING_FAILED:
+        case ChromeCleanupIdleReason.USER_DECLINED_CLEANUP:
+          this.renderCleanupCard_(ChromeCleanerCardState.CLEANING_FAILED);
           break;
 
-        case settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED:
-          this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.CLEANUP_SUCCEEDED);
+        case ChromeCleanupIdleReason.CLEANING_SUCCEEDED:
+          this.renderCleanupCard_(ChromeCleanerCardState.CLEANUP_SUCCEEDED);
           break;
 
-        case settings.ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED:
+        case ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED:
           this.renderCleanupCard_(
-              settings.ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED);
+              ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED);
           break;
 
         default:
@@ -429,10 +420,10 @@ cr.define('settings', function() {
      * @private
      */
     onScanning_() {
-      this.ongoingAction_ = settings.ChromeCleanupOngoingAction.SCANNING;
+      this.ongoingAction_ = ChromeCleanupOngoingAction.SCANNING;
       this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
       this.renderScanOfferedByDefault_ = false;
-      this.renderCleanupCard_(settings.ChromeCleanerCardState.SCANNING);
+      this.renderCleanupCard_(ChromeCleanerCardState.SCANNING);
     },
 
     /**
@@ -446,11 +437,11 @@ cr.define('settings', function() {
      */
     onInfected_(isPoweredByPartner, scannerResults) {
       this.isPoweredByPartner_ = isPoweredByPartner;
-      this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
+      this.ongoingAction_ = ChromeCleanupOngoingAction.NONE;
       this.renderScanOfferedByDefault_ = false;
       this.scannerResults_ = scannerResults;
       this.updateShowItemsLinklabel_();
-      this.renderCleanupCard_(settings.ChromeCleanerCardState.CLEANUP_OFFERED);
+      this.renderCleanupCard_(ChromeCleanerCardState.CLEANUP_OFFERED);
     },
 
     /**
@@ -465,11 +456,11 @@ cr.define('settings', function() {
      */
     onCleaning_(isPoweredByPartner, scannerResults) {
       this.isPoweredByPartner_ = isPoweredByPartner;
-      this.ongoingAction_ = settings.ChromeCleanupOngoingAction.CLEANING;
+      this.ongoingAction_ = ChromeCleanupOngoingAction.CLEANING;
       this.renderScanOfferedByDefault_ = false;
       this.scannerResults_ = scannerResults;
       this.updateShowItemsLinklabel_();
-      this.renderCleanupCard_(settings.ChromeCleanerCardState.CLEANING);
+      this.renderCleanupCard_(ChromeCleanerCardState.CLEANING);
     },
 
     /**
@@ -479,10 +470,10 @@ cr.define('settings', function() {
      * @private
      */
     onRebootRequired_() {
-      this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
+      this.ongoingAction_ = ChromeCleanupOngoingAction.NONE;
       this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
       this.renderScanOfferedByDefault_ = false;
-      this.renderCleanupCard_(settings.ChromeCleanerCardState.REBOOT_REQUIRED);
+      this.renderCleanupCard_(ChromeCleanerCardState.REBOOT_REQUIRED);
     },
 
     /**
@@ -529,11 +520,11 @@ cr.define('settings', function() {
      */
     updateCardFlags_(flags) {
       this.showLogsPermission_ =
-          (flags & settings.ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS) != 0;
+          (flags & ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS) != 0;
       this.isWaitingForResult_ =
-          (flags & settings.ChromeCleanupCardFlags.WAITING_FOR_RESULT) != 0;
+          (flags & ChromeCleanupCardFlags.WAITING_FOR_RESULT) != 0;
       this.showItemsToRemove_ =
-          (flags & settings.ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE) != 0;
+          (flags & ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE) != 0;
 
       // Files to remove list should only be expandable if details are being
       // shown, otherwise it will add extra padding at the bottom of the card.
@@ -629,83 +620,83 @@ cr.define('settings', function() {
 
       return new Map([
         [
-          settings.ChromeCleanerCardState.CLEANUP_OFFERED, {
+          ChromeCleanerCardState.CLEANUP_OFFERED, {
             title: this.i18n('chromeCleanupTitleRemove'),
             explanation: this.i18n('chromeCleanupExplanationRemove'),
             actionButton: actionButtons.REMOVE,
-            flags: settings.ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS |
-                settings.ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE,
+            flags: ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS |
+                ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.CLEANING, {
+          ChromeCleanerCardState.CLEANING, {
             title: this.i18n('chromeCleanupTitleRemoving'),
             explanation: this.i18n('chromeCleanupExplanationRemoving'),
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.WAITING_FOR_RESULT |
-                settings.ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE,
+            flags: ChromeCleanupCardFlags.WAITING_FOR_RESULT |
+                ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.REBOOT_REQUIRED, {
+          ChromeCleanerCardState.REBOOT_REQUIRED, {
             title: this.i18n('chromeCleanupTitleRestart'),
             explanation: null,
             actionButton: actionButtons.RESTART_COMPUTER,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.CLEANUP_SUCCEEDED, {
+          ChromeCleanerCardState.CLEANUP_SUCCEEDED, {
             title:
                 this.i18nAdvanced('chromeCleanupTitleRemoved', {tags: ['a']}),
             explanation: null,
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.CLEANING_FAILED, {
+          ChromeCleanerCardState.CLEANING_FAILED, {
             title: this.i18n('chromeCleanupTitleErrorCantRemove'),
             explanation: this.i18n('chromeCleanupExplanationCleanupError'),
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.SCANNING_OFFERED, {
+          ChromeCleanerCardState.SCANNING_OFFERED, {
             title: this.i18n('chromeCleanupTitleFindAndRemove'),
             explanation: this.i18n('chromeCleanupExplanationFindAndRemove'),
             actionButton: actionButtons.FIND,
-            flags: settings.ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS,
+            flags: ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS,
           }
         ],
         [
-          settings.ChromeCleanerCardState.SCANNING, {
+          ChromeCleanerCardState.SCANNING, {
             title: this.i18n('chromeCleanupTitleScanning'),
             explanation: null,
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.WAITING_FOR_RESULT,
+            flags: ChromeCleanupCardFlags.WAITING_FOR_RESULT,
           }
         ],
         [
           // TODO(crbug.com/776538): Could we offer to reset settings here?
-          settings.ChromeCleanerCardState.SCANNING_FOUND_NOTHING, {
+          ChromeCleanerCardState.SCANNING_FOUND_NOTHING, {
             title: this.i18n('chromeCleanupTitleNothingFound'),
             explanation: null,
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.SCANNING_FAILED, {
+          ChromeCleanerCardState.SCANNING_FAILED, {
             title: this.i18n('chromeCleanupTitleScanningFailed'),
             explanation: this.i18n('chromeCleanupExplanationScanError'),
             actionButton: null,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           }
         ],
         [
-          settings.ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED,
+          ChromeCleanerCardState.CLEANER_DOWNLOAD_FAILED,
           {
             // TODO(crbug.com/776538): distinguish between missing network
             // connectivity and cleanups being disabled by the server.
@@ -713,7 +704,7 @@ cr.define('settings', function() {
             explanation:
                 this.i18n('chromeCleanupExplanationCleanupUnavailable'),
             actionButton: actionButtons.TRY_SCAN_AGAIN,
-            flags: settings.ChromeCleanupCardFlags.NONE,
+            flags: ChromeCleanupCardFlags.NONE,
           },
         ],
       ]);

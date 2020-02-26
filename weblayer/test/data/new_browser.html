@@ -2,5 +2,9 @@
   <body>
     <p id='x'>XXXX</p>
   </body>
-  <script src='new_browser_on_touch.js'/></script>
+  <script>
+    document.addEventListener('touchend', function(e) {
+      window.open('about:blank', '');
+    }, false);
+  </script>
 </html>

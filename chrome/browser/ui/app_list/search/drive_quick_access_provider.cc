@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_chip_result.h"
@@ -96,8 +97,8 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
           drive::DriveIntegrationServiceFactory::GetForProfile(profile)) {
   DCHECK(profile_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

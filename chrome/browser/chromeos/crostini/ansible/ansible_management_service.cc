@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -116,9 +117,8 @@ void AnsibleManagementService::GetAnsiblePlaybookToApply() {
   const base::FilePath& ansible_playbook_file_path =
       profile_->GetPrefs()->GetFilePath(
           prefs::kCrostiniAnsiblePlaybookFilePath);
-  bool success = base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  bool success = base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(base::ReadFileToString, ansible_playbook_file_path,
                      &playbook_),
       base::BindOnce(&AnsibleManagementService::OnAnsiblePlaybookRetrieved,

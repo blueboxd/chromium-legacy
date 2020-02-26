@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/extensions/install_limiter_factory.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -80,8 +81,8 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
 
   num_installs_waiting_for_file_size_++;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&GetFileSize, file_info.path),
       base::BindOnce(&InstallLimiter::AddWithSize, AsWeakPtr(), installer,
                      file_info));

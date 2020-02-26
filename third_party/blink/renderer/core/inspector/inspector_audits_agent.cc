@@ -137,9 +137,7 @@ Response InspectorAuditsAgent::enable() {
   }
 
   enabled_.Set(true);
-  instrumenting_agents_->AddInspectorAuditsAgent(this);
-  for (wtf_size_t i = 0; i < inspector_issue_storage_->size(); ++i)
-    InspectorIssueAdded(inspector_issue_storage_->at(i));
+  InnerEnable();
   return Response::OK();
 }
 
@@ -151,6 +149,18 @@ Response InspectorAuditsAgent::disable() {
   enabled_.Clear();
   instrumenting_agents_->RemoveInspectorAuditsAgent(this);
   return Response::OK();
+}
+
+void InspectorAuditsAgent::Restore() {
+  if (!enabled_.Get())
+    return;
+  InnerEnable();
+}
+
+void InspectorAuditsAgent::InnerEnable() {
+  instrumenting_agents_->AddInspectorAuditsAgent(this);
+  for (wtf_size_t i = 0; i < inspector_issue_storage_->size(); ++i)
+    InspectorIssueAdded(inspector_issue_storage_->at(i));
 }
 
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {

@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
@@ -158,8 +159,8 @@ CrOSActionRecorder::CrOSActionRecorder()
     should_log_ = false;
   }
 
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   task_runner_->PostTask(

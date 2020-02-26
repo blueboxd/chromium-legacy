@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/common/chrome_paths.h"
 #include "ui/gfx/image/image.h"
@@ -88,9 +89,8 @@ NotificationImageRetainer::NotificationImageRetainer(
 
 NotificationImageRetainer::NotificationImageRetainer()
     : NotificationImageRetainer(
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
-               base::TaskPriority::BEST_EFFORT,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
           base::DefaultTickClock::GetInstance()) {}
 

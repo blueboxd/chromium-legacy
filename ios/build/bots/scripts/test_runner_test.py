@@ -161,7 +161,6 @@ class SimulatorTestRunnerTest(TestCase):
     with self.assertRaises(test_runner.AppNotFoundError):
       test_runner.SimulatorTestRunner(
         'fake-app',
-        'fake-iossim',
         'platform',
         'os',
         'xcode-version',
@@ -169,26 +168,10 @@ class SimulatorTestRunnerTest(TestCase):
         'out-dir',
       )
 
-  def test_iossim_not_found(self):
-    """Ensures SimulatorNotFoundError is raised."""
-    self.mock(os.path, 'exists', lambda p: not p.endswith('fake-iossim'))
-
-    with self.assertRaises(test_runner.SimulatorNotFoundError):
-      test_runner.SimulatorTestRunner(
-        'fake-app',
-        'fake-iossim',
-        'iPhone X',
-        '11.4',
-        'xcode-version',
-        'xcode-build',
-        'out-dir',
-      )
-
   def test_init(self):
     """Ensures instance is created."""
     tr = test_runner.SimulatorTestRunner(
         'fake-app',
-        'fake-iossim',
         'iPhone X',
         '11.4',
         'xcode-version',
@@ -217,7 +200,6 @@ class SimulatorTestRunnerTest(TestCase):
 
     tr = test_runner.SimulatorTestRunner(
         'fake-app',
-        'fake-iossim',
         'iPhone X',
         '11.4',
         'xcode-version',
@@ -243,7 +225,6 @@ class SimulatorTestRunnerTest(TestCase):
 
     tr = test_runner.SimulatorTestRunner(
       'fake-app',
-      'fake-iossim',
       'iPhone X',
       '11.4',
       'xcode-version',
@@ -268,7 +249,6 @@ class SimulatorTestRunnerTest(TestCase):
     with self.assertRaises(test_runner.SystemAlertPresentError):
       tr = test_runner.SimulatorTestRunner(
         'fake-app',
-        'fake-iossim',
         'iPhone X',
         '11.4',
         'xcode-version',
@@ -285,7 +265,6 @@ class SimulatorTestRunnerTest(TestCase):
       test_cases."""
     tr = test_runner.SimulatorTestRunner(
       'fake-app',
-      'fake-iossim',
       'iPhone X',
       '11.4',
       'xcode-version',
@@ -359,7 +338,6 @@ class SimulatorTestRunnerTest(TestCase):
 
     tr = test_runner.SimulatorTestRunner(
         'fake-app',
-        'fake-iossim',
         'iPhone X',
         '11.4',
         'xcode-version',

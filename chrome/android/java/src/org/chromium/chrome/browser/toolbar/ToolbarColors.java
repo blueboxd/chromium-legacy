@@ -17,11 +17,11 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.util.ColorUtils;
 
@@ -159,7 +159,7 @@ public class ToolbarColors {
         final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
         final boolean isHorizontalTabSwitcherEnabled = ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
-        final boolean isTabGridEnabled = CachedFeatureFlags.isGridTabSwitcherEnabled();
+        final boolean isTabGridEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
         return (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled);
     }
 }

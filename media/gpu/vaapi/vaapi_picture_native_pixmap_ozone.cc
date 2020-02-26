@@ -103,7 +103,7 @@ bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   auto pixmap = factory->CreateNativePixmap(
       gfx::kNullAcceleratedWidget, VK_NULL_HANDLE, size_, format,
-      gfx::BufferUsage::SCANOUT_VDA_WRITE);
+      gfx::BufferUsage::SCANOUT_VDA_WRITE, /*framebuffer_size=*/visible_size_);
   if (!pixmap) {
     LOG(ERROR) << "Failed allocating a pixmap";
     return false;

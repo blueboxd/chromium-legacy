@@ -8,6 +8,7 @@ include_rules = [
   "+components/browser_ui",
   "+components/captive_portal",
   "+components/crash/content/browser",
+  "+components/crash/core/common",
   "+components/download/public/common",
   "+components/embedder_support",
   "+components/find_in_page",

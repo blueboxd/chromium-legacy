@@ -39,6 +39,9 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                gfx::OverlayTransform transform) override;
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
+  void PostSubBuffer(const gfx::Rect& rect,
+                     BufferPresentedCallback feedback,
+                     std::vector<ui::LatencyInfo> latency_info) override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
@@ -61,6 +64,10 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
 
   base::Optional<gpu::VulkanSwapChain::ScopedWrite> scoped_write_;
+
+#if DCHECK_IS_ON()
+  bool image_modified_ = false;
+#endif
 
   // SkSurfaces for swap chain images.
   std::vector<SkSurfaceSizePair> sk_surface_size_pairs_;

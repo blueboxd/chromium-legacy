@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -144,10 +145,8 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
               ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
           return;
         }
-        base::PostTask(
-            FROM_HERE,
-            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-             base::MayBlock()},
+        base::ThreadPool::PostTask(
+            FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
             base::BindOnce(
                 &ProfilingProcessHost::SaveTraceToFileOnBlockingThread,
                 base::Unretained(ProfilingProcessHost::GetInstance()),

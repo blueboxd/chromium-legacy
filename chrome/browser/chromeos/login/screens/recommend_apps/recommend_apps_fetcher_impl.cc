@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "extensions/common/api/system_display.h"
@@ -330,9 +331,8 @@ void RecommendAppsFetcherImpl::MaybeStartCompressAndEncodeProtoMessage() {
   if (!ash_ready_ || !arc_features_ready_ || has_started_proto_processing_)
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CompressAndEncodeProtoMessageOnBlockingThread,
                      std::move(device_config_)),
       base::BindOnce(

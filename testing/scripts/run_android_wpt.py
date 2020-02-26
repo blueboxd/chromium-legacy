@@ -51,8 +51,6 @@ from devil.android.tools import system_app
 from devil.android.tools import webview_app
 
 
-DEFAULT_WEBDRIVER = os.path.join(SRC_DIR, 'chrome', 'test', 'chromedriver',
-                                 'cipd', 'linux', 'chromedriver')
 DEFAULT_WPT = os.path.join(SRC_DIR, 'third_party', 'blink', 'web_tests',
                            'external', 'wpt', 'wpt')
 
@@ -160,10 +158,9 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     class WPTPassThroughArgs(PassThroughArgs):
       pass_through_args = self.pass_through_wpt_args
 
-    parser.add_argument('--webdriver-binary', default=DEFAULT_WEBDRIVER,
+    parser.add_argument('--webdriver-binary', required=True,
                         help='Path of the webdriver binary.  It needs to have'
-                        ' the same major version as the apk.  Defaults to cipd'
-                        ' archived version (near ToT).')
+                        ' the same major version as the apk.')
     parser.add_argument('--wpt-path', default=DEFAULT_WPT,
                         help='Controls the path of the WPT runner to use'
                         ' (therefore tests).  Defaults the revision rolled into'

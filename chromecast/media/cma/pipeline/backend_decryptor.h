@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/cma/pipeline/stream_decryptor.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 

@@ -82,16 +82,16 @@ public class TabGroupPopupUiTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
-        CachedFeatureFlags.setDuetTabStripIntegrationAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, true);
     }
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
-        CachedFeatureFlags.setDuetTabStripIntegrationAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, null);
     }
 
     @Test

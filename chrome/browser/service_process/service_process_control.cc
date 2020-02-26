@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -63,10 +64,8 @@ void ConnectAsyncWithBackoff(
       response_task_runner->PostTask(
           FROM_HERE, base::BindOnce(std::move(response_callback), nullptr));
     } else {
-      base::PostDelayedTask(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT},
+      base::ThreadPool::PostDelayedTask(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
           base::BindOnce(
               &ConnectAsyncWithBackoff, std::move(interface_provider_receiver),
               server_name, num_retries_left - 1, retry_delay * 2,
@@ -111,9 +110,8 @@ void ServiceProcessControl::ConnectInternal() {
   auto interface_provider_receiver =
       remote_interfaces.InitWithNewPipeAndPassReceiver();
   SetMojoHandle(std::move(remote_interfaces));
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &ConnectAsyncWithBackoff, std::move(interface_provider_receiver),
           GetServiceProcessServerName(), kMaxConnectionAttempts,

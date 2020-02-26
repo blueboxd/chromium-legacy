@@ -45,11 +45,8 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
   }
 
   std::unique_ptr<views::Widget> CreateAnchorWidget() {
-    std::unique_ptr<views::Widget> anchor_widget(new views::Widget());
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget->Init(std::move(params));
+    std::unique_ptr<views::Widget> anchor_widget =
+        CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
     anchor_widget->Show();
     return anchor_widget;
   }

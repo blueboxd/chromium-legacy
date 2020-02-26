@@ -72,8 +72,9 @@ class MojoDecryptorTest : public ::testing::Test {
       const Decryptor::VideoDecodeCB& video_decode_cb) {
     // We don't care about the encrypted data, just create a simple VideoFrame.
     scoped_refptr<VideoFrame> frame(
-        MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(
-            gfx::Size(100, 100), base::TimeDelta::FromSeconds(100)));
+        MojoSharedBufferVideoFrame::CreateDefaultForTesting(
+            PIXEL_FORMAT_I420, gfx::Size(100, 100),
+            base::TimeDelta::FromSeconds(100)));
     frame->AddDestructionObserver(base::Bind(
         &MojoDecryptorTest::OnFrameDestroyed, base::Unretained(this)));
 

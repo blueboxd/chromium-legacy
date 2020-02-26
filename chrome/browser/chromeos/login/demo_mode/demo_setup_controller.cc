@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -639,10 +640,9 @@ void DemoSetupController::OnDeviceEnrolled() {
         preinstalled_demo_resources_->GetAbsolutePath(
             base::FilePath(kOfflinePolicyDirectoryName)
                 .AppendASCII(kOfflineDeviceLocalAccountPolicyFileName));
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ReadFileToOptionalString, file_path),
         base::BindOnce(&DemoSetupController::OnDeviceLocalAccountPolicyLoaded,
                        weak_ptr_factory_.GetWeakPtr()));

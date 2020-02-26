@@ -50,7 +50,7 @@ class HoverButtonTest : public ChromeViewsTestBase {
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
-    CreateWidget();
+    widget_ = CreateTestWidget();
     generator_ = std::make_unique<ui::test::EventGenerator>(
         GetRootWindow(widget_.get()), widget_->GetNativeWindow());
   }
@@ -69,15 +69,6 @@ class HoverButtonTest : public ChromeViewsTestBase {
 
   ui::test::EventGenerator* generator() { return generator_.get(); }
   views::Widget* widget() { return widget_.get(); }
-
-  void CreateWidget() {
-    widget_ = std::make_unique<views::Widget>();
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(100, 100, 200, 200);
-    widget_->Init(std::move(params));
-  }
 
  private:
   std::unique_ptr<views::Widget> widget_;

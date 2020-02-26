@@ -5249,6 +5249,9 @@ Unknown properties are collapsed to zero. -->
   <int value="16" label="Swiped back in overview and went back"/>
   <int value="17"
       label="Swiped back to exit the underneath window's fullscreen mode"/>
+  <int value="18"
+      label="Swiped back to show the shelf and hotseat when an ARC app is in
+             fullscreen mode"/>
 </enum>
 
 <enum name="BackGestureStartScenarioType">
@@ -13487,6 +13490,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="CustomTabsDynamicModuleDestructionReason">
+  <obsolete>
+    Removed in February 2020
+  </obsolete>
   <int value="0" label="No caching enabled and the module is unused"/>
   <int value="1" label="Cached and severe memory pressure"/>
   <int value="2" label="Cached and mild memory pressure and time exceeded"/>
@@ -13495,6 +13501,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="CustomTabsDynamicModuleLoadResult">
+  <obsolete>
+    Removed in February 2020
+  </obsolete>
   <int value="0" label="Loaded new instance successfully"/>
   <int value="1" label="Used cached instance"/>
   <int value="2" label="Not loaded because the feature is disabled"/>
@@ -61792,6 +61801,18 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="SSLKEYLOGFILE environment variable set"/>
 </enum>
 
+<enum name="SSLLegacyCryptoFallback">
+  <int value="0" label="No fallback used"/>
+  <int value="1" label="Used fallback and negotiated 3DES"/>
+  <int value="2" label="Used fallback and negotiated SHA-1"/>
+  <int value="3" label="Used fallback and sent a SHA-1 certificate"/>
+  <int value="4"
+      label="Used fallback, negotiated 3DES, and sent a SHA-1 certificate"/>
+  <int value="5"
+      label="Used fallback, negotiated SHA-1, and sent a SHA-1 certificate"/>
+  <int value="6" label="Used fallback for unknown reason"/>
+</enum>
+
 <enum name="SSLNegotiatedAlpnProtocol">
   <int value="0" label="ALPN not used"/>
   <int value="1" label="HTTP/1.1 negotiated via ALPN"/>
@@ -68214,6 +68235,7 @@ Full version information for the fingerprint enum values:
 <enum name="WebUITabStripOpenActions">
   <int value="0" label="Tap on tab counter"/>
   <int value="1" label="Dragged open from toolbar"/>
+  <int value="2" label="Tab from other window dragged over toolbar"/>
 </enum>
 
 <enum name="WebUIUrlHashes">

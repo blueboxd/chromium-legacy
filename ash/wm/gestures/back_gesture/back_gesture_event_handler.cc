@@ -198,8 +198,8 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       touch_event_copy.unique_event_id(), /*event_consumed=*/false,
       /*is_source_touch_event_set_non_blocking=*/false);
 
-  // Get the event target from TouchEvent since target of the GestureEvent from
-  // GetAndResetPendingGestures is nullptr.
+  // Get the event target from TouchEvent since target of the GestureEvent
+  // from GetAndResetPendingGestures is nullptr.
   aura::Window* target = static_cast<aura::Window*>(event->target());
   const std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
       gesture_provider_.GetAndResetPendingGestures();
@@ -251,9 +251,10 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      // Complete the back gesture if the affordance is activated or fling with
-      // large enough velocity. Note, complete can be different actions while in
-      // different scenarios, but always fading out the affordance at the end.
+      // Complete the back gesture if the affordance is activated or fling
+      // with large enough velocity. Note, complete can be different actions
+      // while in different scenarios, but always fading out the affordance at
+      // the end.
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
@@ -263,10 +264,31 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
             WindowState::Get(TabletModeWindowManager::GetTopWindow());
         if (top_window_state && top_window_state->IsFullscreen() &&
             !Shell::Get()->overview_controller()->InOverviewSession()) {
-          // Complete as exiting the fullscreen mode of the underneath window.
-          const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-          top_window_state->OnWMEvent(&event);
-          RecordEndScenarioType(BackGestureEndScenarioType::kExitFullscreen);
+          // For fullscreen ARC apps, show the hotseat and shelf on the first
+          // back swipe, and send a back event on the second back swipe. For
+          // other fullscreen apps, exit fullscreen.
+          const bool arc_app =
+              top_window_state->window()->GetProperty(aura::client::kAppType) ==
+              static_cast<int>(AppType::ARC_APP);
+          if (arc_app) {
+            // Go back to the previous page if the shelf was already shown,
+            // otherwise record as showing shelf.
+            if (Shelf::ForWindow(top_window_state->window())->IsVisible()) {
+              SendBackEvent(screen_location);
+            } else {
+              Shelf::ForWindow(top_window_state->window())
+                  ->shelf_layout_manager()
+                  ->UpdateVisibilityStateForBackGesture();
+              RecordEndScenarioType(
+                  BackGestureEndScenarioType::kShowShelfAndHotseat);
+            }
+          } else {
+            // Complete as exiting the fullscreen mode of the underneath
+            // window.
+            const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
+            top_window_state->OnWMEvent(&event);
+            RecordEndScenarioType(BackGestureEndScenarioType::kExitFullscreen);
+          }
         } else if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
           // Complete as minimizing the underneath window.
           top_window_state->Minimize();
@@ -276,18 +298,7 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
         } else {
           // Complete as going back to the previous page of the underneath
           // window.
-          aura::Window* root_window =
-              window_util::GetRootWindowAt(screen_location);
-          ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
-                                       ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-          ignore_result(
-              root_window->GetHost()->SendEventToSink(&press_key_event));
-          ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED,
-                                         ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-          ignore_result(
-              root_window->GetHost()->SendEventToSink(&release_key_event));
-          RecordEndScenarioType(GetEndScenarioType(
-              back_gesture_start_scenario_type_, BackGestureEndType::kBack));
+          SendBackEvent(screen_location);
         }
         back_gesture_affordance_->Complete();
         if (features::AreContextualNudgesEnabled()) {
@@ -345,25 +356,16 @@ bool BackGestureEventHandler::CanStartGoingBack(
   if (!top_window && !shell->overview_controller()->InOverviewSession())
     return false;
 
-  // Do not enable back gesture for arc windows in fullscreen mode since some of
-  // them can only stay in fullscreen mode. This will also make arc apps that
-  // can stay in different window modes can't use back gesture to exit
-  // fullscreen mode.
-  if (top_window &&
-      top_window->GetProperty(aura::client::kAppType) ==
-          static_cast<int>(AppType::ARC_APP) &&
-      WindowState::Get(top_window)->IsFullscreen()) {
-    return false;
-  }
-
   for (aura::Window* window = target; window; window = window->parent()) {
     SkRegion* gesture_exclusion =
         window->GetProperty(kSystemGestureExclusionKey);
     if (gesture_exclusion) {
       gfx::Point location_in_window = screen_location;
       ::wm::ConvertPointFromScreen(window, &location_in_window);
-      if (gesture_exclusion->contains(location_in_window.x(), location_in_window.y()))
+      if (gesture_exclusion->contains(location_in_window.x(),
+                                      location_in_window.y())) {
         return false;
+      }
     }
   }
 
@@ -377,6 +379,18 @@ bool BackGestureEventHandler::CanStartGoingBack(
   dragged_from_splitview_divider_ =
       CanStartGoingBackFromSplitViewDivider(screen_location);
   return dragged_from_splitview_divider_;
+}
+
+void BackGestureEventHandler::SendBackEvent(const gfx::Point& screen_location) {
+  aura::Window* root_window = window_util::GetRootWindowAt(screen_location);
+  ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
+                               ui::EF_NONE);
+  ignore_result(root_window->GetHost()->SendEventToSink(&press_key_event));
+  ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_BROWSER_BACK,
+                                 ui::EF_NONE);
+  ignore_result(root_window->GetHost()->SendEventToSink(&release_key_event));
+  RecordEndScenarioType(GetEndScenarioType(back_gesture_start_scenario_type_,
+                                           BackGestureEndType::kBack));
 }
 
 }  // namespace ash

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/audio_service.h"
@@ -70,9 +71,8 @@ void AudioDebugRecordingsHandler::StartAudioDebugRecordings(
     const RecordingErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetLogDirectoryAndEnsureExists, browser_context_),
       base::BindOnce(&AudioDebugRecordingsHandler::DoStartAudioDebugRecordings,
                      this, host, delay, callback, error_callback));
@@ -84,9 +84,8 @@ void AudioDebugRecordingsHandler::StopAudioDebugRecordings(
     const RecordingErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const bool is_manual_stop = true;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetLogDirectoryAndEnsureExists, browser_context_),
       base::BindOnce(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings,
                      this, host, is_manual_stop,

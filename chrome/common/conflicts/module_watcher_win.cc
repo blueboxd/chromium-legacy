@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_handle.h"
 
@@ -165,9 +166,9 @@ void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
 
   // The enumeration of modules is done on a background task to make sure it
   // doesn't slow down startup.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ModuleWatcher::EnumerateAlreadyLoadedModules,
                      base::SequencedTaskRunnerHandle::Get(),

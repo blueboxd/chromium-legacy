@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -346,8 +347,8 @@ ProcessDataCollector::ProcessDataCollector(const Config& config)
 ProcessDataCollector::~ProcessDataCollector() = default;
 
 void ProcessDataCollector::StartSamplingCpuUsage() {
-  cpu_data_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  cpu_data_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   cpu_data_timer_.Start(FROM_HERE, config_.sample_delay, this,
                         &ProcessDataCollector::SampleCpuUsage);
 }

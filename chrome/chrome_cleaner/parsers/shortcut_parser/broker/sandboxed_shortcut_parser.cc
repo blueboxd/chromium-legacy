@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/parsers/parser_utils/parse_tasks_remaining_counter.h"
@@ -44,9 +45,8 @@ void SandboxedShortcutParser::FindAndParseChromeShortcutsInFoldersAsync(
     const std::vector<base::FilePath>& folders,
     const FilePathSet& chrome_exe_locations,
     ShortcutsParsingDoneCallback callback) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives()},
       base::BindOnce(
           &SandboxedShortcutParser::FindAndParseChromeShortcutsInFolders,
           base::Unretained(this), folders, chrome_exe_locations,

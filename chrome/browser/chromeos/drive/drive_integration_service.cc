@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
@@ -557,8 +558,8 @@ DriveIntegrationService::DriveIntegrationService(
   DCHECK(profile && !profile->IsOffTheRecord());
 
   logger_ = std::make_unique<EventLogger>();
-  blocking_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+  blocking_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
 
   if (preference_watcher_)

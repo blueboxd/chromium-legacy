@@ -39,6 +39,8 @@ std::string TooltipTypeToString(TooltipType type) {
       return "drag_handle";
     case TooltipType::kBackGesture:
       return "back_gesture";
+    case TooltipType::kHomeToOverview:
+      return "home_to_overview";
   }
   return "invalid";
 }

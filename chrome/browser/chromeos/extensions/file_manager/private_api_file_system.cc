@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -591,10 +592,8 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   } else {
     uint64_t* total_size = new uint64_t(0);
     uint64_t* remaining_size = new uint64_t(0);
-    base::PostTaskAndReply(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetSizeStatsAsync, volume->mount_path(), total_size,
                        remaining_size),
         base::BindOnce(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats,
@@ -647,9 +646,8 @@ FileManagerPrivateInternalValidatePathNameLengthFunction::Run() {
   if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
     return RespondNow(Error("Invalid URL"));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&GetFileNameMaxLengthAsync,
                      file_system_url.path().AsUTF8Unsafe()),
       base::BindOnce(&FileManagerPrivateInternalValidatePathNameLengthFunction::
@@ -817,8 +815,8 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
   }
   destination_dirs.push_back(destination_url_.path().DirName());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&GetLocalDiskSpaces, std::move(destination_dirs)),
       base::BindOnce(
           &FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace,
@@ -1067,9 +1065,8 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
 
   // DriveFs doesn't provide dedicated backup solution yet, so for now just walk
   // the files and check MD5 extended attribute.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
           this, hashes,
@@ -1159,9 +1156,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateSearchFilesFunction::Run() {
   base::FilePath root = file_manager::util::GetMyFilesFolderForProfile(
       chrome_details_.GetProfile());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SearchByPattern, root, params->search_params.query,
                      base::internal::checked_cast<size_t>(
                          params->search_params.max_results)),
@@ -1240,9 +1236,8 @@ FileManagerPrivateInternalGetDirectorySizeFunction::Run() {
         Error("Failed to get a local path from the entry's url."));
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::ComputeDirectorySize, root_path),
       base::BindOnce(&FileManagerPrivateInternalGetDirectorySizeFunction::
                          OnDirectorySizeRetrieved,

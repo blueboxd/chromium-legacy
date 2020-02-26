@@ -20,6 +20,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/printing_gtk_util.h"
@@ -517,9 +518,9 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job,
   if (print_job)
     g_object_unref(print_job);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), path_to_pdf_,
                      false));

@@ -260,15 +260,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
   def __init__(self,
                app_path,
                host_app_path,
-               iossim_path,
-               xcode_build_version,
                version,
                platform,
                out_dir,
-               mac_toolchain=None,
                retries=1,
                shards=1,
-               xcode_path=None,
                test_cases=None,
                test_args=None,
                use_clang_coverage=False,
@@ -278,16 +274,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     Args:
       app_path: (str) A path to egtests_app.
       host_app_path: (str) A path to the host app for EG2.
-      iossim_path: Path to the compiled iossim binary to use.
-                   Not used, but is required by the base class.
-      xcode_build_version: (str) Xcode build version for running tests.
       version: (str) iOS version to run simulator on.
       platform: (str) Name of device.
       out_dir: (str) A directory to emit test data into.
-      mac_toolchain: (str) A command to run `mac_toolchain` tool.
       retries: (int) A number to retry test run, will re-run only failed tests.
       shards: (int) A number of shards. Default is 1.
-      xcode_path: (str) A path to Xcode.app folder.
       test_cases: (list) List of tests to be included in the test run.
                   None or [] to include all tests.
       test_args: List of strings to pass as arguments to the test when
@@ -303,18 +294,14 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """
     super(SimulatorParallelTestRunner, self).__init__(
         app_path,
-        iossim_path,
         platform,
         version,
-        xcode_build_version,
         out_dir,
         env_vars=env_vars,
-        mac_toolchain=mac_toolchain,
         retries=retries or 1,
         shards=shards or 1,
         test_args=test_args,
         test_cases=test_cases,
-        xcode_path=xcode_path,
         use_clang_coverage=use_clang_coverage,
         xctest=False)
     self.set_up()
@@ -463,11 +450,8 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
       self,
       app_path,
       host_app_path,
-      xcode_build_version,
       out_dir,
-      mac_toolchain=None,
       retries=1,
-      xcode_path=None,
       test_cases=None,
       test_args=None,
       env_vars=None,
@@ -477,11 +461,8 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     Args:
       app_path: (str) A path to egtests_app.
       host_app_path: (str) A path to the host app for EG2.
-      xcode_build_version: (str) Xcode build version for running tests.
       out_dir: (str) A directory to emit test data into.
-      mac_toolchain: (str) A command to run `mac_toolchain` tool.
       retries: (int) A number to retry test run, will re-run only failed tests.
-      xcode_path: (str) A path to Xcode.app folder.
       test_cases: (list) List of tests to be included in the test run.
                   None or [] to include all tests.
       test_args: List of strings to pass as arguments to the test when
@@ -498,14 +479,11 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     test_runner.DeviceTestRunner.__init__(
         self,
         app_path,
-        xcode_build_version,
         out_dir,
         env_vars=env_vars,
         retries=retries,
         test_args=test_args,
         test_cases=test_cases,
-        mac_toolchain=mac_toolchain,
-        xcode_path=xcode_path,
     )
     self.shards = 1  # For tests on real devices shards=1
     self.version = None

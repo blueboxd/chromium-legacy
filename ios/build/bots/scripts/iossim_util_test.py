@@ -5,6 +5,7 @@
 
 import iossim_util
 import mock
+
 import test_runner
 import test_runner_test
 
@@ -14,17 +15,21 @@ class GetiOSSimUtil(test_runner_test.TestCase):
 
   def setUp(self):
     super(GetiOSSimUtil, self).setUp()
+    self.mock(iossim_util, 'get_simulator_list',
+              lambda: test_runner_test.SIMULATORS_LIST)
 
   def test_get_simulator_runtime_by_version(self):
     """Ensures correctness of filter."""
     self.assertEqual(
         'com.apple.CoreSimulator.SimRuntime.iOS-13-2',
-        iossim_util.get_simulator_runtime_by_version(SIMULATORS_LIST, '13.2.2'))
+        iossim_util.get_simulator_runtime_by_version(
+            test_runner_test.SIMULATORS_LIST, '13.2.2'))
 
   def test_get_simulator_runtime_by_version_not_found(self):
     """Ensures that SimulatorNotFoundError raises if no runtime."""
     with self.assertRaises(test_runner.SimulatorNotFoundError) as context:
-      iossim_util.get_simulator_runtime_by_version(SIMULATORS_LIST, '13.2')
+      iossim_util.get_simulator_runtime_by_version(
+          test_runner_test.SIMULATORS_LIST, '13.2')
     expected_message = ('Simulator does not exist: Not found '
                         '"13.2" SDK in runtimes')
     self.assertTrue(expected_message in str(context.exception))
@@ -33,14 +38,14 @@ class GetiOSSimUtil(test_runner_test.TestCase):
     """Ensures correctness of filter."""
     self.assertEqual(
         'com.apple.CoreSimulator.SimDeviceType.iPhone-11',
-        iossim_util.get_simulator_runtime_by_platform(SIMULATORS_LIST,
-                                                      'iPhone 11'))
+        iossim_util.get_simulator_runtime_by_platform(
+            test_runner_test.SIMULATORS_LIST, 'iPhone 11'))
 
   def test_get_simulator_runtime_by_platform_not_found(self):
     """Ensures that SimulatorNotFoundError raises if no platform."""
     with self.assertRaises(test_runner.SimulatorNotFoundError) as context:
-      iossim_util.get_simulator_runtime_by_platform(SIMULATORS_LIST,
-                                                    'iPhone XI')
+      iossim_util.get_simulator_runtime_by_platform(
+          test_runner_test.SIMULATORS_LIST, 'iPhone XI')
     expected_message = ('Simulator does not exist: Not found device '
                         '"iPhone XI" in devicetypes')
     self.assertTrue(expected_message in str(context.exception))

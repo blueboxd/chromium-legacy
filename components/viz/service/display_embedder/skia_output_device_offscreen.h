@@ -19,7 +19,7 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceOffscreen(
       scoped_refptr<gpu::SharedContextState> context_state,
-      bool flipped,
+      SurfaceOrigin origin,
       bool has_alpha,
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);

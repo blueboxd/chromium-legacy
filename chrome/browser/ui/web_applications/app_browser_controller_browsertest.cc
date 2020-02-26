@@ -132,6 +132,11 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
 
   EXPECT_TRUE(app_browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP));
 
+  // No favicons shown for system apps.
+  EXPECT_FALSE(
+      app_browser_->tab_strip_model()->delegate()->ShouldDisplayFavicon(
+          app_browser_->tab_strip_model()->GetActiveWebContents()));
+
   // Check URL of tab1.
   EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
   // Create tab2 with specific URL, check URL, number of tabs.

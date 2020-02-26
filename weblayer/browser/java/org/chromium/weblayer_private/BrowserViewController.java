@@ -5,6 +5,8 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.os.RemoteException;
+import android.util.AndroidRuntimeException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -18,6 +20,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * BrowserViewController controls the set of Views needed to show the WebContents.
@@ -25,7 +28,8 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 @JNINamespace("weblayer")
 public final class BrowserViewController
         implements TopControlsContainerView.Listener,
-                   WebContentsGestureStateTracker.OnGestureStateChangedListener {
+                   WebContentsGestureStateTracker.OnGestureStateChangedListener,
+                   ModalDialogManager.ModalDialogManagerObserver {
     private final ContentViewRenderView mContentViewRenderView;
     private final ContentView mContentView;
     // Child of mContentView, holds top-view from client.
@@ -73,11 +77,13 @@ public final class BrowserViewController
         windowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
 
         mModalDialogManager = windowAndroid.getModalDialogManager();
+        mModalDialogManager.addObserver(this);
         mModalDialogManager.registerPresenter(
                 new WebLayerTabModalPresenter(this, context), ModalDialogType.TAB);
     }
 
     public void destroy() {
+        mModalDialogManager.removeObserver(this);
         setActiveTab(null);
         mTopControlsContainerView.destroy();
         mContentViewRenderView.destroy();
@@ -106,6 +112,10 @@ public final class BrowserViewController
             mGestureStateTracker.destroy();
             mGestureStateTracker = null;
         }
+
+        mModalDialogManager.dismissDialogsOfType(
+                ModalDialogType.TAB, DialogDismissalCause.TAB_SWITCHED);
+
         mTab = tab;
         WebContents webContents = mTab != null ? mTab.getWebContents() : null;
         // Create the WebContentsGestureStateTracker before setting the WebContents on
@@ -130,9 +140,6 @@ public final class BrowserViewController
             mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
         }
-
-        mModalDialogManager.dismissDialogsOfType(
-                ModalDialogType.TAB, DialogDismissalCause.TAB_SWITCHED);
     }
 
     public TabImpl getTab() {
@@ -155,6 +162,28 @@ public final class BrowserViewController
                     mTopControlsContainerView.isTopControlVisible();
         }
         adjustWebContentsHeightIfNecessary();
+    }
+
+    @Override
+    public void onDialogShown(PropertyModel model) {
+        onDialogVisibilityChanged(true);
+    }
+
+    @Override
+    public void onDialogHidden(PropertyModel model) {
+        onDialogVisibilityChanged(false);
+    }
+
+    private void onDialogVisibilityChanged(boolean showing) {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 82) return;
+
+        if (mModalDialogManager.getCurrentType() == ModalDialogType.TAB) {
+            try {
+                mTab.getClient().onTabModalStateChanged(showing);
+            } catch (RemoteException e) {
+                throw new AndroidRuntimeException(e);
+            }
+        }
     }
 
     private void adjustWebContentsHeightIfNecessary() {
@@ -180,5 +209,10 @@ public final class BrowserViewController
         return (mGestureStateTracker.isInGestureOrScroll())
                 ? mCachedDoBrowserControlsShrinkRendererSize
                 : mTopControlsContainerView.isTopControlVisible();
+    }
+
+    public void dismissTabModalOverlay() {
+        mModalDialogManager.dismissDialogsOfType(
+                ModalDialogType.TAB, DialogDismissalCause.TAB_SWITCHED);
     }
 }

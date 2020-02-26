@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
@@ -102,10 +103,8 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
     // Checks for existence of "koly" signature even if file doesn't have
     // archive-type extension, then calls ExtractFileOrDmgFeatures() with
     // result.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(DiskImageTypeSnifferMac::IsAppleDiskImage, tmp_path_),
         base::BindOnce(&FileAnalyzer::ExtractFileOrDmgFeatures,
                        weakptr_factory_.GetWeakPtr()));
@@ -118,9 +117,9 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
 void FileAnalyzer::StartExtractFileFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ExtractFileFeatures, binary_feature_extractor_,
                      tmp_path_),

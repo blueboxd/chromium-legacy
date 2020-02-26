@@ -136,4 +136,38 @@ public class TabCallbackTest {
                 Uri.parse(mActivityTestRule.getTestDataURL("lorem_ipsum.txt")), params[0].linkUri);
         Assert.assertEquals("anchor text", params[0].linkText);
     }
+
+    // Requires implementation M82.
+    @Test
+    @SmallTest
+    public void testTabModalOverlay() throws TimeoutException {
+        String pageUrl = mActivityTestRule.getTestDataURL("alert.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
+        Assert.assertNotNull(activity);
+
+        Boolean isTabModalShowingResult[] = new Boolean[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onTabModalStateChanged(boolean isTabModalShowing) {
+                    isTabModalShowingResult[0] = isTabModalShowing;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        int callCount = callbackHelper.getCallCount();
+        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(true, isTabModalShowingResult[0]);
+
+        callCount = callbackHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getTab().dismissTabModalOverlay(); });
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(false, isTabModalShowingResult[0]);
+    }
 }

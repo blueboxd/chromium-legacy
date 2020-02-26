@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import contextlib
 import copy
 import hashlib
@@ -130,10 +131,9 @@ class LocalDeviceInstrumentationTestRun(
   def __init__(self, env, test_instance):
     super(LocalDeviceInstrumentationTestRun, self).__init__(
         env, test_instance)
+    self._context_managers = collections.defaultdict(list)
     self._flag_changers = {}
-    self._replace_package_contextmanager = None
     self._shared_prefs_to_restore = []
-    self._use_webview_contextmanager = None
 
   #override
   def TestPackage(self):
@@ -158,14 +158,15 @@ class LocalDeviceInstrumentationTestRun(
           # applying the context manager up in test_runner. Instead, we
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
-          self._replace_package_contextmanager = system_app.ReplaceSystemApp(
+          system_app_context = system_app.ReplaceSystemApp(
               dev, self._test_instance.replace_system_package.package,
               self._test_instance.replace_system_package.replacement_apk)
           # Pylint is not smart enough to realize that this field has
           # an __enter__ method, and will complain loudly.
           # pylint: disable=no-member
-          self._replace_package_contextmanager.__enter__()
+          system_app_context.__enter__()
           # pylint: enable=no-member
+          self._context_managers[str(dev)].append(system_app_context)
 
         steps.append(replace_package)
 
@@ -180,13 +181,14 @@ class LocalDeviceInstrumentationTestRun(
           # applying the context manager up in test_runner. Instead, we
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
-          self._use_webview_contextmanager = webview_app.UseWebViewProvider(
+          webview_context = webview_app.UseWebViewProvider(
               dev, self._test_instance.use_webview_provider)
           # Pylint is not smart enough to realize that this field has
           # an __enter__ method, and will complain loudly.
           # pylint: disable=no-member
-          self._use_webview_contextmanager.__enter__()
+          webview_context.__enter__()
           # pylint: enable=no-member
+          self._context_managers[str(dev)].append(webview_context)
 
         steps.append(use_webview_provider)
 
@@ -336,6 +338,9 @@ class LocalDeviceInstrumentationTestRun(
         if self._test_instance.store_tombstones:
           tombstones.ClearAllTombstones(device)
       except device_errors.CommandFailedError:
+        if not device.IsOnline():
+          raise
+
         # A bugreport can be large and take a while to generate, so only capture
         # one if we're using a remote manager.
         if isinstance(
@@ -391,17 +396,11 @@ class LocalDeviceInstrumentationTestRun(
         pref_to_restore.Commit(force_commit=True)
 
       # Context manager exit handlers are applied in reverse order
-      # of the enter handlers
-      if self._use_webview_contextmanager:
+      # of the enter handlers.
+      for context in reversed(self._context_managers[str(dev)]):
         # See pylint-related comment above with __enter__()
         # pylint: disable=no-member
-        self._use_webview_contextmanager.__exit__(*sys.exc_info())
-        # pylint: enable=no-member
-
-      if self._replace_package_contextmanager:
-        # See pylint-related comment above with __enter__()
-        # pylint: disable=no-member
-        self._replace_package_contextmanager.__exit__(*sys.exc_info())
+        context.__exit__(*sys.exc_info())
         # pylint: enable=no-member
 
     self._env.parallel_devices.pMap(individual_device_tear_down)

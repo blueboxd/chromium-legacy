@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -145,7 +146,7 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
           profile_key->GetPrefs());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
   base::FilePath store_path =
       profile_key->GetPath().Append(chrome::kOfflinePagePrefetchStoreDirname);
   auto prefetch_store =

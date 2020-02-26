@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
@@ -76,9 +77,8 @@ TaskManagerImpl::TaskManagerImpl()
     : on_background_data_ready_callback_(
           base::Bind(&TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
                      base::Unretained(this))),
-      blocking_pool_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      blocking_pool_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       shared_sampler_(new SharedSampler(blocking_pool_runner_)),
       is_running_(false),

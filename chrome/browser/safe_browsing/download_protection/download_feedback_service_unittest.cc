@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"
@@ -122,9 +123,8 @@ bool WillStorePings(DownloadCheckResult result,
 class DownloadFeedbackServiceTest : public testing::Test {
  public:
   DownloadFeedbackServiceTest()
-      : file_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT})) {}
+      : file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

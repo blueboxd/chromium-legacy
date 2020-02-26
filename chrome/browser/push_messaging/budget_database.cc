@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -62,9 +63,8 @@ BudgetDatabase::BudgetDatabase(Profile* profile)
   db_ = protodb_provider->GetDB<budget_service::Budget>(
       leveldb_proto::ProtoDbType::BUDGET_DATABASE,
       profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
   db_->Init(base::BindOnce(&BudgetDatabase::OnDatabaseInit,
                            weak_ptr_factory_.GetWeakPtr()));

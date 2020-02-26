@@ -247,6 +247,11 @@ public interface WebContents extends Parcelable {
     void setFocus(boolean hasFocus);
 
     /**
+     * @return true if the renderer is in fullscreen mode.
+     */
+    boolean isFullscreenForCurrentTab();
+
+    /**
      * Inform WebKit that Fullscreen mode has been exited by the user.
      */
     void exitFullscreen();

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "third_party/zlib/google/zip_reader.h"
 
@@ -34,8 +35,8 @@ UnzipHelper::~UnzipHelper() {}
 void UnzipHelper::Unzip(const base::FilePath& image_path,
                         const base::FilePath& temp_dir_path) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                          base::TaskPriority::USER_VISIBLE});
+      base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   task_runner->PostTask(FROM_HERE, base::BindOnce(&UnzipHelper::UnzipImpl, this,
                                                   image_path, temp_dir_path));
 }

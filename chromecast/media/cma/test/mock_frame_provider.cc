@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"

@@ -439,13 +439,17 @@ Polymer({
       if (index === undefined) {
         return;
       }
-      setTimeout(() => {
-        this.$['infinite-list'].focusItem(index);
-        const item = getDeepActiveElement();
-        if (item) {
-          item.focusOnMenuButton();
-        }
-      }, 1);
+
+      if (this.historyData_.length > 0) {
+        setTimeout(() => {
+          this.$['infinite-list'].focusItem(
+              Math.min(this.historyData_.length - 1, index));
+          const item = getDeepActiveElement();
+          if (item && item.focusOnMenuButton) {
+            item.focusOnMenuButton();
+          }
+        }, 1);
+      }
 
       const browserService = BrowserService.getInstance();
       browserService.recordHistogram(

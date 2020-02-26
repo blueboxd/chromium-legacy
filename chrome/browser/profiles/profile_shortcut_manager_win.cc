@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shortcut.h"
@@ -753,7 +754,7 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+  base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
       ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
                                            profile_path, base::nullopt, false));
 }
@@ -762,8 +763,7 @@ void ProfileShortcutManagerWin::HasProfileShortcuts(
     const base::FilePath& profile_path,
     const base::Callback<void(bool)>& callback) {
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
-          .get(),
+      base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}).get(),
       FROM_HERE, base::BindOnce(&HasAnyProfileShortcuts, profile_path),
       base::BindOnce(callback));
 }
@@ -838,7 +838,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   if (all_profiles.size() > 0)
     first_profile_path = all_profiles[0]->GetPath();
 
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+  base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
       ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
                                            profile_path, first_profile_path,
                                            deleting_down_to_last_profile));
@@ -923,7 +923,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     profiles::GetWinAvatarImages(entry, &params.avatar_image_1x,
                                  &params.avatar_image_2x);
   }
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+  base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      &CreateOrUpdateDesktopShortcutsAndIconForProfile, params));

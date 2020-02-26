@@ -183,16 +183,25 @@ class VerifierObserver : public ContentVerifier::TestObserver {
   VerifierObserver();
   virtual ~VerifierObserver();
 
+  const std::set<base::FilePath>& hash_mismatch_unix_paths() {
+    DCHECK(content_hash_);
+    return content_hash_->hash_mismatch_unix_paths();
+  }
+  bool did_hash_mismatch() const { return did_hash_mismatch_; }
+
   // Ensures that |extension_id| has seen OnFetchComplete, waits for it to
   // complete if it hasn't already.
   void EnsureFetchCompleted(const ExtensionId& extension_id);
 
   // ContentVerifier::TestObserver
-  void OnFetchComplete(const ExtensionId& extension_id, bool success) override;
+  void OnFetchComplete(const scoped_refptr<const ContentHash>& content_hash,
+                       bool did_hash_mismatch) override;
 
  private:
   std::set<ExtensionId> completed_fetches_;
   ExtensionId id_to_wait_for_;
+  scoped_refptr<const ContentHash> content_hash_;
+  bool did_hash_mismatch_ = true;
 
   // Created and accessed on |creation_thread_|.
   scoped_refptr<content::MessageLoopRunner> loop_runner_;

@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
@@ -220,9 +221,9 @@ const wchar_t kApprovedShellExtensionRegistryKey[] =
 void EnumerateShellExtensions(
     OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
     base::OnceClosure on_enumeration_finished) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&EnumerateShellExtensionsOnBlockingSequence,
                      base::SequencedTaskRunnerHandle::Get(),

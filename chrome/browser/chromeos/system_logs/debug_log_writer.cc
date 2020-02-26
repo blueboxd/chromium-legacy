@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -181,9 +182,8 @@ void OnSystemLogsAdded(DebugLogWriter::StoreLogsCallback callback,
   base::FilePath user_log_dir =
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AddUserLogsToArchive, user_log_dir, tar_file_path,
                      compressed_output_path, std::move(callback)));
 }

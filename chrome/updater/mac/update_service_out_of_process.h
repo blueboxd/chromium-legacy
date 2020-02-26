@@ -1,0 +1,50 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_UPDATER_MAC_UPDATE_SERVICE_OUT_OF_PROCESS_H_
+#define CHROME_UPDATER_MAC_UPDATE_SERVICE_OUT_OF_PROCESS_H_
+
+#include "base/callback_forward.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
+#import "chrome/updater/server/mac/service_protocol.h"
+#include "chrome/updater/update_service.h"
+
+@class CRUUpdateServiceOutOfProcessImpl;
+
+namespace update_client {
+enum class Error;
+}  // namespace update_client
+
+namespace updater {
+
+// All functions and callbacks must be called on the same sequence.
+class UpdateServiceOutOfProcess : public UpdateService {
+ public:
+  UpdateServiceOutOfProcess();
+
+  UpdateServiceOutOfProcess(const UpdateServiceOutOfProcess&) = delete;
+  UpdateServiceOutOfProcess& operator=(const UpdateServiceOutOfProcess&) =
+      delete;
+
+  ~UpdateServiceOutOfProcess() override;
+
+  // Overrides for updater::UpdateService.
+  // Update-checks all registered applications. Calls |callback| once the
+  // operation is complete.
+  void RegisterApp(
+      const RegistrationRequest& request,
+      base::OnceCallback<void(const RegistrationResponse&)> callback) override;
+  void UpdateAll(
+      base::OnceCallback<void(update_client::Error)> callback) override;
+
+ private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::scoped_nsobject<CRUUpdateServiceOutOfProcessImpl> _client;
+};
+
+}  // namespace updater
+
+#endif  // CHROME_UPDATER_MAC_UPDATE_SERVICE_OUT_OF_PROCESS_H_

@@ -21,6 +21,7 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 import sys
 import traceback
 
@@ -47,11 +48,73 @@ class Runner():
     if args:
       self.parse_args(args)
 
+  def install_xcode(self, xcode_build_version, mac_toolchain_cmd,
+                    xcode_app_path):
+    """Installs the requested Xcode build version.
+
+    Args:
+      xcode_build_version: (string) Xcode build version to install.
+      mac_toolchain_cmd: (string) Path to mac_toolchain command to install Xcode
+      See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
+      xcode_app_path: (string) Path to install the contents of Xcode.app.
+
+    Returns:
+      True if installation was successful. False otherwise.
+    """
+    try:
+      if not mac_toolchain_cmd:
+        raise test_runner.MacToolchainNotFoundError(mac_toolchain_cmd)
+      # Guard against incorrect install paths. On swarming, this path
+      # should be a requested named cache, and it must exist.
+      if not os.path.exists(xcode_app_path):
+        raise test_runner.XcodePathNotFoundError(xcode_app_path)
+
+      subprocess.check_call([
+          mac_toolchain_cmd,
+          'install',
+          '-kind',
+          'ios',
+          '-xcode-version',
+          xcode_build_version.lower(),
+          '-output-dir',
+          xcode_app_path,
+      ])
+      self.xcode_select(xcode_app_path)
+    except subprocess.CalledProcessError as e:
+      # Flush buffers to ensure correct output ordering.
+      sys.stdout.flush()
+      sys.stderr.write('Xcode build version %s failed to install: %s\n' %
+                       (xcode_build_version, e))
+      sys.stderr.flush()
+      return False
+
+    return True
+
+  def xcode_select(self, xcode_app_path):
+    """Switch the default Xcode system-wide to `xcode_app_path`.
+
+    Raises subprocess.CalledProcessError on failure.
+    To be mocked in tests.
+    """
+    subprocess.check_call([
+        'sudo',
+        'xcode-select',
+        '-switch',
+        xcode_app_path,
+    ])
+
   def run(self, args):
     """
     Main coordinating function.
     """
     self.parse_args(args)
+
+    # This logic is run by default before the otool command is invoked such that
+    # otool has the correct Xcode selected for command line dev tools.
+    if not self.install_xcode(self.args.xcode_build_version,
+                              self.args.mac_toolchain_cmd,
+                              self.args.xcode_path):
+      raise test_runner.XcodeVersionNotFoundError(self.args.xcode_build_version)
 
     # GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS are additional test environment
     # variables, set by Swarming, that are only set for a swarming task
@@ -77,15 +140,11 @@ class Runner():
         tr = xcodebuild_runner.SimulatorParallelTestRunner(
             self.args.app,
             self.args.host_app,
-            self.args.iossim,
-            self.args.xcode_build_version,
             self.args.version,
             self.args.platform,
             out_dir=self.args.out_dir,
-            mac_toolchain=self.args.mac_toolchain_cmd,
             retries=self.args.retries,
             shards=self.args.shards,
-            xcode_path=self.args.xcode_path,
             test_cases=self.args.test_cases,
             test_args=self.test_args,
             use_clang_coverage=self.args.use_clang_coverage,
@@ -94,50 +153,39 @@ class Runner():
         tr = wpr_runner.WprProxySimulatorTestRunner(
             self.args.app,
             self.args.host_app,
-            self.args.iossim,
             self.args.replay_path,
             self.args.platform,
             self.args.version,
             self.args.wpr_tools_path,
-            self.args.xcode_build_version,
             self.args.out_dir,
             env_vars=self.args.env_var,
-            mac_toolchain=self.args.mac_toolchain_cmd,
             retries=self.args.retries,
             shards=self.args.shards,
             test_args=self.test_args,
             test_cases=self.args.test_cases,
-            xcode_path=self.args.xcode_path,
             xctest=self.args.xctest,
         )
-      elif self.args.iossim and self.args.platform and self.args.version:
+      elif self.args.platform and self.args.version:
         tr = test_runner.SimulatorTestRunner(
             self.args.app,
-            self.args.iossim,
             self.args.platform,
             self.args.version,
-            self.args.xcode_build_version,
             self.args.out_dir,
             env_vars=self.args.env_var,
-            mac_toolchain=self.args.mac_toolchain_cmd,
             retries=self.args.retries,
             shards=self.args.shards,
             test_args=self.test_args,
             test_cases=self.args.test_cases,
             use_clang_coverage=self.args.use_clang_coverage,
             wpr_tools_path=self.args.wpr_tools_path,
-            xcode_path=self.args.xcode_path,
             xctest=self.args.xctest,
         )
       elif self.args.xcodebuild_device_runner and self.args.xctest:
         tr = xcodebuild_runner.DeviceXcodeTestRunner(
             app_path=self.args.app,
             host_app_path=self.args.host_app,
-            xcode_build_version=self.args.xcode_build_version,
             out_dir=self.args.out_dir,
-            mac_toolchain=self.args.mac_toolchain_cmd,
             retries=self.args.retries,
-            xcode_path=self.args.xcode_path,
             test_cases=self.args.test_cases,
             test_args=self.test_args,
             env_vars=self.args.env_var)
@@ -147,12 +195,10 @@ class Runner():
             self.args.xcode_build_version,
             self.args.out_dir,
             env_vars=self.args.env_var,
-            mac_toolchain=self.args.mac_toolchain_cmd,
             restart=self.args.restart,
             retries=self.args.retries,
             test_args=self.test_args,
             test_cases=self.args.test_cases,
-            xcode_path=self.args.xcode_path,
             xctest=self.args.xctest,
         )
 
@@ -231,12 +277,6 @@ class Runner():
         help='Compiled host .app to run.',
         default='NO_PATH',
         metavar='host_app',
-    )
-    parser.add_argument(
-        '-i',
-        '--iossim',
-        help='Compiled iossim to run the app on.',
-        metavar='iossim',
     )
     parser.add_argument(
         '-j',
@@ -372,12 +412,12 @@ class Runner():
       Runs argument validation
       """
       if (not (args.xcode_parallelization or args.xcodebuild_device_runner) and
-          (args.iossim or args.platform or args.version)):
-        # If any of --iossim, --platform, or --version
-        # are specified then they must all be specified.
-        if not (args.iossim and args.platform and args.version):
+          (args.platform or args.version)):
+        # If --platform or --version are specified then
+        # they must all be specified.
+        if not (args.platform and args.version):
           parser.error('must specify all or none of '
-                       '-i/--iossim, -p/--platform, -v/--version')
+                       '-p/--platform, -v/--version')
 
       if args.xcode_parallelization and not (args.platform and args.version):
         parser.error('--xcode-parallelization also requires '

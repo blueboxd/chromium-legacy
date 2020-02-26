@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -88,8 +89,8 @@ void CrostiniInstallerPageHandler::OnCanceled() {
 }
 
 void CrostiniInstallerPageHandler::RequestAmountOfFreeDiskSpace() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(&CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace,

@@ -189,6 +189,16 @@ void AddAssistantScreensResources(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
 }
 
+void AddGestureNavigationResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("gesture_go_home.json",
+                          IDR_GESTURE_NAVIGATION_GO_HOME_ANIMATION);
+  source->AddResourcePath("gesture_go_back.json",
+                          IDR_GESTURE_NAVIGATION_GO_BACK_ANIMATION);
+  source->AddResourcePath("gesture_hotseat_overview.json",
+                          IDR_GESTURE_NAVIGATION_HOTSEAT_OVERVIEW_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+}
+
 void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
   bool is_lottie_animation = false;
@@ -283,6 +293,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
   AddAssistantScreensResources(source);
+  AddGestureNavigationResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(

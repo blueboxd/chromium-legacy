@@ -224,6 +224,13 @@ public class ModalDialogManager {
     }
 
     /**
+     * @return The type of dialog showing, or last type that was shown.
+     */
+    public @ModalDialogType int getCurrentType() {
+        return mCurrentType;
+    }
+
+    /**
      * Show the specified dialog. If another dialog is currently showing, the specified dialog will
      * be added to the end of the pending dialog list of the specified type.
      * @param model The dialog model to be shown or added to pending list.

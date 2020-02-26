@@ -80,6 +80,7 @@ std::unique_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
 
 void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
                                   const gfx::Size& size,
+                                  const gfx::Size& framebuffer_size,
                                   gfx::BufferFormat format,
                                   gfx::BufferUsage usage,
                                   uint32_t flags,
@@ -89,9 +90,9 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
   DCHECK(drm_thread_.task_runner())
       << "no task runner! in DrmThreadProxy::CreateBuffer";
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
-  base::OnceClosure task =
-      base::BindOnce(&DrmThread::CreateBuffer, base::Unretained(&drm_thread_),
-                     widget, size, format, usage, flags, buffer, framebuffer);
+  base::OnceClosure task = base::BindOnce(
+      &DrmThread::CreateBuffer, base::Unretained(&drm_thread_), widget, size,
+      framebuffer_size, format, usage, flags, buffer, framebuffer);
   PostSyncTask(
       drm_thread_.task_runner(),
       base::BindOnce(&DrmThread::RunTaskAfterWindowReady,

@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -396,9 +397,8 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
         MachineLevelUserCloudPolicyStore::Create(
             browser_dm_token, client_id, user_data_dir,
             /*cloud_policy_overrides=*/false,
-            base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                             base::MayBlock(),
-                                             base::TaskPriority::BEST_EFFORT}));
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     policy_store->AddObserver(&observer);
 
     base::FilePath policy_dir = user_data_dir.Append(

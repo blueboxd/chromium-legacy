@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -127,9 +128,8 @@ void DMTokenStorage::EncryptAndStoreToken() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!system_salt_.empty());
   DCHECK(!dm_token_.empty());
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&EncryptToken, system_salt_, dm_token_),
       base::BindOnce(&DMTokenStorage::OnTokenEncrypted,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -151,9 +151,8 @@ void DMTokenStorage::LoadAndDecryptToken() {
   std::string encrypted_dm_token =
       local_state_->GetString(prefs::kDeviceDMToken);
   if (!encrypted_dm_token.empty()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&DecryptToken, system_salt_, encrypted_dm_token),
         base::BindOnce(&DMTokenStorage::FlushRetrieveTokenCallback,
                        weak_ptr_factory_.GetWeakPtr()));

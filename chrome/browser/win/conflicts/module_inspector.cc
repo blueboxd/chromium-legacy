@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -83,14 +84,12 @@ ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
       is_after_startup_(false),
-      inspection_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      inspection_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       path_mapping_(GetPathMapping()),
-      cache_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      cache_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       inspection_results_cache_read_(false),
       flush_inspection_results_timer_(
@@ -129,8 +128,8 @@ void ModuleInspector::IncreaseInspectionPriority() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Create a task runner with higher priority so that future inspections are
   // done faster.
-  inspection_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  inspection_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // Assume startup is finished to immediately begin inspecting modules.

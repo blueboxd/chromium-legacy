@@ -18,6 +18,7 @@ namespace contextual_tooltip {
 enum class TooltipType {
   kDragHandle,
   kBackGesture,
+  kHomeToOverview,
 };
 
 // Maximum number of times a user can be shown a contextual nudge if the user

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/widget/widget.h"
@@ -23,6 +22,8 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
 
   BackGestureAffordance(const gfx::Point& location,
                         bool dragged_from_splitview_divider = false);
+  BackGestureAffordance(BackGestureAffordance&) = delete;
+  BackGestureAffordance& operator=(BackGestureAffordance&) = delete;
   ~BackGestureAffordance() override;
 
   // Updates the drag related properties. Note, |during_reverse_dragging|
@@ -93,8 +94,6 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
 
   // True if dragged from the splitview divider to go back.
   bool dragged_from_splitview_divider_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(BackGestureAffordance);
 };
 
 }  // namespace ash

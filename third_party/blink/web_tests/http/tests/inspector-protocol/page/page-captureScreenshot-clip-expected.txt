@@ -1,0 +1,10 @@
+Tests that screenshot works with clip
+{"x":0,"y":15018,"width":54,"height":54}
+{
+    id : <number>
+    result : {
+        data : iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAAAXNSR0IArs4c6QAAAG9JREFUaIHt2jEKgDAQAMFEfHh+roXgCxRZmalS3pIrb45xHOOHtq8HeMt+v9b8cIwHrWsBf/tjwmqE1QirEVYjrEZYjbAaYTXCaoTVCKsRViOsRliNsBphNcJqhNUIqxFWI6xGWI2wGmE1001wzAmiFwZpJEBbewAAAABJRU5ErkJggg==
+    }
+    sessionId : <string>
+}
+

@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.tasks.pseudotab;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -208,7 +208,7 @@ public class PseudoTab {
 
         List<PseudoTab> related = new ArrayList<>();
         int rootId = member.getRootId();
-        if (rootId == Tab.INVALID_TAB_ID || !CachedFeatureFlags.isTabGroupsAndroidEnabled()) {
+        if (rootId == Tab.INVALID_TAB_ID || !TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
             related.add(member);
             return related;
         }

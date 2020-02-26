@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -28,9 +29,8 @@ PerfOutputCall::PerfOutputCall(chromeos::DebugDaemonClient* debug_daemon_client,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   perf_data_pipe_reader_ =
-      std::make_unique<chromeos::PipeReader>(base::CreateTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      std::make_unique<chromeos::PipeReader>(base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
   base::ScopedFD pipe_write_end =

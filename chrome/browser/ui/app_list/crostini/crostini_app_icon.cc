@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -215,9 +216,8 @@ void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       registry_service_->GetIconPath(app_id_, scale_factor);
   DCHECK(!path.empty());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&CrostiniAppIcon::ReadOnFileThread, scale_factor, path),
       base::BindOnce(&CrostiniAppIcon::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr()));

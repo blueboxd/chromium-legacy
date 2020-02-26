@@ -109,6 +109,9 @@ class CONTENT_EXPORT WebContentsAndroid {
   jboolean FocusLocationBarByDefault(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  bool IsFullscreenForCurrentTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void ExitFullscreen(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
   void ScrollFocusedEditableNodeIntoView(

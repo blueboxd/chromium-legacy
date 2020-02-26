@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/thumbnail/generator/thumbnail_util.h"
@@ -77,9 +78,8 @@ ImageThumbnailRequest::~ImageThumbnailRequest() {
 
 void ImageThumbnailRequest::Start(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&LoadImageData, path),
       base::BindOnce(&ImageThumbnailRequest::OnLoadComplete,
                      weak_ptr_factory_.GetWeakPtr()));

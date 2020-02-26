@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_pref_names.h"
@@ -196,9 +197,8 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
 void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {
   // Run ReadFiles() in the thread that interacts with the file system and
   // return system logs to |upload_callback| on the current thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadFiles), std::move(upload_callback));
 }
 
@@ -244,9 +244,8 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
 void SystemLogDelegate::ZipSystemLogs(
     std::unique_ptr<SystemLogUploader::SystemLogs> system_logs,
     ZippedLogUploadCallback upload_callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ZipFiles, std::move(system_logs)),
       std::move(upload_callback));
 }

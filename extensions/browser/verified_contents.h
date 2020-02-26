@@ -48,6 +48,10 @@ class VerifiedContents {
   bool TreeHashRootEquals(const base::FilePath& relative_path,
                           const std::string& expected) const;
 
+  bool TreeHashRootEqualsForCanonicalPath(
+      const CanonicalRelativePath& canonical_relative_path,
+      const std::string& expected) const;
+
   // If InitFrom has not been called yet, or was used in "ignore invalid
   // signature" mode, this can return false.
   bool valid_signature() { return valid_signature_; }
@@ -67,10 +71,6 @@ class VerifiedContents {
   bool VerifySignature(const std::string& protected_value,
                        const std::string& payload,
                        const std::string& signature_bytes);
-
-  bool TreeHashRootEqualsImpl(
-      const CanonicalRelativePath& canonical_relative_path,
-      const std::string& expected) const;
 
   // The public key we should use for signature verification.
   base::span<const uint8_t> public_key_;

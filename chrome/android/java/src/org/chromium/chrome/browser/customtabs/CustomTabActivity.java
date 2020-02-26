@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -71,9 +70,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private CustomTabIntentHandler mCustomTabIntentHandler;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
-
-    @Nullable
-    private DynamicModuleCoordinator mDynamicModuleCoordinator;
 
     private CustomTabNightModeStateController mNightModeStateController;
 
@@ -181,12 +177,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public void finishNativeInitialization() {
         if (!mIntentDataProvider.isInfoPage()) FirstRunSignInProcessor.start(this);
 
-        // Try to initialize dynamic module early to enqueue navigation events
-        // @see DynamicModuleNavigationEventObserver
-        if (mIntentDataProvider.isDynamicModuleEnabled()) {
-            mDynamicModuleCoordinator = getComponent().resolveDynamicModuleCoordinator();
-        }
-
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
 
         if (isTaskRoot() && UsageStatsService.isEnabled()) {
@@ -223,10 +213,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         WebContents webContents = tab == null ? null : tab.getWebContents();
         mConnection.resetPostMessageHandlerForSession(
                 mIntentDataProvider.getSession(), webContents);
-
-        if (mDynamicModuleCoordinator != null) {
-            mDynamicModuleCoordinator.resetPostMessageHandlersForCurrentSession(null);
-        }
     }
 
     @Override
@@ -396,10 +382,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();
-        }
-        if (mConnection.shouldHideTopBarOnModuleManagedUrlsForSession(
-                    mIntentDataProvider.getSession())) {
-            component.resolveDynamicModuleToolbarController();
         }
 
         return component;

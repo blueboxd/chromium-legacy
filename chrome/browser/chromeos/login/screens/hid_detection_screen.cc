@@ -79,7 +79,7 @@ HIDDetectionScreen::~HIDDetectionScreen() {
   if (view_)
     view_->Unbind();
   if (discovery_session_.get())
-    discovery_session_->Stop(base::DoNothing(), base::DoNothing());
+    discovery_session_->Stop();
   if (adapter_.get())
     adapter_->RemoveObserver(this);
 }
@@ -149,9 +149,9 @@ void HIDDetectionScreen::HideImpl() {
   if (is_hidden())
     return;
 
-  if (discovery_session_.get()) {
-    discovery_session_->Stop(base::DoNothing(), base::DoNothing());
-  }
+  if (discovery_session_.get())
+    discovery_session_->Stop();
+
   if (view_)
     view_->Hide();
 }

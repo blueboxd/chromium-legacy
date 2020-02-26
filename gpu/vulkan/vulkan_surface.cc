@@ -90,13 +90,12 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
   device_queue_ = device_queue;
 
-  VkResult result = VK_SUCCESS;
 
   VkBool32 present_support;
-  if (vkGetPhysicalDeviceSurfaceSupportKHR(
-          device_queue_->GetVulkanPhysicalDevice(),
-          device_queue_->GetVulkanQueueIndex(), surface_,
-          &present_support) != VK_SUCCESS) {
+  VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
+      device_queue_->GetVulkanPhysicalDevice(),
+      device_queue_->GetVulkanQueueIndex(), surface_, &present_support);
+  if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceSupportKHR() failed: " << result;
     return false;
   }
@@ -154,12 +153,26 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       return false;
     }
   }
-  return CreateSwapChain(gfx::Size(), gfx::OVERLAY_TRANSFORM_INVALID);
+
+  VkSurfaceCapabilitiesKHR surface_caps;
+  result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+      device_queue_->GetVulkanPhysicalDevice(), surface_, &surface_caps);
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
+                << result;
+    return false;
+  }
+
+  image_count_ = std::max(surface_caps.minImageCount, 3u);
+
+  return true;
 }
 
 void VulkanSurface::Destroy() {
-  swap_chain_->Destroy();
-  swap_chain_ = nullptr;
+  if (swap_chain_) {
+    swap_chain_->Destroy();
+    swap_chain_ = nullptr;
+  }
   vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
   surface_ = VK_NULL_HANDLE;
 }
@@ -240,11 +253,10 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   auto swap_chain = std::make_unique<VulkanSwapChain>();
 
   // Create swap chain.
-  uint32_t min_image_count = std::max(surface_caps.minImageCount, 3u);
-  if (!swap_chain->Initialize(device_queue_, surface_, surface_format_,
-                              image_size_, min_image_count, vk_transform,
-                              enforce_protected_memory_,
-                              std::move(swap_chain_))) {
+  DCHECK_EQ(image_count_, std::max(surface_caps.minImageCount, 3u));
+  if (!swap_chain->Initialize(
+          device_queue_, surface_, surface_format_, image_size_, image_count_,
+          vk_transform, enforce_protected_memory_, std::move(swap_chain_))) {
     return false;
   }
 

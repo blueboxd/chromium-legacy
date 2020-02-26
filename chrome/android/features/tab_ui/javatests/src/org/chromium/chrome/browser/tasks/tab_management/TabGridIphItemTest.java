@@ -68,7 +68,7 @@ public class TabGridIphItemTest {
 
     @Before
     public void setUp() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
@@ -80,7 +80,7 @@ public class TabGridIphItemTest {
 
     @After
     public void tearDown() {
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test

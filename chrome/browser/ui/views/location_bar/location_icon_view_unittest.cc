@@ -60,7 +60,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
     gfx::FontList font_list;
 
-    CreateWidget();
+    widget_ = CreateTestWidget();
 
     location_bar_model_ = std::make_unique<TestLocationBarModel>();
     delegate_ =
@@ -74,9 +74,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
   }
 
   void TearDown() override {
-    if (widget_ && !widget_->IsClosed())
-      widget_->Close();
-
+    widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
@@ -102,17 +100,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
   std::unique_ptr<TestLocationBarModel> location_bar_model_;
   std::unique_ptr<TestLocationIconDelegate> delegate_;
   LocationIconView* view_;
-  views::Widget* widget_ = nullptr;
-
-  void CreateWidget() {
-    DCHECK(!widget_);
-
-    widget_ = new views::Widget;
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(std::move(params));
-  }
+  std::unique_ptr<views::Widget> widget_;
 };
 
 TEST_F(LocationIconViewTest, ShouldNotAnimateWhenSuppressingAnimations) {

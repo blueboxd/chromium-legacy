@@ -845,6 +845,10 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
     EXPECT_EQ(*next_ssl_data->expected_network_isolation_key,
               ssl_config.network_isolation_key);
   }
+  if (next_ssl_data->expected_disable_legacy_crypto) {
+    EXPECT_EQ(*next_ssl_data->expected_disable_legacy_crypto,
+              ssl_config.disable_legacy_crypto);
+  }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }

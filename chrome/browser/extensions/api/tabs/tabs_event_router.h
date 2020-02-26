@@ -95,8 +95,7 @@ class TabsEventRouter : public TabStripModelObserver,
                              bool was_active);
   void DispatchActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
-                                int index,
-                                int reason);
+                                int index);
   void DispatchTabSelectionChanged(TabStripModel* tab_strip_model,
                                    const ui::ListSelectionModel& old_model);
   void DispatchTabMoved(content::WebContents* contents,

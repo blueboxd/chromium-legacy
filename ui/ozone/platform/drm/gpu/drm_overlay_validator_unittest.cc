@@ -67,14 +67,15 @@ class DrmOverlayValidatorTest : public testing::Test {
   scoped_refptr<ui::DrmFramebuffer> CreateBuffer() {
     auto gbm_buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, primary_rect_.size(), GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, gbm_buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, gbm_buffer.get(),
+                                              primary_rect_.size());
   }
 
   scoped_refptr<ui::DrmFramebuffer> CreateOverlayBuffer(uint32_t format,
                                                         const gfx::Size& size) {
     auto gbm_buffer =
         drm_->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, gbm_buffer.get());
+    return ui::DrmFramebuffer::AddFramebuffer(drm_, gbm_buffer.get(), size);
   }
 
  protected:

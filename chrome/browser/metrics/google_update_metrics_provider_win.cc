@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "chrome/install_static/install_details.h"
@@ -60,9 +61,8 @@ void GoogleUpdateMetricsProviderWin::AsyncInit(
 
   // Schedules a task on a blocking pool thread to gather Google Update
   // statistics (requires Registry reads).
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking),
       base::BindOnce(&GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,

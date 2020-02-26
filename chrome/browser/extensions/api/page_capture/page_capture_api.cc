@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -212,8 +213,8 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO(bool success) {
     // once it is no longer used.
     mhtml_file_ = ShareableFileReference::GetOrCreate(
         mhtml_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(),  // Requires IO.
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {// Requires IO.
              base::MayBlock(),
 
              // TaskPriority: Inherit.

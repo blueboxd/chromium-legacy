@@ -807,6 +807,12 @@ int SSLServerContextImpl::SocketImpl::Init() {
                                     preferences.size());
   }
 
+  if (context_->ssl_server_config_.signature_algorithm_for_testing
+          .has_value()) {
+    uint16_t id = *context_->ssl_server_config_.signature_algorithm_for_testing;
+    CHECK(SSL_set_signing_algorithm_prefs(ssl_.get(), &id, 1));
+  }
+
   transport_adapter_.reset(new SocketBIOAdapter(
       transport_socket_.get(), kBufferSize, kBufferSize, this));
   BIO* transport_bio = transport_adapter_->bio();
@@ -951,26 +957,34 @@ void SSLServerContextImpl::Init() {
   SSL_CTX_set_mode(ssl_ctx_.get(), mode.set_mask);
   SSL_CTX_clear_mode(ssl_ctx_.get(), mode.clear_mask);
 
-  // See SSLServerConfig::disabled_cipher_suites for description of the suites
-  // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
-  // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
-  // as the handshake hash.
-  std::string command("DEFAULT:!AESGCM+AES256:!aPSK");
+  if (ssl_server_config_.cipher_suite_for_testing.has_value()) {
+    const SSL_CIPHER* cipher =
+        SSL_get_cipher_by_value(*ssl_server_config_.cipher_suite_for_testing);
+    CHECK(cipher);
+    CHECK(SSL_CTX_set_strict_cipher_list(ssl_ctx_.get(),
+                                         SSL_CIPHER_get_name(cipher)));
+  } else {
+    // See SSLServerConfig::disabled_cipher_suites for description of the suites
+    // disabled by default. Note that !SHA256 and !SHA384 only remove
+    // HMAC-SHA256 and HMAC-SHA384 cipher suites, not GCM cipher suites with
+    // SHA256 or SHA384 as the handshake hash.
+    std::string command("DEFAULT:!AESGCM+AES256:!aPSK");
 
-  // SSLPrivateKey only supports ECDHE-based ciphers because it lacks decrypt.
-  if (ssl_server_config_.require_ecdhe || (!pkey_ && private_key_))
-    command.append(":!kRSA");
+    // SSLPrivateKey only supports ECDHE-based ciphers because it lacks decrypt.
+    if (ssl_server_config_.require_ecdhe || (!pkey_ && private_key_))
+      command.append(":!kRSA");
 
-  // Remove any disabled ciphers.
-  for (uint16_t id : ssl_server_config_.disabled_cipher_suites) {
-    const SSL_CIPHER* cipher = SSL_get_cipher_by_value(id);
-    if (cipher) {
-      command.append(":!");
-      command.append(SSL_CIPHER_get_name(cipher));
+    // Remove any disabled ciphers.
+    for (uint16_t id : ssl_server_config_.disabled_cipher_suites) {
+      const SSL_CIPHER* cipher = SSL_get_cipher_by_value(id);
+      if (cipher) {
+        command.append(":!");
+        command.append(SSL_CIPHER_get_name(cipher));
+      }
     }
-  }
 
-  CHECK(SSL_CTX_set_strict_cipher_list(ssl_ctx_.get(), command.c_str()));
+    CHECK(SSL_CTX_set_strict_cipher_list(ssl_ctx_.get(), command.c_str()));
+  }
 
   if (ssl_server_config_.client_cert_type !=
           SSLServerConfig::ClientCertType::NO_CLIENT_CERT &&

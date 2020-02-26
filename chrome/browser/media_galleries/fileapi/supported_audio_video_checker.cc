@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/services/media_gallery_util/public/cpp/safe_audio_video_checker.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -77,9 +78,8 @@ void SupportedAudioVideoChecker::StartPreWriteValidation(
   DCHECK(callback_.is_null());
   callback_ = std::move(result_callback);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&OpenBlocking, path_),
       base::BindOnce(&SupportedAudioVideoChecker::OnFileOpen,
                      weak_factory_.GetWeakPtr()));

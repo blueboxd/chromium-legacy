@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"
 #include "chrome/browser/offline_pages/android/cct_request_observer.h"
@@ -95,8 +96,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
       context, policy.get(), model, std::move(load_termination_listener)));
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   Profile* profile = Profile::FromBrowserContext(context);
   base::FilePath queue_store_path =
       profile->GetPath().Append(chrome::kOfflinePageRequestQueueDirname);

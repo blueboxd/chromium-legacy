@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
@@ -41,8 +42,8 @@ namespace disk {
 void GetDiskInfo(OnceDiskInfoCallback callback,
                  Profile* profile,
                  std::string vm_name) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(&OnAmountOfFreeDiskSpace, std::move(callback), profile,

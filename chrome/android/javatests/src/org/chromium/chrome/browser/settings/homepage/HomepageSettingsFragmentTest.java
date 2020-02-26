@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.TextMessagePreference;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -180,9 +181,9 @@ public class HomepageSettingsFragmentTest {
         mHomepageTestRule.useCustomizedHomepageForTest(TEST_URL_BAR);
         mHomepageTestRule.useChromeNTPForTest();
 
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
         Assert.assertTrue("BottomToolbar should be enabled after setting up feature flag.",
-                CachedFeatureFlags.isBottomToolbarEnabled());
+                BottomToolbarConfiguration.isBottomToolbarEnabled());
 
         launchSettingsActivity();
 
@@ -198,7 +199,7 @@ public class HomepageSettingsFragmentTest {
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_BAR,
                 mCustomUriRadioButton.getPrimaryText().toString());
 
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, false);
     }
 
     @Test
@@ -313,9 +314,9 @@ public class HomepageSettingsFragmentTest {
         HomepagePolicyManager.setInstanceForTests(mMockPolicyManager);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, true);
 
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, true);
         Assert.assertTrue("BottomToolbar should be enabled after setting up feature flag.",
-                CachedFeatureFlags.isBottomToolbarEnabled());
+                BottomToolbarConfiguration.isBottomToolbarEnabled());
 
         launchSettingsActivity();
 
@@ -340,7 +341,7 @@ public class HomepageSettingsFragmentTest {
         // Reset policy
         HomepagePolicyManager.setInstanceForTests(origInstance);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.HOMEPAGE_LOCATION_POLICY, null);
-        CachedFeatureFlags.setIsBottomToolbarEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.CHROME_DUET, null);
     }
 
     @Test

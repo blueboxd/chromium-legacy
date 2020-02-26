@@ -20,6 +20,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #if defined(OS_MACOSX)
@@ -233,18 +234,18 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   base::Process process = base::Process::Open(pid);
 #endif
   // This task joins a process, hence .WithBaseSyncPrimitives().
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-                  base::TaskPriority::BEST_EFFORT,
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&WaitForElevatedInstallToComplete,
-                                base::Passed(&process)));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&WaitForElevatedInstallToComplete,
+                     base::Passed(&process)));
 }
 
 void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&DoElevatedInstallRecoveryComponent, installer_path));
 }
@@ -377,10 +378,9 @@ bool RecoveryComponentInstaller::RunInstallCommand(
 
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
   // This task joins a process, hence .WithBaseSyncPrimitives().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::BEST_EFFORT,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WaitForInstallToComplete, base::Passed(&process),
                      installer_folder, prefs_));

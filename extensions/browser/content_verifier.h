@@ -64,8 +64,9 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
  public:
   class TestObserver {
    public:
-    virtual void OnFetchComplete(const std::string& extension_id,
-                                 bool success) = 0;
+    virtual void OnFetchComplete(
+        const scoped_refptr<const ContentHash>& content_hash,
+        bool did_hash_mismatch) = 0;
   };
 
   static void SetObserverForTests(TestObserver* observer);
@@ -134,8 +135,12 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   static base::FilePath NormalizeRelativePathForTesting(
       const base::FilePath& path);
 
+  bool ShouldVerifyAnyPathsForTesting(
+      const std::string& extension_id,
+      const base::FilePath& extension_root,
+      const std::set<base::FilePath>& relative_unix_paths);
+
  private:
-  friend class ContentVerifierTest;
   friend class base::RefCountedThreadSafe<ContentVerifier>;
   friend class HashHelper;
   ~ContentVerifier() override;

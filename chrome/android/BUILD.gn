@@ -2317,6 +2317,7 @@ group("chrome_public_wpt") {
   data_deps = [
     ":chrome_public_apk",
     "//build/android:test_runner_py",
+    "//chrome/test/chromedriver:chromedriver($host_toolchain)",
   ]
   set_sources_assignment_filter([ "#*" ])
   sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")

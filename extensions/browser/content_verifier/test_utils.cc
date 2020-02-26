@@ -248,16 +248,20 @@ void VerifierObserver::EnsureFetchCompleted(const ExtensionId& extension_id) {
   loop_runner_ = nullptr;
 }
 
-void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
-                                       bool success) {
+void VerifierObserver::OnFetchComplete(
+    const scoped_refptr<const ContentHash>& content_hash,
+    bool did_hash_mismatch) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    base::PostTask(
-        FROM_HERE, {creation_thread_},
-        base::BindOnce(&VerifierObserver::OnFetchComplete,
-                       base::Unretained(this), extension_id, success));
+    base::PostTask(FROM_HERE, {creation_thread_},
+                   base::BindOnce(&VerifierObserver::OnFetchComplete,
+                                  base::Unretained(this), content_hash,
+                                  did_hash_mismatch));
     return;
   }
+  const ExtensionId extension_id = content_hash->extension_id();
   completed_fetches_.insert(extension_id);
+  content_hash_ = content_hash;
+  did_hash_mismatch_ = did_hash_mismatch;
   if (extension_id == id_to_wait_for_) {
     DCHECK(loop_runner_);
     loop_runner_->Quit();

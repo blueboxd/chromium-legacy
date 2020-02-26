@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
@@ -91,7 +90,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
                 COMPONENT_NAME);
 
         boolean isTabGroupsUiImprovementsEnabled =
-                CachedFeatureFlags.isTabGroupsAndroidUiImprovementsEnabled();
+                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
         // TODO(yuezhanggg): TabGridDialog should be the default mode.
         if (isTabGroupsUiImprovementsEnabled) {
             // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher

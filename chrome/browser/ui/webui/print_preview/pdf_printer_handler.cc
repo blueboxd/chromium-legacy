@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -199,10 +200,8 @@ void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
   if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes)) {
     // Read the Mac custom paper sizes on a separate thread.
     // USER_VISIBLE because the result is displayed in the print preview dialog.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetMacCustomPaperSizes),
         base::BindOnce(&ConstructCapabilitiesAndCompleteCallback,
                        destination_id, std::move(callback)));
@@ -360,9 +359,8 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
   if (!prompt_user) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&base::GetUniquePath, path.Append(default_filename)),
         base::BindOnce(&PdfPrinterHandler::OnGotUniqueFileName,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -379,18 +377,16 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   // Get default download directory. This will be used as a fallback if the
   // save directory does not exist.
   base::FilePath default_path = download_prefs->DownloadPath();
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SelectSaveDirectory, path, default_path),
       base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
                      weak_ptr_factory_.GetWeakPtr(), default_filename));
 }
 
 void PdfPrinterHandler::PostPrintToPdfTask() {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&PrintToPdfCallback, print_data_, print_to_pdf_path_,
                      std::move(pdf_file_saved_closure_)));
   print_to_pdf_path_.clear();

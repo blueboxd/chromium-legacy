@@ -31,7 +31,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -77,7 +78,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -124,7 +126,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -171,7 +174,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -218,7 +222,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -265,7 +270,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -312,7 +318,8 @@
               "device_os": "KTU84P",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -363,7 +370,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -409,7 +417,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -456,7 +465,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -503,7 +513,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -550,7 +561,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -597,7 +609,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -644,7 +657,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -691,7 +705,8 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android"
+              "os": "Android",
+              "pool": "chromium.tests.template"
             }
           ],
           "expiration": 10800,
@@ -724,7 +739,8 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -741,7 +757,8 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ],
           "shards": 2
@@ -759,7 +776,8 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -776,7 +794,8 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -793,7 +812,8 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -810,7 +830,8 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -827,7 +848,8 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.template"
             }
           ]
         },
@@ -844,7 +866,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -855,7 +882,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -866,7 +898,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -877,7 +914,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -888,7 +930,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -899,7 +946,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"
@@ -914,7 +966,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
@@ -925,7 +982,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -936,7 +998,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "content_unittests",
         "test_target": "//content/test:content_unittests"
@@ -947,7 +1014,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -958,7 +1030,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "net_unittests",
         "test_target": "//net:net_unittests"
@@ -969,7 +1046,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "pool": "chromium.tests.template"
+            }
+          ]
         },
         "test": "unit_tests",
         "test_target": "//chrome/test:unit_tests"

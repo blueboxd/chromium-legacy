@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -85,9 +86,8 @@ constexpr int AlsReaderImpl::kMaxInitialAttempts;
 constexpr base::TimeDelta AlsReaderImpl::kAlsPollInterval;
 
 AlsReaderImpl::AlsReaderImpl()
-    : blocking_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::MayBlock(),
+    : blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 AlsReaderImpl::~AlsReaderImpl() {

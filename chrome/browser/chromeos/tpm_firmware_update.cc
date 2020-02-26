@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -118,9 +119,8 @@ class AvailabilityChecker {
   // Don't call this directly, but use Start().
   explicit AvailabilityChecker(ResponseCallback callback)
       : callback_(std::move(callback)),
-        background_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::USER_VISIBLE})),
+        background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
         watcher_(new base::FilePathWatcher()) {
     auto watch_callback = base::BindRepeating(
         &AvailabilityChecker::OnFilePathChanged,

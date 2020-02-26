@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
 
@@ -69,9 +70,9 @@ void IntersectCertificates(
   // This is triggered by a call to the
   // chrome.platformKeys.selectClientCertificates extensions API. Completion
   // does not affect browser responsiveness, hence the BEST_EFFORT priority.
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&IntersectOnWorkerThread, certs1, certs2, intersection_ptr),
       base::Bind(callback, base::Passed(&intersection)));

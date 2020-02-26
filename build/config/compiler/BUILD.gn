@@ -1525,6 +1525,9 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
           "-Wno-range-loop-analysis",
+
+          # TODO(https://crbug.com/1050281): Clean up, enable.
+          "-Wno-non-c-typedef-for-linkage",
         ]
 
         if (is_android) {
@@ -1534,24 +1537,15 @@ config("default_warnings") {
           ]
         }
 
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1050281): Clean up, enable.
-            "-Wno-non-c-typedef-for-linkage",
-          ]
-
-          cflags_c += [
-            # TODO(https://crbug.com/1054220): This used to be a C++-only
-            # warning, but it was extended to .C files as well, where it
-            # caught a cast of pointer to long in third-party that isn't
-            # valid on Windows, which is LLP64.
-            "-Wno-microsoft-cast",
-          ]
-        }
-
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
+
+          # TODO(https://crbug.com/1054220): This used to be a C++-only
+          # warning, but it was extended to .C files as well, where it
+          # caught a cast of pointer to long in third-party that isn't
+          # valid on Windows, which is LLP64.
+          "-Wno-microsoft-cast",
         ]
       }
     }

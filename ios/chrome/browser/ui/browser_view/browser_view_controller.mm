@@ -2847,6 +2847,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // be obstructed by the toolbars when the snapshot is displayed in the tab
     // grid.  In that case, the NTP should be inset by the maximum viewport
     /// insets.
+    // The NTP always sits above the bottom toolbar (when there is one) so the
+    // insets should not take into account the bottom toolbar.
+    maxViewportInsets.bottom = 0;
     return [self canShowTabStrip] ? UIEdgeInsetsZero : maxViewportInsets;
   } else {
     // If the NTP is inactive, the WebState's view is used as the base view for

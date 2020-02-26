@@ -2097,7 +2097,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
   std::vector<int32_t> node_id_list;
-  if (ui::IsTableLike(_owner->GetRole()))
+  if (_owner->GetRole() == ax::mojom::Role::kTree)
+    [self getTreeItemDescendantNodeIds:&node_id_list];
+  else if (ui::IsTableLike(_owner->GetRole()))
     node_id_list = _owner->node()->GetTableRowNodeIds();
   // Rows attribute for a column is the list of all the elements in that column
   // at each row.
@@ -2520,6 +2522,19 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
 
   return manager->GetWindow();
+}
+
+- (void)getTreeItemDescendantNodeIds:(std::vector<int32_t>*)tree_item_ids {
+  for (auto it = _owner->PlatformChildrenBegin();
+       it != _owner->PlatformChildrenEnd(); ++it) {
+    const BrowserAccessibilityCocoa* child =
+        ToBrowserAccessibilityCocoa(it.get());
+
+    if ([child internalRole] == ax::mojom::Role::kTreeItem) {
+      tree_item_ids->push_back([child hash]);
+    }
+    [child getTreeItemDescendantNodeIds:tree_item_ids];
+  }
 }
 
 - (NSString*)methodNameForAttribute:(NSString*)attribute {
@@ -3336,18 +3351,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       NSAccessibilityMaxValueAttribute, NSAccessibilityMinValueAttribute,
       NSAccessibilityValueDescriptionAttribute
     ]];
-  } else if ([subrole isEqualToString:NSAccessibilityOutlineRowSubrole]) {
-    [ret addObjectsFromArray:@[
-      NSAccessibilityDisclosingAttribute,
-      NSAccessibilityDisclosedByRowAttribute,
-      NSAccessibilityDisclosureLevelAttribute,
-      NSAccessibilityDisclosedRowsAttribute
-    ]];
   } else if ([role isEqualToString:NSAccessibilityRowRole]) {
     BrowserAccessibility* container = _owner->PlatformGetParent();
     if (container && container->GetRole() == ax::mojom::Role::kRowGroup)
       container = container->PlatformGetParent();
-    if (container && container->GetRole() == ax::mojom::Role::kTreeGrid) {
+    if ([subrole isEqualToString:NSAccessibilityOutlineRowSubrole] ||
+        (container && container->GetRole() == ax::mojom::Role::kTreeGrid)) {
       [ret addObjectsFromArray:@[
         NSAccessibilityDisclosingAttribute,
         NSAccessibilityDisclosedByRowAttribute,
@@ -3361,6 +3370,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[
       NSAccessibilitySelectedChildrenAttribute,
       NSAccessibilityVisibleChildrenAttribute
+    ]];
+  } else if ([role isEqualToString:NSAccessibilityOutlineRole]) {
+    [ret addObjectsFromArray:@[
+      NSAccessibilitySelectedRowsAttribute,
+      NSAccessibilityRowsAttribute,
+      NSAccessibilityColumnsAttribute,
+      NSAccessibilityOrientationAttribute
     ]];
   }
 

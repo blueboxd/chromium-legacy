@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -336,10 +337,9 @@ void EasyUnlockTpmKeyManager::CreateKeyInSystemSlot(
   get_tpm_slot_weak_ptr_factory_.InvalidateWeakPtrs();
 
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CreateTpmKeyPairOnWorkerThread,
                      base::Passed(&system_slot), public_key,
                      base::ThreadTaskRunnerHandle::Get(),
@@ -355,10 +355,9 @@ void EasyUnlockTpmKeyManager::SignDataWithSystemSlot(
   CHECK(system_slot);
 
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SignDataOnWorkerThread, base::Passed(&system_slot),
                      public_key, data, base::ThreadTaskRunnerHandle::Get(),
                      base::Bind(&EasyUnlockTpmKeyManager::OnDataSigned,

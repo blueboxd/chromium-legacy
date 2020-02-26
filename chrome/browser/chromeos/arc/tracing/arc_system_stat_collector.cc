@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
@@ -293,8 +294,8 @@ void ArcSystemStatCollector::Start(const base::TimeDelta& max_interval) {
   // Maximum 10 warning per session.
   missed_update_warning_left_ = 10;
 
-  background_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -397,9 +398,8 @@ void ArcSystemStatCollector::ScheduleSystemStatUpdate() {
 void ArcSystemStatCollector::FreeSystemReadersContext() {
   if (!context_)
     return;
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SystemReadersContext::FreeOnBackgroundThread,
                      std::move(context_)));
 }

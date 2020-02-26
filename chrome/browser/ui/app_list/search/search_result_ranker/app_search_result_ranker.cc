@@ -10,6 +10,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,8 +117,8 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
   if (is_ephemeral_user)
     return;
 
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Loads the predictor from disk asynchronously.

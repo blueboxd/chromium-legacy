@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
-#include "ui/views/test/views_test_base.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 
 namespace {
 
@@ -18,7 +18,7 @@ const char kTestNotificationId3[] = "testid3";
 
 }  // anonymous namespace
 
-class MediaNotificationListViewTest : public views::ViewsTestBase {
+class MediaNotificationListViewTest : public ChromeViewsTestBase {
  public:
   MediaNotificationListViewTest() = default;
   ~MediaNotificationListViewTest() override = default;
@@ -27,20 +27,16 @@ class MediaNotificationListViewTest : public views::ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(400, 400);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(std::move(params));
+    widget_ = CreateTestWidget();
 
     list_view_ = new MediaNotificationListView();
-    widget_.SetContentsView(list_view_);
+    widget_->SetContentsView(list_view_);
 
-    widget_.Show();
+    widget_->Show();
   }
 
   void TearDown() override {
-    widget_.Close();
+    widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -56,7 +52,7 @@ class MediaNotificationListViewTest : public views::ViewsTestBase {
   MediaNotificationListView* list_view() { return list_view_; }
 
  private:
-  views::Widget widget_;
+  std::unique_ptr<views::Widget> widget_;
   MediaNotificationListView* list_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationListViewTest);

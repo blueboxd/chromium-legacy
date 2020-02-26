@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -365,9 +366,9 @@ void ReadLastShutdownInfo() {
 
   base::UmaHistogramEnumeration("Shutdown.ShutdownType", type);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }

@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -266,9 +267,8 @@ DeepScanningDialogDelegate::FileSourceRequest::FileSourceRequest(
 
 void DeepScanningDialogDelegate::FileSourceRequest::GetRequestData(
     DataCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&GetFileContentsSHA256Blocking, path_),
       base::BindOnce(&FileSourceRequest::OnGotFileContents,
                      weakptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -544,9 +544,8 @@ void DeepScanningDialogDelegate::FileRequestCallback(
                         base::TimeTicks::Now() - upload_start_time_,
                         file_info_[index].size, result, response);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&GetFileMimeType, path),
       base::BindOnce(&DeepScanningDialogDelegate::CompleteFileRequestCallback,
                      weak_ptr_factory_.GetWeakPtr(), index, path, result,

@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -1003,9 +1004,8 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
   // VerifyPpdContents() in order to determine whether the file appears to be a
   // PPD file. The task's priority is USER_BLOCKING because the this task
   // updates the UI as a result of a direct user action.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFileToStringWithMaxSize, path, kPpdMaxLineLength),
       base::BindOnce(&CupsPrintersHandler::VerifyPpdContents,
                      weak_factory_.GetWeakPtr(), path));

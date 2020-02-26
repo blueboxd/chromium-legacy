@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -47,9 +48,8 @@ void TestDataSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
   const std::string path = content::URLDataSource::URLToRequestPath(url);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&TestDataSource::ReadFile, base::Unretained(this), path,
                      std::move(callback)));
 }

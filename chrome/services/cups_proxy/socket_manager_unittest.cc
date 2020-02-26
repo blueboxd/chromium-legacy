@@ -9,6 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -57,7 +58,7 @@ class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
   // Note: Can't simulate actual IO thread in unit_tests, so we serve an
   // arbitrary SingleThreadTaskRunner.
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override {
-    return base::CreateSingleThreadTaskRunner({base::ThreadPool()});
+    return base::ThreadPool::CreateSingleThreadTaskRunner({});
   }
 };
 

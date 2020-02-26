@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
@@ -446,9 +447,8 @@ void DemoSession::InstallDemoResources() {
   DCHECK(profile);
   const base::FilePath downloads =
       file_manager::util::GetDownloadsFolderForProfile(profile);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&InstallDemoMedia, demo_resources_->path(), downloads));
 }
 

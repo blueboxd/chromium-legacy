@@ -58,6 +58,7 @@ class NET_EXPORT SSLClientSessionCache {
     base::Optional<IPAddress> dest_ip_addr;
     NetworkIsolationKey network_isolation_key;
     PrivacyMode privacy_mode = PRIVACY_MODE_DISABLED;
+    bool disable_legacy_crypto = false;
   };
 
   explicit SSLClientSessionCache(const Config& config);

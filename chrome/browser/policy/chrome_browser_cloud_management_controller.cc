@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -154,9 +155,8 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
           dm_token, client_id, policy_dir, cloud_policy_has_priority,
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
-               base::TaskPriority::BEST_EFFORT,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                // Block shutdown to make sure the policy cache update is always
                // finished.
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
@@ -172,10 +172,10 @@ void ChromeBrowserCloudManagementController::Init(
   if (!IsEnabled())
     return;
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::ThreadPool()},
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &ChromeBrowserCloudManagementController::CreateReportSchedulerAsync,
           base::Unretained(this), base::ThreadTaskRunnerHandle::Get()));

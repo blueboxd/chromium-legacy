@@ -92,3 +92,7 @@ static_library("vector_icons") {
     "//ui/gfx",
   ]
 }
+
+cast_source_set("back_gesture_router") {
+  sources = [ "back_gesture_router.h" ]
+}

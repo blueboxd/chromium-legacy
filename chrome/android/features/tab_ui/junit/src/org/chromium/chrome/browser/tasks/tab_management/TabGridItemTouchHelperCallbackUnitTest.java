@@ -170,7 +170,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
         doReturn(mTab3).when(mTabGroupModelFilter).getTabAt(POSITION3);
         doReturn(mTab4).when(mTabGroupModelFilter).getTabAt(POSITION4);
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         setupRecyclerView();
 
         mModel = new TabListModel();
@@ -213,7 +213,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
-        CachedFeatureFlags.setTabGroupsAndroidEnabledForTesting(null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test

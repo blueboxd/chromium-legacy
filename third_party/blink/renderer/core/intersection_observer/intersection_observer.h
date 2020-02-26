@@ -129,6 +129,7 @@ class CORE_EXPORT IntersectionObserver final
   // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
 
+  bool HasObservations() const { return !observations_.IsEmpty(); }
   bool AlwaysReportRootBounds() const { return always_report_root_bounds_; }
   bool NeedsOcclusionTracking() const {
     return trackVisibility() && !observations_.IsEmpty();

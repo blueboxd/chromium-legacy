@@ -303,12 +303,14 @@ void RenderViewContextMenuViews::Show() {
   RunMenuAt(top_level_widget, screen_point, params().source_type);
 
   for (auto& observer : observers_) {
-    observer.OnContextMenuShown(
-        params_, static_cast<ToolkitDelegateViews*>(toolkit_delegate())
-                     ->menu_view()
-                     ->GetSubmenu()
-                     ->host()
-                     ->GetWindowBoundsInScreen());
+    auto* submenu_host = static_cast<ToolkitDelegateViews*>(toolkit_delegate())
+                             ->menu_view()
+                             ->GetSubmenu()
+                             ->host();
+    if (submenu_host) {
+      observer.OnContextMenuShown(params_,
+                                  submenu_host->GetWindowBoundsInScreen());
+    }
   }
 }
 

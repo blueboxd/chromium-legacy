@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
@@ -171,8 +172,8 @@ void FileTasksNotifier::NotifyObservers(
 void FileTasksNotifier::GetFileAvailability(PendingFileAvailabilityTask task) {
   if (task.url.type() != storage::kFileSystemTypeDriveFs) {
     base::FilePath path = std::move(task.url.path());
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&base::PathExists, std::move(path)),
         base::BindOnce(&FileTasksNotifier::ForwardQueryResult,
                        std::move(task)));

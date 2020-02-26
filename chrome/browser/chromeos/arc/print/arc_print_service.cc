@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
@@ -311,8 +312,8 @@ class PrinterDiscoverySessionHostImpl
   void FetchCapabilities(const chromeos::Printer& printer) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id(),
                        g_browser_process->GetApplicationLocale()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
@@ -394,8 +395,8 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
     // We read printing data from pipe on working thread in parallel with
     // initializing PrinterQuery on IO thread. When both tasks are complete we
     // start printing.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ReadFileOnBlockingTaskRunner, std::move(file),
                        data_size),
         base::BindOnce(&PrintJobHostImpl::OnFileRead,

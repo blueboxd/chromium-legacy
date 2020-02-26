@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1092,9 +1093,9 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
     const base::FilePath& path,
     const GetFileMimeTypeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&GetMimeType, path), base::BindOnce(callback));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetMimeType, path),
+      base::BindOnce(callback));
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

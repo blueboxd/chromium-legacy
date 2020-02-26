@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -30,12 +32,14 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
       base::OnceCallback<void(mojo::ScopedSharedBufferHandle buffer,
                               size_t capacity)>;
 
-  // Creates a new I420 frame in shared memory with provided parameters
+  // Creates a new I420 or NV12 frame in shared memory with provided parameters
   // (coded_size() == natural_size() == visible_rect()), or returns nullptr.
   // Buffers for the frame are allocated but not initialized. The caller must
   // not make assumptions about the actual underlying sizes, but check the
-  // returned VideoFrame instead.
-  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultI420ForTesting(
+  // returned VideoFrame instead. |format| must be either PIXEL_FORMAT_I420 or
+  // PIXEL_FORMAT_NV12.
+  static scoped_refptr<MojoSharedBufferVideoFrame> CreateDefaultForTesting(
+      const VideoPixelFormat format,
       const gfx::Size& dimensions,
       base::TimeDelta timestamp);
 
@@ -48,7 +52,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Creates a MojoSharedBufferVideoFrame that uses the memory in |handle|.
   // This will take ownership of |handle|, so the caller can no longer use it.
   // |mojo_shared_buffer_done_cb|, if not null, is called on destruction,
-  // and is passed ownership of |handle|. |handle| must be writable.
+  // and is passed ownership of |handle|. |handle| must be writable. |offsets|
+  // and |strides| should be in plane order.
   static scoped_refptr<MojoSharedBufferVideoFrame> Create(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
@@ -56,12 +61,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
       const gfx::Size& natural_size,
       mojo::ScopedSharedBufferHandle handle,
       size_t mapped_size,
-      size_t y_offset,
-      size_t u_offset,
-      size_t v_offset,
-      int32_t y_stride,
-      int32_t u_stride,
-      int32_t v_stride,
+      std::vector<uint32_t> offsets,
+      std::vector<int32_t> strides,
       base::TimeDelta timestamp);
 
   // Returns the offsets relative to the start of |shared_buffer| for the
@@ -93,7 +94,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
 
   // Initializes the MojoSharedBufferVideoFrame by creating a mapping onto
   // the shared memory, and then setting offsets as specified.
-  bool Init(size_t y_offset, size_t u_offset, size_t v_offset);
+  bool Init(std::vector<uint32_t> offsets);
 
   uint8_t* shared_buffer_data() {
     return reinterpret_cast<uint8_t*>(shared_buffer_mapping_.get());

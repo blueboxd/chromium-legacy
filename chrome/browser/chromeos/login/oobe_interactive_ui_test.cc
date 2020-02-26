@@ -737,16 +737,23 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// crbug.com/1054935: SimpleEndToEnd is flaky on ChromeOS.
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
-  SimpleEndToEnd();
-}
+// Disabled on *San bots since they time out.
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
+#define MAYBE_SimpleEndToEnd DISABLED_SimpleEndToEnd
 #else
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
+#define MAYBE_SimpleEndToEnd SimpleEndToEnd
+#endif
+
+// Note that this probably the largest test that is run on ChromeOS, and it
+// might be running close to time limits especially on instrumented builds.
+// As such it might sometimes cause flakiness.
+// Please do not disable it for whole ChromeOS, only for specific instrumented
+// bots. Another alternative is to increase respective multiplier in
+// base/test/test_timeouts.h.
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, MAYBE_SimpleEndToEnd) {
   SimpleEndToEnd();
 }
-#endif
 
 INSTANTIATE_TEST_SUITE_P(
     OobeInteractiveUITestImpl,
@@ -803,16 +810,21 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// crbug.com/997987. Disabled on MSAN since they time out. crbug.com/1004327
-// crbug.com/1054935: EndToEnd is flaky on ChromeOS.
+// crbug.com/997987. Disabled on MSAN since they time out.
 // crbug.com/1055853: EndToEnd is flaky on Linux Chromium OS ASan LSan
-#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS) || \
-    defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
 #endif
 
+// Note that this probably the largest test that is run on ChromeOS, and it
+// might be running close to time limits especially on instrumented builds.
+// As such it might sometimes cause flakiness.
+// Please do not disable it for whole ChromeOS, only for specific instrumented
+// bots. Another alternative is to increase respective multiplier in
+// base/test/test_timeouts.h.
 IN_PROC_BROWSER_TEST_P(OobeZeroTouchInteractiveUITest, MAYBE_EndToEnd) {
   ZeroTouchEndToEnd();
 }

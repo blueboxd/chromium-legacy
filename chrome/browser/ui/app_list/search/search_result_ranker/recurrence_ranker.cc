@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
@@ -165,8 +166,8 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
           TimeDelta::FromSeconds(config.min_seconds_between_saves())),
       time_of_last_save_(Time::Now()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   targets_ = std::make_unique<FrecencyStore>(config.target_limit(),

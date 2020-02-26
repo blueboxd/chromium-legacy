@@ -32,6 +32,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
@@ -113,6 +114,7 @@ int AwBrowserMainParts::PreCreateThreads() {
         std::make_unique<AwBrowserTerminator>());
   }
 
+  crash_reporter::InitializeCrashKeys();
   variations::InitCrashKeys();
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;

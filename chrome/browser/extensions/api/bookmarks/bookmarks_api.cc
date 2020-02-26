@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
@@ -793,9 +794,9 @@ bool BookmarksExportFunction::RunOnReady() {
   // extensions use user gesture for export, so use USER_VISIBLE priority.
   // GetDefaultFilepathForBookmarkExport() might have to touch filesystem
   // (stat or access, for example), so this requires IO.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetDefaultFilepathForBookmarkExport),
       base::BindOnce(&BookmarksIOFunction::ShowSelectFileDialog, this,

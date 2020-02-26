@@ -4,16 +4,37 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
+
 <dom-module id="gesture-navigation">
   <template>
     <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="gesture_navigation.css">
 
-    <oobe-dialog id="gestureIntro" has-buttons
+    <oobe-dialog id="gestureIntro" has-buttons class="step hidden animated"
         hidden="[[!isEqual_(currentPage_, 'gestureIntro')]]"
         title-key="gestureNavigationIntroTitle"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationIntroTitle')]]">
-      <div slot="footer">
-        <!-- content goes here -->
+      <img slot="oobe-icon" src="images/gestures.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical">
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/home.svg">
+          <div class="gesture-list-item-text">
+            [[i18nDynamic(locale, 'gestureNavigationIntroGoHomeItem')]]
+          </div>
+        </div>
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/overview.svg">
+          <div class="gesture-list-item-text">
+            [[i18nDynamic(locale, 'gestureNavigationIntroSwitchAppItem')]]
+          </div>
+        </div>
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/back.svg">
+          <div class="gesture-list-item-text">
+              [[i18nDynamic(locale, 'gestureNavigationIntroGoBackItem')]]
+          </div>
+        </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onNext_"
@@ -28,8 +49,13 @@
         title-key="gestureNavigationHomeTitle"
         subtitle-key="gestureNavigationHomeDescription"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationHomeTitle')]]">
-      <div slot="footer">
-        <!-- content goes here -->
+      <img slot="oobe-icon" src="images/home.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_go_home.json"
+                     class="gesture-animation">
+          </cr-lottie>
+        </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-next-button on-tap="onNext_"
@@ -42,8 +68,13 @@
         title-key="gestureNavigationBackTitle"
         subtitle-key="gestureNavigationBackDescription"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
-      <div slot="footer">
-        <!-- content goes here -->
+      <img slot="oobe-icon" src="images/back.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_go_back.json"
+                      class="gesture-animation">
+          </cr-lottie>
+        </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-next-button on-tap="onNext_"
@@ -56,8 +87,13 @@
         title-key="gestureNavigationOverviewTitle"
         subtitle-key="gestureNavigationOverviewDescription"
         aria-label$="[[i18nDynamic(locale, 'gestureNavigationOverviewTitle')]]">
-      <div slot="footer">
-        <!-- content goes here -->
+      <img slot="oobe-icon" src="images/overview.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_hotseat_overview.json"
+                     class="gesture-animation">
+          </cr-lottie>
+        </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-next-button on-tap="onNext_"

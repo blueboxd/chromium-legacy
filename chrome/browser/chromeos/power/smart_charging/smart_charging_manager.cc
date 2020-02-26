@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
@@ -192,8 +193,8 @@ SmartChargingManager::SmartChargingManager(
   user_activity_observer_.Add(detector);
   power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
   session_manager_observer_.Add(session_manager);
-  blocking_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  blocking_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

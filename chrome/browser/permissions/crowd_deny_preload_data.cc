@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -47,8 +48,8 @@ DomainToReputationMap LoadAndParseAndIndexPreloadDataFromDisk(
 }  // namespace
 
 CrowdDenyPreloadData::CrowdDenyPreloadData() {
-  loading_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  loading_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
 CrowdDenyPreloadData::~CrowdDenyPreloadData() = default;

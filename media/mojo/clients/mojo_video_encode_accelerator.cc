@@ -128,8 +128,8 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                         bool force_keyframe) {
   DVLOG(2) << __func__ << " tstamp=" << frame->timestamp();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(VideoFrame::NumPlanes(frame->format()),
-            frame->layout().num_planes());
+  size_t num_planes = VideoFrame::NumPlanes(frame->format());
+  DCHECK_EQ(num_planes, frame->layout().num_planes());
   DCHECK(vea_.is_bound());
 
 #if defined(OS_LINUX)
@@ -152,7 +152,8 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
     return;
   }
 
-  if (frame->format() != PIXEL_FORMAT_I420 ||
+  if ((frame->format() != PIXEL_FORMAT_I420 &&
+       frame->format() != PIXEL_FORMAT_NV12) ||
       VideoFrame::STORAGE_SHMEM != frame->storage_type() ||
       !frame->shm_region()->IsValid()) {
     DLOG(ERROR) << "Unexpected video frame buffer";
@@ -186,19 +187,23 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   }
   memcpy(dst_mapping.get(), src_mapping.memory(), allocation_size);
 
-  const size_t y_offset = frame->shared_memory_offset();
-  const size_t u_offset = y_offset + frame->data(VideoFrame::kUPlane) -
-                          frame->data(VideoFrame::kYPlane);
-  const size_t v_offset = y_offset + frame->data(VideoFrame::kVPlane) -
-                          frame->data(VideoFrame::kYPlane);
+  std::vector<uint32_t> offsets(num_planes);
+  std::vector<int32_t> strides(num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    offsets[i] = frame->data(i) - frame->data(0);
+    strides[i] = frame->stride(i);
+  }
+
   // Temporary Mojo VideoFrame to allow for marshalling.
   scoped_refptr<MojoSharedBufferVideoFrame> mojo_frame =
       MojoSharedBufferVideoFrame::Create(
           frame->format(), frame->coded_size(), frame->visible_rect(),
           frame->natural_size(), std::move(dst_handle), allocation_size,
-          y_offset, u_offset, v_offset, frame->stride(VideoFrame::kYPlane),
-          frame->stride(VideoFrame::kUPlane),
-          frame->stride(VideoFrame::kVPlane), frame->timestamp());
+          std::move(offsets), std::move(strides), frame->timestamp());
+  if (!mojo_frame) {
+    DLOG(ERROR) << "Failed creating MojoSharedBufferVideoFrame";
+    return;
+  }
 
   // Encode() is synchronous: clients will assume full ownership of |frame| when
   // this gets destroyed and probably recycle its shared_memory_handle(): keep

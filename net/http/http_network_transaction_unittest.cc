@@ -8663,10 +8663,11 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2WithWebsockets) {
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 // Test that, if we have an NTLM proxy and the origin resets the connection, we
-// do no retry forever checking for TLS version interference. This is a
-// regression test for https://crbug.com/823387. The version interference probe
-// has since been removed, but retain the regression test so we can update it if
-// we add future TLS retries.
+// do no retry forever as a result of TLS retries. This is a regression test for
+// https://crbug.com/823387. The version interference probe has since been
+// removed, but we now have a legacy crypto fallback. (If that fallback is
+// removed, this test should be kept but with the expectations tweaked, in case
+// future fallbacks are added.)
 TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   // The NTLM test data expects the proxy to be named 'server'. The origin is
   // https://origin/.
@@ -8762,6 +8763,11 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&data_ssl);
 
+  StaticSocketDataProvider data2(data_reads, data_writes);
+  SSLSocketDataProvider data2_ssl(ASYNC, ERR_CONNECTION_RESET);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&data2_ssl);
+
   // Start the transaction. The proxy responds with an NTLM authentication
   // request.
   TestCompletionCallback callback;
@@ -8786,8 +8792,29 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge.has_value());
 
-  // Restart once more. The tunnel will be established and then the SSL
-  // handshake will reset.
+  // Restart once more. The tunnel will be established and the the SSL handshake
+  // will reset. The fallback will then kick in and restart the process. The
+  // proxy responds with another NTLM authentiation request, but we don't need
+  // to provide credentials as the cached ones work.
+  rv = callback.GetResult(
+      trans.RestartWithAuth(AuthCredentials(), callback.callback()));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  // The proxy responds with the NTLM challenge message.
+  rv = callback.GetResult(
+      trans.RestartWithAuth(AuthCredentials(), callback.callback()));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  // Send the NTLM authenticate message. The tunnel is established and the
+  // handshake resets again. We should not retry again.
   rv = callback.GetResult(
       trans.RestartWithAuth(AuthCredentials(), callback.callback()));
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
@@ -16226,30 +16253,17 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
 
   // [ssl_]data3 contains the data for the third SSL handshake. When a
   // connection to a server fails during an SSL handshake,
-  // HttpNetworkTransaction will attempt to fallback to TLSv1.2 if the previous
-  // connection was attempted with TLSv1.3. This is transparent to the caller
+  // HttpNetworkTransaction will attempt to fallback with legacy cryptography
+  // enabled on some errors. This is transparent to the caller
   // of the HttpNetworkTransaction. Because this test failure is due to
   // requiring a client certificate, this fallback handshake should also
   // fail.
   SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  ssl_data3.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_data3.expected_disable_legacy_crypto = false;
   ssl_data3.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
   StaticSocketDataProvider data3;
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
-
-  // [ssl_]data4 contains the data for the fourth SSL handshake. When a
-  // connection to a server fails during an SSL handshake,
-  // HttpNetworkTransaction will attempt to fallback to TLSv1 if the previous
-  // connection was attempted with TLSv1.1. This is transparent to the caller
-  // of the HttpNetworkTransaction. Because this test failure is due to
-  // requiring a client certificate, this fallback handshake should also
-  // fail.
-  SSLSocketDataProvider ssl_data4(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  ssl_data4.cert_request_info = cert_request.get();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data4);
-  StaticSocketDataProvider data4;
-  session_deps_.socket_factory->AddSocketDataProvider(&data4);
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -16473,10 +16487,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
             std::make_unique<MockClientSocketFactory>();
 
         // See ClientAuthCertCache_Direct_NoFalseStart for the explanation of
-        // [ssl_]data[1-2]. [ssl_]data3 is not needed because we do not retry
-        // for proxies. Rather than represending the endpoint
-        // (www.example.com:443), they represent failures with the HTTPS proxy
-        // (proxy:70).
+        // [ssl_]data[1-3].
         SSLSocketDataProvider ssl_data1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
         ssl_data1.cert_request_info = cert_request.get();
         session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
@@ -16500,10 +16511,22 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
           }
         }
         ssl_data2->cert_request_info = cert_request.get();
-
         session_deps_.socket_factory->AddSSLSocketDataProvider(
             &ssl_data2.value());
         session_deps_.socket_factory->AddSocketDataProvider(&data2.value());
+
+        // If the handshake returns ERR_SSL_PROTOCOL_ERROR, we attempt to
+        // connect twice.
+        base::Optional<SSLSocketDataProvider> ssl_data3;
+        base::Optional<StaticSocketDataProvider> data3;
+        if (reject_in_connect && reject_error == ERR_SSL_PROTOCOL_ERROR) {
+          ssl_data3.emplace(ASYNC, reject_error);
+          data3.emplace();  // There are no reads or writes.
+          ssl_data3->cert_request_info = cert_request.get();
+          session_deps_.socket_factory->AddSSLSocketDataProvider(
+              &ssl_data3.value());
+          session_deps_.socket_factory->AddSocketDataProvider(&data3.value());
+        }
 
         std::unique_ptr<HttpNetworkSession> session =
             CreateSession(&session_deps_);

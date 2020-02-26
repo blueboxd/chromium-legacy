@@ -14,6 +14,8 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
@@ -38,13 +40,16 @@ class BackGestureEventHandlerTest : public AshTestBase {
   static constexpr int kSwipingDistanceForGoingBack = 80;
 
   BackGestureEventHandlerTest() = default;
+  BackGestureEventHandlerTest(const BackGestureEventHandlerTest&) = delete;
+  BackGestureEventHandlerTest& operator=(const BackGestureEventHandlerTest&) =
+      delete;
   ~BackGestureEventHandlerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
 
     feature_list_.InitAndEnableFeature(features::kSwipingFromLeftEdgeToGoBack);
-    top_window_ = CreateAppWindow(gfx::Rect(), AppType::BROWSER);
+    RecreateTopWindow(AppType::BROWSER);
     TabletModeControllerTestApi().EnterTabletMode();
   }
 
@@ -81,15 +86,22 @@ class BackGestureEventHandlerTest : public AshTestBase {
     Shell::Get()->back_gesture_event_handler()->OnTouchEvent(&event);
   }
 
+  void RecreateTopWindow(AppType app_type) {
+    top_window_ = CreateAppWindow(gfx::Rect(), app_type);
+  }
+
+  // Generates a scroll sequence that will create a back gesture.
+  void GenerateBackSequence() {
+    GetEventGenerator()->GestureScrollSequence(
+        gfx::Point(0, 100), gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
+        base::TimeDelta::FromMilliseconds(100), 3);
+  }
+
   aura::Window* top_window() { return top_window_.get(); }
 
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<aura::Window> top_window_;
-
-  BackGestureEventHandlerTest(const BackGestureEventHandlerTest&) = delete;
-  BackGestureEventHandlerTest& operator=(const BackGestureEventHandlerTest&) =
-      delete;
 };
 
 TEST_F(BackGestureEventHandlerTest, SwipingFromLeftEdgeToGoBack) {
@@ -161,9 +173,7 @@ TEST_F(BackGestureEventHandlerTest, GoBackInOverviewMode) {
   ash_test_helper()->test_shell_delegate()->SetCanGoBack(false);
   ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
   ASSERT_TRUE(TabletModeWindowManager::ShouldMinimizeTopWindowOnBack());
-  GetEventGenerator()->GestureScrollSequence(
-      gfx::Point(0, 100), gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   // Should trigger window minimize instead of go back.
   EXPECT_EQ(0, target_back_release.accelerator_count());
   EXPECT_TRUE(WindowState::Get(top_window())->IsMinimized());
@@ -173,9 +183,7 @@ TEST_F(BackGestureEventHandlerTest, GoBackInOverviewMode) {
   auto* shell = Shell::Get();
   shell->overview_controller()->StartOverview();
   ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
-  GetEventGenerator()->GestureScrollSequence(
-      gfx::Point(0, 100), gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   // Should trigger go back instead of minimize the window since it is in
   // overview mode.
   EXPECT_EQ(1, target_back_release.accelerator_count());
@@ -186,17 +194,13 @@ TEST_F(BackGestureEventHandlerTest, DonotStartGoingBack) {
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
   auto* shell = Shell::Get();
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  const gfx::Point start(0, 100);
 
   // Should not go back if it is not in ACTIVE session.
   ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
   ASSERT_FALSE(shell->home_screen_controller()->IsHomeScreenVisible());
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
-  generator->GestureScrollSequence(
-      start, gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
@@ -207,23 +211,19 @@ TEST_F(BackGestureEventHandlerTest, DonotStartGoingBack) {
   shell->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
   ASSERT_TRUE(shell->home_screen_controller()->IsHomeScreenVisible());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-  generator->GestureScrollSequence(
-      start, gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
   // Should exit |kFullscreenSearch| to enter |kFullscreenAllApps| state while
   // home screen search result page is opened.
-  generator->GestureTapAt(GetAppListTestHelper()
-                              ->GetAppListView()
-                              ->search_box_view()
-                              ->GetBoundsInScreen()
-                              .CenterPoint());
+  GetEventGenerator()->GestureTapAt(GetAppListTestHelper()
+                                        ->GetAppListView()
+                                        ->search_box_view()
+                                        ->GetBoundsInScreen()
+                                        .CenterPoint());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
-  generator->GestureScrollSequence(
-      start, gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   EXPECT_EQ(1, target_back_release.accelerator_count());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
@@ -470,7 +470,7 @@ TEST_F(BackGestureEventHandlerTest, BackInSplitViewMode) {
   EXPECT_EQ(8, target_back_release.accelerator_count());
 }
 
-// Tests the back gesture behavior on a fullscreen'ed window.
+// Tests the back gesture behavior on a non-ARC fullscreened window.
 TEST_F(BackGestureEventHandlerTest, FullscreenedWindow) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
@@ -480,21 +480,61 @@ TEST_F(BackGestureEventHandlerTest, FullscreenedWindow) {
   window_state->OnWMEvent(&fullscreen_event);
   EXPECT_TRUE(window_state->IsFullscreen());
 
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  const gfx::Point start(0, 100);
-  generator->GestureScrollSequence(
-      start, gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   // First back gesture should let the window exit fullscreen mode instead of
   // triggering go back.
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
-  generator->GestureScrollSequence(
-      start, gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
-      base::TimeDelta::FromMilliseconds(100), 3);
+  GenerateBackSequence();
   // Second back gesture should trigger go back.
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+// Tests the back gesture behavior on a ARC fullscreened window.
+TEST_F(BackGestureEventHandlerTest, ARCFullscreenedWindow) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  RecreateTopWindow(AppType::ARC_APP);
+
+  WindowState* window_state = WindowState::Get(top_window());
+  const WMEvent fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen_event);
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  auto shelf_visible_hotseat_extended = [this]() -> bool {
+    auto* shelf = Shelf::ForWindow(top_window());
+    const bool shelf_visible = shelf->GetVisibilityState() == SHELF_VISIBLE;
+    const bool hotseat_extended =
+        shelf->hotseat_widget()->state() == HotseatState::kExtended;
+    return shelf_visible && hotseat_extended;
+  };
+
+  GenerateBackSequence();
+  // First back gesture should show the shelf instead of triggering go back. The
+  // app should remain fullscreened.
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+  EXPECT_TRUE(shelf_visible_hotseat_extended());
+
+  // Tapping on a point on the screen should hide the shelf and hotseat.
+  GetEventGenerator()->GestureTapAt(gfx::Point(100, 100));
+  EXPECT_FALSE(shelf_visible_hotseat_extended());
+
+  // Send another back gesture to bring up the shelf and hotseat.
+  GenerateBackSequence();
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+  EXPECT_TRUE(shelf_visible_hotseat_extended());
+
+  GenerateBackSequence();
+  // Second back gesture in a row should trigger go back. Fullscreen will be
+  // dependent on how the app choses to handle the back event.
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }

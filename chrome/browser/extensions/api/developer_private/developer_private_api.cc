@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
@@ -176,9 +177,8 @@ void GetManifestError(const std::string& error,
 
   // This will read the manifest and call AddFailure with the read manifest
   // contents.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFileToString,
                      extension_path.Append(kManifestFilename)),
       base::BindOnce(std::move(callback), extension_path, error, line));
@@ -1461,10 +1461,9 @@ DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
 
   project_base_path_ = project_path;
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent,
           this, project_base_path_));
@@ -1577,10 +1576,9 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     return;
   }
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::CopyFile, this,
                      src_path, target_path));
 }
@@ -1705,9 +1703,8 @@ DeveloperPrivateRequestFileSourceFunction::Run() {
   if (properties.path_suffix == kManifestFile && !properties.manifest_key)
     return RespondNow(Error(kManifestKeyIsRequiredError));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReadFileToString, extension->path().Append(path_suffix)),
       base::BindOnce(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
 

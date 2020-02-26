@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
@@ -152,8 +153,8 @@ void Exporter::FileSelected(const base::FilePath& path,
   }
 
   if (!data.empty()) {
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(&WriterCallback, path, data));
+    base::ThreadPool::PostTask(FROM_HERE, {base::MayBlock()},
+                               base::BindOnce(&WriterCallback, path, data));
   }
 
   delete this;

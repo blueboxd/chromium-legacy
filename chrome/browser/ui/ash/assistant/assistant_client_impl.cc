@@ -33,7 +33,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_switches.h"
-#include "services/identity/public/mojom/identity_service.mojom.h"
 
 AssistantClientImpl::AssistantClientImpl() {
   auto* session_manager = session_manager::SessionManager::Get();
@@ -197,13 +196,6 @@ void AssistantClientImpl::RequestAudioDecoderFactory(
           .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName("Assistant Audio Decoder Service")
           .Pass());
-}
-
-void AssistantClientImpl::RequestIdentityAccessor(
-    mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver) {
-  identity::mojom::IdentityService* service = profile_->GetIdentityService();
-  if (service)
-    service->BindIdentityAccessor(std::move(receiver));
 }
 
 void AssistantClientImpl::RequestAudioFocusManager(

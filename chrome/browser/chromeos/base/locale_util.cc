@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -148,9 +149,8 @@ void SwitchLanguage(const std::string& locale,
       locale, enable_locale_keyboard_layouts, login_layouts_only, callback,
       profile);
   // USER_BLOCKING because it blocks startup on ChromeOS. crbug.com/968554
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SwitchLanguageDoReloadLocale, std::move(data)),
       base::BindOnce(&FinishSwitchLanguage));
 }

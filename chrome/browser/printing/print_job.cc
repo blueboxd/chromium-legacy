@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -543,9 +544,9 @@ void PrintJob::ControlledWorkerShutdown() {
 
   // Now make sure the thread object is cleaned up. Do this on a worker
   // thread because it may block.
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),

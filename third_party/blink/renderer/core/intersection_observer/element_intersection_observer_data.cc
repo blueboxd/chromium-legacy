@@ -44,27 +44,18 @@ void ElementIntersectionObserverData::RemoveObserver(
 
 void ElementIntersectionObserverData::TrackWithController(
     IntersectionObserverController& controller) {
-  for (auto& entry : observations_) {
-    if (entry.key->RootIsImplicit()) {
-      controller.AddTrackedObservation(*entry.value,
-                                       entry.key->trackVisibility());
-    }
-  }
-  for (auto& observer : observers_) {
-    controller.AddTrackedObserver(*observer, observer->trackVisibility());
-  }
+  for (auto& entry : observations_)
+    controller.AddTrackedObservation(*entry.value);
+  for (auto& observer : observers_)
+    controller.AddTrackedObserver(*observer);
 }
 
 void ElementIntersectionObserverData::StopTrackingWithController(
     IntersectionObserverController& controller) {
-  for (auto& entry : observations_) {
-    if (entry.key->RootIsImplicit()) {
-      controller.RemoveTrackedObservation(*entry.value);
-    }
-  }
-  for (auto& observer : observers_) {
+  for (auto& entry : observations_)
+    controller.RemoveTrackedObservation(*entry.value);
+  for (auto& observer : observers_)
     controller.RemoveTrackedObserver(*observer);
-  }
 }
 
 bool ElementIntersectionObserverData::ComputeIntersectionsForTarget(

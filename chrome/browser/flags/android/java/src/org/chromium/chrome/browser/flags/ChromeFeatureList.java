@@ -231,13 +231,6 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
     public static final String CCT_INCOGNITO = "CCTIncognito";
-    public static final String CCT_MODULE = "CCTModule";
-    public static final String CCT_MODULE_CACHE = "CCTModuleCache";
-    public static final String CCT_MODULE_CUSTOM_HEADER = "CCTModuleCustomHeader";
-    public static final String CCT_MODULE_CUSTOM_REQUEST_HEADER = "CCTModuleCustomRequestHeader";
-    public static final String CCT_MODULE_DEX_LOADING = "CCTModuleDexLoading";
-    public static final String CCT_MODULE_POST_MESSAGE = "CCTModulePostMessage";
-    public static final String CCT_MODULE_USE_INTENT_EXTRAS = "CCTModuleUseIntentExtras";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";

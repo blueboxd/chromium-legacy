@@ -53,6 +53,7 @@ namespace ash {
 
 enum class AnimationChangeType;
 class DragWindowFromShelfController;
+class HomeToOverviewNudgeController;
 class PanelLayoutManagerTest;
 class PresentationTimeRecorder;
 class Shelf;
@@ -121,6 +122,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Updates the visibility state.
   void UpdateVisibilityState();
+
+  // Shows the shelf and hotseat for the back gesture.
+  void UpdateVisibilityStateForBackGesture();
 
   // Invoked by the shelf when the auto-hide state may have changed.
   void UpdateAutoHideState();
@@ -281,6 +285,11 @@ class ASH_EXPORT ShelfLayoutManager
 
   DragWindowFromShelfController* window_drag_controller_for_testing() {
     return window_drag_controller_.get();
+  }
+
+  HomeToOverviewNudgeController*
+  home_to_overview_nudge_controller_for_testing() {
+    return home_to_overview_nudge_controller_.get();
   }
 
   bool IsDraggingApplist() const {
@@ -624,6 +633,9 @@ class ASH_EXPORT ShelfLayoutManager
   // up from shelf to homescreen, overview or splitview.
   std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
 
+  std::unique_ptr<HomeToOverviewNudgeController>
+      home_to_overview_nudge_controller_;
+
   // Whether upward fling from shelf should be handled as potential gesture from
   // overview to home. This is set when the swipe would otherwise be handled by
   // |window_drag_controller_|, but the swipe cannot be associated with a window
@@ -639,6 +651,10 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Tracks whether the shelf is currently dimmed for inactivity.
   bool dimmed_for_inactivity_ = false;
+
+  // Tracks whether the shelf and hotseat have been asked to be shown and
+  // extended by the back gesture.
+  bool state_forced_by_back_gesture_ = false;
 
   // Callback to update the shelf's state when the visibility of system tray
   // changes.

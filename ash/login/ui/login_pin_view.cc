@@ -90,7 +90,7 @@ class BasePinButton : public views::InkDropHostView {
                          const base::string16& accessible_name,
                          const base::RepeatingClosure& on_press)
       : on_press_(on_press), accessible_name_(accessible_name) {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     SetPreferredSize(size);
 
     auto layout = std::make_unique<views::BoxLayout>(

@@ -36,7 +36,7 @@ void CompareDestructionCallbackValues(
 
 }  // namespace
 
-TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemory) {
+TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemoryI420) {
   const int kWidth = 16;
   const int kHeight = 9;
   const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
@@ -45,7 +45,8 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemory) {
   // to hold a 16x9 video frame.
   gfx::Size size(kWidth, kHeight);
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(size, kTimestamp);
+      MojoSharedBufferVideoFrame::CreateDefaultForTesting(PIXEL_FORMAT_I420,
+                                                          size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
   // Verify that the correct frame was allocated.
@@ -67,7 +68,36 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemory) {
   EXPECT_TRUE(frame->data(VideoFrame::kVPlane));
 }
 
-TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemory) {
+TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemoryNV12) {
+  const int kWidth = 16;
+  const int kHeight = 9;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
+
+  // Create a MojoSharedBufferVideoFrame which will allocate enough space
+  // to hold a 16x9 video frame.
+  gfx::Size size(kWidth, kHeight);
+  scoped_refptr<MojoSharedBufferVideoFrame> frame =
+      MojoSharedBufferVideoFrame::CreateDefaultForTesting(PIXEL_FORMAT_NV12,
+                                                          size, kTimestamp);
+  ASSERT_TRUE(frame.get());
+
+  // Verify that the correct frame was allocated.
+  EXPECT_EQ(media::PIXEL_FORMAT_NV12, frame->format());
+
+  // The offsets should be set appropriately.
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kYPlane), 0u);
+  EXPECT_GT(frame->PlaneOffset(VideoFrame::kUVPlane), 0u);
+
+  // The strides should be set appropriately.
+  EXPECT_EQ(frame->stride(VideoFrame::kYPlane), kWidth);
+  EXPECT_EQ(frame->stride(VideoFrame::kUVPlane), kWidth);
+
+  // The data pointers for each plane should be set.
+  EXPECT_TRUE(frame->data(VideoFrame::kYPlane));
+  EXPECT_TRUE(frame->data(VideoFrame::kUVPlane));
+}
+
+TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemoryI420) {
   const int kWidth = 32;
   const int kHeight = 18;
   const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1338);
@@ -94,10 +124,10 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemory) {
 
   // Allocate frame.
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::Create(format, size, visible_rect, size,
-                                         std::move(handle), requested_size,
-                                         y_offset, u_offset, v_offset, y_stride,
-                                         u_stride, v_stride, kTimestamp);
+      MojoSharedBufferVideoFrame::Create(
+          format, size, visible_rect, size, std::move(handle), requested_size,
+          {y_offset, u_offset, v_offset}, {y_stride, u_stride, v_stride},
+          kTimestamp);
   ASSERT_TRUE(frame.get());
   EXPECT_EQ(frame->format(), format);
 
@@ -117,24 +147,72 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemory) {
   EXPECT_TRUE(frame->data(VideoFrame::kVPlane));
 }
 
+TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemoryNV12) {
+  const int kWidth = 32;
+  const int kHeight = 18;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1338);
+
+  // Some random values to use. Since we actually don't use the data inside the
+  // frame, random values are fine (as long as the offsets are within the
+  // memory size allocated).
+  const VideoPixelFormat format = PIXEL_FORMAT_NV12;
+  const size_t y_offset = kWidth * 2;
+  const size_t uv_offset = kWidth * 3;
+  const int32_t y_stride = kWidth;
+  const int32_t uv_stride = kWidth + 1;
+
+  // Allocate some shared memory.
+  gfx::Size size(kWidth, kHeight);
+  gfx::Rect visible_rect(size);
+  size_t requested_size = VideoFrame::AllocationSize(format, size);
+  ASSERT_LT(y_offset, requested_size);
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(requested_size);
+  ASSERT_TRUE(handle.is_valid());
+
+  // Allocate frame.
+  scoped_refptr<MojoSharedBufferVideoFrame> frame =
+      MojoSharedBufferVideoFrame::Create(
+          format, size, visible_rect, size, std::move(handle), requested_size,
+          {y_offset, uv_offset}, {y_stride, uv_stride}, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  EXPECT_EQ(frame->format(), format);
+
+  // The offsets should be set appropriately.
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kYPlane), y_offset);
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kUVPlane), uv_offset);
+
+  // The strides should be set appropriately.
+  EXPECT_EQ(frame->stride(VideoFrame::kYPlane), y_stride);
+  EXPECT_EQ(frame->stride(VideoFrame::kUVPlane), uv_stride);
+
+  // The data pointers for each plane should be set.
+  EXPECT_TRUE(frame->data(VideoFrame::kYPlane));
+  EXPECT_TRUE(frame->data(VideoFrame::kUVPlane));
+}
+
 TEST(MojoSharedBufferVideoFrameTest, CreateFrameOddWidth) {
   const int kWidth = 15;
   const int kHeight = 9;
   const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
 
-  // Create a MojoSharedBufferVideoFrame which will allocate enough space
-  // to hold the video frame. Size should be adjusted.
-  gfx::Size size(kWidth, kHeight);
-  scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::CreateDefaultI420ForTesting(size, kTimestamp);
-  ASSERT_TRUE(frame.get());
+  VideoPixelFormat formats[] = {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12};
+  for (auto format : formats) {
+    // Create a MojoSharedBufferVideoFrame which will allocate enough space
+    // to hold the video frame. Size should be adjusted.
+    gfx::Size size(kWidth, kHeight);
+    scoped_refptr<MojoSharedBufferVideoFrame> frame =
+        MojoSharedBufferVideoFrame::CreateDefaultForTesting(format, size,
+                                                            kTimestamp);
+    ASSERT_TRUE(frame.get());
 
-  // Verify that the correct frame was allocated.
-  EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
+    // Verify that the correct frame was allocated.
+    EXPECT_EQ(format, frame->format());
 
-  // The size should be >= 15x9.
-  EXPECT_GE(frame->coded_size().width(), kWidth);
-  EXPECT_GE(frame->coded_size().height(), kHeight);
+    // The size should be >= 15x9.
+    EXPECT_GE(frame->coded_size().width(), kWidth);
+    EXPECT_GE(frame->coded_size().height(), kHeight);
+  }
 }
 
 TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
@@ -159,7 +237,7 @@ TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
       MojoSharedBufferVideoFrame::Create(
           format, size, visible_rect, size, std::move(handle), requested_size,
-          0, 0, 0, kWidth, kWidth, kWidth, kTimestamp);
+          {0, 0, 0}, {kWidth, kWidth, kWidth}, kTimestamp);
   ASSERT_TRUE(frame.get());
   EXPECT_EQ(frame->format(), format);
 
@@ -202,10 +280,10 @@ TEST(MojoSharedBufferVideoFrameTest, InterleavedData) {
 
   // Allocate frame.
   scoped_refptr<MojoSharedBufferVideoFrame> frame =
-      MojoSharedBufferVideoFrame::Create(format, size, visible_rect, size,
-                                         std::move(handle), requested_size,
-                                         y_offset, u_offset, v_offset, y_stride,
-                                         u_stride, v_stride, kTimestamp);
+      MojoSharedBufferVideoFrame::Create(
+          format, size, visible_rect, size, std::move(handle), requested_size,
+          {y_offset, u_offset, v_offset}, {y_stride, u_stride, v_stride},
+          kTimestamp);
   ASSERT_TRUE(frame.get());
   EXPECT_EQ(frame->format(), format);
 
@@ -225,7 +303,7 @@ TEST(MojoSharedBufferVideoFrameTest, InterleavedData) {
   EXPECT_TRUE(frame->data(VideoFrame::kVPlane));
 }
 
-TEST(MojoSharedBufferVideoFrameTest, YUVFrameToMojoFrame) {
+TEST(MojoSharedBufferVideoFrameTest, I420FrameToMojoFrame) {
   std::vector<uint8_t> data = std::vector<uint8_t>(12, 1u);
   const auto pixel_format = VideoPixelFormat::PIXEL_FORMAT_I420;
   const auto size = gfx::Size(1, 1);
@@ -248,6 +326,30 @@ TEST(MojoSharedBufferVideoFrameTest, YUVFrameToMojoFrame) {
   EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kYPlane), 0u);
   EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kUPlane), y_stride);
   EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kVPlane), y_stride + u_stride);
+}
+
+TEST(MojoSharedBufferVideoFrameTest, NV12FrameToMojoFrame) {
+  std::vector<uint8_t> data = std::vector<uint8_t>(12, 1u);
+  const auto pixel_format = VideoPixelFormat::PIXEL_FORMAT_NV12;
+  const auto size = gfx::Size(1, 1);
+  const int32_t stride = 3;
+
+  // The YUV frame only has 1 pixel. But each plane are not in consecutive
+  // memory block, also stride is 3 bytes that contains 1 byte image data and 2
+  // bytes padding in Y plane and 2 bytes image data and 1 byte padding in UV
+  // plane.
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalYuvData(
+      pixel_format, size, gfx::Rect(1, 1), size, stride, stride, stride,
+      &data[0], &data[4], &data[4], base::TimeDelta());
+  auto mojo_frame = MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame);
+  EXPECT_TRUE(mojo_frame);
+
+  const size_t y_stride = frame->stride(VideoFrame::kYPlane);
+
+  // Verifies mapped size and offset.
+  EXPECT_EQ(mojo_frame->MappedSize(), static_cast<size_t>(2 * stride));
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kYPlane), 0u);
+  EXPECT_EQ(mojo_frame->PlaneOffset(VideoFrame::kUVPlane), y_stride);
 }
 
 }  // namespace media

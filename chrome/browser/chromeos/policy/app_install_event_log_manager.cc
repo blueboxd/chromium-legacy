@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -67,9 +68,8 @@ AppInstallEventLogManager::LogTaskRunnerWrapper::~LogTaskRunnerWrapper() =
 scoped_refptr<base::SequencedTaskRunner>
 AppInstallEventLogManager::LogTaskRunnerWrapper::GetTaskRunner() {
   if (!task_runner_) {
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-         base::MayBlock()});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
   }
 
   return task_runner_;

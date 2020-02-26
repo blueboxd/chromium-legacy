@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
@@ -184,7 +184,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
         final float targetAlpha = shouldShowTabSwitcherToolbar ? 1.0f : 0.0f;
         mTabSwitcherModeToolbar.animate()
                 .alpha(targetAlpha)
-                .setDuration(ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
+                .setDuration(TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -282,7 +282,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     }
 
     private boolean isNewTabVariationEnabled() {
-        return CachedFeatureFlags.isGridTabSwitcherEnabled() && ChromeFeatureList.isInitialized()
+        return TabUiFeatureUtilities.isGridTabSwitcherEnabled() && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList
                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                    "tab_grid_layout_android_new_tab")

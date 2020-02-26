@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
@@ -166,7 +167,7 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
 
   // The channel will make blocking calls to ::WriteFile.
   scoped_refptr<base::SequencedTaskRunner> channel_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 
   // ChromePromptChannel method calls will be posted to this sequence using
   // WeakPtr's, so the channel must be deleted on the same sequence.

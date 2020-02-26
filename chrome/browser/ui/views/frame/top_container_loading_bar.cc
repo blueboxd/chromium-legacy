@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/top_container_loading_bar.h"
 
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -82,7 +83,8 @@ void LoadingBarView::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
-TopContainerLoadingBar::TopContainerLoadingBar() = default;
+TopContainerLoadingBar::TopContainerLoadingBar(Browser* browser)
+    : browser_(browser) {}
 
 void TopContainerLoadingBar::SetWebContents(
     content::WebContents* web_contents) {
@@ -107,7 +109,7 @@ void TopContainerLoadingBar::SetWebContents(
 
 void TopContainerLoadingBar::UpdateLoadingProgress() {
   DCHECK(web_contents());
-  if (!favicon::ShouldDisplayFavicon(web_contents())) {
+  if (!browser_->ShouldDisplayFavicon(web_contents())) {
     HideImmediately();
     return;
   }

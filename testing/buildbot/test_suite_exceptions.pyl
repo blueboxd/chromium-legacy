@@ -141,6 +141,11 @@
           'shards': 40,
         },
       },
+      'Linux ASan Tests (sandboxed)': {
+        'swarming': {
+          'shards': 12, # https://crbug.com/1056300
+        },
+      },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372

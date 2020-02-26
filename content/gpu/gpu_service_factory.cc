@@ -8,6 +8,7 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
@@ -61,8 +62,8 @@ void GpuServiceFactory::RunMediaService(
   task_runner = task_runner_;
 #else
   // TODO(crbug.com/786169): Check whether this needs to be single threaded.
-  task_runner = base::CreateSingleThreadTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING});
+  task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      {base::TaskPriority::USER_BLOCKING});
 #endif  // defined(OS_WIN)
 
   using FactoryCallback =

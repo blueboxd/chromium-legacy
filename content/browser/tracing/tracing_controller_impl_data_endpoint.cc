@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -58,8 +59,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
                                  base::TaskPriority write_priority)
       : file_path_(trace_file_path),
         completion_callback_(std::move(callback)),
-        may_block_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(), write_priority})) {}
+        may_block_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), write_priority})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     may_block_task_runner_->PostTask(
@@ -125,10 +126,10 @@ class CompressedTraceDataEndpoint
                               bool compress_with_background_priority)
       : endpoint_(endpoint),
         already_tried_open_(false),
-        background_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), compress_with_background_priority
-                                     ? base::TaskPriority::BEST_EFFORT
-                                     : base::TaskPriority::USER_VISIBLE})) {}
+        background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {compress_with_background_priority
+                 ? base::TaskPriority::BEST_EFFORT
+                 : base::TaskPriority::USER_VISIBLE})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     background_task_runner_->PostTask(

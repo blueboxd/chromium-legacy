@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -223,10 +224,9 @@ void TerminateOnUI(std::unique_ptr<base::Thread> thread,
   if (socket_factory)
     thread->task_runner()->DeleteSoon(FROM_HERE, std::move(socket_factory));
   if (thread) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::BEST_EFFORT},
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
         BindOnce([](std::unique_ptr<base::Thread>) {}, std::move(thread)));
   }
 }

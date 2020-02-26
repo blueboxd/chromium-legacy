@@ -55,6 +55,7 @@
 #include "base/synchronization/lock.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -2250,11 +2251,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           },
           weak_factory_.GetWeakPtr()));
 
-  registry->AddInterface(base::BindRepeating(&MimeRegistryImpl::Create),
-                         base::CreateSequencedTaskRunner(
-                             {base::ThreadPool(), base::MayBlock(),
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-                              base::TaskPriority::USER_BLOCKING}));
+  registry->AddInterface(
+      base::BindRepeating(&MimeRegistryImpl::Create),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+           base::TaskPriority::USER_BLOCKING}));
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
   registry->AddInterface(
       base::BindRepeating(&hyphenation::HyphenationImpl::Create),
@@ -2271,9 +2272,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if defined(OS_WIN)
   registry->AddInterface(
       base::BindRepeating(&DWriteFontProxyImpl::Create),
-      base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                       base::TaskPriority::USER_BLOCKING,
-                                       base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
 #endif
 
   registry->AddInterface(
@@ -2331,8 +2331,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::BindRepeating(&FileUtilitiesHostImpl::Create, GetID()),
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   // Note, the base::Unretained() is safe because the target object has an IO
   // thread deleter and the callback is also targeting the IO thread.  When

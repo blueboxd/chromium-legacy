@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/notifications/blink_notification_service_impl.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/notifications/notification_trigger_constants.h"
@@ -999,9 +1000,8 @@ void PlatformNotificationContextImpl::LazyInitialize(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!task_runner_) {
-    task_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::USER_VISIBLE});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   }
 
   task_runner_->PostTask(

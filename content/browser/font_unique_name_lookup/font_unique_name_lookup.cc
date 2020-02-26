@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
@@ -351,9 +352,9 @@ bool FontUniqueNameLookup::PersistToFile() {
 }
 
 void FontUniqueNameLookup::ScheduleLoadOrUpdateTable() {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
           [](FontUniqueNameLookup* instance) {

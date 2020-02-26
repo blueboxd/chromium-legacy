@@ -15,6 +15,7 @@
 #include "base/i18n/unicodestring.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
@@ -170,7 +171,7 @@ class FileSystemURLLoaderFactoryTest
   void SetUpOnMainThread() override {
     io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
     blocking_task_runner_ =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 
     special_storage_policy_ =
         base::MakeRefCounted<storage::MockSpecialStoragePolicy>();

@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -189,8 +190,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner() {
   if (!file_task_runner_)
-    file_task_runner_ =
-        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()});
+    file_task_runner_ = base::ThreadPool::CreateTaskRunner({base::MayBlock()});
   return file_task_runner_.get();
 }
 

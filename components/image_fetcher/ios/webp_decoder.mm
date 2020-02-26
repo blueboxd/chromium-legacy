@@ -190,7 +190,7 @@ void WebpDecoder::DoReadFeatures(NSData* data) {
   if (features_)
     [features_ appendData:data];
   else
-    features_.reset([[NSMutableData alloc] initWithData:data]);
+    features_ = [[NSMutableData alloc] initWithData:data];
   VP8StatusCode status =
       WebPGetFeatures(static_cast<const uint8_t*>([features_ bytes]),
                       [features_ length], &config_.input);
@@ -217,16 +217,16 @@ void WebpDecoder::DoReadFeatures(NSData* data) {
         break;
       }
       WriteTiffHeader(dst, width, height, bytes_per_px, has_alpha_);
-      output_buffer_.reset([[NSData alloc] initWithBytesNoCopy:dst
-                                                        length:total_size
-                                                  freeWhenDone:YES]);
+      output_buffer_ = [[NSData alloc] initWithBytesNoCopy:dst
+                                                    length:total_size
+                                              freeWhenDone:YES];
       config_.output.is_external_memory = 1;
       config_.output.u.RGBA.rgba = dst + kHeaderSize;
       // Start decoding.
       state_ = READING_DATA;
       incremental_decoder_.reset(WebPINewDecoder(&config_.output));
       DoReadData(features_);
-      features_.reset();
+      features_ = nil;
       break;
     }
     case VP8_STATUS_NOT_ENOUGH_DATA:
@@ -276,34 +276,33 @@ bool WebpDecoder::DoSendData() {
     return false;
   DCHECK_EQ(static_cast<const uint8_t*>([output_buffer_ bytes]) + kHeaderSize,
             data_ptr);
-  base::scoped_nsobject<NSData> result_data;
+  NSData* result_data = nil;
   // When the WebP image is larger than |kRecompressionThreshold| it is
   // compressed to JPEG or PNG. Otherwise, the uncompressed TIFF is used.
   DecodedImageFormat format = TIFF;
   if (width * height > kRecompressionThreshold) {
-    base::scoped_nsobject<UIImage> tiff_image(
-        [[UIImage alloc] initWithData:output_buffer_]);
+    UIImage* tiff_image = [[UIImage alloc] initWithData:output_buffer_];
     if (!tiff_image)
       return false;
     // Compress to PNG if the image is transparent, JPEG otherwise.
     // TODO(droger): Use PNG instead of JPEG if the WebP image is lossless.
     if (has_alpha_) {
-      result_data.reset(UIImagePNGRepresentation(tiff_image));
+      result_data = UIImagePNGRepresentation(tiff_image);
       format = PNG;
     } else {
-      result_data.reset(UIImageJPEGRepresentation(tiff_image, kJpegQuality));
+      result_data = UIImageJPEGRepresentation(tiff_image, kJpegQuality);
       format = JPEG;
     }
     if (!result_data)
       return false;
   } else {
-    result_data.reset(output_buffer_);
+    result_data = output_buffer_;
   }
   UMA_HISTOGRAM_ENUMERATION("WebP.DecodedImageFormat", format,
                             DECODED_FORMAT_COUNT);
   delegate_->SetImageFeatures([result_data length], format);
   delegate_->OnDataDecoded(result_data);
-  output_buffer_.reset();
+  output_buffer_ = nil;
   return true;
 }
 

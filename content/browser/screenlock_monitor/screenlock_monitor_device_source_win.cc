@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/win/message_window.h"
 
 namespace content {
@@ -25,8 +26,8 @@ ScreenlockMonitorDeviceSource::SessionMessageWindow::SessionMessageWindow() {
       base::BindOnce(base::IgnoreResult(&::WTSRegisterSessionNotification),
                      window_->hwnd(), NOTIFY_FOR_ALL_SESSIONS);
 
-  base::CreateCOMSTATaskRunner({base::ThreadPool()})
-      ->PostTask(FROM_HERE, std::move(wts_register));
+  base::ThreadPool::CreateCOMSTATaskRunner({})->PostTask(
+      FROM_HERE, std::move(wts_register));
 }
 
 ScreenlockMonitorDeviceSource::SessionMessageWindow::~SessionMessageWindow() {

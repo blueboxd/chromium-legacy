@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -85,10 +86,10 @@ void LayerTreeView::Initialize(
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.
-    params.image_worker_task_runner = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+    params.image_worker_task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {
     // Single-threaded web tests, and unit tests.

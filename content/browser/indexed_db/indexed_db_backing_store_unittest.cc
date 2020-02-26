@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
@@ -487,17 +488,16 @@ class IndexedDBBackingStoreTestWithExternalObjects
                                          int64_t size) {
     auto uuid = base::GenerateGUID();
     mojo::PendingRemote<blink::mojom::Blob> remote;
-    base::CreateSequencedTaskRunner({base::ThreadPool()})
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                [](std::string uuid,
-                   mojo::PendingReceiver<blink::mojom::Blob> pending_receiver) {
-                  mojo::MakeSelfOwnedReceiver(
-                      std::make_unique<storage::FakeBlob>(uuid),
-                      std::move(pending_receiver));
-                },
-                uuid, remote.InitWithNewPipeAndPassReceiver()));
+    base::ThreadPool::CreateSequencedTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::string uuid,
+               mojo::PendingReceiver<blink::mojom::Blob> pending_receiver) {
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<storage::FakeBlob>(uuid),
+                  std::move(pending_receiver));
+            },
+            uuid, remote.InitWithNewPipeAndPassReceiver()));
     IndexedDBExternalObject info(std::move(remote), uuid, file_name, type,
                                  last_modified, size);
     return info;
@@ -507,17 +507,16 @@ class IndexedDBBackingStoreTestWithExternalObjects
                                          int64_t size) {
     auto uuid = base::GenerateGUID();
     mojo::PendingRemote<blink::mojom::Blob> remote;
-    base::CreateSequencedTaskRunner({base::ThreadPool()})
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                [](std::string uuid,
-                   mojo::PendingReceiver<blink::mojom::Blob> pending_receiver) {
-                  mojo::MakeSelfOwnedReceiver(
-                      std::make_unique<storage::FakeBlob>(uuid),
-                      std::move(pending_receiver));
-                },
-                uuid, remote.InitWithNewPipeAndPassReceiver()));
+    base::ThreadPool::CreateSequencedTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::string uuid,
+               mojo::PendingReceiver<blink::mojom::Blob> pending_receiver) {
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<storage::FakeBlob>(uuid),
+                  std::move(pending_receiver));
+            },
+            uuid, remote.InitWithNewPipeAndPassReceiver()));
     IndexedDBExternalObject info(std::move(remote), uuid, type, size);
     return info;
   }
@@ -525,19 +524,18 @@ class IndexedDBBackingStoreTestWithExternalObjects
   IndexedDBExternalObject CreateNativeFileSystemHandle() {
     auto id = base::UnguessableToken::Create();
     mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> remote;
-    base::CreateSequencedTaskRunner({base::ThreadPool()})
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                [](base::UnguessableToken id,
-                   mojo::PendingReceiver<
-                       blink::mojom::NativeFileSystemTransferToken>
-                       pending_receiver) {
-                  mojo::MakeSelfOwnedReceiver(
-                      std::make_unique<FakeNativeFileSystemTransferToken>(id),
-                      std::move(pending_receiver));
-                },
-                id, remote.InitWithNewPipeAndPassReceiver()));
+    base::ThreadPool::CreateSequencedTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::UnguessableToken id,
+               mojo::PendingReceiver<
+                   blink::mojom::NativeFileSystemTransferToken>
+                   pending_receiver) {
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<FakeNativeFileSystemTransferToken>(id),
+                  std::move(pending_receiver));
+            },
+            id, remote.InitWithNewPipeAndPassReceiver()));
     IndexedDBExternalObject info(std::move(remote));
     return info;
   }

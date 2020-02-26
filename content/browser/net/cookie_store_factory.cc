@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/cookie_constants.h"
@@ -60,9 +61,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
     }
 
     if (!background_task_runner.get()) {
-      background_task_runner = base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           net::GetCookieStoreBackgroundSequencePriority(),
+      background_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     }
 

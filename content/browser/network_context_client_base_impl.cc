@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -70,9 +71,8 @@ void NetworkContextOnFileUploadRequested(
     const std::vector<base::FilePath>& file_paths,
     network::mojom::NetworkContextClient::OnFileUploadRequestedCallback
         callback) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&HandleFileUploadRequest, process_id, async, file_paths,
                      std::move(callback),
                      base::SequencedTaskRunnerHandle::Get()));

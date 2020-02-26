@@ -5,6 +5,7 @@
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/platform/platform.h"
 
@@ -26,7 +27,7 @@ void CodeCacheLoaderImpl::FetchFromCodeCacheSynchronously(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSingleThreadTaskRunner({});
 
   // Also watch for terminate requests from the main thread when running on
   // worker threads.

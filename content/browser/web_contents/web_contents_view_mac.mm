@@ -12,6 +12,7 @@
 #import "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -547,10 +548,8 @@ bool WebContentsViewMac::DragPromisedFileTo(const base::FilePath& file_path,
         new PromiseFileFinalizer(std::move(drag_file_downloader)));
   } else {
     // The writer will take care of closing and deletion.
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&PromiseWriterHelper, drop_data, std::move(file)));
   }
 

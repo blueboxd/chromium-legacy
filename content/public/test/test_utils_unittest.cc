@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
@@ -19,8 +20,8 @@ TEST(ContentTestUtils, NestedRunAllTasksUntilIdleWithPendingThreadPoolWork) {
   base::test::TaskEnvironment task_environment;
 
   bool thread_pool_task_completed = false;
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool()}, base::BindLambdaForTesting([&]() {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {}, base::BindLambdaForTesting([&]() {
         base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
         thread_pool_task_completed = true;
       }));

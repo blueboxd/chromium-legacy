@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/public/child/child_thread.h"
@@ -360,9 +361,8 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
 void DWriteFontCollectionProxy::SetProxy(
     mojo::PendingRemote<blink::mojom::DWriteFontProxy> proxy) {
   font_proxy_ = blink::mojom::ThreadSafeDWriteFontProxyPtr::Create(
-      std::move(proxy),
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
+      std::move(proxy), base::ThreadPool::CreateSequencedTaskRunner(
+                            {base::WithBaseSyncPrimitives()}));
 }
 
 blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {

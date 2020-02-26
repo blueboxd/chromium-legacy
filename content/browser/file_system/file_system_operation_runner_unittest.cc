@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
@@ -195,8 +196,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath();
     file_system_context_ = base::MakeRefCounted<FileSystemContext>(
         base::ThreadTaskRunnerHandle::Get().get(),
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
-            .get(),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         base::MakeRefCounted<storage::MockSpecialStoragePolicy>().get(),
         nullptr, std::vector<std::unique_ptr<storage::FileSystemBackend>>(),

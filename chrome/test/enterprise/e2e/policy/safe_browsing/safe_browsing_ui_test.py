@@ -12,7 +12,7 @@ from pywinauto.application import Application
 UnsafePageLink = "http://testsafebrowsing.appspot.com/s/malware.html"
 UnsafePageLinkTabText = "Security error"
 
-UnsafeDownloadLink = "http://testsafebrowsing.appspot.com/s/content.exe"
+UnsafeDownloadLink = "http://testsafebrowsing.appspot.com/s/badrep.exe"
 UnsafeDownloadTextRe = ".* is dangerous,\s*so\s*Chrom.* has blocked it"
 
 

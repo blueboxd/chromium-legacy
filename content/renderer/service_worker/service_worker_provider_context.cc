@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/service_names.mojom.h"
@@ -130,9 +131,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
 
     // Create a SubresourceLoaderFactory on a background thread to avoid
     // extra contention on the main thread.
-    auto task_runner = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(

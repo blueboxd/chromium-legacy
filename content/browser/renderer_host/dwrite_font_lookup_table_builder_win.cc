@@ -390,9 +390,8 @@ void DWriteFontLookupTableBuilder::
   scanning_error_reasons_.clear();
 
   scoped_refptr<base::SequencedTaskRunner> results_collection_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   results_collection_task_runner->PostTask(
@@ -455,9 +454,9 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
     // Specify base::ThreadPolicy::MUST_USE_FOREGROUND because in
     // https://crbug.com/960263 we observed a priority inversion when running
     // DWrite worker tasks in the background.
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::ThreadPolicy::MUST_USE_FOREGROUND,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(

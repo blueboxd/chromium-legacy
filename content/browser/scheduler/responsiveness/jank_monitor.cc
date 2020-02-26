@@ -5,6 +5,7 @@
 #include "content/browser/scheduler/responsiveness/jank_monitor.h"
 
 #include "base/compiler_specific.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ui_base_features.h"
@@ -57,7 +58,7 @@ void JankMonitor::SetUp() {
   io_thread_exec_state_ = std::make_unique<ThreadExecutionState>();
 
   // Then the monitor thread.
-  monitor_task_runner_ = base::CreateSequencedTaskRunner({base::ThreadPool()});
+  monitor_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
 
   // Finally set up the MetricSource.
   metric_source_ = CreateMetricSource();

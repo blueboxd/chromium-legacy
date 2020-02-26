@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "content/common/frame.mojom.h"
@@ -195,9 +196,8 @@ void ExposeRendererInterfacesToBrowser(
 
   if (base::FeatureList::IsEnabled(
           blink::features::kOffMainThreadServiceWorkerStartup)) {
-    auto task_runner = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING,
+    auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     binders->Add(
         base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,

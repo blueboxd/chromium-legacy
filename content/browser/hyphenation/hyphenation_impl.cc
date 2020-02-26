@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace {
@@ -67,9 +68,8 @@ void HyphenationImpl::Create(
 // static
 scoped_refptr<base::SequencedTaskRunner> HyphenationImpl::GetTaskRunner() {
   static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>> runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_BLOCKING}));
   return *runner;
 }

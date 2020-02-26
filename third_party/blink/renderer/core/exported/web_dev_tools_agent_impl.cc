@@ -249,7 +249,7 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->Append(performance_agent);
 
   session->Append(MakeGarbageCollected<InspectorDOMSnapshotAgent>(
-      inspected_frames, dom_debugger_agent, performance_agent));
+      inspected_frames, dom_debugger_agent));
 
   session->Append(MakeGarbageCollected<InspectorAnimationAgent>(
       inspected_frames, css_agent, session->V8Session()));
@@ -410,9 +410,13 @@ void WebDevToolsAgentImpl::InspectElement(
   }
 }
 
-void WebDevToolsAgentImpl::DebuggerTaskStarted() {}
+void WebDevToolsAgentImpl::DebuggerTaskStarted() {
+  probe::WillStartDebuggerTask(probe_sink_);
+}
 
-void WebDevToolsAgentImpl::DebuggerTaskFinished() {}
+void WebDevToolsAgentImpl::DebuggerTaskFinished() {
+  probe::DidFinishDebuggerTask(probe_sink_);
+}
 
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);

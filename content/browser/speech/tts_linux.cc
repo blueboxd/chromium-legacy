@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/speech/tts_platform_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,9 +112,8 @@ TtsPlatformImplLinux::TtsPlatformImplLinux() : utterance_id_(0) {
   if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))
     return;
 
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&TtsPlatformImplLinux::Initialize,
                      base::Unretained(this)));
 }

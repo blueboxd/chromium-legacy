@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
@@ -1389,10 +1390,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 #if defined(OS_ANDROID)
   non_network_url_loader_factories_.emplace(
       url::kContentScheme,
-      std::make_unique<ContentURLLoaderFactory>(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+      std::make_unique<ContentURLLoaderFactory>(
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
 #endif
 
   std::set<std::string> known_schemes;

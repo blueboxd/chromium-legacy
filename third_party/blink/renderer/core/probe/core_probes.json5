@@ -213,6 +213,8 @@
         "RecalculateStyle",
         "UpdateLayout",
         "V8Compile",
+        "WillStartDebuggerTask",
+        "DidFinishDebuggerTask",
       ]
     },
     InspectorTraceEvents: {

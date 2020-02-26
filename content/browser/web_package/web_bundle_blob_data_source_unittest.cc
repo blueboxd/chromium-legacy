@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -32,7 +33,7 @@ class WebBundleBlobDataSourceTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<storage::BlobStorageContext>(
         data_dir_.GetPath(), data_dir_.GetPath(),
-        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
+        base::ThreadPool::CreateTaskRunner({base::MayBlock()}));
     storage::BlobStorageLimits limits;
     limits.max_ipc_memory_size = kTestBlobStorageMaxBytesDataItemSize;
     limits.max_shared_memory_size = kTestBlobStorageMaxBytesDataItemSize;

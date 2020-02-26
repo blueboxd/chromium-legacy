@@ -56,15 +56,13 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Did(const probe::UpdateLayout&);
   void Will(const probe::V8Compile&);
   void Did(const probe::V8Compile&);
+  void WillStartDebuggerTask();
+  void DidFinishDebuggerTask();
 
   // TaskTimeObserver implementation.
   void WillProcessTask(base::TimeTicks start_time) override;
   void DidProcessTask(base::TimeTicks start_time,
                       base::TimeTicks end_time) override;
-
-  // Called from DOMSnapshotAgent
-  void WillCaptureSnapshot();
-  void DidCaptureSnapshot();
 
  private:
   void ScriptStarts();
@@ -84,8 +82,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   base::TimeTicks task_start_ticks_;
   base::TimeDelta v8compile_duration_;
   base::TimeTicks v8compile_start_ticks_;
-  base::TimeDelta capture_snapshot_duration_;
-  base::TimeTicks capture_snapshot_start_ticks_;
+  base::TimeDelta devtools_command_duration_;
+  base::TimeTicks devtools_command_start_ticks_;
   base::TimeTicks thread_time_origin_;
   uint64_t layout_count_ = 0;
   uint64_t recalc_style_count_ = 0;

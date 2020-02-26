@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,9 +79,8 @@ tracing::mojom::TracingService& TracingServiceController::GetService() {
   if (!service_) {
     auto receiver = service_.BindNewPipeAndPassReceiver();
     if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::WithBaseSyncPrimitives(), base::TaskPriority::USER_BLOCKING})
           ->PostTask(FROM_HERE, base::BindOnce(&BindNewInProcessInstance,
                                                std::move(receiver)));

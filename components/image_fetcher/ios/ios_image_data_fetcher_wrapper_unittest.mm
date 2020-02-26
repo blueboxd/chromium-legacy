@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
@@ -107,11 +106,11 @@ namespace image_fetcher {
 class IOSImageDataFetcherWrapperTest : public PlatformTest {
  protected:
   IOSImageDataFetcherWrapperTest()
-      : callback_([^(NSData* data) {
+      : callback_(^(NSData* data, const RequestMetadata&) {
           result_data_ = data;
           result_ = [UIImage imageWithData:data];
           called_ = true;
-        } copy]) {
+        }) {
     shared_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &factory_);
@@ -128,12 +127,12 @@ class IOSImageDataFetcherWrapperTest : public PlatformTest {
   // Message loop for the main test thread.
   base::test::TaskEnvironment environment_;
 
-  base::mac::ScopedBlock<ImageDataFetcherBlock> callback_;
+  __strong ImageDataFetcherBlock callback_;
   network::TestURLLoaderFactory factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<IOSImageDataFetcherWrapper> image_fetcher_;
-  NSData* result_data_ = nil;
-  UIImage* result_ = nil;
+  __strong NSData* result_data_ = nil;
+  __strong UIImage* result_ = nil;
   bool called_ = false;
 
  private:

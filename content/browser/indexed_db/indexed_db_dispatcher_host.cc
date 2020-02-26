@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "content/browser/indexed_db/cursor_impl.h"
 #include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
@@ -198,9 +199,8 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
     scoped_refptr<IndexedDBContextImpl> indexed_db_context)
     : indexed_db_context_(std::move(indexed_db_context)),
-      file_task_runner_(
-          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_VISIBLE})),
+      file_task_runner_(base::ThreadPool::CreateTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       ipc_process_id_(ipc_process_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);

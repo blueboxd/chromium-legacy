@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -655,9 +656,8 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       service_worker_container_host.InitWithNewPipeAndPassReceiver());
   // To avoid potential dead-lock while synchronous loading, create the
   // SubresourceLoaderFactory on a background thread.
-  auto task_runner = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(

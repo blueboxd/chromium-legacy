@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/services/quarantine/quarantine.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
@@ -323,9 +324,10 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
   if (!file_writer || hash_result != base::File::FILE_OK) {
     // If writer was deleted, or calculating the hash failed try deleting the
     // swap file and invoke the callback.
-    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                   base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                  swap_path, /*recursive=*/false));
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), swap_path,
+                       /*recursive=*/false));
     std::move(callback).Run(native_file_system_error::FromStatus(
         NativeFileSystemStatus::kOperationAborted,
         "Failed to perform Safe Browsing check."));
@@ -364,9 +366,10 @@ void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
   // Writer is gone, or safe browsing check failed. In this case we should
   // try deleting the swap file and call the callback to report that close
   // failed.
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                swap_path, /*recursive=*/false));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile), swap_path,
+                     /*recursive=*/false));
   std::move(callback).Run(native_file_system_error::FromStatus(
       NativeFileSystemStatus::kOperationAborted,
       "Write operation blocked by Safe Browsing."));
@@ -409,8 +412,8 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
 
   GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&AnnotateFileSync,
                      GetContentClient()
                          ->browser()
@@ -445,8 +448,8 @@ void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
     HashCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ReadAndComputeSHA256ChecksumAndSize, swap_url().path()),
       base::BindOnce(
           [](HashCallback callback, HashResult result) {

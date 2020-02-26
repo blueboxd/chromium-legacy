@@ -161,6 +161,8 @@ interface CoreProbes {
   void ShouldBlockRequest(CoreProbeSink*, const KURL&, bool* result);
   void ShouldBypassServiceWorker(ExecutionContext* context, bool* result);
   void ConsoleTimeStamp(ExecutionContext*, const String& title);
+  void WillStartDebuggerTask(CoreProbeSink*);
+  void DidFinishDebuggerTask(CoreProbeSink*);
   void LifecycleEvent([Keep] LocalFrame*, DocumentLoader*, const char* name, double timestamp);
   void PaintTiming([Keep] Document*, const char* name, double timestamp);
   void DidCreateAudioContext(Document*);

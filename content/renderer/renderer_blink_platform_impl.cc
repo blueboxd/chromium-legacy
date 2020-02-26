@@ -25,6 +25,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -917,8 +918,8 @@ blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {
     code_cache_host_ = mojo::SharedRemote<blink::mojom::CodeCacheHost>(
         std::move(code_cache_host_remote_),
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::WithBaseSyncPrimitives()}));
   }
   return *code_cache_host_;
 }

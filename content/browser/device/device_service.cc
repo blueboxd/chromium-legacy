@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -83,8 +84,8 @@ void BindDeviceServiceReceiver(
   // thread affinity on the clients. We therefore require a single-thread
   // runner.
   scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                          base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   // Bind the lifetime of the service instance to that of the sequence it's
   // running on.

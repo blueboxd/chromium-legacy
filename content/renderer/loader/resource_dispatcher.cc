@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -449,7 +450,7 @@ void ResourceDispatcher::StartSync(
   // pointers to |sync_load_response| and |event| as this stack frame will
   // survive until the request is complete.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSingleThreadTaskRunner({});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,

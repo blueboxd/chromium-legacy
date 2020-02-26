@@ -11,6 +11,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -81,8 +82,8 @@ PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
   // the plugin has multiple threads, it cannot make assumptions about
   // ordering of IPC message sends, so it cannot make assumptions
   // about ordering of operations caused by those IPC messages.
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 

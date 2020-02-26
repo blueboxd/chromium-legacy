@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -47,7 +46,7 @@ class WebpDecoderDelegate : public WebpDecoder::Delegate {
  private:
   virtual ~WebpDecoderDelegate() {}
 
-  base::scoped_nsobject<NSMutableData> image_;
+  __strong NSMutableData* image_;
 };
 
 class WebpDecoderTest : public testing::Test {
@@ -169,12 +168,10 @@ class WebpDecoderTest : public testing::Test {
 
 TEST_F(WebpDecoderTest, DecodeToJpeg) {
   // Load a WebP image from disk.
-  base::scoped_nsobject<NSData> webp_image(
-      LoadImage(base::FilePath("test.webp")));
+  NSData* webp_image = LoadImage(base::FilePath("test.webp"));
   ASSERT_TRUE(webp_image != nil);
   // Load reference image.
-  base::scoped_nsobject<NSData> jpg_image(
-      LoadImage(base::FilePath("test.jpg")));
+  NSData* jpg_image = LoadImage(base::FilePath("test.jpg"));
   ASSERT_TRUE(jpg_image != nil);
   // Convert to JPEG.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
@@ -188,12 +185,10 @@ TEST_F(WebpDecoderTest, DecodeToJpeg) {
 
 TEST_F(WebpDecoderTest, DecodeToPng) {
   // Load a WebP image from disk.
-  base::scoped_nsobject<NSData> webp_image(
-      LoadImage(base::FilePath("test_alpha.webp")));
+  NSData* webp_image = LoadImage(base::FilePath("test_alpha.webp"));
   ASSERT_TRUE(webp_image != nil);
   // Load reference image.
-  base::scoped_nsobject<NSData> png_image(
-      LoadImage(base::FilePath("test_alpha.png")));
+  NSData* png_image = LoadImage(base::FilePath("test_alpha.png"));
   ASSERT_TRUE(png_image != nil);
   // Convert to PNG.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
@@ -207,12 +202,10 @@ TEST_F(WebpDecoderTest, DecodeToPng) {
 
 TEST_F(WebpDecoderTest, DecodeToTiff) {
   // Load a WebP image from disk.
-  base::scoped_nsobject<NSData> webp_image(
-      LoadImage(base::FilePath("test_small.webp")));
+  NSData* webp_image = LoadImage(base::FilePath("test_small.webp"));
   ASSERT_TRUE(webp_image != nil);
   // Load reference image.
-  base::scoped_nsobject<NSData> tiff_image(
-      LoadImage(base::FilePath("test_small.tiff")));
+  NSData* tiff_image = LoadImage(base::FilePath("test_small.tiff"));
   ASSERT_TRUE(tiff_image != nil);
   // Convert to TIFF.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
@@ -226,12 +219,10 @@ TEST_F(WebpDecoderTest, DecodeToTiff) {
 
 TEST_F(WebpDecoderTest, StreamedDecode) {
   // Load a WebP image from disk.
-  base::scoped_nsobject<NSData> webp_image(
-      LoadImage(base::FilePath("test.webp")));
+  NSData* webp_image = LoadImage(base::FilePath("test.webp"));
   ASSERT_TRUE(webp_image != nil);
   // Load reference image.
-  base::scoped_nsobject<NSData> jpg_image(
-      LoadImage(base::FilePath("test.jpg")));
+  NSData* jpg_image = LoadImage(base::FilePath("test.jpg"));
   ASSERT_TRUE(jpg_image != nil);
   // Convert to JPEG in chunks.
   EXPECT_CALL(*delegate_, OnFinishedDecoding(true)).Times(1);
@@ -240,12 +231,11 @@ TEST_F(WebpDecoderTest, StreamedDecode) {
   const size_t kChunkSize = 10;
   unsigned int num_chunks = 0;
   while ([webp_image length] > kChunkSize) {
-    base::scoped_nsobject<NSData> chunk(
-        [webp_image subdataWithRange:NSMakeRange(0, kChunkSize)]);
+    NSData* chunk = [webp_image subdataWithRange:NSMakeRange(0, kChunkSize)];
     decoder_->OnDataReceived(chunk);
-    webp_image.reset([webp_image
+    webp_image = [webp_image
         subdataWithRange:NSMakeRange(kChunkSize,
-                                     [webp_image length] - kChunkSize)]);
+                                     [webp_image length] - kChunkSize)];
     ++num_chunks;
   }
   if ([webp_image length] > 0u) {
@@ -261,9 +251,8 @@ TEST_F(WebpDecoderTest, StreamedDecode) {
 TEST_F(WebpDecoderTest, InvalidFormat) {
   EXPECT_CALL(*delegate_, OnFinishedDecoding(false)).Times(1);
   const char dummy_image[] = "(>'-')> <('-'<) ^('-')^ <('-'<) (>'-')>";
-  base::scoped_nsobject<NSData> data([[NSData alloc]
-      initWithBytes:dummy_image
-             length:base::size(dummy_image)]);
+  NSData* data = [[NSData alloc] initWithBytes:dummy_image
+                                        length:base::size(dummy_image)];
   decoder_->OnDataReceived(data);
   EXPECT_EQ(0u, [delegate_->GetImage() length]);
 }

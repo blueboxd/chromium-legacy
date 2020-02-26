@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,10 +42,9 @@ void DevToolsMHTMLHelper::Capture(
     std::unique_ptr<PageHandler::CaptureSnapshotCallback> callback) {
   scoped_refptr<DevToolsMHTMLHelper> helper =
       new DevToolsMHTMLHelper(page_handler, std::move(callback));
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(),
-       // Requires IO.
+      {// Requires IO.
        base::MayBlock(),
 
        // TaskShutdownBehavior: use SKIP_ON_SHUTDOWN so that the helper's
@@ -71,9 +71,8 @@ void DevToolsMHTMLHelper::TemporaryFileCreatedOnIO() {
   mhtml_file_ = storage::ShareableFileReference::GetOrCreate(
       mhtml_snapshot_path_,
       storage::ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(),
-           // Requires IO.
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {// Requires IO.
            base::MayBlock(),
 
            // Because we are using DELETE_ON_FINAL_RELEASE here, the
@@ -111,15 +110,15 @@ void DevToolsMHTMLHelper::MHTMLGeneratedOnUI(int64_t mhtml_file_size) {
     ReportFailure("Failed to generate MHTML");
     return;
   }
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(),
-                  // Requires IO.
-                  base::MayBlock(),
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {// Requires IO.
+       base::MayBlock(),
 
-                  // TaskShutdownBehavior: use SKIP_ON_SHUTDOWN so that the
-                  // helper's fields do not suddenly become invalid.
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                 base::BindOnce(&DevToolsMHTMLHelper::ReadMHTML, this));
+       // TaskShutdownBehavior: use SKIP_ON_SHUTDOWN so that the
+       // helper's fields do not suddenly become invalid.
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&DevToolsMHTMLHelper::ReadMHTML, this));
 }
 
 void DevToolsMHTMLHelper::ReadMHTML() {

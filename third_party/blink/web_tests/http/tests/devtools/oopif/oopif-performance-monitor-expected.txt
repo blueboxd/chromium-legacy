@@ -4,9 +4,9 @@ Tests stability of performance metrics list.
 Metrics reported:
 AdSubframes
 AudioHandlers
-CaptureSnapshotDuration
 ContextLifecycleStateObservers
 DetachedScriptStates
+DevToolsCommandDuration
 Documents
 DomContentLoaded
 FirstMeaningfulPaint

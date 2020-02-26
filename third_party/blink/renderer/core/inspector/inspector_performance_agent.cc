@@ -57,7 +57,7 @@ void InspectorPerformanceAgent::InnerEnable() {
   task_start_ticks_ = base::TimeTicks();
   script_start_ticks_ = base::TimeTicks();
   v8compile_start_ticks_ = base::TimeTicks();
-  capture_snapshot_start_ticks_ = base::TimeTicks();
+  devtools_command_start_ticks_ = base::TimeTicks();
   thread_time_origin_ = GetThreadTimeNow();
 }
 
@@ -110,6 +110,10 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
     return Response::Error("Invalid time domain specification.");
   }
 
+  // Prevent this devtools command duration from being collected to avoid
+  // using start and end time from different time domains.
+  devtools_command_start_ticks_ = base::TimeTicks();
+
   return Response::OK();
 }
 
@@ -154,8 +158,12 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "LayoutDuration", layout_duration_.InSecondsF());
   AppendMetric(result.get(), "RecalcStyleDuration",
                recalc_style_duration_.InSecondsF());
-  AppendMetric(result.get(), "CaptureSnapshotDuration",
-               capture_snapshot_duration_.InSecondsF());
+
+  base::TimeDelta devtools_command_duration = devtools_command_duration_;
+  if (!devtools_command_start_ticks_.is_null())
+    devtools_command_duration += now - devtools_command_start_ticks_;
+  AppendMetric(result.get(), "DevToolsCommandDuration",
+               devtools_command_duration.InSecondsF());
 
   base::TimeDelta script_duration = script_duration_;
   if (!script_start_ticks_.is_null())
@@ -174,10 +182,10 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "TaskDuration", task_duration.InSecondsF());
 
   // Compute task time not accounted for by other metrics.
-  base::TimeDelta other_tasks_duration =
-      task_duration -
-      (script_duration + v8compile_duration + recalc_style_duration_ +
-       layout_duration_ + capture_snapshot_duration_);
+  base::TimeDelta known_tasks_duration =
+      script_duration + v8compile_duration + recalc_style_duration_ +
+      layout_duration_ + devtools_command_duration;
+  base::TimeDelta other_tasks_duration = task_duration - known_tasks_duration;
   AppendMetric(result.get(), "TaskOtherDuration",
                other_tasks_duration.InSecondsF());
 
@@ -232,8 +240,13 @@ void InspectorPerformanceAgent::ScriptStarts() {
 void InspectorPerformanceAgent::ScriptEnds() {
   if (--script_call_depth_)
     return;
-  script_duration_ += GetTimeTicksNow() - script_start_ticks_;
+  base::TimeDelta delta = GetTimeTicksNow() - script_start_ticks_;
+  script_duration_ += delta;
   script_start_ticks_ = base::TimeTicks();
+
+  // Exclude nested script execution from devtools command duration.
+  if (!devtools_command_start_ticks_.is_null())
+    devtools_command_start_ticks_ += delta;
 }
 
 void InspectorPerformanceAgent::Will(const probe::CallFunction& probe) {
@@ -262,11 +275,14 @@ void InspectorPerformanceAgent::Did(const probe::RecalculateStyle& probe) {
   recalc_style_count_++;
   recalc_style_start_ticks_ = base::TimeTicks();
 
-  // Exclude nested style re-calculations from script and layout duration.
+  // Exclude nested style re-calculations from script, layout and devtools
+  // command durations.
   if (!script_start_ticks_.is_null())
     script_start_ticks_ += delta;
   if (!layout_start_ticks_.is_null())
     layout_start_ticks_ += delta;
+  if (!devtools_command_start_ticks_.is_null())
+    devtools_command_start_ticks_ += delta;
 }
 
 void InspectorPerformanceAgent::Will(const probe::UpdateLayout& probe) {
@@ -282,12 +298,14 @@ void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
   layout_count_++;
   layout_start_ticks_ = base::TimeTicks();
 
-  // Exclude nested layout update from script and style re-calculations
-  // duration.
+  // Exclude nested layout update from script, style re-calculations and
+  // devtools command durations.
   if (!script_start_ticks_.is_null())
     script_start_ticks_ += delta;
   if (!recalc_style_start_ticks_.is_null())
     recalc_style_start_ticks_ += delta;
+  if (!devtools_command_start_ticks_.is_null())
+    devtools_command_start_ticks_ += delta;
 }
 
 void InspectorPerformanceAgent::Will(const probe::V8Compile& probe) {
@@ -296,8 +314,25 @@ void InspectorPerformanceAgent::Will(const probe::V8Compile& probe) {
 }
 
 void InspectorPerformanceAgent::Did(const probe::V8Compile& probe) {
-  v8compile_duration_ += GetTimeTicksNow() - v8compile_start_ticks_;
+  base::TimeDelta delta = GetTimeTicksNow() - v8compile_start_ticks_;
+  v8compile_duration_ += delta;
   v8compile_start_ticks_ = base::TimeTicks();
+
+  // Exclude nested script compilation from devtools command duration.
+  if (!devtools_command_start_ticks_.is_null())
+    devtools_command_start_ticks_ += delta;
+}
+
+void InspectorPerformanceAgent::WillStartDebuggerTask() {
+  devtools_command_start_ticks_ = GetTimeTicksNow();
+}
+
+void InspectorPerformanceAgent::DidFinishDebuggerTask() {
+  if (!devtools_command_start_ticks_.is_null()) {
+    devtools_command_duration_ +=
+        GetTimeTicksNow() - devtools_command_start_ticks_;
+    devtools_command_start_ticks_ = base::TimeTicks();
+  }
 }
 
 // Will/DidProcessTask() ignore caller provided times to ensure time domain
@@ -308,21 +343,10 @@ void InspectorPerformanceAgent::WillProcessTask(base::TimeTicks start_time) {
 
 void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
                                                base::TimeTicks end_time) {
-  if (!task_start_ticks_.is_null())
+  if (!task_start_ticks_.is_null()) {
     task_duration_ += GetTimeTicksNow() - task_start_ticks_;
-  task_start_ticks_ = base::TimeTicks();
-}
-
-void InspectorPerformanceAgent::WillCaptureSnapshot() {
-  capture_snapshot_start_ticks_ = GetTimeTicksNow();
-}
-
-void InspectorPerformanceAgent::DidCaptureSnapshot() {
-  if (!capture_snapshot_start_ticks_.is_null()) {
-    capture_snapshot_duration_ +=
-        GetTimeTicksNow() - capture_snapshot_start_ticks_;
+    task_start_ticks_ = base::TimeTicks();
   }
-  capture_snapshot_start_ticks_ = base::TimeTicks();
 }
 
 void InspectorPerformanceAgent::Trace(Visitor* visitor) {

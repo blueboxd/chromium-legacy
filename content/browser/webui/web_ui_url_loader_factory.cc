@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -137,8 +138,8 @@ void DataAvailable(
   // Since the bytes are from the memory mapped resource file, copying the
   // data can lead to disk access. Needs to be posted to a SequencedTaskRunner
   // as Mojo requires a SequencedTaskRunnerHandle in scope.
-  base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock(),
+  base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
       ->PostTask(FROM_HERE, base::BindOnce(ReadData, std::move(headers),
                                            replacements, replace_in_js, source,

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
@@ -33,8 +34,8 @@ const base::Feature kCacheStorageSequenceFeature{
 scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
   if (!base::FeatureList::IsEnabled(kCacheStorageSequenceFeature))
     return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-  return base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE});
+  return base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_VISIBLE});
 }
 
 }  // namespace
@@ -62,9 +63,8 @@ void CacheStorageContextImpl::Init(
   special_storage_policy_ = std::move(special_storage_policy);
 
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   task_runner_->PostTask(

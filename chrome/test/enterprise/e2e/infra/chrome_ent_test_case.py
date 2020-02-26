@@ -162,7 +162,7 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
     ui_test_cmd = r'c:\Python27\python.exe -u %s %s' % (file_name, args)
     cmd = (r'python c:\cel\supporting_files\run_ui_test.py --timeout %s -- %s'
           ) % (timeout, ui_test_cmd)
-    return self.RunCommand(instance_name, cmd)
+    return self.RunCommand(instance_name, cmd, timeout=timeout)
 
   def _generatePassword(self):
     """Generates a random password."""

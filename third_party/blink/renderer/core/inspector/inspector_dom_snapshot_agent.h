@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_performance_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DOMSnapshot.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -27,9 +26,7 @@ class PaintLayer;
 class CORE_EXPORT InspectorDOMSnapshotAgent final
     : public InspectorBaseAgent<protocol::DOMSnapshot::Metainfo> {
  public:
-  InspectorDOMSnapshotAgent(InspectedFrames*,
-                            InspectorDOMDebuggerAgent*,
-                            InspectorPerformanceAgent*);
+  InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
   void Trace(Visitor*) override;
 
@@ -131,7 +128,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   DocumentOrderMap document_order_map_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMDebuggerAgent> dom_debugger_agent_;
-  Member<InspectorPerformanceAgent> performance_agent_;
   InspectorAgentState::Boolean enabled_;
   DISALLOW_COPY_AND_ASSIGN(InspectorDOMSnapshotAgent);
 };

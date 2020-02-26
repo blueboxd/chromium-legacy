@@ -24,6 +24,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
@@ -1361,9 +1362,8 @@ void RenderWidgetHostViewAndroid::OnFinishGetContentBitmap(
     const SkBitmap& bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!bitmap.drawsNothing()) {
-    auto task_runner = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     base::PostTaskAndReplyWithResult(
         task_runner.get(), FROM_HERE,
         base::BindOnce(&CompressAndSaveBitmap, path, bitmap),

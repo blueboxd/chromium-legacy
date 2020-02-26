@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
@@ -241,9 +242,8 @@ void ServiceWorkerContextWrapper::Init(
   // TODO(falken): Only block shutdown for that particular task, when someday
   // task runners support mixing task shutdown behaviors.
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       non_network_pending_loader_factory_bundle_for_update_check;
   if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {

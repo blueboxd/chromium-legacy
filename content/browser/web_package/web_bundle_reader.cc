@@ -10,6 +10,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/web_package/web_bundle_blob_data_source.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -25,8 +26,8 @@ namespace content {
 
 WebBundleReader::SharedFile::SharedFile(
     std::unique_ptr<WebBundleSource> source) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(
           [](std::unique_ptr<WebBundleSource> source)
               -> std::unique_ptr<base::File> { return source->OpenFile(); },
@@ -55,9 +56,8 @@ base::File* WebBundleReader::SharedFile::operator->() {
 WebBundleReader::SharedFile::~SharedFile() {
   // Move the last reference to |file_| that leads an internal blocking call
   // that is not permitted here.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce([](std::unique_ptr<base::File> file) {},
                      std::move(file_)));
 }
@@ -68,8 +68,8 @@ void WebBundleReader::SharedFile::SetFile(std::unique_ptr<base::File> file) {
   if (duplicate_callback_.is_null())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(
           [](base::File* file) -> base::File { return file->Duplicate(); },
           file_.get()),

@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
@@ -93,9 +94,8 @@ bool PerfettoFileTracer::ShouldEnable() {
 }
 
 PerfettoFileTracer::PerfettoFileTracer()
-    : background_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+    : background_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       background_drainer_(background_task_runner_) {
   GetTracingService().BindConsumerHost(
@@ -132,9 +132,8 @@ void PerfettoFileTracer::OnTracingEnabled() {}
 void PerfettoFileTracer::SetBackgroundTaskPriorityForTesting(
     base::TaskPriority priority) {
   background_drainer_.Reset();
-  background_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), priority,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), priority, base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   background_drainer_ =
       base::SequenceBound<BackgroundDrainer>(background_task_runner_);
 }

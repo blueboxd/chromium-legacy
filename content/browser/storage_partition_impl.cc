@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -1475,9 +1476,8 @@ void StoragePartitionImpl::Initialize() {
   if (!is_in_memory_ &&
       base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
     conversion_manager_ = std::make_unique<ConversionManager>(
-        path,
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::BEST_EFFORT}));
+        path, base::ThreadPool::CreateSequencedTaskRunner(
+                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   }
 
   GeneratedCodeCacheSettings settings =

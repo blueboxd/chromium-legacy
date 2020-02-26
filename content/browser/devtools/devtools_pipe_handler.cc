@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/devtools/devtools_pipe_handler.h"
+#include "base/task/thread_pool.h"
 
 #if defined(OS_WIN)
 #include <io.h>
@@ -293,9 +294,9 @@ void DevToolsPipeHandler::Shutdown() {
 
   // If there is no write thread, only take care of the read thread.
   if (!write_thread_) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+        {base::MayBlock(), base::WithBaseSyncPrimitives(),
          base::TaskPriority::BEST_EFFORT},
         base::BindOnce([](base::Thread* rthread) { delete rthread; },
                        read_thread_.release()));
@@ -325,9 +326,9 @@ void DevToolsPipeHandler::Shutdown() {
                                 pipe_reader_.release()));
 
   // Post background task that would join and destroy the threads.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](base::Thread* rthread, base::Thread* wthread) {

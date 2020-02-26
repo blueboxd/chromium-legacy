@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_disk_cache_ops.h"
@@ -377,9 +378,8 @@ AppCacheStorageReference::~AppCacheStorageReference() = default;
 AppCacheServiceImpl::AppCacheServiceImpl(
     storage::QuotaManagerProxy* quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
-    : db_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+    : db_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),

@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -103,9 +104,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     : base::RefCountedDeleteOnSequence<IndexedDBContextImpl>(
           custom_task_runner
               ? custom_task_runner
-              : (base::CreateSequencedTaskRunner(
-                    {base::ThreadPool(), base::MayBlock(),
-                     base::WithBaseSyncPrimitives(),
+              : (base::ThreadPool::CreateSequencedTaskRunner(
+                    {base::MayBlock(), base::WithBaseSyncPrimitives(),
                      base::TaskPriority::USER_VISIBLE,
                      // BLOCK_SHUTDOWN to support clearing session-only storage.
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),

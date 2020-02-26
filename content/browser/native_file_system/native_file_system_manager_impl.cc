@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/native_file_system.pb.h"
@@ -745,10 +746,8 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
   if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
     DCHECK_EQ(entries.size(), 1u);
     // Create file if it doesn't yet exist, and truncate file if it does exist.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
         base::BindOnce(&CreateOrTruncateFile, entries.front()),
         base::BindOnce(
             &NativeFileSystemManagerImpl::DidCreateOrTruncateSaveFile, this,

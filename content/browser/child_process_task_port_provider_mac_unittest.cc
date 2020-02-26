@@ -12,6 +12,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "content/common/child_process.mojom.h"
@@ -171,7 +172,7 @@ TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
   ASSERT_TRUE(base::mac::CreateMachPort(&receive_right, &send_right));
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSequencedTaskRunner({});
 
   MockChildProcess child_process;
   EXPECT_CALL(child_process, GetTaskPort(_))

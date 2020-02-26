@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_config.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -51,8 +52,8 @@ class CrOSSystemTracingSession {
       return;
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(
-        base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
     debug_daemon_->StartAgentTracing(
         trace_config,

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -161,10 +162,11 @@ void TestCertificateProviderExtension::Observe(
     CHECK_EQ(message_value.GetList().size(), 1U);
     HandleCertificatesRequest(std::move(send_reply_to_js_callback));
   } else if (request_type == "onSignatureRequested") {
-    CHECK_EQ(message_value.GetList().size(), 3U);
+    CHECK_EQ(message_value.GetList().size(), 4U);
     HandleSignatureRequest(
         /*sign_request=*/message_value.GetList()[1],
-        /*pin_user_input=*/message_value.GetList()[2],
+        /*pin_status=*/message_value.GetList()[2],
+        /*pin=*/message_value.GetList()[3],
         std::move(send_reply_to_js_callback));
   } else {
     LOG(FATAL) << "Unexpected JS message type: " << request_type;
@@ -181,10 +183,13 @@ void TestCertificateProviderExtension::HandleCertificatesRequest(
 
 void TestCertificateProviderExtension::HandleSignatureRequest(
     const base::Value& sign_request,
-    const base::Value& pin_user_input,
+    const base::Value& pin_status,
+    const base::Value& pin,
     ReplyToJsCallback callback) {
   CHECK_EQ(*sign_request.FindKey("certificate"),
            ConvertBytesToValue(GetCertDer(*certificate_)));
+  const std::string pin_status_string = pin_status.GetString();
+  const std::string pin_string = pin.GetString();
 
   const int sign_request_id = sign_request.FindKey("signRequestId")->GetInt();
   const std::vector<uint8_t> digest =
@@ -209,7 +214,7 @@ void TestCertificateProviderExtension::HandleSignatureRequest(
 
   base::Value response(base::Value::Type::DICTIONARY);
   if (required_pin_.has_value()) {
-    if (pin_user_input.is_none()) {
+    if (pin_status_string == "not_requested") {
       // The PIN is required but not specified yet, so request it via the JS
       // side before generating the signature.
       base::Value pin_request_parameters(base::Value::Type::DICTIONARY);
@@ -218,7 +223,17 @@ void TestCertificateProviderExtension::HandleSignatureRequest(
       std::move(callback).Run(response);
       return;
     }
-    if (pin_user_input.GetString() != *required_pin_) {
+    if (pin_status_string == "canceled" ||
+        base::StartsWith(pin_status_string,
+                         "failed:", base::CompareCase::SENSITIVE)) {
+      // The PIN request failed.
+      LOG(WARNING) << "PIN request failed: " << pin_status_string;
+      // Respond with a failure.
+      std::move(callback).Run(/*response=*/base::Value());
+      return;
+    }
+    DCHECK_EQ(pin_status_string, "ok");
+    if (pin_string != *required_pin_) {
       // The PIN is wrong, so retry the PIN request with displaying an error.
       base::Value pin_request_parameters(base::Value::Type::DICTIONARY);
       pin_request_parameters.SetIntKey("signRequestId", sign_request_id);

@@ -9,7 +9,18 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
-import {TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+
+/** @const {number} */
+export const PLACEHOLDER_TAB_ID = -1;
+
+/**
+ * The data type key for pinned state of a tab. Since drag events only expose
+ * whether or not a data type exists (not the actual value), presence of this
+ * data type means that the tab is pinned.
+ * @const {string}
+ */
+const PINNED_DATA_TYPE = 'pinned';
 
 /**
  * Gets the data type of tab IDs on DataTransfer objects in drag events. This
@@ -23,6 +34,25 @@ function getTabIdDataType() {
 /** @return {string} */
 function getGroupIdDataType() {
   return loadTimeData.getString('tabGroupIdDataType');
+}
+
+/** @return {!TabData} */
+function getDefaultTabData() {
+  return {
+    active: false,
+    alertStates: [],
+    blocked: false,
+    crashed: false,
+    id: -1,
+    index: -1,
+    isDefaultFavicon: false,
+    networkState: TabNetworkState.NONE,
+    pinned: false,
+    shouldHideThrobber: false,
+    showIcon: true,
+    title: '',
+    url: '',
+  };
 }
 
 /**
@@ -39,7 +69,7 @@ export class DragManagerDelegate {
    * @param {!TabElement} element
    * @param {number} index
    * @param {boolean} pinned
-   * @param {string|undefined} groupId
+   * @param {string=} groupId
    */
   placeTabElement(element, index, pinned, groupId) {}
 
@@ -102,6 +132,26 @@ class DragSession {
     return new DragSession(delegate, element, srcIndex, srcGroup);
   }
 
+  /**
+   * @param {!DragManagerDelegateElement} delegate
+   * @param {!DragEvent} event
+   * @return {?DragSession}
+   */
+  static createFromEvent(delegate, event) {
+    if (event.dataTransfer.types.includes(getTabIdDataType())) {
+      const isPinned = event.dataTransfer.types.includes('pinned');
+      const placeholderTabElement =
+          /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
+      placeholderTabElement.tab = /** @type {!TabData} */ (Object.assign(
+          getDefaultTabData(), {id: PLACEHOLDER_TAB_ID, pinned: isPinned}));
+      placeholderTabElement.setDragging(true);
+      delegate.placeTabElement(placeholderTabElement, -1, isPinned);
+      return DragSession.createFromElement(delegate, placeholderTabElement);
+    }
+
+    return null;
+  }
+
   /** @return {string|undefined} */
   get dstGroup() {
     if (isTabElement(this.element_) && this.element_.parentElement &&
@@ -132,6 +182,12 @@ class DragSession {
   }
 
   cancel() {
+    if (isTabElement(this.element_) &&
+        this.element_.tab.id === PLACEHOLDER_TAB_ID) {
+      this.element_.remove();
+      return;
+    }
+
     if (isTabGroupElement(this.element_)) {
       this.delegate_.placeTabGroupElement(
           /** @type {!TabGroupElement} */ (this.element_), this.srcIndex);
@@ -144,12 +200,12 @@ class DragSession {
     this.element_.setDragging(false);
   }
 
-  finish() {
-    const dstGroupId = this.dstGroup;
-    if (dstGroupId && dstGroupId !== this.srcGroup) {
-      this.tabsProxy_.groupTab(this.element_.tab.id, dstGroupId);
-    } else if (!dstGroupId && this.srcGroup) {
-      this.tabsProxy_.ungroupTab(this.element_.tab.id);
+  /** @param {!DragEvent} event */
+  finish(event) {
+    if (isTabElement(this.element_) &&
+        this.element_.tab.id === PLACEHOLDER_TAB_ID) {
+      const id = Number(event.dataTransfer.getData(getTabIdDataType()));
+      this.element_.tab = Object.assign({}, this.element_.tab, {id});
     }
 
     const dstIndex = this.dstIndex;
@@ -157,6 +213,13 @@ class DragSession {
       this.tabsProxy_.moveTab(this.element_.tab.id, dstIndex);
     } else if (isTabGroupElement(this.element_)) {
       this.tabsProxy_.moveGroup(this.element_.dataset.groupId, dstIndex);
+    }
+
+    const dstGroup = this.dstGroup;
+    if (dstGroup && dstGroup !== this.srcGroup) {
+      this.tabsProxy_.groupTab(this.element_.tab.id, dstGroup);
+    } else if (!dstGroup && this.srcGroup) {
+      this.tabsProxy_.ungroupTab(this.element_.tab.id);
     }
 
     this.element_.setDragging(false);
@@ -174,6 +237,11 @@ class DragSession {
     if (isTabElement(this.element_)) {
       event.dataTransfer.setData(
           getTabIdDataType(), this.element_.tab.id.toString());
+
+      if (this.element_.tab.pinned) {
+        event.dataTransfer.setData(
+            'pinned', this.element_.tab.pinned.toString());
+      }
     } else if (isTabGroupElement(this.element_)) {
       event.dataTransfer.setData(
           getGroupIdDataType(), this.element_.dataset.groupId);
@@ -283,7 +351,7 @@ export class DragManager {
 
   /** @private */
   onDragLeave_() {
-    // TODO(johntlee): Handle drag and drop from other windows with
+    // TODO(johntlee): Handle drag and drop groups from other windows with
     // DragSession.
     this.dropPlaceholder_.remove();
   }
@@ -293,7 +361,7 @@ export class DragManager {
     event.preventDefault();
 
     if (!this.dragSession_) {
-      // TODO(johntlee): Handle drag and drop from other windows with
+      // TODO(johntlee): Handle drag and drop groups from other windows with
       // DragSession.
       this.delegate_.showDropPlaceholder(this.dropPlaceholder_);
       return;
@@ -328,26 +396,29 @@ export class DragManager {
     this.dragSession_ = null;
   }
 
+  /** @param {!DragEvent} event */
+  onDragEnter_(event) {
+    if (this.dragSession_) {
+      return;
+    }
+
+    this.dragSession_ = DragSession.createFromEvent(this.delegate_, event);
+  }
+
   /**
    * @param {!DragEvent} event
    */
   onDrop_(event) {
     if (this.dragSession_) {
-      this.dragSession_.finish();
+      this.dragSession_.finish(event);
       this.dragSession_ = null;
       return;
     }
 
-    // TODO(johntlee): Handle drag and drop from other windows with DragSession.
+    // TODO(johntlee): Handle drag and drop groups from other windows with
+    // DragSession.
     this.dropPlaceholder_.remove();
-    if (event.dataTransfer.types.includes(getTabIdDataType())) {
-      const tabId = Number(event.dataTransfer.getData(getTabIdDataType()));
-      if (Number.isNaN(tabId)) {
-        // Invalid tab ID. Return silently.
-        return;
-      }
-      this.tabsProxy_.moveTab(tabId, -1);
-    } else if (event.dataTransfer.types.includes(getGroupIdDataType())) {
+    if (event.dataTransfer.types.includes(getGroupIdDataType())) {
       const groupId = event.dataTransfer.getData(getGroupIdDataType());
       this.tabsProxy_.moveGroup(groupId, -1);
     }
@@ -358,6 +429,8 @@ export class DragManager {
         'dragstart', e => this.onDragStart_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener(
         'dragend', e => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
+    this.delegate_.addEventListener(
+        'dragenter', (e) => this.onDragEnter_(/** @type {!DragEvent} */ (e)));
     this.delegate_.addEventListener('dragleave', () => this.onDragLeave_());
     this.delegate_.addEventListener(
         'dragover', e => this.onDragOver_(/** @type {!DragEvent} */ (e)));

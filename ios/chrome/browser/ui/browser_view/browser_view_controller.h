@@ -21,7 +21,6 @@ class ChromeBrowserState;
 @protocol BrowsingDataCommands;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
-@class CommandDispatcher;
 @protocol FindInPageCommands;
 @protocol OmniboxFocuser;
 @protocol PasswordBreachCommands;
@@ -53,7 +52,6 @@ class ChromeBrowserState;
             (id<ApplicationCommands>)applicationCommandEndpoint
        browsingDataCommandEndpoint:
            (id<BrowsingDataCommands>)browsingDataCommandEndpoint
-                 commandDispatcher:(CommandDispatcher*)commandDispatcher
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
     NS_DESIGNATED_INITIALIZER;

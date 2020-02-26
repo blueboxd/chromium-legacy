@@ -253,6 +253,11 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // that the authentication flow is correctly canceled and dismissed.
 // crbug.com/462202
 - (void)testSignInCancelAuthenticationFlow {
+  // The ChromeSigninView's activity indicator must be hidden as the import
+  // data UI is presented on top of the activity indicator and Earl Grey cannot
+  // interact with any UI while an animation is active.
+  [SigninInteractionControllerAppInterface setActivityIndicatorShown:NO];
+
   // Set up the fake identities.
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
@@ -277,6 +282,9 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // selected. Note that authentication flow actually blocks as the
   // "Clear Browsing Before Syncing" dialog is presented.
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
+  // Waits until the merge/delete data panel is shown.
+  [[EarlGrey selectElementWithMatcher:SettingsImportDataKeepSeparateButton()]
+      assertWithMatcher:grey_interactable()];
 
   // Open new tab to cancel sign-in.
   [ChromeEarlGrey simulateExternalAppURLOpening];
@@ -301,6 +309,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils checkSignedOut];
+  [SigninInteractionControllerAppInterface setActivityIndicatorShown:YES];
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on

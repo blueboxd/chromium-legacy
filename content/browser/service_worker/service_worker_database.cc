@@ -283,7 +283,7 @@ ServiceWorkerDatabase::RegistrationData::RegistrationData()
       has_fetch_handler(false),
       resources_total_size_bytes(0),
       cross_origin_embedder_policy(
-          network::mojom::CrossOriginEmbedderPolicy::kNone) {}
+          network::mojom::CrossOriginEmbedderPolicyValue::kNone) {}
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData(
     const RegistrationData& other) = default;
@@ -1554,11 +1554,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     switch (data.cross_origin_embedder_policy()) {
       case ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST:
         out->cross_origin_embedder_policy =
-            network::mojom::CrossOriginEmbedderPolicy::kNone;
+            network::mojom::CrossOriginEmbedderPolicyValue::kNone;
         break;
       case ServiceWorkerRegistrationData::REQUIRE_CORP:
         out->cross_origin_embedder_policy =
-            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
         break;
     }
   }
@@ -1618,7 +1618,7 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
 
   data.set_cross_origin_embedder_policy(
       registration.cross_origin_embedder_policy ==
-              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp
+              network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp
           ? ServiceWorkerRegistrationData::REQUIRE_CORP
           : ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST);
 

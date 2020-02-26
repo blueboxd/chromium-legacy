@@ -110,7 +110,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   const GURL& updated_script_url() const { return updated_script_url_; }
   bool network_accessed() const { return network_accessed_; }
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy()
       const {
     return cross_origin_embedder_policy_;
   }
@@ -159,7 +159,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   // The value of Cross-Origin-Embedder-Policy header for the updated main
   // script.
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy_;
 
   // |context_| outlives |this| because it owns |this| through
   // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.

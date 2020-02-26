@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from collections import defaultdict
 
 
@@ -15,14 +14,18 @@ def _runtime_features_graph_sanity_check(features):
     feature_pool = {str(f['name']) for f in features}
     for f in features:
         for d in f['depends_on']:
-            assert d in feature_pool, "{} not found in runtime_enabled_features.json5".format(d)
+            assert d in feature_pool, "{} not found in runtime_enabled_features.json5".format(
+                d)
 
     def cyclic(features):
         """
         Returns True if the runtime features graph contains a cycle
         @returns bool
         """
-        graph = {str(feature['name']): feature['depends_on'] for feature in features}
+        graph = {
+            str(feature['name']): feature['depends_on']
+            for feature in features
+        }
         path = set()
 
         def visit(vertex):

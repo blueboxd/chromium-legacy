@@ -27,8 +27,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Callback called when this object is destructed. Ownership of the shared
   // memory is transferred to the callee.
   using MojoSharedBufferDoneCB =
-      base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
-                          size_t capacity)>;
+      base::OnceCallback<void(mojo::ScopedSharedBufferHandle buffer,
+                              size_t capacity)>;
 
   // Creates a new I420 frame in shared memory with provided parameters
   // (coded_size() == natural_size() == visible_rect()), or returns nullptr.
@@ -78,7 +78,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Sets the callback to be called to free the shared buffer. If not null,
   // it is called on destruction, and is passed ownership of |handle|.
   void SetMojoSharedBufferDoneCB(
-      const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb);
+      MojoSharedBufferDoneCB mojo_shared_buffer_done_cb);
 
  private:
   friend class MojoDecryptorService;

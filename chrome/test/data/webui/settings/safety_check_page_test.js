@@ -17,13 +17,17 @@ suite('SafetyCheckUiTests', function() {
     page.remove();
   });
 
-  test('parentBeforeCheckUiTest', function() {
+  /** Tests parent element and collapse. */
+  test('beforeCheckUiTest', function() {
     // Only the text button is present.
     assertTrue(!!page.$$('#safetyCheckParentButton'));
     assertFalse(!!page.$$('#safetyCheckParentIconButton'));
+    // Collapse is not opened.
+    assertFalse(page.$$('#safetyCheckCollapse').opened);
   });
 
-  test('parentDuringCheckUiTest', function() {
+  /** Tests parent element and collapse. */
+  test('duringCheckUiTest', function() {
     // User starts check.
     page.$$('#safetyCheckParentButton').click();
 
@@ -31,9 +35,12 @@ suite('SafetyCheckUiTests', function() {
     // No button is present.
     assertFalse(!!page.$$('#safetyCheckParentButton'));
     assertFalse(!!page.$$('#safetyCheckParentIconButton'));
+    // Collapse is opened.
+    assertTrue(page.$$('#safetyCheckCollapse').opened);
   });
 
-  test('parentAfterCheckUiTest', function() {
+  /** Tests parent element and collapse. */
+  test('afterCheckUiTest', function() {
     // User starts check.
     page.$$('#safetyCheckParentButton').click();
 
@@ -60,5 +67,29 @@ suite('SafetyCheckUiTests', function() {
     // Only the icon button is present.
     assertFalse(!!page.$$('#safetyCheckParentButton'));
     assertTrue(!!page.$$('#safetyCheckParentIconButton'));
+    // Collapse is opened.
+    assertTrue(page.$$('#safetyCheckCollapse').opened);
+  });
+
+  test('passwordsButtonVisibilityUiTest', function() {
+    // Iterate over all states
+    for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {
+      cr.webUIListenerCallback('safety-check-status-changed', {
+        safetyCheckComponent: 1, /* PASSWORDS */
+        newState: state,
+      });
+      Polymer.dom.flush();
+
+      // button is only visible in COMPROMISED and ERROR states
+      switch (state) {
+        case settings.SafetyCheckPasswordsStatus.COMPROMISED:
+        case settings.SafetyCheckPasswordsStatus.ERROR:
+          assertTrue(!!page.$$('#safetyCheckPasswordsButton'));
+          break;
+        default:
+          assertFalse(!!page.$$('#safetyCheckPasswordsButton'));
+          break;
+      }
+    }
   });
 });

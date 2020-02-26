@@ -339,7 +339,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       view_structure_(this) {
   DCHECK(contents_view_);
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  layer()->SetMasksToBounds(true);
   // Clip any icons that are outside the grid view's bounds. These icons would
   // otherwise be visible to the user when the grid view is off screen.
   layer()->SetMasksToBounds(true);
@@ -347,7 +346,8 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   items_container_ = AddChildView(std::make_unique<views::View>());
   items_container_->SetPaintToLayer();
   items_container_->layer()->SetFillsBoundsOpaquely(false);
-  bounds_animator_ = std::make_unique<views::BoundsAnimator>(items_container_);
+  bounds_animator_ = std::make_unique<views::BoundsAnimator>(
+      items_container_, /*use_transforms=*/true);
 
   if (!folder_delegate) {
     SetBorder(views::CreateEmptyBorder(

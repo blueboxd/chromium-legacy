@@ -2035,7 +2035,7 @@ class ServiceWorkerUpdateJobTestWithCrossOriginIsolation
 
 // Update job should handle the COEP header appropriately.
 TEST_F(ServiceWorkerUpdateJobTestWithCrossOriginIsolation,
-       Update_CrossOriginEmbedderPolicy) {
+       Update_CrossOriginEmbedderPolicyValue) {
   const GURL kNewVersionOrigin("https://newversion/");
   const char kHeadersWithRequireCorp[] = R"(HTTP/1.1 200 OK
 Content-Type: application/javascript
@@ -2055,7 +2055,7 @@ Cross-Origin-Embedder-Policy: none
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
-  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
             registration->active_version()->cross_origin_embedder_policy());
 
   registration->AddListener(update_helper_);
@@ -2098,7 +2098,7 @@ Cross-Origin-Embedder-Policy: none
     histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
                                        true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
-    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kRequireCorp,
+    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
               registration->waiting_version()->cross_origin_embedder_policy());
   }
 
@@ -2120,7 +2120,7 @@ Cross-Origin-Embedder-Policy: none
     histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
                                        true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
-    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
               registration->waiting_version()->cross_origin_embedder_policy());
   }
 }

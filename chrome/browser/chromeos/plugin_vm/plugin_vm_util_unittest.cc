@@ -80,13 +80,6 @@ TEST_F(PluginVmUtilTest, GetPluginVmLicenseKey) {
   EXPECT_EQ(kLicenseKey, GetPluginVmLicenseKey());
 }
 
-TEST_F(PluginVmUtilTest, PluginVmShouldBeAllowedForManualTesting) {
-  EXPECT_FALSE(IsPluginVmAllowedForProfile(testing_profile_.get()));
-
-  test_helper_->AllowPluginVmForManualTesting();
-  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
-}
-
 TEST_F(PluginVmUtilTest, DriveLinkDetection) {
   std::string base_url(kBaseDriveUrl);
   std::string file_id(kDriveFileId);

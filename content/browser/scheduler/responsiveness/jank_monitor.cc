@@ -24,7 +24,8 @@ static constexpr int64_t kInactivityThresholdUs =
 JankMonitor::Observer::~Observer() = default;
 
 JankMonitor::JankMonitor()
-    : timer_running_(false),
+    : timer_(std::make_unique<base::RepeatingTimer>()),
+      timer_running_(false),
       janky_task_id_(nullptr),
       last_activity_time_us_(0) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -66,13 +67,16 @@ void JankMonitor::SetUp() {
 void JankMonitor::Destroy() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Destroy() tears down the object in reverse order of SetUp(): destroy the
-  // MetricSource first to silence the WillRun/DidRun callbacks. Then the
-  // monitor timer is stopped. Finally |ui_thread_exec_state_| and
-  // |io_thread_exec_state_| can be safely destroyed.
+  // Destroy shuts down the monitor timer and the metric source in parallel.
+  // |timer_| is shut down and destroyed on the monitor thread. |metric_source_|
+  // is destroyed in calling its Destroy() method. The shared data members,
+  // |ui_thread_exec_state_| and |io_thread_exec_state_| is destroyed in the
+  // JankMonitor dtor, which can happen on either the monitor or the UI thread.
 
-  // This holds a reference to |this| until |metric_source_| finishes async
-  // shutdown.
+  monitor_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&JankMonitor::DestroyOnMonitorThread,
+                                base::RetainedRef(this)));
+
   base::ScopedClosureRunner finish_destroy_metric_source(base::BindOnce(
       &JankMonitor::FinishDestroyMetricSource, base::RetainedRef(this)));
   metric_source_->Destroy(std::move(finish_destroy_metric_source));
@@ -83,12 +87,6 @@ void JankMonitor::FinishDestroyMetricSource() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   metric_source_ = nullptr;
-
-  // We won't receive any RullRun* or DidRun* callbacks. Now shut down the
-  // monitor thread.
-  monitor_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&JankMonitor::DestroyOnMonitorThread,
-                                base::RetainedRef(this)));
 }
 
 void JankMonitor::SetUpOnIOThread() {}
@@ -160,32 +158,38 @@ void JankMonitor::DidRunTaskOrEvent(ThreadExecutionState* thread_exec_state,
 
 void JankMonitor::StartTimerIfNecessary() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_checker_);
-  DCHECK_EQ(timer_.IsRunning(), timer_running_);
+
+  // |timer_| is already destroyed. This function is posted from UI or IO thread
+  // after Destroy() is called. Just do nothing.
+  if (!timer_)
+    return;
+
+  DCHECK_EQ(timer_->IsRunning(), timer_running_);
 
   // Already running. Maybe both UI and IO threads saw the timer stopped, and
   // one attempt has already succeeded.
-  if (timer_.IsRunning())
+  if (timer_->IsRunning())
     return;
 
   static base::TimeDelta monitor_check_interval =
       base::TimeDelta::FromMilliseconds(kMonitorCheckIntervalMs);
   // RepeatingClosure bound to the timer doesn't hold a ref to |this| because
   // the ref will only be released on timer destruction.
-  timer_.Start(FROM_HERE, monitor_check_interval,
-               base::BindRepeating(&JankMonitor::OnCheckJankiness,
-                                   base::Unretained(this)));
+  timer_->Start(FROM_HERE, monitor_check_interval,
+                base::BindRepeating(&JankMonitor::OnCheckJankiness,
+                                    base::Unretained(this)));
   timer_running_ = true;
 }
 
 void JankMonitor::StopTimerIfIdle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_checker_);
-  DCHECK(timer_.IsRunning());
+  DCHECK(timer_->IsRunning());
 
   auto now_us = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
   if (now_us - last_activity_time_us_ < kInactivityThresholdUs)
     return;
 
-  timer_.Stop();
+  timer_->Stop();
   timer_running_ = false;
 }
 
@@ -195,15 +199,11 @@ std::unique_ptr<MetricSource> JankMonitor::CreateMetricSource () {
 
 void JankMonitor::DestroyOnMonitorThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_checker_);
+  DCHECK(timer_);
 
-  timer_.AbandonAndStop();
+  timer_->AbandonAndStop();
+  timer_ = nullptr;
   timer_running_ = false;
-
-  // This is the last step of shutdown: no tasks will be observed on either IO
-  // or IO thread, and the monitor timer is stopped. It's safe to destroy
-  // |ui_thread_exec_state_| and |io_thread_exec_state_| now.
-  ui_thread_exec_state_ = nullptr;
-  io_thread_exec_state_ = nullptr;
 }
 
 bool JankMonitor::timer_running() const {

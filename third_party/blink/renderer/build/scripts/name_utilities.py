@@ -66,5 +66,6 @@ def id_for_css_property_alias(property_name):
 
 
 def _upper_camel_case(property_name):
-    converter = NameStyleConverter(property_name) if isinstance(property_name, str) else property_name
+    converter = NameStyleConverter(property_name) if isinstance(
+        property_name, str) else property_name
     return converter.to_upper_camel_case()

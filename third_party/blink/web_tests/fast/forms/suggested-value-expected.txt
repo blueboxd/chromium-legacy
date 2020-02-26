@@ -55,15 +55,6 @@ instead of "initial value".
 |           shadow:pseudoId="-webkit-datetime-edit-year-field"
 |           "2014"
 |     <div>
-|       id="clear"
-|       pseudo="-webkit-clear-button"
-|       style=""
-|       shadow:pseudoId="-webkit-clear-button"
-|     <div>
-|       id="spin"
-|       pseudo="-webkit-inner-spin-button"
-|       shadow:pseudoId="-webkit-inner-spin-button"
-|     <div>
 |       id="picker"
 |       pseudo="-webkit-calendar-picker-indicator"
 |       shadow:pseudoId="-webkit-calendar-picker-indicator"

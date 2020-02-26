@@ -24,6 +24,11 @@ const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable support for ARC ADB sideloading for managed
+// accounts and/or devices.
+const base::Feature kArcManagedAdbSideloadingSupport{
+    "ArcManagedAdbSideloadingSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",

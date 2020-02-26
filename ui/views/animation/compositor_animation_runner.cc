@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/compositor_animation_runner.h"
 
+#include "ui/compositor/animation_metrics_recorder.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -11,9 +12,19 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // CompositorAnimationRunner
 //
-CompositorAnimationRunner::CompositorAnimationRunner(Widget* widget)
-    : widget_(widget) {
+
+CompositorAnimationRunner::CompositorAnimationRunner(
+    Widget* widget,
+    ui::AnimationMetricsReporter* animation_metrics_reporter,
+    base::TimeDelta expected_duration)
+    : widget_(widget), expected_duration_(expected_duration) {
   widget_->AddObserver(this);
+  if (animation_metrics_reporter) {
+    DCHECK(!expected_duration_.is_zero());
+    animation_metrics_recorder_ =
+        std::make_unique<ui::AnimationMetricsRecorder>(
+            animation_metrics_reporter);
+  }
 }
 
 CompositorAnimationRunner::~CompositorAnimationRunner() {
@@ -24,11 +35,13 @@ CompositorAnimationRunner::~CompositorAnimationRunner() {
 }
 
 void CompositorAnimationRunner::Stop() {
-  if (compositor_ && compositor_->HasAnimationObserver(this))
-    compositor_->RemoveAnimationObserver(this);
+  // Record metrics if necessary.
+  if (animation_metrics_recorder_ && compositor_) {
+    animation_metrics_recorder_->OnAnimationEnd(
+        compositor_->activated_frame_count(), compositor_->refresh_rate());
+  }
 
-  min_interval_ = base::TimeDelta::Max();
-  compositor_ = nullptr;
+  StopInternal();
 }
 
 void CompositorAnimationRunner::OnAnimationStep(base::TimeTicks timestamp) {
@@ -41,11 +54,11 @@ void CompositorAnimationRunner::OnAnimationStep(base::TimeTicks timestamp) {
 
 void CompositorAnimationRunner::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
-  Stop();
+  StopInternal();
 }
 
 void CompositorAnimationRunner::OnWidgetDestroying(Widget* widget) {
-  Stop();
+  StopInternal();
   widget_->RemoveObserver(this);
   widget_ = nullptr;
 }
@@ -57,7 +70,7 @@ void CompositorAnimationRunner::OnStart(base::TimeDelta min_interval,
 
   ui::Compositor* current_compositor = widget_->GetCompositor();
   if (!current_compositor) {
-    Stop();
+    StopInternal();
     return;
   }
 
@@ -71,6 +84,19 @@ void CompositorAnimationRunner::OnStart(base::TimeDelta min_interval,
   min_interval_ = min_interval;
   DCHECK(!compositor_->HasAnimationObserver(this));
   compositor_->AddAnimationObserver(this);
+
+  if (animation_metrics_recorder_) {
+    animation_metrics_recorder_->OnAnimationStart(
+        compositor_->activated_frame_count(), last_tick_, expected_duration_);
+  }
+}
+
+void CompositorAnimationRunner::StopInternal() {
+  if (compositor_ && compositor_->HasAnimationObserver(this))
+    compositor_->RemoveAnimationObserver(this);
+
+  min_interval_ = base::TimeDelta::Max();
+  compositor_ = nullptr;
 }
 
 }  // namespace views

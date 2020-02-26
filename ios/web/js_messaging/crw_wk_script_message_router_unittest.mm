@@ -4,7 +4,6 @@
 
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 
-#include "base/mac/scoped_block.h"
 #include "base/memory/ptr_util.h"
 #import "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"

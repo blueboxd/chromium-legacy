@@ -30,7 +30,7 @@ public class WebContentsFactory {
     // TODO(pshmakov): remove static for unit-testability.
     public static WebContents createWebContents(boolean incognito, boolean initiallyHidden) {
         return WebContentsFactoryJni.get().createWebContents(
-                Profile.getLastUsedProfile(), incognito, initiallyHidden, false);
+                Profile.getLastUsedRegularProfile(), incognito, initiallyHidden, false);
     }
 
     /**
@@ -46,7 +46,7 @@ public class WebContentsFactory {
     public WebContents createWebContentsWithWarmRenderer(
             boolean incognito, boolean initiallyHidden) {
         return WebContentsFactoryJni.get().createWebContents(
-                Profile.getLastUsedProfile(), incognito, initiallyHidden, true);
+                Profile.getLastUsedRegularProfile(), incognito, initiallyHidden, true);
     }
 
     @NativeMethods

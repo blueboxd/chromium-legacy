@@ -448,8 +448,17 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS" desc="Name for the check passwords subsection and settings entry used to perform a password bulk check.">
     Check passwords
   </message>
+  <message name="IDS_SETTINGS_CHECKED_PASSWORDS" desc="Title above amount of found compromised passwords after password bulk check.">
+    Checked passwords
+  </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_DESCRIPTION" desc="Explanation of the passwords bulk check feature found within the password settings.">
     Keep your passwords safe from data breaches and other security issues
+  </message>
+  <message name="IDS_SETTINGS_LEAKED_PASSWORDS_COUNT" desc="Number of compromised passwords found during bulk check.">
+    <ph name="COUNT">$1<ex>5</ex></ph> compromised passwords
+  </message>
+  <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
+    Check again
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
@@ -1759,6 +1768,24 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
     Check now
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
+    Passwords
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_SAFE" desc="This text points out that the safety check password check has not found any compromised passwords.">
+    No compromised passwords found
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_COMPROMISED_SINGULAR" desc="This text points out that the safety check password check has found one compromised password.">
+    1 compromised password
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_COMPROMISED_PLURAL" desc="This text points out that the safety check password check has found multiple compromised passwords. The placeholder will be a numeral.">
+    <ph name="NUM_PASSWORDS">$1<ex>42</ex></ph> compromised passwords
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_COMPROMISED" desc="This button allows users to change their compromised passwords.">
+    Change passwords
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_ERROR" desc="This button allows users to try the password check again.">
+    Try again
   </message>
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching

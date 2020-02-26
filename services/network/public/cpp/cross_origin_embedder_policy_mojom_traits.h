@@ -17,28 +17,27 @@ namespace mojo {
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    StructTraits<network::mojom::CrossOriginEmbedderPolicyWithReportingDataView,
-                 network::CrossOriginEmbedderPolicyWithReporting> {
-  static network::mojom::CrossOriginEmbedderPolicy value(
-      const network::CrossOriginEmbedderPolicyWithReporting& coep) {
+    StructTraits<network::mojom::CrossOriginEmbedderPolicyDataView,
+                 network::CrossOriginEmbedderPolicy> {
+  static network::mojom::CrossOriginEmbedderPolicyValue value(
+      const network::CrossOriginEmbedderPolicy& coep) {
     return coep.value;
   }
   static const base::Optional<std::string>& reporting_endpoint(
-      const network::CrossOriginEmbedderPolicyWithReporting& coep) {
+      const network::CrossOriginEmbedderPolicy& coep) {
     return coep.reporting_endpoint;
   }
-  static network::mojom::CrossOriginEmbedderPolicy report_only_value(
-      const network::CrossOriginEmbedderPolicyWithReporting& coep) {
+  static network::mojom::CrossOriginEmbedderPolicyValue report_only_value(
+      const network::CrossOriginEmbedderPolicy& coep) {
     return coep.report_only_value;
   }
   static const base::Optional<std::string>& report_only_reporting_endpoint(
-      const network::CrossOriginEmbedderPolicyWithReporting& coep) {
+      const network::CrossOriginEmbedderPolicy& coep) {
     return coep.report_only_reporting_endpoint;
   }
 
-  static bool Read(
-      network::mojom::CrossOriginEmbedderPolicyWithReportingDataView view,
-      network::CrossOriginEmbedderPolicyWithReporting* out);
+  static bool Read(network::mojom::CrossOriginEmbedderPolicyDataView view,
+                   network::CrossOriginEmbedderPolicy* out);
 };
 
 }  // namespace mojo

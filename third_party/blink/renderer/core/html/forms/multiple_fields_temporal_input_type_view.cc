@@ -698,10 +698,6 @@ AXObject* MultipleFieldsTemporalInputTypeView::PopupRootAXObject() {
   return nullptr;
 }
 
-bool MultipleFieldsTemporalInputTypeView::TypeShouldForceLegacyLayout() const {
-  return false;
-}
-
 String MultipleFieldsTemporalInputTypeView::RawValue() const {
   return GetDateTimeEditElement()->innerText();
 }

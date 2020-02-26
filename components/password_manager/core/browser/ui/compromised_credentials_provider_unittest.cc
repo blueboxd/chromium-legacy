@@ -93,14 +93,15 @@ class CompromisedCredentialsProviderTest : public ::testing::Test {
 }  // namespace
 
 // Tests whether adding and removing an observer works as expected.
-TEST_F(CompromisedCredentialsProviderTest, NotifyObservers) {
+TEST_F(CompromisedCredentialsProviderTest,
+       NotifyObserversAboutCompromisedCredentialChanges) {
   std::vector<CompromisedCredentials> credentials = {
       MakeCompromised(kExampleCom, kUsername1)};
 
   StrictMockCompromisedCredentialsProviderObserver observer;
   provider().AddObserver(&observer);
 
-  // Adding a credential should notify observers.
+  // Adding a compromised credential should notify observers.
   EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
   store().AddCompromisedCredentials(credentials[0]);
   RunUntilIdle();
@@ -133,6 +134,38 @@ TEST_F(CompromisedCredentialsProviderTest, NotifyObservers) {
   store().AddCompromisedCredentials(credentials[0]);
   RunUntilIdle();
   EXPECT_THAT(store().compromised_credentials(), ElementsAreArray(credentials));
+}
+
+// Tests whether adding and removing an observer works as expected.
+TEST_F(CompromisedCredentialsProviderTest,
+       NotifyObserversAboutSavedPasswordsChanges) {
+  StrictMockCompromisedCredentialsProviderObserver observer;
+  provider().AddObserver(&observer);
+
+  PasswordForm saved_password =
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
+
+  // Adding a saved password should notify observers.
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
+  store().AddLogin(saved_password);
+  RunUntilIdle();
+
+  // Updating a saved password should notify observers.
+  saved_password.password_value = base::ASCIIToUTF16(kPassword2);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
+  store().UpdateLogin(saved_password);
+  RunUntilIdle();
+
+  // Removing a saved password should notify observers.
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
+  store().RemoveLogin(saved_password);
+  RunUntilIdle();
+
+  // After an observer is removed it should no longer receive notifications.
+  provider().RemoveObserver(&observer);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged).Times(0);
+  store().AddLogin(saved_password);
+  RunUntilIdle();
 }
 
 // Tests that the provider is able to join a single password with a compromised
@@ -172,6 +205,48 @@ TEST_F(CompromisedCredentialsProviderTest, JoinPhishedAndLeaked) {
   expected2.password = password.password_value;
   EXPECT_THAT(provider().GetCompromisedCredentials(),
               ElementsAre(expected1, expected2));
+}
+
+// Tests that the provider reacts whenever the saved passwords or the
+// compromised credentials change.
+TEST_F(CompromisedCredentialsProviderTest, ReactToChangesInBothTables) {
+  std::vector<PasswordForm> passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1),
+      MakeSavedPassword(kExampleCom, kUsername2, kPassword2)};
+
+  std::vector<CompromisedCredentials> credentials = {
+      MakeCompromised(kExampleCom, kUsername1),
+      MakeCompromised(kExampleCom, kUsername2)};
+
+  std::vector<CredentialWithPassword> expected(credentials.begin(),
+                                               credentials.end());
+  expected[0].password = passwords[0].password_value;
+  expected[1].password = passwords[1].password_value;
+
+  store().AddLogin(passwords[0]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), IsEmpty());
+
+  store().AddCompromisedCredentials(credentials[0]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected[0]));
+
+  store().AddLogin(passwords[1]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected[0]));
+
+  store().AddCompromisedCredentials(credentials[1]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(),
+              ElementsAreArray(expected));
+
+  store().RemoveLogin(passwords[0]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), ElementsAre(expected[1]));
+
+  store().RemoveLogin(passwords[1]);
+  RunUntilIdle();
+  EXPECT_THAT(provider().GetCompromisedCredentials(), IsEmpty());
 }
 
 // Tests that the provider is able to join multiple passwords with compromised

@@ -3,6 +3,7 @@ include_rules = [
     "+base/threading/thread_checker.h",
     "+base/trace_event/trace_event.h",
     "+mojo/public/cpp/system/data_pipe.h",
+    "+services/network/public",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",
     "+third_party/blink/renderer/modules/event_target_modules.h",
@@ -11,10 +12,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-    "fetch_respond_with_observer\.cc": [
-        "+services/network/public/cpp/cross_origin_resource_policy.h",
-        "+services/network/public/cpp/features.h",
-    ],
     "service_worker_global_scope\.cc": [
         "+third_party/blink/renderer/modules/background_fetch",
         "+third_party/blink/renderer/modules/background_sync",

@@ -10,8 +10,10 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -41,6 +43,8 @@ class Video {
   VideoCodec Codec() const;
   // Get the video's codec profile.
   VideoCodecProfile Profile() const;
+  // Get the video's pixel format.
+  VideoPixelFormat PixelFormat() const;
   // Get the video frame rate.
   uint32_t FrameRate() const;
   // Get the number of frames in the video.
@@ -64,9 +68,14 @@ class Video {
 
  private:
   // Return the profile associated with the |profile| string.
-  static VideoCodecProfile ConvertStringtoProfile(const std::string& profile);
+  static base::Optional<VideoCodecProfile> ConvertStringtoProfile(
+      const std::string& profile);
   // Return the codec associated with the |profile|.
-  static VideoCodec ConvertProfileToCodec(VideoCodecProfile profile);
+  static base::Optional<VideoCodec> ConvertProfileToCodec(
+      VideoCodecProfile profile);
+  // Return the pixel format associated with the |pixel_format| string.
+  static base::Optional<VideoPixelFormat> ConvertStringtoPixelFormat(
+      const std::string& pixel_format);
 
   // Load metadata from the JSON file associated with the video file.
   bool LoadMetadata();
@@ -95,8 +104,12 @@ class Video {
   // List of thumbnail checksums.
   std::vector<std::string> thumbnail_checksums_;
 
+  // Video codec and profile for encoded videos.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   VideoCodec codec_ = kUnknownVideoCodec;
+  // Pixel format for raw videos.
+  VideoPixelFormat pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
+
   uint32_t frame_rate_ = 0;
   uint32_t num_frames_ = 0;
   uint32_t num_fragments_ = 0;

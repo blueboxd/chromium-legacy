@@ -35,6 +35,8 @@ void WaylandCursor::Init(wl_pointer* pointer, WaylandConnection* connection) {
   shm_ = connection->shm();
   pointer_surface_.reset(
       wl_compositor_create_surface(connection->compositor()));
+
+  connection_ = connection;
 }
 
 void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
@@ -79,6 +81,11 @@ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
 void WaylandCursor::HideCursor(uint32_t serial) {
   DCHECK(input_pointer_);
   wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
+
+  wl_surface_attach(pointer_surface_.get(), nullptr, 0, 0);
+  wl_surface_commit(pointer_surface_.get());
+
+  connection_->ScheduleFlush();
 }
 
 }  // namespace ui

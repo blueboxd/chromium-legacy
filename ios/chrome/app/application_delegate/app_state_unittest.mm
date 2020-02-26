@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/ios/block_types.h"
-#include "base/mac/scoped_block.h"
 #import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state_testing.h"

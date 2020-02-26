@@ -1,0 +1,14 @@
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "sandboxed_web_ui_test_base.cc",
+    "sandboxed_web_ui_test_base.h",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//chrome/test:test_support_ui",
+    "//chromeos/constants:constants",
+    "//content/test:test_support",
+  ]
+}

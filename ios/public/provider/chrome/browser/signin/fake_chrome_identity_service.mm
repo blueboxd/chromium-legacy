@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -36,7 +35,7 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
                                              PolicyBundle* bundle);
 
   // Used to manage the registration for NSNotificationCenter notifications.
-  base::scoped_nsobject<id> notification_observer_;
+  __strong id notification_observer_;
 
   // Timestamp of the last notification.
   // Used to coalesce repeated notifications into a single Load() call.

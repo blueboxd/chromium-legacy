@@ -7,7 +7,9 @@
 
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/compare.h"
 #include "ui/gfx/geometry/point.h"
 
 #define ASSERT_TRUE_OR_RETURN(predicate, return_value) \
@@ -20,12 +22,64 @@
 
 namespace media {
 namespace test {
+namespace {
+// The metrics of the similarity of two images.
+enum SimilarityMetrics {
+  PSNR,  // Peak Signal-to-Noise Ratio. For detail see
+         // https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio
+  SSIM,  // Structural Similarity. For detail see
+         // https://en.wikipedia.org/wiki/Structural_similarity
+};
+
+double ComputeSimilarity(const VideoFrame* frame1,
+                         const VideoFrame* frame2,
+                         SimilarityMetrics mode) {
+  ASSERT_TRUE_OR_RETURN(frame1->IsMappable() && frame2->IsMappable(),
+                        std::numeric_limits<std::size_t>::max());
+  // TODO(crbug.com/1044509): Remove these assumptions.
+  ASSERT_TRUE_OR_RETURN(frame1->visible_rect() == frame2->visible_rect(),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1->visible_rect().origin() == gfx::Point(0, 0),
+                        std::numeric_limits<std::size_t>::max());
+  // These are used, only if frames are converted to I420, for keeping converted
+  // frames alive until the end of function.
+  scoped_refptr<VideoFrame> converted_frame1;
+  scoped_refptr<VideoFrame> converted_frame2;
+
+  if (frame1->format() != PIXEL_FORMAT_I420) {
+    converted_frame1 = ConvertVideoFrame(frame1, PIXEL_FORMAT_I420);
+    frame1 = converted_frame1.get();
+  }
+  if (frame2->format() != PIXEL_FORMAT_I420) {
+    converted_frame2 = ConvertVideoFrame(frame1, PIXEL_FORMAT_I420);
+    frame2 = converted_frame2.get();
+  }
+
+  decltype(&libyuv::I420Psnr) metric_func = nullptr;
+  switch (mode) {
+    case SimilarityMetrics::PSNR:
+      metric_func = &libyuv::I420Psnr;
+      break;
+    case SimilarityMetrics::SSIM:
+      metric_func = &libyuv::I420Ssim;
+      break;
+  }
+  ASSERT_TRUE_OR_RETURN(metric_func, std::numeric_limits<double>::max());
+
+  return metric_func(
+      frame1->data(0), frame1->stride(0), frame1->data(1), frame1->stride(1),
+      frame1->data(2), frame1->stride(2), frame2->data(0), frame2->stride(0),
+      frame2->data(1), frame2->stride(1), frame2->data(2), frame2->stride(2),
+      frame1->visible_rect().width(), frame1->visible_rect().height());
+}
+}  // namespace
 
 size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
                                   const VideoFrame& frame2,
                                   uint8_t tolerance) {
   ASSERT_TRUE_OR_RETURN(frame1.format() == frame2.format(),
                         std::numeric_limits<std::size_t>::max());
+  // TODO(crbug.com/1044509): Remove these assumption.
   ASSERT_TRUE_OR_RETURN(frame1.visible_rect() == frame2.visible_rect(),
                         std::numeric_limits<std::size_t>::max());
   ASSERT_TRUE_OR_RETURN(frame1.visible_rect().origin() == gfx::Point(0, 0),
@@ -56,5 +110,12 @@ size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
   return diff_cnt;
 }
 
+double ComputePSNR(const VideoFrame& frame1, const VideoFrame& frame2) {
+  return ComputeSimilarity(&frame1, &frame2, SimilarityMetrics::PSNR);
+}
+
+double ComputeSSIM(const VideoFrame& frame1, const VideoFrame& frame2) {
+  return ComputeSimilarity(&frame1, &frame2, SimilarityMetrics::SSIM);
+}
 }  // namespace test
 }  // namespace media

@@ -202,6 +202,10 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
+bool FileInputType::TypeShouldForceLegacyLayout() const {
+  return true;
+}
+
 LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&,
                                                 LegacyLayout) const {
   return new LayoutFileUploadControl(&GetElement());

@@ -44,11 +44,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                                   ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
-  enum class UpdateCheckType {
-    kMainScriptDuringStartWorker,  // Only check main script.
-    kAllScriptsBeforeStartWorker,  // Check all scripts.
-  };
-
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       ServiceWorkerContextCore* context,
@@ -120,20 +115,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   bool IsUpdateCheckNeeded() const;
-
-  // Trigger the UpdateCheckType::kAllScriptsBeforeStartWorker type check if
-  // ServiceWorkerImportedScriptUpdateCheck is enabled.
-  void TriggerUpdateCheckInBrowser(
+  void TriggerUpdateCheck(
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
-  // When ServiceWorkerImportedScriptUpdateCheck is enabled, returns
-  // UpdateCheckType::kAllScriptsBeforeStartWorker, otherwise, returns
-  // UpdateCheckType::kMainScriptDuringStartWorker.
-  UpdateCheckType GetUpdateCheckType() const;
-
-  // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
-  // enabled. Refer ServiceWorkerUpdateChecker::UpdateStatusCallback for the
-  // meaning of the parameters.
+  // Refer ServiceWorkerUpdateChecker::UpdateStatusCallback for the meaning of
+  // the parameters.
   void OnUpdateCheckFinished(
       ServiceWorkerSingleScriptUpdateChecker::Result result,
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
@@ -152,9 +138,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   // Creates a new ServiceWorkerVersion for [[Update]].
   void CreateNewVersionForUpdate();
-  // Starts a service worker with a new ServiceWorkerVersion for [[Update]].
-  // The script comparison has finished at this point. It starts install phase.
-  void StartWorkerForUpdate(scoped_refptr<ServiceWorkerVersion> new_version);
+  // Starts a service worker for [[Update]]. The script comparison has finished
+  // at this point. It starts install phase.
+  void StartWorkerForUpdate(scoped_refptr<ServiceWorkerVersion> version);
   void OnStartWorkerFinished(blink::ServiceWorkerStatusCode status);
   void OnStoreRegistrationComplete(blink::ServiceWorkerStatusCode status);
   void InstallAndContinue();

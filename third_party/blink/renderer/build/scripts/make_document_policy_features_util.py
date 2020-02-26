@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 
-def parse_default_value(default_value, value_type, recognized_types=('Bool', 'DecDouble'),
+def parse_default_value(default_value,
+                        value_type,
+                        recognized_types=('Bool', 'DecDouble'),
                         single_ctor_param_types=('Bool')):
     """ Parses default_value string to actual usable C++ expression.
     @param default_value_str: default_value field specified in document_policy_features.json5
@@ -22,9 +24,11 @@ def parse_default_value(default_value, value_type, recognized_types=('Bool', 'De
     policy_value_type = "mojom::PolicyValueType::k{}".format(value_type)
 
     if default_value == 'max':
-        return "PolicyValue::CreateMaxPolicyValue({})".format(policy_value_type)
+        return "PolicyValue::CreateMaxPolicyValue({})".format(
+            policy_value_type)
     if default_value == 'min':
-        return "PolicyValue::CreateMinPolicyValue({})".format(policy_value_type)
+        return "PolicyValue::CreateMinPolicyValue({})".format(
+            policy_value_type)
 
     # types that have only one corresponding PolicyValueType
     if value_type in single_ctor_param_types:

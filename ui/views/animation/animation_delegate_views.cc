@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/animation_delegate_views.h"
 
+#include "ui/compositor/animation_metrics_recorder.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/widget/widget.h"
@@ -54,6 +55,11 @@ void AnimationDelegateViews::AnimationContainerShuttingDown(
   container_ = nullptr;
 }
 
+base::TimeDelta AnimationDelegateViews::GetAnimationDurationForReporting()
+    const {
+  return base::TimeDelta();
+}
+
 void AnimationDelegateViews::UpdateAnimationRunner() {
   if (!container_)
     return;
@@ -68,8 +74,9 @@ void AnimationDelegateViews::UpdateAnimationRunner() {
   if (container_->has_custom_animation_runner())
     return;
 
-  container_->SetAnimationRunner(
-      std::make_unique<CompositorAnimationRunner>(view_->GetWidget()));
+  container_->SetAnimationRunner(std::make_unique<CompositorAnimationRunner>(
+      view_->GetWidget(), animation_metrics_reporter_,
+      GetAnimationDurationForReporting()));
 }
 
 }  // namespace views

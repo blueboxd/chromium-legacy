@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -64,9 +63,8 @@ class WebGPUDecoderTest : public ::testing::Test {
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestAdapterCmd));
 
     constexpr uint32_t kAdapterServiceID = 0;
-    constexpr uint32_t kRequestDeviceSerial = 0;
     cmds::RequestDevice requestDeviceCmd;
-    requestDeviceCmd.Init(kRequestDeviceSerial, kAdapterServiceID, 0, 0, 0);
+    requestDeviceCmd.Init(kDeviceClientID, kAdapterServiceID, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
     GpuPreferences gpu_preferences;
@@ -129,6 +127,8 @@ class WebGPUDecoderTest : public ::testing::Test {
   std::unique_ptr<SharedImageFactory> factory_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;
+
+  static const DawnDeviceClientID kDeviceClientID = 0u;
 };
 
 TEST_F(WebGPUDecoderTest, DawnCommands) {
@@ -162,7 +162,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   {
     gpu::Mailbox bad_mailbox;
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, bad_mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 bad_mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(bad_mailbox.name)));
   }
@@ -178,7 +179,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: texture ID invalid for the wire server.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 42, 42, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -186,7 +188,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 42, 42, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -194,7 +197,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid texture usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Force32, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Force32,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -206,7 +210,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // and generation invalid.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -214,7 +219,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: associated to an already associated texture.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -241,7 +247,8 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   // Associate a mailbox so we can later dissociate it.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }

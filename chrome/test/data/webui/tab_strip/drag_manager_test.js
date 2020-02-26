@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {DragManager} from 'chrome://tab-strip/drag_manager.js';
+import {DragManager, PLACEHOLDER_TAB_ID} from 'chrome://tab-strip/drag_manager.js';
 import {TabElement} from 'chrome://tab-strip/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
@@ -326,37 +326,73 @@ suite('DragManager', () => {
     assertEquals(1, index);
   });
 
-  test('DragTabIntoListFromOutside', () => {
+  test('DragExternalTabOverTab', async () => {
+    const externalTabId = 1000;
     const mockDataTransfer = new MockDataTransfer();
-    mockDataTransfer.setData(strings.tabIdDataType, '1000');
+    mockDataTransfer.setData(strings.tabIdDataType, `${externalTabId}`);
+    const dragEnterEvent = new DragEvent('dragenter', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    delegate.dispatchEvent(dragEnterEvent);
+
+    // Test that a placeholder tab was created.
+    const placeholderTabElement = delegate.lastElementChild;
+    assertEquals(PLACEHOLDER_TAB_ID, placeholderTabElement.tab.id);
+
+    const dragOverIndex = 0;
+    const dragOverTab = delegate.children[dragOverIndex];
     const dragOverEvent = new DragEvent('dragover', {
       bubbles: true,
       composed: true,
       dataTransfer: mockDataTransfer,
     });
-    delegate.dispatchEvent(dragOverEvent);
-    assertTrue(delegate.lastElementChild.id === 'dropPlaceholder');
+    dragOverTab.dispatchEvent(dragOverEvent);
+    assertEquals(placeholderTabElement, delegate.children[dragOverIndex]);
 
-    delegate.dispatchEvent(new DragEvent('drop', dragOverEvent));
-    assertEquals(null, delegate.querySelector('#dropPlaceholder'));
-  });
-
-  test('DropTabIntoList', async () => {
-    const droppedTabId = 9000;
-    const mockDataTransfer = new MockDataTransfer();
-    mockDataTransfer.setData(strings.tabIdDataType, droppedTabId);
     const dropEvent = new DragEvent('drop', {
       bubbles: true,
       composed: true,
-      clientX: 100,
-      clientY: 150,
       dataTransfer: mockDataTransfer,
     });
-    delegate.dispatchEvent(dropEvent);
-
+    dragOverTab.dispatchEvent(dropEvent);
+    assertEquals(externalTabId, placeholderTabElement.tab.id);
     const [tabId, index] = await testTabsApiProxy.whenCalled('moveTab');
-    assertEquals(droppedTabId, tabId);
-    assertEquals(-1, index);
+    assertEquals(externalTabId, tabId);
+    assertEquals(dragOverIndex, index);
+  });
+
+  test('DragExternalTabOverTabGroup', async () => {
+    const externalTabId = 1000;
+    const mockDataTransfer = new MockDataTransfer();
+    mockDataTransfer.setData(strings.tabIdDataType, `${externalTabId}`);
+    const dragEnterEvent = new DragEvent('dragenter', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    delegate.dispatchEvent(dragEnterEvent);
+    const placeholderTabElement = delegate.lastElementChild;
+
+    const draggedGroup = groupTab(delegate.children[0], 'group0');
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedGroup.dispatchEvent(dragOverEvent);
+    assertEquals(draggedGroup, placeholderTabElement.parentElement);
+
+    const dropEvent = new DragEvent('drop', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedGroup.dispatchEvent(dropEvent);
+    const [tabId, groupId] = await testTabsApiProxy.whenCalled('groupTab');
+    assertEquals(externalTabId, tabId);
+    assertEquals('group0', groupId);
   });
 
   test('CancelDragResetsPosition', () => {

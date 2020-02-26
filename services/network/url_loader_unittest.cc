@@ -4627,12 +4627,13 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
   }
 }
 
-TEST_F(URLLoaderTest, CrossOriginEmbedderPolicy) {
+TEST_F(URLLoaderTest, CrossOriginEmbedderPolicyValue) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
 
-  constexpr auto kNone = mojom::CrossOriginEmbedderPolicy::kNone;
-  constexpr auto kRequireCorp = mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+  constexpr auto kNone = mojom::CrossOriginEmbedderPolicyValue::kNone;
+  constexpr auto kRequireCorp =
+      mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
   const auto kNoHeader = base::Optional<std::string>();
   const auto kNoEndpoint = base::Optional<std::string>();
 
@@ -4640,9 +4641,9 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicy) {
     base::Optional<std::string> coep_header;
     base::Optional<std::string> coep_report_only_header;
 
-    mojom::CrossOriginEmbedderPolicy value;
+    mojom::CrossOriginEmbedderPolicyValue value;
     base::Optional<std::string> reporting_endpoint;
-    mojom::CrossOriginEmbedderPolicy report_only_value;
+    mojom::CrossOriginEmbedderPolicyValue report_only_value;
     base::Optional<std::string> report_only_reporting_endpoint;
   } cases[] = {
       // No headers
@@ -4710,7 +4711,8 @@ TEST_F(URLLoaderTest, CrossOriginEmbedderPolicy) {
       headers->AddHeader("cross-origin-embedder-policy-report-only: " +
                          *testcase.coep_report_only_header);
     }
-    const auto coep = URLLoader::ParseCrossOriginEmbedderPolicy(headers.get());
+    const auto coep =
+        URLLoader::ParseCrossOriginEmbedderPolicyValue(headers.get());
 
     EXPECT_EQ(coep.value, testcase.value);
     EXPECT_EQ(coep.reporting_endpoint, testcase.reporting_endpoint);

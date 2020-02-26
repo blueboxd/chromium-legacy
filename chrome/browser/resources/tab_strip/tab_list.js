@@ -460,6 +460,14 @@ class TabListElement extends CustomElement {
    * @private
    */
   onTabCreated_(tab) {
+    const droppedTabElement = this.findTabElement_(tab.id);
+    if (droppedTabElement) {
+      droppedTabElement.tab = tab;
+      droppedTabElement.setDragging(false);
+      this.tabsApi_.setThumbnailTracked(tab.id, true);
+      return;
+    }
+
     const tabElement = this.createTabElement_(tab);
     this.placeTabElement(tabElement, tab.index, tab.pinned, tab.groupId);
     this.addAnimationPromise_(tabElement.slideIn());
@@ -596,7 +604,7 @@ class TabListElement extends CustomElement {
    * @param {!TabElement} element
    * @param {number} index
    * @param {boolean} pinned
-   * @param {string|undefined} groupId
+   * @param {string=} groupId
    */
   placeTabElement(element, index, pinned, groupId) {
     const isInserting = !element.isConnected;

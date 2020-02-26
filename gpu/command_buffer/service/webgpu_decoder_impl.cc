@@ -18,9 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
-#include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/dawn_platform.h"
 #include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
@@ -443,10 +441,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       int32_t requested_adapter_index,
       const WGPUDeviceProperties& requested_device_properties);
 
-  void SendAdapterProperties(uint32_t request_adapter_serial,
+  void SendAdapterProperties(DawnRequestAdapterSerial request_adapter_serial,
                              uint32_t adapter_service_id,
                              const dawn_native::Adapter& adapter);
-  void SendRequestedDeviceInfo(uint32_t request_device_serial,
+  void SendRequestedDeviceInfo(DawnDeviceClientID device_client_id,
                                bool is_request_device_success);
 
   std::unique_ptr<SharedImageRepresentationFactory>
@@ -702,7 +700,7 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 }
 
 void WebGPUDecoderImpl::SendAdapterProperties(
-    uint32_t request_adapter_serial,
+    DawnRequestAdapterSerial request_adapter_serial,
     uint32_t adapter_service_id,
     const dawn_native::Adapter& adapter) {
   WGPUDeviceProperties adapter_properties = adapter.GetAdapterProperties();
@@ -733,12 +731,12 @@ void WebGPUDecoderImpl::SendAdapterProperties(
 }
 
 void WebGPUDecoderImpl::SendRequestedDeviceInfo(
-    uint32_t request_device_serial,
+    DawnDeviceClientID device_client_id,
     bool is_request_device_success) {
   cmds::DawnReturnRequestDeviceInfo return_request_device_info;
   DCHECK_EQ(DawnReturnDataType::kRequestedDeviceReturnInfo,
             return_request_device_info.return_data_header.return_data_type);
-  return_request_device_info.request_device_serial = request_device_serial;
+  return_request_device_info.device_client_id = device_client_id;
   return_request_device_info.is_request_device_success =
       is_request_device_success;
 
@@ -755,6 +753,9 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
 
   PowerPreference power_preference =
       static_cast<PowerPreference>(c.power_preference);
+  DawnRequestAdapterSerial request_adapter_serial =
+      static_cast<DawnRequestAdapterSerial>(c.request_adapter_serial);
+
   int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
   if (requested_adapter_index < 0) {
     return error::kLostContext;
@@ -765,7 +766,7 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
   const dawn_native::Adapter& adapter = dawn_adapters_[requested_adapter_index];
-  SendAdapterProperties(static_cast<uint32_t>(c.request_adapter_serial),
+  SendAdapterProperties(request_adapter_serial,
                         static_cast<uint32_t>(requested_adapter_index),
                         adapter);
 
@@ -778,8 +779,8 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
   const volatile webgpu::cmds::RequestDevice& c =
       *static_cast<const volatile webgpu::cmds::RequestDevice*>(cmd_data);
 
-  uint32_t request_device_serial =
-      static_cast<uint32_t>(c.request_device_serial);
+  DawnDeviceClientID device_client_id =
+      static_cast<DawnDeviceClientID>(c.device_client_id);
   uint32_t adapter_service_id = static_cast<uint32_t>(c.adapter_service_id);
   uint32_t request_device_properties_shm_id =
       static_cast<uint32_t>(c.request_device_properties_shm_id);
@@ -805,7 +806,7 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
 
   error::Error init_dawn_device_error =
       InitDawnDeviceAndSetWireServer(adapter_service_id, device_properties);
-  SendRequestedDeviceInfo(request_device_serial,
+  SendRequestedDeviceInfo(device_client_id,
                           !error::IsError(init_dawn_device_error));
   return init_dawn_device_error;
 }
@@ -842,7 +843,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
       *static_cast<const volatile webgpu::cmds::AssociateMailboxImmediate*>(
           cmd_data);
 
-  uint32_t device_id = static_cast<uint32_t>(c.device_id);
+  DawnDeviceClientID device_client_id =
+      static_cast<DawnDeviceClientID>(c.device_client_id());
   uint32_t device_generation = static_cast<uint32_t>(c.device_generation);
   uint32_t id = static_cast<uint32_t>(c.id);
   uint32_t generation = static_cast<uint32_t>(c.generation);
@@ -863,9 +865,9 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   DLOG_IF(ERROR, !mailbox.Verify())
       << "AssociateMailbox was passed an invalid mailbox";
 
-  // TODO(cwallez@chromium.org): Use device_id/generation when the decoder
-  // supports multiple devices.
-  if (device_id != 0 || device_generation != 0) {
+  // TODO(cwallez@chromium.org): Use device_client_id/generation when the
+  // decoder supports multiple devices.
+  if (device_client_id != 0 || device_generation != 0) {
     DLOG(ERROR) << "AssociateMailbox: Invalid device ID";
     return error::kInvalidArguments;
   }

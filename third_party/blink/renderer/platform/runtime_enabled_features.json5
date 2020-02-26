@@ -168,10 +168,6 @@
       status: "stable",
     },
     {
-      name: "AsyncClipboard",
-      status: "stable",
-    },
-    {
       name: "AudioOutputDevices",
       // Android does not yet support switching of audio output devices
       status: {"Android": "", "default": "stable"},
@@ -237,12 +233,6 @@
     },
     {
       name: "BlinkRuntimeCallStats",
-    },
-    {
-      // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
-      // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
-      name: "BlobReadMethods",
-      status: "stable"
     },
     {
       name: "BlockCredentialedSubresources",
@@ -1464,6 +1454,10 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
+    // Enables the use of Insertable Streams.
+    {
+      name: "RTCInsertableStreams",
+    },
     // Enables the use of the RTCQuicTransport object.
     {
       name: "RTCQuicTransport",
@@ -1631,10 +1625,6 @@
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       status: "test",
-    },
-    {
-      name: "StorageQuotaDetails",
-      status: "stable"
     },
     {
       name: "StrictMimeTypesForWorkers",

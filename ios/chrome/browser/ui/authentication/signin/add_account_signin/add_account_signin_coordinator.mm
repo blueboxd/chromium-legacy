@@ -106,10 +106,12 @@ using signin_metrics::PromoAction;
               self.browser->GetBrowserState(), self);
 
   signin::IdentityManager* identityManager =
-      IdentityManagerFactory::GetForBrowserState(self.browserState);
+      IdentityManagerFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.mediator = [[AddAccountSigninMediator alloc]
       initWithIdentityInteractionManager:self.identityInteractionManager
-                             prefService:self.browserState->GetPrefs()
+                             prefService:self.browser->GetBrowserState()
+                                             ->GetPrefs()
                          identityManager:identityManager];
   self.mediator.delegate = self;
   [self.mediator handleSigninIntent:self.signinIntent

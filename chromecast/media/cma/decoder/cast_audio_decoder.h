@@ -61,12 +61,9 @@ class CastAudioDecoder {
 
   // Converts encoded data to the |output_format|. Must be called on the same
   // thread as |task_runner|. Decoded data will be passed to |decode_callback|.
-  // It is OK to call Decode before the |initialized_callback| has been called;
-  // those buffers will be queued until initialization completes, at which point
-  // they will be decoded in order (if initialization was successful), or
-  // ignored if initialization failed. The |decode_callback| will not be called
-  // after the CastAudioDecoder instance is destroyed.
-  // It is OK to pass an end-of-stream DecoderBuffer as |data|.
+  // The |decode_callback| will not be called after the CastAudioDecoder
+  // instance is destroyed. It is OK to pass an end-of-stream DecoderBuffer as
+  // |data|.
   virtual void Decode(scoped_refptr<media::DecoderBufferBase> data,
                       DecodeCallback decode_callback) = 0;
 };

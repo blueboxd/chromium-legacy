@@ -776,7 +776,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, AbortFromUI) {
+// TODO(crbug.com/1056096): Re-enable this test.
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DISABLED_AbortFromUI) {
   std::vector<OfflineItem> items;
   // Creates a registration with more than one request.
   ASSERT_NO_FATAL_FAILURE(

@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -54,6 +55,9 @@ class WebGPUTest : public testing::Test {
 
   void RunPendingTasks();
   void WaitForCompletion(wgpu::Device device);
+
+  const uint32_t kAdapterServiceID = 0u;
+  const webgpu::DawnDeviceClientID kDeviceClientID = 0u;
 
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;

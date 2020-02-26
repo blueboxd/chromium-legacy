@@ -132,6 +132,12 @@
     'nacl_test_data\\glibc\\sysconf_nprocessors_onln_test_libs\\lib32\\libppapi_cpp_lib.dll',
     'nacl_test_data\\glibc\\sysconf_nprocessors_onln_test_libs\\lib64\\libppapi_cpp_lib.dll',
 
+    # https://crbug.com/1040247
+    'nacl_irt_x86_32.nexe',
+    'nacl_irt_x86_32.nexe.debug',
+    'nacl_irt_x86_64.nexe',
+    'nacl_irt_x86_64.nexe.debug',
+
     # TODO(thakis): Figure out what's up with these three (and their isolate).
     'mini_installer.exe',
     'mini_installer.exe.pdb',

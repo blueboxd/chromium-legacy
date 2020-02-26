@@ -30,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/post_async_results.h"
@@ -706,6 +707,10 @@ void BluetoothAdapterWinrt::InitForTests(
 // static
 BluetoothAdapterWinrt::StaticsInterfaces
 BluetoothAdapterWinrt::PerformSlowInitTasks() {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   if (!ResolveCoreWinRT())
     return BluetoothAdapterWinrt::StaticsInterfaces();
 

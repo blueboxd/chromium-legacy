@@ -7,7 +7,6 @@
 #import <WebKit/WebKit.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"

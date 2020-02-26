@@ -26,6 +26,7 @@ import android.content.res.Resources.NotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -313,7 +314,8 @@ public class ShareHelper {
      */
     public static void shareImageWithGoogleLens(
             final WindowAndroid window, Uri imageUri, boolean isIncognito) {
-        Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(imageUri, isIncognito);
+        Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(
+                imageUri, isIncognito, SystemClock.elapsedRealtimeNanos());
         try {
             // Pass an empty callback to ensure the triggered activity can identify the source
             // of the intent (startActivityForResult allows app identification).

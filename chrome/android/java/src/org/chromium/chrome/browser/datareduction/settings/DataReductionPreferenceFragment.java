@@ -111,8 +111,8 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
-                    getString(R.string.help_context_data_reduction), Profile.getLastUsedProfile(),
-                    null);
+                    getString(R.string.help_context_data_reduction),
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return false;

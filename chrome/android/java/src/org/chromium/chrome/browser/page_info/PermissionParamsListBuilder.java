@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoView;
+import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 

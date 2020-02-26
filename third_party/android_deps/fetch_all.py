@@ -352,11 +352,17 @@ def main():
       '--debug', action='store_true', help='Enable debug logging')
   args = parser.parse_args()
 
-  print("""WARNING: Temporary manual edits have been made to
-        //third_party/android_deps/BUILD.gn to support the androidx migration.
-        This script will overwrite them, so you will need to revert them
-        afterwards.
-        E.g. by running: git checkout HEAD -p https://crbug.com/896775""")
+  msg = """
+WARNING: Temporary manual edits have been made to
+         //third_party/android_deps/BUILD.gn to support the androidx migration.
+         This script will overwrite them, so you will need to revert them
+         afterwards. To do so you can run 'git checkout HEAD -p
+         third_party/android_deps/BUILD.gn' to interactively choose to revert
+         parts of the file that are not related to the specific package you are
+         adding or updating. See crrev.com/c/1830506 for the cl with the manual
+         changes for reference.
+"""
+  print(msg)
 
   # Determine Chromium source tree.
   chromium_src = args.chromium_dir

@@ -20,6 +20,8 @@ extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kArcAdbSideloadingFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kArcManagedAdbSideloadingSupport;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistPersonalInfo;

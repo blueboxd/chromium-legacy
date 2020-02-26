@@ -11,23 +11,7 @@ cr.define('settings_people_page_sync_page', function() {
     let encryptWithGoogle = null;
     let encryptWithPassphrase = null;
 
-    suiteSetup(function() {
-      loadTimeData.overrideValues({
-        syncSetupFriendlySettings: true,
-        sWAAOn: 'On',
-        sWAAOff: 'Off',
-        sWAAOnHint: 'sWAAOnHint',
-        sWAAOffHint: 'sWAAOffHint',
-        historySyncOffHint: 'historySyncOffHint',
-        dataEncryptedHint: 'dataEncryptedHint'
-      });
-    });
-
-    setup(function() {
-      sync_test_util.setupRouterWithSyncRoutes();
-      browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
-
+    function setupSyncPage() {
       PolymerTest.clearBody();
       syncPage = document.createElement('settings-sync-page');
       settings.Router.getInstance().navigateTo(settings.routes.SYNC);
@@ -57,6 +41,27 @@ cr.define('settings_people_page_sync_page', function() {
           'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       syncPage.set('syncStatus', {supervisedUser: false});
       Polymer.dom.flush();
+    }
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        syncSetupFriendlySettings: true,
+        sWAAOn: 'On',
+        sWAAOff: 'Off',
+        sWAAOnHint: 'sWAAOnHint',
+        sWAAOffHint: 'sWAAOffHint',
+        historySyncOffHint: 'historySyncOffHint',
+        dataEncryptedHint: 'dataEncryptedHint',
+        signinAllowed: true
+      });
+    });
+
+    setup(function() {
+      sync_test_util.setupRouterWithSyncRoutes();
+      browserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+      setupSyncPage();
 
       return test_util.waitBeforeNextRender().then(() => {
         encryptionElement = syncPage.$$('settings-sync-encryption-options');
@@ -647,7 +652,6 @@ cr.define('settings_people_page_sync_page', function() {
     if (!cr.isChromeOS) {
       test('SyncSetupCancel', function() {
         syncPage.syncStatus = {
-          signinAllowed: true,
           syncSystemEnabled: true,
           firstSetupInProgress: true,
           signedIn: true
@@ -670,7 +674,6 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('SyncSetupConfirm', function() {
         syncPage.syncStatus = {
-          signinAllowed: true,
           syncSystemEnabled: true,
           firstSetupInProgress: true,
           signedIn: true
@@ -693,7 +696,6 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('SyncSetupLeavePage', function() {
         syncPage.syncStatus = {
-          signinAllowed: true,
           syncSystemEnabled: true,
           firstSetupInProgress: true,
           signedIn: true
@@ -747,7 +749,6 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('SyncSetupSearchSettings', function() {
         syncPage.syncStatus = {
-          signinAllowed: true,
           syncSystemEnabled: true,
           firstSetupInProgress: true,
           signedIn: true
@@ -766,14 +767,25 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('ShowAccountRow', function() {
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.syncStatus = {syncSystemEnabled: false};
         Polymer.dom.flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
-        syncPage.syncStatus = {signinAllowed: false, syncSystemEnabled: false};
-        Polymer.dom.flush();
-        assertFalse(!!syncPage.$$('settings-sync-account-control'));
-        syncPage.syncStatus = {signinAllowed: true, syncSystemEnabled: true};
+        syncPage.syncStatus = {syncSystemEnabled: true};
         Polymer.dom.flush();
         assertTrue(!!syncPage.$$('settings-sync-account-control'));
+      });
+
+      test('ShowAccountRow_SigninAllowedFalse', function() {
+        loadTimeData.overrideValues({signinAllowed: false});
+        setupSyncPage();
+
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.syncStatus = {syncSystemEnabled: false};
+        Polymer.dom.flush();
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.syncStatus = {syncSystemEnabled: true};
+        Polymer.dom.flush();
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
       });
     }
   });

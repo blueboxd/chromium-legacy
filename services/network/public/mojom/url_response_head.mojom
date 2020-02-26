@@ -205,7 +205,7 @@ struct URLResponseHead {
 
   // The parsed representation of Cross-Origin-Embedder-Policy and
   // Cross-Origin-Embedder-Policy-Report-Only headers.
-  CrossOriginEmbedderPolicyWithReporting cross_origin_embedder_policy;
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy;
 
   // The parsed value of the Cross-Origin-Opener-Policy (COOP) header.
   CrossOriginOpenerPolicy cross_origin_opener_policy =

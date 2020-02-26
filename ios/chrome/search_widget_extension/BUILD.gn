@@ -61,9 +61,9 @@ source_set("search_widget") {
   deps = [
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
-    "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:command",
+    "//ios/chrome/common/ui/elements",
     "//ios/chrome/common/ui/util",
   ]
 

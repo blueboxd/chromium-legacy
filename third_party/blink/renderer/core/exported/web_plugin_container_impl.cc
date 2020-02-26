@@ -241,8 +241,8 @@ void WebPluginContainerImpl::HandleEvent(Event& event) {
   // where mozilla behaves differently than the spec.
   if (auto* mouse_event = DynamicTo<MouseEvent>(event))
     HandleMouseEvent(*mouse_event);
-  else if (event.IsWheelEvent())
-    HandleWheelEvent(ToWheelEvent(event));
+  else if (auto* wheel_event = DynamicTo<WheelEvent>(event))
+    HandleWheelEvent(*wheel_event);
   else if (auto* keyboard_event = DynamicTo<KeyboardEvent>(event))
     HandleKeyboardEvent(*keyboard_event);
   else if (auto* touch_event = DynamicTo<TouchEvent>(event))

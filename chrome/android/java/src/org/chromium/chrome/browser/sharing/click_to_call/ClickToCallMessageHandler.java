@@ -164,8 +164,6 @@ public class ClickToCallMessageHandler {
     @CalledByNative
     @VisibleForTesting
     static void handleMessage(String phoneNumber) {
-        ClickToCallUma.recordMessageReceived();
-
         if (shouldOpenDialer()) {
             openDialer(phoneNumber);
         }

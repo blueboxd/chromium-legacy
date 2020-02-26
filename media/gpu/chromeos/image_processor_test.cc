@@ -82,7 +82,7 @@ class ImageProcessorParamTest
           std::tuple<base::FilePath, base::FilePath>> {
  public:
   void SetUp() override {}
-  void TearDown() override {}
+  void TearDown() override { model_frames_.clear(); }
 
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
       const test::Image& input_image,
@@ -135,12 +135,15 @@ class ImageProcessorParamTest
         scoped_refptr<const VideoFrame> model_frame =
             CreateVideoFrameFromImage(*output_image);
         LOG_ASSERT(model_frame) << "Failed to create from image";
+        model_frames_ = {model_frame};
         // Scaling is not deterministic process. There are various algorithms to
         // scale images. We set a weaker tolerance value, 32, to avoid false
         // negative.
         constexpr uint32_t kImageProcessorTestTorelance = 32;
         auto vf_validator = test::VideoFrameValidator::Create(
-            {model_frame}, kImageProcessorTestTorelance);
+            base::BindRepeating(&ImageProcessorParamTest::GetModelFrame,
+                                base::Unretained(this)),
+            kImageProcessorTestTorelance);
         frame_processors.push_back(std::move(vf_validator));
       }
     }
@@ -161,6 +164,18 @@ class ImageProcessorParamTest
         input_config, output_config, kNumBuffers, std::move(frame_processors));
     return ip_client;
   }
+
+ private:
+  scoped_refptr<const VideoFrame> GetModelFrame(size_t frame_index) const {
+    if (frame_index >= model_frames_.size()) {
+      LOG(ERROR) << "Failed to get model frame with index=" << frame_index;
+      ADD_FAILURE();
+      return nullptr;
+    }
+    return model_frames_[frame_index];
+  }
+
+  std::vector<scoped_refptr<const VideoFrame>> model_frames_;
 };
 
 TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {

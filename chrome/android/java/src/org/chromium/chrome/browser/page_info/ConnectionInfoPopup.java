@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.vr.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.page_info.CertificateChainHelper;
+import org.chromium.components.page_info.CertificateViewer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;

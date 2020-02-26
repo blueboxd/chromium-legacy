@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
@@ -1874,7 +1873,7 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
-                Tab tab, boolean needsToCloseTab, boolean proxy) {
+                boolean needsToCloseTab, boolean proxy) {
             startActivityIntent = intent;
             startIncognitoIntentCalled = true;
             return true;

@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 
 import java.util.List;
@@ -73,13 +72,12 @@ interface ExternalNavigationDelegate {
      * @param intent The intent for external application that will be sent.
      * @param referrerUrl The referrer for the current navigation.
      * @param fallbackUrl The URL to load if the user doesn't proceed with external intent.
-     * @param tab The current tab.
      * @param needsToCloseTab Whether the current tab has to be closed after the intent is sent.
      * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
      *              used by Instant Apps intents.
      * @return True if the function returned error free, false if it threw an exception.
      */
-    boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
+    boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
             boolean needsToCloseTab, boolean proxy);
 
     /**

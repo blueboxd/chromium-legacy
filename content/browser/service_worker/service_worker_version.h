@@ -512,10 +512,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   void set_cross_origin_embedder_policy(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+      network::mojom::CrossOriginEmbedderPolicyValue
+          cross_origin_embedder_policy) {
     cross_origin_embedder_policy_ = cross_origin_embedder_policy;
   }
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy()
       const {
     return cross_origin_embedder_policy_;
   }
@@ -553,7 +554,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
           compared_script_info_map,
       const GURL& updated_script_url,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+      network::mojom::CrossOriginEmbedderPolicyValue
+          cross_origin_embedder_policy);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
   ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
@@ -890,8 +892,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Cross-Origin-Embedder-Policy for the service worker script. This persists
   // in the disk. kNone is set if this is a brand-new service worker whose main
   // script is not loaded yet.
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_ =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy_ =
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;

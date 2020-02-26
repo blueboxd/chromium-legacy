@@ -226,6 +226,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       RenderProcessHost* rph,
       int routing_id,
       const url::Origin& origin,
+      network::mojom::CrossOriginEmbedderPolicyValue
+          cross_origin_embedder_policy,
       ContentBrowserClient::URLLoaderFactoryType factory_type);
 
  private:

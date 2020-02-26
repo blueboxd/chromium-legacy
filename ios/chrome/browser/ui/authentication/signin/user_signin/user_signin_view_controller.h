@@ -20,6 +20,9 @@
 // Performs scroll operation on unified consent screen.
 - (void)userSigninViewControllerDidScrollOnUnifiedConsent;
 
+// Performs operations to skip sign-in or undo existing sign-in.
+- (void)userSigninViewControllerDidTapOnSkipSignin;
+
 @end
 
 // View controller used to show sign-in UI.
@@ -29,7 +32,7 @@
 @property(nonatomic, weak) id<UserSigninViewControllerDelegate> delegate;
 
 // View controller that handles the user consent before the user signs in.
-@property UIViewController* unifiedConsentViewController;
+@property(nonatomic, weak) UIViewController* unifiedConsentViewController;
 
 // Informs the view controller that the unified consent has reached the bottom
 // of the screen.

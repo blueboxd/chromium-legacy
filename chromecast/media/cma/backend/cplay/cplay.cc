@@ -318,7 +318,7 @@ int CplayMain(int argc, char* argv[]) {
   float volume_dbfs = GetVolumeMap().VolumeToDbFS(params.cast_volume);
   float volume_multiplier = std::pow(10.0, volume_dbfs / 20.0);
   mixer_input.SetVolumeMultiplier(1.0);
-  mixer_input.SetContentTypeVolume(volume_multiplier, 0 /* fade_ms */);
+  mixer_input.SetContentTypeVolume(volume_multiplier);
   LOG(INFO) << "Volume set to level " << params.cast_volume << " | "
             << volume_dbfs << "dBFS | multiplier=" << volume_multiplier;
 

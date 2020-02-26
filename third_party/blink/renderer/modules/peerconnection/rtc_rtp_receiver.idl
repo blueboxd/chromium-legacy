@@ -15,4 +15,6 @@ interface RTCRtpReceiver {
     sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
     sequence<RTCRtpContributingSource> getContributingSources();
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
+    [RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedAudioStreams();
+    [RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedVideoStreams();
 };

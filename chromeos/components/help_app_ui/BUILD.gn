@@ -45,7 +45,10 @@ mojom("mojo_bindings") {
 
 group("closure_compile") {
   testonly = true
-  deps = [ "resources:closure_compile" ]
+  deps = [
+    ":closure_compile_tests",
+    "resources:closure_compile",
+  ]
 }
 
 js2gtest("browser_tests_js") {
@@ -55,5 +58,65 @@ js2gtest("browser_tests_js") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  deps = [ "//chromeos/constants" ]
+  deps = [
+    ":browser_test_support",
+    "//chromeos/constants",
+  ]
+}
+
+source_set("browser_test_support") {
+  testonly = true
+  sources = [
+    "test/help_app_ui_browsertest.cc",
+    "test/help_app_ui_browsertest.h",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    ":help_app_ui",
+    "//chrome/test:test_support_ui",
+    "//chromeos/components/web_applications/test:test_support",
+  ]
+
+  data = [
+    "test/driver.js",
+    "test/driver_api.js",
+    "test/guest_query_receiver.js",
+  ]
+}
+
+# Note we compile with reportUnknownTypes while it works, but if dependencies
+# get more complex, we should remove it and only enable in developer builds.
+js_type_check("closure_compile_tests") {
+  testonly = true
+  closure_flags = default_closure_args + [
+                    "jscomp_error=strictCheckTypes",
+                    "jscomp_error=reportUnknownTypes",
+                  ]
+  deps = [
+    ":test_driver_api_js",
+    ":test_driver_js",
+    ":test_guest_query_receiver_js",
+  ]
+}
+
+js_library("test_driver_api_js") {
+  testonly = true
+  sources = [ "test/driver_api.js" ]
+}
+
+js_library("test_guest_query_receiver_js") {
+  testonly = true
+  sources = [ "test/guest_query_receiver.js" ]
+  deps = [ ":test_driver_api_js" ]
+}
+
+js_library("test_driver_js") {
+  testonly = true
+  sources = [ "test/driver.js" ]
+  deps = [
+    ":test_driver_api_js",
+    "//ui/webui/resources/js:assert",
+  ]
 }

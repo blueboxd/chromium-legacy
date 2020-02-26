@@ -134,6 +134,22 @@ ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   return promise;
 }
 
+RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not supported");
+  return nullptr;
+}
+
+RTCInsertableStreams* RTCRtpReceiver::createEncodedVideoStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not supported");
+  return nullptr;
+}
+
 RTCRtpReceiverPlatform* RTCRtpReceiver::platform_receiver() {
   return receiver_.get();
 }

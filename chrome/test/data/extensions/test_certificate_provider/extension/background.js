@@ -37,7 +37,8 @@ function onCertificatesRequested(reportCallback) {
 
 // Listener for the chrome.certificateProvider.onSignDigestRequested event.
 function onSignDigestRequested(request, reportCallback) {
-  requestSignatureFromCpp(request, /*pinUserInput=*/ null, reportCallback);
+  requestSignatureFromCpp(
+      request, /*pinStatus=*/ 'not_requested', /*pin=*/ '', reportCallback);
 }
 
 function requestCertificatesFromCpp(reportCertificatesCallback) {
@@ -57,11 +58,11 @@ function onCertificatesResponseFromCpp(reportCertificatesCallback, response) {
 }
 
 function requestSignatureFromCpp(
-    signDigestRequest, pinUserInput, reportSignatureCallback) {
+    signDigestRequest, pinStatus, pin, reportSignatureCallback) {
   chrome.test.sendMessage(
       JSON.stringify([
         'onSignatureRequested', jsonifiableFromSignRequest(signDigestRequest),
-        pinUserInput
+        pinStatus, pin
       ]),
       onSignatureResponseFromCpp.bind(
           null, signDigestRequest, reportSignatureCallback));
@@ -91,12 +92,14 @@ function onSignatureResponseFromCpp(
     // we'll request the signature from the C++ handler again.
     chrome.certificateProvider.requestPin(
         parsedResponse.requestPin, requestPinResponse => {
-          const pinUserInput =
-              requestPinResponse && requestPinResponse.userInput ?
+          const pin = (requestPinResponse && requestPinResponse.userInput) ?
               requestPinResponse.userInput :
-              'pin-request-failed';
+              '';
+          const pinStatus = chrome.runtime.lastError ?
+              ('failed:' + chrome.runtime.lastError) :
+              (pin ? 'ok' : 'canceled');
           requestSignatureFromCpp(
-              signDigestRequest, pinUserInput, reportSignatureCallback);
+              signDigestRequest, pinStatus, pin, reportSignatureCallback);
         });
   }
 }

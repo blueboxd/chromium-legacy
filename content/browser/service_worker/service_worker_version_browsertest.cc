@@ -1589,7 +1589,7 @@ class ServiceWorkerVersionCoepTest : public ServiceWorkerVersionBrowserTest,
   // |coep|.
   static std::unique_ptr<net::test_server::HttpResponse>
   RequestHandlerForWorkerScriptWithCoep(
-      base::Optional<network::mojom::CrossOriginEmbedderPolicy> coep,
+      base::Optional<network::mojom::CrossOriginEmbedderPolicyValue> coep,
       const net::test_server::HttpRequest& request) {
     static int counter = 0;
     if (request.relative_url != "/service_worker/generated")
@@ -1601,7 +1601,7 @@ class ServiceWorkerVersionCoepTest : public ServiceWorkerVersionBrowserTest,
     response->set_content_type("text/javascript");
     if (coep.has_value()) {
       std::string header_value =
-          coep.value() == network::mojom::CrossOriginEmbedderPolicy::kNone
+          coep.value() == network::mojom::CrossOriginEmbedderPolicyValue::kNone
               ? "none"
               : "require-corp";
       response->AddCustomHeader("Cross-Origin-Embedder-Policy", header_value);
@@ -1618,25 +1618,25 @@ INSTANTIATE_TEST_SUITE_P(All, ServiceWorkerVersionCoepTest, testing::Bool());
 // Checks if ServiceWorkerVersion has the correct value of COEP when a new
 // worker is installed.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerVersionCoepTest,
-                       CrossOriginEmbedderPolicy_Install) {
+                       CrossOriginEmbedderPolicyValue_Install) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &ServiceWorkerVersionCoepTest::RequestHandlerForWorkerScriptWithCoep,
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp));
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp));
   StartServerAndNavigateToSetup();
 
   // The version cannot get the proper COEP value until the worker is started.
   RunOnCoreThread(base::BindOnce(
       &ServiceWorkerVersionBrowserTest::SetUpRegistrationOnCoreThread,
       base::Unretained(this), "/service_worker/generated"));
-  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
             version_->cross_origin_embedder_policy());
 
   // Once it's started, the worker script is read from the network and the COEP
   // value is set to the version.
   StartWorker(blink::ServiceWorkerStatusCode::kOk);
   EXPECT_EQ(IsCrossOriginIsolationEnabled()
-                ? network::mojom::CrossOriginEmbedderPolicy::kRequireCorp
-                : network::mojom::CrossOriginEmbedderPolicy::kNone,
+                ? network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp
+                : network::mojom::CrossOriginEmbedderPolicyValue::kNone,
             version_->cross_origin_embedder_policy());
 }
 

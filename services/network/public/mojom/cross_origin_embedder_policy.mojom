@@ -5,21 +5,21 @@
 module network.mojom;
 
 // https://mikewest.github.io/corpp/#integration-html
-enum CrossOriginEmbedderPolicy {
+enum CrossOriginEmbedderPolicyValue {
   kNone,
   kRequireCorp,
 };
 
 // Corresponding to the "embedder policy" concept in the spec.
 // TODO(yhirano): Attach a spec link.
-struct CrossOriginEmbedderPolicyWithReporting {
+struct CrossOriginEmbedderPolicy {
     // The value of the policy.
-    CrossOriginEmbedderPolicy value = CrossOriginEmbedderPolicy.kNone;
+    CrossOriginEmbedderPolicyValue value = CrossOriginEmbedderPolicyValue.kNone;
     // The reporting endpoint for the policy.
     string? reporting_endpoint;
     // The value for the "report only" mode.
-    CrossOriginEmbedderPolicy report_only_value =
-        CrossOriginEmbedderPolicy.kNone;
+    CrossOriginEmbedderPolicyValue report_only_value =
+        CrossOriginEmbedderPolicyValue.kNone;
     // The reporting endpoint for the "report only" mode.
     string? report_only_reporting_endpoint;
 };

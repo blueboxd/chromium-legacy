@@ -85,6 +85,7 @@ void MessageEvent::UnregisterAmountOfExternallyAllocatedMemory() {
   if (amount_of_external_memory_ > 0) {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
         -static_cast<int64_t>(amount_of_external_memory_));
+    amount_of_external_memory_ = 0;
   }
 }
 
@@ -316,6 +317,10 @@ ScriptValue MessageEvent::data(ScriptState* script_state) {
 
     case MessageEvent::kDataTypeSerializedScriptValue:
       if (data_as_serialized_script_value_) {
+        // The data is put on the V8 GC heap here, and therefore the V8 GC does
+        // the accounting from here on. We unregister the registered memory to
+        // avoid double accounting.
+        UnregisterAmountOfExternallyAllocatedMemory();
         MessagePortArray message_ports = ports();
         SerializedScriptValue::DeserializeOptions options;
         options.message_ports = &message_ports;

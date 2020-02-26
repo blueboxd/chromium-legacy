@@ -152,7 +152,7 @@ void SpinButtonElement::ForwardEvent(Event& event) {
   if (!spin_button_owner_->ShouldSpinButtonRespondToWheelEvents())
     return;
 
-  DoStepAction(ToWheelEvent(event).wheelDeltaY());
+  DoStepAction(To<WheelEvent>(event).wheelDeltaY());
   event.SetDefaultHandled();
 }
 

@@ -246,9 +246,10 @@ bool MojoSharedBufferVideoFrame::Init(size_t y_offset,
 MojoSharedBufferVideoFrame::~MojoSharedBufferVideoFrame() {
   // Call |mojo_shared_buffer_done_cb_| to take ownership of
   // |shared_buffer_handle_|.
-  if (mojo_shared_buffer_done_cb_)
-    mojo_shared_buffer_done_cb_.Run(std::move(shared_buffer_handle_),
-                                    shared_buffer_size_);
+  if (mojo_shared_buffer_done_cb_) {
+    std::move(mojo_shared_buffer_done_cb_)
+        .Run(std::move(shared_buffer_handle_), shared_buffer_size_);
+  }
 }
 
 size_t MojoSharedBufferVideoFrame::PlaneOffset(size_t plane) const {
@@ -257,8 +258,8 @@ size_t MojoSharedBufferVideoFrame::PlaneOffset(size_t plane) const {
 }
 
 void MojoSharedBufferVideoFrame::SetMojoSharedBufferDoneCB(
-    const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb) {
-  mojo_shared_buffer_done_cb_ = mojo_shared_buffer_done_cb;
+    MojoSharedBufferDoneCB mojo_shared_buffer_done_cb) {
+  mojo_shared_buffer_done_cb_ = std::move(mojo_shared_buffer_done_cb);
 }
 
 const mojo::SharedBufferHandle& MojoSharedBufferVideoFrame::Handle() const {

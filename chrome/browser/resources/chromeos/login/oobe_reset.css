@@ -19,24 +19,17 @@ a {
 }
 
 #tpmFirmwareUpdate {
-  margin-bottom: 20px;
-  margin-inline-start: 20px;
-  margin-top: 23px; /* = 36 - font size */
-  width: 100%;
+  margin-top: 20px;
 }
 
-#tpmFirmwareUpdateCheckbox {
-  margin-top: 2px;
-  size: 16px;
+#illustration {
+  max-height: 80%;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 #tpmFirmwareUpdateContainer {
   cursor: default;
   line-height: 20px;
   pointer-events: auto;
-}
-
-#illustration {
-  height: 264px;
-  width: 264px;
 }

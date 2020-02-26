@@ -14,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
@@ -49,6 +50,10 @@ bool AccountManagerWelcomeDialog::ShowIfRequired() {
   }
 
   // Check if the dialog should be shown.
+  if (user_manager::UserManager::Get()
+          ->IsCurrentUserCryptohomeDataEphemeral()) {
+    return false;
+  }
   PrefService* pref_service =
       ProfileManager::GetActiveUserProfile()->GetPrefs();
   const int num_times_shown = pref_service->GetInteger(

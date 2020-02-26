@@ -15,8 +15,6 @@
 class Browser;
 @class ChromeIdentity;
 
-@protocol ApplicationCommands;
-@protocol BrowsingDataCommands;
 @protocol SyncPresenter;
 
 // Called when the sign-in dialog is closed.

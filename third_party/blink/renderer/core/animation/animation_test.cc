@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -173,9 +174,12 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
         StringKeyframeVector());
   }
 
-  KeyframeEffect* MakeAnimation(double duration = 30) {
+  KeyframeEffect* MakeAnimation(
+      double duration = 30,
+      Timing::FillMode fill_mode = Timing::FillMode::AUTO) {
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
+    timing.fill_mode = fill_mode;
     return MakeGarbageCollected<KeyframeEffect>(nullptr, MakeEmptyEffectModel(),
                                                 timing);
   }
@@ -1135,6 +1139,45 @@ TEST_F(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
   EXPECT_FALSE(animation->pending());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_FALSE(animation->startTime());
+}
+
+// crbug.com/1052217
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateAfterFinish) {
+  animation->setEffect(MakeAnimation(30, Timing::FillMode::FORWARDS));
+  animation->finish();
+  animation->Update(kTimingUpdateOnDemand);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_EQ(base::nullopt, animation->TimeToEffectChange());
+
+  // Reversing a finished animation marks the animation as outdated. Required
+  // to recompute the time to next interval.
+  animation->setPlaybackRate(-1);
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(animation->playbackRate(), -1);
+  EXPECT_TRUE(animation->Outdated());
+  animation->Update(kTimingUpdateOnDemand);
+  EXPECT_EQ(0, animation->TimeToEffectChange()->InSecondsF());
+  EXPECT_FALSE(animation->Outdated());
+}
+
+TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateAfterFinish) {
+  animation->setEffect(MakeAnimation(30, Timing::FillMode::FORWARDS));
+  animation->finish();
+  animation->Update(kTimingUpdateOnDemand);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_EQ(base::nullopt, animation->TimeToEffectChange());
+
+  // Reversing a finished animation marks the animation as outdated. Required
+  // to recompute the time to next interval. The pending playback rate is
+  // immediately applied when updatePlaybackRate is called on a non-running
+  // animation.
+  animation->updatePlaybackRate(-1);
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(animation->playbackRate(), -1);
+  EXPECT_TRUE(animation->Outdated());
+  animation->Update(kTimingUpdateOnDemand);
+  EXPECT_EQ(0, animation->TimeToEffectChange()->InSecondsF());
+  EXPECT_FALSE(animation->Outdated());
 }
 
 TEST_F(AnimationAnimationTestCompositeAfterPaint,

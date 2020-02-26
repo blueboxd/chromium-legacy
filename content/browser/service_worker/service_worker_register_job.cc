@@ -338,7 +338,7 @@ bool ServiceWorkerRegisterJob::IsUpdateCheckNeeded() const {
   return !skip_script_comparison_;
 }
 
-void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
+void ServiceWorkerRegisterJob::TriggerUpdateCheck(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
@@ -372,20 +372,10 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
                      weak_factory_.GetWeakPtr()));
 }
 
-ServiceWorkerRegisterJob::UpdateCheckType
-ServiceWorkerRegisterJob::GetUpdateCheckType() const {
-  return blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
-             ? UpdateCheckType::kAllScriptsBeforeStartWorker
-             : UpdateCheckType::kMainScriptDuringStartWorker;
-}
-
 void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
     ServiceWorkerSingleScriptUpdateChecker::Result result,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
         failure_info) {
-  DCHECK_EQ(GetUpdateCheckType(),
-            UpdateCheckType::kAllScriptsBeforeStartWorker);
-
   // Update check failed.
   if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
     DCHECK(failure_info);
@@ -504,7 +494,6 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
 
   if (update_checker_) {
-    DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
     new_version()->PrepareForUpdate(
         update_checker_->TakeComparedResults(),
         update_checker_->updated_script_url(),
@@ -524,23 +513,16 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
 // This function corresponds to the spec's [[Update]] algorithm.
 void ServiceWorkerRegisterJob::UpdateAndContinue() {
   SetPhase(UPDATE);
-  switch (GetUpdateCheckType()) {
-    case UpdateCheckType::kAllScriptsBeforeStartWorker:
-      if (!IsUpdateCheckNeeded()) {
-        CreateNewVersionForUpdate();
-        return;
-      }
 
-      // This will start the update check after loader factory is retrieved.
-      context_->wrapper()->GetLoaderFactoryForUpdateCheck(
-          scope_,
-          base::BindOnce(&ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser,
-                         weak_factory_.GetWeakPtr()));
-      return;
-    case UpdateCheckType::kMainScriptDuringStartWorker:
-      CreateNewVersionForUpdate();
-      return;
+  if (!IsUpdateCheckNeeded()) {
+    CreateNewVersionForUpdate();
+    return;
   }
+
+  // This will start the update check after loader factory is retrieved.
+  context_->wrapper()->GetLoaderFactoryForUpdateCheck(
+      scope_, base::BindOnce(&ServiceWorkerRegisterJob::TriggerUpdateCheck,
+                             weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(
@@ -819,12 +801,9 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
   // from the current job when the update checker tried to fetch the worker
   // script.
   // |update_checker_| is not available when installing a new
-  // service worker without update checking (e.g. a new registration), or
-  // non-ServiceWorkerImportedScriptUpdateCheck. In this case, get
-  // |network_accessed| and |force_bypass_cache| from the new version.
+  // service worker without update checking (e.g. a new registration). In this
+  // case, get |network_accessed| and |force_bypass_cache| from the new version.
   if (update_checker_) {
-    DCHECK_EQ(GetUpdateCheckType(),
-              UpdateCheckType::kAllScriptsBeforeStartWorker);
     network_accessed = update_checker_->network_accessed();
     force_bypass_cache = force_bypass_cache_;
   } else {

@@ -556,24 +556,9 @@
     "expiry_milestone": 82
   },
   {
-    "name": "contextual-search-simplified-server",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
-    "name": "contextual-search-translation-model",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "contextual-search-translations",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "contextual-search-unity-integration",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "cookie-deprecation-messages",

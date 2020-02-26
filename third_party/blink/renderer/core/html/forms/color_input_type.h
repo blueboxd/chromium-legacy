@@ -78,7 +78,6 @@ class ColorInputType final : public InputType,
   void WarnIfValueIsInvalid(const String&) const override;
   void UpdateView() override;
   AXObject* PopupRootAXObject() override;
-  bool TypeShouldForceLegacyLayout() const override;
 
   Color ValueAsColor() const;
   HTMLElement* ShadowColorSwatch() const;

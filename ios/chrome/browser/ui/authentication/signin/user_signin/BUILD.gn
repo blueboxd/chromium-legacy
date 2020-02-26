@@ -9,11 +9,16 @@ source_set("user_signin") {
   sources = [
     "user_signin_coordinator.h",
     "user_signin_coordinator.mm",
+    "user_signin_mediator.h",
+    "user_signin_mediator.mm",
     "user_signin_view_controller.h",
     "user_signin_view_controller.mm",
   ]
   deps = [
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/signin:signin_protected",
     "//ios/chrome/browser/ui/authentication/unified_consent",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/util",

@@ -32,7 +32,7 @@ message ServiceWorkerRegistrationData {
     ALL = 1;
     NONE = 2;
   }
-  enum CrossOriginEmbedderPolicy {
+  enum CrossOriginEmbedderPolicyValue {
     NONE_OR_NOT_EXIST = 0;
     REQUIRE_CORP = 1;
   }
@@ -77,7 +77,7 @@ message ServiceWorkerRegistrationData {
   // serialized by Time::ToDeltaSinceWindowsEpoch().
   optional int64 script_response_time = 16;
 
-  optional CrossOriginEmbedderPolicy cross_origin_embedder_policy = 17
+  optional CrossOriginEmbedderPolicyValue cross_origin_embedder_policy = 17
       [default = NONE_OR_NOT_EXIST];
 }
 

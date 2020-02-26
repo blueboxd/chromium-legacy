@@ -74,8 +74,6 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   bool CheckIfScriptRequestIsValid(
       const network::ResourceRequest& resource_request);
 
-  // Used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  //
   // The callback is called once the copy is done. It normally runs
   // asynchronously, and would be synchronous if the operation completes
   // synchronously. The first parameter of the callback is the new resource id

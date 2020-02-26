@@ -625,6 +625,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           // Item may not exist if navigation was stopped (see
           // crbug.com/969915).
           item->SetURL(webViewURL);
+          if ([ErrorPageHelper
+                  failedNavigationURLFromErrorPageFileURL:webViewURL]
+                  .is_valid()) {
+            item->SetVirtualURL([ErrorPageHelper
+                failedNavigationURLFromErrorPageFileURL:webViewURL]);
+          }
         }
         context->SetUrl(webViewURL);
       }
@@ -700,23 +706,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                      rendererInitiated:YES
                  placeholderNavigation:isPlaceholderURL];
   web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
-
-  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
-    // |item| is nil for back/forward/reload navigations.
-    if (navigationContext->GetItem() &&
-        navigationContext->GetItem()->GetVirtualURL() ==
-            navigationContext->GetItem()->GetURL()) {
-      // Set nav item's virtual URL to failed URL if it doesn't have a specific
-      // virtualURL.
-      GURL virtualURLForError =
-          [ErrorPageHelper failedNavigationURLFromErrorPageFileURL:webViewURL];
-      // virtualURLForError will only be valid of error URL. If it is a regular
-      // URL it won't be valid, so the virtualURL won't be overridden.
-      if (virtualURLForError.is_valid()) {
-        navigationContext->GetItem()->SetVirtualURL(virtualURLForError);
-      }
-    }
-  }
 
   // GetPendingItem which may be called inside OnNavigationStarted relies on
   // association between NavigationContextImpl and WKNavigation.
@@ -1107,13 +1096,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                  originalNavigation:navigation
                             webView:webView];
     } else if (context->GetError()) {
-      GURL URLForError =
-          [ErrorPageHelper failedNavigationURLFromErrorPageFileURL:webViewURL];
-      if (URLForError.is_valid()) {
-        [self loadErrorPageForNavigationItem:item
-                           navigationContext:navigation
-                                     webView:webView];
-      }
+      [self loadErrorPageForNavigationItem:item
+                         navigationContext:navigation
+                                   webView:webView];
     }
   }
 
@@ -1833,27 +1818,28 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       //   2. Current nav item has a failed URL. This may happen when
       //      back/forward/refresh on a loaded page;
       //   3. Current nav item is an irrelevant page.
-      // For 1&2, load error page HTML into current page;
+      // For 1&2, load an empty string to remove existing JS code.
       // For 3, load error page file to create a new nav item.
+      // The actual error HTML will be loaded in didFinishNavigation callback.
+      WKNavigation* errorNavigation = nil;
       if (provisionalLoad &&
           ![errorPage
               isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
           ![backForwardItem.URL isEqual:errorPage.failedNavigationURL]) {
-        WKNavigation* errorNavigation =
-            [webView loadFileURL:errorPage.errorPageFileURL
-                allowingReadAccessToURL:errorPage.errorPageFileURL];
-        [self.navigationStates setState:web::WKNavigationState::REQUESTED
-                          forNavigation:errorNavigation];
-        std::unique_ptr<web::NavigationContextImpl> originalContext =
-            [self.navigationStates removeNavigation:navigation];
-        [self.navigationStates setContext:std::move(originalContext)
-                            forNavigation:errorNavigation];
-
-        // Return as the context was moved.
-        return;
+        errorNavigation = [webView loadFileURL:errorPage.errorPageFileURL
+                       allowingReadAccessToURL:errorPage.errorPageFileURL];
       } else {
-        // TODO(crbug.com/991608): Inject HTML for the error page.
+        errorNavigation = [webView loadHTMLString:@""
+                                          baseURL:backForwardItem.URL];
       }
+      [self.navigationStates setState:web::WKNavigationState::REQUESTED
+                        forNavigation:errorNavigation];
+      std::unique_ptr<web::NavigationContextImpl> originalContext =
+          [self.navigationStates removeNavigation:navigation];
+      [self.navigationStates setContext:std::move(originalContext)
+                          forNavigation:errorNavigation];
+      // Return as the context was moved.
+      return;
     } else {
       GURL errorURL =
           net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
@@ -2071,6 +2057,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       error.userInfo[NSURLErrorFailingURLStringErrorKey];
   GURL failingURL(base::SysNSStringToUTF8(failingURLString));
   GURL itemURL = item->GetURL();
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    if (itemURL != failingURL)
+      item->SetVirtualURL(failingURL);
+  }
   int itemID = item->GetUniqueID();
   web::GetWebClient()->PrepareErrorPage(
       self.webStateImpl, failingURL, error, context->IsPost(),

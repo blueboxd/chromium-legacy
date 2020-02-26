@@ -1932,7 +1932,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::BindCacheStorage(
-    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

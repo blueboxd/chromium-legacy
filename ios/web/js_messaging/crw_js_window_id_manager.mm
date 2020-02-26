@@ -65,8 +65,15 @@ const size_t kUniqueKeyLength = 16;
                  return;
                }
 
-               DCHECK_EQ(CFBooleanGetTypeID(),
-                         CFGetTypeID((__bridge CFTypeRef)result));
+               // If |result| is an incorrect type, do not check its value.
+               // Also do not attempt to re-inject scripts as it may lead to
+               // endless recursion attempting to inject the scripts correctly.
+               if (result && CFBooleanGetTypeID() !=
+                                 CFGetTypeID((__bridge CFTypeRef)result)) {
+                 NOTREACHED();
+                 return;
+               }
+
                if (![result boolValue]) {
                  // WKUserScript has not been injected yet. Retry window id
                  // injection, because it is critical for the system to

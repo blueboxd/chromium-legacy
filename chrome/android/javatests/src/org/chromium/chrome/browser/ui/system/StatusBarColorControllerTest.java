@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -57,6 +58,7 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    @DisabledTest(message = "https://crbug.com/1056196")
     public void testColorToggleIncongitoInOverview() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         Resources resources = activity.getResources();
@@ -87,6 +89,7 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    @DisabledTest(message = "https://crbug.com/1056196")
     public void testBrandColorIgnoredInOverview() throws Exception {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         Resources resources = activity.getResources();

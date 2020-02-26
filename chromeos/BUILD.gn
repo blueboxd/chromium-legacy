@@ -287,6 +287,9 @@ if (is_chromeos_device) {
       "crostini.VerifyAppWayland.artifact",
       "crostini.VerifyAppX11.artifact",
       "crostini.Webserver.artifact",
+
+      # crbug.com/1056163
+      "hwsec.LoginGuest",
     ]
   }
 

@@ -89,7 +89,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
         CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
   }
 
-  UpdateButtonLabels();
+  UpdateButtons();
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
@@ -111,7 +111,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   controls_container_->SetVisible(false);
   overlay_->SetVisible(true);
   progress_throbber_->Start();
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
   Layout();
 }
@@ -173,7 +173,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       layout->AddView(std::move(error_icon));
       layout->AddView(std::move(error_label));
     }
-    UpdateButtonLabels();
+    UpdateButtons();
     DialogModelChanged();
   }
 
@@ -261,18 +261,6 @@ void CardUnmaskPromptViews::DeleteDelegate() {
   delete this;
 }
 
-int CardUnmaskPromptViews::GetDialogButtons() const {
-  // In permanent error state, only the "close" button is shown.
-  AutofillClient::PaymentsRpcResult result =
-      controller_->GetVerificationResult();
-  if (result == AutofillClient::PERMANENT_FAILURE ||
-      result == AutofillClient::NETWORK_ERROR) {
-    return ui::DIALOG_BUTTON_CANCEL;
-  }
-
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool CardUnmaskPromptViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)
@@ -320,7 +308,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   if (controller_->InputCvcIsValid(new_contents))
     cvc_input_->SetInvalid(false);
 
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
 }
 
@@ -341,7 +329,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
 
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
 }
 
@@ -474,7 +462,15 @@ void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
 }
 
-void CardUnmaskPromptViews::UpdateButtonLabels() {
+void CardUnmaskPromptViews::UpdateButtons() {
+  // In permanent error state, only the "close" button is shown.
+  AutofillClient::PaymentsRpcResult result =
+      controller_->GetVerificationResult();
+  bool has_ok = result != AutofillClient::PERMANENT_FAILURE &&
+                result != AutofillClient::NETWORK_ERROR;
+  DialogDelegate::set_buttons(has_ok ? ui::DIALOG_BUTTON_OK |
+                                           ui::DIALOG_BUTTON_CANCEL
+                                     : ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    controller_->GetOkButtonLabel());
 }
@@ -488,7 +484,7 @@ void CardUnmaskPromptViews::LinkClicked() {
   input_row_->InvalidateLayout();
   cvc_input_->SetInvalid(false);
   cvc_input_->SetText(base::string16());
-  UpdateButtonLabels();
+  UpdateButtons();
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   instructions_->SetText(controller_->GetInstructionsMessage());

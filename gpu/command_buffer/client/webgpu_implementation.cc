@@ -385,7 +385,7 @@ void WebGPUImplementation::OnGpuControlReturnData(
       const cmds::DawnReturnAdapterInfo* returned_adapter_info =
           reinterpret_cast<const cmds::DawnReturnAdapterInfo*>(data.data());
 
-      GLuint request_adapter_serial =
+      DawnRequestAdapterSerial request_adapter_serial =
           returned_adapter_info->header.request_adapter_serial;
       auto request_callback_iter =
           request_adapter_callback_map_.find(request_adapter_serial);
@@ -417,10 +417,10 @@ void WebGPUImplementation::OnGpuControlReturnData(
           reinterpret_cast<const cmds::DawnReturnRequestDeviceInfo*>(
               data.data());
 
-      GLuint request_device_serial =
-          returned_request_device_info->request_device_serial;
+      DawnDeviceClientID device_client_id =
+          returned_request_device_info->device_client_id;
       auto request_callback_iter =
-          request_device_callback_map_.find(request_device_serial);
+          request_device_callback_map_.find(device_client_id);
       if (request_callback_iter == request_device_callback_map_.end()) {
         // TODO(jiawei.shao@intel.com): Lose the context.
         NOTREACHED();
@@ -475,7 +475,7 @@ ReservedTexture WebGPUImplementation::ReserveTexture(WGPUDevice device) {
 #endif
 }
 
-uint32_t WebGPUImplementation::NextRequestAdapterSerial() {
+DawnRequestAdapterSerial WebGPUImplementation::NextRequestAdapterSerial() {
   return ++request_adapter_serial_;
 }
 
@@ -483,13 +483,11 @@ bool WebGPUImplementation::RequestAdapterAsync(
     PowerPreference power_preference,
     base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
         request_adapter_callback) {
-  uint32_t request_adapter_serial = NextRequestAdapterSerial();
-
-  // Avoid the overflow of request_adapter_serial and old slot being reused.
-  if (request_adapter_callback_map_.find(request_adapter_serial) !=
-      request_adapter_callback_map_.end()) {
-    return false;
-  }
+  // Now that we declare request_adapter_serial as an uint64, it can't overflow
+  // because we just increment an uint64 by one.
+  DawnRequestAdapterSerial request_adapter_serial = NextRequestAdapterSerial();
+  DCHECK(request_adapter_callback_map_.find(request_adapter_serial) ==
+         request_adapter_callback_map_.end());
 
   helper_->RequestAdapter(request_adapter_serial,
                           static_cast<uint32_t>(power_preference));
@@ -501,8 +499,8 @@ bool WebGPUImplementation::RequestAdapterAsync(
   return true;
 }
 
-uint32_t WebGPUImplementation::NextRequestDeviceSerial() {
-  return ++request_device_serial_;
+DawnDeviceClientID WebGPUImplementation::NextDeviceClientID() {
+  return ++device_client_id_;
 }
 
 bool WebGPUImplementation::RequestDeviceAsync(
@@ -510,13 +508,11 @@ bool WebGPUImplementation::RequestDeviceAsync(
     const WGPUDeviceProperties* requested_device_properties,
     base::OnceCallback<void(bool)> request_device_callback) {
 #if BUILDFLAG(USE_DAWN)
-  uint32_t request_device_serial = NextRequestDeviceSerial();
-
-  // Avoid the overflow of request_device_serial and old slot being reused.
-  if (request_device_callback_map_.find(request_device_serial) !=
-      request_device_callback_map_.end()) {
-    return false;
-  }
+  // Now that we declare device_client_id as an uint64, it can't overflow
+  // because we just increment an uint64 by one.
+  DawnDeviceClientID device_client_id = NextDeviceClientID();
+  DCHECK(request_device_callback_map_.find(device_client_id) ==
+         request_device_callback_map_.end());
 
   // TODO(jiawei.shao@intel.com): support multiple WebGPU devices. Each WebGPU
   // device corresponds to a unique WebGPUCommandSerializer.
@@ -525,12 +521,11 @@ bool WebGPUImplementation::RequestDeviceAsync(
         new WebGPUCommandSerializer(helper_, memory_transfer_service_.get()));
   }
 
-  request_device_callback_map_[request_device_serial] =
+  request_device_callback_map_[device_client_id] =
       std::move(request_device_callback);
 
   if (!requested_device_properties) {
-    helper_->RequestDevice(request_device_serial_, requested_adapter_id, 0, 0,
-                           0);
+    helper_->RequestDevice(device_client_id, requested_adapter_id, 0, 0, 0);
     return true;
   }
 
@@ -547,7 +542,7 @@ bool WebGPUImplementation::RequestDeviceAsync(
   dawn_wire::SerializeWGPUDeviceProperties(
       requested_device_properties,
       reinterpret_cast<char*>(transfer_buffer.address()));
-  helper_->RequestDevice(request_device_serial, requested_adapter_id,
+  helper_->RequestDevice(device_client_id, requested_adapter_id,
                          transfer_buffer.shm_id(), transfer_buffer.offset(),
                          serialized_device_properties_size);
   transfer_buffer.Release();

@@ -464,6 +464,8 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
   DCHECK_NE(property.PropertyID(), CSSPropertyID::kVariable);
   DCHECK_NE(priority.GetOrigin(), CascadeOrigin::kNone);
 
+  MarkHasVariableReference(property);
+
   // If the previous call to ResolvePendingSubstitution parsed 'value', then
   // we don't need to do it again.
   bool is_cached = resolver.shorthand_cache_.value == &value;
@@ -500,8 +502,6 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
   // parsed_properties.
   const CSSProperty* unvisited_property =
       property.IsVisited() ? property.GetUnvisitedProperty() : &property;
-
-  MarkHasVariableReference(*unvisited_property);
 
   unsigned parsed_properties_count = parsed_properties.size();
   for (unsigned i = 0; i < parsed_properties_count; ++i) {

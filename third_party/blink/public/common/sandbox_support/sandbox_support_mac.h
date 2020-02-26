@@ -40,6 +40,8 @@ enum class MacSystemColorID {
 constexpr size_t kMacSystemColorIDCount =
     static_cast<size_t>(MacSystemColorID::kCount);
 
+constexpr size_t kMacSystemColorSchemeCount = 2;
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_SANDBOX_SUPPORT_SANDBOX_SUPPORT_MAC_H_

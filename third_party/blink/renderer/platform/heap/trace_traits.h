@@ -172,30 +172,6 @@ void TraceTrait<T>::Trace(Visitor* visitor, void* self) {
   static_cast<T*>(self)->Trace(visitor);
 }
 
-template <typename T, typename Traits>
-struct TraceTrait<HeapVectorBacking<T, Traits>> {
-  STATIC_ONLY(TraceTrait);
-  using Backing = HeapVectorBacking<T, Traits>;
-
- public:
-  static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace};
-  }
-
-  static void Trace(blink::Visitor* visitor, void* self) {
-    if (visitor->ConcurrentTracingBailOut({self, &Trace}))
-      return;
-
-    static_assert(!WTF::IsWeak<T>::value,
-                  "Weakness is not supported in HeapVector and HeapDeque");
-    if (WTF::IsTraceableInCollectionTrait<Traits>::value) {
-      WTF::TraceInCollectionTrait<WTF::kNoWeakHandling,
-                                  HeapVectorBacking<T, Traits>,
-                                  void>::Trace(visitor, self);
-    }
-  }
-};
-
 // The trace trait for the heap hashtable backing is used when we find a
 // direct pointer to the backing from the conservative stack scanner. This
 // normally indicates that there is an ongoing iteration over the table, and so
@@ -397,70 +373,6 @@ struct TraceInCollectionTrait<kWeakHandling, blink::WeakMember<T>, Traits> {
 
   static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& value) {
     return !blink::ThreadHeap::IsHeapObjectAlive(value);
-  }
-};
-
-// This trace method is used only for on-stack HeapVectors found in
-// conservative scanning. On-heap HeapVectors are traced by Vector::trace.
-template <typename T, typename Traits>
-struct TraceInCollectionTrait<kNoWeakHandling,
-                              blink::HeapVectorBacking<T, Traits>,
-                              void> {
-  static bool Trace(blink::Visitor* visitor, void* self) {
-    // HeapVectorBacking does not know the exact size of the vector
-    // and just knows the capacity of the vector. Due to the constraint,
-    // HeapVectorBacking can support only the following objects:
-    //
-    // - An object that has a vtable. In this case, HeapVectorBacking
-    //   traces only slots that are not zeroed out. This is because if
-    //   the object has a vtable, the zeroed slot means that it is
-    //   an unused slot (Remember that the unused slots are guaranteed
-    //   to be zeroed out by VectorUnusedSlotClearer).
-    //
-    // - An object that can be initialized with memset. In this case,
-    //   HeapVectorBacking traces all slots including unused slots.
-    //   This is fine because the fact that the object can be initialized
-    //   with memset indicates that it is safe to treat the zerod slot
-    //   as a valid object.
-    static_assert(!IsTraceableInCollectionTrait<Traits>::value ||
-                      Traits::kCanClearUnusedSlotsWithMemset ||
-                      std::is_polymorphic<T>::value,
-                  "HeapVectorBacking doesn't support objects that cannot be "
-                  "cleared as unused with memset.");
-
-    // This trace method is instantiated for vectors where
-    // IsTraceableInCollectionTrait<Traits>::value is false, but the trace
-    // method should not be called. Thus we cannot static-assert
-    // IsTraceableInCollectionTrait<Traits>::value but should runtime-assert it.
-    DCHECK(IsTraceableInCollectionTrait<Traits>::value);
-
-    T* array = reinterpret_cast<T*>(self);
-    blink::HeapObjectHeader* header =
-        blink::HeapObjectHeader::FromPayload(self);
-    // Use the payload size as recorded by the heap to determine how many
-    // elements to trace.
-    size_t length = header->PayloadSize() / sizeof(T);
-#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-    // As commented above, HeapVectorBacking can trace unused slots
-    // (which are already zeroed out).
-    ANNOTATE_CHANGE_SIZE(array, length, 0, length);
-#endif
-    if (std::is_polymorphic<T>::value) {
-      char* pointer = reinterpret_cast<char*>(array);
-      for (unsigned i = 0; i < length; ++i) {
-        char* element = pointer + i * sizeof(T);
-        if (blink::VTableInitialized(element))
-          blink::TraceIfNeeded<
-              T, IsTraceableInCollectionTrait<Traits>::value>::Trace(visitor,
-                                                                     array[i]);
-      }
-    } else {
-      for (size_t i = 0; i < length; ++i)
-        blink::TraceIfNeeded<
-            T, IsTraceableInCollectionTrait<Traits>::value>::Trace(visitor,
-                                                                   array[i]);
-    }
-    return false;
   }
 };
 

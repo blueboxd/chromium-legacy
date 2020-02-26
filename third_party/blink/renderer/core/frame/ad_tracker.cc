@@ -37,7 +37,7 @@ namespace features {
 // Controls whether the AdTracker will look across async stacks to determine if
 // the currently running stack is ad related.
 const base::Feature kAsyncStackAdTagging{"AsyncStackAdTagging",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the AdTracker analyzes the whole pseudo-stack or just the
 // top of the stack when detecting ads.

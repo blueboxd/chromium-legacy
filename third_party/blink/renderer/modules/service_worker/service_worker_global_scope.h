@@ -52,6 +52,10 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace blink {
 
 class ExceptionState;
@@ -374,8 +378,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       DispatchFetchEventForSubresourceCallback callback) override;
   void Clone(
       mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> reciever,
-      network::mojom::blink::CrossOriginEmbedderPolicy
-          cross_origin_embedder_policy) override;
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy)
+      override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -465,7 +469,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // the event queue, and executed immediately or sometimes later.
   void StartFetchEvent(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
+      const network::CrossOriginEmbedderPolicy& requestor_coep,
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventInternalCallback callback,
@@ -660,12 +664,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |event_queue_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
   // |event_queue_|.
-  // network::mojom::blink::CrossOriginEmbedderPolicy set as the context of
+  // network::CrossOriginEmbedderPolicy set as the context of
   // mojo::ReceiverSet is the policy for the client which dispatches FetchEvents
   // to the ControllerServiceWorker. It should be referred to before sending the
   // response back to the client.
   mojo::ReceiverSet<mojom::blink::ControllerServiceWorker,
-                    network::mojom::blink::CrossOriginEmbedderPolicy>
+                    network::CrossOriginEmbedderPolicy>
       controller_receivers_;
 };
 

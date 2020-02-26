@@ -11,6 +11,10 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace content {
 
 class ServiceWorkerContextWrapper;
@@ -69,7 +73,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandle {
   void OnBeginNavigationCommit(
       int render_process_id,
       int render_frame_id,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   // Similar to OnBeginNavigationCommit() for shared workers (and dedicated
@@ -77,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandle {
   // |cross_origin_embedder_policy| is passed to the pre-created provider
   // host.
   void OnBeginWorkerCommit(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
 
   blink::mojom::ServiceWorkerProviderInfoForClientPtr TakeProviderInfo() {
     return std::move(provider_info_);

@@ -44,8 +44,8 @@ source_set("frame_validator") {
     "video_frame_validator.h",
   ]
   deps = [
-    ":decode_helpers",
     ":helpers",
+    ":test_helpers",
     "//media/gpu",
   ]
 }
@@ -63,11 +63,11 @@ source_set("frame_file_writer") {
   ]
 }
 
-source_set("decode_helpers") {
+source_set("test_helpers") {
   testonly = true
   sources = [
-    "video_decode_accelerator_unittest_helpers.cc",
-    "video_decode_accelerator_unittest_helpers.h",
+    "video_test_helpers.cc",
+    "video_test_helpers.h",
   ]
   public_deps = [ ":helpers" ]
   deps = [
@@ -87,7 +87,7 @@ static_library("video_player_thumbnail_renderer") {
     "video_player/frame_renderer_thumbnail.h",
   ]
   deps = [
-    ":decode_helpers",
+    ":test_helpers",
     "//gpu/command_buffer/common",
     "//media/gpu",
     "//ui/gfx/codec:codec",
@@ -112,7 +112,7 @@ static_library("video_player") {
     "video_player/video_player.h",
   ]
   deps = [
-    ":decode_helpers",
+    ":test_helpers",
     "//media/gpu",
     "//testing/gtest:gtest",
   ]

@@ -3880,8 +3880,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowAllRequests) {
 
 // Ensure allowAllRequests rules work correctly for srcdoc frames. Regression
 // test for crbug.com/1050536.
+// TODO(crbug.com/1056031): Re-enabled this test.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       AllowAllRequests_SrcDoc) {
+                       DISABLED_AllowAllRequests_SrcDoc) {
   TestRule block_rule = CreateGenericRule();
   block_rule.id = kMinValidID;
   block_rule.priority = kMinValidPriority;

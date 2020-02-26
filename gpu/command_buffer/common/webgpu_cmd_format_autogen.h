@@ -75,14 +75,16 @@ struct AssociateMailboxImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLuint _device_id,
+  void Init(GLuint64 _device_client_id,
             GLuint _device_generation,
             GLuint _id,
             GLuint _generation,
             GLuint _usage,
             const GLbyte* _mailbox) {
     SetHeader();
-    device_id = _device_id;
+    gles2::GLES2Util::MapUint64ToTwoUint32(
+        static_cast<uint64_t>(_device_client_id), &device_client_id_0,
+        &device_client_id_1);
     device_generation = _device_generation;
     id = _id;
     generation = _generation;
@@ -91,41 +93,51 @@ struct AssociateMailboxImmediate {
   }
 
   void* Set(void* cmd,
-            GLuint _device_id,
+            GLuint64 _device_client_id,
             GLuint _device_generation,
             GLuint _id,
             GLuint _generation,
             GLuint _usage,
             const GLbyte* _mailbox) {
-    static_cast<ValueType*>(cmd)->Init(_device_id, _device_generation, _id,
-                                       _generation, _usage, _mailbox);
+    static_cast<ValueType*>(cmd)->Init(_device_client_id, _device_generation,
+                                       _id, _generation, _usage, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
+  GLuint64 device_client_id() const volatile {
+    return static_cast<GLuint64>(gles2::GLES2Util::MapTwoUint32ToUint64(
+        device_client_id_0, device_client_id_1));
+  }
+
   gpu::CommandHeader header;
-  uint32_t device_id;
+  uint32_t device_client_id_0;
+  uint32_t device_client_id_1;
   uint32_t device_generation;
   uint32_t id;
   uint32_t generation;
   uint32_t usage;
 };
 
-static_assert(sizeof(AssociateMailboxImmediate) == 24,
-              "size of AssociateMailboxImmediate should be 24");
+static_assert(sizeof(AssociateMailboxImmediate) == 28,
+              "size of AssociateMailboxImmediate should be 28");
 static_assert(offsetof(AssociateMailboxImmediate, header) == 0,
               "offset of AssociateMailboxImmediate header should be 0");
-static_assert(offsetof(AssociateMailboxImmediate, device_id) == 4,
-              "offset of AssociateMailboxImmediate device_id should be 4");
 static_assert(
-    offsetof(AssociateMailboxImmediate, device_generation) == 8,
-    "offset of AssociateMailboxImmediate device_generation should be 8");
-static_assert(offsetof(AssociateMailboxImmediate, id) == 12,
-              "offset of AssociateMailboxImmediate id should be 12");
-static_assert(offsetof(AssociateMailboxImmediate, generation) == 16,
-              "offset of AssociateMailboxImmediate generation should be 16");
-static_assert(offsetof(AssociateMailboxImmediate, usage) == 20,
-              "offset of AssociateMailboxImmediate usage should be 20");
+    offsetof(AssociateMailboxImmediate, device_client_id_0) == 4,
+    "offset of AssociateMailboxImmediate device_client_id_0 should be 4");
+static_assert(
+    offsetof(AssociateMailboxImmediate, device_client_id_1) == 8,
+    "offset of AssociateMailboxImmediate device_client_id_1 should be 8");
+static_assert(
+    offsetof(AssociateMailboxImmediate, device_generation) == 12,
+    "offset of AssociateMailboxImmediate device_generation should be 12");
+static_assert(offsetof(AssociateMailboxImmediate, id) == 16,
+              "offset of AssociateMailboxImmediate id should be 16");
+static_assert(offsetof(AssociateMailboxImmediate, generation) == 20,
+              "offset of AssociateMailboxImmediate generation should be 20");
+static_assert(offsetof(AssociateMailboxImmediate, usage) == 24,
+              "offset of AssociateMailboxImmediate usage should be 24");
 
 struct DissociateMailbox {
   typedef DissociateMailbox ValueType;
@@ -176,14 +188,14 @@ struct RequestAdapter {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _request_adapter_serial, uint32_t _power_preference) {
+  void Init(uint64_t _request_adapter_serial, uint32_t _power_preference) {
     SetHeader();
     request_adapter_serial = _request_adapter_serial;
     power_preference = _power_preference;
   }
 
   void* Set(void* cmd,
-            uint32_t _request_adapter_serial,
+            uint64_t _request_adapter_serial,
             uint32_t _power_preference) {
     static_cast<ValueType*>(cmd)->Init(_request_adapter_serial,
                                        _power_preference);
@@ -216,13 +228,13 @@ struct RequestDevice {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _request_device_serial,
+  void Init(uint64_t _device_client_id,
             uint32_t _adapter_service_id,
             uint32_t _request_device_properties_shm_id,
             uint32_t _request_device_properties_shm_offset,
             uint32_t _request_device_properties_size) {
     SetHeader();
-    request_device_serial = _request_device_serial;
+    device_client_id = _device_client_id;
     adapter_service_id = _adapter_service_id;
     request_device_properties_shm_id = _request_device_properties_shm_id;
     request_device_properties_shm_offset =
@@ -231,20 +243,20 @@ struct RequestDevice {
   }
 
   void* Set(void* cmd,
-            uint32_t _request_device_serial,
+            uint64_t _device_client_id,
             uint32_t _adapter_service_id,
             uint32_t _request_device_properties_shm_id,
             uint32_t _request_device_properties_shm_offset,
             uint32_t _request_device_properties_size) {
-    static_cast<ValueType*>(cmd)->Init(
-        _request_device_serial, _adapter_service_id,
-        _request_device_properties_shm_id,
-        _request_device_properties_shm_offset, _request_device_properties_size);
+    static_cast<ValueType*>(cmd)->Init(_device_client_id, _adapter_service_id,
+                                       _request_device_properties_shm_id,
+                                       _request_device_properties_shm_offset,
+                                       _request_device_properties_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  uint32_t request_device_serial;
+  uint32_t device_client_id;
   uint32_t adapter_service_id;
   uint32_t request_device_properties_shm_id;
   uint32_t request_device_properties_shm_offset;
@@ -255,8 +267,8 @@ static_assert(sizeof(RequestDevice) == 24,
               "size of RequestDevice should be 24");
 static_assert(offsetof(RequestDevice, header) == 0,
               "offset of RequestDevice header should be 0");
-static_assert(offsetof(RequestDevice, request_device_serial) == 4,
-              "offset of RequestDevice request_device_serial should be 4");
+static_assert(offsetof(RequestDevice, device_client_id) == 4,
+              "offset of RequestDevice device_client_id should be 4");
 static_assert(offsetof(RequestDevice, adapter_service_id) == 8,
               "offset of RequestDevice adapter_service_id should be 8");
 static_assert(

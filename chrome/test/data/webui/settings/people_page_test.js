@@ -26,10 +26,6 @@ cr.define('settings_people_page', function() {
 
   suite('ProfileInfoTests', function() {
     suiteSetup(function() {
-      loadTimeData.overrideValues({
-        // Force Dice off. Dice is tested in the DiceUITest suite.
-        diceEnabled: false,
-      });
       if (cr.isChromeOS) {
         loadTimeData.overrideValues({
           // Account Manager is tested in the Chrome OS-specific section below.
@@ -80,8 +76,46 @@ cr.define('settings_people_page', function() {
   });
 
   if (!cr.isChromeOS) {
+    suite('SigninDisallowedTests', function() {
+      setup(function() {
+        loadTimeData.overrideValues({signinAllowed: false});
+
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        peoplePage.pageVisibility = settings.pageVisibility;
+        document.body.appendChild(peoplePage);
+      });
+
+      teardown(function() {
+        peoplePage.remove();
+      });
+
+      test('ShowCorrectRows', function() {
+        return syncBrowserProxy.whenCalled('getSyncStatus').then(function() {
+          // The correct /manageProfile link row is shown.
+          assertTrue(!!peoplePage.$$('#edit-profile'));
+          assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
+
+          // Control element doesn't exist when policy forbids sync.
+          sync_test_util.simulateSyncStatus({
+            signedIn: false,
+            syncSystemEnabled: true,
+          });
+          assertFalse(!!peoplePage.$$('settings-sync-account-control'));
+        });
+      });
+    });
+
     suite('SyncStatusTests', function() {
       setup(function() {
+        loadTimeData.overrideValues({signinAllowed: true});
         syncBrowserProxy = new TestSyncBrowserProxy();
         settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
 
@@ -113,7 +147,6 @@ cr.define('settings_people_page', function() {
 
           sync_test_util.simulateSyncStatus({
             signedIn: false,
-            signinAllowed: true,
             syncSystemEnabled: true,
           });
 
@@ -122,16 +155,8 @@ cr.define('settings_people_page', function() {
           assertTrue(
               window.getComputedStyle(accountControl)['display'] != 'none');
 
-          // Control element doesn't exist when policy forbids sync or sign-in.
+          // Control element doesn't exist when policy forbids sync.
           sync_test_util.simulateSyncStatus({
-            signinAllowed: false,
-            syncSystemEnabled: true,
-          });
-          assertEquals(
-              'none', window.getComputedStyle(accountControl)['display']);
-
-          sync_test_util.simulateSyncStatus({
-            signinAllowed: true,
             syncSystemEnabled: false,
           });
           assertEquals(
@@ -248,7 +273,6 @@ cr.define('settings_people_page', function() {
               sync_test_util.simulateSyncStatus({
                 signedIn: true,
                 domain: 'example.com',
-                signinAllowed: true,
                 syncSystemEnabled: true,
               });
 
@@ -653,7 +677,6 @@ cr.define('settings_people_page', function() {
 
       test('Sync account control is shown', () => {
         sync_test_util.simulateSyncStatus({
-          signinAllowed: true,
           syncSystemEnabled: true,
         });
 

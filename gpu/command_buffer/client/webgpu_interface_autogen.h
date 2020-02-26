@@ -13,7 +13,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_AUTOGEN_H_
 
-virtual void AssociateMailbox(GLuint device_id,
+virtual void AssociateMailbox(GLuint64 device_client_id,
                               GLuint device_generation,
                               GLuint id,
                               GLuint generation,

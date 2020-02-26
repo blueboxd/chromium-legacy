@@ -337,11 +337,16 @@
         This page is dangerous. Site information
       </message>
 
-     <!-- Cookie controls UI -->
+      <!-- Cookie controls UI -->
       <message name="IDS_COOKIE_CONTROLS_BLOCKED_COOKIES" desc="Text showing the number of blocked cookies on a site.">
         {COOKIE_COUNT, plural,
             =1 {1 cookie blocked}
             other {# cookies blocked}}
+      </message>
+
+      <!-- Certificate viewer -->
+      <message name="IDS_CERTTITLE" desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]">
+        Certificate viewer
       </message>
 
     </messages>

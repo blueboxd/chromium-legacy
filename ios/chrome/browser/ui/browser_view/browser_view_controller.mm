@@ -716,7 +716,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             (id<ApplicationCommands>)applicationCommandEndpoint
        browsingDataCommandEndpoint:
            (id<BrowsingDataCommands>)browsingDataCommandEndpoint
-                 commandDispatcher:(CommandDispatcher*)commandDispatcher
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];

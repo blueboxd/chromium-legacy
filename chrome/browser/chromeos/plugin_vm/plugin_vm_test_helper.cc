@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "base/json/json_reader.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -123,11 +121,6 @@ void PluginVmTestHelper::EnablePluginVmFeature() {
   scoped_feature_list_.InitAndEnableFeature(features::kPluginVm);
 }
 
-void PluginVmTestHelper::EnableDevMode() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kSystemDevMode);
-}
-
 void PluginVmTestHelper::EnterpriseEnrollDevice() {
   testing_profile_->ScopedCrosSettingsTestHelper()
       ->InstallAttributes()
@@ -140,14 +133,6 @@ void PluginVmTestHelper::AllowPluginVm() {
   EnablePluginVmFeature();
   EnterpriseEnrollDevice();
   SetPolicyRequirementsToAllowPluginVm();
-  ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
-}
-
-void PluginVmTestHelper::AllowPluginVmForManualTesting() {
-  ASSERT_FALSE(IsPluginVmAllowedForProfile(testing_profile_));
-  SetUserRequirementsToAllowPluginVm();
-  EnablePluginVmFeature();
-  EnableDevMode();
   ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
 }
 

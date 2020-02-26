@@ -44,15 +44,8 @@ struct HttpResponseInfoIOBuffer;
 // A set of |network_loader_state_|, |header_writer_state_|, and
 // |body_writer_state_| is the state of this loader. Each of them is changed
 // independently, while some state changes have dependency to other state
-// changes.  See the comment for each field below to see exactly when their
-// state changes happen. For resume loaders, these states are set to be
-// values extracted from ServiceWorkerSingleScriptUpdateChecker::PausedState
-// to make the loader seamlessly resume the download.
-//
-// In case there is already an installed service worker for this registration,
-// this class also performs the "byte-for-byte" comparison for updating the
-// worker. If the script is identical, the load succeeds but no script is
-// written, and ServiceWorkerVersion is told to terminate startup.
+// changes. See the comment for each field below to see exactly when their state
+// changes happen.
 //
 // NOTE: To perform the network request, this class uses |loader_factory_| which
 // may internally use a non-NetworkService factory if URL has a non-http(s)

@@ -7,12 +7,11 @@
 namespace mojo {
 
 // static
-bool StructTraits<
-    network::mojom::CrossOriginEmbedderPolicyWithReportingDataView,
-    network::CrossOriginEmbedderPolicyWithReporting>::
-    Read(network::mojom::CrossOriginEmbedderPolicyWithReportingDataView input,
-         network::CrossOriginEmbedderPolicyWithReporting* output) {
-  network::CrossOriginEmbedderPolicyWithReporting result;
+bool StructTraits<network::mojom::CrossOriginEmbedderPolicyDataView,
+                  network::CrossOriginEmbedderPolicy>::
+    Read(network::mojom::CrossOriginEmbedderPolicyDataView input,
+         network::CrossOriginEmbedderPolicy* output) {
+  network::CrossOriginEmbedderPolicy result;
 
   if (input.ReadValue(&result.value) &&
       input.ReadReportingEndpoint(&result.reporting_endpoint) &&

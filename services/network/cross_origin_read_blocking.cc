@@ -25,6 +25,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -846,8 +847,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           request_url, request_initiator, response, kOverreachingRequestMode,
-          request_initiator_site_lock,
-          mojom::CrossOriginEmbedderPolicy::kNone)) {
+          request_initiator_site_lock, CrossOriginEmbedderPolicy())) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;

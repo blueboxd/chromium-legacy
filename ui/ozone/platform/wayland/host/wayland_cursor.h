@@ -57,6 +57,7 @@ class WaylandCursor {
 
   WaylandShm* shm_ = nullptr;            // Owned by WaylandConnection.
   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
+  WaylandConnection* connection_ = nullptr;
 
   // Holds the buffers and their memory until the compositor releases them.
   base::flat_map<wl_buffer*, WaylandShmBuffer> buffers_;

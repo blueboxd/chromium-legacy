@@ -57,7 +57,6 @@ class ChooserOnlyTemporalInputTypeView final
   void DidSetValue(const String&, bool value_changed) override;
   void HandleDOMActivateEvent(Event&) override;
   void UpdateView() override;
-  bool TypeShouldForceLegacyLayout() const final;
 
   // DateTimeChooserClient functions:
   Element& OwnerElement() const override;

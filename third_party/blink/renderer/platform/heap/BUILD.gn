@@ -46,6 +46,7 @@ blink_platform_sources("heap") {
     "blink_gc_memory_dump_provider.h",
     "cancelable_task_scheduler.cc",
     "cancelable_task_scheduler.h",
+    "collection_support/heap_vector_backing.h",
     "disallow_new_wrapper.h",
     "finalizer_traits.h",
     "garbage_collected.h",

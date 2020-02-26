@@ -129,9 +129,6 @@ void ShowCrostiniUninstallerView(Profile* profile,
 // Shows the Crostini App installer dialog.
 void ShowCrostiniAppInstallerView(Profile* profile,
                                   const LinuxPackageInfo& package_info);
-// Shows the Crostini App Uninstaller dialog.
-void ShowCrostiniAppUninstallerView(Profile* profile,
-                                    const std::string& app_id);
 // Shows the Crostini force-close dialog. If |app_name| is nonempty, the dialog
 // will include the window's name as text. Returns a handle to that dialog, so
 // that we can add observers to the dialog itself.

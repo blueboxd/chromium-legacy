@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -56,11 +57,12 @@ class IDBCursorWithValue final : public IDBCursor {
   bool IsCursorWithValue() const override { return true; }
 };
 
-DEFINE_TYPE_CASTS(IDBCursorWithValue,
-                  IDBCursor,
-                  cursor,
-                  cursor->IsCursorWithValue(),
-                  cursor.IsCursorWithValue());
+template <>
+struct DowncastTraits<IDBCursorWithValue> {
+  static bool AllowFrom(const IDBCursor& cursor) {
+    return cursor.IsCursorWithValue();
+  }
+};
 
 }  // namespace blink
 

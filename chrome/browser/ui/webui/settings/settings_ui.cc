@@ -66,6 +66,8 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -251,11 +253,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
         std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-#if !defined(OS_CHROMEOS)
-  html_source->AddBoolean(
-      "diceEnabled",
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
-#endif  // !defined(OS_CHROMEOS)
+  html_source->AddBoolean("signinAllowed", !profile->IsGuestSession() &&
+                                               profile->GetPrefs()->GetBoolean(
+                                                   prefs::kSigninAllowed));
 
   html_source->AddBoolean(
       "privacySettingsRedesignEnabled",

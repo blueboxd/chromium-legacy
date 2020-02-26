@@ -12,12 +12,15 @@ class FeaturePolicyFeatureWriter(json5_generator.Writer):
     file_basename = 'feature_policy_helper'
 
     def __init__(self, json5_file_path, output_dir):
-        super(FeaturePolicyFeatureWriter, self).__init__(json5_file_path, output_dir)
+        super(FeaturePolicyFeatureWriter, self).__init__(
+            json5_file_path, output_dir)
         runtime_features = []
         feature_policy_features = []
-        # Note: there can be feature with same 'name' attribute in document_policy_features
-        # and in feature_policy_features. They are supposed to have the same 'depends_on' attribute.
-        # However, their feature_policy_name and document_policy_name might be different.
+        # Note: there can be feature with same 'name' attribute in
+        # document_policy_features and in feature_policy_features.
+        # They are supposed to have the same 'depends_on' attribute.
+        # However, their feature_policy_name and document_policy_name
+        # might be different.
         document_policy_features = []
 
         for feature in self.json5_file.name_dictionaries:
@@ -37,26 +40,38 @@ class FeaturePolicyFeatureWriter(json5_generator.Writer):
             for dependency in feature['depends_on']:
                 if str(dependency) in origin_trials_set:
                     if feature['feature_policy_name']:
-                        fp_origin_trial_dependency_map[feature['name']].append(dependency)
+                        fp_origin_trial_dependency_map[feature['name']].append(
+                            dependency)
                     else:
-                        dp_origin_trial_dependency_map[feature['name']].append(dependency)
+                        dp_origin_trial_dependency_map[feature['name']].append(
+                            dependency)
                 else:
                     if feature['feature_policy_name']:
-                        runtime_to_feature_policy_map[dependency].append(feature['name'])
+                        runtime_to_feature_policy_map[dependency].append(
+                            feature['name'])
                     else:
-                        runtime_to_document_policy_map[dependency].append(feature['name'])
+                        runtime_to_document_policy_map[dependency].append(
+                            feature['name'])
 
         self._outputs = {
-            self.file_basename + '.cc': template_expander.use_jinja('templates/' + self.file_basename + '.cc.tmpl')(lambda: {
-                'header_guard': self.make_header_guard(self._relative_output_dir + self.file_basename + '.h'),
-                'input_files': self._input_files,
-                'feature_policy_features': feature_policy_features,
-                'document_policy_features': document_policy_features,
-                'fp_origin_trial_dependency_map': fp_origin_trial_dependency_map,
-                'dp_origin_trial_dependency_map': dp_origin_trial_dependency_map,
-                'runtime_to_feature_policy_map': runtime_to_feature_policy_map,
-                'runtime_to_document_policy_map': runtime_to_document_policy_map
-            }),
+            self.file_basename + '.cc':
+                template_expander.use_jinja('templates/' +
+                    self.file_basename + '.cc.tmpl')(lambda: {
+                        'header_guard': self.make_header_guard(
+                            self._relative_output_dir +
+                            self.file_basename + '.h'),
+                        'input_files': self._input_files,
+                        'feature_policy_features': feature_policy_features,
+                        'document_policy_features': document_policy_features,
+                        'fp_origin_trial_dependency_map':
+                        fp_origin_trial_dependency_map,
+                        'dp_origin_trial_dependency_map':
+                        dp_origin_trial_dependency_map,
+                        'runtime_to_feature_policy_map':
+                        runtime_to_feature_policy_map,
+                        'runtime_to_document_policy_map':
+                        runtime_to_document_policy_map
+                    }),
         }
 
 

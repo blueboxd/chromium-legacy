@@ -25,6 +25,7 @@ class ExceptionState;
 class MediaStreamTrack;
 class RTCDtlsTransport;
 class RTCDTMFSender;
+class RTCInsertableStreams;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
 class RTCRtpTransceiver;
@@ -59,6 +60,10 @@ class RTCRtpSender final : public ScriptWrappable {
   ScriptPromise setParameters(ScriptState*, const RTCRtpSendParameters*);
   ScriptPromise getStats(ScriptState*);
   void setStreams(HeapVector<Member<MediaStream>> streams, ExceptionState&);
+  RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
+                                                  ExceptionState&);
+  RTCInsertableStreams* createEncodedVideoStreams(ScriptState*,
+                                                  ExceptionState&);
 
   RTCRtpSenderPlatform* web_sender();
   // Sets the track. This must be called when the |RTCRtpSenderPlatform| has its

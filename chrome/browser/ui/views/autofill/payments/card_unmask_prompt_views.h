@@ -56,7 +56,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -80,7 +79,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void ShowNewCardLink();
   void ClosePrompt();
 
-  void UpdateButtonLabels();
+  void UpdateButtons();
 
   void LinkClicked();
 

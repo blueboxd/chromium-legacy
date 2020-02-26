@@ -291,7 +291,6 @@
                    dependencyFactory:factory
           applicationCommandEndpoint:self.applicationCommandHandler
          browsingDataCommandEndpoint:self.browsingDataCommandHandler
-                   commandDispatcher:self.dispatcher
       browserContainerViewController:self.browserContainerCoordinator
                                          .viewController];
 }

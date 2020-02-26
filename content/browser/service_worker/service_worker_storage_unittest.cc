@@ -735,7 +735,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   live_version->set_used_features(
       std::set<blink::mojom::WebFeature>(used_features));
   live_version->set_cross_origin_embedder_policy(
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp);
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -753,7 +753,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             found_registration->waiting_version()->used_features());
   EXPECT_EQ(
       found_registration->waiting_version()->cross_origin_embedder_policy(),
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp);
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   found_registration = nullptr;
 
   // But FindRegistrationForScope is always async.

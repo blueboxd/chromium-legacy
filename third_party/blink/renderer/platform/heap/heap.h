@@ -532,61 +532,75 @@ class GarbageCollected {
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
-// Default MakeGarbageCollected: Constructs an instance of T, which is a garbage
-// collected type.
-template <typename T, typename... Args>
-T* MakeGarbageCollected(Args&&... args) {
-  static_assert(WTF::IsGarbageCollectedType<T>::value,
-                "T needs to be a garbage collected object");
-  static_assert(std::is_trivially_destructible<T>::value ||
-                    std::has_virtual_destructor<T>::value ||
-                    std::is_final<T>::value ||
-                    internal::IsGarbageCollectedContainer<T>::value ||
-                    internal::HasFinalizeGarbageCollectedObject<T>::value,
-                "Finalized GarbageCollected class should either have a virtual "
-                "destructor or be marked as final");
-  static_assert(!IsGarbageCollectedMixin<T>::value ||
-                    sizeof(T) <= kLargeObjectSizeThreshold,
-                "GarbageCollectedMixin may not be a large object");
-  void* memory = T::template AllocateObject<T>(sizeof(T));
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-  // Placement new as regular operator new() is deleted.
-  T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
-  return object;
-}
-
 // Used for passing custom sizes to MakeGarbageCollected.
 struct AdditionalBytes {
   explicit AdditionalBytes(size_t bytes) : value(bytes) {}
   const size_t value;
 };
 
+template <typename T>
+struct MakeGarbageCollectedTrait {
+  template <typename... Args>
+  static T* Call(Args&&... args) {
+    static_assert(WTF::IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    static_assert(
+        std::is_trivially_destructible<T>::value ||
+            std::has_virtual_destructor<T>::value || std::is_final<T>::value ||
+            internal::IsGarbageCollectedContainer<T>::value ||
+            internal::HasFinalizeGarbageCollectedObject<T>::value,
+        "Finalized GarbageCollected class should either have a virtual "
+        "destructor or be marked as final");
+    static_assert(!IsGarbageCollectedMixin<T>::value ||
+                      sizeof(T) <= kLargeObjectSizeThreshold,
+                  "GarbageCollectedMixin may not be a large object");
+    void* memory = T::template AllocateObject<T>(sizeof(T));
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    // Placement new as regular operator new() is deleted.
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
+    return object;
+  }
+
+  template <typename... Args>
+  static T* Call(AdditionalBytes additional_bytes, Args&&... args) {
+    static_assert(WTF::IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    static_assert(
+        std::is_trivially_destructible<T>::value ||
+            std::has_virtual_destructor<T>::value || std::is_final<T>::value ||
+            internal::IsGarbageCollectedContainer<T>::value ||
+            internal::HasFinalizeGarbageCollectedObject<T>::value,
+        "Finalized GarbageCollected class should either have a virtual "
+        "destructor or be marked as final.");
+    const size_t size = sizeof(T) + additional_bytes.value;
+    if (IsGarbageCollectedMixin<T>::value) {
+      // Ban large mixin so we can use PageFromObject() on them.
+      CHECK_GE(kLargeObjectSizeThreshold, size)
+          << "GarbageCollectedMixin may not be a large object";
+    }
+    void* memory = T::template AllocateObject<T>(size);
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    // Placement new as regular operator new() is deleted.
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
+    return object;
+  }
+};
+
+// Default MakeGarbageCollected: Constructs an instance of T, which is a garbage
+// collected type.
+template <typename T, typename... Args>
+T* MakeGarbageCollected(Args&&... args) {
+  return MakeGarbageCollectedTrait<T>::Call(std::forward<Args>(args)...);
+}
+
 // Constructs an instance of T, which is a garbage collected type. This special
 // version takes size which enables constructing inline objects.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
-  static_assert(WTF::IsGarbageCollectedType<T>::value,
-                "T needs to be a garbage collected object");
-  static_assert(std::is_trivially_destructible<T>::value ||
-                    std::has_virtual_destructor<T>::value ||
-                    std::is_final<T>::value ||
-                    internal::IsGarbageCollectedContainer<T>::value ||
-                    internal::HasFinalizeGarbageCollectedObject<T>::value,
-                "Finalized GarbageCollected class should either have a virtual "
-                "destructor or be marked as final.");
-  const size_t size = sizeof(T) + additional_bytes.value;
-  if (IsGarbageCollectedMixin<T>::value) {
-    // Ban large mixin so we can use PageFromObject() on them.
-    CHECK_GE(kLargeObjectSizeThreshold, size)
-        << "GarbageCollectedMixin may not be a large object";
-  }
-  void* memory = T::template AllocateObject<T>(size);
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-  // Placement new as regular operator new() is deleted.
-  T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
-  return object;
+  return MakeGarbageCollectedTrait<T>::Call(additional_bytes,
+                                            std::forward<Args>(args)...);
 }
 
 // Assigning class types to their arenas.

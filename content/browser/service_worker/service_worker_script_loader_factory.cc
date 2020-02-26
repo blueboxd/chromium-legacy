@@ -65,8 +65,6 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   // C) service worker is not installed, script is installed: serve from
   //    storage (use ServiceWorkerInstalledScriptLoader)
   // D) service worker is not installed, script is not installed:
-  //    When ServiceWorkerImportedScriptsUpdateCheck is enabled, there are
-  //    three sub cases (D.1 to D.3). When not, D.3 always happens.
   //    1) If compared script info exists and specifies that the script is
   //       installed in an old service worker and content is not changed, then
   //       copy the old script into the new service worker and load it using
@@ -75,9 +73,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //       installed in an old service worker but content has changed, then
   //       ServiceWorkerUpdatedScriptLoader::CreateAndStart() is called to
   //       resume the paused state stored in the compared script info.
-  //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
-  //       enabled, serve from network with installing the script by using
-  //       ServiceWorkerNewScriptLoader.
+  //    3) For other cases, serve from network with installing the script by
+  //       using ServiceWorkerNewScriptLoader.
 
   // Case A and C:
   scoped_refptr<ServiceWorkerVersion> version =
@@ -107,9 +104,6 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   // If there is no compared script info, goto D.3 directly.
   const auto& compared_script_info_map = version->compared_script_info_map();
   if (!compared_script_info_map.empty()) {
-    // ServiceWorkerImportedScriptsUpdateCheck must be enabled if there is
-    // compared script info.
-    DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
     auto it = compared_script_info_map.find(resource_request.url);
     if (it != compared_script_info_map.end()) {
       switch (it->second.result) {

@@ -116,7 +116,6 @@ void PerfTestWithBVC::SetUp() {
   SessionRestorationBrowserAgent::FromBrowser(otr_browser_.get())
       ->RestoreSessionWindow(session.sessionWindows[0]);
 
-  command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.
   bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()
@@ -126,7 +125,6 @@ void PerfTestWithBVC::SetUp() {
                    dependencyFactory:bvc_factory_
           applicationCommandEndpoint:nil
          browsingDataCommandEndpoint:nil
-                   commandDispatcher:command_dispatcher_
       browserContainerViewController:[[BrowserContainerViewController alloc]
                                          init]];
   [bvc_ setActive:YES];

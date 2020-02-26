@@ -359,8 +359,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
-            final String fallbackUrl, final Tab tab, final boolean needsToCloseTab,
-            final boolean proxy) {
+            final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
         try {
             return startIncognitoIntentInternal(
                     intent, referrerUrl, fallbackUrl, needsToCloseTab, proxy);

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/mac_util.h"
@@ -19,6 +18,10 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // This policy loader loads a managed app configuration from the NSUserDefaults.
 // For example code from Apple see:
@@ -84,7 +87,6 @@ NSString* const kEncodedChromePolicyKey = @"EncodedChromePolicy";
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 @end
@@ -104,9 +106,9 @@ void PolicyLoaderIOS::InitOnBackgroundThread() {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
   base::RepeatingClosure callback = base::BindRepeating(
       &PolicyLoaderIOS::UserDefaultsChanged, weak_factory_.GetWeakPtr());
-  notification_observer_.reset(
+  notification_observer_ =
       [[PolicyNotificationObserver alloc] initWithCallback:callback
-                                                taskRunner:task_runner()]);
+                                                taskRunner:task_runner()];
 }
 
 std::unique_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
@@ -123,15 +125,15 @@ std::unique_ptr<PolicyBundle> PolicyLoaderIOS::Load() {
       NSLog(@"Ignoring EncodedChromePolicy because ChromePolicy is present.");
   } else if (encodedChromePolicy &&
              [encodedChromePolicy isKindOfClass:[NSString class]]) {
-    base::scoped_nsobject<NSData> data(
+    NSData* data =
         [[NSData alloc] initWithBase64EncodedString:encodedChromePolicy
-                                            options:0]);
+                                            options:0];
     if (!data) {
       NSLog(@"Invalid Base64 encoding of EncodedChromePolicy");
     } else {
       NSError* error = nil;
       NSDictionary* properties = [NSPropertyListSerialization
-          propertyListWithData:data.get()
+          propertyListWithData:data
                        options:NSPropertyListImmutable
                         format:NULL
                          error:&error];
@@ -174,7 +176,7 @@ void PolicyLoaderIOS::LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
   // NSDictionary is toll-free bridged to CFDictionaryRef, which is a
   // CFPropertyListRef.
   std::unique_ptr<base::Value> value =
-      PropertyToValue(static_cast<CFPropertyListRef>(dictionary));
+      PropertyToValue((__bridge CFPropertyListRef)(dictionary));
   base::DictionaryValue* dict = NULL;
   if (value && value->GetAsDictionary(&dict)) {
     PolicyMap& map = bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));

@@ -21,7 +21,7 @@ namespace gpu {
 
 namespace {
 
-void OnRequestAdapterCallback(uint32_t adapter_server_id,
+void OnRequestAdapterCallback(uint32_t adapter_service_id,
                               const WGPUDeviceProperties& properties) {}
 
 }  // anonymous namespace

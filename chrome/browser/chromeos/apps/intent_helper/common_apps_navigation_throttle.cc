@@ -202,6 +202,9 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
 
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
 
+  if (app_ids.empty())
+    return false;
+
   if (navigate_from_link()) {
     auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
 
@@ -218,6 +221,9 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindAllAppsForUrl(web_contents, url, {});
 
+  if (apps_for_picker.empty())
+    return false;
+
   IntentPickerTabHelper::LoadAppIcons(
       web_contents, std::move(apps_for_picker),
       base::BindOnce(
@@ -232,11 +238,8 @@ void CommonAppsNavigationThrottle::OnDeferredNavigationProcessed(
   content::WebContents* web_contents = handle->GetWebContents();
   const GURL& url = handle->GetURL();
 
-  std::vector<apps::IntentPickerAppInfo> apps_for_picker =
-      FindAllAppsForUrl(web_contents, url, std::move(apps));
-
   ShowIntentPickerForApps(web_contents, ui_auto_display_service_, url,
-                          std::move(apps_for_picker),
+                          std::move(apps),
                           base::BindOnce(&OnIntentPickerClosed, web_contents,
                                          ui_auto_display_service_, url));
 

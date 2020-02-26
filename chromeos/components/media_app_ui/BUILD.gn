@@ -61,10 +61,8 @@ source_set("browser_test_support") {
 
   deps = [
     ":media_app_ui",
-    "//base/test:test_support",
     "//chrome/test:test_support_ui",
-    "//chromeos/constants:constants",
-    "//content/test:test_support",
+    "//chromeos/components/web_applications/test:test_support",
   ]
 
   data = [

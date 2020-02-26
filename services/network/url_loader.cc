@@ -71,9 +71,9 @@ using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
 
-constexpr char kCrossOriginEmbedderPolicyHeader[] =
+constexpr char kCrossOriginEmbedderPolicyValueHeader[] =
     "Cross-Origin-Embedder-Policy";
-constexpr char kCrossOriginEmbedderPolicyReportOnlyHeader[] =
+constexpr char kCrossOriginEmbedderPolicyValueReportOnlyHeader[] =
     "Cross-Origin-Embedder-Policy-Report-Only";
 constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
 constexpr char kRequireCorp[] = "require-corp";
@@ -414,11 +414,12 @@ const struct {
     {"Via", ConcerningHeaderId::kVia},
 };
 
-std::pair<network::mojom::CrossOriginEmbedderPolicy,
+std::pair<network::mojom::CrossOriginEmbedderPolicyValue,
           base::Optional<std::string>>
-ParseCrossOriginEmbedderPolicyInternal(const net::HttpResponseHeaders* headers,
-                                       base::StringPiece header_name) {
-  constexpr auto kNone = mojom::CrossOriginEmbedderPolicy::kNone;
+ParseCrossOriginEmbedderPolicyValueInternal(
+    const net::HttpResponseHeaders* headers,
+    base::StringPiece header_name) {
+  constexpr auto kNone = mojom::CrossOriginEmbedderPolicyValue::kNone;
   using Item = net::structured_headers::Item;
   std::string header_value;
   if (!headers ||
@@ -438,7 +439,7 @@ ParseCrossOriginEmbedderPolicyInternal(const net::HttpResponseHeaders* headers,
   if (it != item->params.end() && it->second.Type() == Item::kStringType) {
     endpoint = it->second.GetString();
   }
-  return std::make_pair(mojom::CrossOriginEmbedderPolicy::kRequireCorp,
+  return std::make_pair(mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
                         std::move(endpoint));
 }
 
@@ -934,11 +935,12 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
   ReportFlaggedResponseCookies();
 
+  const CrossOriginEmbedderPolicy kEmpty;
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
-  const mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy =
+  const CrossOriginEmbedderPolicy& cross_origin_embedder_policy =
       factory_params_->client_security_state
           ? factory_params_->client_security_state->cross_origin_embedder_policy
-          : mojom::CrossOriginEmbedderPolicy::kNone;
+          : kEmpty;
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), *response,
@@ -1095,10 +1097,11 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                           base::Unretained(this)));
 
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
-  const mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy =
+  const CrossOriginEmbedderPolicy kEmpty;
+  const CrossOriginEmbedderPolicy& cross_origin_embedder_policy =
       factory_params_->client_security_state
           ? factory_params_->client_security_state->cross_origin_embedder_policy
-          : mojom::CrossOriginEmbedderPolicy::kNone;
+          : kEmpty;
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), *response_,
@@ -1155,7 +1158,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     // Parse the Cross-Origin-Embedder-Policy and
     // Cross-Origin-Embedder-Policy-Report-Only headers.
     response_->cross_origin_embedder_policy =
-        ParseCrossOriginEmbedderPolicy(url_request_->response_headers());
+        ParseCrossOriginEmbedderPolicyValue(url_request_->response_headers());
 
     // Parse the Cross-Origin-Opener-Policy header.
     std::string raw_coop_string;
@@ -1467,16 +1470,15 @@ void URLLoader::LogConcerningRequestHeaders(
 }
 
 // static
-CrossOriginEmbedderPolicyWithReporting
-URLLoader::ParseCrossOriginEmbedderPolicy(
+CrossOriginEmbedderPolicy URLLoader::ParseCrossOriginEmbedderPolicyValue(
     const net::HttpResponseHeaders* headers) {
-  CrossOriginEmbedderPolicyWithReporting coep;
+  CrossOriginEmbedderPolicy coep;
   std::tie(coep.value, coep.reporting_endpoint) =
-      ParseCrossOriginEmbedderPolicyInternal(headers,
-                                             kCrossOriginEmbedderPolicyHeader);
+      ParseCrossOriginEmbedderPolicyValueInternal(
+          headers, kCrossOriginEmbedderPolicyValueHeader);
   std::tie(coep.report_only_value, coep.report_only_reporting_endpoint) =
-      ParseCrossOriginEmbedderPolicyInternal(
-          headers, kCrossOriginEmbedderPolicyReportOnlyHeader);
+      ParseCrossOriginEmbedderPolicyValueInternal(
+          headers, kCrossOriginEmbedderPolicyValueReportOnlyHeader);
   return coep;
 }
 

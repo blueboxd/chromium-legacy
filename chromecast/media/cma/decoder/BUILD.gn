@@ -8,6 +8,8 @@ cast_source_set("decoder") {
   sources = [
     "cast_audio_decoder.cc",
     "cast_audio_decoder.h",
+    "external_audio_decoder_wrapper.cc",
+    "external_audio_decoder_wrapper.h",
   ]
 
   deps = [

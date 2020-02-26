@@ -57,10 +57,9 @@ class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)) {
-  allow_insecure_content_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowRunningInsecureContent);
-}
+    : request_(std::move(request)),
+      allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowRunningInsecureContent)) {}
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
@@ -115,7 +114,7 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  PopulateFuchsiaFrameBinders(map, &cdm_service_);
+  PopulateFuchsiaFrameBinders(map, &media_resource_provider_service_);
 }
 
 void WebEngineContentBrowserClient::

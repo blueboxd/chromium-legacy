@@ -174,13 +174,12 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //             then return value will never be false, since in such cases
   //             return value will have been coerced into either null or a
   //             DOMString.
+  auto* before_unload_event = DynamicTo<BeforeUnloadEvent>(&event);
   const bool is_beforeunload_event =
-      event.IsBeforeUnloadEvent() &&
-      event.type() == event_type_names::kBeforeunload;
+      before_unload_event && event.type() == event_type_names::kBeforeunload;
   if (is_beforeunload_event) {
     if (result_for_beforeunload) {
       event.preventDefault();
-      BeforeUnloadEvent* before_unload_event = ToBeforeUnloadEvent(&event);
       if (before_unload_event->returnValue().IsEmpty())
         before_unload_event->setReturnValue(result_for_beforeunload);
     }

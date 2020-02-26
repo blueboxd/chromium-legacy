@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector_backing.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -45,16 +46,6 @@ template <typename T>
 struct IsAllowedInContainer<T, typename T::IsDisallowedInContainerMarker>
     : std::false_type {};
 
-template <typename T, typename Traits = WTF::VectorTraits<T>>
-class HeapVectorBacking {
-  DISALLOW_NEW();
-  IS_GARBAGE_COLLECTED_TYPE();
-
- public:
-  static void Finalize(void* pointer);
-  void FinalizeGarbageCollectedObject() { Finalize(this); }
-};
-
 template <typename Table>
 class HeapHashTableBacking {
   DISALLOW_NEW();
@@ -88,16 +79,8 @@ class PLATFORM_EXPORT HeapAllocator {
   }
   template <typename T>
   static T* AllocateVectorBacking(size_t size) {
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    DCHECK(state->IsAllocationAllowed());
-    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
-    const char* type_name =
-        WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HeapVectorBacking<T>>);
     return reinterpret_cast<T*>(
-        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
-            state, ThreadHeap::AllocationSizeFromSize(size),
-            BlinkGC::kVectorArenaIndex, gc_info_index, type_name)));
+        MakeGarbageCollected<HeapVectorBacking<T>>(size / sizeof(T)));
   }
   static void FreeVectorBacking(void*);
   static bool ExpandVectorBacking(void*, size_t);
@@ -412,43 +395,6 @@ class HeapListHashSetAllocator : public HeapAllocator {
     TraceListHashSetValue(visitor, node->value_);
   }
 };
-
-template <typename T, typename Traits>
-void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
-  static_assert(Traits::kNeedsDestruction,
-                "Only vector buffers with items requiring destruction should "
-                "be finalized");
-  // See the comment in HeapVectorBacking::trace.
-  static_assert(
-      Traits::kCanClearUnusedSlotsWithMemset || std::is_polymorphic<T>::value,
-      "HeapVectorBacking doesn't support objects that cannot be cleared as "
-      "unused with memset or don't have a vtable");
-
-  static_assert(
-      !std::is_trivially_destructible<T>::value,
-      "Finalization of trivially destructible classes should not happen.");
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
-  // Use the payload size as recorded by the heap to determine how many
-  // elements to finalize.
-  size_t length = header->PayloadSize() / sizeof(T);
-  char* payload = static_cast<char*>(pointer);
-#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-  ANNOTATE_CHANGE_SIZE(payload, length * sizeof(T), 0, length * sizeof(T));
-#endif
-  // As commented above, HeapVectorBacking calls finalizers for unused slots
-  // (which are already zeroed out).
-  if (std::is_polymorphic<T>::value) {
-    for (unsigned i = 0; i < length; ++i) {
-      char* element = payload + i * sizeof(T);
-      if (blink::VTableInitialized(element))
-        reinterpret_cast<T*>(element)->~T();
-    }
-  } else {
-    T* buffer = reinterpret_cast<T*>(payload);
-    for (unsigned i = 0; i < length; ++i)
-      buffer[i].~T();
-  }
-}
 
 template <typename Table>
 void HeapHashTableBacking<Table>::Finalize(void* pointer) {

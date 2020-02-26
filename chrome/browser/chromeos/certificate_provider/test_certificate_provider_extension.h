@@ -79,7 +79,8 @@ class TestCertificateProviderExtension final
 
   void HandleCertificatesRequest(ReplyToJsCallback callback);
   void HandleSignatureRequest(const base::Value& sign_request,
-                              const base::Value& pin_user_input,
+                              const base::Value& pin_status,
+                              const base::Value& pin,
                               ReplyToJsCallback callback);
 
   content::BrowserContext* const browser_context_;

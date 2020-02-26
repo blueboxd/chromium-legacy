@@ -561,6 +561,22 @@ void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
   sender_->SetStreams(stream_ids);
 }
 
+RTCInsertableStreams* RTCRtpSender::createEncodedAudioStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not supported");
+  return nullptr;
+}
+
+RTCInsertableStreams* RTCRtpSender::createEncodedVideoStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not supported");
+  return nullptr;
+}
+
 void RTCRtpSender::Trace(Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);

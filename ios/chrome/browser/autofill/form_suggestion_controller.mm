@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"

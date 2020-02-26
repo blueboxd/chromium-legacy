@@ -91,8 +91,6 @@ struct FinalizerTrait {
 };
 
 class HeapAllocator;
-template <typename T, typename Traits>
-class HeapVectorBacking;
 template <typename Table>
 class HeapHashTableBacking;
 
@@ -146,16 +144,6 @@ struct FinalizerTrait<HeapHashTableBacking<Table>> {
       !std::is_trivially_destructible<typename Table::ValueType>::value;
   static void Finalize(void* obj) {
     internal::FinalizerTraitImpl<HeapHashTableBacking<Table>,
-                                 kNonTrivialFinalizer>::Finalize(obj);
-  }
-};
-
-template <typename T, typename Traits>
-struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
-  STATIC_ONLY(FinalizerTrait);
-  static const bool kNonTrivialFinalizer = Traits::kNeedsDestruction;
-  static void Finalize(void* obj) {
-    internal::FinalizerTraitImpl<HeapVectorBacking<T, Traits>,
                                  kNonTrivialFinalizer>::Finalize(obj);
   }
 };

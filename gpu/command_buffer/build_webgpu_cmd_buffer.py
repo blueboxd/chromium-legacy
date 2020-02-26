@@ -64,13 +64,13 @@ _FUNCTION_INFO = {
   'RequestAdapter': {
     'impl_func': False,
     'internal': True,
-    'cmd_args': 'uint32_t request_adapter_serial, uint32_t power_preference'
+    'cmd_args': 'uint64_t request_adapter_serial, uint32_t power_preference'
   },
   'RequestDevice': {
     'impl_func': False,
     'internal': True,
     'data_transfer_methods': ['shm'],
-    'cmd_args': 'uint32_t request_device_serial, '
+    'cmd_args': 'uint64_t device_client_id, '
                 'uint32_t adapter_service_id, '
                 'uint32_t request_device_properties_shm_id, '
                 'uint32_t request_device_properties_shm_offset, '

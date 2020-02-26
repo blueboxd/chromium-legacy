@@ -864,7 +864,7 @@ void StyleResolver::ApplyBaseComputedStyle(
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                   state.Style());
+                                   state.Style(), state.Style()->InsideLink());
 
     MatchAllRules(state, collector,
                   matching_behavior != kMatchAllRulesExcludingSMIL);
@@ -989,7 +989,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   if (!animation_base_computed_style) {
     // Check UA, user and author rules.
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                   state.Style());
+                                   state.Style(), state.Style()->InsideLink());
     collector.SetPseudoElementStyleRequest(pseudo_style_request);
 
     // The UA sheet is supposed to set some styles to ::marker pseudo-elements,
@@ -1150,6 +1150,10 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
                                                        : 1);
   initial_style->SetEffectiveZoom(initial_style->Zoom());
 
+  initial_style->SetInternalVisitedColor(
+      initial_style->InitialColorForColorScheme());
+  initial_style->SetColor(initial_style->InitialColorForColorScheme());
+
   FontDescription document_font_description =
       initial_style->GetFontDescription();
   document_font_description.SetLocale(
@@ -1198,7 +1202,7 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 state.Style());
+                                 nullptr, EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   CollectPseudoRulesForElement(*element, collector, kPseudoIdNone,
                                rules_to_include);
@@ -1212,7 +1216,7 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 state.Style());
+                                 nullptr, EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
   CollectPseudoRulesForElement(*element, collector, pseudo_id,
                                rules_to_include);
@@ -1543,20 +1547,6 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
   }
 }
 
-static inline unsigned ComputeApplyMask(
-    StyleResolverState& state,
-    const MatchedProperties& matched_properties) {
-  if (state.Style()->InsideLink() == EInsideLink::kNotInsideLink)
-    return kApplyMaskRegular;
-  static_assert(static_cast<int>(kApplyMaskRegular) ==
-                    static_cast<int>(CSSSelector::kMatchLink),
-                "kApplyMaskRegular and kMatchLink must match");
-  static_assert(static_cast<int>(kApplyMaskVisited) ==
-                    static_cast<int>(CSSSelector::kMatchVisited),
-                "kApplyMaskVisited and kMatchVisited must match");
-  return matched_properties.types_.link_match_type;
-}
-
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
@@ -1575,7 +1565,13 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
     return;
 
   for (const auto& matched_properties : range) {
-    const unsigned apply_mask = ComputeApplyMask(state, matched_properties);
+    static_assert(static_cast<int>(kApplyMaskRegular) ==
+                      static_cast<int>(CSSSelector::kMatchLink),
+                  "kApplyMaskRegular and kMatchLink must match");
+    static_assert(static_cast<int>(kApplyMaskVisited) ==
+                      static_cast<int>(CSSSelector::kMatchVisited),
+                  "kApplyMaskVisited and kMatchVisited must match");
+    const unsigned apply_mask = matched_properties.types_.link_match_type;
     ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
         state, matched_properties.properties.Get(), is_important,
         inherited_only, needs_apply_pass,
@@ -2046,9 +2042,6 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
     return;
   }
 
-  if (state.Style()->InsideLink() == EInsideLink::kNotInsideLink)
-    filter = filter.Add(CSSProperty::kVisited, true);
-
   cascade.Analyze(result, filter);
 
   if (cache_success.ShouldApplyInheritedOnly()) {
@@ -2193,7 +2186,7 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
     return;
 
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
-                                 state.Style());
+                                 state.Style(), state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   collector.SetIncludeEmptyRules(true);
 
@@ -2291,8 +2284,6 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
       state.Style()->SetColor(
           StyleBuilderConverter::ConvertColor(state, *color_value));
     }
-  } else if (state.GetElement() == GetDocument().documentElement()) {
-    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
   }
 
   if (const CSSValue* visited_color_value =

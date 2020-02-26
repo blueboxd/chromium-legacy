@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_block.h"
 #include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
@@ -49,8 +48,7 @@ class URLFetcherBlockAdapter {
   // The URL loader factory.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Callback for resource load.
-  base::mac::ScopedBlock<web::URLFetcherBlockAdapterCompletion>
-      completion_handler_;
+  __strong web::URLFetcherBlockAdapterCompletion completion_handler_;
   // URLLoader for retrieving data from net stack.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 };

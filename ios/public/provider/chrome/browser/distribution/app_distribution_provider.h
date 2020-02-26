@@ -35,10 +35,6 @@ class AppDistributionProvider {
   // was integrated and thus should not have Firebase enabled.
   virtual void InitializeFirebase(int64_t install_date, bool is_first_run);
 
-  // Returns whether user who installed Chrome on |install_date| predates
-  // integration with Firebase for installation attribution.
-  virtual bool IsPreFirebaseLegacyUser(int64_t install_date);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AppDistributionProvider);
 };

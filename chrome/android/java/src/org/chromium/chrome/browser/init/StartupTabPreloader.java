@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
@@ -180,6 +181,9 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
         if (referrer != null && !referrer.isEmpty()) {
             mLoadUrlParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));
         }
+        int transition = IntentHandler.getTransitionTypeFromIntent(
+                intent, PageTransition.LINK | PageTransition.FROM_API);
+        mLoadUrlParams.setTransitionType(transition);
 
         // Create a detached tab, but don't add it to the tab model yet. We'll do that
         // later if the loadUrlParams etc... match.

@@ -121,7 +121,7 @@
       }
     </style>
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(
-        syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
+        syncStatus.syncSystemEnabled)]]">
       <settings-sync-account-control embedded-in-subpage
           sync-status="[[syncStatus]]" prefs="{{prefs}}"
           promo-label-with-account=

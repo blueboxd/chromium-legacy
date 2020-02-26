@@ -84,7 +84,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
     int64_t resources_total_size_bytes;
 
-    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy;
+    network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy;
 
     RegistrationData();
     RegistrationData(const RegistrationData& other);
@@ -448,7 +448,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, InvalidWebFeature);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
-                           NoCrossOriginEmbedderPolicy);
+                           NoCrossOriginEmbedderPolicyValue);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };

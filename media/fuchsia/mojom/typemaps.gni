@@ -2,7 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [
-  "//media/fuchsia/mojom/fuchsia_audio_consumer_provider.typemap",
-  "//media/fuchsia/mojom/fuchsia_cdm_provider.typemap",
-]
+typemaps = [ "//media/fuchsia/mojom/fuchsia_media_resource_provider.typemap" ]

@@ -2419,25 +2419,43 @@ void Document::PropagateStyleToViewport() {
 #undef PROPAGATE_FROM
 
 #if DCHECK_IS_ON()
+static void AssertNodeClean(const Node& node) {
+  DCHECK(!node.NeedsStyleRecalc());
+  DCHECK(!node.ChildNeedsStyleRecalc());
+  DCHECK(!node.NeedsReattachLayoutTree());
+  DCHECK(!node.ChildNeedsReattachLayoutTree());
+  DCHECK(!node.ChildNeedsDistributionRecalc());
+  DCHECK(!node.NeedsStyleInvalidation());
+  DCHECK(!node.ChildNeedsStyleInvalidation());
+  DCHECK(!node.GetForceReattachLayoutTree());
+}
+
+static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
+  WTF::Vector<PseudoId> pseudo_ids = {kPseudoIdFirstLetter, kPseudoIdBefore,
+                                      kPseudoIdAfter, kPseudoIdMarker,
+                                      kPseudoIdBackdrop};
+  for (auto pseudo_id : pseudo_ids) {
+    if (auto* pseudo_element = element.GetPseudoElement(pseudo_id))
+      AssertNodeClean(*pseudo_element);
+  }
+}
+
 static void AssertLayoutTreeUpdated(Node& root) {
   Node* node = &root;
   while (node) {
-    auto* element = DynamicTo<Element>(node);
-    if (element && RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() &&
-        element->StyleRecalcBlockedByDisplayLock(
-            DisplayLockLifecycleTarget::kChildren)) {
-      node = FlatTreeTraversal::NextSkippingChildren(*node);
-      continue;
+    if (auto* element = DynamicTo<Element>(node)) {
+      if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() &&
+          element->StyleRecalcBlockedByDisplayLock(
+              DisplayLockLifecycleTarget::kChildren)) {
+        node = FlatTreeTraversal::NextSkippingChildren(*node);
+        continue;
+      }
+      // Check pseudo elements.
+      AssertLayoutTreeUpdatedForPseudoElements(*element);
     }
 
-    DCHECK(!node->NeedsStyleRecalc());
-    DCHECK(!node->ChildNeedsStyleRecalc());
-    DCHECK(!node->NeedsReattachLayoutTree());
-    DCHECK(!node->ChildNeedsReattachLayoutTree());
-    DCHECK(!node->ChildNeedsDistributionRecalc());
-    DCHECK(!node->NeedsStyleInvalidation());
-    DCHECK(!node->ChildNeedsStyleInvalidation());
-    DCHECK(!node->GetForceReattachLayoutTree());
+    AssertNodeClean(*node);
+
     // Make sure there is no node which has a LayoutObject, but doesn't have a
     // parent in a flat tree. If there is such a node, we forgot to detach the
     // node. DocumentNode is only an exception.

@@ -391,7 +391,7 @@ void FetchRespondWithObserver::OnNoResponse() {
 FetchRespondWithObserver::FetchRespondWithObserver(
     ExecutionContext* context,
     int fetch_event_id,
-    network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
+    const network::CrossOriginEmbedderPolicy& requestor_coep,
     const mojom::blink::FetchAPIRequest& request,
     WaitUntilObserver* observer)
     : RespondWithObserver(context, fetch_event_id, observer),

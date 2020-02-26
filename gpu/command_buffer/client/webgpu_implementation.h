@@ -153,8 +153,8 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
  private:
   const char* GetLogPrefix() const { return "webgpu"; }
   void CheckGLError() {}
-  uint32_t NextRequestAdapterSerial();
-  uint32_t NextRequestDeviceSerial();
+  DawnRequestAdapterSerial NextRequestAdapterSerial();
+  DawnDeviceClientID NextDeviceClientID();
 
   WebGPUCmdHelper* helper_;
 #if BUILDFLAG(USE_DAWN)
@@ -169,14 +169,14 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
   LogSettings log_settings_;
 
   base::flat_map<
-      uint32_t,
+      DawnRequestAdapterSerial,
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>>
       request_adapter_callback_map_;
-  uint32_t request_adapter_serial_ = 0;
+  DawnRequestAdapterSerial request_adapter_serial_ = 0;
 
-  base::flat_map<uint32_t, base::OnceCallback<void(bool)>>
+  base::flat_map<DawnDeviceClientID, base::OnceCallback<void(bool)>>
       request_device_callback_map_;
-  uint32_t request_device_serial_ = 0;
+  DawnDeviceClientID device_client_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebGPUImplementation);
 };

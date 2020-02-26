@@ -287,8 +287,5 @@ ColorChooserClient* ColorInputType::GetColorChooserClient() {
   return this;
 }
 
-bool ColorInputType::TypeShouldForceLegacyLayout() const {
-  return false;
-}
 
 }  // namespace blink

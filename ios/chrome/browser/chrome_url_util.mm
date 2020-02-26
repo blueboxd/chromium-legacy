@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"

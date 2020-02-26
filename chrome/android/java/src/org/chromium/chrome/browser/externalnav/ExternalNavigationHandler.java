@@ -697,7 +697,7 @@ public class ExternalNavigationHandler {
         // This intent may leave Chrome. Warn the user that incognito does not carry over
         // to apps out side of Chrome.
         if (mDelegate.startIncognitoIntent(targetIntent, params.getReferrerUrl(),
-                    browserFallbackUrl, params.getTab(),
+                    browserFallbackUrl,
                     params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
                     shouldProxyForInstantApps)) {
             if (DEBUG) Log.i(TAG, "Incognito navigation out");
@@ -961,7 +961,7 @@ public class ExternalNavigationHandler {
 
         if (params.isIncognito()) {
             if (!mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(), null,
-                        params.getTab(),
+
                         params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(), false)) {
                 if (DEBUG) Log.i(TAG, "Failed to show incognito alert dialog.");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;

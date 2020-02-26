@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_ANIMATION_COMPOSITOR_ANIMATION_RUNNER_H_
 #define UI_VIEWS_ANIMATION_COMPOSITOR_ANIMATION_RUNNER_H_
 
+#include <memory>
+
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor.h"
@@ -12,6 +14,11 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace ui {
+class AnimationMetricsRecorder;
+class AnimationMetricsReporter;
+}  // namespace ui
 
 namespace views {
 class Widget;
@@ -21,7 +28,13 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
                                   public ui::CompositorAnimationObserver,
                                   public WidgetObserver {
  public:
-  explicit CompositorAnimationRunner(Widget* widget);
+  // Callers can also pass a AnimationMetricsReporter which will record metrics
+  // after an animation is complete. A non zero |expected_duration| is required
+  // for computations.
+  explicit CompositorAnimationRunner(
+      Widget* widget,
+      ui::AnimationMetricsReporter* animation_metrics_reporter = nullptr,
+      base::TimeDelta expected_duration = base::TimeDelta());
   CompositorAnimationRunner(CompositorAnimationRunner&) = delete;
   CompositorAnimationRunner& operator=(CompositorAnimationRunner&) = delete;
   ~CompositorAnimationRunner() override;
@@ -41,6 +54,10 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
   void OnStart(base::TimeDelta min_interval, base::TimeDelta elapsed) override;
 
  private:
+  // Called when an animation is stopped, the compositor is shutting down, or
+  // the widget is destroyed.
+  void StopInternal();
+
   // When |widget_| is nullptr, it means the widget has been destroyed and
   // |compositor_| must also be nullptr.
   Widget* widget_;
@@ -52,6 +69,11 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
 
   base::TimeDelta min_interval_ = base::TimeDelta::Max();
   base::TimeTicks last_tick_;
+
+  // Expected duration of an animation. Used for and required to be non zero for
+  // animation metrics recording.
+  const base::TimeDelta expected_duration_;
+  std::unique_ptr<ui::AnimationMetricsRecorder> animation_metrics_recorder_;
 };
 
 }  // namespace views

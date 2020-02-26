@@ -38,9 +38,15 @@ class View;
 // You can attach an AnimationDelegate to the individual animation for a view
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
+//
+// There is an option to apply transforms on the view instead of repainting and
+// relayouting each animation tick. This should be used if the size of the view
+// is not changing. It can be considered, but may have funny looking visuals for
+// other cases, depending on the content. If layers are not present, they are
+// created and destroyed as necessary.
 class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
  public:
-  explicit BoundsAnimator(View* view);
+  explicit BoundsAnimator(View* view, bool use_transforms = false);
   ~BoundsAnimator() override;
 
   // Starts animating |view| from its current bounds to |target|. If there is
@@ -123,6 +129,9 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
 
     // Delegate for the animation, may be nullptr.
     std::unique_ptr<gfx::AnimationDelegate> delegate;
+
+    // Will only exist if |use_transforms_| is true.
+    base::Optional<gfx::Transform> target_transform;
   };
 
   // Used by AnimationEndedOrCanceled.
@@ -158,9 +167,17 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   void AnimationContainerEmpty(gfx::AnimationContainer* container) override;
   void OnChildViewRemoved(views::View* observed_view,
                           views::View* child) override;
+  base::TimeDelta GetAnimationDurationForReporting() const override;
 
   // Parent of all views being animated.
   View* parent_;
+
+  // A more performant version of the bounds animations which updates the
+  // transform of the views and therefore skips repainting and relayouting until
+  // the end of the animation. Note that this may not look as good as the
+  // regular version, depending on the content and the source and destination
+  // bounds.
+  const bool use_transforms_;
 
   base::ObserverList<BoundsAnimatorObserver>::Unchecked observers_;
 

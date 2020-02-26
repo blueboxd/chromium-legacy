@@ -19,6 +19,17 @@ namespace test {
 size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
                                   const VideoFrame& frame2,
                                   uint8_t tolerance);
+
+// Compute PSNR (Peak Signal-to-Noise Ratio) and SSIM (Structural SIMilarity)
+// from |frame1| and |frame2|. These metrics give an estimate of the similarity
+// of two images, and can be used as an indication of image quality when
+// compared to a baseline.
+// The VideoFrames must be memory-based. Note: since these functions leverage
+// libyuv::I420(Ssim|Psnr), I420 VideoFrames are created from |frame1| and
+// |frame2| if they are not I420.
+double ComputePSNR(const VideoFrame& frame1, const VideoFrame& frame2);
+double ComputeSSIM(const VideoFrame& frame1, const VideoFrame& frame2);
+
 }  // namespace test
 }  // namespace media
 

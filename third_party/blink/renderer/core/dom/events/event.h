@@ -363,10 +363,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
   base::TimeTicks platform_time_stamp_;
 };
 
-#define DEFINE_EVENT_TYPE_CASTS(typeName)                          \
-  DEFINE_TYPE_CASTS(typeName, Event, event, event->Is##typeName(), \
-                    event.Is##typeName())
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_H_

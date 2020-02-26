@@ -24,10 +24,6 @@ namespace media {
 
 namespace {
 
-typedef base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
-                            size_t capacity)>
-    MojoSharedBufferDoneCB;
-
 // cdm::Buffer implementation that provides access to mojo shared memory.
 // It owns the memory until Destroy() is called.
 class MojoCdmBuffer : public cdm::Buffer {
@@ -35,7 +31,8 @@ class MojoCdmBuffer : public cdm::Buffer {
   static MojoCdmBuffer* Create(
       mojo::ScopedSharedBufferHandle buffer,
       size_t capacity,
-      const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb) {
+      MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
+          mojo_shared_buffer_done_cb) {
     DCHECK(buffer.is_valid());
     DCHECK(mojo_shared_buffer_done_cb);
 
@@ -43,7 +40,7 @@ class MojoCdmBuffer : public cdm::Buffer {
     DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());
     return new MojoCdmBuffer(std::move(buffer),
                              base::checked_cast<uint32_t>(capacity),
-                             mojo_shared_buffer_done_cb);
+                             std::move(mojo_shared_buffer_done_cb));
   }
 
   // cdm::Buffer implementation.
@@ -52,8 +49,9 @@ class MojoCdmBuffer : public cdm::Buffer {
     mapping_.reset();
 
     // If nobody has claimed the handle, then return it.
-    if (buffer_.is_valid())
-      mojo_shared_buffer_done_cb_.Run(std::move(buffer_), capacity_);
+    if (buffer_.is_valid()) {
+      std::move(mojo_shared_buffer_done_cb_).Run(std::move(buffer_), capacity_);
+    }
 
     // No need to exist anymore.
     delete this;
@@ -77,9 +75,10 @@ class MojoCdmBuffer : public cdm::Buffer {
  private:
   MojoCdmBuffer(mojo::ScopedSharedBufferHandle buffer,
                 uint32_t capacity,
-                const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb)
+                MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
+                    mojo_shared_buffer_done_cb)
       : buffer_(std::move(buffer)),
-        mojo_shared_buffer_done_cb_(mojo_shared_buffer_done_cb),
+        mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)),
         capacity_(capacity),
         size_(0) {
     mapping_ = buffer_->Map(capacity_);
@@ -92,7 +91,8 @@ class MojoCdmBuffer : public cdm::Buffer {
   }
 
   mojo::ScopedSharedBufferHandle buffer_;
-  MojoSharedBufferDoneCB mojo_shared_buffer_done_cb_;
+  MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
+      mojo_shared_buffer_done_cb_;
 
   mojo::ScopedSharedBufferMapping mapping_;
   uint32_t capacity_;
@@ -105,9 +105,9 @@ class MojoCdmBuffer : public cdm::Buffer {
 // out of the data.
 class MojoCdmVideoFrame : public VideoFrameImpl {
  public:
-  explicit MojoCdmVideoFrame(
-      const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb)
-      : mojo_shared_buffer_done_cb_(mojo_shared_buffer_done_cb) {}
+  explicit MojoCdmVideoFrame(MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
+                                 mojo_shared_buffer_done_cb)
+      : mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)) {}
   ~MojoCdmVideoFrame() final = default;
 
   // VideoFrameImpl implementation.
@@ -143,13 +143,16 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
 
     // |frame| could fail to be created if the memory can't be mapped into
     // this address space.
-    if (frame)
-      frame->SetMojoSharedBufferDoneCB(mojo_shared_buffer_done_cb_);
+    if (frame) {
+      frame->SetMojoSharedBufferDoneCB(std::move(mojo_shared_buffer_done_cb_));
+    }
+
     return frame;
   }
 
  private:
-  MojoSharedBufferDoneCB mojo_shared_buffer_done_cb_;
+  MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
+      mojo_shared_buffer_done_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmVideoFrame);
 };
@@ -175,8 +178,9 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
   auto found = available_buffers_.lower_bound(capacity);
   if (found == available_buffers_.end()) {
     buffer = AllocateNewBuffer(&capacity);
-    if (!buffer.is_valid())
+    if (!buffer.is_valid()) {
       return nullptr;
+    }
   } else {
     capacity = found->first;
     buffer = std::move(found->second);
@@ -196,8 +200,8 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
 std::unique_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_unique<MojoCdmVideoFrame>(
-      base::Bind(&MojoCdmAllocator::AddBufferToAvailableMap,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MojoCdmAllocator::AddBufferToAvailableMap,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(

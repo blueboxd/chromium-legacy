@@ -20,6 +20,7 @@
 # We've modified Victor's version to output hash values that match WTFString,
 # which involves using a specific seed and some different constants.
 
+
 class uint32_t(long):
     def __rshift__(self, other):
         return uint32_t(long.__rshift__(self, other) & ((1L << 32) - 1))

@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -17,15 +18,23 @@
     <!-- // TODO(crbug.com/1010001): Release block M82 beta:
         Support dark mode. -->
     <style include="settings-shared">
-      .icon-blue {
-        fill: var(--google-blue-600);
-      }
+      #safetyCheckCollapse .list-item.selected {
+         min-height: var(--settings-row-two-line-min-height);
+       }
 
       iron-icon {
         display: flex;
         flex-shrink: 0;
         padding-inline-end: var(--cr-icon-button-margin-start);
         width: var(--cr-link-row-icon-width, var(--cr-icon-size));
+      }
+
+      .icon-blue {
+        fill: var(--google-blue-600);
+      }
+
+      .icon-red {
+        fill: var(--google-red-600);
       }
     </style>
     <div class="settings-box first two-line">
@@ -36,14 +45,15 @@
       <div class="start settings-box-text" no-search>
         [[getParentPrimaryLabelText_(parentStatus_)]]
       </div>
-      <template is="dom-if" if="[[showParentButton_(parentStatus_)]]" restamp>
+      <template is="dom-if" if="[[shouldShowParentButton_(parentStatus_)]]"
+          restamp>
         <div class="separator"></div>
         <cr-button id="safetyCheckParentButton"
             on-click="onRunSafetyCheckClick_" no-search>
           $i18n{safetyCheckParentButton}
         </cr-button>
       </template>
-      <template is="dom-if" if="[[showParentIconButton_(parentStatus_)]]"
+      <template is="dom-if" if="[[shouldShowParentIconButton_(parentStatus_)]]"
           restamp>
         <div class="separator"></div>
         <cr-icon-button id="safetyCheckParentIconButton"
@@ -52,6 +62,29 @@
         </cr-icon-button>
       </template>
     </div>
+    <iron-collapse id="safetyCheckCollapse"
+        opened="[[shouldShowChildren_(parentStatus_)]]">
+      <div class="settings-box two-line">
+        <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
+            src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
+            class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
+        </iron-icon>
+        <div class="start settings-box-text">
+          <div>$i18n{safetyCheckPasswordsPrimaryLabel}</div>
+          <div class="secondary" no-search>
+            [[getPasswordsSubLabelText_(passwordsStatus_)]]
+          </div>
+        </div>
+        <template is="dom-if"
+            if="[[shouldShowPasswordsButton_(passwordsStatus_)]]" restamp>
+          <div class="separator"></div>
+          <cr-button id="safetyCheckPasswordsButton"
+              on-click="onPasswordsButtonClick_" no-search>
+            [[getPasswordsButtonText_(passwordsStatus_)]]
+          </cr-button>
+        </template>
+      </div>
+    </iron-collapse>
   </template>
   <script src="safety_check_page.js"></script>
 </dom-module>

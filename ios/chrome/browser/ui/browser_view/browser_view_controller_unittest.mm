@@ -64,8 +64,6 @@
 namespace {
 class BrowserViewControllerTest : public BlockCleanupTest {
  public:
-  BrowserViewControllerTest() : web_state_list_(&web_state_list_delegate_) {}
-
  protected:
   void SetUp() override {
     BlockCleanupTest::SetUp();
@@ -94,22 +92,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     chrome_browser_state_ = test_cbs_builder.Build();
     ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
 
-    // Set up mock TabModel.
-    id tabModel = [OCMockObject niceMockForClass:[TabModel class]];
-    OCMStub([tabModel webStateList]).andReturn(&web_state_list_);
-    OCMStub([tabModel browserState])
-        .andReturn(
-            // As OCMock compare types as string, the cast is required otherwise
-            // it will complain that the value has an incompatible type.
-            static_cast<ChromeBrowserState*>(chrome_browser_state_.get()));
-
-    // Enable web usage for the mock TabModel's WebStateList.
-    WebStateListWebUsageEnabler* enabler =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            chrome_browser_state_.get());
-    enabler->SetWebStateList([tabModel webStateList]);
-    enabler->SetWebUsageEnabled(true);
-
     id passKitController =
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];
     passKitViewController_ = passKitController;
@@ -121,20 +103,16 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         mockForClass:[BrowserViewControllerDependencyFactory class]];
     [[[factory stub] andReturn:bvcHelper_] newBrowserViewControllerHelper];
 
-    tabModel_ = tabModel;
     dependencyFactory_ = factory;
-    command_dispatcher_ = [[CommandDispatcher alloc] init];
-    id mockPageInfoCommandHandler =
-        OCMProtocolMock(@protocol(PageInfoCommands));
-    [command_dispatcher_ startDispatchingToTarget:mockPageInfoCommandHandler
-                                      forProtocol:@protocol(PageInfoCommands)];
-    id mockApplicationCommandHandler =
-        OCMProtocolMock(@protocol(ApplicationCommands));
 
-    [[tabModel stub] closeAllTabs];
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
 
-    browser_ =
-        std::make_unique<TestBrowser>(chrome_browser_state_.get(), tabModel_);
+    WebStateListWebUsageEnabler* enabler =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            chrome_browser_state_.get());
+    enabler->SetWebStateList(browser_->GetWebStateList());
+    enabler->SetWebUsageEnabled(true);
+
     SessionRestorationBrowserAgent::CreateForBrowser(
         browser_.get(), [[TestSessionService alloc] init]);
 
@@ -148,15 +126,20 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [browser_->GetCommandDispatcher()
         startDispatchingToTarget:mockTextZoomCommandHandler
                      forProtocol:@protocol(TextZoomCommands)];
+    id mockPageInfoCommandHandler =
+        OCMProtocolMock(@protocol(PageInfoCommands));
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mockPageInfoCommandHandler
+                     forProtocol:@protocol(PageInfoCommands)];
 
     // Create three web states.
     for (int i = 0; i < 3; i++) {
       web::WebState::CreateParams params(chrome_browser_state_.get());
       std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
       AttachTabHelpers(webState.get(), NO);
-      tabModel_.webStateList->InsertWebState(0, std::move(webState), 0,
-                                             WebStateOpener());
-      tabModel_.webStateList->ActivateWebStateAt(0);
+      browser_->GetWebStateList()->InsertWebState(0, std::move(webState), 0,
+                                                  WebStateOpener());
+      browser_->GetWebStateList()->ActivateWebStateAt(0);
     }
 
     // Load TemplateURLService.
@@ -166,12 +149,14 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     template_url_service->Load();
 
     // Instantiate the BVC.
+    id mockApplicationCommandHandler =
+        OCMProtocolMock(@protocol(ApplicationCommands));
+
     bvc_ = [[BrowserViewController alloc]
                        initWithBrowser:browser_.get()
                      dependencyFactory:factory
             applicationCommandEndpoint:mockApplicationCommandHandler
            browsingDataCommandEndpoint:nil
-                     commandDispatcher:command_dispatcher_
         browserContainerViewController:[[BrowserContainerViewController alloc]
                                            init]];
 
@@ -186,15 +171,14 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [bvc_ shutdown];
 
     // Cleanup to avoid debugger crash in non empty observer lists.
-    WebStateList* web_state_list = tabModel_.webStateList;
-    web_state_list->CloseAllWebStates(
+    browser_->GetWebStateList()->CloseAllWebStates(
         WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
 
     BlockCleanupTest::TearDown();
   }
 
   web::WebState* ActiveWebState() {
-    return tabModel_.webStateList->GetActiveWebState();
+    return browser_->GetWebStateList()->GetActiveWebState();
   }
 
   MOCK_METHOD0(OnCompletionCalled, void());
@@ -207,9 +191,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  FakeWebStateListDelegate web_state_list_delegate_;
-  WebStateList web_state_list_;
-  TabModel* tabModel_;
   std::unique_ptr<Browser> browser_;
   BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
@@ -264,7 +245,7 @@ TEST_F(BrowserViewControllerTest, TestClearPresentedState) {
 // Verifies the the next/previous tab commands from the keyboard work OK.
 TEST_F(BrowserViewControllerTest, TestFocusNextPrevious) {
   // Add more web states.
-  WebStateList* web_state_list = tabModel_.webStateList;
+  WebStateList* web_state_list = browser_->GetWebStateList();
   // This test assumes there are exactly three web states in the list.
   ASSERT_EQ(web_state_list->count(), 3);
 
@@ -290,7 +271,7 @@ TEST_F(BrowserViewControllerTest, TestFocusNextPrevious) {
 // Tests that WebState::WasShown() and WebState::WasHidden() is properly called
 // for WebState activations in the BrowserViewController's WebStateList.
 TEST_F(BrowserViewControllerTest, UpdateWebStateVisibility) {
-  WebStateList* web_state_list = tabModel_.webStateList;
+  WebStateList* web_state_list = browser_->GetWebStateList();
   ASSERT_EQ(3, web_state_list->count());
 
   // Activate each WebState in the list and check the visibility.

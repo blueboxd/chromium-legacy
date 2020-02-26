@@ -165,7 +165,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
   void BindCacheStorage(
-      network::mojom::CrossOriginEmbedderPolicy,
+      const network::CrossOriginEmbedderPolicy&,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindFileSystemManager(

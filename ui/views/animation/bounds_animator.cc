@@ -8,15 +8,18 @@
 
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/tween.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
-BoundsAnimator::BoundsAnimator(View* parent)
+BoundsAnimator::BoundsAnimator(View* parent, bool use_transforms)
     : AnimationDelegateViews(parent),
       parent_(parent),
+      use_transforms_(use_transforms),
       container_(new gfx::AnimationContainer()) {}
 
 BoundsAnimator::~BoundsAnimator() {
@@ -55,6 +58,15 @@ void BoundsAnimator::AnimateViewTo(
   data.target_bounds = target;
   data.animation = CreateAnimation();
   data.delegate = std::move(delegate);
+
+  if (use_transforms_) {
+    // Calculate the target transform. Note that we don't reset the transform if
+    // there already was one, otherwise users will end up with visual bounds
+    // different than what they set.
+    const gfx::Transform target_transform = gfx::TransformBetweenRects(
+        gfx::RectF(data.start_bounds), gfx::RectF(data.target_bounds));
+    data.target_transform = target_transform;
+  }
 
   animation_to_view_[data.animation.get()] = view;
 
@@ -210,6 +222,13 @@ void BoundsAnimator::AnimationEndedOrCanceled(const gfx::Animation* animation,
   // Save the data for later clean up.
   Data data = RemoveFromMaps(view);
 
+  if (use_transforms_) {
+    // Set the bounds at the end of the animation and reset the transform.
+    view->SetTransform(gfx::Transform());
+    if (type == AnimationEndType::kEnded)
+      view->SetBoundsRect(data.target_bounds);
+  }
+
   if (data.delegate) {
     if (type == AnimationEndType::kEnded) {
       data.delegate->AnimationEnded(animation);
@@ -228,16 +247,24 @@ void BoundsAnimator::AnimationProgressed(const gfx::Animation* animation) {
   View* view = animation_to_view_[animation];
   DCHECK(view);
   const Data& data = data_[view];
-  gfx::Rect new_bounds =
-      animation->CurrentValueBetween(data.start_bounds, data.target_bounds);
-  if (new_bounds != view->bounds()) {
-    gfx::Rect total_bounds = gfx::UnionRects(new_bounds, view->bounds());
 
-    // Build up the region to repaint in repaint_bounds_. We'll do the repaint
-    // when all animations complete (in AnimationContainerProgressed).
-    repaint_bounds_.Union(total_bounds);
+  if (use_transforms_) {
+    DCHECK(data.target_transform);
+    const gfx::Transform current_transform = gfx::Tween::TransformValueBetween(
+        animation->GetCurrentValue(), gfx::Transform(), *data.target_transform);
+    view->SetTransform(current_transform);
+  } else {
+    gfx::Rect new_bounds =
+        animation->CurrentValueBetween(data.start_bounds, data.target_bounds);
+    if (new_bounds != view->bounds()) {
+      gfx::Rect total_bounds = gfx::UnionRects(new_bounds, view->bounds());
 
-    view->SetBoundsRect(new_bounds);
+      // Build up the region to repaint in repaint_bounds_. We'll do the repaint
+      // when all animations complete (in AnimationContainerProgressed).
+      repaint_bounds_.Union(total_bounds);
+
+      view->SetBoundsRect(new_bounds);
+    }
   }
 
   if (data.delegate)
@@ -255,6 +282,7 @@ void BoundsAnimator::AnimationCanceled(const gfx::Animation* animation) {
 void BoundsAnimator::AnimationContainerProgressed(
     gfx::AnimationContainer* container) {
   if (!repaint_bounds_.IsEmpty()) {
+    DCHECK(!use_transforms_);
     // Adjust for rtl.
     repaint_bounds_.set_x(parent_->GetMirroredXWithWidthInView(
         repaint_bounds_.x(), repaint_bounds_.width()));
@@ -283,6 +311,10 @@ void BoundsAnimator::OnChildViewRemoved(views::View* observed_view,
   if (iter == data_.end())
     return;
   AnimationCanceled(iter->second.animation.get());
+}
+
+base::TimeDelta BoundsAnimator::GetAnimationDurationForReporting() const {
+  return GetAnimationDuration();
 }
 
 }  // namespace views

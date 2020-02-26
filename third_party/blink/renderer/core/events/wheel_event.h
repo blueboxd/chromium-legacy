@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -101,7 +102,10 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   WebMouseWheelEvent native_event_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(WheelEvent);
+template <>
+struct DowncastTraits<WheelEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsWheelEvent(); }
+};
 
 }  // namespace blink
 

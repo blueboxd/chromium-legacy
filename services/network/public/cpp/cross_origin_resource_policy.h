@@ -21,6 +21,8 @@ class HttpResponseHeaders;
 
 namespace network {
 
+struct CrossOriginEmbedderPolicy;
+
 // Implementation of Cross-Origin-Resource-Policy - see:
 // - https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header
 // - https://github.com/whatwg/fetch/issues/687
@@ -44,7 +46,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       const network::mojom::URLResponseHead& response,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      mojom::CrossOriginEmbedderPolicy embedder_policy);
+      const CrossOriginEmbedderPolicy& embedder_policy);
 
   // Same with Verify() but this method can take a raw value of
   // Cross-Origin-Resource-Policy header instead of using URLResponseHead.
@@ -54,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      mojom::CrossOriginEmbedderPolicy embedder_policy);
+      const CrossOriginEmbedderPolicy& embedder_policy);
 
   // Parsing of the Cross-Origin-Resource-Policy http response header.
   enum ParsedHeader {

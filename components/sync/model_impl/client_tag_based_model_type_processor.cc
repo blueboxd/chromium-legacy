@@ -26,6 +26,28 @@
 
 namespace syncer {
 
+namespace {
+
+// These errors are used to investigate user reports (see crbug.com/1045641).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ClientTagBasedModelTypeProcessorErrors {
+  kLoadMetadataError = 0,
+  kFullUpdateError = 1,
+  kDuplicateRecordAddedError = 2,
+  kEmptyStorageKeyError = 3,
+  kStorageKeyNotFoundError = 4,
+  kMaxValue = kStorageKeyNotFoundError,
+};
+
+void LogModelTypeProcessorError(ClientTagBasedModelTypeProcessorErrors error) {
+  // TODO(crbug.com/1045641): Remove once investigation is over.
+  base::UmaHistogramEnumeration("Sync.WalletDataModelTypeProcessorErrors",
+                                error);
+}
+
+}  // namespace
+
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
     const base::RepeatingClosure& dump_stack)
@@ -93,6 +115,12 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
     entity_tracker_ = std::make_unique<ProcessorEntityTracker>(
         std::move(metadata_map), batch->GetModelTypeState());
+    // TODO(crbug.com/1045641): Remove once investigation is over.
+    if (type_ == ModelType::AUTOFILL_WALLET_DATA &&
+        !entity_tracker_->AllStorageKeysPopulated()) {
+      LogModelTypeProcessorError(
+          ClientTagBasedModelTypeProcessorErrors::kLoadMetadataError);
+    }
   } else {
     // In older versions of the binary, commit-only types did not persist
     // initial_sync_done(). So this branch can be exercised for commit-only
@@ -338,6 +366,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   DCHECK(!data->is_deleted());
   DCHECK(!data->name.empty());
   DCHECK(!data->specifics.has_encrypted());
+  DCHECK(!storage_key.empty());
   DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
   if (!entity_tracker_->model_type_state().initial_sync_done()) {
@@ -642,6 +671,12 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
       !entity_tracker_->model_type_state().initial_sync_done();
   if (is_initial_sync || HasClearAllDirective(model_type_state)) {
     error = OnFullUpdateReceived(model_type_state, std::move(updates));
+    // TODO(crbug.com/1045641): Remove once investigation is over.
+    if (type_ == ModelType::AUTOFILL_WALLET_DATA &&
+        !entity_tracker_->AllStorageKeysPopulated()) {
+      LogModelTypeProcessorError(
+          ClientTagBasedModelTypeProcessorErrors::kFullUpdateError);
+    }
   } else {
     error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
   }
@@ -920,8 +955,19 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
               ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data)));
   }
   std::string storage_key;
-  if (bridge_->SupportsGetStorageKey())
+  if (bridge_->SupportsGetStorageKey()) {
     storage_key = bridge_->GetStorageKey(data);
+    // TODO(crbug.com/1045641): Remove once investigation is over.
+    if (type_ == ModelType::AUTOFILL_WALLET_DATA) {
+      if (storage_key.empty()) {
+        LogModelTypeProcessorError(
+            ClientTagBasedModelTypeProcessorErrors::kEmptyStorageKeyError);
+      } else if (entity_tracker_->GetEntityForStorageKey(storage_key)) {
+        LogModelTypeProcessorError(
+            ClientTagBasedModelTypeProcessorErrors::kDuplicateRecordAddedError);
+      }
+    }
+  }
   return CreateEntity(storage_key, data);
 }
 
@@ -961,6 +1007,12 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
   }
 
   for (const std::string& key : storage_key_to_be_deleted) {
+    // TODO(crbug.com/1045641): replace with DCHECK after fixing.
+    if (type_ == ModelType::AUTOFILL_WALLET_DATA &&
+        entity_tracker_->GetEntityForStorageKey(key) == nullptr) {
+      LogModelTypeProcessorError(
+          ClientTagBasedModelTypeProcessorErrors::kStorageKeyNotFoundError);
+    }
     RemoveEntity(key, metadata_changes);
   }
 }
@@ -969,6 +1021,7 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
   DCHECK(!storage_key.empty());
+  DCHECK(entity_tracker_->GetEntityForStorageKey(storage_key));
   metadata_change_list->ClearMetadata(storage_key);
   entity_tracker_->RemoveEntityForStorageKey(storage_key);
 }

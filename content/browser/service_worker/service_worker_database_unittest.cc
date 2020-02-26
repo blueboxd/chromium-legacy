@@ -466,7 +466,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data1.resources_total_size_bytes = 100;
   data1.script_response_time = base::Time::FromJsTime(0);
   data1.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -491,7 +491,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data2.resources_total_size_bytes = 200;
   data2.script_response_time = base::Time::FromJsTime(42);
   data2.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -516,7 +516,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data3.resources_total_size_bytes = 300;
   data3.script_response_time = base::Time::FromJsTime(420);
   data3.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
   std::vector<Resource> resources3;
   resources3.push_back(CreateResource(3, data3.script, 300));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -532,7 +532,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data4.resources_total_size_bytes = 400;
   data4.script_response_time = base::Time::FromJsTime(4200);
   data4.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
   std::vector<Resource> resources4;
   resources4.push_back(CreateResource(4, data4.script, 400));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -580,7 +580,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
   data1.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -596,7 +596,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data2.resources_total_size_bytes = 200;
   data2.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
   data2.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -2250,7 +2250,7 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
   EXPECT_EQ(expect, registration.used_features);
 }
 
-TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicy) {
+TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicyValue) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   // Prepare a registration proto that doesn't have Cross Origin Embedder
@@ -2276,7 +2276,7 @@ TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicy) {
   RegistrationData registration;
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ParseRegistrationData(value, &registration));
-  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
             registration.cross_origin_embedder_policy);
 }
 

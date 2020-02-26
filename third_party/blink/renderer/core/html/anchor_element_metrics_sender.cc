@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
@@ -101,11 +102,12 @@ AnchorElementMetricsSender::GetAnchorElements() const {
 
 void AnchorElementMetricsSender::Trace(Visitor* visitor) {
   visitor->Trace(anchor_elements_);
+  visitor->Trace(metrics_host_);
   Supplement<Document>::Trace(visitor);
 }
 
 bool AnchorElementMetricsSender::AssociateInterface() {
-  if (metrics_host_)
+  if (metrics_host_.is_bound())
     return true;
 
   Document* document = GetSupplementable();
@@ -114,12 +116,15 @@ bool AnchorElementMetricsSender::AssociateInterface() {
     return false;
 
   document->GetBrowserInterfaceBroker().GetInterface(
-      metrics_host_.BindNewPipeAndPassReceiver());
+      metrics_host_.BindNewPipeAndPassReceiver(
+          document->ToExecutionContext()->GetTaskRunner(
+              TaskType::kInternalDefault)));
   return true;
 }
 
 AnchorElementMetricsSender::AnchorElementMetricsSender(Document& document)
-    : Supplement<Document>(document) {
+    : Supplement<Document>(document),
+      metrics_host_(document.ToExecutionContext()) {
   DCHECK(!document.ParentDocument());
 }
 

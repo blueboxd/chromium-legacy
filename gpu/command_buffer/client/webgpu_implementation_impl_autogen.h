@@ -13,21 +13,21 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_IMPL_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_IMPL_AUTOGEN_H_
 
-void WebGPUImplementation::AssociateMailbox(GLuint device_id,
+void WebGPUImplementation::AssociateMailbox(GLuint64 device_client_id,
                                             GLuint device_generation,
                                             GLuint id,
                                             GLuint generation,
                                             GLuint usage,
                                             const GLbyte* mailbox) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgAssociateMailbox(" << device_id
-                     << ", " << device_generation << ", " << id << ", "
-                     << generation << ", " << usage << ", "
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgAssociateMailbox("
+                     << device_client_id << ", " << device_generation << ", "
+                     << id << ", " << generation << ", " << usage << ", "
                      << static_cast<const void*>(mailbox) << ")");
   uint32_t count = 16;
   for (uint32_t ii = 0; ii < count; ++ii)
     GPU_CLIENT_LOG("value[" << ii << "]: " << mailbox[ii]);
-  helper_->AssociateMailboxImmediate(device_id, device_generation, id,
+  helper_->AssociateMailboxImmediate(device_client_id, device_generation, id,
                                      generation, usage, mailbox);
   CheckGLError();
 }

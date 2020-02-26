@@ -102,7 +102,7 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(
-            syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
+            syncStatus.syncSystemEnabled)]]">
           <settings-sync-account-control
               sync-status="[[syncStatus]]"
               prefs="{{prefs}}"
@@ -115,7 +115,7 @@
           </settings-sync-account-control>
         </template>
         <template is="dom-if" if="[[!shouldShowSyncAccountControl_(
-            syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]" restamp>
+            syncStatus.syncSystemEnabled)]]" restamp>
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
               <div id="profile-icon" on-click="onProfileTap_"
@@ -211,8 +211,7 @@
 <if expr="not chromeos">
       <template is="dom-if" route-path="/manageProfile">
         <settings-subpage
-            associated-control="[[getEditPersonAssocControl_(
-                syncStatus.signinAllowed)]]"
+            associated-control="[[getEditPersonAssocControl_()]]"
             page-title="$i18n{editPerson}">
           <settings-manage-profile profile-name="[[profileName_]]"
               sync-status="[[syncStatus]]">

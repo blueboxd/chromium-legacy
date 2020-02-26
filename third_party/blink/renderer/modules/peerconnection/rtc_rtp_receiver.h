@@ -23,6 +23,7 @@
 
 namespace blink {
 class RTCDtlsTransport;
+class RTCInsertableStreams;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
 class RTCRtpTransceiver;
@@ -49,6 +50,10 @@ class RTCRtpReceiver final : public ScriptWrappable {
   HeapVector<Member<RTCRtpSynchronizationSource>> getSynchronizationSources();
   HeapVector<Member<RTCRtpContributingSource>> getContributingSources();
   ScriptPromise getStats(ScriptState*);
+  RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
+                                                  ExceptionState&);
+  RTCInsertableStreams* createEncodedVideoStreams(ScriptState*,
+                                                  ExceptionState&);
 
   RTCRtpReceiverPlatform* platform_receiver();
   MediaStreamVector streams() const;

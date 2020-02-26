@@ -205,11 +205,15 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
     return;
   }
   const url::Origin origin = url::Origin::Create(url_);
+  // TODO(https://crbug.com/1039613): Get the COEP value for the service worker
+  // and pass it to each factory bundle.
   auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin,
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin,
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {

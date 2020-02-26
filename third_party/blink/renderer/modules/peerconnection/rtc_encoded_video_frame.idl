@@ -1,0 +1,24 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/alvestrand/webrtc-media-streams/blob/master/explainer.md#api
+// TODO(crbug.com/1052765): Add link to standard when available.
+
+enum RTCCodedVideoFrameType {
+    "empty",
+    "key",
+    "delta",
+};
+
+// TODO(crbug.com/1052765): Align with WebCodecs definition once it is stable.
+[RuntimeEnabled=RTCInsertableStreams]
+interface RTCEncodedVideoFrame {
+    readonly attribute RTCCodedVideoFrameType type;
+    readonly attribute unsigned long long timestamp;  // microseconds
+    attribute ArrayBuffer data;
+    // TODO(crbug.com/1052765): Replace this ArrayBuffer with structured data
+    // once we have decided what will be exposed.
+    readonly attribute ArrayBuffer additionalData;
+    stringifier;
+};

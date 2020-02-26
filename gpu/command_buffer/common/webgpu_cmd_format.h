@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_H_
 
 #include "gpu/command_buffer/common/gl2_types.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 
@@ -33,7 +34,7 @@ static_assert(offsetof(DawnReturnCommandsInfo, return_data_header) == 0,
 struct DawnReturnAdapterInfoHeader {
   DawnReturnDataHeader return_data_header = {
       DawnReturnDataType::kRequestedDawnAdapterProperties};
-  uint32_t request_adapter_serial;
+  DawnRequestAdapterSerial request_adapter_serial;
   uint32_t adapter_service_id;
 };
 
@@ -51,7 +52,7 @@ static_assert(offsetof(DawnReturnAdapterInfo, header) == 0,
 struct DawnReturnRequestDeviceInfo {
   DawnReturnDataHeader return_data_header = {
       DawnReturnDataType::kRequestedDeviceReturnInfo};
-  uint32_t request_device_serial;
+  DawnDeviceClientID device_client_id;
   bool is_request_device_success;
 };
 

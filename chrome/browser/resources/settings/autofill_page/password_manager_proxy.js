@@ -148,6 +148,11 @@ class PasswordManagerProxy {
    * @return {!Promise<(boolean)>} A promise that resolves to the opt-in state.
    */
   isOptedInForAccountStorage() {}
+
+  /**
+   * Requests the start of the bulk password check.
+   */
+  startBulkPasswordCheck() {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -289,6 +294,9 @@ class PasswordManagerImpl {
       chrome.passwordsPrivate.isOptedInForAccountStorage(resolve);
     });
   }
+
+  /** @override */
+  startBulkPasswordCheck() {}
 }
 
 cr.addSingletonGetter(PasswordManagerImpl);

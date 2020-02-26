@@ -27,6 +27,10 @@ ProcessorEntityTracker::ProcessorEntityTracker(
         ProcessorEntity::CreateFromMetadata(kv.first, std::move(*kv.second));
     const ClientTagHash client_tag_hash =
         ClientTagHash::FromHashed(entity->metadata().client_tag_hash());
+
+    DCHECK(storage_key_to_tag_hash_.find(entity->storage_key()) ==
+           storage_key_to_tag_hash_.end());
+    DCHECK(entities_.find(client_tag_hash) == entities_.end());
     storage_key_to_tag_hash_[entity->storage_key()] = client_tag_hash;
     entities_[client_tag_hash] = std::move(entity);
   }
@@ -36,9 +40,12 @@ ProcessorEntityTracker::~ProcessorEntityTracker() = default;
 
 bool ProcessorEntityTracker::AllStorageKeysPopulated() const {
   for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
+    const ProcessorEntity* entity = kv.second.get();
     if (entity->storage_key().empty())
       return false;
+  }
+  if (entities_.size() != storage_key_to_tag_hash_.size()) {
+    return false;
   }
   return true;
 }

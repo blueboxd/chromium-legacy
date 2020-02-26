@@ -6,15 +6,29 @@
  * @fileoverview Test suite for chrome://help-app.
  */
 
+GEN('#include "chromeos/components/help_app_ui/test/help_app_ui_browsertest.h"');
+
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 const HOST_ORIGIN = 'chrome://help-app';
-const GUEST_ORIGIN = 'chrome-untrusted://help-app';
+
+// Test driver initialised in setUp and used in tests to interact with the
+// untrusted context.
+let driver = null;
 
 var HelpAppUIBrowserTest = class extends testing.Test {
   /** @override */
   get browsePreload() {
     return HOST_ORIGIN;
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      ...super.extraLibraries,
+      '//chromeos/components/help_app_ui/test/driver.js',
+      '//ui/webui/resources/js/assert.js',
+    ];
   }
 
   /** @override */
@@ -28,8 +42,25 @@ var HelpAppUIBrowserTest = class extends testing.Test {
   }
 
   /** @override */
+  get typedefCppFixture() {
+    return 'HelpAppUiBrowserTest';
+  }
+
+  /** @override */
   get runAccessibilityChecks() {
     return false;
+  }
+
+  /** @override */
+  setUp() {
+    super.setUp();
+    driver = new GuestDriver(GUEST_ORIGIN);
+  }
+
+  /** @override */
+  tearDown() {
+    driver.tearDown();
+    super.tearDown();
   }
 };
 
@@ -42,11 +73,21 @@ TEST_F('HelpAppUIBrowserTest', 'HasChromeSchemeURL', () => {
   testDone();
 });
 
-// Tests that chrome://help-app can successfully send a request to open the
+// Tests that trusted context can successfully send a request to open the
 // feedback dialog and receive a response.
 TEST_F('HelpAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
   const result = await help_app.handler.openFeedbackDialog();
 
+  assertEquals(result.errorMessage, '');
+  testDone();
+});
+
+// Tests that untrusted context can successfully send a request to open the
+// feedback dialog and receive a response.
+TEST_F('HelpAppUIBrowserTest', 'GuestCanOpenFeedbackDialog', async () => {
+  const result = await driver.sendPostMessageRequest('feedback');
+
+  // No error message from opening feedback dialog.
   assertEquals(result.errorMessage, '');
   testDone();
 });

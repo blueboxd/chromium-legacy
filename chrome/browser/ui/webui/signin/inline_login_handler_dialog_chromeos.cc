@@ -41,6 +41,42 @@ bool IsDeviceAccountEmail(const std::string& email) {
          gaia::AreEmailsSame(active_user->GetDisplayEmail(), email);
 }
 
+GURL GetUrlWithEmailParam(base::StringPiece url_string,
+                          const std::string& email) {
+  GURL url = GURL(url_string);
+  if (!email.empty()) {
+    url = net::AppendQueryParameter(url, "email", email);
+    url = net::AppendQueryParameter(url, "readOnlyEmail", "true");
+  }
+  return url;
+}
+
+GURL GetInlineLoginUrl(const std::string& email) {
+  if (IsDeviceAccountEmail(email)) {
+    // It's a device account re-auth.
+    return GetUrlWithEmailParam(chrome::kChromeUIChromeSigninURL, email);
+  }
+  if (!ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
+    // Addition of secondary Google Accounts is not allowed.
+    return GURL(chrome::kChromeUIAccountManagerErrorURL);
+  }
+
+  // Addition of secondary Google Accounts is allowed.
+  if (!ProfileManager::GetActiveUserProfile()->IsChild()) {
+    return GetUrlWithEmailParam(chrome::kChromeUIChromeSigninURL, email);
+  }
+  // User type is Child.
+  if (!features::IsEduCoexistenceEnabled()) {
+    return GURL(chrome::kChromeUIAccountManagerErrorURL);
+  }
+  DCHECK_EQ(std::string(chrome::kChromeUIChromeSigninURL).back(), '/');
+  // chrome://chrome-signin/edu
+  const std::string kEduAccountLoginURL =
+      std::string(chrome::kChromeUIChromeSigninURL) + "edu";
+  return GetUrlWithEmailParam(kEduAccountLoginURL, email);
+}
+
 }  // namespace
 
 // static
@@ -50,32 +86,8 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
     return;
   }
 
-  GURL url;
-  if (ProfileManager::GetActiveUserProfile()->IsChild()) {
-    // chrome://chrome-signin/edu
-    const std::string kEduAccountLoginURL =
-        std::string(chrome::kChromeUIChromeSigninURL) + "edu";
-
-    url = GURL(features::IsEduCoexistenceEnabled()
-                   ? kEduAccountLoginURL
-                   : chrome::kChromeUIAccountManagerErrorURL);
-  } else if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
-                 chromeos::prefs::kSecondaryGoogleAccountSigninAllowed) ||
-             IsDeviceAccountEmail(email)) {
-    // Addition of secondary Google Accounts is allowed OR it's a primary
-    // account re-auth.
-    url = GURL(chrome::kChromeUIChromeSigninURL);
-    if (!email.empty()) {
-      url = net::AppendQueryParameter(url, "email", email);
-      url = net::AppendQueryParameter(url, "readOnlyEmail", "true");
-    }
-  } else {
-    // Addition of secondary Google Accounts is not allowed.
-    url = GURL(chrome::kChromeUIAccountManagerErrorURL);
-  }
-
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
-  dialog = new InlineLoginHandlerDialogChromeOS(url);
+  dialog = new InlineLoginHandlerDialogChromeOS(GetInlineLoginUrl(email));
   dialog->ShowSystemDialog();
 
   // TODO(crbug.com/1016828): Remove/update this after the dialog behavior on

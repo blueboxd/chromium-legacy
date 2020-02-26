@@ -182,10 +182,10 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
 // [1] https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 bool CrossOriginOpenerPolicyMatch(
     network::mojom::CrossOriginOpenerPolicy initiator_coop,
-    network::mojom::CrossOriginEmbedderPolicy initiator_coep,
+    network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
     const url::Origin& initiator_origin,
     network::mojom::CrossOriginOpenerPolicy destination_coop,
-    network::mojom::CrossOriginEmbedderPolicy destination_coep,
+    network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
     const url::Origin& destination_origin) {
   if (initiator_coop != destination_coop)
     return false;
@@ -204,13 +204,13 @@ bool CrossOriginOpenerPolicyMatch(
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
 bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
     network::mojom::CrossOriginOpenerPolicy initiator_coop,
-    network::mojom::CrossOriginEmbedderPolicy initiator_coep,
+    network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
     const url::Origin& initiator_origin,
     bool is_initiator_aboutblank,
     network::mojom::CrossOriginOpenerPolicy destination_coop,
-    network::mojom::CrossOriginEmbedderPolicy destination_coep,
+    network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
     const url::Origin& destination_origin) {
-  using network::mojom::CrossOriginEmbedderPolicy;
+  using network::mojom::CrossOriginEmbedderPolicyValue;
   using network::mojom::CrossOriginOpenerPolicy;
 
   if (!base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation))
@@ -2338,7 +2338,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->response() &&
       ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
           render_frame_host_->cross_origin_opener_policy(),
-          render_frame_host_->cross_origin_embedder_policy(),
+          render_frame_host_->cross_origin_embedder_policy().value,
           render_frame_host_->GetLastCommittedOrigin(),
           !render_frame_host_->has_committed_any_navigation(),
           request->response()->cross_origin_opener_policy,

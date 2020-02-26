@@ -463,6 +463,9 @@ ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
   SetText(text, true /* allow_import_rules */, exception_state);
   if (!IsLoading())
     return ScriptPromise::Cast(script_state, ToV8(this, script_state));
+  // We're loading a stylesheet that contains @import rules. This is deprecated.
+  Deprecation::CountDeprecation(OwnerDocument(),
+                                WebFeature::kCssStyleSheetReplaceWithImport);
   resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return resolver_->Promise();
 }

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/resolver/match_request.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -109,7 +110,8 @@ class ElementRuleCollector {
  public:
   ElementRuleCollector(const ElementResolveContext&,
                        const SelectorFilter&,
-                       ComputedStyle* = nullptr);
+                       ComputedStyle*,
+                       EInsideLink);
   ~ElementRuleCollector();
 
   void SetMode(SelectorChecker::Mode mode) { mode_ = mode; }
@@ -188,6 +190,7 @@ class ElementRuleCollector {
   bool same_origin_only_;
   bool matching_ua_rules_;
   bool include_empty_rules_;
+  EInsideLink inside_link_;
 
   HeapVector<MatchedRule, 32> matched_rules_;
 

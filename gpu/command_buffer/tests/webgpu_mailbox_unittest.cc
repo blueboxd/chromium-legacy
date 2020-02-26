@@ -90,8 +90,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
   SyncToken mailbox_produced_token = sii->GenVerifiedSyncToken();
   webgpu()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
 
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
 
@@ -101,9 +100,9 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     gpu::webgpu::ReservedTexture reservation =
         webgpu()->ReserveTexture(device.Get());
 
-    webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               WGPUTextureUsage_OutputAttachment,
-                               reinterpret_cast<GLbyte*>(&mailbox));
+    webgpu()->AssociateMailbox(
+        kDeviceClientID, 0, reservation.id, reservation.generation,
+        WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox));
     wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
     // Clear the texture using a render pass.
@@ -142,8 +141,8 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     // are validated correctly.
     webgpu()->FlushCommands();
 
-    webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               WGPUTextureUsage_CopySrc,
+    webgpu()->AssociateMailbox(kDeviceClientID, 0, reservation.id,
+                               reservation.generation, WGPUTextureUsage_CopySrc,
                                reinterpret_cast<GLbyte*>(&mailbox));
     wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
@@ -211,8 +210,7 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   webgpu()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
 
   // Create the device, and expect a validation error.
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   device.SetUncapturedErrorCallback(ToMockUncapturedErrorCallback, 0);
@@ -222,9 +220,9 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
       webgpu()->ReserveTexture(device.Get());
   wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
 
-  webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                             WGPUTextureUsage_OutputAttachment,
-                             reinterpret_cast<GLbyte*>(&mailbox));
+  webgpu()->AssociateMailbox(
+      kDeviceClientID, 0, reservation.id, reservation.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailbox));
   webgpu()->DissociateMailbox(reservation.id, reservation.generation);
 
   // Try using the texture, it should produce a validation error.
@@ -272,23 +270,22 @@ TEST_F(WebGPUMailboxTest, UseA_UseB_DestroyA_DestroyB) {
       SHARED_IMAGE_USAGE_WEBGPU);
 
   // Get a WebGPU device to associate the shared images to.
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
 
   // Associate both mailboxes
   gpu::webgpu::ReservedTexture reservationA =
       webgpu()->ReserveTexture(device.Get());
-  webgpu()->AssociateMailbox(0, 0, reservationA.id, reservationA.generation,
-                             WGPUTextureUsage_OutputAttachment,
-                             reinterpret_cast<GLbyte*>(&mailboxA));
+  webgpu()->AssociateMailbox(
+      kDeviceClientID, 0, reservationA.id, reservationA.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailboxA));
 
   gpu::webgpu::ReservedTexture reservationB =
       webgpu()->ReserveTexture(device.Get());
-  webgpu()->AssociateMailbox(0, 0, reservationB.id, reservationB.generation,
-                             WGPUTextureUsage_OutputAttachment,
-                             reinterpret_cast<GLbyte*>(&mailboxB));
+  webgpu()->AssociateMailbox(
+      kDeviceClientID, 0, reservationB.id, reservationB.generation,
+      WGPUTextureUsage_OutputAttachment, reinterpret_cast<GLbyte*>(&mailboxB));
 
   // Dissociate both mailboxes in the same order.
   webgpu()->DissociateMailbox(reservationA.id, reservationA.generation);

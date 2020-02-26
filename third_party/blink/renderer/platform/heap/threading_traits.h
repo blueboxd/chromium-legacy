@@ -58,8 +58,6 @@ struct DefaultThreadingTrait<T, true> {
 class HeapAllocator;
 template <typename Table>
 class HeapHashTableBacking;
-template <typename T, typename Traits>
-class HeapVectorBacking;
 template <typename T>
 class Member;
 template <typename T>
@@ -116,12 +114,6 @@ template <typename T, size_t inlineCapacity>
 struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
   static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
-};
-
-template <typename T, typename Traits>
-struct ThreadingTrait<HeapVectorBacking<T, Traits>> {
-  STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity kAffinity = ThreadingTrait<T>::Affinity;
 };
 
 template <typename T, size_t inlineCapacity>

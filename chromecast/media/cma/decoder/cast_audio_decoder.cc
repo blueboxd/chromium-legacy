@@ -22,6 +22,7 @@
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_logging.h"
+#include "chromecast/media/cma/decoder/external_audio_decoder_wrapper.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/cdm_context.h"
@@ -39,17 +40,13 @@ namespace {
 class CastAudioDecoderImpl : public CastAudioDecoder {
  public:
   CastAudioDecoderImpl(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       const media::AudioConfig& config,
                        OutputFormat output_format)
       : task_runner_(std::move(task_runner)),
         output_format_(output_format),
         weak_factory_(this) {
     weak_this_ = weak_factory_.GetWeakPtr();
     DCHECK(task_runner_);
-  }
-
-  bool Initialize(const media::AudioConfig& config) {
-    DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    DCHECK(!initialized_);
 
     input_config_ = config;
     input_config_.encryption_scheme = EncryptionScheme::kUnencrypted;
@@ -70,7 +67,6 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
         base::NullCallback());
     // Unfortunately there is no result from decoder_->Initialize() until later
     // (the pipeline status callback is posted to the task runner).
-    return true;
   }
 
   // CastAudioDecoder implementation:
@@ -296,12 +292,17 @@ std::unique_ptr<CastAudioDecoder> CastAudioDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const media::AudioConfig& config,
     OutputFormat output_format) {
-  auto decoder = std::make_unique<CastAudioDecoderImpl>(std::move(task_runner),
-                                                        output_format);
-  if (!decoder->Initialize(config)) {
-    decoder.reset();
+  if (ExternalAudioDecoderWrapper::IsSupportedConfig(config)) {
+    auto external_decoder = std::make_unique<ExternalAudioDecoderWrapper>(
+        std::move(task_runner), config, output_format);
+    if (!external_decoder->initialized()) {
+      return nullptr;
+    }
+    return external_decoder;
   }
-  return decoder;
+
+  return std::make_unique<CastAudioDecoderImpl>(std::move(task_runner), config,
+                                                output_format);
 }
 
 // static

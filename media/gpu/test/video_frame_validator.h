@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
@@ -38,6 +39,9 @@ namespace test {
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
  public:
+  // Get the model frame from |frame_index|.
+  using GetModelFrameCB =
+      base::RepeatingCallback<scoped_refptr<const VideoFrame>(size_t)>;
   static constexpr uint8_t kDefaultTolerance = 4;
   // TODO(hiroh): Support a validation by PSNR and SSIM.
   enum class ValidateMode {
@@ -79,8 +83,11 @@ class VideoFrameValidator : public VideoFrameProcessor {
       const VideoPixelFormat validation_format = PIXEL_FORMAT_I420,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
 
+  // Create an instance of the video frame validator. The VideoFrameValidator
+  // compares a given VideoFrame on ProcessVideoFrame() with the model frame got
+  // by |get_model_frame_cb|.
   static std::unique_ptr<VideoFrameValidator> Create(
-      const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+      GetModelFrameCB get_model_frame_cb,
       const uint8_t tolerance = kDefaultTolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
 
@@ -110,7 +117,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
 
   VideoFrameValidator(
-      const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+      GetModelFrameCB get_model_frame_cb,
       const uint8_t tolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
 
@@ -121,6 +128,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // Validate the |video_frame|'s content on the |frame_validator_thread_|.
   void ProcessVideoFrameTask(const scoped_refptr<const VideoFrame> video_frame,
+                             const scoped_refptr<const VideoFrame> model_frame,
                              size_t frame_index);
 
   // Returns md5 values of video frame represented by |video_frame|.
@@ -131,6 +139,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
       size_t frame_index);
   base::Optional<MismatchedFrameInfo> ValidateRaw(
       const VideoFrame& validated_frame,
+      const VideoFrame& model_frame,
       size_t frame_index);
 
   const ValidateMode validate_mode_;
@@ -143,7 +152,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // Values used only if |validate_mode_| is RAW.
   // The list of expected frames
-  const std::vector<scoped_refptr<const VideoFrame>> model_frames_;
+  const GetModelFrameCB get_model_frame_cb_;
   const uint8_t tolerance_ = 0;
 
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;

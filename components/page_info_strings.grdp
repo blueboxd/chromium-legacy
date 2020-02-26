@@ -534,4 +534,49 @@
   <message name="IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT" desc="Label on the button that's used to turn off the VR presentation.">
     End
   </message>
+
+  <!-- Certificate viewer dialog strings that are shared across all the platforms -->
+  <message name="IDS_CERT_INFO_SUBJECT_GROUP" desc="The label of the Issued To group in the general page of the certificate info dialog">
+    Issued To
+  </message>
+  <message name="IDS_CERT_INFO_ISSUER_GROUP" desc="The label of the Issued By group in the general page of the certificate info dialog">
+    Issued By
+  </message>
+  <message name="IDS_CERT_INFO_COMMON_NAME_LABEL" desc="The label of the Common Name field in the general page of the certificate info dialog.  (CN) is the name of this field in the standard">
+    Common Name (CN)
+  </message>
+  <message name="IDS_CERT_INFO_ORGANIZATION_LABEL" desc="The label of the Organization field in the general page of the certificate info dialog.  (O) is the name of this field in the standard">
+    Organization (O)
+  </message>
+  <message name="IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL" desc="The label of the Organizational Unit field in the general page of the certificate info dialog.  (OU) is the name of this field in the standard">
+    Organizational Unit (OU)
+  </message>
+  <message name="IDS_CERT_INFO_SERIAL_NUMBER_LABEL" desc="The label of the Serial Number field in the general page of the certificate info dialog.">
+    Serial Number
+  </message>
+  <message name="IDS_CERT_INFO_VALIDITY_GROUP" desc="The label of the group showing the validity (issued and expired dates) in the general page of the certificate info dialog">
+    Validity Period
+  </message>
+  <message name="IDS_CERT_INFO_ISSUED_ON_LABEL" desc="The label of the Issued On field in the general page of the certificate info dialog">
+    Issued On
+  </message>
+  <message name="IDS_CERT_INFO_EXPIRES_ON_LABEL" desc="The label of the Issued On field in the general page of the certificate info dialog">
+    Expires On
+  </message>
+  <message name="IDS_CERT_INFO_FINGERPRINTS_GROUP" desc="The label of the group showing the certificate fingerprints in the general page of the certificate info dialog">
+    Fingerprints
+  </message>
+  <message name="IDS_CERT_INFO_SHA256_FINGERPRINT_LABEL" desc="The label of the SHA-256 Fingerprint field in the general page of the certificate info dialog">
+    SHA-256 Fingerprint
+  </message>
+  <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA-1 Fingerprint field in the general page of the certificate info dialog">
+    SHA-1 Fingerprint
+  </message>
+
+  <message name="IDS_CERT_DETAILS_EXTENSIONS" desc="The label of the Extensions element in the details page of the certificate info dialog.">
+    Extensions
+  </message>
+  <message name="IDS_CERT_X509_SUBJECT_ALT_NAME" desc="description of extension Certificate Subject Alternative Name">
+    Certificate Subject Alternative Name
+  </message>
 </grit-part>

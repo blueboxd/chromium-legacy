@@ -7,12 +7,13 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/compositor/compositor_export.h"
 
 namespace ui {
 
 class AnimationMetricsReporter;
 
-class AnimationMetricsRecorder {
+class COMPOSITOR_EXPORT AnimationMetricsRecorder {
  public:
   explicit AnimationMetricsRecorder(AnimationMetricsReporter* reporter);
   AnimationMetricsRecorder(const AnimationMetricsRecorder&) = delete;

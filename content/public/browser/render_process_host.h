@@ -27,7 +27,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
-#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -54,6 +53,10 @@ namespace base {
 class PersistentMemoryAllocator;
 class TimeDelta;
 class Token;
+}
+
+namespace network {
+struct CrossOriginEmbedderPolicy;
 }
 
 namespace url {
@@ -465,7 +468,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) = 0;
   virtual void BindFileSystemManager(

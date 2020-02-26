@@ -53,9 +53,7 @@ namespace {
 struct {
   uint16_t width;
   uint16_t height;
-} const kFallbackVideoResolutions[] = {{1920, 1080}, {1280, 720}, {960, 720},
-                                       {640, 480},   {640, 360},  {320, 240},
-                                       {320, 180}};
+} const kFallbackVideoResolutions[] = {{1920, 1080}, {1280, 720}, {640, 480}};
 
 // Frame rates for sources with no support for capability enumeration.
 const uint16_t kFallbackVideoFrameRates[] = {30, 60};

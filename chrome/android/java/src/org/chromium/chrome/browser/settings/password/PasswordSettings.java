@@ -202,6 +202,16 @@ public class PasswordSettings
         getPreferenceScreen().addPreference(mEmptyView);
     }
 
+    /**
+     * Include a message when there's no match.
+     */
+    private void displayPasswordNoResultScreenMessage() {
+        Preference noResultView = new Preference(getStyledContext());
+        noResultView.setLayoutResource(R.layout.password_no_result);
+        noResultView.setSelectable(false);
+        getPreferenceScreen().addPreference(noResultView);
+    }
+
     @Override
     public void onDetach() {
         super.onDetach();
@@ -296,6 +306,7 @@ public class PasswordSettings
                 // If not searching, the category needs to be removed again.
                 getPreferenceScreen().removePreference(passwordParent);
             } else {
+                displayPasswordNoResultScreenMessage();
                 getView().announceForAccessibility(
                         getString(R.string.accessible_find_in_page_no_results));
             }

@@ -38,6 +38,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
@@ -625,8 +626,7 @@ void ServiceWorkerGlobalScope::BindControllerServiceWorker(
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
   controller_receivers_.Add(
-      this, std::move(receiver),
-      network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+      this, std::move(receiver), network::CrossOriginEmbedderPolicy(),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1409,7 +1409,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
 
 void ServiceWorkerGlobalScope::StartFetchEvent(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
+    const network::CrossOriginEmbedderPolicy& requestor_coep,
     mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
         response_callback,
     DispatchFetchEventInternalCallback callback,
@@ -1491,7 +1491,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
                "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
                "url", params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
-  network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep =
+  const network::CrossOriginEmbedderPolicy& requestor_coep =
       controller_receivers_.current_context();
   if (RequestedTermination()) {
     event_queue_->EnqueuePending(
@@ -1512,8 +1512,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
 
 void ServiceWorkerGlobalScope::Clone(
     mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
-    network::mojom::blink::CrossOriginEmbedderPolicy
-        cross_origin_embedder_policy) {
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
   DCHECK(IsContextThread());
   controller_receivers_.Add(
       this, std::move(receiver), cross_origin_embedder_policy,
@@ -1837,14 +1836,14 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
     event_queue_->EnqueueOffline(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+                  network::CrossOriginEmbedderPolicy(),
                   std::move(response_callback), std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   } else {
     event_queue_->EnqueueNormal(
         WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
                   WrapWeakPersistent(this), std::move(params),
-                  network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+                  network::CrossOriginEmbedderPolicy(),
                   std::move(response_callback), std::move(callback)),
         CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
   }

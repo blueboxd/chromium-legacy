@@ -600,30 +600,6 @@ TEST_F(StyleCascadeTest, ApplyingPendingSubstitutionLast) {
   EXPECT_EQ("4px", cascade.ComputedValue("margin-left"));
 }
 
-// TODO(andruud): This is not useful anymore.
-// TEST_F(StyleCascadeTest, ApplyingPendingSubstitutionModifiesCascade) {
-//  TestCascade cascade(GetDocument());
-//  cascade.Add("margin", "1px var(--x) 3px 4px");
-//  cascade.Add("--x", "2px");
-//  cascade.Add("margin-right", "5px");
-//
-//  // We expect the pending substitution value for all the shorthands,
-//  // except margin-right.
-//  EXPECT_EQ("1px var(--x) 3px 4px", cascade.GetValue("margin-top"));
-//  EXPECT_EQ("5px", cascade.GetValue("margin-right"));
-//  EXPECT_EQ("1px var(--x) 3px 4px", cascade.GetValue("margin-bottom"));
-//  EXPECT_EQ("1px var(--x) 3px 4px", cascade.GetValue("margin-left"));
-//
-//  // Apply a pending substitution value should modify the cascade for other
-//  // longhands with the same pending substitution value.
-//  cascade.Apply("margin-left");
-//
-//  EXPECT_EQ("1px", cascade.GetValue("margin-top"));
-//  EXPECT_EQ("5px", cascade.GetValue("margin-right"));
-//  EXPECT_EQ("3px", cascade.GetValue("margin-bottom"));
-//  EXPECT_FALSE(cascade.GetValue("margin-left"));
-//}
-
 TEST_F(StyleCascadeTest, ResolverDetectCycle) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver(GetDocument());
@@ -1999,6 +1975,56 @@ TEST_F(StyleCascadeTest, MarkReferenced) {
   EXPECT_FALSE(registry->WasReferenced("--y"));
 }
 
+TEST_F(StyleCascadeTest, MarkHasVariableReferenceLonghand) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("--x", "1px");
+  cascade.Add("width", "var(--x)");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_TRUE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, MarkHasVariableReferenceShorthand) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("--x", "1px");
+  cascade.Add("margin", "var(--x)");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_TRUE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, MarkHasVariableReferenceLonghandMissingVar) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width", "var(--x)");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_TRUE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, MarkHasVariableReferenceShorthandMissingVar) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("margin", "var(--x)");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_TRUE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, NoMarkHasVariableReferenceInherited) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("color", "var(--x)");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_FALSE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
+TEST_F(StyleCascadeTest, NoMarkHasVariableReferenceWithoutVar) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("width", "1px");
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_FALSE(style->HasVariableReferenceFromNonInheritedProperty());
+}
+
 TEST_F(StyleCascadeTest, InternalVisitedColorLonghand) {
   MatchResult result;
   result.FinishAddingUARules();
@@ -2565,8 +2591,5 @@ TEST_F(StyleCascadeTest, NoMarkHasReferenceForInherited) {
                    .StyleRef()
                    .HasVariableReferenceFromNonInheritedProperty());
 }
-
-// TODO: Check that tests don't crash when passing wrong match_result/
-// interpolations to Apply.
 
 }  // namespace blink

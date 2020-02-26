@@ -87,7 +87,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
 
   // Only callable on the UI thread.
   void AddReceiver(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 

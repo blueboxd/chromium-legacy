@@ -341,6 +341,33 @@ TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/autofill_page/passwords_check.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsCheckTest() {}
+
+CrSettingsPasswordsCheckTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/passwords_check.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'password_check_test.js',
+    '../test_browser_proxy.js',
+    'passwords_and_autofill_fake_data.js',
+    'test_password_manager_proxy.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsCheckTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * Test fixture for CrOS specific behavior in

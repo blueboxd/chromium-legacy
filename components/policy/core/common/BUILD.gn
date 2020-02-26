@@ -6,6 +6,12 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 group("common") {
   if (is_component_build) {
     public_deps = [ "//components/policy" ]
@@ -106,12 +112,6 @@ jumbo_source_set("internal") {
     "policy_details.h",
     "policy_load_status.cc",
     "policy_load_status.h",
-    "policy_loader_ios.h",
-    "policy_loader_ios.mm",
-    "policy_loader_mac.h",
-    "policy_loader_mac.mm",
-    "policy_loader_win.cc",
-    "policy_loader_win.h",
     "policy_map.cc",
     "policy_map.h",
     "policy_merger.cc",
@@ -126,8 +126,6 @@ jumbo_source_set("internal") {
     "policy_service_impl.h",
     "policy_statistics_collector.cc",
     "policy_statistics_collector.h",
-    "preferences_mac.cc",
-    "preferences_mac.h",
     "remote_commands/remote_command_job.cc",
     "remote_commands/remote_command_job.h",
     "remote_commands/remote_commands_factory.cc",
@@ -181,6 +179,10 @@ jumbo_source_set("internal") {
   ]
 
   if (is_win) {
+    sources += [
+      "policy_loader_win.cc",
+      "policy_loader_win.h",
+    ]
     libs = [
       "netapi32.lib",
       "ntdsapi.lib",
@@ -245,10 +247,24 @@ jumbo_source_set("internal") {
       "mac_util.cc",
       "mac_util.h",
     ]
-    libs = [ "CoreFoundation.framework" ]
+    frameworks = [ "CoreFoundation.framework" ]
 
     if (is_mac) {
-      libs += [ "SystemConfiguration.framework" ]
+      sources += [
+        "policy_loader_mac.h",
+        "policy_loader_mac.mm",
+        "preferences_mac.cc",
+        "preferences_mac.h",
+      ]
+      frameworks += [ "SystemConfiguration.framework" ]
+    }
+
+    if (is_ios) {
+      sources += [
+        "policy_loader_ios.h",
+        "policy_loader_ios.mm",
+      ]
+      configs += [ "//build/config/compiler:enable_arc" ]
     }
   }
 }
@@ -282,8 +298,6 @@ jumbo_static_library("test_support") {
     "mock_policy_service.h",
     "policy_test_utils.cc",
     "policy_test_utils.h",
-    "preferences_mock_mac.cc",
-    "preferences_mock_mac.h",
     "remote_commands/test_remote_command_job.cc",
     "remote_commands/test_remote_command_job.h",
     "remote_commands/testing_remote_commands_server.cc",
@@ -294,6 +308,13 @@ jumbo_static_library("test_support") {
     sources -= [
       "cloud/mock_user_cloud_policy_store.cc",
       "cloud/mock_user_cloud_policy_store.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "preferences_mock_mac.cc",
+      "preferences_mock_mac.h",
     ]
   }
 
@@ -346,9 +367,6 @@ source_set("unit_tests") {
     "generate_policy_source_unittest.cc",
     "plist_writer_unittest.cc",
     "policy_bundle_unittest.cc",
-    "policy_loader_ios_unittest.mm",
-    "policy_loader_mac_unittest.cc",
-    "policy_loader_win_unittest.cc",
     "policy_map_unittest.cc",
     "policy_service_impl_unittest.cc",
     "policy_statistics_collector_unittest.cc",
@@ -395,10 +413,22 @@ source_set("unit_tests") {
   }
   if (is_mac || is_ios) {
     sources += [ "mac_util_unittest.cc" ]
+
+    if (is_mac) {
+      sources += [ "policy_loader_mac_unittest.cc" ]
+    }
+
+    if (is_ios) {
+      sources += [ "policy_loader_ios_unittest.mm" ]
+      configs += [ "//build/config/compiler:enable_arc" ]
+    }
   }
   if (is_win || is_linux) {
     # Needed by policy_loader_win_unittest.cc and preg_parser_unittest.cc
     data = [ "//chrome/test/data/policy/" ]
+  }
+  if (is_win) {
+    sources += [ "policy_loader_win_unittest.cc" ]
   }
 
   deps = [

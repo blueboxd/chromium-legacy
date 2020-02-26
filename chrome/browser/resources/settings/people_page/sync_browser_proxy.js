@@ -23,7 +23,6 @@ cr.define('settings', function() {
    *            firstSetupInProgress: (boolean|undefined),
    *            signedIn: (boolean|undefined),
    *            signedInUsername: (string|undefined),
-   *            signinAllowed: (boolean|undefined),
    *            statusAction: (!settings.StatusAction),
    *            statusActionText: (string|undefined),
    *            statusText: (string|undefined),

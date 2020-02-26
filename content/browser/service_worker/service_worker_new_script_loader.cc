@@ -516,14 +516,7 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
     DCHECK_EQ(LoaderState::kCompleted, network_loader_state_);
     DCHECK_EQ(WriterState::kCompleted, header_writer_state_);
     DCHECK_EQ(WriterState::kCompleted, body_writer_state_);
-    // If all the calls to WriteHeaders/WriteData succeeded, but the incumbent
-    // entry wasn't actually replaced because the new entry was equivalent, the
-    // new version didn't actually install because it already exists.
-    if (!cache_writer_->did_replace()) {
-      version_->SetStartWorkerStatusCode(
-          blink::ServiceWorkerStatusCode::kErrorExists);
-      error_code = net::ERR_FILE_EXISTS;
-    }
+    DCHECK(cache_writer_->did_replace());
     bytes_written = cache_writer_->bytes_written();
   } else {
     // AddMessageConsole must be called before notifying that an error occurred

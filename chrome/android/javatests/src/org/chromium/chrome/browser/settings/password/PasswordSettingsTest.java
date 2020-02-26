@@ -1875,7 +1875,7 @@ public class PasswordSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testSearchDisplaysBlankPageIfSearchTurnsUpEmpty() {
+    public void testSearchDisplaysNoResultMessageIfSearchTurnsUpEmpty() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), PasswordSettings.class.getName());
@@ -1898,6 +1898,8 @@ public class PasswordSettingsTest {
         Espresso.onView(allOf(withParent(isAssignableFrom(LinearLayout.class)),
                                 withText(R.string.password_settings_title)))
                 .check(doesNotExist());
+        // Check the message for no result.
+        Espresso.onView(withText(R.string.password_no_result)).check(matches(isDisplayed()));
     }
 
     /**

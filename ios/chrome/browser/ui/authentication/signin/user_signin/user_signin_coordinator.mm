@@ -5,6 +5,11 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
+#import "base/metrics/user_metrics.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
@@ -16,7 +21,8 @@ using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
 @interface UserSigninCoordinator () <UnifiedConsentCoordinatorDelegate,
-                                     UserSigninViewControllerDelegate>
+                                     UserSigninViewControllerDelegate,
+                                     UserSigninMediatorDelegate>
 
 // Coordinator that handles the user consent before the user signs in.
 @property(nonatomic, strong)
@@ -25,6 +31,8 @@ using signin_metrics::PromoAction;
 @property(nonatomic, strong) SigninCoordinator* addAccountSigninCoordinator;
 // View controller that handles the sign-in UI.
 @property(nonatomic, strong) UserSigninViewController* viewController;
+// Mediator that handles the sign-in authentication state.
+@property(nonatomic, strong) UserSigninMediator* mediator;
 // Suggested identity shown at sign-in.
 @property(nonatomic, strong) ChromeIdentity* defaultIdentity;
 // View where the sign-in button was displayed.
@@ -52,12 +60,17 @@ using signin_metrics::PromoAction;
   return self;
 }
 
-#pragma mark - ChromeCoordinator
+#pragma mark - SigninCoordinator
 
 - (void)start {
   [super start];
   self.viewController = [[UserSigninViewController alloc] init];
   self.viewController.delegate = self;
+
+  self.mediator = [[UserSigninMediator alloc]
+      initWithAuthenticationService:AuthenticationServiceFactory::
+                                        GetForBrowserState(self.browserState)];
+  self.mediator.delegate = self;
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]
       initWithBaseViewController:nil
@@ -81,8 +94,6 @@ using signin_metrics::PromoAction;
 
 - (void)stop {
   [super stop];
-  [self.addAccountSigninCoordinator stop];
-  self.addAccountSigninCoordinator = nil;
   self.unifiedConsentCoordinator = nil;
 }
 
@@ -108,7 +119,7 @@ using signin_metrics::PromoAction;
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
-  [self.viewController updatePrimaryButtonStyle];
+  [self userSigninMediatorNeedPrimaryButtonUpdate];
 }
 
 #pragma mark - UserSigninViewControllerDelegate
@@ -137,6 +148,53 @@ using signin_metrics::PromoAction;
 
 - (void)userSigninViewControllerDidScrollOnUnifiedConsent {
   [self.unifiedConsentCoordinator scrollToBottom];
+}
+
+- (void)userSigninViewControllerDidTapOnSkipSignin {
+  [self.mediator cancelSignin];
+}
+
+#pragma mark - UserSigninMediatorDelegate
+
+- (void)userSigninMediatorSigninFinishedWithResult:
+    (SigninCoordinatorResult)signinResult {
+  [self recordSigninMetricsWithResult:signinResult];
+
+  __weak UserSigninCoordinator* weakSelf = self;
+  ProceduralBlock completion = ^void() {
+    [weakSelf
+        runCompletionCallbackWithSigninResult:signinResult
+                                     identity:weakSelf.unifiedConsentCoordinator
+                                                  .selectedIdentity];
+  };
+
+  [self.viewController dismissViewControllerAnimated:YES completion:completion];
+
+  self.unifiedConsentCoordinator.delegate = nil;
+  self.unifiedConsentCoordinator = nil;
+}
+
+- (void)userSigninMediatorNeedPrimaryButtonUpdate {
+  [self.viewController updatePrimaryButtonStyle];
+}
+
+- (void)recordSigninMetricsWithResult:(SigninCoordinatorResult)signinResult {
+  switch (signinResult) {
+    case SigninCoordinatorResultSuccess: {
+      signin_metrics::LogSigninAccessPointCompleted(self.accessPoint,
+                                                    self.promoAction);
+      break;
+    }
+    case SigninCoordinatorResultCanceledByUser: {
+      base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+      break;
+    }
+    case SigninCoordinatorResultInterrupted: {
+      // TODO(crbug.com/951145): Add metric when the sign-in has been
+      // interrupted.
+      break;
+    }
+  }
 }
 
 @end

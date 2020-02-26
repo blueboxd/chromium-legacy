@@ -321,9 +321,8 @@ base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
 
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
-  container_host->OnBeginNavigationCommit(
-      process_id, 1 /* route_id */,
-      network::mojom::CrossOriginEmbedderPolicy::kNone);
+  container_host->OnBeginNavigationCommit(process_id, 1 /* route_id */,
+                                          network::CrossOriginEmbedderPolicy());
   return container_host;
 }
 
@@ -774,7 +773,7 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
           ? script_url
           : GURL(),
-      network::mojom::CrossOriginEmbedderPolicy::kNone);
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone);
 }
 
 void ServiceWorkerUpdateCheckTestUtils::

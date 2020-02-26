@@ -8,7 +8,6 @@
 
 #import <CoreSpotlight/CoreSpotlight.h>
 
-#include "base/mac/scoped_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"

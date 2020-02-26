@@ -322,7 +322,7 @@ void WorkerScriptLoader::CommitCompleted(
     // TODO(https://crbug.com/999049): Parse the COEP header and pass it to
     // the service worker handle.
     service_worker_handle_->OnBeginWorkerCommit(
-        network::mojom::CrossOriginEmbedderPolicy::kNone);
+        network::CrossOriginEmbedderPolicy());
   }
 
   client_->OnComplete(status);

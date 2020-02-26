@@ -145,7 +145,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   bool network_accessed() const { return network_accessed_; }
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy()
       const {
     return cross_origin_embedder_policy_;
   }
@@ -188,8 +188,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
   bool network_accessed_ = false;
-  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_ =
-      network::mojom::CrossOriginEmbedderPolicy::kNone;
+  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy_ =
+      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
 
   std::unique_ptr<
       ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>

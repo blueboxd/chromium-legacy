@@ -5,28 +5,21 @@
 #ifndef CHROMEOS_COMPONENTS_MEDIA_APP_UI_TEST_MEDIA_APP_UI_BROWSERTEST_H_
 #define CHROMEOS_COMPONENTS_MEDIA_APP_UI_TEST_MEDIA_APP_UI_BROWSERTEST_H_
 
-#include <memory>
+#include <string>
 
-#include "base/macros.h"
-#include "chrome/test/base/mojo_web_ui_browser_test.h"
+#include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 
-class MediaAppUiBrowserTest : public MojoWebUIBrowserTest {
+class MediaAppUiBrowserTest : public SandboxedWebUiAppTestBase {
  public:
   MediaAppUiBrowserTest();
   ~MediaAppUiBrowserTest() override;
 
+  MediaAppUiBrowserTest(const MediaAppUiBrowserTest&) = delete;
+  MediaAppUiBrowserTest& operator=(const MediaAppUiBrowserTest&) = delete;
+
   // Returns the contents of the JavaScript library used to help test the
-  // MediaApp guest frame.
+  // sandboxed frame.
   static std::string AppJsTestLibrary();
-
-  // MojoWebUIBrowserTest:
-  void SetUpOnMainThread() override;
-
- private:
-  class TestCodeInjector;
-  std::unique_ptr<TestCodeInjector> injector_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaAppUiBrowserTest);
 };
 
 #endif  // CHROMEOS_COMPONENTS_MEDIA_APP_UI_TEST_MEDIA_APP_UI_BROWSERTEST_H_

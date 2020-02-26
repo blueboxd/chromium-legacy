@@ -4,17 +4,22 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.clearText;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.withChild;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -22,6 +27,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -32,6 +38,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
 import android.widget.RadioButton;
 
@@ -59,6 +66,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 
 /**
@@ -391,7 +399,90 @@ public class AutofillAssistantPersonalDataManagerTest {
         assertThat(getElementValue("email", getWebContents()), is("janedoe@google.com"));
     }
 
-    // TODO(b/143265578): Add test where credit card is manually entered.
+    /**
+     * Add a credit card with Autofill Assistant UI and fill it into the form.
+     */
+    @Test
+    @MediumTest
+    public void testCreateAndEnterCard() throws Exception {
+        // Add a profile for easier address selection.
+        mHelper.addDummyProfile("Adam West", "adamwest@google.com");
+
+        // The Current year is the default selection for expiration year of the credit card.
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setUseCard(org.chromium.chrome.browser.autofill_assistant.proto
+                                            .UseCreditCardProto.newBuilder()
+                                            .setFormFieldElement(
+                                                    ElementReferenceProto.newBuilder().addSelectors(
+                                                            "#card_number")))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+        onView(allOf(withId(R.id.section_title_add_button_label), withText("Add card")))
+                .perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Card number*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Card number*")).perform(typeText("4111111111111111"));
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name on card*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Name on card*")).perform(typeText("John Doe"));
+        Espresso.closeSoftKeyboard(); // Close keyboard, not to hide the Spinners.
+        onView(allOf(withId(org.chromium.chrome.R.id.spinner),
+                       withChild(withText(String.valueOf(year)))))
+                .perform(click());
+        onData(anything())
+                .atPosition(2 /* select 2 years in the future, 0 is the current year */)
+                .inRoot(withDecorView(withClassName(containsString("Popup"))))
+                .perform(click());
+        onView(allOf(withId(org.chromium.chrome.R.id.spinner), withChild(withText("Select"))))
+                .perform(click());
+        onData(anything())
+                .atPosition(1 /* address of Adam, 0 is SELECT (empty) */)
+                .inRoot(withDecorView(withClassName(containsString("Popup"))))
+                .perform(click());
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button))
+                .perform(scrollTo(), click());
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                allOf(withText(containsString("1111")), isDisplayed()));
+        onView(withContentDescription("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withId(R.id.card_unmask_input), isCompletelyDisplayed());
+        onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
+        onView(withId(R.id.positive_button)).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        assertThat(getElementValue("name", getWebContents()), is("John Doe"));
+        assertThat(getElementValue("card_number", getWebContents()), is("4111111111111111"));
+        assertThat(getElementValue("cv2_number", getWebContents()), is("123"));
+        assertThat(getElementValue("exp_month", getWebContents()), is("01"));
+        assertThat(getElementValue("exp_year", getWebContents()), is(String.valueOf(year + 2)));
+    }
 
     /**
      * Catch the insert of a credit card added outside of the Autofill Assistant, e.g. with the

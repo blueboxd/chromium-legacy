@@ -282,6 +282,10 @@ void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
   style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 }
 
+bool TextFieldInputType::TypeShouldForceLegacyLayout() const {
+  return true;
+}
+
 LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
                                                      LegacyLayout) const {
   return new LayoutTextControlSingleLine(&GetElement());

@@ -13,26 +13,21 @@
 
 namespace network {
 
-// This corresponds to network::mojom::CrossOriginEmbedderPolicyWithReporting.
+// This corresponds to network::mojom::CrossOriginEmbedderPolicy.
 // See the comments there.
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    CrossOriginEmbedderPolicyWithReporting final {
-  CrossOriginEmbedderPolicyWithReporting();
-  ~CrossOriginEmbedderPolicyWithReporting();
-  CrossOriginEmbedderPolicyWithReporting(
-      const CrossOriginEmbedderPolicyWithReporting&);
-  CrossOriginEmbedderPolicyWithReporting(
-      CrossOriginEmbedderPolicyWithReporting&&);
-  CrossOriginEmbedderPolicyWithReporting& operator=(
-      const CrossOriginEmbedderPolicyWithReporting&);
-  CrossOriginEmbedderPolicyWithReporting& operator=(
-      CrossOriginEmbedderPolicyWithReporting&&);
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CrossOriginEmbedderPolicy final {
+  CrossOriginEmbedderPolicy();
+  ~CrossOriginEmbedderPolicy();
+  CrossOriginEmbedderPolicy(const CrossOriginEmbedderPolicy&);
+  CrossOriginEmbedderPolicy(CrossOriginEmbedderPolicy&&);
+  CrossOriginEmbedderPolicy& operator=(const CrossOriginEmbedderPolicy&);
+  CrossOriginEmbedderPolicy& operator=(CrossOriginEmbedderPolicy&&);
 
-  mojom::CrossOriginEmbedderPolicy value =
-      mojom::CrossOriginEmbedderPolicy::kNone;
+  mojom::CrossOriginEmbedderPolicyValue value =
+      mojom::CrossOriginEmbedderPolicyValue::kNone;
   base::Optional<std::string> reporting_endpoint;
-  mojom::CrossOriginEmbedderPolicy report_only_value =
-      mojom::CrossOriginEmbedderPolicy::kNone;
+  mojom::CrossOriginEmbedderPolicyValue report_only_value =
+      mojom::CrossOriginEmbedderPolicyValue::kNone;
   base::Optional<std::string> report_only_reporting_endpoint;
 };
 

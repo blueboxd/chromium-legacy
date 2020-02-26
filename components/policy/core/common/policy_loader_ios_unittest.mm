@@ -24,6 +24,10 @@
 #include "components/policy/core/common/policy_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace policy {
 
 namespace {
@@ -129,9 +133,7 @@ void TestHarness::InstallStringListPolicy(const std::string& policy_name,
   NSString* key = base::SysUTF8ToNSString(policy_name);
   base::ScopedCFTypeRef<CFPropertyListRef> value(
       ValueToProperty(*policy_value));
-  AddPolicies(@{
-      key: static_cast<NSArray*>(value.get())
-  });
+  AddPolicies(@{key : (__bridge NSArray*)(value.get())});
 }
 
 void TestHarness::InstallDictionaryPolicy(
@@ -140,9 +142,7 @@ void TestHarness::InstallDictionaryPolicy(
   NSString* key = base::SysUTF8ToNSString(policy_name);
   base::ScopedCFTypeRef<CFPropertyListRef> value(
       ValueToProperty(*policy_value));
-  AddPolicies(@{
-      key: static_cast<NSDictionary*>(value.get())
-  });
+  AddPolicies(@{key : (__bridge NSDictionary*)(value.get())});
 }
 
 // static
@@ -165,8 +165,7 @@ void TestHarness::AddPolicies(NSDictionary* policy) {
 void TestHarness::AddChromePolicy(NSDictionary* policy) {
   NSString* key = @"ChromePolicy";
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  base::scoped_nsobject<NSMutableDictionary> chromePolicy(
-      [[NSMutableDictionary alloc] init]);
+  NSMutableDictionary* chromePolicy = [[NSMutableDictionary alloc] init];
 
   NSDictionary* previous = [defaults dictionaryForKey:key];
   if (previous)
@@ -185,15 +184,14 @@ void TestHarness::AddEncodedChromePolicy(NSDictionary* policy) {
   NSString* key = @"EncodedChromePolicy";
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
 
-  base::scoped_nsobject<NSMutableDictionary> chromePolicy(
-      [[NSMutableDictionary alloc] init]);
+  NSMutableDictionary* chromePolicy = [[NSMutableDictionary alloc] init];
 
   NSString* previous = [defaults stringForKey:key];
   if (previous) {
-    base::scoped_nsobject<NSData> data(
-        [[NSData alloc] initWithBase64EncodedString:previous options:0]);
+    NSData* data = [[NSData alloc] initWithBase64EncodedString:previous
+                                                       options:0];
     NSDictionary* properties = [NSPropertyListSerialization
-        propertyListWithData:data.get()
+        propertyListWithData:data
                      options:NSPropertyListImmutable
                       format:NULL
                        error:NULL];

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
@@ -40,16 +38,9 @@ static std::string& GetFakeLicenseKey() {
 // For PluginVm to be allowed:
 // * Profile should be eligible.
 // * PluginVm feature should be enabled.
-// If device is not enterprise enrolled:
-//     * Device should be in a dev mode.
-// If device is enterprise enrolled:
-//     * User should be affiliated.
-//     * All necessary policies should be set (PluginVmAllowed and
-//       PluginVmLicenseKey).
-//
-// TODO(okalitova, aoldemeier): PluginVm should be disabled in case of
-// non-managed devices once it is launched. Currently this conditions are used
-// for making manual tests easier.
+// * Device should be enterprise enrolled:
+//   * User should be affiliated.
+//   * PluginVmAllowed and PluginVmLicenseKey policies should be set.
 bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that the profile is eligible.
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
@@ -68,16 +59,9 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
   if (FakeLicenseKeyIsSet())
     return true;
 
-  // TODO(okalitova, aoldemeier): Remove once PluginVm is ready to be launched.
-  // Check for alternative condition for manual testing, i.e. the device is in
-  // developer mode and the device is not enterprise-enrolled.
-  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kSystemDevMode)) {
-      return true;
-    }
+  // Check that the device is enterprise enrolled.
+  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged())
     return false;
-  }
 
   // Check that the user is affiliated.
   const user_manager::User* const user =

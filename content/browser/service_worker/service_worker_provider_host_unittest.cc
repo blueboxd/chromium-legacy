@@ -205,7 +205,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     // process right before navigation commit.
     container_host->OnBeginNavigationCommit(
         helper_->mock_render_process_id(), 1 /* route_id */,
-        network::mojom::CrossOriginEmbedderPolicy::kNone);
+        network::CrossOriginEmbedderPolicy());
   }
 
   blink::mojom::ServiceWorkerErrorType Register(
@@ -998,7 +998,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
                                url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientContainerHost(container_host.get()));
     container_host->CompleteWebWorkerPreparation(
-        network::mojom::CrossOriginEmbedderPolicy::kNone);
+        network::CrossOriginEmbedderPolicy());
     EXPECT_TRUE(CanFindClientContainerHost(container_host.get()));
   }
 
@@ -1085,7 +1085,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
                              url::Origin::Create(url));
   container_host->CompleteWebWorkerPreparation(
-      network::mojom::CrossOriginEmbedderPolicy::kNone);
+      network::CrossOriginEmbedderPolicy());
 
   EXPECT_TRUE(container_host->is_response_committed());
   EXPECT_TRUE(container_host->is_execution_ready());

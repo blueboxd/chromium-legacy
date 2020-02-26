@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
-#include "fuchsia/engine/browser/web_engine_cdm_service.h"
+#include "fuchsia/engine/browser/media_resource_provider_service.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 
 class WebEngineBrowserMainParts;
@@ -67,9 +67,9 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   // Owned by content::BrowserMainLoop.
   WebEngineBrowserMainParts* main_parts_;
 
-  WebEngineCdmService cdm_service_;
+  MediaResourceProviderService media_resource_provider_service_;
 
-  bool allow_insecure_content_;
+  const bool allow_insecure_content_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };

@@ -13,7 +13,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/time_source.h"
-#include "media/fuchsia/mojom/fuchsia_audio_consumer_provider.mojom.h"
+#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -29,8 +29,8 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
  public:
   FuchsiaAudioRenderer(
       MediaLog* media_log,
-      mojo::PendingRemote<media::mojom::FuchsiaAudioConsumerProvider>
-          audio_consumer_provider);
+      mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
+          media_resource_provider);
   ~FuchsiaAudioRenderer() final;
 
   // AudioRenderer implementation.

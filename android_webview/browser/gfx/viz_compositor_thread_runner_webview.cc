@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 
 namespace android_webview {
@@ -58,10 +59,15 @@ VizCompositorThreadRunnerWebView::VizCompositorThreadRunnerWebView()
 void VizCompositorThreadRunnerWebView::InitFrameSinkManagerOnViz() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
 
-  // The SharedBitmapManager is null as we do not support or use software
-  // compositing on Android.
+  // Android doesn't support software compositing, but in some cases
+  // unaccelerated canvas can use SharedBitmaps as resource so we create
+  // SharedBitmapManager anyway.
+  // TODO(1056184): Stop using SharedBitmapManager after fixing fallback to
+  // SharedBitmap.
+  server_shared_bitmap_manager_ =
+      std::make_unique<viz::ServerSharedBitmapManager>();
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
-      /*shared_bitmap_manager=*/nullptr);
+      server_shared_bitmap_manager_.get());
 }
 
 viz::FrameSinkManagerImpl*

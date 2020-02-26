@@ -89,6 +89,24 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
     Chrome can help keep you safe from data breaches, bad extensions, and more
   </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_OFFLINE" desc="This text points out that the password check cannot run due to not having interent connection.">
+    Chrome can't check your passwords. Try checking your internet connection.
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_NO_PASSWORDS" desc="This text points out that password check cannot run due to the user not having saved passwords.">
+    No saved passwords. Chrome can check your passwords when you save them in your Google Account.
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_SIGNED_OUT" desc="This text points out that the password check can only run when the user is signed in.">
+    Chrome can check your passwords when you sign in with your Google Account
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_QUOTA_LIMIT" desc="This text points out that the passwords check cannot run and that the user should try again tomorrow.">
+    Chrome can't check your passwords. Try again tomorrow.
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_TOO_MANY_PASSWORDS" desc="This text points out that the password check cannot run due to the user having too many saved passwords.">
+    Chrome can't check your passwords because there are too many
+  </message>
+  <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_ERROR" desc="This text points out that the passwords check encountered an unknown error.">
+    Chrome can't check your passwords
+  </message>
 
   <!-- People Page -->
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITH_COUNTS_SINGULAR" desc="Warning message displayed in the Sign out of Chrome dialog that indicates profile browsing data will be removed from the device.">

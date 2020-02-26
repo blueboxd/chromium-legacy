@@ -1332,6 +1332,9 @@ void Animation::updatePlaybackRate(double playback_rate,
       }
       ApplyPendingPlaybackRate();
       UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+      SetCompositorPending(false);
+      SetOutdated();
+      NotifyProbe();
       break;
     }
 
@@ -1451,6 +1454,8 @@ void Animation::setPlaybackRate(double playback_rate,
   }
 
   SetCompositorPending(false);
+  SetOutdated();
+  NotifyProbe();
 }
 
 void Animation::ClearOutdated() {

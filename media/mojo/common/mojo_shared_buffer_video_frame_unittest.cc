@@ -165,9 +165,9 @@ TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
 
   // Set the destruction callback.
   bool callback_called = false;
-  frame->SetMojoSharedBufferDoneCB(base::Bind(&CompareDestructionCallbackValues,
-                                              original_handle, requested_size,
-                                              &callback_called));
+  frame->SetMojoSharedBufferDoneCB(
+      base::BindOnce(&CompareDestructionCallbackValues, original_handle,
+                     requested_size, &callback_called));
   EXPECT_FALSE(callback_called);
 
   // Force destruction of |frame|.

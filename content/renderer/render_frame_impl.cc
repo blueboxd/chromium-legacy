@@ -301,6 +301,7 @@ namespace content {
 namespace {
 
 const int kExtraCharsBeforeAndAfterSelection = 100;
+const size_t kMaxURLLogChars = 1024;
 
 const PreviewsState kDisabledPreviewsBits =
     PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM;
@@ -318,6 +319,12 @@ int64_t ExtractPostId(const WebHistoryItem& item) {
     return -1;
 
   return item.HttpBody().Identifier();
+}
+
+std::string TrimURL(const std::string& url) {
+  if (url.length() <= kMaxURLLogChars)
+    return url;
+  return url.substr(0, kMaxURLLogChars - 3) + "...";
 }
 
 // Calculates transition type based on navigation parameters. Used
@@ -4216,6 +4223,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     bool should_reset_browser_interface_broker) {
+  DLOG(INFO) << "Committed provisional load: "
+             << TrimURL(GetLoadingUrl().possibly_invalid_spec());
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());

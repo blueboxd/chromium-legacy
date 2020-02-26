@@ -21,7 +21,7 @@ URLFetcherBlockAdapter::URLFetcherBlockAdapter(
     web::URLFetcherBlockAdapterCompletion completion_handler)
     : url_(url),
       url_loader_factory_(std::move(url_loader_factory)),
-      completion_handler_([completion_handler copy]) {}
+      completion_handler_(completion_handler) {}
 
 URLFetcherBlockAdapter::~URLFetcherBlockAdapter() {
 }
@@ -52,7 +52,7 @@ void URLFetcherBlockAdapter::OnURLLoadComplete(
 
   NSData* data =
       [NSData dataWithBytes:response.c_str() length:response.length()];
-  completion_handler_.get()(data, this);
+  completion_handler_(data, this);
 }
 
 }  // namespace web

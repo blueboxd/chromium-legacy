@@ -48,7 +48,8 @@ class MakeNamesWriter(json5_generator.Writer):
         'ImplementedAs': {},
         # This is not used in make_names,py, but used in make_event_factory.py.
         'interfaceHeaderDir': {},
-        'RuntimeEnabled': {},  # What should we do for runtime-enabled features?
+        # What should we do for runtime-enabled features?
+        'RuntimeEnabled': {},
         'Symbol': {},
     }
     default_metadata = {
@@ -100,11 +101,13 @@ class MakeNamesWriter(json5_generator.Writer):
             'this_include_path': qualified_header,
         }
 
-    @template_expander.use_jinja("templates/make_names.h.tmpl", filters=filters)
+    @template_expander.use_jinja(
+        "templates/make_names.h.tmpl", filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("templates/make_names.cc.tmpl", filters=filters)
+    @template_expander.use_jinja(
+        "templates/make_names.cc.tmpl", filters=filters)
     def generate_implementation(self):
         return self._template_context
 

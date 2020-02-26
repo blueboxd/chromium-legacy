@@ -5,7 +5,20 @@
 import("//build/config/android/rules.gni")
 
 static_library("android") {
-  sources = [ "cookie_controls_status.h" ]
+  sources = [
+    "certificate_chain_helper.cc",
+    "certificate_viewer_android.cc",
+    "cookie_controls_status.h",
+  ]
+  deps = [
+    "//base",
+    "//components/page_info/android:jni_headers",
+    "//components/strings:components_strings_grit",
+    "//content/public/browser:browser",
+    "//net:net",
+    "//third_party/boringssl",
+    "//ui/base:base",
+  ]
 }
 
 java_cpp_enum("cookie_controls_status_javagen") {
@@ -17,21 +30,30 @@ android_resources("java_resources") {
     "java/res/layout/cookie_controls_view.xml",
     "java/res/layout/page_info.xml",
     "java/res/layout/page_info_permission_row.xml",
+    "java/res/values/dimens.xml",
     "java/res/values/ids.xml",
   ]
   custom_package = "org.chromium.components.page_info"
-  deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+  deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//ui/android:ui_java_resources",
+  ]
 }
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
+    "java/src/org/chromium/components/page_info/CertificateViewer.java",
     "java/src/org/chromium/components/page_info/CookieControlsView.java",
+    "java/src/org/chromium/components/page_info/PageInfoDialog.java",
     "java/src/org/chromium/components/page_info/PageInfoView.java",
+    "java/src/org/chromium/components/page_info/SystemSettingsActivityRequiredListener.java",
   ]
 
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -39,4 +61,12 @@ android_library("java") {
   ]
 
   srcjar_deps = [ ":cookie_controls_status_javagen" ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "java/src/org/chromium/components/page_info/CertificateChainHelper.java",
+    "java/src/org/chromium/components/page_info/CertificateViewer.java",
+  ]
 }

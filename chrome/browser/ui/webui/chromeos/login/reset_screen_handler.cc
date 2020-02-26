@@ -119,9 +119,13 @@ void ResetScreenHandler::SetIsRollbackAvailable(bool value) {
   CallJS("login.ResetScreen.setIsRollbackAvailable", value);
 }
 
-void ResetScreenHandler::SetIsRollbackChecked(bool value) {
-  is_rollback_checked_ = value;
-  CallJS("login.ResetScreen.setIsRollbackChecked", value);
+// Only serve the request if the confirmation dialog isn't being shown.
+void ResetScreenHandler::SetIsRollbackRequested(bool value) {
+  if (is_showing_confirmation_dialog_)
+    return;
+
+  is_rollback_requested_ = value;
+  CallJS("login.ResetScreen.setIsRollbackRequested", value);
 }
 
 void ResetScreenHandler::SetIsTpmFirmwareUpdateAvailable(bool value) {
@@ -143,12 +147,13 @@ void ResetScreenHandler::SetTpmFirmwareUpdateMode(
   CallJS("login.ResetScreen.setTpmFirmwareUpdateMode", static_cast<int>(value));
 }
 
-void ResetScreenHandler::SetIsConfirmational(bool value) {
-  CallJS("login.ResetScreen.setIsConfirmational", value);
+void ResetScreenHandler::SetShouldShowConfirmationDialog(bool value) {
+  is_showing_confirmation_dialog_ = value;
+  CallJS("login.ResetScreen.setShouldShowConfirmationDialog", value);
 }
 
-void ResetScreenHandler::SetIsGoogleBrandedBuild(bool value) {
-  CallJS("login.ResetScreen.setIsGoogleBrandedBuild", value);
+void ResetScreenHandler::SetConfirmationDialogClosed() {
+  is_showing_confirmation_dialog_ = false;
 }
 
 void ResetScreenHandler::SetScreenState(State value) {
@@ -168,8 +173,8 @@ bool ResetScreenHandler::GetIsRollbackAvailable() {
   return is_rollback_available_;
 }
 
-bool ResetScreenHandler::GetIsRollbackChecked() {
-  return is_rollback_checked_;
+bool ResetScreenHandler::GetIsRollbackRequested() {
+  return is_rollback_requested_;
 }
 
 bool ResetScreenHandler::GetIsTpmFirmwareUpdateChecked() {

@@ -172,7 +172,7 @@ class CONTENT_EXPORT JankMonitor
 
   // The timer that runs on the monitor sequence to perform periodic check of
   // janks.
-  base::RepeatingTimer timer_;
+  std::unique_ptr<base::RepeatingTimer> timer_;
 
   // |timer_running_| is equivalent to timer_.IsRunning() except that it is
   // thread-safe. It is checked in WillRunTaskOrEvent() (from UI or IO thread)

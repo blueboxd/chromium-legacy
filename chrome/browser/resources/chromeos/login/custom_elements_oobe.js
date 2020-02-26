@@ -37,7 +37,6 @@
 // <include src="oobe_terms_of_service.js">
 // <include src="oobe_hid_detection.js">
 // <include src="oobe_reset.js">
-// <include src="oobe_reset_confirmation_overlay.js">
 // <include src="oobe_update.js">
 // <include src="oobe_i18n_dropdown.js">
 // <include src="oobe_welcome_dialog.js">

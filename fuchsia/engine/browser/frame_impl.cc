@@ -253,12 +253,6 @@ FrameImpl::~FrameImpl() {
   map.erase(it);
 }
 
-void FrameImpl::BindAudioConsumerProvider(
-    mojo::PendingReceiver<media::mojom::FuchsiaAudioConsumerProvider>
-        receiver) {
-  audio_consumer_provider_service_.Bind(std::move(receiver));
-}
-
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
   return zx::unowned_channel(binding_.channel());
 }
@@ -762,7 +756,7 @@ void FrameImpl::SetWindowTreeHost(
 }
 
 void FrameImpl::SetMediaSessionId(uint64_t session_id) {
-  audio_consumer_provider_service_.set_session_id(session_id);
+  media_session_id_ = session_id;
 }
 
 void FrameImpl::ForceContentDimensions(

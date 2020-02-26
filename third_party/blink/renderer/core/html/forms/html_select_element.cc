@@ -356,6 +356,10 @@ bool HTMLSelectElement::CanSelectAll() const {
   return !UsesMenuList();
 }
 
+bool HTMLSelectElement::TypeShouldForceLegacyLayout() const {
+  return true;
+}
+
 LayoutObject* HTMLSelectElement::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy_layout) {

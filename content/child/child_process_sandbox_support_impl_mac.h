@@ -28,7 +28,8 @@ class WebSandboxSupportMac : public blink::WebSandboxSupport {
   bool LoadFont(CTFontRef font,
                 base::ScopedCFTypeRef<CTFontDescriptorRef>* out_descriptor,
                 uint32_t* font_id) override;
-  SkColor GetSystemColor(blink::MacSystemColorID color_id) override;
+  SkColor GetSystemColor(blink::MacSystemColorID color_id,
+                         blink::WebColorScheme color_scheme) override;
 
  private:
   void OnGotSystemColors(base::ReadOnlySharedMemoryRegion region);

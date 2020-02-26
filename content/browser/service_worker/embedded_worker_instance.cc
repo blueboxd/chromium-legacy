@@ -117,12 +117,14 @@ using SetupProcessCallback = base::OnceCallback<void(
 //
 // This also sets up two URLLoaderFactoryBundles, one for
 // ServiceWorkerScriptLoaderFactory and the other is for passing to the
-// renderer. These bundles include factories for non-network URLs like
-// chrome-extension:// as needed.
+// renderer. |cross_origin_embedder_policy| is respected to make these bundles.
+// These bundles include factories for non-network URLs like chrome-extension://
+// as needed.
 void SetupOnUIThread(
     int embedded_worker_id,
     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     bool can_use_existing_process,
+    network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy,
     blink::mojom::EmbeddedWorkerStartParamsPtr params,
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     ServiceWorkerContextCore* context,
@@ -193,7 +195,7 @@ void SetupOnUIThread(
           blink::features::kEagerCacheStorageSetupForServiceWorkers)) {
     // TODO(https://crbug.com/1031542): Add support enforcing CORP in
     // cache.match() for ServiceWorker.
-    rph->BindCacheStorage(network::mojom::CrossOriginEmbedderPolicy::kNone,
+    rph->BindCacheStorage(network::CrossOriginEmbedderPolicy(),
                           url::Origin::Create(params->script_url),
                           cache_storage.InitWithNewPipeAndPassReceiver());
   }
@@ -229,7 +231,7 @@ void SetupOnUIThread(
   if (!params->is_installed) {
     factory_bundle_for_new_scripts =
         EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-            rph, routing_id, origin,
+            rph, routing_id, origin, cross_origin_embedder_policy,
             ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   }
 
@@ -239,7 +241,7 @@ void SetupOnUIThread(
   // service worker terminates itself when the connection breaks, so a new
   // instance can be started.
   factory_bundle_for_renderer = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, routing_id, origin,
+      rph, routing_id, origin, cross_origin_embedder_policy,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   // TODO(crbug.com/862854): Support changes to
@@ -527,6 +529,8 @@ class EmbeddedWorkerInstance::StartTask {
   }
 
   void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,
+             network::mojom::CrossOriginEmbedderPolicyValue
+                 cross_origin_embedder_policy,
              StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(instance_->context_);
@@ -555,8 +559,9 @@ class EmbeddedWorkerInstance::StartTask {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       SetupOnUIThread(
           instance_->embedded_worker_id(), process_manager,
-          can_use_existing_process, std::move(params), std::move(receiver_),
-          context.get(), context, base::nullopt,
+          can_use_existing_process, std::move(cross_origin_embedder_policy),
+          std::move(params), std::move(receiver_), context.get(), context,
+          base::nullopt,
           base::BindOnce(&StartTask::OnSetupCompleted,
                          weak_factory_.GetWeakPtr(), process_manager));
     } else {
@@ -564,7 +569,8 @@ class EmbeddedWorkerInstance::StartTask {
           FROM_HERE,
           base::BindOnce(
               &SetupOnUIThread, instance_->embedded_worker_id(),
-              process_manager, can_use_existing_process, std::move(params),
+              process_manager, can_use_existing_process,
+              std::move(cross_origin_embedder_policy), std::move(params),
               std::move(receiver_), context.get(), context,
               base::make_optional<base::Time>(base::Time::Now()),
               base::BindOnce(&StartTask::OnSetupCompleted,
@@ -730,7 +736,9 @@ void EmbeddedWorkerInstance::Start(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
   inflight_start_task_.reset(
       new StartTask(this, params->script_url, std::move(receiver), start_time));
-  inflight_start_task_->Start(std::move(params), std::move(callback));
+  inflight_start_task_->Start(std::move(params),
+                              owner_version_->cross_origin_embedder_policy(),
+                              std::move(callback));
 }
 
 void EmbeddedWorkerInstance::Stop() {
@@ -1029,6 +1037,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
     RenderProcessHost* rph,
     int routing_id,
     const url::Origin& origin,
+    network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy,
     ContentBrowserClient::URLLoaderFactoryType factory_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle =
@@ -1056,7 +1065,12 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
       rph, routing_id, &default_factory_receiver);
 
-  // TODO(yhirano): Support COEP.
+  factory_params->client_security_state =
+      network::mojom::ClientSecurityState::New();
+  // TODO(https://crbug.com/1056122): Plumb other fields to support report only
+  // mode.
+  factory_params->client_security_state->cross_origin_embedder_policy.value =
+      std::move(cross_origin_embedder_policy);
 
   rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
                               std::move(factory_params));

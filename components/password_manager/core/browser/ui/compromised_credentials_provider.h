@@ -13,11 +13,10 @@
 #include "components/password_manager/core/browser/compromised_credentials_consumer.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "url/gurl.h"
 
 namespace password_manager {
-
-class SavedPasswordsPresenter;
 
 // Simple struct that augments the CompromisedCredentials with a password.
 struct CredentialWithPassword : CompromisedCredentials {
@@ -40,7 +39,8 @@ std::ostream& operator<<(std::ostream& out,
 // notified about changes to the list.
 class CompromisedCredentialsProvider
     : public PasswordStore::DatabaseCompromisedCredentialsObserver,
-      public CompromisedCredentialsConsumer {
+      public CompromisedCredentialsConsumer,
+      public SavedPasswordsPresenter::Observer {
  public:
 
   using CredentialsView = base::span<const CredentialWithPassword>;
@@ -76,7 +76,12 @@ class CompromisedCredentialsProvider
   void OnGetCompromisedCredentials(
       std::vector<CompromisedCredentials> compromised_credentials) override;
 
-  // Notify observers about changes to |compromised_credentials_|.
+  // SavedPasswordsPresenter::Observer:
+  void OnSavedPasswordsChanged(
+      SavedPasswordsPresenter::SavedPasswordsView passwords) override;
+
+  // Notify observers about changes to
+  // |compromised_credentials_with_passwords_|.
   void NotifyCompromisedCredentialsChanged();
 
   // The password store containing the compromised credentials.
@@ -87,7 +92,10 @@ class CompromisedCredentialsProvider
   SavedPasswordsPresenter* presenter_ = nullptr;
 
   // Cache of the most recently obtained compromised credentials.
-  std::vector<CredentialWithPassword> compromised_credentials_;
+  std::vector<CompromisedCredentials> compromised_credentials_;
+
+  // Cache of the most recently obtained compromised credentials with passwords.
+  std::vector<CredentialWithPassword> compromised_credentials_with_passwords_;
 
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };

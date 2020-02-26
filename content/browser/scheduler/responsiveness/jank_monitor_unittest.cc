@@ -375,8 +375,10 @@ class TestJankMonitorShutdownRace : public JankMonitor {
   void DestroyOnMonitorThread() override {
     JankMonitor::DestroyOnMonitorThread();
 
-    // Posts a task to the UI thread. If MetricSource is still active, this
-    // will restart the timer and fail the test.
+    // Posts a task to the UI thread. Note that we run concurrently with the
+    // destruction of MetricSource. Even if MetricSource is still active and
+    // attempts to start the timer, the attempt should be a no-op since the
+    // the timer is already destroyed. We should still expect timer not running.
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(base::DoNothing::Once()));
 
@@ -394,7 +396,8 @@ class TestJankMonitorShutdownRace : public JankMonitor {
   base::WaitableEvent* shutdown_on_ui_thread_;
 };
 
-// Test that shutdown race with the monitor timer doesn't happen.
+// Test that completion of shutdown shouldn't leave the timer in the running
+// state.
 TEST(JankMonitorShutdownTest, ShutdownRace_TimerRestarted) {
   content::BrowserTaskEnvironment task_environment;
 
@@ -419,8 +422,9 @@ TEST(JankMonitorShutdownTest, ShutdownRace_TimerRestarted) {
     shutdown_on_ui_thread.Wait();
   task_environment.RunUntilIdle();
 
-  // The monitor thread should be shut down with MetricSource destroyed, i.e.
-  // the monitor timer shouldn't be restarted.
+  // After shutdown of both MetricSource and the monitor timer, we should expect
+  // that the timer isn't running even if a task runs on the UI thread during
+  // shutdown.
   EXPECT_FALSE(jank_monitor->timer_running());
 }
 
@@ -480,8 +484,8 @@ TEST(JankMonitorShutdownTest, ShutdownRace_TimerFired) {
   jank_monitor->Destroy();
   task_environment.RunUntilIdle();
 
-  // The timer fires, but we shouldn't crash.
-  EXPECT_TRUE(jank_monitor->monitor_timer_fired());
+  // The monitor timer isn't expected to fire.
+  EXPECT_FALSE(jank_monitor->monitor_timer_fired());
 }
 
 #undef VALIDATE_TEST_OBSERVER_CALLS

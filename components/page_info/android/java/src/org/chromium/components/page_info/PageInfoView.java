@@ -358,7 +358,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         ImageView permissionIcon = permissionRow.findViewById(R.id.page_info_permission_icon);
         permissionIcon.setImageDrawable(UiUtils.getTintedDrawable(getContext(), params.iconResource,
                 params.iconTintColorResource != 0 ? params.iconTintColorResource
-                                                  : org.chromium.ui.R.color.default_icon_color));
+                                                  : R.color.default_icon_color));
 
         if (params.warningTextResource != 0) {
             TextView permissionUnavailable =

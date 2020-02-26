@@ -53,8 +53,7 @@ TEST_F(WebGPUFenceTest, InitialValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
@@ -76,8 +75,7 @@ TEST_F(WebGPUFenceTest, GetCompletedValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
@@ -95,8 +93,7 @@ TEST_F(WebGPUFenceTest, OnCompletion) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
@@ -117,8 +114,7 @@ TEST_F(WebGPUFenceTest, SignalManyTimes) {
     LOG(ERROR) << "Test skipped";
     return;
   }
-  constexpr uint32_t kAdapterID = 0;
-  webgpu()->RequestDeviceAsync(kAdapterID, nullptr,
+  webgpu()->RequestDeviceAsync(kAdapterServiceID, nullptr,
                                base::BindOnce(&OnRequestDeviceCallback));
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();

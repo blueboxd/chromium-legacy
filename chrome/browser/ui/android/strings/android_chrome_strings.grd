@@ -500,6 +500,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAVED_PASSWORDS_NONE_TEXT" desc="Text when there are no saved passwords/exceptions.">
         Saved passwords will appear here.
       </message>
+      <message name="IDS_PASSWORD_NO_RESULT" desc="Text when a password search returned no results.">
+        Can’t find that password. Check your spelling and try again.
+      </message>
       <message name="IDS_PASSWORD_ENTRY_VIEWER_TITLE" desc='Title of the overview screen for a saved password.'>
         Saved password
       </message>

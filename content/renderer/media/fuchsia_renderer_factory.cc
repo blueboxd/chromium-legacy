@@ -52,13 +52,13 @@ std::unique_ptr<media::Renderer> FuchsiaRendererFactory::CreateRenderer(
     media::VideoRendererSink* video_renderer_sink,
     const media::RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
-  mojo::PendingRemote<media::mojom::FuchsiaAudioConsumerProvider>
-      audio_consumer_provider;
+  mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
+      media_resource_provider;
   interface_broker_->GetInterface(
-      audio_consumer_provider.InitWithNewPipeAndPassReceiver());
+      media_resource_provider.InitWithNewPipeAndPassReceiver());
 
   auto audio_renderer = std::make_unique<media::FuchsiaAudioRenderer>(
-      media_log_, std::move(audio_consumer_provider));
+      media_log_, std::move(media_resource_provider));
 
   media::GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)

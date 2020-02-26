@@ -87,6 +87,10 @@ VideoCodecProfile Video::Profile() const {
   return profile_;
 }
 
+VideoPixelFormat Video::PixelFormat() const {
+  return pixel_format_;
+}
+
 uint32_t Video::FrameRate() const {
   return frame_rate_;
 }
@@ -154,16 +158,50 @@ bool Video::LoadMetadata() {
     return false;
   }
 
+  // Find the video's profile, only required for encoded video streams.
+  profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   const base::Value* profile =
       metadata->FindKeyOfType("profile", base::Value::Type::STRING);
-  if (!profile) {
-    LOG(ERROR) << "Key \"profile\" is not found in " << metadata_file_path_;
+  if (profile) {
+    auto converted_profile = ConvertStringtoProfile(profile->GetString());
+    if (!converted_profile) {
+      LOG(ERROR) << profile->GetString() << " is not supported";
+      return false;
+    }
+    profile_ = converted_profile.value();
+
+    auto converted_codec = ConvertProfileToCodec(profile_);
+    if (!converted_codec) {
+      LOG(ERROR) << profile->GetString() << " is not supported";
+      return false;
+    }
+    codec_ = converted_codec.value();
+  }
+
+  // Find the video's pixel format, only required for raw video streams.
+  pixel_format_ = VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
+  const base::Value* pixel_format =
+      metadata->FindKeyOfType("pixel_format", base::Value::Type::STRING);
+  if (pixel_format) {
+    auto converted_pixel_format =
+        ConvertStringtoPixelFormat(pixel_format->GetString());
+    if (!converted_pixel_format) {
+      LOG(ERROR) << pixel_format->GetString() << " is not supported";
+      return false;
+    }
+    pixel_format_ = converted_pixel_format.value();
+  }
+
+  // We need to either know the video's profile (encoded video stream) or pixel
+  // format (raw video stream).
+  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN &&
+      pixel_format_ == VideoPixelFormat::PIXEL_FORMAT_UNKNOWN) {
+    LOG(ERROR) << "No video profile or pixel format found";
     return false;
   }
-  profile_ = ConvertStringtoProfile(profile->GetString());
-  codec_ = ConvertProfileToCodec(profile_);
-  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || codec_ == kUnknownVideoCodec) {
-    LOG(ERROR) << profile->GetString() << " is not supported";
+  if (profile_ != VIDEO_CODEC_PROFILE_UNKNOWN &&
+      pixel_format_ != VideoPixelFormat::PIXEL_FORMAT_UNKNOWN) {
+    LOG(ERROR) << "Both video profile and pixel format are specified";
     return false;
   }
 
@@ -183,14 +221,19 @@ bool Video::LoadMetadata() {
   }
   num_frames_ = static_cast<uint32_t>(num_frames->GetInt());
 
-  const base::Value* num_fragments =
-      metadata->FindKeyOfType("num_fragments", base::Value::Type::INTEGER);
-  if (!num_fragments) {
-    LOG(ERROR) << "Key \"num_fragments\" is not found in "
-               << metadata_file_path_;
-    return false;
+  // Find the number of fragments, only required for H.264 video streams.
+  num_fragments_ = num_frames_;
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
+    const base::Value* num_fragments =
+        metadata->FindKeyOfType("num_fragments", base::Value::Type::INTEGER);
+    if (!num_fragments) {
+      LOG(ERROR) << "Key \"num_fragments\" is required for H.264 video streams "
+                    "but could not be found in "
+                 << metadata_file_path_;
+      return false;
+    }
+    num_fragments_ = static_cast<uint32_t>(num_fragments->GetInt());
   }
-  num_fragments_ = static_cast<uint32_t>(num_fragments->GetInt());
 
   const base::Value* width =
       metadata->FindKeyOfType("width", base::Value::Type::INTEGER);
@@ -256,7 +299,8 @@ base::Optional<base::FilePath> Video::ResolveFilePath(
 }
 
 // static
-VideoCodecProfile Video::ConvertStringtoProfile(const std::string& profile) {
+base::Optional<VideoCodecProfile> Video::ConvertStringtoProfile(
+    const std::string& profile) {
   if (profile == "H264PROFILE_BASELINE") {
     return H264PROFILE_BASELINE;
   } else if (profile == "H264PROFILE_MAIN") {
@@ -271,12 +315,13 @@ VideoCodecProfile Video::ConvertStringtoProfile(const std::string& profile) {
     return VP9PROFILE_PROFILE2;
   } else {
     VLOG(2) << profile << " is not supported";
-    return VIDEO_CODEC_PROFILE_UNKNOWN;
+    return base::nullopt;
   }
 }
 
 // static
-VideoCodec Video::ConvertProfileToCodec(VideoCodecProfile profile) {
+base::Optional<VideoCodec> Video::ConvertProfileToCodec(
+    VideoCodecProfile profile) {
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     return kCodecH264;
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
@@ -285,7 +330,20 @@ VideoCodec Video::ConvertProfileToCodec(VideoCodecProfile profile) {
     return kCodecVP9;
   } else {
     VLOG(2) << GetProfileName(profile) << " is not supported";
-    return kUnknownVideoCodec;
+    return base::nullopt;
+  }
+}
+
+// static
+base::Optional<VideoPixelFormat> Video::ConvertStringtoPixelFormat(
+    const std::string& pixel_format) {
+  if (pixel_format == "I420") {
+    return VideoPixelFormat::PIXEL_FORMAT_I420;
+  } else if (pixel_format == "NV12") {
+    return VideoPixelFormat::PIXEL_FORMAT_NV12;
+  } else {
+    VLOG(2) << pixel_format << " is not supported";
+    return base::nullopt;
   }
 }
 

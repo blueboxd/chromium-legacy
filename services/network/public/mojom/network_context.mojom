@@ -568,8 +568,7 @@ struct URLLoaderFactoryOverride {
 struct ClientSecurityState {
   // https://mikewest.github.io/corpp/#integration-html
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
-  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
-      CrossOriginEmbedderPolicy.kNone;
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy;
 
   // Whether the initiator of the requests is in a web secure context.
   bool is_web_secure_context = false;

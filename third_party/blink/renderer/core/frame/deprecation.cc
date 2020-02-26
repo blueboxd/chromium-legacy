@@ -61,6 +61,7 @@ enum Milestone {
   kM80 = 80,
   kM81 = 81,
   kM82 = 82,
+  kM83 = 83,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -101,6 +102,8 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
       return {2020, 3, 0, 17, 4};
     case kM82:
       return {2020, 4, 0, 28, 4};
+    case kM83:
+      return {2020, 6, 0, 9, 4};
   }
 
   NOTREACHED();
@@ -505,6 +508,17 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "Support for this will be removed in %s. "
                   "Please check with your partner to have this fixed.",
                   MilestoneString(kM81).Ascii().c_str())};
+
+    case WebFeature::kCssStyleSheetReplaceWithImport:
+      return {
+          "CssStyleSheetReplaceWithImport", kM83,
+          String::Format(
+              "Support for calls to CSSStyleSheet.replace() with stylesheet "
+              "text that includes @import has been deprecated, and will be "
+              "removed in %s. See "
+              "https://chromestatus.com/feature/4735925877735424 for more "
+              "details.",
+              MilestoneString(kM83).Ascii().c_str())};
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

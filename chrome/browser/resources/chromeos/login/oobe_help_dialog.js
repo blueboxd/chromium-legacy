@@ -26,12 +26,12 @@ Polymer({
 
   /* Shows the help dialog and changes the focus to the close button. */
   showDialog: function() {
-    this.$['help-dialog'].showModal();
+    this.$.helpDialog.showModal();
     this.$.closeButton.focus();
   },
 
   hideDialog: function() {
-    this.$['help-dialog'].close();
+    this.$.helpDialog.close();
   },
 
 });

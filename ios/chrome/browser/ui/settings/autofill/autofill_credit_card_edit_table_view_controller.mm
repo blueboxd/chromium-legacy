@@ -7,7 +7,6 @@
 #include "base/format_macros.h"
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"

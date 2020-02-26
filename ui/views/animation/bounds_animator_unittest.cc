@@ -58,6 +58,8 @@ class TestView : public View {
   TestView() = default;
 
   void OnDidSchedulePaint(const gfx::Rect& r) override {
+    ++repaint_count_;
+
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else
@@ -66,8 +68,12 @@ class TestView : public View {
 
   const gfx::Rect& dirty_rect() const { return dirty_rect_; }
 
+  void set_repaint_count(int val) { repaint_count_ = val; }
+  int repaint_count() const { return repaint_count_; }
+
  private:
   gfx::Rect dirty_rect_;
+  int repaint_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
@@ -78,22 +84,29 @@ class BoundsAnimatorTest : public testing::Test {
  public:
   BoundsAnimatorTest()
       : task_environment_(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
-        child_(new TestView()),
-        animator_(&parent_) {
+        child_(new TestView()) {
     parent_.AddChildView(child_);
-    animator_.SetAnimationDuration(base::TimeDelta::FromMilliseconds(10));
+    RecreateAnimator(/*use_transforms=*/false);
   }
 
   TestView* parent() { return &parent_; }
   TestView* child() { return child_; }
-  BoundsAnimator* animator() { return &animator_; }
+  BoundsAnimator* animator() { return animator_.get(); }
+
+ protected:
+  void RecreateAnimator(bool use_transforms) {
+    animator_ = std::make_unique<BoundsAnimator>(&parent_, use_transforms);
+    animator_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(10));
+  }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_;
   TestView parent_;
   TestView* child_;  // Owned by |parent_|.
-  BoundsAnimator animator_;
+  std::unique_ptr<BoundsAnimator> animator_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimatorTest);
 };
@@ -186,6 +199,49 @@ TEST_F(BoundsAnimatorTest, StopAnimating) {
   // Stopping should both cancel the delegate and delete it.
   EXPECT_TRUE(OwnedDelegate::GetAndClearDeleted());
   EXPECT_TRUE(OwnedDelegate::GetAndClearCanceled());
+}
+
+// Tests using the transforms option.
+TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewTo) {
+  RecreateAnimator(/*use_transforms=*/true);
+
+  gfx::Rect initial_bounds(0, 0, 10, 10);
+  child()->SetBoundsRect(initial_bounds);
+  gfx::Rect target_bounds(10, 10, 20, 20);
+
+  child()->set_repaint_count(0);
+  animator()->AnimateViewTo(child(), target_bounds);
+  animator()->SetAnimationDelegate(child(),
+                                   std::make_unique<TestAnimationDelegate>());
+
+  // The animator should be animating now.
+  EXPECT_TRUE(animator()->IsAnimating());
+  EXPECT_TRUE(animator()->IsAnimating(child()));
+
+  // Run the message loop; the delegate exits the loop when the animation is
+  // done.
+  base::RunLoop().Run();
+
+  // Make sure the bounds match of the view that was animated match and the
+  // layer is destroyed.
+  EXPECT_EQ(target_bounds, child()->bounds());
+  EXPECT_FALSE(child()->layer());
+
+  // |child| shouldn't be animating anymore.
+  EXPECT_FALSE(animator()->IsAnimating(child()));
+
+  // Schedule a longer animation. The number of repaints should be the same as
+  // with the short animation.
+  const base::TimeDelta long_duration = base::TimeDelta::FromMilliseconds(2000);
+  const int repaint_count = child()->repaint_count();
+  animator()->SetAnimationDuration(long_duration);
+  child()->set_repaint_count(0);
+  animator()->AnimateViewTo(child(), initial_bounds);
+  animator()->SetAnimationDelegate(child(),
+                                   std::make_unique<TestAnimationDelegate>());
+  task_environment_.FastForwardBy(long_duration);
+  base::RunLoop().Run();
+  EXPECT_EQ(repaint_count, child()->repaint_count());
 }
 
 }  // namespace views

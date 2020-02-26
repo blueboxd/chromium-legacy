@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+console.log("Start script - there should be a deprecation message below about replace() and @import.");
+const sheet = new CSSStyleSheet();
+try {
+  sheet.replace('@import "resources/import.css";')
+     .then(() => {console.log("Replace resolved");});
+} catch (e) {
+  console.log("Replace threw exception");
+}
+
+console.log("Finish script");
+</script>

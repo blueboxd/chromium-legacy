@@ -11,7 +11,7 @@
  */
 class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
-    super(['requestPlaintextPassword']);
+    super(['requestPlaintextPassword', 'startBulkPasswordCheck']);
 
     this.actual_ = new PasswordManagerExpectations();
 
@@ -137,5 +137,10 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     assertEquals(
         expected.listening.accountStorageOptInState,
         actual.listening.accountStorageOptInState);
+  }
+
+  /** @override */
+  startBulkPasswordCheck() {
+    this.methodCalled('startBulkPasswordCheck');
   }
 }

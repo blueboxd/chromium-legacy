@@ -15,5 +15,7 @@ interface RTCRtpSender {
     [Measure] readonly attribute RTCDTMFSender? dtmf;
     [Measure, RaisesException] void setStreams(MediaStream... streams);
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
+    [RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedAudioStreams();
+    [RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedVideoStreams();
     // TODO(hbos): Implement the rest of RTCRtpSender, https://crbug.com/700916.
 };

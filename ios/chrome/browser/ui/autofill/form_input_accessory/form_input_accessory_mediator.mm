@@ -6,7 +6,6 @@
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"

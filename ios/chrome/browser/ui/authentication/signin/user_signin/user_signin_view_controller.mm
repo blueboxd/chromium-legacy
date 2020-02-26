@@ -257,8 +257,7 @@ enum AuthenticationButtonType {
 #pragma mark - Events
 
 - (void)onSkipSigninButtonPressed:(id)sender {
-  // TODO(crbug.com/971989): Populate action.
-  NOTIMPLEMENTED();
+  [self.delegate userSigninViewControllerDidTapOnSkipSignin];
 }
 
 - (void)onConfirmationButtonPressed:(id)sender {

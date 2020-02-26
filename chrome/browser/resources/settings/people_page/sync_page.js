@@ -678,7 +678,8 @@ Polymer({
     }
     // </if>
     return this.syncStatus !== undefined &&
-        !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
+        !!this.syncStatus.syncSystemEnabled &&
+        loadTimeData.getBoolean('signinAllowed');
   },
 
   /**

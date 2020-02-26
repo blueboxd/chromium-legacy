@@ -31,19 +31,6 @@ source_set("common") {
   libs = [ "QuartzCore.framework" ]
 }
 
-source_set("common_extension") {
-  sources = [
-    "highlight_button.h",
-    "highlight_button.mm",
-  ]
-
-  libs = [ "UIKit.framework" ]
-
-  public_deps = [ ":timing" ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("timing") {
   sources = [
     "material_timing.h",

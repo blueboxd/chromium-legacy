@@ -16,6 +16,10 @@
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace content {
 
 class ServiceWorkerContextWrapper;
@@ -40,9 +44,9 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
   void OnBeginNavigationCommit(
       int render_process_id,
       int render_frame_id,
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
   void OnBeginWorkerCommit(
-      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();

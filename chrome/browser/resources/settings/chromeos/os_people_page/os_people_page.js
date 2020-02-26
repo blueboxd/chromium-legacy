@@ -355,7 +355,7 @@ Polymer({
    * @private
    */
   showSignin_(syncStatus) {
-    return !!syncStatus.signinAllowed && !syncStatus.signedIn;
+    return loadTimeData.getBoolean('signinAllowed') && !syncStatus.signedIn;
   },
 
   /**

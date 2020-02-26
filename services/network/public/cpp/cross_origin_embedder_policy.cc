@@ -6,18 +6,16 @@
 
 namespace network {
 
-CrossOriginEmbedderPolicyWithReporting::
-    CrossOriginEmbedderPolicyWithReporting() = default;
-CrossOriginEmbedderPolicyWithReporting::CrossOriginEmbedderPolicyWithReporting(
-    const CrossOriginEmbedderPolicyWithReporting& src) = default;
-CrossOriginEmbedderPolicyWithReporting::CrossOriginEmbedderPolicyWithReporting(
-    CrossOriginEmbedderPolicyWithReporting&& src) = default;
-CrossOriginEmbedderPolicyWithReporting::
-    ~CrossOriginEmbedderPolicyWithReporting() = default;
+CrossOriginEmbedderPolicy::CrossOriginEmbedderPolicy() = default;
+CrossOriginEmbedderPolicy::CrossOriginEmbedderPolicy(
+    const CrossOriginEmbedderPolicy& src) = default;
+CrossOriginEmbedderPolicy::CrossOriginEmbedderPolicy(
+    CrossOriginEmbedderPolicy&& src) = default;
+CrossOriginEmbedderPolicy::~CrossOriginEmbedderPolicy() = default;
 
-CrossOriginEmbedderPolicyWithReporting& CrossOriginEmbedderPolicyWithReporting::
-operator=(const CrossOriginEmbedderPolicyWithReporting& src) = default;
-CrossOriginEmbedderPolicyWithReporting& CrossOriginEmbedderPolicyWithReporting::
-operator=(CrossOriginEmbedderPolicyWithReporting&& src) = default;
+CrossOriginEmbedderPolicy& CrossOriginEmbedderPolicy::operator=(
+    const CrossOriginEmbedderPolicy& src) = default;
+CrossOriginEmbedderPolicy& CrossOriginEmbedderPolicy::operator=(
+    CrossOriginEmbedderPolicy&& src) = default;
 
 }  // namespace network

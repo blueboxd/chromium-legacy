@@ -20,6 +20,7 @@ class Location;
 
 namespace viz {
 class FrameSinkManagerImpl;
+class ServerSharedBitmapManager;
 }  // namespace viz
 
 namespace android_webview {
@@ -77,6 +78,7 @@ class VizCompositorThreadRunnerWebView : public viz::VizCompositorThreadRunner {
 
   // Only accessed on |viz_task_runner_|.
   THREAD_CHECKER(viz_thread_checker_);
+  std::unique_ptr<viz::ServerSharedBitmapManager> server_shared_bitmap_manager_;
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VizCompositorThreadRunnerWebView);

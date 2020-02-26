@@ -79,15 +79,15 @@ constexpr size_t kNumBuffers = 16;
 
 FuchsiaAudioRenderer::FuchsiaAudioRenderer(
     MediaLog* media_log,
-    mojo::PendingRemote<media::mojom::FuchsiaAudioConsumerProvider>
-        pending_audio_consumer_provider)
+    mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
+        pending_media_resource_provider)
     : media_log_(media_log) {
   DETACH_FROM_THREAD(thread_checker_);
 
-  mojo::Remote<media::mojom::FuchsiaAudioConsumerProvider>
-      audio_consumer_provider;
-  audio_consumer_provider.Bind(std::move(pending_audio_consumer_provider));
-  audio_consumer_provider->CreateAudioConsumer(
+  mojo::Remote<media::mojom::FuchsiaMediaResourceProvider>
+      media_resource_provider;
+  media_resource_provider.Bind(std::move(pending_media_resource_provider));
+  media_resource_provider->CreateAudioConsumer(
       audio_consumer_handle_.NewRequest());
 }
 

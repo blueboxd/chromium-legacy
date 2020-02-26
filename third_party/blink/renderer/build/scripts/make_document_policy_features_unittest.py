@@ -11,11 +11,14 @@ class MakeDocumentPolicyFeaturesTest(unittest.TestCase):
     def test_parse_default_value(self):
         self.assertEqual(
             parse_default_value("max", "DecDouble"),
-            "PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble)")
+            "PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble)"
+        )
         self.assertEqual(
             parse_default_value("min", "DecDouble"),
-            "PolicyValue::CreateMinPolicyValue(mojom::PolicyValueType::kDecDouble)")
-        self.assertEqual(parse_default_value("false", "Bool"), "PolicyValue(false)")
+            "PolicyValue::CreateMinPolicyValue(mojom::PolicyValueType::kDecDouble)"
+        )
+        self.assertEqual(
+            parse_default_value("false", "Bool"), "PolicyValue(false)")
         self.assertEqual(
             parse_default_value("0.5", "DecDouble"),
             "PolicyValue(0.5, mojom::PolicyValueType::kDecDouble)")

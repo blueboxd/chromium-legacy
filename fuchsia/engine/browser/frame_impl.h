@@ -21,7 +21,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
-#include "fuchsia/engine/browser/audio_consumer_provider_service.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -56,9 +55,7 @@ class FrameImpl : public fuchsia::web::Frame,
             fidl::InterfaceRequest<fuchsia::web::Frame> frame_request);
   ~FrameImpl() override;
 
-  void BindAudioConsumerProvider(
-      mojo::PendingReceiver<media::mojom::FuchsiaAudioConsumerProvider>
-          receiver);
+  uint64_t media_session_id() const { return media_session_id_; }
 
   zx::unowned_channel GetBindingChannelForTest() const;
   content::WebContents* web_contents_for_test() const {
@@ -224,7 +221,10 @@ class FrameImpl : public fuchsia::web::Frame,
   std::vector<uint64_t> before_load_scripts_order_;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
   UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
-  AudioConsumerProviderService audio_consumer_provider_service_;
+
+  // Session ID to use for fuchsia.media.AudioConsumer. Set with
+  // SetMediaSessionId().
+  uint64_t media_session_id_ = 0;
 
   // Used for receiving and dispatching popup created by this Frame.
   fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;

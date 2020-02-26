@@ -199,7 +199,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       bool added_during_redirect);
 
   // Exposed for testing.
-  static CrossOriginEmbedderPolicyWithReporting ParseCrossOriginEmbedderPolicy(
+  static CrossOriginEmbedderPolicy ParseCrossOriginEmbedderPolicyValue(
       const net::HttpResponseHeaders* headers);
 
  private:

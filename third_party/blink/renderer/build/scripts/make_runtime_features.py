@@ -47,7 +47,8 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
     file_basename = None
 
     def __init__(self, json5_file_path, output_dir):
-        super(BaseRuntimeFeatureWriter, self).__init__(json5_file_path, output_dir)
+        super(BaseRuntimeFeatureWriter, self).__init__(json5_file_path,
+                                                       output_dir)
         # Subclasses should add generated output files and their contents to this dict.
         self._outputs = {}
         assert self.file_basename
@@ -57,30 +58,43 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
 
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['in_origin_trial'] = str(feature['name']) in origin_trial_set
-            feature['data_member_name'] = self._data_member_name(feature['name'])
+            feature['in_origin_trial'] = str(
+                feature['name']) in origin_trial_set
+            feature['data_member_name'] = self._data_member_name(
+                feature['name'])
             # Most features just check their is_foo_enabled_ bool
             # but some depend on or are implied by other bools.
             enabled_condition = feature['data_member_name']
-            assert not feature['implied_by'] or not feature['depends_on'], 'Only one of implied_by and depends_on is allowed'
+            assert not feature['implied_by'] or not feature[
+                'depends_on'], 'Only one of implied_by and depends_on is allowed'
             for implied_by_name in feature['implied_by']:
-                enabled_condition += ' || ' + self._data_member_name(implied_by_name)
+                enabled_condition += ' || ' + self._data_member_name(
+                    implied_by_name)
             for dependant_name in feature['depends_on']:
-                enabled_condition += ' && ' + self._data_member_name(dependant_name)
+                enabled_condition += ' && ' + self._data_member_name(
+                    dependant_name)
             feature['enabled_condition'] = enabled_condition
             # If 'status' is a dict, add the values for all the not-mentioned platforms too.
             if isinstance(feature['status'], dict):
-                feature['status'] = self._status_with_all_platforms(feature['status'])
+                feature['status'] = self._status_with_all_platforms(
+                    feature['status'])
             # Specify the type of status
-            feature['status_type'] = "dict" if isinstance(feature['status'], dict) else "str"
+            feature['status_type'] = "dict" if isinstance(
+                feature['status'], dict) else "str"
 
-        self._standard_features = [feature for feature in self._features if not feature['custom']]
-        self._origin_trial_features = [feature for feature in self._features if feature['in_origin_trial']]
-        self._header_guard = self.make_header_guard(self._relative_output_dir + self.file_basename + '.h')
+        self._standard_features = [
+            feature for feature in self._features if not feature['custom']
+        ]
+        self._origin_trial_features = [
+            feature for feature in self._features if feature['in_origin_trial']
+        ]
+        self._header_guard = self.make_header_guard(self._relative_output_dir +
+                                                    self.file_basename + '.h')
 
     @staticmethod
     def _data_member_name(str_or_converter):
-        converter = NameStyleConverter(str_or_converter) if type(str_or_converter) is str else str_or_converter
+        converter = NameStyleConverter(str_or_converter) if type(
+            str_or_converter) is str else str_or_converter
         return converter.to_class_data_member(prefix='is', suffix='enabled')
 
     def _feature_sets(self):
@@ -119,7 +133,8 @@ class RuntimeFeatureWriter(BaseRuntimeFeatureWriter):
 
     def _write_features_to_pickle_file(self, platform_output_dir):
         # TODO(yashard): Get the file path from args instead of hardcoding it.
-        file_name = os.path.join(platform_output_dir, '..', 'build', 'scripts', 'runtime_enabled_features.pickle')
+        file_name = os.path.join(platform_output_dir, '..', 'build', 'scripts',
+                                 'runtime_enabled_features.pickle')
         features_map = {}
         for feature in self._features:
             features_map[str(feature['name'])] = {
@@ -162,8 +177,11 @@ class RuntimeFeatureTestHelpersWriter(BaseRuntimeFeatureWriter):
     file_basename = 'runtime_enabled_features_test_helpers'
 
     def __init__(self, json5_file_path, output_dir):
-        super(RuntimeFeatureTestHelpersWriter, self).__init__(json5_file_path, output_dir)
-        self._outputs = {('testing/' + self.file_basename + '.h'): self.generate_header}
+        super(RuntimeFeatureTestHelpersWriter, self).__init__(
+            json5_file_path, output_dir)
+        self._outputs = {
+            ('testing/' + self.file_basename + '.h'): self.generate_header
+        }
 
     def _template_inputs(self):
         return {

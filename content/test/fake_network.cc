@@ -104,7 +104,7 @@ bool FakeNetwork::HandleRequest(URLLoaderInterceptor::RequestParams* params) {
       info.headers->HasHeaderValue("Cross-Origin-Embedder-Policy",
                                    "require-corp")) {
     response->cross_origin_embedder_policy.value =
-        network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+        network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
   }
 
   mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;

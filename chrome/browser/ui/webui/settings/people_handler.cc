@@ -941,7 +941,6 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no IdentityManager.
-    sync_status->SetBoolean("signinAllowed", false);
     return sync_status;
   }
 
@@ -969,8 +968,6 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  sync_status->SetBoolean(
-      "signinAllowed", profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
   sync_status->SetBoolean(
       "firstSetupInProgress",

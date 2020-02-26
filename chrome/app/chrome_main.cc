@@ -91,7 +91,13 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // defined(OS_WIN)
   base::CommandLine::Init(0, nullptr);
   base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+
+#if defined(OS_MACOSX)
+  if(!__builtin_available(macOS 10.10,*)) {
+    command_line->AppendSwitch(service_manager::switches::kNoSandbox);
+  }
+#endif
+
   ALLOW_UNUSED_LOCAL(command_line);
 
 #if defined(OS_MACOSX)

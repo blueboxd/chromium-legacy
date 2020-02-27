@@ -49,6 +49,31 @@ CONSOLE WARNING: line 337: Delay.delayTime.setTargetAtTime value -1 outside nomi
 CONSOLE WARNING: line 338: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
+PASS Executing "initialize"
+PASS Executing "Offline createGain"
+PASS Executing "Offline createDelay"
+PASS Executing "Offline createBufferSource"
+PASS Executing "Offline createStereoPanner"
+PASS Executing "Offline createDynamicsCompressor"
+PASS Executing "Offline createBiquadFilter"
+PASS Executing "Offline createOscillator"
+PASS Executing "Offline createPanner"
+PASS Executing "Offline createConstantSource"
+PASS Executing "Offline createBuffer"
+PASS Executing "Offline createIIRFilter"
+PASS Executing "Offline createWaveShaper"
+PASS Executing "Offline createConvolver"
+PASS Executing "Offline createAnalyser"
+PASS Executing "Offline createScriptProcessor"
+PASS Executing "Offline createPeriodicWave"
+PASS Executing "Offline createChannelSplitter"
+PASS Executing "Offline createChannelMerger"
+PASS Executing "Online createMediaElementSource"
+PASS Executing "Online createMediaStreamDestination"
+PASS Executing "AudioListener"
+PASS Executing "verifyTests"
+PASS Executing "automation"
+PASS Audit report
 PASS > [initialize] 
 PASS   Create offline context for tests did not throw an exception.
 PASS   Create online context for tests did not throw an exception.

@@ -38,8 +38,8 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
+#import "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -218,10 +218,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // WebStateListObserverBridges.
   NSArray<id<WebStateListObserving>>* _retainedWebStateListObservers;
 
-  // The delegate for sync (the actual object will be owned by the observers
-  // vector, above).
-  TabModelSyncedWindowDelegate* _syncedWindowDelegate;
-
   // Counters for metrics.
   WebStateListMetricsObserver* _webStateListMetricsObserver;
 
@@ -284,17 +280,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
     _sessionRestorationBrowserAgent =
         SessionRestorationBrowserAgent::FromBrowser(browser);
-
     _tabUsageRecorder = TabUsageRecorderBrowserAgent::FromBrowser(browser);
-    // Tab sync handles incognito browser states by filtering on profile, so
-    // it's important to the backend code to always have a sync window delegate.
-    std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
-        std::make_unique<TabModelSyncedWindowDelegate>(_webStateList);
-
-    // Keep a weak ref to the the window delegate, which is then moved into
-    // the web state list observers list.
-    _syncedWindowDelegate = syncedWindowDelegate.get();
-    _webStateListObservers.push_back(std::move(syncedWindowDelegate));
+    _syncedWindowDelegate =
+        SyncedWindowDelegateBrowserAgent::FromBrowser(browser);
 
     NSMutableArray<id<WebStateListObserving>>* retainedWebStateListObservers =
         [[NSMutableArray alloc] init];

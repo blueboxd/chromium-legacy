@@ -542,7 +542,7 @@ void ExtensionDownloader::CreateManifestLoader() {
           sender: "Extension Downloader"
           description:
             "Fetches information about an extension manifest (using its "
-            "update_url, which is usually Chrome WebStore) in order to update "
+            "update_url, which is usually Chrome Web Store) in order to update "
             "the extension."
           trigger:
             "An update timer indicates that it's time to update extensions, or "
@@ -550,12 +550,14 @@ void ExtensionDownloader::CreateManifestLoader() {
           data:
             "The extension id, version and install source (the cause of the "
             "update flow). The client's OS, architecture, language, Chromium "
-            "version, channel and a flag stating whether the request originated"
-            "in the foreground or the background."
+            "version, channel and a flag stating whether the request "
+            "originated in the foreground or the background. Authentication is "
+            "used only for non-Chrome-Web-Store update_urls."
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: NO
+          cookies_allowed: YES
+          cookies_store: "user"
           setting:
             "This feature cannot be disabled. It is only enabled when the user "
             "has installed extensions."
@@ -571,9 +573,8 @@ void ExtensionDownloader::CreateManifestLoader() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = active_request->full_url(),
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  // Send traffic-management headers to the webstore.
+  // Send traffic-management headers to the webstore, and omit credentials.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=647516
   if (extension_urls::IsWebstoreUpdateUrl(active_request->full_url())) {
     resource_request->headers.SetHeader(kUpdateInteractivityHeader,
@@ -586,6 +587,11 @@ void ExtensionDownloader::CreateManifestLoader() {
         base::StringPrintf(
             "%s-%s", UpdateQueryParams::GetProdIdString(UpdateQueryParams::CRX),
             UpdateQueryParams::GetProdVersion().c_str()));
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  } else {
+    // Non-webstore sources may require HTTP auth.
+    resource_request->credentials_mode =
+        network::mojom::CredentialsMode::kInclude;
   }
 
   manifest_loader_ = network::SimpleURLLoader::Create(

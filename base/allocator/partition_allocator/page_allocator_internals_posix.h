@@ -12,8 +12,11 @@
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 
+#include <Security/Security.h>
 #include <mach/mach.h>
 #endif
 #if defined(OS_ANDROID)
@@ -33,8 +36,9 @@
 
 namespace base {
 
-#if defined(OS_ANDROID)
 namespace {
+
+#if defined(OS_ANDROID)
 const char* PageTagToName(PageTag tag) {
   // Important: All the names should be string literals. As per prctl.h in
   // //third_party/android_ndk the kernel keeps a pointer to the name instead
@@ -56,8 +60,27 @@ const char* PageTagToName(PageTag tag) {
       return "";
   }
 }
-}  // namespace
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_MACOSX)
+// Tests whether the version of macOS supports the MAP_JIT flag and if the
+// current process is signed with the allow-jit entitlement.
+bool UseMapJit() {
+  if (!mac::IsAtLeastOS10_14())
+    return false;
+
+  ScopedCFTypeRef<SecTaskRef> task(SecTaskCreateFromSelf(kCFAllocatorDefault));
+  ScopedCFTypeRef<CFErrorRef> error;
+  ScopedCFTypeRef<CFTypeRef> value(SecTaskCopyValueForEntitlement(
+      task.get(), CFSTR("com.apple.security.cs.allow-jit"),
+      error.InitializeInto()));
+  if (error)
+    return false;
+  return mac::CFCast<CFBooleanRef>(value.get()) == kCFBooleanTrue;
+}
+#endif  // defined(OS_MACOSX)
+
+}  // namespace
 
 // |mmap| uses a nearby address if the hint address is blocked.
 constexpr bool kHintIsAdvisory = true;
@@ -104,8 +127,8 @@ void* SystemAllocPagesInternal(void* hint,
   // "runtime" option cannot execute writable memory by default. They can opt
   // into this capability by specifying the "com.apple.security.cs.allow-jit"
   // code signing entitlement and allocating the region with the MAP_JIT flag.
-  static const bool kNeedMapJIT = mac::IsAtLeastOS10_14();
-  if (page_tag == PageTag::kV8 && kNeedMapJIT) {
+  static const bool kUseMapJit = UseMapJit();
+  if (page_tag == PageTag::kV8 && kUseMapJit) {
     map_flags |= MAP_JIT;
   }
 #endif

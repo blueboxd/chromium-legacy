@@ -396,6 +396,16 @@
 
 #pragma mark - Pref Utilities (EG2)
 
+// Gets the value of a local state pref. Returns a
+// base::Value encoded as a JSON string. If the pref was not registered,
+// returns a Value of type NONE.
++ (NSString*)localStatePrefValue:(NSString*)prefName;
+
+// Gets the value of a user pref in the original browser state. Returns a
+// base::Value encoded as a JSON string. If the pref was not registered,
+// returns a Value of type NONE.
++ (NSString*)userPrefValue:(NSString*)prefName;
+
 // Sets the value of a boolean user pref in the original browser state.
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
 

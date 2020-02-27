@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 
 /**
  * Observes changes to the tab model selector.
@@ -17,8 +18,10 @@ public interface TabModelSelectorObserver {
 
     /**
      * Called when a new tab is created.
+     * @param tab A new tab being created.
+     * @param creationState How the tab was created.
      */
-    void onNewTabCreated(Tab tab);
+    void onNewTabCreated(Tab tab, @TabCreationState int creationState);
 
     /**
      * Called when a different tab model has been selected.

@@ -243,7 +243,7 @@ void MessagePumpForUI::DoRunLoop() {
       continue;
 
     // WaitForWork() does some work itself, so notify the delegate of it.
-    state_->delegate->BeforeDoInternalWork();
+    state_->delegate->BeforeWait();
     WaitForWork(next_work_info);
   }
 }

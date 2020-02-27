@@ -9,7 +9,7 @@ import subprocess
 
 from collections import namedtuple
 
-from core.results_processor.perfetto_binary_roller import binary_deps_manager
+from core.perfetto_binary_roller import binary_deps_manager
 from py_utils import tempfile_ext
 from tracing.value import histogram_set
 

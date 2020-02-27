@@ -56,11 +56,11 @@ void LogoutButtonTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
 }
 
-void LogoutButtonTray::UpdateAfterShelfChange() {
+void LogoutButtonTray::UpdateLayout() {
   // We must first update the button so that its container can lay it out
   // correctly.
   UpdateButtonTextAndImage();
-  tray_container()->UpdateAfterShelfChange();
+  tray_container()->UpdateLayout();
 }
 
 void LogoutButtonTray::UpdateBackground() {

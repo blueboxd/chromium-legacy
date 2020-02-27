@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/autofill_private/autofill_private_api.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/guid.h"
@@ -44,8 +45,9 @@ static const char kErrorDataUnavailable[] = "Autofill data unavailable.";
 // any of the rest of the list, then the item (at |index|) is removed. The
 // comparison of phone number values is done on normalized versions of the phone
 // number values.
-void RemoveDuplicatePhoneNumberAtIndex(
-    size_t index, const std::string& country_code, base::ListValue* list) {
+void RemoveDuplicatePhoneNumberAtIndex(size_t index,
+                                       const std::string& country_code,
+                                       base::ListValue* list) {
   base::string16 new_value;
   if (!list->GetString(index, &new_value)) {
     NOTREACHED() << "List should have a value at index " << index;
@@ -63,8 +65,8 @@ void RemoveDuplicatePhoneNumberAtIndex(
       NOTREACHED() << "List should have a value at index " << i;
       continue;
     }
-    is_duplicate = autofill::i18n::PhoneNumbersMatch(
-        new_value, existing_value, country_code, app_locale);
+    is_duplicate = autofill::i18n::PhoneNumbersMatch(new_value, existing_value,
+                                                     country_code, app_locale);
   }
 
   if (is_duplicate)
@@ -103,7 +105,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
-      chrome_details_.GetProfile());
+          chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -134,51 +136,43 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
   }
 
   if (address->company_name) {
-    profile.SetRawInfo(
-        autofill::COMPANY_NAME,
-        base::UTF8ToUTF16(*address->company_name));
+    profile.SetRawInfo(autofill::COMPANY_NAME,
+                       base::UTF8ToUTF16(*address->company_name));
   }
 
   if (address->address_lines) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_STREET_ADDRESS,
-        base::UTF8ToUTF16(*address->address_lines));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS,
+                       base::UTF8ToUTF16(*address->address_lines));
   }
 
   if (address->address_level1) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_STATE,
-        base::UTF8ToUTF16(*address->address_level1));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_STATE,
+                       base::UTF8ToUTF16(*address->address_level1));
   }
 
   if (address->address_level2) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_CITY,
-        base::UTF8ToUTF16(*address->address_level2));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_CITY,
+                       base::UTF8ToUTF16(*address->address_level2));
   }
 
   if (address->address_level3) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
-        base::UTF8ToUTF16(*address->address_level3));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
+                       base::UTF8ToUTF16(*address->address_level3));
   }
 
   if (address->postal_code) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_ZIP,
-        base::UTF8ToUTF16(*address->postal_code));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP,
+                       base::UTF8ToUTF16(*address->postal_code));
   }
 
   if (address->sorting_code) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_SORTING_CODE,
-        base::UTF8ToUTF16(*address->sorting_code));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE,
+                       base::UTF8ToUTF16(*address->sorting_code));
   }
 
   if (address->country_code) {
-    profile.SetRawInfo(
-        autofill::ADDRESS_HOME_COUNTRY,
-        base::UTF8ToUTF16(*address->country_code));
+    profile.SetRawInfo(autofill::ADDRESS_HOME_COUNTRY,
+                       base::UTF8ToUTF16(*address->country_code));
   }
 
   if (address->phone_numbers) {
@@ -244,7 +238,7 @@ AutofillPrivateGetAddressComponentsFunction::
     ~AutofillPrivateGetAddressComponentsFunction() {}
 
 ExtensionFunction::ResponseAction
-    AutofillPrivateGetAddressComponentsFunction::Run() {
+AutofillPrivateGetAddressComponentsFunction::Run() {
   std::unique_ptr<api::autofill_private::GetAddressComponents::Params>
       parameters =
           api::autofill_private::GetAddressComponents::Params::Create(*args_);
@@ -312,7 +306,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
-      chrome_details_.GetProfile());
+          chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -339,21 +333,18 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   }
 
   if (card->card_number) {
-    credit_card.SetRawInfo(
-        autofill::CREDIT_CARD_NUMBER,
-        base::UTF8ToUTF16(*card->card_number));
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                           base::UTF8ToUTF16(*card->card_number));
   }
 
   if (card->expiration_month) {
-    credit_card.SetRawInfo(
-        autofill::CREDIT_CARD_EXP_MONTH,
-        base::UTF8ToUTF16(*card->expiration_month));
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_EXP_MONTH,
+                           base::UTF8ToUTF16(*card->expiration_month));
   }
 
   if (card->expiration_year) {
-    credit_card.SetRawInfo(
-        autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-        base::UTF8ToUTF16(*card->expiration_year));
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                           base::UTF8ToUTF16(*card->expiration_year));
   }
 
   if (use_existing_card) {
@@ -381,7 +372,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
-      chrome_details_.GetProfile());
+          chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -397,7 +388,7 @@ AutofillPrivateValidatePhoneNumbersFunction::
     ~AutofillPrivateValidatePhoneNumbersFunction() {}
 
 ExtensionFunction::ResponseAction
-    AutofillPrivateValidatePhoneNumbersFunction::Run() {
+AutofillPrivateValidatePhoneNumbersFunction::Run() {
   std::unique_ptr<api::autofill_private::ValidatePhoneNumbers::Params>
       parameters =
           api::autofill_private::ValidatePhoneNumbers::Params::Create(*args_);
@@ -431,7 +422,7 @@ ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
-      chrome_details_.GetProfile());
+          chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -566,4 +557,25 @@ AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::Run() {
       parameters->enabled);
   return RespondNow(NoArguments());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateGetUpiIdListFunction
+
+AutofillPrivateGetUpiIdListFunction::AutofillPrivateGetUpiIdListFunction() =
+    default;
+
+AutofillPrivateGetUpiIdListFunction::~AutofillPrivateGetUpiIdListFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutofillPrivateGetUpiIdListFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          chrome_details_.GetProfile());
+  DCHECK(personal_data && personal_data->IsDataLoaded());
+
+  return RespondNow(
+      ArgumentList(api::autofill_private::GetUpiIdList::Results::Create(
+          personal_data->GetUpiIds())));
+}
+
 }  // namespace extensions

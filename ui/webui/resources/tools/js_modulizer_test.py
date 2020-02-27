@@ -56,5 +56,9 @@ class JsModulizerTest(unittest.TestCase):
   def testSuccess_WithIgnore(self):
     self._run_test_('with_ignore.js', 'with_ignore_expected.js')
 
+  def testSuccess_NonAscii(self):
+    self._run_test_('non_ascii.js', 'non_ascii_expected.js')
+
+
 if __name__ == '__main__':
   unittest.main()

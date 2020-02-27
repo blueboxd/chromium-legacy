@@ -558,6 +558,10 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
   }
 
+  int LinesUntilClamp() const {
+    return HasRareData() ? rare_data_->LinesUntilClamp() : 0;
+  }
+
   // Return true if the two constraint spaces are similar enough that it *may*
   // be possible to skip re-layout. If true is returned, the caller is expected
   // to verify that any constraint space size (available size, percentage size,
@@ -742,7 +746,7 @@ class CORE_EXPORT NGConstraintSpace final {
         return true;
 
       if (data_union_type == kBlockData)
-        return true;
+        return block_data_.MaySkipLayout(other.block_data_);
 
       if (data_union_type == kTableCellData)
         return table_cell_data_.MaySkipLayout(other.table_cell_data_);
@@ -768,7 +772,7 @@ class CORE_EXPORT NGConstraintSpace final {
         return true;
 
       if (data_union_type == kBlockData)
-        return true;
+        return block_data_.IsInitialForMaySkipLayout();
 
       if (data_union_type == kTableCellData)
         return table_cell_data_.IsInitialForMaySkipLayout();
@@ -816,6 +820,14 @@ class CORE_EXPORT NGConstraintSpace final {
 
     void SetClearanceOffset(LayoutUnit clearance_offset) {
       EnsureBlockData()->clearance_offset = clearance_offset;
+    }
+
+    int LinesUntilClamp() const {
+      return data_union_type == kBlockData ? block_data_.lines_until_clamp : 0;
+    }
+
+    void SetLinesUntilClamp(int value) {
+      EnsureBlockData()->lines_until_clamp = value;
     }
 
     NGBoxStrut TableCellBorders() const {
@@ -907,10 +919,17 @@ class CORE_EXPORT NGConstraintSpace final {
 
    private:
     struct BlockData {
+      bool MaySkipLayout(const BlockData& other) const {
+        return lines_until_clamp == other.lines_until_clamp;
+      }
+
+      bool IsInitialForMaySkipLayout() const { return lines_until_clamp == 0; }
+
       NGMarginStrut margin_strut;
       base::Optional<LayoutUnit> optimistic_bfc_block_offset;
       base::Optional<LayoutUnit> forced_bfc_block_offset;
       LayoutUnit clearance_offset = LayoutUnit::Min();
+      int lines_until_clamp = 0;
     };
 
     struct TableCellData {

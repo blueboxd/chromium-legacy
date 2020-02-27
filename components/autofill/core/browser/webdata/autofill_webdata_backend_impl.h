@@ -6,6 +6,8 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_BACKEND_IMPL_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -187,6 +189,8 @@ class AutofillWebDataBackendImpl
                                                  WebDatabase* db);
 
   WebDatabase::State AddUpiId(const std::string& upi_id, WebDatabase* db);
+
+  std::unique_ptr<WDTypedResult> GetAllUpiIds(WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);

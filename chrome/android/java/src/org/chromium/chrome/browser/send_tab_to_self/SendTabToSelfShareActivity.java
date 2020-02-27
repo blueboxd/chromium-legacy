@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
@@ -27,29 +28,31 @@ public class SendTabToSelfShareActivity extends ShareActivity {
         Tab tab = triggeringActivity.getActivityTabProvider().get();
         if (tab == null) return;
         NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
-        actionHandler(triggeringActivity, entry, triggeringActivity.getBottomSheetController());
+        actionHandler(triggeringActivity, entry, triggeringActivity.getBottomSheetController(),
+                tab.getWebContents());
     }
 
-    public static void actionHandler(
-            Context context, NavigationEntry entry, BottomSheetController controller) {
+    public static void actionHandler(Context context, NavigationEntry entry,
+            BottomSheetController controller, WebContents webContents) {
         if (entry == null || controller == null) {
             return;
         }
 
         SendTabToSelfShareClickResult.recordClickResult(
                 SendTabToSelfShareClickResult.ClickType.SHOW_DEVICE_LIST);
-        controller.requestShowContent(createBottomSheetContent(context, entry, controller), true);
+        controller.requestShowContent(
+                createBottomSheetContent(context, entry, controller, webContents), true);
         // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
         // automatically show since PeekStateEnabled is set to false.
         controller.expandSheet();
     }
 
-    static BottomSheetContent createBottomSheetContent(
-            Context context, NavigationEntry entry, BottomSheetController controller) {
+    static BottomSheetContent createBottomSheetContent(Context context, NavigationEntry entry,
+            BottomSheetController controller, WebContents webContents) {
         if (sBottomSheetContentForTesting != null) {
             return sBottomSheetContentForTesting;
         }
-        return new DevicePickerBottomSheetContent(context, entry, controller);
+        return new DevicePickerBottomSheetContent(context, entry, controller, webContents);
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {

@@ -318,6 +318,16 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
+  void SetLinesUntilClamp(int clamp) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_lines_until_clamp_set_);
+    is_lines_until_clamp_set_ = true;
+#endif
+    DCHECK(!is_new_fc_);
+    if (clamp != 0)
+      space_.EnsureRareData()->SetLinesUntilClamp(clamp);
+  }
+
   void SetTargetStretchInlineSize(LayoutUnit target_stretch_inline_size) {
     DCHECK_GE(target_stretch_inline_size, LayoutUnit());
     space_.EnsureRareData()->SetTargetStretchInlineSize(
@@ -381,6 +391,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_table_cell_borders_set_ = false;
   bool is_table_cell_intrinsic_padding_set_ = false;
   bool is_custom_layout_data_set_ = false;
+  bool is_lines_until_clamp_set_ = false;
 
   bool to_constraint_space_called_ = false;
 #endif

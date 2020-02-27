@@ -12,7 +12,7 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "media/base/media_error.h"
+#include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
@@ -81,7 +81,7 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
               int textures_per_picture);
 
     // Push a new |texture|, |array_slice| to |gl_image_|.
-    MediaError PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
+    Status PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
 
     std::vector<uint32_t> service_ids_;
 

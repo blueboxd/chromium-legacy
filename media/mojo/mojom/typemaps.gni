@@ -21,7 +21,7 @@ typemaps = [
   "//media/mojo/mojom/video_encode_accelerator.typemap",
   "//media/mojo/mojom/video_encoder_info.typemap",
   "//media/mojo/mojom/video_frame.typemap",
-  "//media/mojo/mojom/media_error.typemap",
+  "//media/mojo/mojom/status.typemap",
 ]
 
 if (enable_media_drm_storage) {

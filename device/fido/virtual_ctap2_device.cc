@@ -352,6 +352,7 @@ CtapDeviceResponseCode ConfirmPresentedPIN(
   }
 
   state->pin_retries = kMaxPinRetries;
+  state->uv_retries = kMaxUvRetries;
   state->pin_retries_since_insertion = 0;
 
   return CtapDeviceResponseCode::kSuccess;

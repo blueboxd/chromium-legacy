@@ -54,7 +54,6 @@ luci.cq_group(
 )
 
 try_.defaults.bucket.set(vars.bucket.get())
-try_.defaults.bucketed_triggers.set(True)
 try_.defaults.cq_group.set(vars.cq_group.get())
 
 

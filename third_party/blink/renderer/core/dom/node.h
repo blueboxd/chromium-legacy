@@ -767,16 +767,20 @@ class CORE_EXPORT Node : public EventTarget {
   //
   // Blink notifies this callback regardless if the subtree of the node is a
   // document tree or a floating subtree.  Implementation can determine the type
-  // of subtree by seeing insertionPoint->isConnected().  For a performance
+  // of subtree by seeing insertion_point->isConnected().  For a performance
   // reason, notifications are delivered only to ContainerNode subclasses if the
-  // insertionPoint is out of document.
+  // insertion_point is out of document.
   //
-  // There are another callback named didNotifySubtreeInsertionsToDocument(),
+  // There are another callback named DidNotifySubtreeInsertionsToDocument(),
   // which is called after all the descendant is notified, if this node was
   // inserted into the document tree. Only a few subclasses actually need
   // this. To utilize this, the node should return
-  // InsertionShouldCallDidNotifySubtreeInsertions from insertedInto().
+  // kInsertionShouldCallDidNotifySubtreeInsertions from InsertedInto().
   //
+  // InsertedInto() implementations must not modify the DOM tree, and must not
+  // dispatch synchronous events. On the other hand,
+  // DidNotifySubtreeInsertionsToDocument() may modify the DOM tree, and may
+  // dispatch synchronous events.
   enum InsertionNotificationRequest {
     kInsertionDone,
     kInsertionShouldCallDidNotifySubtreeInsertions
@@ -788,10 +792,12 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Notifies the node that it is no longer part of the tree.
   //
-  // This is a dual of insertedInto(), and is similar to the
+  // This is a dual of InsertedInto(), and is similar to the
   // DOMNodeRemovedFromDocument DOM event, but does not require the overhead of
   // event dispatching, and is called _after_ the node is removed from the tree.
   //
+  // RemovedFrom() implementations must not modify the DOM tree, and must not
+  // dispatch synchronous events.
   virtual void RemovedFrom(ContainerNode& insertion_point);
 
   // FIXME(dominicc): This method is not debug-only--it is used by

@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-package components.feed.core.proto.wire;
+package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
@@ -19,7 +19,7 @@ message ActionPayloadForTest {
   // The mid that represents the topic of the story on the card
   optional string id = 1;
 
-  extend components.feed.core.proto.wire.ActionPayload {
+  extend feedwire.ActionPayload {
     optional ActionPayloadForTest action_payload_for_test_extension = 2;
   }
 }

@@ -31,34 +31,34 @@ PersistedData::PersistedData(PrefService* pref_service)
 }
 
 PersistedData::~PersistedData() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 base::Version PersistedData::GetProductVersion(const std::string& id) const {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Version(GetString(id, kPV));
 }
 
 void PersistedData::SetProductVersion(const std::string& id,
                                       const base::Version& pv) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pv.IsValid());
   SetString(id, kPV, pv.GetString());
 }
 
 std::string PersistedData::GetFingerprint(const std::string& id) const {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetString(id, kFP);
 }
 
 void PersistedData::SetFingerprint(const std::string& id,
                                    const std::string& fingerprint) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetString(id, kFP, fingerprint);
 }
 
 std::vector<std::string> PersistedData::GetAppIds() const {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The prefs is a dictionary of dictionaries, where each inner dictionary
   // corresponds to an app:
@@ -81,7 +81,7 @@ std::vector<std::string> PersistedData::GetAppIds() const {
 
 std::string PersistedData::GetString(const std::string& id,
                                      const std::string& key) const {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::Contains(id, '.'));  // Assume the id does not contain '.'.
 
   const base::DictionaryValue* dict =
@@ -98,7 +98,7 @@ std::string PersistedData::GetString(const std::string& id,
 void PersistedData::SetString(const std::string& id,
                               const std::string& key,
                               const std::string& value) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::Contains(id, '.'));  // Assume the id does not contain '.'.
 
   DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);

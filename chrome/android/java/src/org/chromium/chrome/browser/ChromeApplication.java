@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
 import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
@@ -177,7 +178,7 @@ public class ChromeApplication extends Application {
     }
 
     private static Boolean shouldUseDebugFlags() {
-        return CachedFeatureFlags.isCommandLineOnNonRootedEnabled();
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
     }
 
     protected static boolean isBrowserProcess() {

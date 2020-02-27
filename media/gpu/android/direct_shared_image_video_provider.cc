@@ -199,9 +199,6 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   gpu::gles2::ContextGroup* group = stub_->decoder_context()->GetContextGroup();
   if (!group)
     return false;
-  gpu::gles2::TextureManager* texture_manager = group->texture_manager();
-  if (!texture_manager)
-    return false;
 
   const auto& size = spec.size;
 

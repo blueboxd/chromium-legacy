@@ -501,6 +501,16 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Pref Utilities (EG2)
 
+// Gets the value of a local state pref.
+- (bool)localStateBooleanPref:(const std::string&)prefName;
+- (int)localStateIntegerPref:(const std::string&)prefName;
+- (std::string)localStateStringPref:(const std::string&)prefName;
+
+// Gets the value of a user pref in the original browser state.
+- (bool)userBooleanPref:(const std::string&)prefName;
+- (int)userIntegerPref:(const std::string&)prefName;
+- (std::string)userStringPref:(const std::string&)prefName;
+
 // Sets the value of a boolean user pref in the original browser state.
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName;
 

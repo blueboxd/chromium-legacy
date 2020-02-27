@@ -20,7 +20,7 @@ namespace ash {
 
 class FeaturePodControllerBase;
 
-// ImageButton internally used in FeaturePodButton. Should not be used directly.
+// A toggle button with an icon used by feature pods and in other places.
 class FeaturePodIconButton : public views::ToggleImageButton {
  public:
   FeaturePodIconButton(views::ButtonListener* listener, bool is_togglable);
@@ -28,6 +28,9 @@ class FeaturePodIconButton : public views::ToggleImageButton {
 
   // Change the toggle state. See FeaturePodButton::SetToggled.
   void SetToggled(bool toggled);
+
+  // Sets the button's icon.
+  void SetVectorIcon(const gfx::VectorIcon& icon);
 
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;

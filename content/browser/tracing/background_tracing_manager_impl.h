@@ -12,8 +12,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/public/browser/background_tracing_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 
 namespace base {
@@ -24,6 +26,7 @@ class NoDestructor;
 namespace tracing {
 namespace mojom {
 class BackgroundTracingAgent;
+class BackgroundTracingAgentProvider;
 }  // namespace mojom
 }  // namespace tracing
 
@@ -153,7 +156,11 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       bool privacy_filtering_enabled);
   bool IsTriggerHandleValid(TriggerHandle handle) const;
   void OnScenarioAborted();
-  static void AddPendingAgentConstructor(base::OnceClosure constructor);
+  static void AddPendingAgent(
+      int child_process_id,
+      mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
+          provider);
+  static void ClearPendingAgent(int child_process_id);
   void MaybeConstructPendingAgents();
 
   std::unique_ptr<BackgroundTracingActiveScenario> active_scenario_;
@@ -168,7 +175,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   std::set<tracing::mojom::BackgroundTracingAgent*> agents_;
   std::set<AgentObserver*> agent_observers_;
 
-  std::vector<base::OnceClosure> pending_agent_constructors_;
+  std::map<int, mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider>>
+      pending_agents_;
 
   IdleCallback idle_callback_;
   base::RepeatingClosure tracing_enabled_callback_for_testing_;

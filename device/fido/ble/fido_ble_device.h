@@ -42,6 +42,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
     kCaBLE,
   };
 
+  class Observer {
+   public:
+    virtual void FidoBleDeviceConnected(FidoBleDevice* device, bool success) {}
+    virtual void FidoBleDeviceTimeout(FidoBleDevice* device) {}
+  };
+
   FidoBleDevice(BluetoothAdapter* adapter, std::string address, Type type);
   explicit FidoBleDevice(std::unique_ptr<FidoBleConnection> connection);
   ~FidoBleDevice() override;
@@ -49,9 +55,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   // Returns FidoDevice::GetId() for a given FidoBleConnection address.
   static std::string GetIdForAddress(const std::string& ble_address);
 
+  std::string GetAddress();
   void Connect();
   void SendPing(std::vector<uint8_t> data, DeviceCallback callback);
   FidoBleConnection::ReadCallback GetReadCallbackForTesting();
+  void set_observer(Observer* observer);
 
   // FidoDevice:
   void Cancel(CancelToken token) override;
@@ -116,6 +124,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   // request, or else is empty if no request is currently pending.
   base::Optional<CancelToken> current_token_;
   base::Optional<FidoBleTransaction> transaction_;
+  Observer* observer_ = nullptr;
 
   base::WeakPtrFactory<FidoBleDevice> weak_factory_{this};
 

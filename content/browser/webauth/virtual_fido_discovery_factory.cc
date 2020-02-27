@@ -119,6 +119,7 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
   auto* authenticator = CreateAuthenticator(
       options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
+  authenticator->SetUserPresence(options->is_user_present);
 
   std::move(callback).Run(GetMojoToVirtualAuthenticator(authenticator));
 }

@@ -7838,4 +7838,12 @@ TEST_F(PersonalDataManagerTest, RemoveObserverInOnPersonalDataChanged) {
   EXPECT_FALSE(observer.IsConnected()) << "Observer not called";
 }
 
+TEST_F(PersonalDataManagerTest, AddAndGetUpiId) {
+  constexpr char upi_id[] = "vpa@indianbank";
+  personal_data_->AddUpiId(upi_id);
+  WaitOnceForOnPersonalDataChanged();
+  std::vector<std::string> all_upi_ids = personal_data_->GetUpiIds();
+  EXPECT_THAT(all_upi_ids, testing::ElementsAre(upi_id));
+}
+
 }  // namespace autofill

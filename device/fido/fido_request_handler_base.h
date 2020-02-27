@@ -150,6 +150,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // internal user verification.
     virtual void OnRetryUserVerification(int attempts) = 0;
 
+    // Called when an authenticator reports internal user verification has been
+    // locked (e.g. by repeated failed attempts to recognise the user's
+    // fingerprints).
+    virtual void OnInternalUserVerificationLocked() = 0;
+
     // SetMightCreateResidentCredential indicates whether the activation of an
     // authenticator may cause a resident credential to be created. A resident
     // credential may be discovered by someone with physical access to the

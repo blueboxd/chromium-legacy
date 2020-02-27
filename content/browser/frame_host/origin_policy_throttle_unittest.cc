@@ -49,13 +49,8 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
   }
 
   void CreateHandleFor(const GURL& url) {
-    net::HttpRequestHeaders headers;
-    if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url))
-      headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy, "0");
-
     nav_handle_ = std::make_unique<MockNavigationHandle>(web_contents());
     nav_handle_->set_url(url);
-    nav_handle_->set_request_headers(headers);
   }
 
  protected:
@@ -109,8 +104,6 @@ TEST_P(OriginPolicyThrottleTest, WillProcessResponse) {
        NavigationThrottle::ThrottleAction::PROCEED},
       {network::OriginPolicyState::kNoPolicyApplies,
        NavigationThrottle::ThrottleAction::PROCEED},
-      {network::OriginPolicyState::kInvalidRedirect,
-       NavigationThrottle::ThrottleAction::CANCEL},
       {network::OriginPolicyState::kCannotLoadPolicy,
        NavigationThrottle::ThrottleAction::CANCEL},
   };

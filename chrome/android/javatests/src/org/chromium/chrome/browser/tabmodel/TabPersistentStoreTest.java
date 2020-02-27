@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
@@ -106,7 +107,9 @@ public class TabPersistentStoreTest {
         @Override
         public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
             Tab tab = new MockTab(0, mIsIncognito, TabLaunchType.FROM_LINK);
-            mSelector.getModel(mIsIncognito).addTab(tab, TabModel.INVALID_TAB_INDEX, type);
+            mSelector.getModel(mIsIncognito)
+                    .addTab(tab, TabModel.INVALID_TAB_INDEX, type,
+                            TabCreationState.LIVE_IN_FOREGROUND);
             storeTabInfo(null, tab.getId());
             return tab;
         }
@@ -115,7 +118,9 @@ public class TabPersistentStoreTest {
         public Tab createFrozenTab(TabState state, int id, int index) {
             Tab tab = new MockTab(id, state.isIncognito(), TabLaunchType.FROM_RESTORE);
             TabTestUtils.restoreFieldsFromState(tab, state);
-            mSelector.getModel(mIsIncognito).addTab(tab, index, TabLaunchType.FROM_RESTORE);
+            mSelector.getModel(mIsIncognito)
+                    .addTab(tab, index, TabLaunchType.FROM_RESTORE,
+                            TabCreationState.FROZEN_ON_RESTORE);
             storeTabInfo(state, id);
             return tab;
         }

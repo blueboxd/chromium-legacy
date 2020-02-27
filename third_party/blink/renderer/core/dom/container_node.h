@@ -315,8 +315,12 @@ class CORE_EXPORT ContainerNode : public Node {
                                        Node* unchanged_next,
                                        ChildrenChangeSource by_parser) {
       ChildrenChange change = {
-          node.IsElementNode() ? kElementInserted : kNonElementInserted, &node,
-          unchanged_previous, unchanged_next, by_parser};
+          node.IsElementNode() ? kElementInserted : kNonElementInserted,
+          &node,
+          unchanged_previous,
+          unchanged_next,
+          nullptr,
+          by_parser};
       return change;
     }
 
@@ -325,8 +329,12 @@ class CORE_EXPORT ContainerNode : public Node {
                                      Node* next_sibling,
                                      ChildrenChangeSource by_parser) {
       ChildrenChange change = {
-          node.IsElementNode() ? kElementRemoved : kNonElementRemoved, &node,
-          previous_sibling, next_sibling, by_parser};
+          node.IsElementNode() ? kElementRemoved : kNonElementRemoved,
+          &node,
+          previous_sibling,
+          next_sibling,
+          nullptr,
+          by_parser};
       return change;
     }
 
@@ -353,13 +361,22 @@ class CORE_EXPORT ContainerNode : public Node {
     //  - siblingChanged.nextSibling after single node insertion
     //  - nextSibling of the last inserted node after multiple node insertion.
     Node* sibling_after_change = nullptr;
+
+    // List of removed nodes for kAllChildrenRemoved.
+    HeapVector<Member<Node>>* removed_nodes;
     ChildrenChangeSource by_parser;
   };
 
   // Notifies the node that it's list of children have changed (either by adding
   // or removing child nodes), or a child node that is of the type
   // CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
+  //
+  // ChildrenChanged() implementations may modify the DOM tree, and may dispatch
+  // synchronous events.
   virtual void ChildrenChanged(const ChildrenChange&);
+
+  // Provides ChildrenChange::removed_nodes for kAllChildrenRemoved.
+  virtual bool ChildrenChangedAllChildrenRemovedNeedsList() const;
 
   virtual bool ChildrenCanHaveStyle() const { return true; }
 

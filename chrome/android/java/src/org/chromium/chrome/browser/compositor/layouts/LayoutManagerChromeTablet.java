@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -150,8 +151,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     protected LayoutManagerTabModelObserver createTabModelObserver() {
         return new LayoutManagerTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int launchType) {
-                super.didAddTab(tab, launchType);
+            public void didAddTab(
+                    Tab tab, @TabLaunchType int launchType, @TabCreationState int creationState) {
+                super.didAddTab(tab, launchType, creationState);
                 updateTitle(getTabById(tab.getId()));
             }
         };

@@ -743,7 +743,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"checkPasswordLeakCount", IDS_SETTINGS_LEAKED_PASSWORDS_COUNT},
       {"checkPasswordsAgain", IDS_SETTINGS_CHECK_PASSWORDS_AGAIN},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
-      {"noCreditCardsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
+      {"noPaymentMethodsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
       {"enableProfilesLabel", IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL},
@@ -777,6 +777,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"migratableCardsInfoSingle", IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO},
       {"migratableCardsInfoMultiple",
        IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARDS_INFO},
+      {"upiIdLabel", IDS_SETTINGS_UPI_ID_LABEL},
+      {"upiIdExpirationNever", IDS_SETTINGS_UPI_ID_EXPIRATION_NEVER},
       {"canMakePaymentToggleLabel", IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL},
       {"autofillDetail", IDS_SETTINGS_AUTOFILL_DETAIL},
       {"passwordsSavePasswordsLabel",
@@ -878,6 +880,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "undoDescription",
       l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
                                  undo_accelerator.GetShortcutText()));
+
+  html_source->AddBoolean("showUpiIdSettings",
+                          base::FeatureList::IsEnabled(
+                              autofill::features::kAutofillSaveAndFillVPA));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

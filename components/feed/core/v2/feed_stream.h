@@ -21,7 +21,7 @@ class TickClock;
 }  // namespace base
 
 namespace feed {
-
+class FeedNetwork;
 class FeedStreamBackground;
 
 // Implements FeedStreamApi. |FeedStream| additionally exposes functionality
@@ -30,6 +30,7 @@ class FeedStream : public FeedStreamApi,
                    public offline_pages::TaskQueue::Delegate {
  public:
   FeedStream(PrefService* profile_prefs,
+             FeedNetwork* feed_network,
              base::Clock* clock,
              base::TickClock* tick_clock,
              scoped_refptr<base::SequencedTaskRunner> background_task_runner);
@@ -61,6 +62,7 @@ class FeedStream : public FeedStreamApi,
 
  private:
   PrefService* profile_prefs_;
+  FeedNetwork* feed_network_;
   base::Clock* clock_;
   base::TickClock* tick_clock_;
 

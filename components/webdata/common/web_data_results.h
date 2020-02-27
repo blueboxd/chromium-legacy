@@ -6,6 +6,7 @@
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -18,31 +19,32 @@ class WDTypedResult;
 // Result types for WebDataService.
 //
 typedef enum {
-  BOOL_RESULT = 1,              // WDResult<bool>
-  KEYWORDS_RESULT,              // WDResult<WDKeywordsResult>
-  INT64_RESULT,                 // WDResult<int64_t>
-#if defined(OS_WIN)             //
-  PASSWORD_IE7_RESULT,          // WDResult<IE7PasswordInfo>
-#endif                          //
-  WEB_APP_IMAGES,               // WDResult<WDAppImagesResult>
-  TOKEN_RESULT,                 // WDResult<TokenResult>
-  AUTOFILL_VALUE_RESULT,        // WDResult<std::vector<AutofillEntry>>
-  AUTOFILL_CLEANUP_RESULT,      // WDResult<size_t>
-  AUTOFILL_CHANGES,             // WDResult<std::vector<AutofillChange>>
-  AUTOFILL_PROFILE_RESULT,      // WDResult<AutofillProfile>
-  AUTOFILL_PROFILES_RESULT,     // WDResult<std::vector<
-                                //     std::unique_ptr<AutofillProfile>>>
-  AUTOFILL_CLOUDTOKEN_RESULT,   // WDResult<std::vector<std::unique_ptr<
-                                //     CreditCardCloudTokenData>>>
-  AUTOFILL_CREDITCARD_RESULT,   // WDResult<CreditCard>
-  AUTOFILL_CREDITCARDS_RESULT,  // WDResult<std::vector<
-                                //     std::unique_ptr<CreditCard>>>
+  BOOL_RESULT = 1,               // WDResult<bool>
+  KEYWORDS_RESULT,               // WDResult<WDKeywordsResult>
+  INT64_RESULT,                  // WDResult<int64_t>
+#if defined(OS_WIN)              //
+  PASSWORD_IE7_RESULT,           // WDResult<IE7PasswordInfo>
+#endif                           //
+  WEB_APP_IMAGES,                // WDResult<WDAppImagesResult>
+  TOKEN_RESULT,                  // WDResult<TokenResult>
+  AUTOFILL_VALUE_RESULT,         // WDResult<std::vector<AutofillEntry>>
+  AUTOFILL_CLEANUP_RESULT,       // WDResult<size_t>
+  AUTOFILL_CHANGES,              // WDResult<std::vector<AutofillChange>>
+  AUTOFILL_PROFILE_RESULT,       // WDResult<AutofillProfile>
+  AUTOFILL_PROFILES_RESULT,      // WDResult<std::vector<
+                                 //     std::unique_ptr<AutofillProfile>>>
+  AUTOFILL_CLOUDTOKEN_RESULT,    // WDResult<std::vector<std::unique_ptr<
+                                 //     CreditCardCloudTokenData>>>
+  AUTOFILL_CREDITCARD_RESULT,    // WDResult<CreditCard>
+  AUTOFILL_CREDITCARDS_RESULT,   // WDResult<std::vector<
+                                 //     std::unique_ptr<CreditCard>>>
   AUTOFILL_CUSTOMERDATA_RESULT,  // WDResult<std::unique_ptr<
                                  //     PaymentsCustomerData>>
-#if !defined(OS_IOS)
-  PAYMENT_WEB_APP_MANIFEST,  // WDResult<std::vector<
-                             //     mojom::WebAppManifestSectionPtr>>
-  PAYMENT_METHOD_MANIFEST,   // WDResult<std::vector<std::string>>
+  AUTOFILL_UPI_RESULT,           // WDResult<std::string>
+#if !defined(OS_IOS)             //
+  PAYMENT_WEB_APP_MANIFEST,      // WDResult<std::vector<
+                                 //     mojom::WebAppManifestSectionPtr>>
+  PAYMENT_METHOD_MANIFEST,       // WDResult<std::vector<std::string>>
 #endif
 } WDResultType;
 

@@ -5,7 +5,11 @@
 package org.chromium.url;
 
 import android.os.SystemClock;
+import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -27,6 +31,10 @@ import org.chromium.base.metrics.RecordHistogram;
 @JNINamespace("url")
 @MainDex
 public class GURL {
+    private static final String TAG = "GURL";
+    /* package */ static final int SERIALIZER_VERSION = 1;
+    /* package */ static final char SERIALIZER_DELIMITER = '\0';
+
     // TODO(https://crbug.com/1039841): Right now we return a new String with each request for a
     //      GURL component other than the spec itself. Should we cache return Strings (as
     //      WeakReference?) so that callers can share String memory?
@@ -46,6 +54,12 @@ public class GURL {
      * @param uri The string URI representation to parse into a GURL.
      */
     public GURL(String uri) {
+        // Avoid a jni hop (and initializing the native library) for empty GURLs.
+        if (TextUtils.isEmpty(uri)) {
+            mSpec = "";
+            mParsed = Parsed.createEmpty();
+            return;
+        }
         ensureNativeInitializedForGURL();
         GURLJni.get().init(uri, this);
     }
@@ -205,6 +219,64 @@ public class GURL {
         if (other == this) return true;
         if (!(other instanceof GURL)) return false;
         return mSpec.equals(((GURL) other).mSpec);
+    }
+
+    /**
+     * Serialize a GURL to a String, to be used with {@link GURL#deserialize(String)}.
+     *
+     * Note that a serialized GURL should only be used internally to Chrome, and should *never* be
+     * used if coming from an untrusted source.
+     *
+     * @return A serialzed GURL.
+     */
+    public final String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(SERIALIZER_VERSION).append(SERIALIZER_DELIMITER);
+        builder.append(mIsValid).append(SERIALIZER_DELIMITER);
+        builder.append(mParsed.serialize()).append(SERIALIZER_DELIMITER);
+        builder.append(mSpec);
+        String serialization = builder.toString();
+        return Integer.toString(serialization.length()) + SERIALIZER_DELIMITER + serialization;
+    }
+
+    /**
+     * Deserialize a GURL serialized with {@link GURL#serialize()}.
+     *
+     * This function should *never* be used on a String coming from an untrusted source.
+     *
+     * @return The deserialized GURL (or null if the input is empty).
+     */
+    public static GURL deserialize(@Nullable String gurl) {
+        try {
+            if (TextUtils.isEmpty(gurl)) return emptyGURL();
+            String[] tokens = gurl.split(Character.toString(SERIALIZER_DELIMITER));
+
+            // First token MUST always be the length of the serialized data.
+            String length = tokens[0];
+            if (gurl.length() != Integer.parseInt(length) + length.length() + 1) {
+                throw new IllegalArgumentException("Serialized GURL had the wrong length.");
+            }
+
+            // Last token MUST always be the original spec - just re-parse the GURL on version
+            // changes.
+            String spec = tokens[tokens.length - 1];
+            // Special case for empty spec - it won't get its own token.
+            if (gurl.endsWith(Character.toString(SERIALIZER_DELIMITER))) spec = "";
+
+            // Second token MUST always be the version number.
+            int version = Integer.parseInt(tokens[1]);
+            if (version != SERIALIZER_VERSION) return new GURL(spec);
+
+            boolean isValid = Boolean.parseBoolean(tokens[2]);
+            Parsed parsed = Parsed.deserialize(tokens, 3);
+            GURL result = new GURL();
+            result.init(spec, isValid, parsed);
+            return result;
+        } catch (Exception e) {
+            // This is unexpected, maybe the storage got corrupted somehow?
+            Log.w(TAG, "Exception while deserializing a GURL: " + gurl, e);
+            return emptyGURL();
+        }
     }
 
     @NativeMethods

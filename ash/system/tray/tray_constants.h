@@ -206,6 +206,14 @@ constexpr int kStatusAreaOverflowGradientSize = 24;
 constexpr int kTrayBubbleInsetTabletModeCompensation = 8;
 constexpr int kTrayBubbleInsetHotseatCompensation = 16;
 
+// Constants used for the privacy screen toast.
+constexpr int kPrivacyScreenToastWidth = 256;
+constexpr int kPrivacyScreenToastHeight = 64;
+constexpr int kPrivacyScreenToastMainLabelFontSize = 14;
+constexpr int kPrivacyScreenToastSubLabelFontSize = 13;
+constexpr gfx::Insets kPrivacyScreenToastInsets(10, 16);
+constexpr int kPrivacyScreenToastSpacing = 16;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

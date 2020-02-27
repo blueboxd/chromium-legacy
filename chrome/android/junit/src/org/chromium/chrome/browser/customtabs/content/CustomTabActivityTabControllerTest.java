@@ -105,13 +105,13 @@ public class CustomTabActivityTabControllerTest {
     public void addsEarlyCreatedTab_ToTabModel() {
         env.warmUp();
         env.reachNativeInit(mTabController);
-        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt());
+        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt(), anyInt());
     }
 
     @Test
     public void addsTabCreatedOnNativeInit_ToTabModel() {
         env.reachNativeInit(mTabController);
-        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt());
+        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt(), anyInt());
     }
 
     @Test

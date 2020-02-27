@@ -35,7 +35,9 @@ class WebviewController : public CastWebContents::Delegate,
                           public CastWebContents::Observer,
                           public WebContentController {
  public:
-  WebviewController(content::BrowserContext* browser_context, Client* client);
+  WebviewController(content::BrowserContext* browser_context,
+                    Client* client,
+                    bool enabled_for_dev);
   ~WebviewController() override;
 
   // Returns a navigation throttle for the current navigation request, if one is

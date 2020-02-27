@@ -20,6 +20,7 @@ struct VirtualAuthenticatorOptions {
   blink.mojom.AuthenticatorAttachment attachment;
   bool has_resident_key;
   bool has_user_verification;
+  bool is_user_present = true;
 };
 
 // Encapsulates both public (key handle) and private information associated

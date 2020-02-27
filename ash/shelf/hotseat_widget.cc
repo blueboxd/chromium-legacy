@@ -20,6 +20,8 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -88,11 +90,10 @@ class HotseatWindowTargeter : public aura::WindowTargeter {
 
 class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
                                     public views::WidgetDelegateView,
+                                    public OverviewObserver,
                                     public WallpaperControllerObserver {
  public:
-  explicit DelegateView(WallpaperControllerImpl* wallpaper_controller)
-      : translucent_background_(ui::LAYER_SOLID_COLOR),
-        wallpaper_controller_(wallpaper_controller) {
+  DelegateView() : translucent_background_(ui::LAYER_SOLID_COLOR) {
     translucent_background_.SetName("hotseat/Background");
   }
   ~DelegateView() override;
@@ -120,6 +121,10 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
 
+  // OverviewObserver:
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
 
@@ -138,8 +143,6 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   // A background layer that may be visible depending on HotseatState.
   ui::Layer translucent_background_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
-  // The WallpaperController, responsible for providing proper colors.
-  WallpaperControllerImpl* wallpaper_controller_;
   // Blur is disabled during animations to improve performance.
   bool blur_lock_ = false;
 
@@ -151,8 +154,14 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 };
 
 HotseatWidget::DelegateView::~DelegateView() {
-  if (wallpaper_controller_)
-    wallpaper_controller_->RemoveObserver(this);
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  OverviewController* overview_controller =
+      Shell::Get()->overview_controller();
+  if (wallpaper_controller)
+    wallpaper_controller->RemoveObserver(this);
+  if (overview_controller)
+    overview_controller->RemoveObserver(this);
 }
 
 void HotseatWidget::DelegateView::Init(
@@ -163,8 +172,14 @@ void HotseatWidget::DelegateView::Init(
   if (!chromeos::switches::ShouldShowScrollableShelf())
     return;
 
-  if (wallpaper_controller_)
-    wallpaper_controller_->AddObserver(this);
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  OverviewController* overview_controller =
+      Shell::Get()->overview_controller();
+  if (wallpaper_controller)
+    wallpaper_controller->AddObserver(this);
+  if (overview_controller)
+    overview_controller->AddObserver(this);
   SetParentLayer(parent_layer);
 
   DCHECK(scrollable_shelf_view);
@@ -257,6 +272,16 @@ void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   parent_layer->StackAtBottom(&translucent_background_);
 }
 
+void HotseatWidget::DelegateView::OnOverviewModeStartingAnimationComplete(
+    bool canceled) {
+  SetBackgroundBlur(false);
+}
+
+void HotseatWidget::DelegateView::OnOverviewModeEndingAnimationComplete(
+    bool canceled) {
+  SetBackgroundBlur(true);
+}
+
 void HotseatWidget::DelegateView::OnWallpaperColorsChanged() {
   UpdateTranslucentBackground();
 }
@@ -266,8 +291,7 @@ void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   ReorderLayers();
 }
 
-HotseatWidget::HotseatWidget()
-    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {
+HotseatWidget::HotseatWidget() : delegate_view_(new DelegateView()) {
   ShelfConfig::Get()->AddObserver(this);
 }
 

@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
-#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
@@ -23,11 +22,7 @@ namespace safe_browsing {
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return real_time_lookup_enabled_ &&
          RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-             resource_type_) &&
-         // TODO(crbug.com/1054978): PDF loading issue when full url lookup is
-         // enabled.
-         !base::EndsWith(url.path_piece(), ".pdf",
-                         base::CompareCase::INSENSITIVE_ASCII);
+             resource_type_);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
@@ -46,9 +41,18 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
+    bool is_rt_lookup_successful,
     std::unique_ptr<RTLookupResponse> response) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK_EQ(ResourceType::kMainFrame, resource_type_);
+
+  const GURL& url = urls_[next_index_].url;
+
+  // TODO(crbug.com/1050859): Add a metric to log is_rt_lookup_successful.
+  if (!is_rt_lookup_successful) {
+    PerformHashBasedCheck(url);
+    return;
+  }
 
   if (url_web_ui_token_ != -1) {
     // The following is to log this RTLookupResponse on any open
@@ -59,8 +63,6 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
                        base::Unretained(WebUIInfoSingleton::GetInstance()),
                        url_web_ui_token_, *response));
   }
-
-  const GURL& url = urls_[next_index_].url;
 
   SBThreatType sb_threat_type = SB_THREAT_TYPE_SAFE;
   if (response && (response->threat_info_size() > 0)) {

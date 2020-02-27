@@ -777,6 +777,9 @@ AuthenticatorClientPinEntrySheetModel::AuthenticatorClientPinEntrySheetModel(
     Mode mode)
     : AuthenticatorSheetModelBase(dialog_model), mode_(mode) {
   if (!dialog_model->has_attempted_pin_entry()) {
+    if (dialog_model->uv_attempts() == 0) {
+      error_ = l10n_util::GetStringUTF16(IDS_WEBAUTHN_UV_ERROR_LOCKED);
+    }
     return;
   }
 

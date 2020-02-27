@@ -16,6 +16,8 @@ settings_namespace_rewrites = [
   "settings.ExtensionControlBrowserProxy|ExtensionControlBrowserProxy",
   "settings.FontsBrowserProxy|FontsBrowserProxy",
   "settings.GlobalScrollTargetBehavior|GlobalScrollTargetBehavior",
+  "settings.IncompatibleApplicationsBrowserProxy|IncompatibleApplicationsBrowserProxy",
+  "settings.IncompatibleApplication|IncompatibleApplication",
   "settings.LifetimeBrowserProxy|LifetimeBrowserProxy",
   "settings.MinimumRoutes|MinimumRoutes",
   "settings.OnStartupBrowserProxy|OnStartupBrowserProxy",

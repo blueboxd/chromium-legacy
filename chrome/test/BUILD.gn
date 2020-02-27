@@ -1635,9 +1635,6 @@ if (!is_android) {
         # TODO(halyavin) NaCl on Windows can't open debug stub socket in
         # browser process as needed by this test. See http://crbug.com/157312.
         sources -= [ "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc" ]
-        configs -= [ "//build/config/win:default_incremental_linking" ]
-        configs +=
-            [ "//build/config/win:default_large_module_incremental_linking" ]
       }
       if (is_linux) {
         data_deps += [ "//components/nacl/loader:nacl_helper" ]
@@ -5242,13 +5239,6 @@ test("unit_tests") {
     deps += [ "//rlz:test_support" ]
   }
   if (is_win) {
-    if (!is_component_build) {
-      # The PDB gets too large for incremental linking.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
-    }
-
     sources += [
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
@@ -5887,6 +5877,7 @@ if (!is_android) {
         "../browser/ui/views/constrained_window_views_browsertest.cc",
         "../browser/ui/views/exclusive_access_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/extensions/extension_dialog_interactive_uitest.cc",
+        "../browser/ui/views/extensions/extensions_toolbar_interactive_ui_test.cc",
         "../browser/ui/views/find_bar_views_interactive_uitest.cc",
         "../browser/ui/views/frame/browser_view_focus_uitest.cc",
         "../browser/ui/views/frame/browser_view_interactive_uitest.cc",
@@ -6023,10 +6014,6 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
-
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
 
       libs = [
         "oleacc.lib",
@@ -6436,10 +6423,6 @@ if (!is_fuchsia && !is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
-
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
     }
     if (is_chromeos) {
       sources += [
@@ -6505,9 +6488,6 @@ if (!is_fuchsia && !is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
     }
 
     if (toolkit_views) {
@@ -6668,10 +6648,6 @@ if (!is_fuchsia && !is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
-
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
     }
   }
 

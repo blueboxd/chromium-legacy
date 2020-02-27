@@ -9,6 +9,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 
 import java.util.ArrayList;
@@ -215,10 +216,10 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     @Override
-    public void didAddTab(Tab tab, @TabLaunchType int type) {
+    public void didAddTab(Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
         addTab(tab);
         for (TabModelObserver observer : mFilteredObservers) {
-            observer.didAddTab(tab, type);
+            observer.didAddTab(tab, type, creationState);
         }
     }
 

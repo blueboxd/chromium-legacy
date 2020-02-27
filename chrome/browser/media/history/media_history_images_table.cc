@@ -26,10 +26,34 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
   bool success =
       DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
                                        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                       "url TEXT NOT NULL UNIQUE,"
-                                       "mime_type TEXT)",
+                                       "playback_origin_id INTEGER NOT NULL,"
+                                       "url TEXT NOT NULL,"
+                                       "mime_type TEXT, "
+                                       "CONSTRAINT fk_origin "
+                                       "FOREIGN KEY (playback_origin_id) "
+                                       "REFERENCES origin(id) "
+                                       "ON DELETE CASCADE"
+                                       ")",
                                        kTableName)
                         .c_str());
+
+  if (success) {
+    success = DB()->Execute(
+        base::StringPrintf(
+            "CREATE INDEX IF NOT EXISTS playback_origin_id_index ON "
+            "%s (playback_origin_id)",
+            kTableName)
+            .c_str());
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        base::StringPrintf(
+            "CREATE UNIQUE INDEX IF NOT EXISTS image_origin_url_index ON "
+            "%s (playback_origin_id, url)",
+            kTableName)
+            .c_str());
+  }
 
   if (!success) {
     ResetDB();
@@ -42,6 +66,7 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
 
 base::Optional<int64_t> MediaHistoryImagesTable::SaveOrGetImage(
     const GURL& url,
+    const url::Origin& playback_origin,
     const base::string16& mime_type) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
@@ -51,12 +76,16 @@ base::Optional<int64_t> MediaHistoryImagesTable::SaveOrGetImage(
     // First we should try and save the image in the database. It will not save
     // if we already have this image in the DB.
     sql::Statement statement(DB()->GetCachedStatement(
-        SQL_FROM_HERE, base::StringPrintf("INSERT OR IGNORE INTO %s "
-                                          "(url, mime_type) VALUES (?, ?)",
-                                          kTableName)
-                           .c_str()));
-    statement.BindString(0, url.spec());
-    statement.BindString16(1, mime_type);
+        SQL_FROM_HERE,
+        base::StringPrintf("INSERT OR IGNORE INTO %s "
+                           "(playback_origin_id, url, mime_type) VALUES "
+                           "((SELECT id FROM origin WHERE origin = ?), ?, ?)",
+                           kTableName)
+            .c_str()));
+    statement.BindString(
+        0, MediaHistoryOriginTable::GetOriginForStorage(playback_origin));
+    statement.BindString(1, url.spec());
+    statement.BindString16(2, mime_type);
 
     if (!statement.Run())
       return base::nullopt;
@@ -78,9 +107,14 @@ base::Optional<int64_t> MediaHistoryImagesTable::SaveOrGetImage(
     // If we did not save the image then we need to find the ID of the image.
     sql::Statement statement(DB()->GetCachedStatement(
         SQL_FROM_HERE,
-        base::StringPrintf("SELECT id FROM %s WHERE url = ?", kTableName)
+        base::StringPrintf(
+            "SELECT id FROM %s WHERE playback_origin_id = (SELECT id FROM "
+            "origin WHERE origin = ?) AND url = ?",
+            kTableName)
             .c_str()));
-    statement.BindString(0, url.spec());
+    statement.BindString(
+        0, MediaHistoryOriginTable::GetOriginForStorage(playback_origin));
+    statement.BindString(1, url.spec());
 
     while (statement.Step()) {
       return statement.ColumnInt64(0);

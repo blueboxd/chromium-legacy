@@ -33,7 +33,7 @@ using RTLookupRequestCallback =
     base::OnceCallback<void(std::unique_ptr<RTLookupRequest>)>;
 
 using RTLookupResponseCallback =
-    base::OnceCallback<void(std::unique_ptr<RTLookupResponse>)>;
+    base::OnceCallback<void(bool, std::unique_ptr<RTLookupResponse>)>;
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.

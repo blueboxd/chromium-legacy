@@ -37,6 +37,16 @@
   <methods>;
 }
 
+# This is a workaround for b/147584922 - otherwise, R8 would generate a synthetic
+# abstract method for the subsclass FeedOfflineIndicator, which Mockito would not
+# mock.
+-keep interface **.feed**.OfflineIndicatorApi {
+  <methods>;
+}
+-keep interface **.feed**.SchedulerApi {
+  <methods>;
+}
+
 # Keep all enum members since they might be reflectively called by JUnit4 runner
 -keepclassmembers enum * { *; }
 

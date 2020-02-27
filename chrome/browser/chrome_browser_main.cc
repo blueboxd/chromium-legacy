@@ -39,6 +39,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -1538,8 +1539,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif
 
-  // Start watching all browser threads for responsiveness.
-  ThreadWatcherList::StartWatchingAll(parsed_command_line());
+  // Two different types of hang detection cannot run at the same time or they
+  // would interfere with each other.
+  if (!base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+    // Start watching all browser threads for responsiveness.
+    ThreadWatcherList::StartWatchingAll(parsed_command_line());
+  }
 
   // This has to come before the first GetInstance() call. PreBrowserStart()
   // seems like a reasonable place to put this, except on Android,

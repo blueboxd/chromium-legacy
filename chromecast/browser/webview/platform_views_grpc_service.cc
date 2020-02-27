@@ -19,12 +19,14 @@ PlatformViewsAsyncService::PlatformViewsAsyncService(
     std::unique_ptr<grpc::ServerCompletionQueue> cq,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     WebContentsProvider* web_contents_provider,
-    CastWindowManager* cast_window_manager)
+    CastWindowManager* cast_window_manager,
+    bool enabled_for_dev)
     : ui_task_runner_(std::move(ui_task_runner)),
       cq_(std::move(cq)),
       service_(std::move(service)),
       window_manager_(cast_window_manager),
-      web_contents_provider_(web_contents_provider) {
+      web_contents_provider_(web_contents_provider),
+      enabled_for_dev_(enabled_for_dev) {
   base::PlatformThread::Create(0, this, &rpc_thread_);
 }
 
@@ -41,7 +43,7 @@ void PlatformViewsAsyncService::ThreadMain() {
   new CastAppRpcInstance(service_.get(), cq_.get(), ui_task_runner_,
                          &window_manager_, web_contents_provider_);
   new WebviewRpcInstance(service_.get(), cq_.get(), ui_task_runner_,
-                         &window_manager_);
+                         &window_manager_, enabled_for_dev_);
   // This thread is joined when this service is destroyed.
   while (cq_->Next(&tag, &ok)) {
     reinterpret_cast<GrpcCallback*>(tag)->Run(ok);

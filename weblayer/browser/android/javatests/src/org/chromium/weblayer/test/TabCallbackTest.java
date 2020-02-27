@@ -137,7 +137,6 @@ public class TabCallbackTest {
         Assert.assertEquals("anchor text", params[0].linkText);
     }
 
-    // Requires implementation M82.
     @Test
     @SmallTest
     public void testTabModalOverlay() throws TimeoutException {
@@ -167,6 +166,64 @@ public class TabCallbackTest {
         callCount = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { activity.getTab().dismissTabModalOverlay(); });
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(false, isTabModalShowingResult[0]);
+    }
+
+    @Test
+    @SmallTest
+    public void testTabModalOverlayOnBackgroundTab() throws TimeoutException {
+        // Create a tab.
+        String url = mActivityTestRule.getTestDataURL("new_browser.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
+        Assert.assertNotNull(activity);
+        NewTabCallbackImpl callback = new NewTabCallbackImpl();
+        Tab firstTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            Tab tab = activity.getBrowser().getActiveTab();
+            tab.setNewTabCallback(callback);
+            return tab;
+        });
+
+        // Tapping it creates a second tab, which is active.
+        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
+        callback.waitForNewTab();
+
+        Tab secondTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            Assert.assertEquals(2, activity.getBrowser().getTabs().size());
+            return activity.getBrowser().getActiveTab();
+        });
+        Assert.assertNotSame(firstTab, secondTab);
+
+        // Track tab modal updates.
+        Boolean isTabModalShowingResult[] = new Boolean[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        int callCount = callbackHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            firstTab.registerTabCallback(new TabCallback() {
+                @Override
+                public void onTabModalStateChanged(boolean isTabModalShowing) {
+                    isTabModalShowingResult[0] = isTabModalShowing;
+                    callbackHelper.notifyCalled();
+                }
+            });
+        });
+
+        // Create an alert from the background tab. It shouldn't display. There's no way to
+        // consistently verify that nothing happens, but the script execution should finish, which
+        // is not the case for dialogs that show on an active tab until they're dismissed.
+        mActivityTestRule.executeScriptSync("window.alert('foo');", true, firstTab);
+        Assert.assertEquals(0, callbackHelper.getCallCount());
+
+        // When that tab becomes active again, the alert should show.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getBrowser().setActiveTab(firstTab); });
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(true, isTabModalShowingResult[0]);
+
+        // Switch away from the tab again; the alert should be hidden.
+        callCount = callbackHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getBrowser().setActiveTab(secondTab); });
         callbackHelper.waitForCallback(callCount);
         Assert.assertEquals(false, isTabModalShowingResult[0]);
     }

@@ -121,22 +121,18 @@ std::unique_ptr<SSLBlockingPage> CreateSslBlockingPage(
   bool strict_enforcement = false;
   base::Time time_triggered_ = base::Time::NowFromSystemTime();
   std::string url_param;
-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
-                                 "url",
-                                 &url_param)) {
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "url", &url_param)) {
     if (GURL(url_param).is_valid()) {
       request_url = GURL(url_param);
     }
   }
   std::string overridable_param;
-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
-                                 "overridable",
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "overridable",
                                  &overridable_param)) {
     overridable = overridable_param == "1";
   }
   std::string strict_enforcement_param;
-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
-                                 "strict_enforcement",
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "strict_enforcement",
                                  &strict_enforcement_param)) {
     strict_enforcement = strict_enforcement_param == "1";
   }
@@ -280,9 +276,7 @@ CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
       safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
   std::string url_param;
-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
-                                 "url",
-                                 &url_param)) {
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "url", &url_param)) {
     if (GURL(url_param).is_valid()) {
       request_url = GURL(url_param);
     }
@@ -291,9 +285,7 @@ CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   // TODO(mattm): add flag to change main_frame_url or add dedicated flag to
   // test subresource interstitials.
   std::string type_param;
-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
-                                 "type",
-                                 &type_param)) {
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "type", &type_param)) {
     if (type_param == "malware") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
@@ -433,8 +425,7 @@ std::unique_ptr<security_interstitials::SecurityInterstitialPage>
 CreateOriginPolicyInterstitialPage(content::WebContents* web_contents) {
   return base::WrapUnique<security_interstitials::SecurityInterstitialPage>(
       security_interstitials::OriginPolicyUI::GetBlockingPage(
-          network::OriginPolicyState::kCannotLoadPolicy, web_contents,
-          GURL("https://example.com/broken/origin/policy")));
+          web_contents, GURL("https://example.com/broken/origin/policy")));
 }
 
 }  //  namespace
@@ -445,8 +436,7 @@ InterstitialUI::InterstitialUI(content::WebUI* web_ui)
                               std::make_unique<InterstitialHTMLSource>());
 }
 
-InterstitialUI::~InterstitialUI() {
-}
+InterstitialUI::~InterstitialUI() = default;
 
 // InterstitialHTMLSource
 

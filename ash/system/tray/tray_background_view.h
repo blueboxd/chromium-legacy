@@ -63,8 +63,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // whether the showing operation is initiated by mouse or gesture click.
   virtual void ShowBubble(bool show_by_click);
 
-  // Called whenever the shelf alignment or configuration changes.
-  virtual void UpdateAfterShelfChange();
+  // Calculates the ideal bounds that this view should have depending on the
+  // constraints.
+  virtual void CalculateTargetBounds();
+
+  // Makes this view's bounds and layout match its calculated target bounds.
+  virtual void UpdateLayout();
 
   // Called to update the tray button after the login status changes.
   virtual void UpdateAfterLoginStatusChange();

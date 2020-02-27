@@ -172,7 +172,7 @@ ExtensionFunction::ResponseAction GizmoFrobulateFunction::Run() {
       params->cycles,
       // Note that |this| is refcounted, so binding automatically adds a
       // reference.
-      base::Bind(&GizmoFrobulateFunction::OnFrobulated, this));
+      base::BindOnce(&GizmoFrobulateFunction::OnFrobulated, this));
 
   // Note: Since we are returning RespondLater() here, it is required that
   // Frobulate() did not call the callback synchronously (in which case,

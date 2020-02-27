@@ -34,6 +34,10 @@ import org.chromium.base.annotations.NativeMethods;
     private final Parsed mInnerUrl;
     private final boolean mPotentiallyDanglingMarkup;
 
+    /* packaged */ static Parsed createEmpty() {
+        return new Parsed(0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, false, null);
+    }
+
     @CalledByNative
     private Parsed(int schemeBegin, int schemeLength, int usernameBegin, int usernameLength,
             int passwordBegin, int passwordLength, int hostBegin, int hostLength, int portBegin,
@@ -68,6 +72,60 @@ import org.chromium.base.annotations.NativeMethods;
                 mUsernameLength, mPasswordBegin, mPasswordLength, mHostBegin, mHostLength,
                 mPortBegin, mPortLength, mPathBegin, mPathLength, mQueryBegin, mQueryLength,
                 mRefBegin, mRefLength, mPotentiallyDanglingMarkup, inner);
+    }
+
+    /* package */ String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(mSchemeBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mSchemeLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mUsernameBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mUsernameLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPasswordBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPasswordLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mHostBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mHostLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPortBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPortLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPathBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPathLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mQueryBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mQueryLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mRefBegin).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mRefLength).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mPotentiallyDanglingMarkup).append(GURL.SERIALIZER_DELIMITER);
+        builder.append(mInnerUrl != null);
+        if (mInnerUrl != null) {
+            builder.append(GURL.SERIALIZER_DELIMITER).append(mInnerUrl.serialize());
+        }
+        return builder.toString();
+    }
+
+    /* package */ static Parsed deserialize(String[] tokens, int startIndex) {
+        int schemeBegin = Integer.parseInt(tokens[startIndex++]);
+        int schemeLength = Integer.parseInt(tokens[startIndex++]);
+        int usernameBegin = Integer.parseInt(tokens[startIndex++]);
+        int usernameLength = Integer.parseInt(tokens[startIndex++]);
+        int passwordBegin = Integer.parseInt(tokens[startIndex++]);
+        int passwordLength = Integer.parseInt(tokens[startIndex++]);
+        int hostBegin = Integer.parseInt(tokens[startIndex++]);
+        int hostLength = Integer.parseInt(tokens[startIndex++]);
+        int portBegin = Integer.parseInt(tokens[startIndex++]);
+        int portLength = Integer.parseInt(tokens[startIndex++]);
+        int pathBegin = Integer.parseInt(tokens[startIndex++]);
+        int pathLength = Integer.parseInt(tokens[startIndex++]);
+        int queryBegin = Integer.parseInt(tokens[startIndex++]);
+        int queryLength = Integer.parseInt(tokens[startIndex++]);
+        int refBegin = Integer.parseInt(tokens[startIndex++]);
+        int refLength = Integer.parseInt(tokens[startIndex++]);
+        boolean potentiallyDanglingMarkup = Boolean.parseBoolean(tokens[startIndex++]);
+        Parsed innerParsed = null;
+        if (Boolean.parseBoolean(tokens[startIndex++])) {
+            innerParsed = Parsed.deserialize(tokens, startIndex);
+        }
+        return new Parsed(schemeBegin, schemeLength, usernameBegin, usernameLength, passwordBegin,
+                passwordLength, hostBegin, hostLength, portBegin, portLength, pathBegin, pathLength,
+                queryBegin, queryLength, refBegin, refLength, potentiallyDanglingMarkup,
+                innerParsed);
     }
 
     @NativeMethods

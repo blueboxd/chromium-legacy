@@ -105,6 +105,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "get_pin_one_try_remaining") {
       model->set_has_attempted_pin_entry_for_testing();
       model->CollectPIN(1, base::Bind([](std::string pin) {}));
+    } else if (name == "get_pin_fallback") {
+      model->set_internal_uv_locked();
+      model->CollectPIN(8, base::Bind([](std::string pin) {}));
     } else if (name == "retry_uv") {
       model->OnRetryUserVerification(5);
     } else if (name == "retry_uv_two_tries_remaining") {
@@ -268,6 +271,10 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_get_pin_one_try_remaining) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_get_pin_fallback) {
   ShowAndVerifyUi();
 }
 

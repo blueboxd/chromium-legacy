@@ -37,7 +37,7 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
 
   // TrayBackgroundView:
   void UpdateAfterLoginStatusChange() override;
-  void UpdateAfterShelfChange() override;
+  void UpdateLayout() override;
   void UpdateBackground() override;
   void ClickedOutsideBubble() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;

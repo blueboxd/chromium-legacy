@@ -175,36 +175,6 @@ luci.console_view(
             short_name = '32',
         ),
         luci.console_view_entry(
-            builder = 'ci-beta/KitKat Phone Tester (dbg)',
-            category = 'chromium.android|tester|phone',
-            short_name = 'K',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-beta/Lollipop Phone Tester',
-            category = 'chromium.android|tester|phone',
-            short_name = 'L',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-beta/KitKat Tablet Tester',
-            category = 'chromium.android|tester|tablet',
-            short_name = 'K',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-beta/Lollipop Tablet Tester',
-            category = 'chromium.android|tester|tablet',
-            short_name = 'L',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-beta/Marshmallow Tablet Tester',
-            category = 'chromium.android|tester|tablet',
-            short_name = 'M',
-        ),
-        luci.console_view_entry(
-            builder = 'ci-beta/Android WebView L (dbg)',
-            category = 'chromium.android|tester|webview',
-            short_name = 'L',
-        ),
-        luci.console_view_entry(
             builder = 'ci-beta/android-cronet-arm-rel',
             category = 'chromium.android|cronet|arm',
             short_name = 'rel',

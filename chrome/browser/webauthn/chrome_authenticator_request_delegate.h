@@ -118,6 +118,7 @@ class ChromeAuthenticatorRequestDelegate
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
   void FinishCollectToken() override;
   void OnRetryUserVerification(int attempts) override;
+  void OnInternalUserVerificationLocked() override;
   void SetMightCreateResidentCredential(bool v) override;
 
   // AuthenticatorRequestDialogModel::Observer:

@@ -2389,6 +2389,7 @@ class AssistantInteractionHelper
   void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
                          OnOpenAppResponseCallback callback) override {
     result_.SetKey("openAppResponse", base::Value(app_info->package_name));
+    std::move(callback).Run(true);
   }
 
   void OnSuggestionsResponse(
@@ -2463,6 +2464,8 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
 
 void AutotestPrivateSendAssistantTextQueryFunction::
     OnInteractionFinishedCallback(bool success) {
+  // |timeout_timer_| need to be hold until |Respond(.)| is called to avoid
+  // |this| being destructed.
   if (!success) {
     Respond(Error("Interaction ends abnormally."));
     timeout_timer_.AbandonAndStop();
@@ -2519,6 +2522,8 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
 
 void AutotestPrivateWaitForAssistantQueryStatusFunction::
     OnInteractionFinishedCallback(bool success) {
+  // |timeout_timer_| need to be hold until |Respond(.)| is called to avoid
+  // |this| being destructed.
   if (!success) {
     Respond(Error("Interaction ends abnormally."));
     timeout_timer_.AbandonAndStop();

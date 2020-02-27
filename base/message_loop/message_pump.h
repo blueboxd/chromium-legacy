@@ -36,10 +36,18 @@ class BASE_EXPORT MessagePump {
    public:
     virtual ~Delegate() = default;
 
-    // Called before work performed internal to the message pump is executed,
-    // including waiting for a wake up.
-    // TODO(crbug.com/851163): Implement for all platforms.
+    // Called before a unit of work internal to the message pump is executed.
+    // This allows reports about individual units of work to be produced.
+    // The unit of work ends when BeforeDoInternalWork() is called again, or
+    // when BeforeWait(), DoSomeWork(), DoWork(), DoDelayedWork() or
+    // DoIdleWork() is called.
+    // TODO(crbug.com/851163): Place calls for all platforms.
     virtual void BeforeDoInternalWork() = 0;
+
+    // Called before the message pump starts waiting for work.
+    // This indicates the end of the current unit of work, which is required
+    // to produce reports about individual units of work.
+    virtual void BeforeWait() = 0;
 
     struct NextWorkInfo {
       // Helper to extract a TimeDelta for pumps that need a
@@ -109,9 +117,11 @@ class BASE_EXPORT MessagePump {
   // The Run method is called to enter the message pump's run loop.
   //
   // Within the method, the message pump is responsible for processing native
-  // messages as well as for giving cycles to the delegate periodically.  The
+  // messages as well as for giving cycles to the delegate periodically. The
   // message pump should take care to mix delegate callbacks with native
   // message processing so neither type of event starves the other of cycles.
+  // Each call to a delegate function or DoInternalWork() is considered
+  // the beginning of a new "unit of work".
   //
   // The anatomy of a typical run loop:
   //

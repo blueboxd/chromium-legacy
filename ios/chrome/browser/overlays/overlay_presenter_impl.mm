@@ -160,7 +160,7 @@ void OverlayPresenterImpl::SetActiveWebState(
   } else {
     // For WebState activations, the overlay UI for the previously active
     // WebState should be hidden, as it may be shown again upon reactivating.
-    presentation_context_->HideOverlayUI(this, previously_active_request);
+    presentation_context_->HideOverlayUI(previously_active_request);
   }
 }
 
@@ -193,8 +193,9 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   // Overlays cannot be presented if one is already presented.
   DCHECK(!presenting_);
 
-  // Overlays cannot be shown without a presentation context.
-  if (!presentation_context_)
+  // Overlays cannot be shown without a presentation context or if the
+  // presentation context is already showing overlay UI.
+  if (!presentation_context_ || presentation_context_->IsShowingOverlayUI())
     return;
 
   // No presentation is necessary if there is no active reqeust or the context
@@ -219,9 +220,8 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
       &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
       presentation_context_, request, GetActiveQueue()->GetWeakPtr());
-  presentation_context_->ShowOverlayUI(this, request,
-                                       std::move(presentation_callback),
-                                       std::move(dismissal_callback));
+  presentation_context_->ShowOverlayUI(
+      request, std::move(presentation_callback), std::move(dismissal_callback));
 }
 
 void OverlayPresenterImpl::OverlayWasPresented(
@@ -286,7 +286,7 @@ void OverlayPresenterImpl::OverlayWasDismissed(
 void OverlayPresenterImpl::CancelOverlayUIForRequest(OverlayRequest* request) {
   if (!presentation_context_ || !request)
     return;
-  presentation_context_->CancelOverlayUI(this, request);
+  presentation_context_->CancelOverlayUI(request);
 }
 
 void OverlayPresenterImpl::CancelAllOverlayUI() {
@@ -372,7 +372,7 @@ void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
       presented_request_ && queue->size() > 1 &&
       queue->GetRequest(/*index=*/1) == presented_request_;
   if (should_dismiss_for_inserted_request)
-    presentation_context_->HideOverlayUI(this, presented_request_);
+    presentation_context_->HideOverlayUI(presented_request_);
 }
 
 void OverlayPresenterImpl::OverlayRequestQueueDestroyed(
@@ -392,7 +392,7 @@ void OverlayPresenterImpl::
   OverlayRequest* request = GetActiveRequest();
   if (presenting_ &&
       !presentation_context->CanShowUIForRequest(request, capabilities)) {
-    presentation_context_->HideOverlayUI(this, GetActiveRequest());
+    presentation_context_->HideOverlayUI(GetActiveRequest());
   }
 }
 

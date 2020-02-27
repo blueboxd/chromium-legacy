@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -257,6 +258,27 @@ CableDiscoveryData::V2Data::V2Data() = default;
 CableDiscoveryData::V2Data::V2Data(const V2Data&) = default;
 CableDiscoveryData::V2Data::~V2Data() = default;
 
+// FidoCableDiscovery::CableV1DiscoveryEvent  ---------------------------------
+
+// CableV1DiscoveryEvent enumerates several things that can occur during a caBLE
+// v1 discovery. Do not change assigned values since they are used in
+// histograms, only append new values. Keep synced with enums.xml.
+enum class FidoCableDiscovery::CableV1DiscoveryEvent : int {
+  kStarted = 0,
+  kAdapterPresent = 1,
+  kAdapterAlreadyPowered = 2,
+  kAdapterAutomaticallyPowered = 3,
+  kAdapterManuallyPowered = 4,
+  kAdapterPoweredOff = 5,
+  kScanningStarted = 6,
+  kAdvertisementRegistered = 7,
+  kFirstCableDeviceFound = 8,
+  kFirstCableDeviceGATTConnected = 9,
+  kFirstCableHandshakeSucceeded = 10,
+  kFirstCableDeviceTimeout = 11,
+  kMaxValue = kFirstCableDeviceTimeout,
+};
+
 // FidoCableDiscovery::Result -------------------------------------------------
 
 FidoCableDiscovery::Result::Result() = default;
@@ -302,6 +324,14 @@ FidoCableDiscovery::FidoCableDiscovery(
     discovery_data_.erase(discovery_data_.begin() + 1, discovery_data_.end());
   }
 #endif
+  for (const CableDiscoveryData& data : discovery_data_) {
+    if (data.version != CableDiscoveryData::Version::V1) {
+      continue;
+    }
+    has_v1_discovery_data_ = true;
+    RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kStarted);
+    break;
+  }
 }
 
 FidoCableDiscovery::~FidoCableDiscovery() {
@@ -382,6 +412,14 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
 
 void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
                                                bool powered) {
+  if (has_v1_discovery_data_) {
+    RecordCableV1DiscoveryEventOnce(
+        powered ? (adapter->CanPower()
+                       ? CableV1DiscoveryEvent::kAdapterAutomaticallyPowered
+                       : CableV1DiscoveryEvent::kAdapterManuallyPowered)
+                : CableV1DiscoveryEvent::kAdapterPoweredOff);
+  }
+
   if (!powered) {
     // In order to prevent duplicate client EIDs from being advertised when
     // BluetoothAdapter is powered back on, unregister all existing client
@@ -407,11 +445,41 @@ void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
 #endif  // defined(OS_WIN)
 }
 
+void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
+  if (has_v1_discovery_data_) {
+    if (adapter->IsPresent()) {
+      RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kAdapterPresent);
+    }
+    if (adapter->IsPowered()) {
+      RecordCableV1DiscoveryEventOnce(
+          CableV1DiscoveryEvent::kAdapterAlreadyPowered);
+    }
+  }
+  FidoBleDiscoveryBase::OnGetAdapter(std::move(adapter));
+}
+
 void FidoCableDiscovery::OnSetPowered() {
   DCHECK(adapter());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartCableDiscovery,
                                 weak_factory_.GetWeakPtr()));
+}
+
+void FidoCableDiscovery::FidoBleDeviceConnected(FidoBleDevice* device,
+                                                bool success) {
+  if (!success || !IsObservedV1Device(device->GetAddress())) {
+    return;
+  }
+  RecordCableV1DiscoveryEventOnce(
+      CableV1DiscoveryEvent::kFirstCableDeviceGATTConnected);
+}
+
+void FidoCableDiscovery::FidoBleDeviceTimeout(FidoBleDevice* device) {
+  if (!IsObservedV1Device(device->GetAddress())) {
+    return;
+  }
+  RecordCableV1DiscoveryEventOnce(
+      CableV1DiscoveryEvent::kFirstCableDeviceTimeout);
 }
 
 void FidoCableDiscovery::StartCableDiscovery() {
@@ -430,8 +498,9 @@ void FidoCableDiscovery::StartCableDiscovery() {
 
 void FidoCableDiscovery::OnStartDiscoverySession(
     std::unique_ptr<BluetoothDiscoverySession> session) {
-  SetDiscoverySession(std::move(session));
   FIDO_LOG(DEBUG) << "Discovery session started.";
+  RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kScanningStarted);
+  SetDiscoverySession(std::move(session));
   // Advertising is delayed by 500ms to ensure that any UI has a chance to
   // appear as we don't want to start broadcasting without the user being
   // aware.
@@ -506,6 +575,8 @@ void FidoCableDiscovery::OnAdvertisementRegistered(
     const CableEidArray& client_eid,
     scoped_refptr<BluetoothAdvertisement> advertisement) {
   FIDO_LOG(DEBUG) << "Advertisement registered";
+  RecordCableV1DiscoveryEventOnce(
+      CableV1DiscoveryEvent::kAdvertisementRegistered);
   advertisements_.emplace(client_eid, std::move(advertisement));
 }
 
@@ -516,15 +587,18 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
     return;
   }
 
-  base::Optional<Result> maybe_result = GetCableDiscoveryData(device);
-  if (!maybe_result ||
-      base::Contains(active_authenticator_eids_, maybe_result->eid)) {
+  base::Optional<Result> result = GetCableDiscoveryData(device);
+  if (!result || base::Contains(active_authenticator_eids_, result->eid)) {
     return;
   }
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
+  if (result->discovery_data.version == CableDiscoveryData::Version::V1) {
+    RecordCableV1DiscoveryEventOnce(
+        CableV1DiscoveryEvent::kFirstCableDeviceFound);
+  }
   active_devices_.insert(device_address);
-  active_authenticator_eids_.insert(maybe_result->eid);
+  active_authenticator_eids_.insert(result->eid);
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Speed up GATT service discovery on ChromeOS/BlueZ.
@@ -540,10 +614,10 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device_address);
-  StopAdvertisements(
-      base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
-                     weak_factory_.GetWeakPtr(), std::move(cable_device),
-                     std::move(*maybe_result)));
+  cable_device->set_observer(this);
+  StopAdvertisements(base::BindOnce(
+      &FidoCableDiscovery::ConductEncryptionHandshake,
+      weak_factory_.GetWeakPtr(), std::move(cable_device), std::move(*result)));
 }
 
 void FidoCableDiscovery::ConductEncryptionHandshake(
@@ -561,11 +635,12 @@ void FidoCableDiscovery::ConductEncryptionHandshake(
   handshake_handler_ptr->InitiateCableHandshake(
       base::BindOnce(&FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,
                      weak_factory_.GetWeakPtr(), std::move(cable_device),
-                     handshake_handler_ptr));
+                     result.discovery_data.version, handshake_handler_ptr));
 }
 
 void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
     std::unique_ptr<FidoCableDevice> cable_device,
+    CableDiscoveryData::Version cable_version,
     FidoCableHandshakeHandler* handshake_handler,
     base::Optional<std::vector<uint8_t>> handshake_response) {
   if (!handshake_response)
@@ -574,6 +649,10 @@ void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
   if (handshake_handler->ValidateAuthenticatorHandshakeMessage(
           *handshake_response)) {
     FIDO_LOG(DEBUG) << "Authenticator handshake validated";
+    if (cable_version == CableDiscoveryData::Version::V1) {
+      RecordCableV1DiscoveryEventOnce(
+          CableV1DiscoveryEvent::kFirstCableHandshakeSucceeded);
+    }
     AddDevice(std::move(cable_device));
   } else {
     FIDO_LOG(DEBUG) << "Authenticator handshake invalid";
@@ -598,11 +677,6 @@ FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
     }
   }
 
-  auto data = std::make_unique<ObservedDeviceData>();
-  data->service_data = maybe_eid_from_service_data;
-  data->uuids = uuids;
-  observed_devices_.insert_or_assign(address, std::move(data));
-
   // New or updated device information.
   if (known) {
     FIDO_LOG(DEBUG) << "Updated information for caBLE device " << address
@@ -611,12 +685,12 @@ FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
     FIDO_LOG(DEBUG) << "New caBLE device " << address << ":";
   }
 
-  base::Optional<FidoCableDiscovery::Result> ret;
+  base::Optional<FidoCableDiscovery::Result> result;
   if (maybe_eid_from_service_data.has_value()) {
-    ret =
+    result =
         GetCableDiscoveryDataFromAuthenticatorEid(*maybe_eid_from_service_data);
     FIDO_LOG(DEBUG) << "  Service data: "
-                    << ResultDebugString(*maybe_eid_from_service_data, ret);
+                    << ResultDebugString(*maybe_eid_from_service_data, result);
 
   } else {
     FIDO_LOG(DEBUG) << "  Service data: <none>";
@@ -625,15 +699,23 @@ FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
   if (!uuids.empty()) {
     FIDO_LOG(DEBUG) << "  UUIDs:";
     for (const auto& uuid : uuids) {
-      auto result = GetCableDiscoveryDataFromAuthenticatorEid(uuid);
-      FIDO_LOG(DEBUG) << "    " << ResultDebugString(uuid, result);
-      if (!ret.has_value() && result.has_value()) {
-        ret = result;
+      auto discovery_data = GetCableDiscoveryDataFromAuthenticatorEid(uuid);
+      FIDO_LOG(DEBUG) << "    " << ResultDebugString(uuid, discovery_data);
+      if (!result && discovery_data) {
+        result = discovery_data;
       }
     }
   }
 
-  return ret;
+  auto observed_data = std::make_unique<ObservedDeviceData>();
+  observed_data->service_data = maybe_eid_from_service_data;
+  observed_data->uuids = uuids;
+  if (result) {
+    observed_data->maybe_discovery_data = result->discovery_data;
+  }
+  observed_devices_.insert_or_assign(address, std::move(observed_data));
+
+  return result;
 }
 
 // static
@@ -722,6 +804,24 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
   }
 
   return base::nullopt;
+}
+
+bool FidoCableDiscovery::IsObservedV1Device(const std::string& address) const {
+  const auto it = observed_devices_.find(address);
+  return it != observed_devices_.end() && it->second->maybe_discovery_data &&
+         it->second->maybe_discovery_data->version ==
+             CableDiscoveryData::Version::V1;
+}
+
+void FidoCableDiscovery::RecordCableV1DiscoveryEventOnce(
+    CableV1DiscoveryEvent event) {
+  DCHECK(has_v1_discovery_data_);
+  if (base::Contains(recorded_events_, event)) {
+    return;
+  }
+  recorded_events_.insert(event);
+  base::UmaHistogramEnumeration("WebAuthentication.CableV1DiscoveryEvent",
+                                event);
 }
 
 // static

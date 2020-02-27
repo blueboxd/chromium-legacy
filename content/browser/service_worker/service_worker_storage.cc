@@ -20,6 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -39,6 +40,21 @@ namespace {
 
 void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
+}
+
+// Notifies quota manager that a disk write operation failed so that it can
+// check for storage pressure.
+void MaybeNotifyWriteFailed(
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    ServiceWorkerDatabase::Status status,
+    const GURL& origin) {
+  if (!quota_manager_proxy)
+    return;
+
+  if (status == ServiceWorkerDatabase::Status::kErrorFailed ||
+      status == ServiceWorkerDatabase::Status::kErrorIOError) {
+    quota_manager_proxy->NotifyWriteFailed(url::Origin::Create(origin));
+  }
 }
 
 const base::FilePath::CharType kDatabaseName[] =
@@ -332,7 +348,8 @@ void ServiceWorkerStorage::UpdateToActiveState(
       base::BindOnce(&ServiceWorkerDatabase::UpdateVersionToActive,
                      base::Unretained(database_.get()), registration_id,
                      origin),
-      std::move(callback));
+      base::BindOnce(&ServiceWorkerStorage::DidUpdateToActiveState,
+                     weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }
 
 void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
@@ -458,6 +475,7 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
 
 void ServiceWorkerStorage::StoreUncommittedResourceId(
     int64_t resource_id,
+    const GURL& origin,
     DatabaseStatusCallback callback) {
   DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
@@ -478,7 +496,8 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(
       base::BindOnce(&ServiceWorkerDatabase::WriteUncommittedResourceIds,
                      base::Unretained(database_.get()),
                      std::set<int64_t>(&resource_id, &resource_id + 1)),
-      std::move(callback));
+      base::BindOnce(&ServiceWorkerStorage::DidWriteUncommittedResourceIds,
+                     weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }
 
 void ServiceWorkerStorage::DoomUncommittedResources(
@@ -528,7 +547,8 @@ void ServiceWorkerStorage::StoreUserData(
       base::BindOnce(&ServiceWorkerDatabase::WriteUserData,
                      base::Unretained(database_.get()), registration_id, origin,
                      key_value_pairs),
-      std::move(callback));
+      base::BindOnce(&ServiceWorkerStorage::DidStoreUserData,
+                     weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }
 
 void ServiceWorkerStorage::GetUserData(int64_t registration_id,
@@ -973,6 +993,7 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
     const std::vector<int64_t>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk) {
+    MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
     std::move(callback).Run(status, deleted_version.version_id,
                             newly_purgeable_resources);
     return;
@@ -991,6 +1012,14 @@ void ServiceWorkerStorage::DidStoreRegistrationData(
   std::move(callback).Run(ServiceWorkerDatabase::Status::kOk,
                           deleted_version.version_id,
                           newly_purgeable_resources);
+}
+
+void ServiceWorkerStorage::DidUpdateToActiveState(
+    DatabaseStatusCallback callback,
+    const GURL& origin,
+    ServiceWorkerDatabase::Status status) {
+  MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
+  std::move(callback).Run(status);
 }
 
 void ServiceWorkerStorage::DidDeleteRegistration(
@@ -1020,6 +1049,22 @@ void ServiceWorkerStorage::DidDeleteRegistration(
   std::move(params->callback)
       .Run(ServiceWorkerDatabase::Status::kOk, deleted_version.version_id,
            newly_purgeable_resources);
+}
+
+void ServiceWorkerStorage::DidWriteUncommittedResourceIds(
+    DatabaseStatusCallback callback,
+    const GURL& origin,
+    ServiceWorkerDatabase::Status status) {
+  MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
+  std::move(callback).Run(status);
+}
+
+void ServiceWorkerStorage::DidStoreUserData(
+    DatabaseStatusCallback callback,
+    const GURL& origin,
+    ServiceWorkerDatabase::Status status) {
+  MaybeNotifyWriteFailed(quota_manager_proxy_, status, origin);
+  std::move(callback).Run(status);
 }
 
 ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {

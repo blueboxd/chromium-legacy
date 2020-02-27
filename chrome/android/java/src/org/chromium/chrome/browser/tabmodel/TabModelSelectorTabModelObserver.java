@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class TabModelSelectorTabModelObserver extends EmptyTabModelObserver {
         if (tabModels.isEmpty()) {
             mSelectorObserver = new EmptyTabModelSelectorObserver() {
                 @Override
-                public void onNewTabCreated(Tab tab) {
+                public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                     throw new IllegalStateException(
                             "onChange should have happened and unregistered this listener.");
                 }

@@ -132,6 +132,20 @@
            use_base_dir="false"
            type="BINDATA"
            preprocess="true" />
+  <if expr="is_win and _google_chrome">
+    <include name="IDR_SETTINGS_INCOMPATIBLE_APPLICATIONS_PAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/incompatible_applications_page/incompatible_applications_page.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_INCOMPATIBLE_APPLICATIONS_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/incompatible_applications_page/incompatible_applications_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_INCOMPATIBLE_APPLICATIONS_INCOMPATIBLE_APPLICATION_ITEM_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/incompatible_applications_page/incompatible_application_item.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_LIFETIME_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/lifetime_browser_proxy.m.js"
            use_base_dir="false"

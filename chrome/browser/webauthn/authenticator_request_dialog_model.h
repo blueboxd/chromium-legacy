@@ -396,9 +396,6 @@ class AuthenticatorRequestDialogModel {
   // |responses()|.
   void OnAccountSelected(size_t index);
 
-  // OnSuccess is called when a WebAuthn operation completes successfully.
-  void OnSuccess(AuthenticatorTransport transport);
-
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   ObservableAuthenticatorList& saved_authenticators() {
@@ -419,6 +416,9 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.has_attempted_pin_entry_;
   }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
+
+  // Flags the authenticator's internal user verification as locked.
+  void set_internal_uv_locked() { uv_attempts_ = 0; }
   base::Optional<int> uv_attempts() const { return uv_attempts_; }
 
   void RequestAttestationPermission(base::OnceCallback<void(bool)> callback);
@@ -544,9 +544,6 @@ class AuthenticatorRequestDialogModel {
   // phones.
   bool have_paired_phones_ = false;
   base::Optional<device::QRGeneratorKey> qr_generator_key_;
-  // did_cable_broadcast_ is true if a caBLE v1 extension was provided and
-  // BLE adverts were broadcast.
-  bool did_cable_broadcast_ = false;
   // win_native_api_already_tried_ is true if the Windows-native UI has been
   // displayed already and the user cancelled it. In this case, we shouldn't
   // jump straight to showing it again.

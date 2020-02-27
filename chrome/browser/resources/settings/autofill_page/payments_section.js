@@ -62,6 +62,12 @@ cr.define('settings', function() {
      * Enables FIDO authentication for card unmasking.
      */
     setCreditCardFIDOAuthEnabledState(enabled) {}
+
+    /**
+     * Requests the list of UPI IDs from personal data.
+     * @param {function(!Array<!string>):void} callback
+     */
+    getUpiIdList(callback) {}
   }
 
   /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
@@ -116,6 +122,11 @@ cr.define('settings', function() {
     setCreditCardFIDOAuthEnabledState(enabled) {
       chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState(enabled);
     }
+
+    /** @override */
+    getUpiIdList(callback) {
+      chrome.autofillPrivate.getUpiIdList(callback);
+    }
   }
 
   cr.addSingletonGetter(PaymentsManagerImpl);
@@ -134,6 +145,15 @@ cr.define('settings', function() {
        * @type {!Array<!settings.PaymentsManager.CreditCardEntry>}
        */
       creditCards: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
+       * An array of all saved UPI IDs.
+       * @type {!Array<!string>}
+       */
+      upiIds: {
         type: Array,
         value: () => [],
       },
@@ -227,6 +247,11 @@ cr.define('settings', function() {
         this.creditCards = cardList;
       };
 
+      /** @type {function(!Array<!string>)} */
+      const setUpiIdsListener = upiIdList => {
+        this.upiIds = upiIdList;
+      };
+
       // Remember the bound reference in order to detach.
       this.setPersonalDataListener_ = setPersonalDataListener;
 
@@ -235,6 +260,7 @@ cr.define('settings', function() {
 
       // Request initial data.
       this.paymentsManager_.getCreditCardList(setCreditCardsListener);
+      this.paymentsManager_.getUpiIdList(setUpiIdsListener);
 
       // Listen for changes.
       this.paymentsManager_.setPersonalDataManagerListener(

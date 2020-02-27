@@ -5,24 +5,22 @@
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compiler/pgo/pgo.gni")
+import("//build/toolchain/toolchain.gni")
 
 # Configuration that enables PGO instrumentation.
 config("pgo_instrumentation_flags") {
   visibility = [ ":default_pgo_flags" ]
-  cflags = []
-  ldflags = []
 
   # Only add flags when chrome_pgo_phase == 1, so that variables we would use
   # are not required to be defined when we're not actually using PGO.
-  if (chrome_pgo_phase == 1) {
-    if (is_clang) {
-      cflags = [ "-fprofile-instr-generate" ]
-      if (!is_win) {
-        # Windows directly calls link.exe instead of the compiler driver when
-        # linking, and embeds the path to the profile runtime library as
-        # dependent library into each object file.
-        ldflags += [ "-fprofile-instr-generate" ]
-      }
+  if (chrome_pgo_phase == 1 && is_clang && use_lld && !is_nacl &&
+      is_a_target_toolchain) {
+    cflags = [ "-fprofile-instr-generate" ]
+    if (!is_win) {
+      # Windows directly calls link.exe instead of the compiler driver when
+      # linking, and embeds the path to the profile runtime library as
+      # dependent library into each object file.
+      ldflags = [ "-fprofile-instr-generate" ]
     }
   }
 }
@@ -30,25 +28,22 @@ config("pgo_instrumentation_flags") {
 # Configuration that enables optimization using profile data.
 config("pgo_optimization_flags") {
   visibility = [ ":default_pgo_flags" ]
-  cflags = []
-  ldflags = []
 
   # Only add flags when chrome_pgo_phase == 2, so that variables we would use
   # are not required to be defined when we're not actually using PGO.
-  if (chrome_pgo_phase == 2) {
-    if (is_clang) {
-      assert(pgo_data_path != "",
-             "Please set pgo_data_path to point at the profile data")
-      cflags += [
-        "-fprofile-instr-use=$pgo_data_path",
+  if (chrome_pgo_phase == 2 && is_clang && use_lld && !is_nacl &&
+      is_a_target_toolchain) {
+    assert(pgo_data_path != "",
+           "Please set pgo_data_path to point at the profile data")
+    cflags += [
+      "-fprofile-instr-use=$pgo_data_path",
 
-        # It's possible to have some profile data legitimately missing,
-        # and at least some profile data always ends up being considered
-        # out of date, so make sure we don't error for those cases.
-        "-Wno-profile-instr-unprofiled",
-        "-Wno-error=profile-instr-out-of-date",
-      ]
-    }
+      # It's possible to have some profile data legitimately missing,
+      # and at least some profile data always ends up being considered
+      # out of date, so make sure we don't error for those cases.
+      "-Wno-profile-instr-unprofiled",
+      "-Wno-error=profile-instr-out-of-date",
+    ]
   }
 }
 

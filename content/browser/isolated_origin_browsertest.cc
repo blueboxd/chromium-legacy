@@ -100,9 +100,11 @@ class IsolatedOriginTest : public IsolatedOriginTestBase {
   void InjectAndClickLinkTo(GURL url) {
     EXPECT_TRUE(ExecuteScript(web_contents(),
                               "var link = document.createElement('a');"
-                              "link.href = '" + url.spec() + "';"
-                              "document.body.appendChild(link);"
-                              "link.click();"));
+                              "link.href = '" +
+                                  url.spec() +
+                                  "';"
+                                  "document.body.appendChild(link);"
+                                  "link.click();"));
   }
 
  private:
@@ -160,16 +162,15 @@ class OriginIsolationOptInTest : public IsolatedOriginTestBase {
     if (request.relative_url == "/isolate_me") {
       response->set_code(net::HTTP_OK);
       response->set_content_type("text/html");
-      response->AddCustomHeader(net::HttpRequestHeaders::kSecOriginPolicy,
-                                "policy=isolate");
+      response->AddCustomHeader("Origin-Policy", "allowed=(latest)");
       response->set_content("isolate me!");
       return std::move(response);
     }
 
     // Intercepts the request to get the origin policy, and injects the policy.
     // Note: this will only be activated for requests that load "isolate_me"
-    // above, since only it sets the kSecOriginPolicy header.
-    if (request.relative_url == "/.well-known/origin-policy/isolate") {
+    // above, since only it sets the Origin-Policy header.
+    if (request.relative_url == "/.well-known/origin-policy") {
       response->set_code(net::HTTP_OK);
       response->set_content(origin_policy_manifest_);
       return std::move(response);

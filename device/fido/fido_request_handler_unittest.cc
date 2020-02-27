@@ -161,6 +161,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 
   void OnRetryUserVerification(int attempts) override {}
 
+  void OnInternalUserVerificationLocked() override {}
+
   void FinishCollectToken() override { NOTREACHED(); }
 
  private:

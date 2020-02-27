@@ -481,6 +481,15 @@ void Service::RequestAccessToken() {
     return;
   }
 
+  // Work around a login crash for Active Directory accounts.
+  // TODO(https://crbug.com/1056717): Figure out if assistant is supposed to
+  // work for AD accounts. If not, we probably shouldn't create |this|.
+  if (!identity_manager_->HasPrimaryAccount(
+          signin::ConsentLevel::kNotRequired)) {
+    LOG(WARNING) << "No primary account info, stopping access token fetch.";
+    return;
+  }
+
   if (access_token_fetcher_) {
     LOG(WARNING) << "Access token already requested.";
     return;

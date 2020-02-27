@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/upload_data_stream.h"
 
@@ -36,7 +37,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
     // Called for each read request. Delegate must respond by calling
     // OnReadSuccess on the network thread asynchronous, or failing the request.
     // Only called when there's no other pending read or rewind operation.
-    virtual void Read(net::IOBuffer* buffer, int buf_len) = 0;
+    virtual void Read(scoped_refptr<net::IOBuffer> buffer, int buf_len) = 0;
 
     // Called to rewind the stream. Not called when already at the start of the
     // stream. The delegate must respond by calling OnRewindSuccess

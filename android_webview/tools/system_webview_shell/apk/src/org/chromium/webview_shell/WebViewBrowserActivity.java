@@ -249,11 +249,17 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         });
         findViewById(R.id.btn_load_url).setOnClickListener((view) -> loadUrlFromUrlBar(view));
 
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .penaltyDeath()
-                .build());
+        StrictMode.ThreadPolicy.Builder threadPolicyBuilder =
+                new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath();
+        // See crbug.com/1056368, Samsung device has an internal method
+        // "android.util.GeneralUtil#isSupportedGloveModeInternal", which reads file and
+        // violates strict mode policy. This method is called when showing the dropdown menu after
+        // user clicks the 3-dots menu. However this showing code is part of Android framework and
+        // not controlled by this app, so we need to permit disk read for the UI thread.
+        if (Build.MANUFACTURER.toLowerCase(Locale.US).equals("samsung")) {
+            threadPolicyBuilder.permitDiskReads();
+        }
+        StrictMode.setThreadPolicy(threadPolicyBuilder.build());
         // Conspicuously omitted: detectCleartextNetwork() and detectFileUriExposure() to permit
         // http:// and file:// origins.
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()

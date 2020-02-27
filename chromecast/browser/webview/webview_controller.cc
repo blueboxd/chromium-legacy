@@ -45,7 +45,8 @@ class WebviewUserData : public base::SupportsUserData::Data {
 }  // namespace
 
 WebviewController::WebviewController(content::BrowserContext* browser_context,
-                                     Client* client)
+                                     Client* client,
+                                     bool enabled_for_dev)
     : WebContentController(client) {
   content::WebContents::CreateParams create_params(browser_context, nullptr);
   contents_ = content::WebContents::Create(create_params);
@@ -53,7 +54,7 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
                          std::make_unique<WebviewUserData>(this));
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
-  cast_contents_init.enabled_for_dev = CAST_IS_DEBUG_BUILD();
+  cast_contents_init.enabled_for_dev = enabled_for_dev;
   cast_contents_init.delegate = weak_ptr_factory_.GetWeakPtr();
   cast_web_contents_ = std::make_unique<CastWebContentsImpl>(
       contents_.get(), cast_contents_init);

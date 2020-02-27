@@ -47,7 +47,10 @@ enum class HintOrigin {
   // preconnect is initiated. Preconnect triggered by
   // OMNIBOX_PRERENDER_FALLBACK may be handled differently than preconnects
   // triggered by OMNIBOX since the former are triggered at higher confidence.
-  OMNIBOX_PRERENDER_FALLBACK
+  OMNIBOX_PRERENDER_FALLBACK,
+
+  // Triggered by optimization guide.
+  OPTIMIZATION_GUIDE,
 };
 
 // Represents the config for the Loading predictor.

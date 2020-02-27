@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingDelegateFactory;
@@ -307,7 +308,7 @@ public class CustomTabActivityTabController
         assert tab != null;
 
         if (mode != TabCreationMode.RESTORED) {
-            tabModel.addTab(tab, 0, tab.getLaunchType());
+            tabModel.addTab(tab, 0, tab.getLaunchType(), TabCreationState.LIVE_IN_FOREGROUND);
         }
 
         // This cannot be done before because we want to do the reparenting only

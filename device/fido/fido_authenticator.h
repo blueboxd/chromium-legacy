@@ -144,6 +144,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
     kNoPIN,
     // kUsePIN means that a PIN must be gathered and used for this assertion.
     kUsePIN,
+    // kUsePINForFallback means that a PIN may be used for fallback if internal
+    // user verification fails.
+    kUsePINForFallback,
     // kUnsatisfiable means that the request cannot be satisfied by this
     // authenticator.
     kUnsatisfiable,

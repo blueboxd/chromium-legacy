@@ -5,7 +5,9 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "base/test/ios/wait_util.h"
 
+#include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -15,6 +17,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_http_header_provider.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -60,6 +63,24 @@ using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::BrowserCommandDispatcherForMainBVC;
+
+namespace {
+
+// Returns a JSON-encoded string representing the given |pref|. If |pref| is
+// nullptr, returns a string representing a base::Value of type NONE.
+NSString* SerializedPref(const PrefService::Preference* pref) {
+  base::Value none_value(base::Value::Type::NONE);
+
+  const base::Value* value = pref ? pref->GetValue() : &none_value;
+  DCHECK(value);
+
+  std::string serialized_value;
+  JSONStringValueSerializer serializer(&serialized_value);
+  serializer.Serialize(*value);
+  return base::SysUTF8ToNSString(serialized_value);
+}
+
+}
 
 @implementation ChromeEarlGreyAppInterface
 
@@ -684,6 +705,21 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 #pragma mark - Pref Utilities (EG2)
+
++ (NSString*)localStatePrefValue:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  const PrefService::Preference* pref =
+      GetApplicationContext()->GetLocalState()->FindPreference(path);
+  return SerializedPref(pref);
+}
+
++ (NSString*)userPrefValue:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  const PrefService::Preference* pref =
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs()->FindPreference(
+          path);
+  return SerializedPref(pref);
+}
 
 + (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName {
   chrome_test_util::SetBooleanUserPref(

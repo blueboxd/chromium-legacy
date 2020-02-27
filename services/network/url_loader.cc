@@ -584,8 +584,6 @@ URLLoader::URLLoader(
   if (request.obey_origin_policy) {
     DCHECK(origin_policy_manager);
     origin_policy_manager_ = origin_policy_manager;
-    merged_headers.SetHeader(net::HttpRequestHeaders::kSecOriginPolicy,
-                             kDefaultOriginPolicyVersion);
   }
   // This should be ensured by the CorsURLLoaderFactory(), which is called
   // before URLLoaders are created.
@@ -1176,18 +1174,19 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   // If necessary, retrieve the associated origin policy, before sending the
   // response to the client.
   if (origin_policy_manager_ && url_request_->response_headers()) {
-    std::string sec_origin_policy_header;
-    url_request_->response_headers()->GetNormalizedHeader(
-        net::HttpRequestHeaders::kSecOriginPolicy, &sec_origin_policy_header);
+    base::Optional<std::string> origin_policy_header;
+    std::string origin_policy_header_value;
+    if (url_request_->response_headers()->GetNormalizedHeader(
+            "origin-policy", &origin_policy_header_value)) {
+      origin_policy_header = origin_policy_header_value;
+    }
 
     OriginPolicyManager::RetrieveOriginPolicyCallback
         origin_policy_manager_done =
             base::BindOnce(&URLLoader::OnOriginPolicyManagerRetrieveDone,
                            weak_ptr_factory_.GetWeakPtr());
-    // Passing an empty string if no header is present is intentional as the
-    // origin policy manager needs to also handle an empty header.
     origin_policy_manager_->RetrieveOriginPolicy(
-        url::Origin::Create(url_request_->url()), sec_origin_policy_header,
+        url::Origin::Create(url_request_->url()), origin_policy_header,
         std::move(origin_policy_manager_done));
 
     // The callback will continue by calling

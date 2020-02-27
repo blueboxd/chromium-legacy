@@ -277,12 +277,15 @@ void SoftwareOutputDeviceWinProxy::EndPaintDelegated(
 
 void SoftwareOutputDeviceWinProxy::DrawAck() {
   DCHECK(waiting_on_draw_ack_);
-  DCHECK(!swap_ack_callback_.is_null());
 
   TRACE_EVENT_ASYNC_END0("viz", "SoftwareOutputDeviceWinProxy::Draw", this);
 
   waiting_on_draw_ack_ = false;
-  std::move(swap_ack_callback_).Run();
+
+  // It's possible the display compositor won't call SwapBuffers() so there will
+  // be no callback to run.
+  if (swap_ack_callback_)
+    std::move(swap_ack_callback_).Run();
 }
 
 }  // namespace

@@ -9074,6 +9074,78 @@ TEST_F(HostResolverManagerDnsTest, EsniDnsQuery) {
             c1.keys_for_addresses());
 }
 
+// Test that a newly-registered ResolveContext is immediately usable with a DNS
+// configuration loaded before the context registration.
+TEST_F(HostResolverManagerDnsTest,
+       NewlyRegisteredContext_ConfigBeforeRegistration) {
+  ResolveContext context(nullptr /* url_request_context */,
+                         true /* enable_caching */);
+  set_allow_fallback_to_proctask(false);
+  ChangeDnsConfig(CreateValidDnsConfig());
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ASSERT_TRUE(dns_client_->GetCurrentSession());
+
+  resolver_->RegisterResolveContext(&context);
+  EXPECT_EQ(context.current_session_for_testing(),
+            dns_client_->GetCurrentSession());
+
+  // Test a SECURE-mode DoH request with SetForceDohServerAvailable(false).
+  // Should only succeed if a DoH server is marked available in the
+  // ResolveContext. MockDnsClient skips most other interaction with
+  // ResolveContext.
+  dns_client_->SetForceDohServerAvailable(false);
+  context.SetProbeSuccess(0u /* doh_server_index */, true /* success */,
+                          dns_client_->GetCurrentSession());
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
+      base::nullopt, &context, context.host_cache()));
+  EXPECT_THAT(response.result_error(), IsOk());
+
+  resolver_->DeregisterResolveContext(&context);
+}
+
+// Test interaction with a ResolveContext registered before a DNS config is
+// ready.
+TEST_F(HostResolverManagerDnsTest,
+       NewlyRegisteredContext_NoConfigAtRegistration) {
+  ResolveContext context(nullptr /* url_request_context */,
+                         true /* enable_caching */);
+  set_allow_fallback_to_proctask(false);
+  InvalidateDnsConfig();
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ASSERT_FALSE(dns_client_->GetCurrentSession());
+
+  // Register context before loading a DNS config.
+  resolver_->RegisterResolveContext(&context);
+  EXPECT_FALSE(context.current_session_for_testing());
+
+  // Load DNS config and expect the session to be loaded into the ResolveContext
+  ChangeDnsConfig(CreateValidDnsConfig());
+  ASSERT_TRUE(dns_client_->GetCurrentSession());
+  EXPECT_EQ(context.current_session_for_testing(),
+            dns_client_->GetCurrentSession());
+
+  // Test a SECURE-mode DoH request with SetForceDohServerAvailable(false).
+  // Should only succeed if a DoH server is marked available in the
+  // ResolveContext. MockDnsClient skips most other interaction with
+  // ResolveContext.
+  dns_client_->SetForceDohServerAvailable(false);
+  context.SetProbeSuccess(0u /* doh_server_index */, true /* success */,
+                          dns_client_->GetCurrentSession());
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
+      base::nullopt, &context, context.host_cache()));
+  EXPECT_THAT(response.result_error(), IsOk());
+
+  resolver_->DeregisterResolveContext(&context);
+}
+
 class HostResolverManagerEsniTest : public HostResolverManagerDnsTest {
  public:
   HostResolverManagerEsniTest()

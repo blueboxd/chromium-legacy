@@ -41,7 +41,10 @@ js_modulizer("modulize") {
     "test_util.js",
   ]
   if (is_win) {
-    input_files += [ "chrome_cleanup_page_test.js" ]
+    input_files += [
+      "chrome_cleanup_page_test.js",
+      "incompatible_applications_page_test.js",
+    ]
   }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
                          "settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW",
@@ -49,7 +52,6 @@ js_modulizer("modulize") {
                          "settings.FakeSettingsPrivate|FakeSettingsPrivate",
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
-                         "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]

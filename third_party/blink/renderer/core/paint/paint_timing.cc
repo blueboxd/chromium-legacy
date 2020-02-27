@@ -99,12 +99,6 @@ void PaintTiming::SetFirstMeaningfulPaint(
       "loading,rail,devtools.timeline", "firstMeaningfulPaint", swap_stamp,
       "frame", ToTraceValue(GetFrame()), "afterUserInput", had_input);
 
-  InteractiveDetector* interactive_detector(
-      InteractiveDetector::From(*GetSupplementable()));
-  if (interactive_detector) {
-    interactive_detector->OnFirstMeaningfulPaintDetected(swap_stamp, had_input);
-  }
-
   // Notify FMP for UMA only if there's no user input before FMP, so that layout
   // changes caused by user interactions wouldn't be considered as FMP.
   if (had_input == FirstMeaningfulPaintDetector::kNoUserInput) {
@@ -246,6 +240,11 @@ void PaintTiming::SetFirstContentfulPaintSwap(base::TimeTicks stamp) {
     GetFrame()->Loader().Progress().DidFirstContentfulPaint();
   NotifyPaintTimingChanged();
   fmp_detector_->NotifyFirstContentfulPaint(first_contentful_paint_swap_);
+  InteractiveDetector* interactive_detector =
+      InteractiveDetector::From(*GetSupplementable());
+  if (interactive_detector) {
+    interactive_detector->OnFirstContentfulPaint(first_contentful_paint_swap_);
+  }
 }
 
 void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {

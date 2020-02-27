@@ -558,8 +558,6 @@ jumbo_static_library("browser") {
     "google/google_search_domain_mixing_metrics_emitter.h",
     "google/google_search_domain_mixing_metrics_emitter_factory.cc",
     "google/google_search_domain_mixing_metrics_emitter_factory.h",
-    "gpu/chrome_browser_main_extra_parts_gpu.cc",
-    "gpu/chrome_browser_main_extra_parts_gpu.h",
     "gpu/gpu_mode_manager.cc",
     "gpu/gpu_mode_manager.h",
     "hang_monitor/hang_crash_dump.h",

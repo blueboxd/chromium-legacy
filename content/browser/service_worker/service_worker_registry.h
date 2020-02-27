@@ -188,7 +188,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                                      const GURL& origin,
                                      const std::string& value,
                                      StatusCallback callback);
-  void StoreUncommittedResourceId(int64_t resource_id);
+  void StoreUncommittedResourceId(int64_t resource_id, const GURL& origin);
   void DoomUncommittedResource(int64_t resource_id);
   void DoomUncommittedResources(const std::set<int64_t>& resource_ids);
   void GetUserData(int64_t registration_id,
@@ -291,7 +291,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
 
-  void DidUpdateToActiveState(StatusCallback callback,
+  void DidUpdateToActiveState(const GURL& origin,
+                              StatusCallback callback,
                               ServiceWorkerDatabase::Status status);
   void DidWriteUncommittedResourceIds(ServiceWorkerDatabase::Status status);
   void DidDoomUncommittedResourceIds(const std::set<int64_t>& resource_ids,

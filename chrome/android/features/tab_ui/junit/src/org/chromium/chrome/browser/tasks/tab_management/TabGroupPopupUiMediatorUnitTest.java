@@ -34,6 +34,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -273,7 +274,8 @@ public class TabGroupPopupUiMediatorUnitTest {
         List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
         createTabGroup(tabGroup, TAB1_ID);
 
-        mTabModelObserverCaptor.getValue().didAddTab(mTab2, TabLaunchType.FROM_CHROME_UI);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab2, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
         verify(mUpdater, never()).updateTabGroupPopUi();
@@ -287,7 +289,8 @@ public class TabGroupPopupUiMediatorUnitTest {
         List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3));
         createTabGroup(tabGroup, TAB1_ID);
 
-        mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_CHROME_UI);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab3, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
         verify(mUpdater).updateTabGroupPopUi();
@@ -301,7 +304,8 @@ public class TabGroupPopupUiMediatorUnitTest {
         List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
         createTabGroup(tabGroup, TAB1_ID);
 
-        mTabModelObserverCaptor.getValue().didAddTab(mTab2, TabLaunchType.FROM_RESTORE);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab2, TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE);
 
         assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
         verify(mUpdater, never()).updateTabGroupPopUi();
@@ -316,8 +320,8 @@ public class TabGroupPopupUiMediatorUnitTest {
         List<Tab> tabGroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3));
         createTabGroup(tabGroup, TAB1_ID);
 
-        mTabModelObserverCaptor.getValue().didAddTab(
-                mTab3, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                TabCreationState.LIVE_IN_BACKGROUND);
 
         assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(true));
         verify(mUpdater, never()).updateTabGroupPopUi();

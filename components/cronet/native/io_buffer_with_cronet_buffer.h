@@ -36,14 +36,18 @@ class IOBufferWithCronet_Buffer : public net::WrappedIOBuffer {
 // net::IOBuffer and the Cronet_Buffer object alive until destroyed.
 class Cronet_BufferWithIOBuffer {
  public:
-  Cronet_BufferWithIOBuffer(net::IOBuffer* io_buffer, size_t io_buffer_len);
+  Cronet_BufferWithIOBuffer(scoped_refptr<net::IOBuffer> io_buffer,
+                            size_t io_buffer_len);
   ~Cronet_BufferWithIOBuffer();
 
   const net::IOBuffer* io_buffer() const { return io_buffer_.get(); }
   size_t io_buffer_len() const { return io_buffer_len_; }
 
   // Returns pointer to Cronet buffer owned by |this|.
-  Cronet_BufferPtr cronet_buffer() { return cronet_buffer_.get(); }
+  Cronet_BufferPtr cronet_buffer() {
+    CHECK(io_buffer_->HasAtLeastOneRef());
+    return cronet_buffer_.get();
+  }
 
  private:
   scoped_refptr<net::IOBuffer> io_buffer_;

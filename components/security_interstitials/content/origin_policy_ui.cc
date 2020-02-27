@@ -21,7 +21,6 @@ namespace security_interstitials {
 namespace {
 
 std::unique_ptr<SecurityInterstitialPage> GetErrorPageImpl(
-    network::OriginPolicyState error_reason,
     content::WebContents* web_contents,
     const GURL& url) {
   MetricsHelper::ReportDetails report_details;
@@ -33,17 +32,16 @@ std::unique_ptr<SecurityInterstitialPage> GetErrorPageImpl(
           nullptr, /* pref service: can be null */
           "", GURL());
   return std::make_unique<security_interstitials::OriginPolicyInterstitialPage>(
-      web_contents, url, std::move(controller), error_reason);
+      web_contents, url, std::move(controller));
 }
 
 }  // namespace
 
 base::Optional<std::string> OriginPolicyUI::GetErrorPageAsHTML(
-    network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
   DCHECK(handle);
-  std::unique_ptr<SecurityInterstitialPage> page(GetErrorPageImpl(
-      error_reason, handle->GetWebContents(), handle->GetURL()));
+  std::unique_ptr<SecurityInterstitialPage> page(
+      GetErrorPageImpl(handle->GetWebContents(), handle->GetURL()));
   std::string html = page->GetHTMLContents();
 
   // The page object is "associated" with the web contents, and this is how
@@ -55,10 +53,9 @@ base::Optional<std::string> OriginPolicyUI::GetErrorPageAsHTML(
 }
 
 SecurityInterstitialPage* OriginPolicyUI::GetBlockingPage(
-    network::OriginPolicyState error_reason,
     content::WebContents* web_contents,
     const GURL& url) {
-  return GetErrorPageImpl(error_reason, web_contents, url).release();
+  return GetErrorPageImpl(web_contents, url).release();
 }
 
 }  // namespace security_interstitials

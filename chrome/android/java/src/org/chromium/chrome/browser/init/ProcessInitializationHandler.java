@@ -158,7 +158,7 @@ public class ProcessInitializationHandler {
     protected void handlePreNativeInitialization() {
         BrowserTaskExecutor.register();
         BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(
-                CachedFeatureFlags.shouldPrioritizeBootstrapTasks());
+                CachedFeatureFlags.isEnabled(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS));
 
         Context application = ContextUtils.getApplicationContext();
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -30,23 +31,37 @@ class SafeBrowsingTokenFetcher {
   using Callback =
       base::OnceCallback<void(base::Optional<signin::AccessTokenInfo>)>;
 
-  // Create a SafeBrowsingTokenFetcher and immediately begin fetching the token
-  // for the primary account of |identity_manager|, with consent level
-  // |consent|. |callback| will be called with the result.
-  SafeBrowsingTokenFetcher(signin::IdentityManager* identity_manager,
-                           signin::ConsentLevel consent,
-                           Callback callback);
+  // Create a SafeBrowsingTokenFetcher for the primary account of
+  // |identity_manager|. |identity_manager| is unowned, and must outlive this
+  // object.
+  explicit SafeBrowsingTokenFetcher(signin::IdentityManager* identity_manager);
 
   ~SafeBrowsingTokenFetcher();
 
- private:
-  void OnTokenFetched(GoogleServiceAuthError error,
-                      signin::AccessTokenInfo access_token_info);
-  void OnTokenTimeout();
-  void Finish(base::Optional<signin::AccessTokenInfo> token_info);
+  // Begin fetching a token for the account with the given |consent_level|. The
+  // result will be returned in |callback|. Must be called on the UI thread.
+  void Start(signin::ConsentLevel consent_level, Callback callback);
 
-  std::unique_ptr<signin::AccessTokenFetcher> token_fetcher_;
-  Callback callback_;
+ private:
+  void OnTokenFetched(int request_id,
+                      GoogleServiceAuthError error,
+                      signin::AccessTokenInfo access_token_info);
+  void OnTokenTimeout(int request_id);
+  void Finish(int request_id,
+              base::Optional<signin::AccessTokenInfo> token_info);
+
+  // Reference to the identity manager to fetch from.
+  signin::IdentityManager* identity_manager_;
+
+  // The count of requests sent. This is used as an ID for requests.
+  int requests_sent_;
+
+  // Active fetchers, keyed by ID.
+  base::flat_map<int, std::unique_ptr<signin::AccessTokenFetcher>>
+      token_fetchers_;
+
+  // Active callbacks, keyed by ID.
+  base::flat_map<int, Callback> callbacks_;
 
   base::WeakPtrFactory<SafeBrowsingTokenFetcher> weak_ptr_factory_;
 };

@@ -19,6 +19,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
+#include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
@@ -125,6 +126,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           shelf->GetStatusAreaWidget()->GetRootView())),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
+      privacy_screen_toast_controller_(
+          std::make_unique<PrivacyScreenToastController>(this)),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
@@ -410,8 +413,8 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
   CloseBubble();
 }
 
-void UnifiedSystemTray::UpdateAfterShelfChange() {
-  TrayBackgroundView::UpdateAfterShelfChange();
+void UnifiedSystemTray::UpdateLayout() {
+  TrayBackgroundView::UpdateLayout();
   time_view_->UpdateAlignmentForShelf(shelf());
 }
 
@@ -422,6 +425,9 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
 
   // Hide volume/brightness slider popup.
   slider_bubble_controller_->CloseBubble();
+
+  // Hide the privacy screen toast if it is shown.
+  privacy_screen_toast_controller_->HideToast();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
 

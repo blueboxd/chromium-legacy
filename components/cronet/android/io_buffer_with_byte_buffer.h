@@ -53,7 +53,7 @@ class IOBufferWithByteBuffer : public net::WrappedIOBuffer {
 class ByteBufferWithIOBuffer {
  public:
   ByteBufferWithIOBuffer(JNIEnv* env,
-                         net::IOBuffer* io_buffer,
+                         scoped_refptr<net::IOBuffer> io_buffer,
                          int io_buffer_len);
 
   ~ByteBufferWithIOBuffer();

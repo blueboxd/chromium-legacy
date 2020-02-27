@@ -129,24 +129,6 @@ void InteractiveDetector::StartOrPostponeCITimer(
   }
 }
 
-base::TimeTicks InteractiveDetector::GetInteractiveTime() const {
-  // TODO(crbug.com/808685) Simplify FMP and TTI input invalidation.
-  return page_event_times_.first_meaningful_paint_invalidated
-             ? base::TimeTicks()
-             : interactive_time_;
-}
-
-base::TimeTicks InteractiveDetector::GetInteractiveDetectionTime() const {
-  // TODO(crbug.com/808685) Simplify FMP and TTI input invalidation.
-  return page_event_times_.first_meaningful_paint_invalidated
-             ? base::TimeTicks()
-             : interactive_detection_time_;
-}
-
-base::TimeTicks InteractiveDetector::GetFirstInvalidatingInputTime() const {
-  return page_event_times_.first_invalidating_input;
-}
-
 base::TimeDelta InteractiveDetector::GetFirstInputDelay() const {
   return page_event_times_.first_input_delay;
 }
@@ -373,19 +355,16 @@ void InteractiveDetector::OnLongTaskDetected(base::TimeTicks start_time,
   StartOrPostponeCITimer(end_time + kTimeToInteractiveWindow);
 }
 
-void InteractiveDetector::OnFirstMeaningfulPaintDetected(
-    base::TimeTicks fmp_time,
-    FirstMeaningfulPaintDetector::HadUserInput user_input_before_fmp) {
-  DCHECK(page_event_times_.first_meaningful_paint
-             .is_null());  // Should not set FMP twice.
-  page_event_times_.first_meaningful_paint = fmp_time;
-  page_event_times_.first_meaningful_paint_invalidated =
-      user_input_before_fmp == FirstMeaningfulPaintDetector::kHadUserInput;
-  if (clock_->NowTicks() - fmp_time >= kTimeToInteractiveWindow) {
-    // We may have reached TTCI already. Check right away.
+void InteractiveDetector::OnFirstContentfulPaint(
+    base::TimeTicks first_contentful_paint) {
+  // Should not set FCP twice.
+  DCHECK(page_event_times_.first_contentful_paint.is_null());
+  page_event_times_.first_contentful_paint = first_contentful_paint;
+  if (clock_->NowTicks() - first_contentful_paint >= kTimeToInteractiveWindow) {
+    // We may have reached TTI already. Check right away.
     CheckTimeToInteractiveReached();
   } else {
-    StartOrPostponeCITimer(page_event_times_.first_meaningful_paint +
+    StartOrPostponeCITimer(page_event_times_.first_contentful_paint +
                            kTimeToInteractiveWindow);
   }
 }
@@ -521,21 +500,21 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
   if (!interactive_time_.is_null())
     return;
 
-  // FMP and DCL have not been detected yet.
-  if (page_event_times_.first_meaningful_paint.is_null() ||
+  // FCP and DCL have not been detected yet.
+  if (page_event_times_.first_contentful_paint.is_null() ||
       page_event_times_.dom_content_loaded_end.is_null())
     return;
 
   const base::TimeTicks current_time = clock_->NowTicks();
-  if (current_time - page_event_times_.first_meaningful_paint <
+  if (current_time - page_event_times_.first_contentful_paint <
       kTimeToInteractiveWindow) {
-    // Too close to FMP to determine Time to Interactive.
+    // Too close to FCP to determine Time to Interactive.
     return;
   }
 
   AddCurrentlyActiveQuietIntervals(current_time);
   const base::TimeTicks interactive_candidate =
-      FindInteractiveCandidate(page_event_times_.first_meaningful_paint);
+      FindInteractiveCandidate(page_event_times_.first_contentful_paint);
   RemoveCurrentlyActiveQuietIntervals();
 
   // No Interactive Candidate found.
@@ -563,14 +542,6 @@ void InteractiveDetector::OnTimeToInteractiveDetected() {
       "loading,rail", "InteractiveTime", interactive_time_, "frame",
       ToTraceValue(GetSupplementable()->GetFrame()),
       "had_user_input_before_interactive", had_user_input_before_interactive);
-
-  // We only send TTI to Performance Timing Observers if FMP was not invalidated
-  // by input.
-  // TODO(crbug.com/808685) Simplify FMP and TTI input invalidation.
-  if (!page_event_times_.first_meaningful_paint_invalidated) {
-    if (GetSupplementable()->Loader())
-      GetSupplementable()->Loader()->DidChangePerformanceTiming();
-  }
 }
 
 void InteractiveDetector::ContextDestroyed() {

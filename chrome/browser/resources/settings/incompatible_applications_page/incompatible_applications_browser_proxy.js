@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * All possible actions to take on an incompatible application.
@@ -11,7 +15,7 @@ cr.define('settings', function() {
    * @readonly
    * @enum {number}
    */
-  const ActionTypes = {
+  /* #export */ const ActionTypes = {
     UNINSTALL: 0,
     MORE_INFO: 1,
     UPGRADE: 2,
@@ -24,10 +28,10 @@ cr.define('settings', function() {
    *   actionUrl: string,
    * }}
    */
-  let IncompatibleApplication;
+  /* #export */ let IncompatibleApplication;
 
   /** @interface */
-  class IncompatibleApplicationsBrowserProxy {
+  /* #export */ class IncompatibleApplicationsBrowserProxy {
     /**
      * Get the list of incompatible applications.
      * @return {!Promise<!Array<!settings.IncompatibleApplication>>}
@@ -73,7 +77,7 @@ cr.define('settings', function() {
   }
 
   /** @implements {settings.IncompatibleApplicationsBrowserProxy} */
-  class IncompatibleApplicationsBrowserProxyImpl {
+  /* #export */ class IncompatibleApplicationsBrowserProxyImpl {
     /** @override */
     requestIncompatibleApplicationsList() {
       return cr.sendWithPromise('requestIncompatibleApplicationsList');

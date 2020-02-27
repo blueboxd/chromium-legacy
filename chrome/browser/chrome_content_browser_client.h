@@ -42,14 +42,14 @@ namespace blink {
 namespace mojom {
 class WindowFeatures;
 class WebUsbService;
-}
+}  // namespace mojom
 class URLLoaderThrottle;
-}
+}  // namespace blink
 
 namespace content {
 class BrowserContext;
 class QuotaPermissionContext;
-}
+}  // namespace content
 
 namespace data_reduction_proxy {
 class DataReductionProxyData;
@@ -64,7 +64,7 @@ class PreviewsUserData;
 namespace safe_browsing {
 class SafeBrowsingService;
 class UrlCheckerDelegate;
-}
+}  // namespace safe_browsing
 
 namespace ui {
 class NativeTheme;
@@ -554,7 +554,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)
       override;
   base::Optional<std::string> GetOriginPolicyErrorPage(
-      network::OriginPolicyState error_reason,
       content::NavigationHandle* handle) override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
   void OnNetworkServiceDataUseUpdate(int32_t network_traffic_annotation_id_hash,

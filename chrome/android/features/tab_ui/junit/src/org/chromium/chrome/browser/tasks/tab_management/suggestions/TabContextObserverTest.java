@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -76,7 +77,8 @@ public class TabContextObserverTest {
     public void testAddTab() {
         TabContextObserverTestHelper tabContextObserverTestHelper =
                 new TabContextObserverTestHelper(mTabModelSelector);
-        tabContextObserverTestHelper.mTabModelObserver.didAddTab(null, 0);
+        tabContextObserverTestHelper.mTabModelObserver.didAddTab(
+                null, 0, TabCreationState.LIVE_IN_FOREGROUND);
         Assert.assertEquals(TabContextObserver.TabContextChangeReason.TAB_ADDED,
                 tabContextObserverTestHelper.getChangeReason());
     }

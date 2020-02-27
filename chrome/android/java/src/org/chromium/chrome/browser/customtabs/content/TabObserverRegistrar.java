@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 
@@ -118,7 +119,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     }
 
     @Override
-    public void didAddTab(Tab tab, int type) {
+    public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
         addObserversForTab(tab);
     }
 

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -236,7 +237,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
         if (isNewTabVariationEnabled()) {
             mTabModelObserver = new EmptyTabModelObserver() {
                 @Override
-                public void didAddTab(Tab tab, int type) {
+                public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
                     assert tab.isIncognito();
                     updateIncognitoTabsCount();
                 }

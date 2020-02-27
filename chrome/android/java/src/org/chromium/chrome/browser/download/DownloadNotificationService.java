@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import static org.chromium.chrome.browser.download.DownloadBroadcastManager.getServiceDelegate;
+import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
 import android.content.Context;
@@ -634,6 +635,16 @@ public class DownloadNotificationService {
                 ChromePreferenceKeys.DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT);
     }
 
+    void onForegroundServiceRestarted(int pinnedNotificationId) {
+        // In API < 24, notifications pinned to the foreground will get killed with the service.
+        // Fix this by relaunching the notification that was pinned to the service as the service
+        // dies, if there is one.
+        relaunchPinnedNotification(pinnedNotificationId);
+
+        updateNotificationsForShutdown();
+        resumeAllPendingDownloads();
+    }
+
     void onForegroundServiceTaskRemoved() {
         // If we've lost all Activities, cancel the off the record downloads.
         if (ApplicationStatus.isEveryActivityDestroyed()) {
@@ -644,6 +655,39 @@ public class DownloadNotificationService {
     void onForegroundServiceDestroyed() {
         updateNotificationsForShutdown();
         rescheduleDownloads();
+    }
+
+    /**
+     * Given the id of the notification that was pinned to the service when it died, give the
+     * notification a new id in order to rebuild and relaunch the notification.
+     * @param pinnedNotificationId Id of the notification pinned to the service when it died.
+     */
+    private void relaunchPinnedNotification(int pinnedNotificationId) {
+        // If there was no notification pinned to the service, no correction is necessary.
+        if (pinnedNotificationId == INVALID_NOTIFICATION_ID) return;
+
+        List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
+        List<DownloadSharedPreferenceEntry> copies =
+                new ArrayList<DownloadSharedPreferenceEntry>(entries);
+        for (DownloadSharedPreferenceEntry entry : copies) {
+            if (entry.notificationId == pinnedNotificationId) {
+                // Get new notification id that is not associated with the service.
+                DownloadSharedPreferenceEntry updatedEntry =
+                        new DownloadSharedPreferenceEntry(entry.id, getNextNotificationId(),
+                                entry.isOffTheRecord, entry.canDownloadWhileMetered, entry.fileName,
+                                entry.isAutoResumable, entry.isTransient);
+                mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(updatedEntry);
+
+                // Right now this only happens in the paused case, so re-build and re-launch the
+                // paused notification, with the updated notification id..
+                notifyDownloadPaused(updatedEntry.id, updatedEntry.fileName, true /* isResumable */,
+                        updatedEntry.isAutoResumable, updatedEntry.isOffTheRecord,
+                        updatedEntry.isTransient, null /* icon */, null /* originalUrl */,
+                        false /* shouldPromoteOrigin */, true /* hasUserGesture */,
+                        true /* forceRebuild */, PendingState.NOT_PENDING);
+                return;
+            }
+        }
     }
 
     private void updateNotificationsForShutdown() {

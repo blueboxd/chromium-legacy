@@ -41,7 +41,7 @@ class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
   // CronetUploadDataStream::Delegate implementation.  Called on network thread.
   void InitializeOnNetworkThread(
       base::WeakPtr<CronetUploadDataStream> upload_data_stream) override;
-  void Read(net::IOBuffer* buffer, int buf_len) override;
+  void Read(scoped_refptr<net::IOBuffer> buffer, int buf_len) override;
   void Rewind() override;
   void OnUploadDataStreamDestroyed() override;
 

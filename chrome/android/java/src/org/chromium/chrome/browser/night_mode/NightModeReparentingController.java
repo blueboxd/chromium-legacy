@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
@@ -92,7 +93,8 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
     private void reattachTab(ReparentingTask task, TabReparentingParams params, TabModel tabModel) {
         final Tab tab = params.getTabToReparent();
         task.finish(mReparentingDelegate, () -> {
-            tabModel.addTab(tab, params.getTabIndex(), TabLaunchType.FROM_REPARENTING);
+            tabModel.addTab(tab, params.getTabIndex(), TabLaunchType.FROM_REPARENTING,
+                    TabCreationState.LIVE_IN_FOREGROUND);
             AsyncTabParamsManager.remove(tab.getId());
         });
     }

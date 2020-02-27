@@ -12,14 +12,17 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
-PrivacyScreenFeaturePodController::PrivacyScreenFeaturePodController() =
-    default;
+PrivacyScreenFeaturePodController::PrivacyScreenFeaturePodController() {
+  Shell::Get()->privacy_screen_controller()->AddObserver(this);
+}
 
-PrivacyScreenFeaturePodController::~PrivacyScreenFeaturePodController() =
-    default;
+PrivacyScreenFeaturePodController::~PrivacyScreenFeaturePodController() {
+  Shell::Get()->privacy_screen_controller()->RemoveObserver(this);
+}
 
 FeaturePodButton* PrivacyScreenFeaturePodController::CreateButton() {
   DCHECK(!button_);
@@ -55,12 +58,15 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
   if (!is_supported)
     return;
 
+  bool is_enabled = privacy_screen_controller->GetEnabled();
+
   button_->SetVectorIcon(kPrivacyScreenIcon);
+  button_->SetToggled(is_enabled);
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_LABEL));
 
   base::string16 tooltip_state;
-  if (privacy_screen_controller->GetEnabled()) {
+  if (is_enabled) {
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_SUBLABEL));
     tooltip_state = l10n_util::GetStringUTF16(
@@ -74,6 +80,11 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
 
   button_->SetIconAndLabelTooltips(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_ROTATION_LOCK_TOOLTIP, tooltip_state));
+}
+
+void PrivacyScreenFeaturePodController::OnPrivacyScreenSettingChanged(
+    bool enabled) {
+  UpdateButton();
 }
 
 }  // namespace ash

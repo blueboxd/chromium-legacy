@@ -1491,6 +1491,8 @@ void UserSessionManager::InitProfilePreferences(
       user_manager::known_user::UpdateGaiaID(user_context.GetAccountId(),
                                              gaia_id);
     }
+  } else {
+    // Active Directory (non-supervised, non-GAIA) accounts take this path.
   }
 }
 

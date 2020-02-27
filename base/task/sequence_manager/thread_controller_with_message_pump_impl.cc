@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/message_loop/message_pump.h"
+#include "base/threading/hang_watcher.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -207,11 +208,38 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
 }
 
 void ThreadControllerWithMessagePumpImpl::BeforeDoInternalWork() {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+
+  work_id_provider_->IncrementWorkId();
+}
+
+void ThreadControllerWithMessagePumpImpl::BeforeWait() {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    // Waiting for work cannot be covered by a hang watch scope because that
+    // means the thread can be idle for unbounded time.
+    hang_watch_scope_.reset();
+  }
+
   work_id_provider_->IncrementWorkId();
 }
 
 MessagePump::Delegate::NextWorkInfo
 ThreadControllerWithMessagePumpImpl::DoSomeWork() {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+
   work_deduplicator_.OnWorkStarted();
   bool ran_task = false;  // Unused.
   LazyNow continuation_lazy_now(time_source_);
@@ -258,6 +286,13 @@ ThreadControllerWithMessagePumpImpl::DoSomeWork() {
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWork() {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+
   work_deduplicator_.OnWorkStarted();
   bool ran_task = false;
   LazyNow continuation_lazy_now(time_source_);
@@ -283,6 +318,13 @@ bool ThreadControllerWithMessagePumpImpl::DoWork() {
 
 bool ThreadControllerWithMessagePumpImpl::DoDelayedWork(
     TimeTicks* next_run_time) {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+
   work_deduplicator_.OnDelayedWorkStarted();
   LazyNow continuation_lazy_now(time_source_);
   bool ran_task = false;
@@ -396,6 +438,13 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   TRACE_EVENT0("sequence_manager", "SequenceManager::DoIdleWork");
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)
   bool need_high_res_mode =
@@ -470,6 +519,11 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed,
 
   main_thread_only().runloop_count--;
   main_thread_only().quit_pending = false;
+
+  // Reset the hang watch scope upon exiting the outermost loop since the
+  // execution it covers is now completely over.
+  if (main_thread_only().runloop_count == 0)
+    hang_watch_scope_.reset();
 }
 
 void ThreadControllerWithMessagePumpImpl::OnBeginNestedRunLoop() {

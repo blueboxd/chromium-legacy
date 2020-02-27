@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/ble/fido_ble_discovery_base.h"
 #include "device/fido/cable/cable_discovery_data.h"
 
@@ -29,7 +30,8 @@ class BluetoothAdvertisement;
 class FidoCableHandshakeHandler;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
-    : public FidoBleDiscoveryBase {
+    : public FidoBleDiscoveryBase,
+      public FidoBleDevice::Observer {
  public:
   FidoCableDiscovery(
       std::vector<CableDiscoveryData> discovery_data,
@@ -55,6 +57,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
                          const CableEidArray& eid);
 
  private:
+  enum class CableV1DiscoveryEvent : int;
+
   // Result represents a successful match of a received EID against a specific
   // |FidoDiscoveryData|.
   struct Result {
@@ -84,18 +88,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
     base::Optional<CableEidArray> service_data;
     std::vector<CableEidArray> uuids;
+    base::Optional<CableDiscoveryData> maybe_discovery_data;
   };
 
-  // BluetoothAdapter::Observer:
-  void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
-  void DeviceChanged(BluetoothAdapter* adapter,
-                     BluetoothDevice* device) override;
-  void DeviceRemoved(BluetoothAdapter* adapter,
-                     BluetoothDevice* device) override;
-  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
-
-  // FidoBleDiscoveryBase:
-  void OnSetPowered() override;
+  // ResultDebugString returns a string containing a hex dump of |eid| and a
+  // description of |result|, if present.
+  static std::string ResultDebugString(const CableEidArray& eid,
+                                       const base::Optional<Result>& result);
+  static base::Optional<CableEidArray> MaybeGetEidFromServiceData(
+      const BluetoothDevice* device);
+  static std::vector<CableEidArray> GetUUIDs(const BluetoothDevice* device);
 
   void StartCableDiscovery();
   void OnStartDiscoverySession(std::unique_ptr<BluetoothDiscoverySession>);
@@ -115,20 +117,32 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
                                   Result discovery_data);
   void ValidateAuthenticatorHandshakeMessage(
       std::unique_ptr<FidoCableDevice> cable_device,
+      CableDiscoveryData::Version cable_version,
       FidoCableHandshakeHandler* handshake_handler,
       base::Optional<std::vector<uint8_t>> handshake_response);
 
   base::Optional<Result> GetCableDiscoveryData(
       const BluetoothDevice* device) const;
-  static base::Optional<CableEidArray> MaybeGetEidFromServiceData(
-      const BluetoothDevice* device);
-  static std::vector<CableEidArray> GetUUIDs(const BluetoothDevice* device);
   base::Optional<Result> GetCableDiscoveryDataFromAuthenticatorEid(
       CableEidArray authenticator_eid) const;
-  // ResultDebugString returns a containing a hex dump of |eid| and a
-  // description of |result|, if present.
-  static std::string ResultDebugString(const CableEidArray& eid,
-                                       const base::Optional<Result>& result);
+  bool IsObservedV1Device(const std::string& address) const;
+  void RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent event);
+
+  // BluetoothAdapter::Observer:
+  void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
+  void DeviceChanged(BluetoothAdapter* adapter,
+                     BluetoothDevice* device) override;
+  void DeviceRemoved(BluetoothAdapter* adapter,
+                     BluetoothDevice* device) override;
+  void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
+
+  // FidoBleDiscoveryBase:
+  void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) override;
+  void OnSetPowered() override;
+
+  // FidoeBleDevice::Observer:
+  void FidoBleDeviceConnected(FidoBleDevice* device, bool success) override;
+  void FidoBleDeviceTimeout(FidoBleDevice* device) override;
 
   std::vector<CableDiscoveryData> discovery_data_;
   // active_authenticator_eids_ contains authenticator EIDs for which a
@@ -160,6 +174,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // noted_obsolete_eids_ remembers QR-code EIDs that have been logged as
   // valid-but-expired in order to avoid spamming the device-log.
   mutable base::flat_set<CableEidArray> noted_obsolete_eids_;
+
+  bool has_v1_discovery_data_ = false;
+  base::flat_set<CableV1DiscoveryEvent> recorded_events_;
 
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_{this};
 

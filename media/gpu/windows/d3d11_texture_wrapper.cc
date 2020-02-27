@@ -158,11 +158,11 @@ bool DefaultTexture2DWrapper::GpuResources::Init(
   return true;
 }
 
-MediaError DefaultTexture2DWrapper::GpuResources::PushNewTexture(
+Status DefaultTexture2DWrapper::GpuResources::PushNewTexture(
     ComD3D11Texture2D texture,
     size_t array_slice) {
   if (!helper_ || !helper_->MakeContextCurrent())
-    return MediaError(ErrorCode::kCannotMakeContextCurrent);
+    return Status(StatusCode::kCannotMakeContextCurrent);
 
   // Notify |gl_image_| that it has a new texture.
   gl_image_->SetTexture(texture, array_slice);
@@ -178,13 +178,13 @@ MediaError DefaultTexture2DWrapper::GpuResources::PushNewTexture(
   if (!eglStreamPostD3DTextureANGLE(egl_display, stream_,
                                     static_cast<void*>(texture.Get()),
                                     frame_attributes)) {
-    return MediaError(ErrorCode::kCouldNotPostTexture);
+    return Status(StatusCode::kCouldNotPostTexture);
   }
 
   if (!eglStreamConsumerAcquireKHR(egl_display, stream_))
-    return MediaError(ErrorCode::kCouldNotPostAcquireStream);
+    return Status(StatusCode::kCouldNotPostAcquireStream);
 
-  return MediaError::Ok();
+  return Status::Ok();
 }
 
 }  // namespace media

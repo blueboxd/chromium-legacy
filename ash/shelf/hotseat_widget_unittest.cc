@@ -705,6 +705,32 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
                                      InAppShelfGestures::kSwipeUpToShow, 1);
 }
 
+// Tests that a swipe up on the shelf shows the hotseat while in split view.
+TEST_P(HotseatWidgetTest, DisableBlurDuringOverviewMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ASSERT_EQ(
+      ShelfConfig::Get()->shelf_blur_radius(),
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+
+  // Go into overview and check that at the end of the animation, background
+  // blur is disabled.
+  OverviewAnimationWaiter enter_overview_waiter;
+  StartOverview();
+  enter_overview_waiter.Wait();
+  EXPECT_EQ(
+      0, GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+
+  // Exit overview and check that at the end of the animation, background
+  // blur is enabled again.
+  OverviewAnimationWaiter exit_overview_waiter;
+  EndOverview();
+  exit_overview_waiter.Wait();
+  EXPECT_EQ(
+      ShelfConfig::Get()->shelf_blur_radius(),
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
 // Tests that releasing the hotseat gesture below the threshold results in a
 // kHidden hotseat when the shelf is shown.
 TEST_P(HotseatWidgetTest, ReleasingSlowDragBelowThreshold) {
@@ -963,7 +989,6 @@ TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
   // hotseat into kExtended state.
   if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
     SwipeUpOnShelf();
-
 
   // Start going to overview - use non zero animation so transition is not
   // immediate.

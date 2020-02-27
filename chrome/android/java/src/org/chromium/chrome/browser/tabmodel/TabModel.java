@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 
@@ -169,8 +170,9 @@ public interface TabModel extends TabList {
      * @param tab   The tab to be added.
      * @param index The index where the tab should be inserted. The model may override the index.
      * @param type  How the tab was opened.
+     * @param creationState How the tab was created.
      */
-    void addTab(Tab tab, int index, @TabLaunchType int type);
+    void addTab(Tab tab, int index, @TabLaunchType int type, @TabCreationState int creationState);
 
     /**
      * Removes the given tab from the model without destroying it. The tab should be inserted into

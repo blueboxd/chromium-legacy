@@ -38,6 +38,9 @@ class LayoutObjectFactory {
   static LayoutBlockFlow* CreateBlockFlow(Node&,
                                           const ComputedStyle&,
                                           LegacyLayout);
+  static LayoutBlock* CreateBlockForLineClamp(Node& node,
+                                              const ComputedStyle& style,
+                                              LegacyLayout legacy);
   static LayoutBlock* CreateFlexibleBox(Node&,
                                         const ComputedStyle&,
                                         LegacyLayout);

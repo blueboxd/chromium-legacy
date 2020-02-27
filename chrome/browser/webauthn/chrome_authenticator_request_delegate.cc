@@ -393,8 +393,6 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->OnSuccess(transport);
-
   // We already invoke AddFidoBleDeviceToPairedList() on
   // AuthenticatorRequestDialogModel::OnPairingSuccess(). We invoke the function
   // here once more to take into account the case when user pairs Bluetooth
@@ -564,6 +562,13 @@ void ChromeAuthenticatorRequestDelegate::OnRetryUserVerification(int attempts) {
     return;
 
   weak_dialog_model_->OnRetryUserVerification(attempts);
+}
+
+void ChromeAuthenticatorRequestDelegate::OnInternalUserVerificationLocked() {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->set_internal_uv_locked();
 }
 
 void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(

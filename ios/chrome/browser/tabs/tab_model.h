@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 class ChromeBrowserState;
-class TabModelSyncedWindowDelegate;
+class SyncedWindowDelegateBrowserAgent;
 class WebStateList;
 class Browser;
 
@@ -22,7 +22,7 @@ class Browser;
 
 // The delegate for sync.
 @property(nonatomic, readonly)
-    TabModelSyncedWindowDelegate* syncedWindowDelegate;
+    SyncedWindowDelegateBrowserAgent* syncedWindowDelegate;
 
 // BrowserState associated with this TabModel.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;

@@ -41,54 +41,12 @@ ci.defaults.triggered_by.set([vars.poller.get()])
 
 
 ci.android_builder(
-    name = 'Android WebView L (dbg)',
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
-)
-
-ci.android_builder(
     name = 'Android arm Builder (dbg)',
     execution_timeout = 4 * time.hour,
 )
 
 ci.android_builder(
     name = 'Cast Android (dbg)',
-)
-
-ci.android_builder(
-    name = 'KitKat Phone Tester (dbg)',
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
-)
-
-ci.android_builder(
-    name = 'KitKat Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 20 * time.hour,
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
-)
-
-ci.android_builder(
-    name = 'Lollipop Phone Tester',
-    # We have limited phone capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 6 * time.hour,
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
-)
-
-ci.android_builder(
-    name = 'Lollipop Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 20 * time.hour,
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
-)
-
-ci.android_builder(
-    name = 'Marshmallow Tablet Tester',
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 12 * time.hour,
-    triggered_by = [vars.bucket.builder('Android arm Builder (dbg)')],
 )
 
 ci.android_builder(

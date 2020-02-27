@@ -33,6 +33,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -482,7 +483,7 @@ public final class PageViewObserverTest {
     }
 
     private void didAddTab(TabImpl tab, @TabLaunchType int launchType) {
-        getTabModelObserver().didAddTab(tab, launchType);
+        getTabModelObserver().didAddTab(tab, launchType, TabCreationState.LIVE_IN_FOREGROUND);
     }
 
     private TabObserver getTabObserver() {

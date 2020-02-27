@@ -52,13 +52,13 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& physical_delta,
 
   // Attempt to scroll inner viewport first.
   pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
-      InnerScrollNode(), pending_scroll_node_delta, viewport_point,
+      *InnerScrollNode(), pending_scroll_node_delta, viewport_point,
       is_direct_manipulation, &scroll_tree());
 
   // Now attempt to scroll the outer viewport.
   if (scroll_outer_viewport) {
     pending_scroll_node_delta -= host_impl_->ScrollSingleNode(
-        OuterScrollNode(), pending_scroll_node_delta, viewport_point,
+        *OuterScrollNode(), pending_scroll_node_delta, viewport_point,
         is_direct_manipulation, &scroll_tree());
   }
 

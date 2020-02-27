@@ -243,10 +243,6 @@ public class CachedFeatureFlags {
                 parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
     }
 
-    public static boolean isCommandLineOnNonRootedEnabled() {
-        return isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
-    }
-
     private static void cacheStartSurfaceVariation() {
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
@@ -260,13 +256,6 @@ public class CachedFeatureFlags {
      */
     public static boolean isStartSurfaceEnabled() {
         return isEnabled(ChromeFeatureList.START_SURFACE_ANDROID) && !SysUtils.isLowEndDevice();
-    }
-
-    /**
-     * @return Whether the Paint Preview capture test is enabled.
-     */
-    public static boolean isPaintPreviewTestEnabled() {
-        return isEnabled(ChromeFeatureList.PAINT_PREVIEW_TEST);
     }
 
     /**
@@ -294,14 +283,6 @@ public class CachedFeatureFlags {
     public static boolean isAndroidGo() {
         return SysUtils.isLowEndDevice()
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
-    }
-
-    /**
-     * @return Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task
-     *         prioritization experiment is enabled).
-     */
-    public static boolean shouldPrioritizeBootstrapTasks() {
-        return isEnabled(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS);
     }
 
     /**

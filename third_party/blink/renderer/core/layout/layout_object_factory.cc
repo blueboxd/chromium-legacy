@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
@@ -84,6 +85,16 @@ LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
 
   // Create a plain LayoutBlockFlow
   return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow>(node, style, legacy);
+}
+
+// static
+LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
+    Node& node,
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  DCHECK(RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled());
+  return CreateObject<LayoutBlock, LayoutNGBlockFlow,
+                      LayoutDeprecatedFlexibleBox>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,

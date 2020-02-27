@@ -114,6 +114,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   unsigned is_horizontal_writing_mode_ : 1;
   unsigned quirks_mode_ : 1;
+  // Set to true if the line should be truncated even if there is enough space.
+  // This is set to true for the last line of line-clamp.
+  unsigned force_truncate_ : 1;
 
 #if DCHECK_IS_ON()
   // True if |box_states_| is taken from |context_|, to check the |box_states_|

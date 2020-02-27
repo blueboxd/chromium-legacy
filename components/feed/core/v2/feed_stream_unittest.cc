@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream_background.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -15,6 +16,18 @@
 
 namespace feed {
 namespace {
+
+class TestFeedNetwork : public FeedNetwork {
+ public:
+  void SendQueryRequest(
+      const feedwire::Request& request,
+      base::OnceCallback<void(QueryRequestResult)> callback) override {}
+  void SendActionRequest(
+      const feedwire::ActionRequest& request,
+      base::OnceCallback<void(ActionRequestResult)> callback) override {}
+  void CancelRequests() override {}
+};
+
 class FeedStreamTest : public testing::Test {
  public:
   void SetUp() override {
@@ -27,12 +40,13 @@ class FeedStreamTest : public testing::Test {
                                                    true);
 
     stream_ = std::make_unique<FeedStream>(
-        &profile_prefs_, &clock_, &tick_clock_,
+        &profile_prefs_, &network_, &clock_, &tick_clock_,
         task_environment_.GetMainThreadTaskRunner());
   }
 
  protected:
   TestingPrefServiceSimple profile_prefs_;
+  TestFeedNetwork network_;
   base::SimpleTestClock clock_;
   base::SimpleTestTickClock tick_clock_;
 

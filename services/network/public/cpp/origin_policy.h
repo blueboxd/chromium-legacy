@@ -23,20 +23,12 @@ enum class OriginPolicyState {
   // this could mean the server has returned a 404 when attempting to retrieve
   // the origin policy.
   kCannotLoadPolicy,
-  // An invalid redirect has been encountered. The only valid redirect is if
-  // we requested the default "/.well-known/origin-policy", to which the
-  // server MUST respond with a redirect to the latest origin policy. Any
-  // other redirect (or more than 1 redirect) is invalid.
-  // https://wicg.github.io/origin-policy/#origin-policy-well-known
-  kInvalidRedirect,
   // There is no need to apply an origin policy. This could be (for example) if
   // an exception has been added for the requested origin.
   kNoPolicyApplies,
-  // Other origin policy state.
-  kOther,
 
   // kMaxValue needs to always be set to the last value of the enum.
-  kMaxValue = kOther,
+  kMaxValue = kNoPolicyApplies,
 };
 
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) OriginPolicyContents;

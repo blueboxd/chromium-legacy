@@ -736,7 +736,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
-  gfx::Vector2dF ScrollSingleNode(ScrollNode* scroll_node,
+  // TODO(bokan): Make |scroll_node| a const ref.
+  gfx::Vector2dF ScrollSingleNode(ScrollNode& scroll_node,
                                   const gfx::Vector2dF& delta,
                                   const gfx::Point& viewport_point,
                                   bool is_direct_manipulation,
@@ -877,7 +878,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       gfx::Vector2dF* out_local_scroll_delta,
       gfx::PointF* out_local_start_point = nullptr);
   gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
-      ScrollNode* scroll_node,
+      ScrollNode& scroll_node,
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
@@ -995,7 +996,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 
-  bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
+  bool ScrollAnimationUpdateTarget(const ScrollNode& scroll_node,
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
 

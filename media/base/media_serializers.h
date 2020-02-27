@@ -11,9 +11,9 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
-#include "media/base/media_error.h"
-#include "media/base/media_error_codes.h"
 #include "media/base/media_serializers_base.h"
+#include "media/base/status.h"
+#include "media/base/status_codes.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -349,22 +349,22 @@ struct MediaSerializer<media::SerializableBufferingState<T>> {
 
 // enum (simple)
 template <>
-struct MediaSerializer<media::ErrorCode> {
-  static inline base::Value Serialize(media::ErrorCode code) {
+struct MediaSerializer<media::StatusCode> {
+  static inline base::Value Serialize(media::StatusCode code) {
     return base::Value(static_cast<int>(code));
   }
 };
 
 // Class (complex)
 template <>
-struct MediaSerializer<media::MediaError> {
-  static base::Value Serialize(const media::MediaError& err) {
+struct MediaSerializer<media::Status> {
+  static base::Value Serialize(const media::Status& err) {
     if (err.IsOk())
       return base::Value("Ok");
 
     base::Value result(base::Value::Type::DICTIONARY);
-    FIELD_SERIALIZE("error_code", err.GetErrorCode());
-    FIELD_SERIALIZE("error_message", err.GetErrorMessage());
+    FIELD_SERIALIZE("status_code", err.code());
+    FIELD_SERIALIZE("status_message", err.message());
     FIELD_SERIALIZE("stack", err.data_->frames);
     FIELD_SERIALIZE("data", err.data_->data);
     FIELD_SERIALIZE("causes", err.data_->causes);

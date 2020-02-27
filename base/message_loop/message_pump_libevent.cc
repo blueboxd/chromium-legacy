@@ -253,7 +253,7 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
     // Block waiting for events and process all available upon waking up. This
     // is conditionally interrupted to look for more work if we are aware of a
     // delayed task that will need servicing.
-    delegate->BeforeDoInternalWork();
+    delegate->BeforeWait();
     event_base_loop(event_base_, EVLOOP_ONCE);
 
     // We previously setup a timer to break out the event loop to look for more

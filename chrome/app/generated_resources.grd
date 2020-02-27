@@ -10337,6 +10337,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           =1 {You have one attempt remaining.}
           other {You have # attempts remaining.}}
       </message>
+      <message name="IDS_WEBAUTHN_UV_ERROR_LOCKED" desc="Error message. Displayed when the user's authenticator has been locked due to too many failed attempts to read their fingerprint, and they are required to enter a PIN to unlock it.">
+        Your security key is locked because your fingerprint couldn't be recognized. To unlock it, enter your PIN.
+      </message>
 
       <!-- WebAuthn account selection for resident keys -->
       <message name="IDS_WEBAUTHN_ACCOUNT_COLUMN" desc="The title of a column in a table under which will be a list of usernames or email addresses, e.g. joe@gmail.com.">

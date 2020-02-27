@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 
@@ -53,8 +54,9 @@ public interface TabModelObserver {
      *
      * @param tab The newly added tab.
      * @param type The type of tab launch.
+     * @param creationState How the tab was created.
      */
-    void didAddTab(Tab tab, @TabLaunchType int type);
+    void didAddTab(Tab tab, @TabLaunchType int type, @TabCreationState int creationState);
 
     /**
      * Called after a tab has been moved from one position in the {@link TabModel} to another.

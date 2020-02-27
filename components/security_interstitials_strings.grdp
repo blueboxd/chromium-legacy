@@ -415,7 +415,7 @@
     The site <ph name="ORIGIN">$2</ph> has requested that an origin policy
     will apply to all its request, but this policy cannot presently be applied.
   </message>
-  <message name="IDS_ORIGIN_POLICY_INFO2" desc="The second paragrpah of the text of the Origin Policy Error Interstitial. (Presently intentionally left blank.)" />
+  <message name="IDS_ORIGIN_POLICY_INFO2" desc="The second paragraph of the text of the Origin Policy Error Interstitial. (Presently intentionally left blank.)" />
   <message name="IDS_ORIGIN_POLICY_BUTTON"
     desc="The text for the Origin Policy Error Interstitial button that takes the user back to the previous page">
     Back to safety.
@@ -424,26 +424,11 @@
     desc="The text for the Origin Policy Error Interstitial button that contains additional information.">
     Advanced
   </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy could not be loaded.">
+  <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy was requested but could not be loaded.">
     The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
     an origin policy will be applied to all requests to it. But it has now
     failed to deliver a policy, which prevents the browser from fulfilling
     your request for <ph name="SITE">$1</ph>. Origin policies can be used by
-    site operators to configure security and other properties for a site.
-  </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_SHOULD_NOT_REDIRECT" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy request was met with a 'redirect' response.">
-    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
-    an origin policy will be applied to all requests to it. But instead of
-    delivering a policy it has redirected the browser elsewhere, which prevents
-    the browser from fulfilling your request for <ph name="SITE">$1</ph>. Origin
-    policies can be used by site operators to configure security and other
-    properties for a site.
-  </message>
-  <message name="IDS_ORIGIN_POLICY_EXPLANATION_OTHER" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for cases other than redirect or load error.">
-    The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
-    an origin policy will be applied to all requests to it. But it has now
-    delivered an invalid policy, which means the browser cannot fullfil your
-    request for <ph name="SITE">$1</ph>. Origin policies can be used by
     site operators to configure security and other properties for a site.
   </message>
   <message name="IDS_ORIGIN_POLICY_FINAL_PARAGRAPH"

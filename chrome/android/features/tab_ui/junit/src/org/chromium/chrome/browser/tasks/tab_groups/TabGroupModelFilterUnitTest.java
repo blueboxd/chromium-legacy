@@ -38,6 +38,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -143,7 +144,7 @@ public class TabGroupModelFilterUnitTest {
             }
         })
                 .when(mTabModel)
-                .addTab(any(Tab.class), anyInt(), anyInt());
+                .addTab(any(Tab.class), anyInt(), anyInt(), anyInt());
 
         doAnswer(new Answer() {
             @Override
@@ -204,8 +205,10 @@ public class TabGroupModelFilterUnitTest {
 
     private TabImpl addTabToTabModel(int index, @Nullable TabImpl tab) {
         if (tab == null) tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
-        mTabModel.addTab(tab, index, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(tab, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                tab, index, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                tab, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         return tab;
     }
 
@@ -216,28 +219,40 @@ public class TabGroupModelFilterUnitTest {
         mTabGroupModelFilter.addTabGroupObserver(mTabGroupModelFilterObserver);
 
         doReturn(isIncognito).when(mTab1).isIncognito();
-        mTabModel.addTab(mTab1, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab1, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab1, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab2).isIncognito();
-        mTabModel.addTab(mTab2, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab2, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab2, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab2, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab3).isIncognito();
-        mTabModel.addTab(mTab3, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab3, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab3, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab4).isIncognito();
-        mTabModel.addTab(mTab4, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab4, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab4, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab4, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab5).isIncognito();
-        mTabModel.addTab(mTab5, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab5, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab5, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab5, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab6).isIncognito();
-        mTabModel.addTab(mTab6, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab6, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab6, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab6, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         if (isTabRestoreCompleted) {
             mTabGroupModelFilter.restoreCompleted();

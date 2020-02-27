@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/format_macros.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -857,6 +858,69 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 #pragma mark - Pref Utilities (EG2)
+
+// Returns a base::Value representation of the requested pref.
+- (std::unique_ptr<base::Value>)localStatePrefValue:
+    (const std::string&)prefName {
+  std::string jsonRepresentation =
+      base::SysNSStringToUTF8([ChromeEarlGreyAppInterface
+          localStatePrefValue:base::SysUTF8ToNSString(prefName)]);
+  JSONStringValueDeserializer deserializer(jsonRepresentation);
+  return deserializer.Deserialize(/*error_code=*/nullptr,
+                                  /*error_message=*/nullptr);
+}
+
+- (bool)localStateBooleanPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self localStatePrefValue:prefName];
+  BOOL success = value && value->is_bool();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected bool");
+  return success ? value->GetBool() : false;
+}
+
+- (int)localStateIntegerPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self localStatePrefValue:prefName];
+  BOOL success = value && value->is_int();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected int");
+  return success ? value->GetInt() : 0;
+}
+
+- (std::string)localStateStringPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self localStatePrefValue:prefName];
+  BOOL success = value && value->is_string();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected string");
+  return success ? value->GetString() : "";
+}
+
+// Returns a base::Value representation of the requested pref.
+- (std::unique_ptr<base::Value>)userPrefValue:(const std::string&)prefName {
+  std::string jsonRepresentation =
+      base::SysNSStringToUTF8([ChromeEarlGreyAppInterface
+          userPrefValue:base::SysUTF8ToNSString(prefName)]);
+  JSONStringValueDeserializer deserializer(jsonRepresentation);
+  return deserializer.Deserialize(/*error_code=*/nullptr,
+                                  /*error_message=*/nullptr);
+}
+
+- (bool)userBooleanPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self userPrefValue:prefName];
+  BOOL success = value && value->is_bool();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected bool");
+  return success ? value->GetBool() : false;
+}
+
+- (int)userIntegerPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self userPrefValue:prefName];
+  BOOL success = value && value->is_int();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected int");
+  return success ? value->GetInt() : 0;
+}
+
+- (std::string)userStringPref:(const std::string&)prefName {
+  std::unique_ptr<base::Value> value = [self userPrefValue:prefName];
+  BOOL success = value && value->is_string();
+  EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected string");
+  return success ? value->GetString() : "";
+}
 
 - (void)setBoolValue:(BOOL)value forUserPref:(const std::string&)UTF8PrefName {
   NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);

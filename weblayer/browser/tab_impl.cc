@@ -440,11 +440,6 @@ void TabImpl::DidNavigateMainFramePostCommit(
 content::JavaScriptDialogManager* TabImpl::GetJavaScriptDialogManager(
     content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
-  // Simply ignore javascript dialog requests from non-foremost tabs.
-  // TODO(crbug.com/1025256): revisit this behavior.
-  if (!IsActive())
-    return nullptr;
-
   return javascript_dialogs::TabModalDialogManager::FromWebContents(
       web_contents);
 #else

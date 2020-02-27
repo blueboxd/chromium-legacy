@@ -154,7 +154,10 @@ void StatusAreaWidget::UpdateCollapseState() {
 }
 
 void StatusAreaWidget::CalculateTargetBounds() {
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->CalculateTargetBounds();
   status_area_widget_delegate_->CalculateTargetBounds();
+
   gfx::Size status_size(status_area_widget_delegate_->GetTargetBounds().size());
   const gfx::Size shelf_size = shelf_->shelf_widget()->GetTargetBounds().size();
   const gfx::Point shelf_origin =
@@ -186,7 +189,7 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
     return;
 
   for (TrayBackgroundView* tray_button : tray_buttons_)
-    tray_button->UpdateAfterShelfChange();
+    tray_button->UpdateLayout();
   status_area_widget_delegate_->UpdateLayout(animate);
 
   // Having a window which is visible but does not have an opacity is an
@@ -420,8 +423,6 @@ void StatusAreaWidget::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void StatusAreaWidget::OnShelfConfigUpdated() {
-  for (TrayBackgroundView* tray_button : tray_buttons_)
-    tray_button->UpdateAfterShelfChange();
   UpdateCollapseState();
 }
 

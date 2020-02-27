@@ -106,9 +106,9 @@ message OpenUrlData {
   //  latest frequency token as the value of this query param.
   optional string consistency_token_query_param_name = 2;
   // The content ID that was interacted with to cause a URL open.
-  optional components.feed.core.proto.wire.ContentId content_id = 3;
+  optional feedwire.ContentId content_id = 3;
   // Roundtripped server data on a per-action level.
-  optional components.feed.core.proto.wire.ActionPayload payload = 4;
+  optional feedwire.ActionPayload payload = 4;
 }
 
 // Data needed by Stream to open a context menu.
@@ -121,19 +121,19 @@ message DismissData {
   // The ContentId needed by the server to suppress reshowing the dismissed
   // content. This will usually be the ContentId of the card which holds the
   // content, not the ContentId of the content itself.
-  optional components.feed.core.proto.wire.ContentId content_id = 1;
+  optional feedwire.ContentId content_id = 1;
 
   // The DataOperations which are needed to actually perform the dismiss on the
   // client. This is typically a singleton list of a remove operation on the
   // Cluster that the content belongs to.
-  repeated components.feed.core.proto.wire.DataOperation data_operations = 2;
+  repeated feedwire.DataOperation data_operations = 2;
 
   // Data used by the client to show a confirmation message with option to undo.
   // This confirmation and undo option will only appear if the UndoAction is
   // present and the client can handle this capability.
   optional UndoAction undo_action = 3;
   // Roundtripped server data on a per-action level.
-  optional components.feed.core.proto.wire.ActionPayload payload = 4;
+  optional feedwire.ActionPayload payload = 4;
 }
 
 // Data needed by the client to handle the not interested action.
@@ -143,9 +143,9 @@ message NotInterestedInData {
   // present and the client can handle this capability.
   optional UndoAction undo_action = 1;
   // The data needed by Stream to preform the dismiss.
-  repeated components.feed.core.proto.wire.DataOperation data_operations = 2;
+  repeated feedwire.DataOperation data_operations = 2;
   // Roundtripped server data on a per-action level.
-  optional components.feed.core.proto.wire.ActionPayload payload = 3;
+  optional feedwire.ActionPayload payload = 3;
   enum RecordedInterestType {
     UNKNOWN_INTEREST_TYPE = 0;
     TOPIC = 1;

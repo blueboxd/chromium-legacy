@@ -1190,6 +1190,7 @@ jumbo_component("platform") {
     "mediastream/audio_service_audio_processor_proxy.h",
     "mediastream/media_constraints.cc",
     "mediastream/media_constraints.h",
+    "mediastream/media_stream_audio_deliverer.h",
     "mediastream/media_stream_audio_level_calculator.cc",
     "mediastream/media_stream_audio_level_calculator.h",
     "mediastream/media_stream_audio_processor_options.cc",

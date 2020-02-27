@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_ORIGIN_TABLE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_ORIGIN_TABLE_H_
 
+#include <string>
+
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
@@ -38,6 +40,10 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   // Returns a flag indicating whether watchtime was increased successfully.
   bool IncrementAggregateAudioVideoWatchTime(const url::Origin& origin,
                                              const base::TimeDelta& time);
+
+  // Deletes an origin from the database and returns a flag as to whether this
+  // was successful.
+  bool Delete(const url::Origin& origin);
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryOriginTable);
 };

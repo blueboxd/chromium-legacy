@@ -188,6 +188,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Adds |resource_id| to the set of resources that are in the disk cache
   // but not yet stored with a registration.
   void StoreUncommittedResourceId(int64_t resource_id,
+                                  const GURL& origin,
                                   DatabaseStatusCallback callback);
 
   // Removes resource ids from uncommitted list, adds them to the purgeable list
@@ -389,12 +390,21 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64_t>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
+  void DidUpdateToActiveState(DatabaseStatusCallback callback,
+                              const GURL& origin,
+                              ServiceWorkerDatabase::Status status);
   void DidDeleteRegistration(
       std::unique_ptr<DidDeleteRegistrationParams> params,
       OriginState origin_state,
       const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64_t>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
+  void DidWriteUncommittedResourceIds(DatabaseStatusCallback callback,
+                                      const GURL& origin,
+                                      ServiceWorkerDatabase::Status status);
+  void DidStoreUserData(DatabaseStatusCallback callback,
+                        const GURL& origin,
+                        ServiceWorkerDatabase::Status status);
 
   // Lazy disk_cache getter.
   ServiceWorkerDiskCache* disk_cache();

@@ -50,7 +50,7 @@ class Cronet_UploadDataSinkImpl : public Cronet_UploadDataSink {
   void InitializeUploadDataStream(
       base::WeakPtr<CronetUploadDataStream> upload_data_stream,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
-  void Read(net::IOBuffer* buffer, int buf_len);
+  void Read(scoped_refptr<net::IOBuffer> buffer, int buf_len);
   void Rewind();
   void Close();
 

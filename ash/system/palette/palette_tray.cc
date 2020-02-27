@@ -597,7 +597,7 @@ void PaletteTray::UpdateIconVisibility() {
                            palette_utils::IsInUserSession();
   SetVisiblePreferred(visible_preferred);
   if (visible_preferred)
-    UpdateAfterShelfChange();
+    UpdateLayout();
 }
 
 }  // namespace ash

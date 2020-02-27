@@ -1508,6 +1508,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_WAITFOROVERVIEWSTATE = 1445,
   AUTOTESTPRIVATE_GETSCROLLABLESHELFINFOFORSTATE = 1446,
   ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEHOSTNAME = 1447,
+  AUTOFILLPRIVATE_GETUPIIDLIST = 1448,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

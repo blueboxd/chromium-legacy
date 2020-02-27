@@ -19,8 +19,7 @@ class BackgroundTracingAgentClientImpl
  public:
   static void Create(
       int child_process_id,
-      mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
-          pending_provider);
+      mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider> provider);
 
   ~BackgroundTracingAgentClientImpl() override;
 

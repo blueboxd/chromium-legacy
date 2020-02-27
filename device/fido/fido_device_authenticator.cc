@@ -273,20 +273,21 @@ FidoAuthenticator::GetAssertionPINDisposition
 FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
     const CtapGetAssertionRequest& request,
     const FidoRequestHandlerBase::Observer* observer) {
-  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
-  // implemented.)
-  if (Options()->user_verification_availability ==
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured) {
-    return GetAssertionPINDisposition::kNoPIN;
-  }
-
   const bool can_use_pin = (Options()->client_pin_availability ==
                             AuthenticatorSupportedOptions::
                                 ClientPinAvailability::kSupportedAndPinSet) &&
                            // The PIN is effectively unavailable if there's no
                            // UI support for collecting it.
                            observer && observer->SupportsPIN();
+
+  // Authenticators with built-in UV can use that.
+  if (Options()->user_verification_availability ==
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured) {
+    return can_use_pin ? GetAssertionPINDisposition::kUsePINForFallback
+                       : GetAssertionPINDisposition::kNoPIN;
+  }
+
   const bool resident_key_request = request.allow_list.empty();
 
   if (resident_key_request) {

@@ -923,6 +923,13 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
+    // The hang watcher needs to be started once the feature list is available
+    // but before the IO thread is started.
+    if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+      hang_watcher_ = std::make_unique<base::HangWatcher>(
+          base::BindRepeating((&base::HangWatcher::RecordHang)));
+    }
+
     if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
       // The FeatureList needs to create before starting the ThreadPool.
       StartBrowserThreadPool();

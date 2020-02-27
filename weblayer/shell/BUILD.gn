@@ -246,11 +246,6 @@ if (is_android) {
 
     if (is_win) {
       deps += [ "//sandbox" ]
-
-      # This is a large module that can't do incremental linking in some cases.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
       if (win_console_app) {
         defines += [ "WIN_CONSOLE_APP" ]
       } else {

@@ -5,6 +5,7 @@
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -296,6 +297,19 @@
   GREYAssertTrue([ChromeEarlGrey isCompactWidth] == expectedIsCompactWidth,
                  @"isCompactWidth should return %@",
                  expectedIsCompactWidth ? @"YES" : @"NO");
+}
+
+// Tests helpers that retrieve prefs and local state values.
+- (void)testGetPrefs {
+  // The actual pref names and values below are irrelevant, but the calls
+  // themselves should return data without crashing or asserting.
+  [ChromeEarlGrey localStateBooleanPref:prefs::kLastSessionExitedCleanly];
+  [ChromeEarlGrey localStateIntegerPref:prefs::kBrowserStatesNumCreated];
+  [ChromeEarlGrey localStateStringPref:prefs::kBrowserStateLastUsed];
+
+  [ChromeEarlGrey userBooleanPref:prefs::kIosBookmarkPromoAlreadySeen];
+  [ChromeEarlGrey userIntegerPref:prefs::kIosBookmarkCachedTopMostRow];
+  [ChromeEarlGrey userStringPref:prefs::kDefaultCharset];
 }
 
 @end

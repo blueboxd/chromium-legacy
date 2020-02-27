@@ -81,6 +81,38 @@ void FeaturePodIconButton::SetToggled(bool toggled) {
   views::ToggleImageButton::SetToggled(toggled);
 }
 
+void FeaturePodIconButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kIconSystemMenu, AshColorMode::kDark);
+  const SkColor toggled_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kIconSystemMenuToggled, AshColorMode::kDark);
+
+  // Skip repainting if the incoming icon is the same as the current icon. If
+  // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
+  // grab the ImageSkia from a cache, so it will be cheap. Note that this
+  // assumes that toggled/disabled images changes at the same time as the normal
+  // image, which it currently does.
+  const gfx::ImageSkia new_normal_image =
+      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize, icon_color);
+  const gfx::ImageSkia& old_normal_image =
+      GetImage(views::Button::STATE_NORMAL);
+  if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
+      new_normal_image.BackedBySameObjectAs(old_normal_image)) {
+    return;
+  }
+
+  SetImage(views::Button::STATE_NORMAL, new_normal_image);
+
+  SetToggledImage(views::Button::STATE_NORMAL,
+                  new gfx::ImageSkia(gfx::CreateVectorIcon(
+                      icon, kUnifiedFeaturePodVectorIconSize, toggled_color)));
+
+  SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
+                            AshColorProvider::GetDisabledColor(icon_color)));
+}
+
 void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
@@ -331,36 +363,7 @@ double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
 }
 
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
-  const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kIconSystemMenu, AshColorMode::kDark);
-  const SkColor toggled_color = AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kIconSystemMenuToggled, AshColorMode::kDark);
-
-  // Skip repainting if the incoming icon is the same as the current icon. If
-  // the icon has been painted before, |gfx::CreateVectorIcon()| will simply
-  // grab the ImageSkia from a cache, so it will be cheap. Note that this
-  // assumes that toggled/disabled images changes at the same time as the normal
-  // image, which it currently does.
-  const gfx::ImageSkia new_normal_image =
-      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize, icon_color);
-  const gfx::ImageSkia& old_normal_image =
-      icon_button_->GetImage(views::Button::STATE_NORMAL);
-  if (!new_normal_image.isNull() && !old_normal_image.isNull() &&
-      new_normal_image.BackedBySameObjectAs(old_normal_image)) {
-    return;
-  }
-
-  icon_button_->SetImage(views::Button::STATE_NORMAL, new_normal_image);
-
-  icon_button_->SetToggledImage(
-      views::Button::STATE_NORMAL,
-      new gfx::ImageSkia(gfx::CreateVectorIcon(
-          icon, kUnifiedFeaturePodVectorIconSize, toggled_color)));
-
-  icon_button_->SetImage(
-      views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
-                            AshColorProvider::GetDisabledColor(icon_color)));
+  icon_button_->SetVectorIcon(icon);
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {

@@ -137,6 +137,23 @@ TEST_F('CrSettingsExtensionControlledIndicatorV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+
+// eslint-disable-next-line no-var
+var CrSettingsIncompatibleApplicationsPageV3Test =
+    class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/incompatible_applications_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsIncompatibleApplicationsPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+
 // eslint-disable-next-line no-var
 var CrSettingsPrefUtilV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */

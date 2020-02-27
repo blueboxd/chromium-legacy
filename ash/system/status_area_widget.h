@@ -143,6 +143,9 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
     // Children change visibility only one at a time, so keeping track of
     // how many are visible (as opposed to the visibility state of each) is
     // sufficient to make sure we don't miss necessary layout changes.
+    // TODO(manucornet): The assumption that children only change visibility
+    // one at a time may be too optimistic. One way to address this would be
+    // to have a child visibility change counter.
     unsigned int number_of_visible_children = 0;
 
     bool operator==(const LayoutInputs& other) const {

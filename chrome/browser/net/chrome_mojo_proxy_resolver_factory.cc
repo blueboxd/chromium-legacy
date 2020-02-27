@@ -46,13 +46,6 @@ proxy_resolver::mojom::ProxyResolverFactory* GetProxyResolverFactory() {
     content::ServiceProcessHost::Launch(
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
-#if defined(OS_MACOSX)
-            // The proxy_resolver service runs V8, so it needs to run in the
-            // helper application that has the com.apple.security.cs.allow-jit
-            // code signing entitlement, which is CHILD_RENDERER. The service
-            // still runs under the utility process sandbox.
-            .WithChildFlags(content::ChildProcessHost::CHILD_RENDERER)
-#endif
             .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
 #if defined(OS_WIN)
             .WithSandboxType(service_manager::SandboxType::kProxyResolver)

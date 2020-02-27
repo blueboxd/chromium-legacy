@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {IncompatibleApplicationsBrowserProxyImpl, IncompatibleApplication} from 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /** @implements {settings.IncompatibleApplicationsBrowserProxy} */
 class TestIncompatibleApplicationsBrowserProxy extends TestBrowserProxy {
   constructor() {

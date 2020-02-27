@@ -23,11 +23,10 @@ class NavigationHandle;
 //
 // The intended use is that the navigation request will
 // - call OriginPolicyThrottle::ShouldRequestOriginPolicy to determine whether
-//   a policy should be requested, and add the appropriate SecOriginPolicy:
-//   header.
+//   a policy should be requested.
 // - call OriginPolicyThrottle::MaybeCreateThrottleFor a given navigation.
-//   This will use presence of the header to decide whether to create a
-//   throttle or not.
+//   This will use presence of the Origin-Policy header to decide whether to
+//   create a throttle or not.
 class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
  public:
   // Determine whether to request a policy (or advertise origin policy

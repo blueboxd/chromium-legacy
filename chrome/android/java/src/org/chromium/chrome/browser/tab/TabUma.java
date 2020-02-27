@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 
-import androidx.annotation.IntDef;
-
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -16,9 +14,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.net.NetError;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Centralizes UMA data collection for Tab management.
@@ -64,22 +59,6 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     // Counter of tab shows (as per onShow()) for all tabs.
     private static long sAllTabsShowCount;
-
-    /**
-     * State in which the tab was created. This can be used in metric accounting - e.g. to
-     * distinguish reasons for a tab to be restored upon first display.
-     */
-    @IntDef({TabCreationState.LIVE_IN_FOREGROUND, TabCreationState.LIVE_IN_BACKGROUND,
-            TabCreationState.FROZEN_ON_RESTORE, TabCreationState.FROZEN_FOR_LAZY_LOAD,
-            TabCreationState.FROZEN_ON_RESTORE_FAILED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface TabCreationState {
-        int LIVE_IN_FOREGROUND = 0;
-        int LIVE_IN_BACKGROUND = 1;
-        int FROZEN_ON_RESTORE = 2;
-        int FROZEN_FOR_LAZY_LOAD = 3;
-        int FROZEN_ON_RESTORE_FAILED = 4;
-    }
 
     private final @TabCreationState int mTabCreationState;
 
@@ -315,7 +294,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
             // where this is created too early and we start missing out on metrics suddenly.
             mNewTabObserver = new EmptyTabModelSelectorObserver() {
                 @Override
-                public void onNewTabCreated(Tab newTab) {
+                public void onNewTabCreated(Tab newTab, @TabCreationState int creationState) {
                     if (newTab.getParentId() == tab.getId()
                             && newTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
                         onBackgroundTabOpenedFromContextMenu(newTab);

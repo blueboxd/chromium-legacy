@@ -340,9 +340,13 @@ void TrayBackgroundView::CloseBubble() {}
 
 void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
-void TrayBackgroundView::UpdateAfterShelfChange() {
+void TrayBackgroundView::CalculateTargetBounds() {
+  tray_container_->CalculateTargetBounds();
+}
+
+void TrayBackgroundView::UpdateLayout() {
   UpdateBackground();
-  tray_container_->UpdateAfterShelfChange();
+  tray_container_->UpdateLayout();
 }
 
 void TrayBackgroundView::UpdateAfterLoginStatusChange() {

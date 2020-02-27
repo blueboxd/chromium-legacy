@@ -1274,12 +1274,12 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 84
   },
   {
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 84
   },
   {
     "name": "enable-experimental-accessibility-switch-access",

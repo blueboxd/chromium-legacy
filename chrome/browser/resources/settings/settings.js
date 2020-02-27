@@ -28,6 +28,10 @@ import './settings_menu/settings_menu.m.js';
 import './settings_page/settings_subpage.m.js';
 import './settings_page/settings_animated_pages.m.js';
 
+// <if expr="_google_chrome and is_win">
+import './incompatible_applications_page/incompatible_applications_page.m.js';
+// </if>
+
 // <if expr="not chromeos">
 import './default_browser_page/default_browser_page.m.js';
 import './system_page/system_page.m.js';
@@ -37,6 +41,7 @@ import './system_page/system_page.m.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.m.js';
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.m.js';
 export {ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.m.js';
+export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.m.js';
 // </if>
 
 // <if expr="not chromeos">

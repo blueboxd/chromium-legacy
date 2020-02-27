@@ -72,8 +72,7 @@ message StreamSharedState {
   optional string content_id = 1;
   oneof share_state {
     // A Piet shared state item.
-    components.feed.core.proto.wire.PietSharedStateItem piet_shared_state_item =
-        2;
+    feedwire.PietSharedStateItem piet_shared_state_item = 2;
   }
 }
 
@@ -157,7 +156,7 @@ message StreamPayload {
 
     // The consistency token used to ensure that we are recording actions to
     // the same server store.
-    components.feed.core.proto.wire.ConsistencyToken consistency_token = 9;
+    feedwire.ConsistencyToken consistency_token = 9;
   }
   reserved 8;
 }
@@ -228,7 +227,7 @@ message StreamUploadableAction {
   // When the action was recorded
   optional int64 timestamp_seconds = 4;
 
-  optional wire.ActionPayload payload = 6;
+  optional feedwire.ActionPayload payload = 6;
 
   reserved 1, 5;  // deprecated fields
 }

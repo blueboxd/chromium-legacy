@@ -107,4 +107,16 @@ bool MediaHistoryOriginTable::IncrementAggregateAudioVideoWatchTime(
   return true;
 }
 
+bool MediaHistoryOriginTable::Delete(const url::Origin& origin) {
+  if (!CanAccessDatabase())
+    return false;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      base::StringPrintf("DELETE FROM %s WHERE origin = ?", kTableName)
+          .c_str()));
+  statement.BindString(0, GetOriginForStorage(origin));
+  return statement.Run();
+}
+
 }  // namespace media_history

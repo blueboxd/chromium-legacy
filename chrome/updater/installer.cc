@@ -49,11 +49,11 @@ Installer::Installer(const std::string& app_id,
     : app_id_(app_id), persisted_data_(persisted_data) {}
 
 Installer::~Installer() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 update_client::CrxComponent Installer::MakeCrxComponent() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   VLOG(1) << __func__ << " for " << app_id_;
 

@@ -329,8 +329,11 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
       return true;
   }
 
-  if (style.IsDeprecatedWebkitBox())
+  if (style.IsDeprecatedWebkitBox() &&
+      (!style.IsDeprecatedWebkitBoxWithVerticalLineClamp() ||
+       !RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled())) {
     return true;
+  }
 
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a multicol

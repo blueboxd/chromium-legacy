@@ -187,7 +187,7 @@ public class DownloadForegroundService extends Service {
     public void onDestroy() {
         DownloadNotificationUmaHelper.recordServiceStoppedHistogram(
                 DownloadNotificationUmaHelper.ServiceStopped.DESTROYED, true /* withForeground */);
-        DownloadNotificationService.getInstance().onForegroundServiceDestroyed();
+        DownloadForegroundServiceObservers.alertObserversServiceDestroyed();
         super.onDestroy();
     }
 
@@ -195,7 +195,7 @@ public class DownloadForegroundService extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         DownloadNotificationUmaHelper.recordServiceStoppedHistogram(
                 DownloadNotificationUmaHelper.ServiceStopped.TASK_REMOVED, true /*withForeground*/);
-        DownloadNotificationService.getInstance().onForegroundServiceTaskRemoved();
+        DownloadForegroundServiceObservers.alertObserversTaskRemoved();
         super.onTaskRemoved(rootIntent);
     }
 

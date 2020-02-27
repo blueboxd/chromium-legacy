@@ -330,6 +330,7 @@ function TestPaymentsManager() {
   // Set these to have non-empty data.
   this.data = {
     creditCards: [],
+    upiIds: [],
   };
 
   // Holds the last callbacks so they can be called when needed.
@@ -354,6 +355,12 @@ TestPaymentsManager.prototype = {
   getCreditCardList: function(callback) {
     this.actual_.requestedCreditCards++;
     callback(this.data.creditCards);
+  },
+
+  /** @override */
+  getUpiIdList: function(callback) {
+    this.actual_.requestedUpiIds++;
+    callback(this.data.upiIds);
   },
 
   /**

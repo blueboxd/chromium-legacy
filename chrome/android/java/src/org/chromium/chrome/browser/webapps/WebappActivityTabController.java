@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -124,7 +125,7 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
         assert tab != null;
 
         if (mode != TabCreationMode.RESTORED) {
-            tabModel.addTab(tab, 0, tab.getLaunchType());
+            tabModel.addTab(tab, 0, tab.getLaunchType(), TabCreationState.LIVE_IN_FOREGROUND);
         }
 
         mTabProvider.setInitialTab(tab, mode);

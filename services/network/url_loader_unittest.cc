@@ -4480,10 +4480,10 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
 class MockOriginPolicyManager : public mojom::OriginPolicyManager {
  public:
   void RetrieveOriginPolicy(const url::Origin& origin,
-                            const std::string& header_value,
+                            const base::Optional<std::string>& header,
                             RetrieveOriginPolicyCallback callback) override {
     retrieve_origin_policy_called_ = true;
-    header_value_ = header_value;
+    header_ = header;
     OriginPolicy result;
     result.state = OriginPolicyState::kLoaded;
     result.policy_url = origin.GetURL();
@@ -4493,13 +4493,13 @@ class MockOriginPolicyManager : public mojom::OriginPolicyManager {
 
   void AddExceptionFor(const url::Origin& origin) override {}
 
-  const std::string& header_value() { return header_value_; }
+  const base::Optional<std::string>& header() { return header_; }
   bool retrieve_origin_policy_called() {
     return retrieve_origin_policy_called_;
   }
 
  private:
-  std::string header_value_ = "";
+  base::Optional<std::string> header_ = base::nullopt;
   bool retrieve_origin_policy_called_ = false;
 };
 
@@ -4511,7 +4511,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
         std::unique_ptr<net::test_server::BasicHttpResponse> response =
             std::make_unique<net::test_server::BasicHttpResponse>();
         if (request.relative_url == "/with_policy")
-          response->AddCustomHeader("Sec-Origin-Policy", "policy=policy-1");
+          response->AddCustomHeader("Origin-Policy", "allowed=(\"policy-1\")");
         return response;
       }));
   ASSERT_TRUE(server.Start());
@@ -4546,7 +4546,9 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
 
-    EXPECT_EQ("policy=policy-1", mock_origin_policy_manager.header_value());
+    EXPECT_TRUE(mock_origin_policy_manager.header().has_value());
+    EXPECT_EQ("allowed=(\"policy-1\")",
+              mock_origin_policy_manager.header().value());
     EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
     EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
     EXPECT_EQ(OriginPolicyState::kLoaded,
@@ -4584,7 +4586,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
 
-    EXPECT_EQ("", mock_origin_policy_manager.header_value());
+    EXPECT_FALSE(mock_origin_policy_manager.header().has_value());
     EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
     EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
     EXPECT_EQ(OriginPolicyState::kLoaded,

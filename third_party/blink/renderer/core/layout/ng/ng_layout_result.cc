@@ -97,6 +97,8 @@ NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey key,
     : NGLayoutResult(/* physical_fragment */ nullptr,
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.status = status;
+  if (builder->lines_until_clamp_ != 0)
+    EnsureRareData()->lines_until_clamp = builder->lines_until_clamp_;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
 }

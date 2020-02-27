@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-package components.feed.core.proto.wire;
+package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 

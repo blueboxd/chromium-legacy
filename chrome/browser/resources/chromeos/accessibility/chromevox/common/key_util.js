@@ -352,7 +352,7 @@ KeyUtil = class {
 
     for (let index = 0; index < numKeys; index++) {
       if (str != '' && !opt_modifiers) {
-        str += '>';
+        str += ', then ';
       } else if (str != '') {
         str += '+';
       }
@@ -417,13 +417,15 @@ KeyUtil = class {
 
     if (keySequence.cvoxModifier || keySequence.prefixKey) {
       if (str != '') {
-        str = 'ChromeVox+' + str;
+        str = 'Search+' + str;
       } else {
-        str = 'Cvox';
+        str = 'Search+Search';
       }
     } else if (keySequence.stickyMode) {
-      if (str[str.length - 1] == '>') {
-        str = str.slice(0, -1);
+      // Strip trailing ', then '.
+      const cut = str.slice(str.length - ', then '.length);
+      if (cut === ', then ') {
+        str = str.slice(0, str.length - cut.length);
       }
       str = str + '+' + str;
     }

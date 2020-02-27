@@ -5,6 +5,31 @@ CONSOLE WARNING: line 769: The provided value 'junk' is not a valid enum value o
 CONSOLE WARNING: line 800: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
+PASS Executing "initialize"
+PASS Executing "createBuffer"
+PASS Executing "createMediaElementSource"
+PASS Executing "createMediaStreamSource"
+PASS Executing "createScriptProcessor"
+PASS Executing "createChannelSplitter"
+PASS Executing "createChannelMerger"
+PASS Executing "createPeriodicWave"
+PASS Executing "createAnalyser"
+PASS Executing "Init test nodes"
+PASS Executing "connections"
+PASS Executing "channel-stuff"
+PASS Executing "audioparam"
+PASS Executing "biquad"
+PASS Executing "offline-audio-context"
+PASS Executing "invalid-offline-audio-context-parameters"
+PASS Executing "invalid-frame-length"
+PASS Executing "waveshaper"
+PASS Executing "audio-buffer-source"
+PASS Executing "oscillator"
+PASS Executing "convolver"
+PASS Executing "panner"
+PASS Executing "script-processor"
+PASS Executing "misc"
+PASS Audit report
 PASS > [initialize] Initialize contexts for testing
 PASS   context = new AudioContext() did not throw an exception.
 PASS   otherContext = new AudioContext() did not throw an exception.

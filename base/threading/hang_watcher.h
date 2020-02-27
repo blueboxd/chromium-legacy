@@ -12,6 +12,7 @@
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
@@ -44,6 +45,13 @@ namespace base {
 // exited would lead to non-actionable hang reports.
 class BASE_EXPORT HangWatchScope {
  public:
+  // A good default value needs to be large enough to represent a significant
+  // hang and avoid noise while being small enough to not exclude too many
+  // hangs. The nature of the work that gets executed on the thread is also
+  // important. We can be much stricter when monitoring a UI thread compared tp
+  // a ThreadPool thread for example.
+  static const base::TimeDelta kDefaultHangWatchTime;
+
   // Constructing/destructing thread must be the same thread.
   explicit HangWatchScope(TimeDelta timeout);
   ~HangWatchScope();
@@ -71,6 +79,8 @@ class BASE_EXPORT HangWatchScope {
 // within a single process. This instance must outlive all monitored threads.
 class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
  public:
+  static const base::Feature kEnableHangWatcher;
+
   // The first invocation of the constructor will set the global instance
   // accessible through GetInstance(). This means that only one instance can
   // exist at a time.
@@ -84,6 +94,10 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   // Returns a non-owning pointer to the global HangWatcher instance.
   static HangWatcher* GetInstance();
+
+  // Invoke base::debug::DumpWithoutCrashing() insuring that the stack frame
+  // right under it in the trace belongs to HangWatcher for easier attribution.
+  NOINLINE static void RecordHang();
 
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be

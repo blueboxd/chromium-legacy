@@ -490,12 +490,8 @@ aom_ports_asm_x86 = [ "//third_party/libaom/source/libaom/aom_ports/emms.asm" ]
 
 aom_rtcd_sources = [
   "//third_party/libaom/source/libaom/aom_dsp/aom_dsp_rtcd.c",
-  "//third_party/libaom/source/libaom/aom_dsp/aom_dsp_rtcd_defs.pl",
   "//third_party/libaom/source/libaom/aom_scale/aom_scale_rtcd.c",
-  "//third_party/libaom/source/libaom/aom_scale/aom_scale_rtcd.pl",
   "//third_party/libaom/source/libaom/av1/common/av1_rtcd.c",
-  "//third_party/libaom/source/libaom/av1/common/av1_rtcd_defs.pl",
-  "//third_party/libaom/source/libaom/build/cmake/rtcd.pl",
 ]
 
 aom_scale_intrin_dspr2 = [

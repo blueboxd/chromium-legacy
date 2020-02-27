@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.infobar.AdsBlockedInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -151,7 +152,8 @@ public final class SubresourceFilterTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> tabModel.addObserver(new EmptyTabModelObserver() {
                     @Override
-                    public void didAddTab(Tab tab, @TabLaunchType int type) {
+                    public void didAddTab(
+                            Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                         if (tab.getUrlString().equals(LEARN_MORE_PAGE)) {
                             tabCreatedCallback.notifyCalled();
                         }

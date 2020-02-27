@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -163,7 +164,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         }
 
         @Override
-        public void didAddTab(Tab tab, @TabLaunchType int launchType) {
+        public void didAddTab(
+                Tab tab, @TabLaunchType int launchType, @TabCreationState int creationState) {
             int tabId = tab.getId();
             if (launchType == TabLaunchType.FROM_RESTORE) {
                 getActiveLayout().onTabRestored(time(), tabId);

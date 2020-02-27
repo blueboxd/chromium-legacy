@@ -3823,7 +3823,25 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
 class UVTokenTestAuthenticatorClientDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
+  explicit UVTokenTestAuthenticatorClientDelegate(bool* collected_pin)
+      : collected_pin_(collected_pin) {
+    *collected_pin_ = false;
+  }
+
+  bool SupportsPIN() const override { return true; }
+
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    *collected_pin_ = true;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
+  }
+
   void FinishCollectToken() override {}
+
+ private:
+  bool* collected_pin_;
 };
 
 class UVTokenTestAuthenticatorContentBrowserClient
@@ -3832,8 +3850,14 @@ class UVTokenTestAuthenticatorContentBrowserClient
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       RenderFrameHost* render_frame_host) override {
-    return std::make_unique<UVTokenTestAuthenticatorClientDelegate>();
+    return std::make_unique<UVTokenTestAuthenticatorClientDelegate>(
+        &collected_pin_);
   }
+
+  bool collected_pin() { return collected_pin_; }
+
+ private:
+  bool collected_pin_;
 };
 
 class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
@@ -3909,6 +3933,8 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUVToken) {
   }
 }
 
+// Test exhausting all internal user verification attempts on an authenticator
+// that does not support PINs.
 TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
@@ -3916,6 +3942,7 @@ TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
+  config.pin_support = false;
   virtual_device_factory_->SetCtap2Config(config);
   virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
@@ -3938,6 +3965,43 @@ TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
 
   EXPECT_EQ(0, expected_retries);
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
+// Test exhausting all internal user verification attempts on an authenticator
+// that supports PINs.
+TEST_F(UVTokenAuthenticatorImplTest, UvTokenFallBackToPin) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  config.pin_support = true;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  int expected_retries = 5;
+  virtual_device_factory_->mutable_state()->uv_retries = expected_retries;
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        EXPECT_EQ(--expected_retries,
+                  virtual_device_factory_->mutable_state()->uv_retries);
+        return true;
+      });
+
+  auto options = get_credential_options();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(0, expected_retries);
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 }
 
 // ResidentKeyTestAuthenticatorRequestDelegate is a delegate that:

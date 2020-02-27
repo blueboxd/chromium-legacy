@@ -229,6 +229,24 @@ class AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction
       AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction);
 };
 
+class AutofillPrivateGetUpiIdListFunction : public ExtensionFunction {
+ public:
+  AutofillPrivateGetUpiIdListFunction();
+  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getUpiIdList",
+                             AUTOFILLPRIVATE_GETUPIIDLIST)
+
+ protected:
+  ~AutofillPrivateGetUpiIdListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetUpiIdListFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_

@@ -192,7 +192,6 @@ class Runner():
       else:
         tr = test_runner.DeviceTestRunner(
             self.args.app,
-            self.args.xcode_build_version,
             self.args.out_dir,
             env_vars=self.args.env_var,
             restart=self.args.restart,

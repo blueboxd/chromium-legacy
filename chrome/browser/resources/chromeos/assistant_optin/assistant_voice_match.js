@@ -44,11 +44,11 @@ Polymer({
    * @private
    */
   onSkipTap_() {
+    this.$['voice-match-lottie'].setPlay(false);
+    this.$['already-setup-lottie'].setPlay(false);
     chrome.send(
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['skip-pressed']);
-    this.$['voice-match-lottie'].setPlay(false);
-    this.$['already-setup-lottie'].setPlay(false);
   },
 
   /**
@@ -146,12 +146,12 @@ Polymer({
     }
 
     window.setTimeout(function() {
+      this.$['voice-match-lottie'].setPlay(false);
+      this.$['already-setup-lottie'].setPlay(false);
       chrome.send(
           'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
           ['voice-match-done']);
-      this.$['voice-match-lottie'].setPlay(false);
-      this.$['already-setup-lottie'].setPlay(false);
-    }, this.doneActionDelayMs_);
+    }.bind(this), this.doneActionDelayMs_);
   },
 
   /**

@@ -19,9 +19,7 @@ option cc_enable_arenas = true;
 // Top level feature which shows a stream of cards.  Provides any UI information
 // which may be needed in order to render the stream of cards.
 message Stream {
-  extend components.feed.core.proto.wire.Feature {
-    optional Stream stream_extension = 185431437;
-  }
+  extend feedwire.Feature { optional Stream stream_extension = 185431437; }
 
   // Empty for now as don't support any custom information.
 }
@@ -29,9 +27,7 @@ message Stream {
 // Feature which represents a cluster in a Stream. May have a Card or Content
 // as children.
 message Cluster {
-  extend components.feed.core.proto.wire.Feature {
-    optional Cluster cluster_extension = 190812910;
-  }
+  extend feedwire.Feature { optional Cluster cluster_extension = 190812910; }
 
   // Empty for now as we don't support any custom information.
 }
@@ -39,9 +35,7 @@ message Cluster {
 // Experimental feature which represents a carousel in a Stream. May have a list
 // of Cards or Content as children.
 message Carousel {
-  extend components.feed.core.proto.wire.Feature {
-    optional Carousel carousel_extension = 244251946;
-  }
+  extend feedwire.Feature { optional Carousel carousel_extension = 244251946; }
 
   // Please use CL numbers you own for extension numbers.
   extensions 10000 to max;
@@ -50,9 +44,7 @@ message Carousel {
 // Feature which represents a full card in a Stream.  Allows metadata to be sent
 // to describe how to render the card.
 message Card {
-  extend components.feed.core.proto.wire.Feature {
-    optional Card card_extension = 185431438;
-  }
+  extend feedwire.Feature { optional Card card_extension = 185431438; }
 
   // Please use CL numbers you own for extension numbers.
   extensions 10000 to max;
@@ -98,9 +90,7 @@ message OfflineMetadata {
 // inside or outside a card. Actual data on what to display will be sent on an
 // extension.
 message Content {
-  extend components.feed.core.proto.wire.Feature {
-    optional Content content_extension = 185431439;
-  }
+  extend feedwire.Feature { optional Content content_extension = 185431439; }
 
   enum Type {
     UNKNOWN_CONTENT = 0;
@@ -122,7 +112,7 @@ message PietContent {
 
   // Content Ids of Piet Shared States which should be provided to Piet in order
   // to show its content.
-  repeated components.feed.core.proto.wire.ContentId piet_shared_states = 1;
+  repeated feedwire.ContentId piet_shared_states = 1;
 
   // The Piet frame to render.
   optional components.feed.core.proto.ui.piet.Frame frame = 2;

@@ -454,9 +454,7 @@
         "skipStripping": false,
         "doubleTap": true,
         "keys": {
-          "keyCode": [
-            91
-          ]
+          "keyCode": [91]
         }
       }
     },

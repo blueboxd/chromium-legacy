@@ -12,14 +12,28 @@
   padding: 0 8px 16px 0;
 }
 
-#value-prop-container {
-  border-inline-end: 1px solid rgb(218, 220, 224);
-  width: 50%;
+#column-container {
+  flex-direction: column;
 }
 
 #consents-container {
   padding-inline-start: 24px;
-  width: 50%;
+}
+
+@media screen and (min-width: 600px) {
+  #column-container {
+    flex-direction: row;
+  }
+
+  #value-prop-container {
+    align-items: center;
+    border-inline-end: 1px solid rgb(218, 220, 224);
+    width: 50%;
+  }
+
+  #consents-container {
+    width: 50%;
+  }
 }
 
 #user-name {

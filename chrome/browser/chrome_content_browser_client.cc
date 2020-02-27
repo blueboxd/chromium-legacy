@@ -62,7 +62,6 @@
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/font_family_cache.h"
-#include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -1279,8 +1278,6 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiling);
 
   main_parts->AddParts(new ChromeBrowserMainExtraPartsMemory);
-
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsGpu);
 
   chrome::AddMetricsExtraParts(main_parts.get());
 
@@ -3295,6 +3292,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // Apply system caption style.
   if (!style) {
     style = native_theme->GetSystemCaptionStyle();
+
+    base::UmaHistogramBoolean(
+        "Accessibility.CaptionSettingsLoadedFromSystemSettings",
+        style.has_value());
   }
 
   // Apply caption style from preferences if system caption style is undefined.
@@ -4969,10 +4970,8 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
 
 base::Optional<std::string>
 ChromeContentBrowserClient::GetOriginPolicyErrorPage(
-    network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
-  return security_interstitials::OriginPolicyUI::GetErrorPageAsHTML(
-      error_reason, handle);
+  return security_interstitials::OriginPolicyUI::GetErrorPageAsHTML(handle);
 }
 
 bool ChromeContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {

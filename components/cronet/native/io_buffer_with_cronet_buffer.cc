@@ -42,13 +42,14 @@ Cronet_BufferPtr IOBufferWithCronet_Buffer::Release() {
   return cronet_buffer_.release();
 }
 
-Cronet_BufferWithIOBuffer::Cronet_BufferWithIOBuffer(net::IOBuffer* io_buffer,
-                                                     size_t io_buffer_len)
-    : io_buffer_(io_buffer),
+Cronet_BufferWithIOBuffer::Cronet_BufferWithIOBuffer(
+    scoped_refptr<net::IOBuffer> io_buffer,
+    size_t io_buffer_len)
+    : io_buffer_(std::move(io_buffer)),
       io_buffer_len_(io_buffer_len),
       cronet_buffer_(Cronet_Buffer_Create()) {
   static base::NoDestructor<Cronet_BufferCallbackUnowned> static_callback;
-  cronet_buffer_->InitWithDataAndCallback(io_buffer->data(), io_buffer_len,
+  cronet_buffer_->InitWithDataAndCallback(io_buffer_->data(), io_buffer_len_,
                                           static_callback.get());
 }
 

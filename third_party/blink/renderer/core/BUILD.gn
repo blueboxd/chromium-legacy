@@ -224,18 +224,6 @@ component("core") {
     "//third_party/blink/renderer/platform/wtf",
   ]
 
-  if (is_win && is_debug && is_component_build && current_cpu == "x64") {
-    # Incremental linking fails when the .ilk file gets too large.
-    # 64-bit debug builds with full symbols trigger this problem, so we turn
-    # off incremental linking in that configuration.
-    # For fastest builds, use component release builds without debug
-    # information.
-    # VC++ bug filed for 64-bit debug incremental link failures:
-    # https://connect.microsoft.com/VisualStudio/feedback/details/2846790
-    configs -= [ "//build/config/win:default_incremental_linking" ]
-    configs += [ "//build/config/win:no_incremental_linking" ]
-  }
-
   public_configs = [ ":core_include_dirs" ]
 
   if (is_mac) {

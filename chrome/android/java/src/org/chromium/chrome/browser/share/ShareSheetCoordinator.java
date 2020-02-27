@@ -127,7 +127,8 @@ public class ShareSheetCoordinator {
                                                     .getWebContents()
                                                     .getNavigationController()
                                                     .getVisibleEntry(),
-                                            mBottomSheetController);
+                                            mBottomSheetController,
+                                            mActivityTabProvider.get().getWebContents());
                                 },
                                 /*isFirstParty=*/true);
         models.add(sttsPropertyModel);

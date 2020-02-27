@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
+import android.util.SparseArray;
+import android.util.SparseLongArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +48,12 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Implementation of {@link WebContentsAccessibility} interface.
@@ -80,6 +86,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
+
+    // Constant for throttling delay of successive accessibility events in milliseconds.
+    private static final int ACCESSIBILITY_EVENT_DELAY = 100;
 
     private final WebContentsImpl mWebContents;
     protected AccessibilityManager mAccessibilityManager;
@@ -125,6 +134,19 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Accessibility touch exploration state.
     private boolean mTouchExplorationEnabled;
+
+    // Unordered list of event types we will throttle if multiple events of the given type are sent
+    // in quick succession.
+    private Set<Integer> mEventsToThrottle = new HashSet<Integer>(Arrays.asList(
+            AccessibilityEvent.TYPE_VIEW_SCROLLED, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED));
+
+    // For events being throttled (see: |mEventsToThrottle|), this array will map the eventType
+    // to the last time (long in milliseconds) such an event has been sent.
+    private SparseLongArray mEventLastFiredTimes = new SparseLongArray();
+
+    // For events being throttled (see: |mEventsToThrottle|), this array will map the eventType
+    // to a single Runnable that will send an event after some delay.
+    private SparseArray<Runnable> mPendingEvents = new SparseArray<>();
 
     /**
      * Create a WebContentsAccessibilityImpl object.
@@ -323,7 +345,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     public void setObscuredByAnotherView(boolean isObscured) {
         if (isObscured != mIsObscuredByAnotherView) {
             mIsObscuredByAnotherView = isObscured;
-            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
         }
     }
 
@@ -676,7 +698,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         // Invalidate the container view, since the chrome accessibility tree is now
         // ready and listed as the child of the container view.
-        sendWindowContentChangedOnView();
+        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
 
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
@@ -943,28 +965,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      */
     @CalledByNative
     private void sendDelayedWindowContentChangedEvent() {
-        if (mSendWindowContentChangedRunnable != null) return;
-
-        mSendWindowContentChangedRunnable = new Runnable() {
-            @Override
-            public void run() {
-                sendWindowContentChangedOnView();
-            }
-        };
-
-        mView.postDelayed(mSendWindowContentChangedRunnable, WINDOW_CONTENT_CHANGED_DELAY_MS);
-    }
-
-    private void sendWindowContentChangedOnView() {
-        if (mSendWindowContentChangedRunnable != null) {
-            mView.removeCallbacks(mSendWindowContentChangedRunnable);
-            mSendWindowContentChangedRunnable = null;
-        }
-        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-    }
-
-    private void sendWindowContentChangedOnVirtualView(int virtualViewId) {
-        sendAccessibilityEvent(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
@@ -983,8 +984,49 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         }
 
         AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
-        if (event != null) {
+        if (event == null) return;
+
+        // Check whether this type of event is one we want to throttle, and if not then send it
+        if (!mEventsToThrottle.contains(eventType)) {
             mView.requestSendAccessibilityEvent(mView, event);
+            return;
+        }
+
+        // Check when we last fired an event. If we have not fired an event of this type, or the
+        // last time was longer than |ACCESSIBILITY_EVENT_DELAY| ago, then we allow this event
+        // to be sent immediately and record the time and clear any lingering callbacks.
+        long now = Calendar.getInstance().getTimeInMillis();
+        if (now - mEventLastFiredTimes.get(eventType, 0) >= ACCESSIBILITY_EVENT_DELAY) {
+            mView.requestSendAccessibilityEvent(mView, event);
+            mView.removeCallbacks(mPendingEvents.get(eventType));
+            mPendingEvents.remove(eventType);
+            mEventLastFiredTimes.put(eventType, now);
+        } else {
+            // We have fired an event within our |ACCESSIBILITY_EVENT_DELAY| delay window.
+            // Store this event, replacing any events in |mPendingEvents| of the same type,
+            // and set a delay equal to remaining time in our delay.
+            mView.removeCallbacks(mPendingEvents.get(eventType));
+
+            Runnable myRunnable = () -> {
+                // We have delayed firing this event, so accessibility may not be enabled or the
+                // node may be invalid. Only fire if neither of these are the case.
+                if (isAccessibilityEnabled()
+                        && WebContentsAccessibilityImplJni.get().isNodeValid(
+                                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId)) {
+                    mView.requestSendAccessibilityEvent(mView, event);
+
+                    // After sending event, record time it was sent
+                    mEventLastFiredTimes.put(eventType, Calendar.getInstance().getTimeInMillis());
+                }
+
+                // Remove callbacks and pending event
+                mView.removeCallbacks(mPendingEvents.get(eventType));
+                mPendingEvents.remove(eventType);
+            };
+
+            mView.postDelayed(myRunnable,
+                    (mEventLastFiredTimes.get(eventType, 0) + ACCESSIBILITY_EVENT_DELAY) - now);
+            mPendingEvents.put(eventType, myRunnable);
         }
     }
 
@@ -1141,9 +1183,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 mNativeObj, WebContentsAccessibilityImpl.this);
         if (rootId != mCurrentRootId) {
             mCurrentRootId = rootId;
-            sendWindowContentChangedOnView();
+            sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
         } else {
-            sendWindowContentChangedOnVirtualView(id);
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
         }
     }
 
@@ -1153,7 +1195,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
         // Invalidate the host, since its child is now gone.
-        sendWindowContentChangedOnView();
+        sendAccessibilityEvent(View.NO_ID, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     @CalledByNative

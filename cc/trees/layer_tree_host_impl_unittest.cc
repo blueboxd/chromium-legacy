@@ -8007,6 +8007,170 @@ TEST_F(LayerTreeHostImplTest,
                         gfx::ScrollOffsetToVector2dF(scroll_offset));
 }
 
+// Ensure the viewport correctly handles the user_scrollable bits. That is, if
+// the outer viewport disables user scrolling, we should still be able to
+// scroll the inner viewport.
+TEST_F(LayerTreeHostImplTest, ViewportUserScrollable) {
+  gfx::Size viewport_size(100, 100);
+  gfx::Size content_size(200, 200);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+
+  auto* outer_scroll = OuterViewportScrollLayer();
+  auto* inner_scroll = InnerViewportScrollLayer();
+
+  ScrollTree& scroll_tree =
+      host_impl_->active_tree()->property_trees()->scroll_tree;
+  ElementId inner_element_id = inner_scroll->element_id();
+  ElementId outer_element_id = outer_scroll->element_id();
+
+  DrawFrame();
+
+  // "Zoom in" so that the inner viewport is scrollable.
+  float page_scale_factor = 2;
+  host_impl_->active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, page_scale_factor, page_scale_factor);
+
+  // Disable scrolling the outer viewport horizontally. The inner viewport
+  // should still be allowed to scroll.
+  GetScrollNode(outer_scroll)->user_scrollable_vertical = true;
+  GetScrollNode(outer_scroll)->user_scrollable_horizontal = false;
+
+  gfx::Vector2dF scroll_delta(30 * page_scale_factor, 0);
+  {
+    auto begin_state =
+        BeginState(gfx::Point(), scroll_delta, InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollBegin(begin_state.get(), InputHandler::TOUCHSCREEN)
+            .thread);
+
+    // Try scrolling right, the inner viewport should be allowed to scroll.
+    auto update_state =
+        UpdateState(gfx::Point(), scroll_delta, InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollUpdate(update_state.get());
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(30, 0),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 0),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+
+    // Continue scrolling. The inner viewport should scroll until its extent,
+    // however, the outer viewport should not accept any scroll.
+    update_state =
+        UpdateState(gfx::Point(), scroll_delta, InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollUpdate(update_state.get());
+    update_state =
+        UpdateState(gfx::Point(), scroll_delta, InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollUpdate(update_state.get());
+    update_state =
+        UpdateState(gfx::Point(), scroll_delta, InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollUpdate(update_state.get());
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50, 0),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 0),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+
+    host_impl_->ScrollEnd();
+  }
+
+  // Reset. Try the same test above but using animated scrolls.
+  SetScrollOffset(outer_scroll, gfx::ScrollOffset(0, 0));
+  SetScrollOffset(inner_scroll, gfx::ScrollOffset(0, 0));
+
+  {
+    auto begin_state =
+        BeginState(gfx::Point(), scroll_delta, InputHandler::WHEEL);
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollBegin(begin_state.get(), InputHandler::WHEEL).thread);
+
+    // Try scrolling right, the inner viewport should be allowed to scroll.
+    auto update_state = AnimatedUpdateState(gfx::Point(), scroll_delta);
+    host_impl_->ScrollUpdate(update_state.get());
+
+    base::TimeTicks cur_time =
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+    viz::BeginFrameArgs begin_frame_args =
+        viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+#define ANIMATE(time_ms)                                  \
+  cur_time += base::TimeDelta::FromMilliseconds(time_ms); \
+  begin_frame_args.frame_time = (cur_time);               \
+  begin_frame_args.frame_id.sequence_number++;            \
+  host_impl_->WillBeginImplFrame(begin_frame_args);       \
+  host_impl_->Animate();                                  \
+  host_impl_->UpdateAnimationState(true);                 \
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+    // The animation is setup in the first frame so tick twice to actually
+    // animate it.
+    ANIMATE(0);
+    ANIMATE(200);
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(30, 0),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 0),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+
+    // Continue scrolling. The inner viewport should scroll until its extent,
+    // however, the outer viewport should not accept any scroll.
+    update_state = AnimatedUpdateState(gfx::Point(), scroll_delta);
+    host_impl_->ScrollUpdate(update_state.get());
+    ANIMATE(10);
+    ANIMATE(200);
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50, 0),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 0),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+
+    // Continue scrolling. the outer viewport should still not scroll.
+    update_state = AnimatedUpdateState(gfx::Point(), scroll_delta);
+    host_impl_->ScrollUpdate(update_state.get());
+    ANIMATE(10);
+    ANIMATE(200);
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50, 0),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 0),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+
+    // Fully scroll the inner viewport. We'll now try to start an animation on
+    // the outer viewport in the vertical direction, which is scrollable. We'll
+    // then try to update the curve to scroll horizontally. Ensure that doesn't
+    // allow any horizontal scroll.
+    SetScrollOffset(inner_scroll, gfx::ScrollOffset(50, 50));
+    update_state = AnimatedUpdateState(gfx::Point(), gfx::Vector2dF(0, 100));
+    host_impl_->ScrollUpdate(update_state.get());
+    ANIMATE(16);
+    ANIMATE(64);
+
+    // We don't care about the exact offset, we just want to make sure the
+    // scroll is in progress but not finished.
+    ASSERT_LT(0, scroll_tree.current_scroll_offset(outer_element_id).y());
+    ASSERT_GT(50, scroll_tree.current_scroll_offset(outer_element_id).y());
+    ASSERT_EQ(0, scroll_tree.current_scroll_offset(outer_element_id).x());
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50, 50),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+
+    // Now when we scroll we should do so by updating the ongoing animation
+    // curve. Ensure this doesn't allow any horizontal scrolling.
+    update_state = AnimatedUpdateState(gfx::Point(), gfx::Vector2dF(100, 100));
+    host_impl_->ScrollUpdate(update_state.get());
+    ANIMATE(200);
+
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
+                     scroll_tree.current_scroll_offset(outer_element_id));
+    EXPECT_VECTOR_EQ(gfx::ScrollOffset(50, 50),
+                     scroll_tree.current_scroll_offset(inner_element_id));
+
+#undef ANIMATE
+
+    host_impl_->ScrollEnd();
+  }
+}
+
 // Ensure that the SetSynchronousInputHandlerRootScrollOffset method used by
 // the WebView API correctly respects the user_scrollable bits on both of the
 // inner and outer viewport scroll nodes.

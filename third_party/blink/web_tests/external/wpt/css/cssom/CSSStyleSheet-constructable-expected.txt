@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
 PASS document.adoptedStyleSheets should initially have length 0.
 FAIL new CSSStyleSheet produces empty CSSStyleSheet assert_equals: expected (object) null but got (string) ""
-PASS CSSStyleSheet.replace produces Promise<CSSStyleSheet>
+FAIL title cannot be set in the CSSStyleSheet constructor assert_equals: expected (object) null but got (string) "something"
+FAIL CSSStyleSheet.replace produces Promise<CSSStyleSheet> assert_equals: expected (object) null but got (string) ""
 PASS Constructed style sheets can be applied on document
 PASS Constructed style sheets can be applied on shadow root
 PASS Re-attaching shadow host with adopted stylesheets work

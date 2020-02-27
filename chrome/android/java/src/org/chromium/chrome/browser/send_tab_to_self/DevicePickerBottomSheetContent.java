@@ -14,18 +14,28 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Bottom sheet content to display a list of devices a user can send a tab to after they have
- * chosen to share it with themselves through the SendTabToSelfFeature.
+ * chosen to share it with themselves through the SendTabToSelfFeature. If sync is disabled
+ * or no target devices are available an prompt will be shown indicating to the user that
+ * they must sign in to use the feature.
  */
 public class DevicePickerBottomSheetContent implements BottomSheetContent, OnItemClickListener {
     private final Context mContext;
@@ -35,14 +45,16 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     private final DevicePickerBottomSheetAdapter mAdapter;
     private final NavigationEntry mEntry;
     private final Profile mProfile;
+    private final WebContents mWebContents;
 
-    public DevicePickerBottomSheetContent(
-            Context context, NavigationEntry entry, BottomSheetController controller) {
+    public DevicePickerBottomSheetContent(Context context, NavigationEntry entry,
+            BottomSheetController controller, WebContents webContents) {
         mContext = context;
         mController = controller;
         mProfile = Profile.getLastUsedRegularProfile();
         mAdapter = new DevicePickerBottomSheetAdapter(mProfile);
         mEntry = entry;
+        mWebContents = webContents;
 
         createToolbarView();
         createContentView();
@@ -63,12 +75,36 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createContentView() {
-        mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
-                R.layout.send_tab_to_self_device_picker_list, null);
-        ListView listView = mContentView.findViewById(R.id.device_picker_list);
+        List<TargetDeviceInfo> targetDeviceList = new ArrayList<TargetDeviceInfo>();
+        SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(mProfile, targetDeviceList);
 
-        listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(this);
+        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+            mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
+                    R.layout.send_tab_to_self_feature_unavailable_prompt, null);
+            mToolbarView.setVisibility(View.GONE);
+            enableSettingsButton();
+        } else if (targetDeviceList.isEmpty()) {
+            mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
+                    R.layout.send_tab_to_self_feature_unavailable_prompt, null);
+            mToolbarView.setVisibility(View.GONE);
+            TextView textView = mContentView.findViewById(R.id.enable_sync_text_field);
+            textView.setText(mContext.getResources().getString(
+                    R.string.sharing_hub_no_devices_available_text));
+        } else {
+            mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
+                    R.layout.send_tab_to_self_device_picker_list, null);
+            ListView listView = mContentView.findViewById(R.id.device_picker_list);
+            listView.setAdapter(mAdapter);
+            listView.setOnItemClickListener(this);
+        }
+    }
+
+    private void enableSettingsButton() {
+        ButtonCompat chromeSettingsButton = mContentView.findViewById(R.id.chrome_settings);
+        chromeSettingsButton.setVisibility(View.VISIBLE);
+        chromeSettingsButton.setOnClickListener(view -> {
+            SettingsLauncher.getInstance().launchSettingsPage(ContextUtils.getApplicationContext());
+        });
     }
 
     @Override

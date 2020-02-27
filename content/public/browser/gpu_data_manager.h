@@ -11,8 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
-#include "gpu/config/gpu_feature_info.h"
-#include "gpu/config/gpu_feature_type.h"
 
 namespace base {
 class CommandLine;
@@ -51,9 +49,6 @@ class GpuDataManager {
   virtual void BlacklistWebGLForTesting() = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() = 0;
-
-  virtual gpu::GpuFeatureStatus GetFeatureStatus(
-      gpu::GpuFeatureType feature) = 0;
 
   // This indicator might change because we could collect more GPU info or
   // because the GPU blacklist could be updated.

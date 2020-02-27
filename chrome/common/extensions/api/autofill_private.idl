@@ -184,6 +184,7 @@ namespace autofillPrivate {
   callback ValidatePhoneNumbersCallback =
       void(DOMString[] validatedPhoneNumbers);
   callback GetCreditCardListCallback = void(CreditCardEntry[] entries);
+  callback GetUpiIdListCallback = void(DOMString[] entries);
 
   interface Functions {
     // Saves the given address. If |address| has an empty string as its ID, it
@@ -242,6 +243,10 @@ namespace autofillPrivate {
 
     // Enables or disables FIDO Authentication for credit card unmasking.
     static void setCreditCardFIDOAuthEnabledState(boolean enabled);
+
+    // Gets the list of UPI IDs (a.k.a. Virtual Payment Addresses).
+    // |callback|: Callback which will be called with the list of UPI IDs.
+    static void getUpiIdList(GetUpiIdListCallback callback);
   };
 
   interface Events {

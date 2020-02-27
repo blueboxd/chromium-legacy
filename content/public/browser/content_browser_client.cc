@@ -118,7 +118,8 @@ bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
 }
 
 bool ContentBrowserClient::ShouldUseProcessPerSite(
-    BrowserContext* browser_context, const GURL& effective_url) {
+    BrowserContext* browser_context,
+    const GURL& effective_url) {
   DCHECK(browser_context);
   return false;
 }
@@ -206,7 +207,8 @@ bool ContentBrowserClient::MayReuseHost(RenderProcessHost* process_host) {
 }
 
 bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
-      BrowserContext* browser_context, const GURL& url) {
+    BrowserContext* browser_context,
+    const GURL& url) {
   DCHECK(browser_context);
   return false;
 }
@@ -521,7 +523,7 @@ bool ContentBrowserClient::CanCreateWindow(
 }
 
 SpeechRecognitionManagerDelegate*
-    ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
+ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return nullptr;
 }
 
@@ -553,8 +555,8 @@ base::FilePath ContentBrowserClient::GetGrShaderDiskCacheDirectory() {
   return base::FilePath();
 }
 
-BrowserPpapiHost*
-    ContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
+BrowserPpapiHost* ContentBrowserClient::GetExternalBrowserPpapiHost(
+    int plugin_process_id) {
   return nullptr;
 }
 
@@ -933,7 +935,6 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcher(
 }
 
 base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
-    network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
   return base::nullopt;
 }

@@ -313,10 +313,10 @@
     Update overdue
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    Your organization asks that you update this device
+    <ph name="organization_name">$1<ex>google.com</ex></ph> asks that you update this device
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY" desc="The body text of a dialog that tells users the device must be restarted right now.">
-    Your organization requires an update to this device right away
+    <ph name="organization_name">$1<ex>google.com</ex></ph> requires an update to this device right away
   </message>
 
   <!-- Chrome OS Strings -->

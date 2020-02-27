@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_STORE_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -32,6 +33,10 @@ struct MediaPosition;
 namespace sql {
 class Database;
 }  // namespace sql
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace media_history {
 
@@ -86,8 +91,13 @@ class MediaHistoryStore {
 
  protected:
   friend class MediaHistoryKeyedService;
+  friend class MediaHistoryKeyedServiceTest;
 
   void EraseDatabaseAndCreateNew();
+  void DeleteAllOriginData(const std::set<url::Origin>& origins);
+
+  void GetURLsInTableForTest(const std::string& table,
+                             base::OnceCallback<void(std::set<GURL>)> callback);
 
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;

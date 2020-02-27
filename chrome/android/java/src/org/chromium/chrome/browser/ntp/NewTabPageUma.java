@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
@@ -326,7 +327,7 @@ public final class NewTabPageUma {
      */
     private static class TabCreationRecorder extends EmptyTabModelSelectorObserver {
         @Override
-        public void onNewTabCreated(Tab tab) {
+        public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
             if (!NewTabPage.isNTPUrl(tab.getUrlString())) return;
             RecordUserAction.record("MobileNTPOpenedInNewTab");
         }

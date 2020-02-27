@@ -68,8 +68,8 @@ def ProcessFile(filename, out_folder, namespace_rewrites):
   indices_to_remove = [];
   renames = {}
 
-  with open(filename) as f:
-    lines = f.readlines()
+  with io.open(filename, encoding='utf-8', mode='r') as f:
+    lines = f.readlines();
     ignore_remaining_lines = False
     cr_define_start_index = -1
     cr_define_end_index = -1

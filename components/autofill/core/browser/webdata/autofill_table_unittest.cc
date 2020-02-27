@@ -51,6 +51,7 @@ using sync_pb::ModelTypeState;
 using syncer::EntityMetadataMap;
 using syncer::MetadataBatch;
 using testing::ElementsAre;
+using testing::UnorderedElementsAre;
 
 namespace autofill {
 
@@ -3015,7 +3016,7 @@ TEST_F(AutofillTableTest, RemoveOrphanAutofillTableRows) {
   EXPECT_FALSE(s_autofill_profile_phones.Step());
 }
 
-TEST_F(AutofillTableTest, UpiId) {
+TEST_F(AutofillTableTest, InsertUpiId) {
   EXPECT_TRUE(table_->InsertUpiId("name@indianbank"));
 
   sql::Statement s_inspect(db_->GetSQLConnection()->GetUniqueStatement(
@@ -3025,6 +3026,16 @@ TEST_F(AutofillTableTest, UpiId) {
   ASSERT_TRUE(s_inspect.Step());
   EXPECT_GE(s_inspect.ColumnString(0), "name@indianbank");
   EXPECT_FALSE(s_inspect.Step());
+}
+
+TEST_F(AutofillTableTest, GetAllUpiIds) {
+  constexpr char upi_id1[] = "name@indianbank";
+  constexpr char upi_id2[] = "vpa@icici";
+  EXPECT_TRUE(table_->InsertUpiId(upi_id1));
+  EXPECT_TRUE(table_->InsertUpiId(upi_id2));
+
+  std::vector<std::string> upi_ids = table_->GetAllUpiIds();
+  ASSERT_THAT(upi_ids, UnorderedElementsAre(upi_id1, upi_id2));
 }
 
 }  // namespace autofill

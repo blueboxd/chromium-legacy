@@ -1273,7 +1273,7 @@ class ExtensionUpdaterTest : public testing::Test {
     helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.load_flags == kExpectedLoadFlags);
-          EXPECT_EQ(network::mojom::CredentialsMode::kOmit,
+          EXPECT_EQ(network::mojom::CredentialsMode::kInclude,
                     request.credentials_mode);
         }));
     for (int i = 0; i <= ExtensionDownloader::kMaxRetries; ++i) {
@@ -1324,6 +1324,64 @@ class ExtensionUpdaterTest : public testing::Test {
     RunUntilIdle();
 
     Mock::VerifyAndClearExpectations(&delegate);
+  }
+
+  void TestManifestCredentialsNonWebstore() {
+    NotificationsObserver observer;
+    ExtensionDownloaderTestHelper helper;
+    helper.downloader().manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
+
+    GURL kUpdateUrl("http://localhost/manifest1");
+
+    std::unique_ptr<ManifestFetchData> fetch(
+        CreateManifestFetchData(kUpdateUrl));
+    ManifestFetchData::PingData zeroDays(0, 0, true, 0);
+    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData,
+                        std::string(), std::string(),
+                        ManifestFetchData::FetchPriority::BACKGROUND);
+
+    helper.downloader().StartUpdateCheck(std::move(fetch));
+    RunUntilIdle();
+
+    helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          EXPECT_EQ(network::mojom::CredentialsMode::kInclude,
+                    request.credentials_mode);
+        }));
+    auto* request = helper.GetPendingRequest(0);
+    helper.test_url_loader_factory().SimulateResponseForPendingRequest(
+        request->request.url, network::URLLoaderCompletionStatus(net::OK),
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
+    RunUntilIdle();
+  }
+
+  void TestManifestCredentialsWebstore() {
+    NotificationsObserver observer;
+    ExtensionDownloaderTestHelper helper;
+    helper.downloader().manifests_queue_.set_backoff_policy(&kNoBackoffPolicy);
+
+    GURL kUpdateUrl(extension_urls::kChromeWebstoreUpdateURL);
+
+    std::unique_ptr<ManifestFetchData> fetch(
+        CreateManifestFetchData(kUpdateUrl));
+    ManifestFetchData::PingData zeroDays(0, 0, true, 0);
+    fetch->AddExtension("1111", "1.0", &zeroDays, kEmptyUpdateUrlData,
+                        std::string(), std::string(),
+                        ManifestFetchData::FetchPriority::BACKGROUND);
+
+    helper.downloader().StartUpdateCheck(std::move(fetch));
+    RunUntilIdle();
+
+    helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          EXPECT_EQ(network::mojom::CredentialsMode::kOmit,
+                    request.credentials_mode);
+        }));
+    auto* request = helper.GetPendingRequest(0);
+    helper.test_url_loader_factory().SimulateResponseForPendingRequest(
+        request->request.url, network::URLLoaderCompletionStatus(net::OK),
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
+    RunUntilIdle();
   }
 
   void TestSingleExtensionDownloading(bool pending, bool retry, bool fail) {
@@ -2498,6 +2556,11 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchDataMerge) {
   TestManifestMerge(ManifestFetchData::FetchPriority::FOREGROUND,
                     ManifestFetchData::FetchPriority::FOREGROUND,
                     ManifestFetchData::FetchPriority::FOREGROUND);
+}
+
+TEST_F(ExtensionUpdaterTest, TestManifestFetchCredentials) {
+  TestManifestCredentialsWebstore();
+  TestManifestCredentialsNonWebstore();
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:

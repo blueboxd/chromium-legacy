@@ -4,7 +4,6 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -144,16 +143,6 @@ if (!is_android && !is_mac) {
       output_name = "initialexe/chrome"
     } else {
       output_name = "chrome"
-    }
-
-    if (!is_win || is_clang) {
-      # Normally, we need to pass specific flags to the linker to
-      # create an executable that gathers profile data. However, when
-      # using MSVC, we need to make sure we *don't* pass /GENPROFILE
-      # when linking without generating any code, or else the linker
-      # will give us fatal error LNK1264. So we add the PGO flags
-      # on all configurations, execpt MSVC on Windows.
-      configs += [ "//build/config/compiler/pgo:default_pgo_flags" ]
     }
 
     # Because the sources list varies so significantly per-platform, generally
@@ -398,14 +387,6 @@ if (is_win) {
       configs += [ "//build/config/win:delayloads_not_for_child_dll" ]
     }
 
-    if (!is_component_build) {
-      # This is a large module that can't do incremental linking in some
-      # cases.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
-    }
-
     if (use_aura) {
       deps += [ "//ui/compositor" ]
     }
@@ -476,7 +457,6 @@ if (is_win) {
         configs -= [ "//build/config/win:default_incremental_linking" ]
         configs += [ "//build/config/win:no_incremental_linking" ]
       }
-      configs += [ "//build/config/compiler/pgo:default_pgo_flags" ]
     }
   }
   copy("copy_first_run") {

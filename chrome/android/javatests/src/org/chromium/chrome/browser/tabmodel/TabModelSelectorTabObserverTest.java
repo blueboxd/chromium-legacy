@@ -18,6 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
@@ -140,7 +141,10 @@ public class TabModelSelectorTabObserverTest {
     }
 
     private static void addTab(TabModel tabModel, Tab tab) {
-        ThreadUtils.runOnUiThreadBlocking(() -> tabModel.addTab(tab, 0, TabLaunchType.FROM_LINK));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tabModel.addTab(tab, 0, TabLaunchType.FROM_LINK,
+                                TabCreationState.LIVE_IN_FOREGROUND));
     }
 
     private static void closeTab(TabModel tabModel, Tab tab) {

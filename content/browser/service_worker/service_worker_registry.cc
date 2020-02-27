@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "content/browser/service_worker/service_worker_registry.h"
 
 #include "base/memory/ptr_util.h"
@@ -13,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -377,7 +380,7 @@ void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
   storage()->UpdateToActiveState(
       registration_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidUpdateToActiveState,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), origin, std::move(callback)));
 }
 
 void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
@@ -410,9 +413,10 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
       CreateDatabaseStatusCallback(std::move(callback)));
 }
 
-void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id) {
+void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
+                                                       const GURL& origin) {
   storage()->StoreUncommittedResourceId(
-      resource_id,
+      resource_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1056,6 +1060,7 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
 }
 
 void ServiceWorkerRegistry::DidUpdateToActiveState(
+    const GURL& origin,
     StatusCallback callback,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::Status::kOk &&

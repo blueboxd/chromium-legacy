@@ -80,16 +80,24 @@ void RelaunchNotificationControllerPlatformImpl::SetDeadline(
 
 void RelaunchNotificationControllerPlatformImpl::
     RefreshRelaunchRecommendedTitle(bool past_deadline) {
+  std::string enterprise_display_domain =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetEnterpriseDisplayDomain();
   if (past_deadline) {
     SystemTrayClient::Get()->SetUpdateNotificationState(
         ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_TITLE),
-        l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY));
+        l10n_util::GetStringFUTF16(
+            IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY,
+            base::UTF8ToUTF16(enterprise_display_domain)));
   } else {
     SystemTrayClient::Get()->SetUpdateNotificationState(
         ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_TITLE),
-        l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_BODY));
+        l10n_util::GetStringFUTF16(
+            IDS_RELAUNCH_RECOMMENDED_BODY,
+            base::UTF8ToUTF16(enterprise_display_domain)));
   }
 }
 

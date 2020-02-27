@@ -13,6 +13,10 @@ namespace base {
 class UpdateableSequencedTaskRunner;
 }  // namespace base
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace media_history {
 
 class MediaHistoryImagesTable : public MediaHistoryTableBase {
@@ -33,6 +37,7 @@ class MediaHistoryImagesTable : public MediaHistoryTableBase {
 
   // Saves the image or gets the image ID if it is already in the database.
   base::Optional<int64_t> SaveOrGetImage(const GURL& url,
+                                         const url::Origin& playback_origin,
                                          const base::string16& mime_type);
 };
 

@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility_tab_switcher.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -55,7 +56,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                 }
 
                 @Override
-                public void onNewTabCreated(Tab tab) {
+                public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                     getAdapter().notifyDataSetChanged();
                 }
             };

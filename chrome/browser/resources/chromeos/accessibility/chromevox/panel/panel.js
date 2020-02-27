@@ -455,8 +455,10 @@ Panel = class {
     const roleListMenuMapping = [
       {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
       {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
-      {menuTitle: 'role_link', predicate: AutomationPredicate.link},
-      {menuTitle: 'role_form', predicate: AutomationPredicate.formField},
+      {menuTitle: 'role_link', predicate: AutomationPredicate.link}, {
+        menuTitle: 'panel_menu_form_controls',
+        predicate: AutomationPredicate.formField
+      },
       {menuTitle: 'role_table', predicate: AutomationPredicate.table}
     ];
 

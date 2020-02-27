@@ -90,7 +90,6 @@ class NET_EXPORT HttpRequestHeaders {
   static const char kProxyConnection[];
   static const char kRange[];
   static const char kReferer[];
-  static const char kSecOriginPolicy[];
   static const char kTransferEncoding[];
   static const char kUserAgent[];
 
@@ -164,13 +163,9 @@ class NET_EXPORT HttpRequestHeaders {
   void MergeFrom(const HttpRequestHeaders& other);
 
   // Copies from |other| to |this|.
-  void CopyFrom(const HttpRequestHeaders& other) {
-    *this = other;
-  }
+  void CopyFrom(const HttpRequestHeaders& other) { *this = other; }
 
-  void Swap(HttpRequestHeaders* other) {
-    headers_.swap(other->headers_);
-  }
+  void Swap(HttpRequestHeaders* other) { headers_.swap(other->headers_); }
 
   // Serializes HttpRequestHeaders to a string representation.  Joins all the
   // header keys and values with ": ", and inserts "\r\n" between each header

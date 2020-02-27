@@ -3755,6 +3755,14 @@ Only you can see what your camera is looking at. The site can't see your camera'
         Go to Chrome settings
       </message>
 
+      <!-- Sharing Hub -->
+      <message name="IDS_SHARING_HUB_NO_DEVICES_AVAILABLE_TEXT" desc="Text to show when no device targets are available for sharing.">
+        To share this page to another device, turn on sync in Chrome settings on the other device
+      </message>
+      <message name="IDS_SHARING_HUB_SYNC_DISABLED_TEXT" desc="Text to show when sync is disabled on the current device.">
+        To share this page to another device, turn on sync in Chrome settings
+      </message>
+
       <!-- ClickToCall -->
       <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification to call on a number.">
         Tap to make call

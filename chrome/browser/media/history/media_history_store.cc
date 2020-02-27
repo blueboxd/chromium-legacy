@@ -82,6 +82,9 @@ class MediaHistoryStoreInternal
       base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter);
 
   void RazeAndClose();
+  void DeleteAllOriginData(const std::set<url::Origin>& origins);
+
+  std::set<GURL> GetURLsInTableForTest(const std::string& table);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;
@@ -135,7 +138,9 @@ void MediaHistoryStoreInternal::SavePlayback(
     return;
   }
 
+  // TODO(https://crbug.com/1052436): Remove the separate origin.
   auto origin = url::Origin::Create(watch_time.origin);
+  CHECK_EQ(origin, url::Origin::Create(watch_time.url));
 
   if (!(CreateOriginId(origin) && playback_table_->SavePlayback(watch_time))) {
     DB()->RollbackTransaction();
@@ -163,16 +168,24 @@ void MediaHistoryStoreInternal::Initialize() {
 
   db_->Preload();
 
+  if (!db_->Execute("PRAGMA foreign_keys=1")) {
+    LOG(ERROR) << "Failed to enable foreign keys on the media history store.";
+    db_->Poison();
+    return;
+  }
+
   meta_table_.Init(db_.get(), GetCurrentVersion(), kCompatibleVersionNumber);
   sql::InitStatus status = CreateOrUpgradeIfNeeded();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to create or update the media history store.";
+    db_->Poison();
     return;
   }
 
   status = InitializeTables();
   if (status != sql::INIT_OK) {
     LOG(ERROR) << "Failed to initialize the media history store tables.";
+    db_->Poison();
     return;
   }
 
@@ -333,7 +346,8 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
   }
 
   for (auto& image : artwork) {
-    auto image_id = images_table_->SaveOrGetImage(image.src, image.type);
+    auto image_id =
+        images_table_->SaveOrGetImage(image.src, origin, image.type);
     if (!image_id) {
       DB()->RollbackTransaction();
       return;
@@ -379,6 +393,46 @@ void MediaHistoryStoreInternal::RazeAndClose() {
     db_->RazeAndClose();
 
   sql::Database::Delete(db_path_);
+}
+
+void MediaHistoryStoreInternal::DeleteAllOriginData(
+    const std::set<url::Origin>& origins) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  for (auto& origin : origins) {
+    if (!origin_table_->Delete(origin)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  DB()->CommitTransaction();
+}
+
+std::set<GURL> MediaHistoryStoreInternal::GetURLsInTableForTest(
+    const std::string& table) {
+  std::set<GURL> urls;
+
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return urls;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf("SELECT url from %s", table.c_str()).c_str()));
+
+  while (statement.Step()) {
+    urls.insert(GURL(statement.ColumnString(0)));
+  }
+
+  DCHECK(statement.Succeeded());
+  return urls;
 }
 
 MediaHistoryStore::MediaHistoryStore(
@@ -477,6 +531,23 @@ void MediaHistoryStore::GetPlaybackSessions(
       db_->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::GetPlaybackSessions, db_,
                      num_sessions, std::move(filter)),
+      std::move(callback));
+}
+
+void MediaHistoryStore::DeleteAllOriginData(
+    const std::set<url::Origin>& origins) {
+  db_->db_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::DeleteAllOriginData,
+                                db_, origins));
+}
+
+void MediaHistoryStore::GetURLsInTableForTest(
+    const std::string& table,
+    base::OnceCallback<void(std::set<GURL>)> callback) {
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::GetURLsInTableForTest, db_,
+                     table),
       std::move(callback));
 }
 

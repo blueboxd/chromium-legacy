@@ -514,11 +514,20 @@ class ScalerImpl : public GLHelper::ScalerInterface {
                                 GL_TEXTURE_2D, dest_texture_1, 0);
     }
 
-    // Bind to the source texture and set the texture sampler to use bilinear
-    // filtering and clamp to the edge, as required by all shader programs.
+    // Use GL_NEAREST for copies between exactly same size of rectangles to
+    // reduce errors on low-precision GPUs. Use bilinear filtering otherwise.
+    //
+    // This is a workaround for Mali-G72 GPU (b/141898654) that uses lower
+    // precision than expected for interpolation.
+    GLint filter = (src_rect.IsExpressibleAsRect() &&
+                    src_rect.size() == gfx::SizeF(result_size))
+                       ? GL_NEAREST
+                       : GL_LINEAR;
+    // Bind to the source texture and set the filitering and clamp to the edge,
+    // as required by all shader programs.
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, src_texture);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

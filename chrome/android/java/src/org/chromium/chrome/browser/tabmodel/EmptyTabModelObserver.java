@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 
@@ -27,7 +28,7 @@ public class EmptyTabModelObserver implements TabModelObserver {
     public void willAddTab(Tab tab, @TabLaunchType int type) {}
 
     @Override
-    public void didAddTab(Tab tab, @TabLaunchType int type) {}
+    public void didAddTab(Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {}
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {}

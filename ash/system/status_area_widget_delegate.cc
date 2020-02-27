@@ -231,16 +231,7 @@ void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
   // Need to re-layout the shelf when trays or items are added/removed.
   StatusAreaWidgetDelegateAnimationSettings settings(layer());
 
-  // The shelf only needs a re-layout if this widget has changed size in
-  // the primary dimension. No re-layout is needed for changes in the cross
-  // dimension.
-  bool should_relayout_shelf = (shelf_->IsHorizontalAlignment() &&
-                                new_size.width() != current_size.width()) ||
-                               (!shelf_->IsHorizontalAlignment() &&
-                                new_size.height() != current_size.height());
-  should_relayout_shelf = false;
-  if (should_relayout_shelf)
-    shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
+  shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
 }
 
 void StatusAreaWidgetDelegate::ChildVisibilityChanged(View* child) {

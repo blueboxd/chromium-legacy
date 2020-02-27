@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -17,6 +19,13 @@
 #include "base/time/time.h"
 
 namespace base {
+
+// static
+const base::Feature HangWatcher::kEnableHangWatcher{
+    "EnableHangWatcher", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::TimeDelta HangWatchScope::kDefaultHangWatchTime =
+    base::TimeDelta::FromSeconds(10);
 
 namespace {
 HangWatcher* g_instance = nullptr;
@@ -35,6 +44,12 @@ const base::TimeDelta kMonitoringPeriod = base::TimeDelta::FromSeconds(10);
 HangWatchScope::HangWatchScope(TimeDelta timeout) {
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+
+  // TODO(crbug.com/1034046): Remove when all threads using HangWatchScope are
+  // monitored. Thread is not monitored, noop.
+  if (!current_hang_watch_state) {
+    return;
+  }
 
   DCHECK(current_hang_watch_state)
       << "A scope can only be used on a thread that "
@@ -58,6 +73,12 @@ HangWatchScope::~HangWatchScope() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
+
+  // TODO(crbug.com/1034046): Remove when all threads using HangWatchScope are
+  // monitored. Thread is not monitored, noop.
+  if (!current_hang_watch_state) {
+    return;
+  }
 
 #if DCHECK_IS_ON()
   // Verify that no Scope was destructed out of order.
@@ -130,6 +151,17 @@ void HangWatcher::Run() {
 // static
 HangWatcher* HangWatcher::GetInstance() {
   return g_instance;
+}
+
+// static
+void HangWatcher::RecordHang() {
+  base::debug::DumpWithoutCrashing();
+
+  // Defining |inhibit_tail_call_optimization| *after* calling
+  // DumpWithoutCrashing() prevents tail call optimization from omitting this
+  // function's address on the stack.
+  volatile int inhibit_tail_call_optimization = __LINE__;
+  ALLOW_UNUSED_LOCAL(inhibit_tail_call_optimization);
 }
 
 ScopedClosureRunner HangWatcher::RegisterThread() {

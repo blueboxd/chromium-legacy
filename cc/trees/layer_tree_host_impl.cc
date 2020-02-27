@@ -154,6 +154,20 @@ bool IsMobileOptimized(LayerTreeImpl* active_tree) {
   return has_fixed_page_scale || has_mobile_viewport;
 }
 
+// This helper returns an adjusted version of |delta| where the scroll delta is
+// cleared in any axis in which user scrolling is disabled (e.g. by
+// |overflow-x: hidden|).
+gfx::Vector2dF UserScrollableDelta(const ScrollNode& node,
+                                   const gfx::Vector2dF& delta) {
+  gfx::Vector2dF adjusted_delta = delta;
+  if (!node.user_scrollable_horizontal)
+    adjusted_delta.set_x(0);
+  if (!node.user_scrollable_vertical)
+    adjusted_delta.set_y(0);
+
+  return adjusted_delta;
+}
+
 viz::ResourceFormat TileRasterBufferFormat(
     const LayerTreeSettings& settings,
     viz::ContextProvider* context_provider,
@@ -4105,10 +4119,7 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
 
   gfx::Vector2dF adjusted_scroll(delta);
   adjusted_scroll.Scale(1.f / scale_factor);
-  if (!scroll_node.user_scrollable_horizontal)
-    adjusted_scroll.set_x(0);
-  if (!scroll_node.user_scrollable_vertical)
-    adjusted_scroll.set_y(0);
+  adjusted_scroll = UserScrollableDelta(scroll_node, adjusted_scroll);
 
   gfx::ScrollOffset old_offset =
       scroll_tree.current_scroll_offset(scroll_node.element_id);
@@ -4225,28 +4236,28 @@ bool LayerTreeHostImpl::CalculateLocalScrollDeltaAndStartPoint(
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
-    ScrollNode* scroll_node,
+    ScrollNode& scroll_node,
     const gfx::PointF& viewport_point,
     const gfx::Vector2dF& viewport_delta,
     ScrollTree* scroll_tree) {
   gfx::PointF local_start_point;
   gfx::Vector2dF local_scroll_delta;
   if (!CalculateLocalScrollDeltaAndStartPoint(
-          *scroll_node, viewport_point, viewport_delta, *scroll_tree,
+          scroll_node, viewport_point, viewport_delta, *scroll_tree,
           &local_scroll_delta, &local_start_point)) {
     return gfx::Vector2dF();
   }
 
-  bool scrolls_outer_viewport = scroll_node->scrolls_outer_viewport;
+  bool scrolls_outer_viewport = scroll_node.scrolls_outer_viewport;
   TRACE_EVENT2("cc", "ScrollNodeWithViewportSpaceDelta", "delta_y",
                local_scroll_delta.y(), "is_outer", scrolls_outer_viewport);
 
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset =
-      scroll_tree->current_scroll_offset(scroll_node->element_id);
-  scroll_tree->ScrollBy(scroll_node, local_scroll_delta, active_tree());
+      scroll_tree->current_scroll_offset(scroll_node.element_id);
+  scroll_tree->ScrollBy(&scroll_node, local_scroll_delta, active_tree());
   gfx::ScrollOffset scrolled =
-      scroll_tree->current_scroll_offset(scroll_node->element_id) -
+      scroll_tree->current_scroll_offset(scroll_node.element_id) -
       previous_offset;
 
   TRACE_EVENT_INSTANT1("cc", "ConsumedDelta", TRACE_EVENT_SCOPE_THREAD, "y",
@@ -4260,7 +4271,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   // Calculate the applied scroll delta in viewport space coordinates.
   bool end_clipped;
   const gfx::Transform screen_space_transform =
-      scroll_tree->ScreenSpaceTransform(scroll_node->id);
+      scroll_tree->ScreenSpaceTransform(scroll_node.id);
   gfx::PointF actual_screen_space_end_point = MathUtil::MapPoint(
       screen_space_transform, actual_local_end_point, &end_clipped);
   DCHECK(!end_clipped);
@@ -4275,22 +4286,22 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
 }
 
 static gfx::Vector2dF ScrollNodeWithLocalDelta(
-    ScrollNode* scroll_node,
+    ScrollNode& scroll_node,
     const gfx::Vector2dF& local_delta,
     float page_scale_factor,
     LayerTreeImpl* layer_tree_impl) {
-  bool scrolls_outer_viewport = scroll_node->scrolls_outer_viewport;
+  bool scrolls_outer_viewport = scroll_node.scrolls_outer_viewport;
   TRACE_EVENT2("cc", "ScrollNodeWithLocalDelta", "delta_y", local_delta.y(),
                "is_outer", scrolls_outer_viewport);
 
   ScrollTree& scroll_tree = layer_tree_impl->property_trees()->scroll_tree;
   gfx::ScrollOffset previous_offset =
-      scroll_tree.current_scroll_offset(scroll_node->element_id);
+      scroll_tree.current_scroll_offset(scroll_node.element_id);
   gfx::Vector2dF delta = local_delta;
   delta.Scale(1.f / page_scale_factor);
-  scroll_tree.ScrollBy(scroll_node, delta, layer_tree_impl);
+  scroll_tree.ScrollBy(&scroll_node, delta, layer_tree_impl);
   gfx::ScrollOffset scrolled =
-      scroll_tree.current_scroll_offset(scroll_node->element_id) -
+      scroll_tree.current_scroll_offset(scroll_node.element_id) -
       previous_offset;
   gfx::Vector2dF consumed_scroll(scrolled.x(), scrolled.y());
   consumed_scroll.Scale(page_scale_factor);
@@ -4303,11 +4314,13 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
 // TODO(danakj): Make this into two functions, one with delta, one with
 // viewport_point, no bool required.
 gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
-    ScrollNode* scroll_node,
+    ScrollNode& scroll_node,
     const gfx::Vector2dF& delta,
     const gfx::Point& viewport_point,
     bool is_direct_manipulation,
     ScrollTree* scroll_tree) {
+  gfx::Vector2dF adjusted_delta = UserScrollableDelta(scroll_node, delta);
+
   // Events representing direct manipulation of the screen (such as gesture
   // events) need to be transformed from viewport coordinates to local layer
   // coordinates so that the scrolling contents exactly follow the user's
@@ -4318,13 +4331,13 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
   if (is_direct_manipulation) {
     // For touch-scroll we need to scale the delta here, as the transform tree
     // won't know anything about the external page scale factors used by OOPIFs.
-    gfx::Vector2dF scaled_delta(delta);
+    gfx::Vector2dF scaled_delta(adjusted_delta);
     scaled_delta.Scale(1 / active_tree()->external_page_scale_factor());
     return ScrollNodeWithViewportSpaceDelta(
         scroll_node, gfx::PointF(viewport_point), scaled_delta, scroll_tree);
   }
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
-  return ScrollNodeWithLocalDelta(scroll_node, delta, scale_factor,
+  return ScrollNodeWithLocalDelta(scroll_node, adjusted_delta, scale_factor,
                                   active_tree());
 }
 
@@ -4335,8 +4348,6 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
   DCHECK(latched_scroll_type_.has_value());
 
   ScrollNode& scroll_node = *CurrentlyScrollingNode();
-  gfx::Point viewport_point(scroll_state->position_x(),
-                            scroll_state->position_y());
   const gfx::Vector2dF delta(scroll_state->delta_x(), scroll_state->delta_y());
   TRACE_EVENT2("cc", "LayerTreeHostImpl::ScrollLatchedScroller", "delta_x",
                delta.x(), "delta_y", delta.y());
@@ -4353,7 +4364,7 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
       TRACE_EVENT_INSTANT0("cc", "UpdateExistingAnimation",
                            TRACE_EVENT_SCOPE_THREAD);
       bool animation_updated =
-          ScrollAnimationUpdateTarget(&scroll_node, delta, delayed_by);
+          ScrollAnimationUpdateTarget(scroll_node, delta, delayed_by);
 
       if (animation_updated) {
         // Because we updated the animation target, consume delta so we notify
@@ -4383,6 +4394,8 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
     // browser controls).
     delta_applied_to_content = delta;
   } else {
+    gfx::Point viewport_point(scroll_state->position_x(),
+                              scroll_state->position_y());
     if (viewport().ShouldScroll(scroll_node)) {
       // |scrolls_outer_viewport| will only ever be false if the scroll chains
       // up to the viewport without going through the outer viewport scroll
@@ -4401,7 +4414,7 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state,
       delta_applied_to_content = result.content_scrolled_delta;
     } else {
       applied_delta =
-          ScrollSingleNode(&scroll_node, delta, viewport_point,
+          ScrollSingleNode(scroll_node, delta, viewport_point,
                            scroll_state->is_direct_manipulation(),
                            &active_tree_->property_trees()->scroll_tree);
     }
@@ -4594,8 +4607,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
   if (!CurrentlyScrollingNode())
     return InputHandlerScrollResult();
 
-  ScrollNode& scroll_node = *CurrentlyScrollingNode();
-
   last_scroll_state_ = *scroll_state;
 
   bool is_delta_percent_units = scroll_state->delta_granularity() ==
@@ -4613,11 +4624,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
 
   scroll_accumulated_this_frame_ +=
       gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
-
-  if (!scroll_node.user_scrollable_horizontal)
-    scroll_state->data()->delta_x = 0;
-  if (!scroll_node.user_scrollable_vertical)
-    scroll_state->data()->delta_y = 0;
 
   // Flash the overlay scrollbar even if the scroll delta is 0.
   if (settings_.scrollbar_flash_after_any_scroll_update) {
@@ -4671,11 +4677,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
   }
 
   // When inner viewport is unscrollable, disable overscrolls.
-  if (const auto* inner_viewport_scroll_node = InnerViewportScrollNode()) {
-    if (!inner_viewport_scroll_node->user_scrollable_horizontal)
-      unused_root_delta.set_x(0);
-    if (!inner_viewport_scroll_node->user_scrollable_vertical)
-      unused_root_delta.set_y(0);
+  if (auto* inner_viewport_scroll_node = InnerViewportScrollNode()) {
+    unused_root_delta =
+        UserScrollableDelta(*inner_viewport_scroll_node, unused_root_delta);
   }
 
   accumulated_root_overscroll_ += unused_root_delta;
@@ -5835,16 +5839,18 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
-    ScrollNode* scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
-  gfx::Vector2dF scaled_delta =
+  gfx::Vector2dF adjusted_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);
+  adjusted_delta = UserScrollableDelta(scroll_node, adjusted_delta);
+
   bool animation_updated = mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
-      scaled_delta,
+      adjusted_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
-          scroll_node->id),
+          scroll_node.id),
       CurrentBeginFrameArgs().frame_time, delayed_by);
   if (animation_updated) {
     // Because we updated the animation target, notify the SwapPromiseMonitor

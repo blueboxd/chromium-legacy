@@ -33,7 +33,7 @@ class FlexBoxIterator;
 // eventually be replaced by LayoutFlexibleBox.
 class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
  public:
-  LayoutDeprecatedFlexibleBox(Element&);
+  LayoutDeprecatedFlexibleBox(Element* element);
   ~LayoutDeprecatedFlexibleBox() override;
 
   const char* GetName() const override { return "LayoutDeprecatedFlexibleBox"; }

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -128,7 +129,8 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(mActivity.getTabModelSelector()) {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(
+                    Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                 if (type == TabLaunchType.FROM_RESTORE) return;
                 if (NewTabPage.isNTPUrl(tab.getUrlString())) {
                     recordUserBehavior(MainIntentActionType.NTP_CREATED);

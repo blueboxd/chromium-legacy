@@ -75,11 +75,20 @@ bool FakeOverlayPresentationContext::CanShowUIForRequest(
 
 bool FakeOverlayPresentationContext::CanShowUIForRequest(
     OverlayRequest* request) const {
-  return CanShowUIForRequest(request, capabilities_);
+  return CanShowUIForRequest(request, capabilities_) && !IsShowingOverlayUI();
+}
+
+bool FakeOverlayPresentationContext::IsShowingOverlayUI() const {
+  for (auto& request_ui_state_pair : states_) {
+    if (request_ui_state_pair.second.presentation_state ==
+        PresentationState::kPresented) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void FakeOverlayPresentationContext::ShowOverlayUI(
-    OverlayPresenter* presenter,
     OverlayRequest* request,
     OverlayPresentationCallback presentation_callback,
     OverlayDismissalCallback dismissal_callback) {
@@ -89,13 +98,11 @@ void FakeOverlayPresentationContext::ShowOverlayUI(
   std::move(presentation_callback).Run();
 }
 
-void FakeOverlayPresentationContext::HideOverlayUI(OverlayPresenter* presenter,
-                                                   OverlayRequest* request) {
+void FakeOverlayPresentationContext::HideOverlayUI(OverlayRequest* request) {
   SimulateDismissalForRequest(request, OverlayDismissalReason::kHiding);
 }
 
 void FakeOverlayPresentationContext::CancelOverlayUI(
-    OverlayPresenter* presenter,
     OverlayRequest* request) {
   FakeUIState& state = states_[request];
   if (state.presentation_state == PresentationState::kPresented) {

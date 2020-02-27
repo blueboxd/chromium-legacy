@@ -110,12 +110,16 @@ bool OverlayPresentationContextImpl::CanShowUIForRequest(
   return CanShowUIForRequest(request, GetPresentationCapabilities());
 }
 
+bool OverlayPresentationContextImpl::IsShowingOverlayUI() const {
+  return !!request_;
+}
+
 void OverlayPresentationContextImpl::ShowOverlayUI(
-    OverlayPresenter* presenter,
     OverlayRequest* request,
     OverlayPresentationCallback presentation_callback,
     OverlayDismissalCallback dismissal_callback) {
-  DCHECK_EQ(presenter_, presenter);
+  DCHECK(!IsShowingOverlayUI());
+  DCHECK(CanShowUIForRequest(request));
   // Create the UI state for |request| if necessary.
   if (!GetRequestUIState(request))
     states_[request] = std::make_unique<OverlayRequestUIState>(request);
@@ -125,9 +129,8 @@ void OverlayPresentationContextImpl::ShowOverlayUI(
   SetRequest(request);
 }
 
-void OverlayPresentationContextImpl::HideOverlayUI(OverlayPresenter* presenter,
-                                                   OverlayRequest* request) {
-  DCHECK_EQ(presenter_, presenter);
+void OverlayPresentationContextImpl::HideOverlayUI(OverlayRequest* request) {
+  DCHECK(CanShowUIForRequest(request));
   DCHECK_EQ(request_, request);
   DCHECK(CanShowUIForRequest(request));
 
@@ -140,10 +143,8 @@ void OverlayPresentationContextImpl::HideOverlayUI(OverlayPresenter* presenter,
 }
 
 void OverlayPresentationContextImpl::CancelOverlayUI(
-    OverlayPresenter* presenter,
     OverlayRequest* request) {
-  DCHECK_EQ(presenter_, presenter);
-
+  DCHECK(CanShowUIForRequest(request));
   // No cleanup required if there is no UI state for |request|.  This can
   // occur when cancelling an OverlayRequest whose UI has never been
   // presented.

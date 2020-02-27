@@ -514,52 +514,24 @@ config("windowed") {
 
 # Incremental linking ----------------------------------------------------------
 
-incremental_linking_on_switch = [ "/INCREMENTAL" ]
-if ((!is_debug && !is_component_build) || !use_lld) {
-  incremental_linking_off_switch = [ "/INCREMENTAL:NO" ]
-}
-if (use_lld) {
-  incremental_linking_on_switch += [ "/OPT:NOREF" ]
-}
-
-# Enable incremental linking for debug builds and all component builds - any
-# builds where performance is not job one.
-if (is_debug || is_component_build) {
-  default_incremental_linking_switch = incremental_linking_on_switch
-} else {
-  default_incremental_linking_switch = incremental_linking_off_switch
-}
-
 # Applies incremental linking or not depending on the current configuration.
 config("default_incremental_linking") {
-  ldflags = default_incremental_linking_switch
-}
-
-# Explicitly on or off incremental linking
-config("incremental_linking") {
-  ldflags = incremental_linking_on_switch
-}
-config("no_incremental_linking") {
-  # Projects disable incremental linking to work around ilk file issues with
-  # link.exe. lld doesn't use ilk files and doesn't really have an incremental
-  # link mode; the only effect of the flag is that the .lib file timestamp isn't
-  # updated if the .lib doesn't change.
-  if (!use_lld) {
-    ldflags = incremental_linking_off_switch
-  }
-}
-
-# Some large modules can't handle incremental linking in some situations. This
-# config should be applied to large modules to turn off incremental linking
-# when it won't work.
-config("default_large_module_incremental_linking") {
-  if (use_lld || symbol_level == 0 ||
-      (current_cpu == "x86" && is_component_build)) {
-    # In these configurations, ilk file sizes stay low enough that we can
-    # link incrementally.
-    ldflags = default_incremental_linking_switch
+  # Enable incremental linking for debug builds and all component builds - any
+  # builds where performance is not job one.
+  # TODO(thakis): Always turn this on with lld, no reason not to.
+  if (is_debug || is_component_build) {
+    ldflags = [ "/INCREMENTAL" ]
+    if (use_lld) {
+      # lld doesn't use ilk files and doesn't really have an incremental link
+      # mode; the only effect of the flag is that the .lib file timestamp isn't
+      # updated if the .lib doesn't change.
+      # TODO(thakis): Why pass /OPT:NOREF for lld, but not otherwise?
+      # TODO(thakis): /INCREMENTAL is on by default in link.exe, but not in
+      # lld.
+      ldflags += [ "/OPT:NOREF" ]
+    }
   } else {
-    ldflags = incremental_linking_off_switch
+    ldflags = [ "/INCREMENTAL:NO" ]
   }
 }
 

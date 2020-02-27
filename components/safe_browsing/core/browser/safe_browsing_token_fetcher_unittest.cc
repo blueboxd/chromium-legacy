@@ -28,14 +28,14 @@ TEST_F(SafeBrowsingTokenFetcherTest, Success) {
       "test@example.com");
   base::Optional<signin::AccessTokenInfo> maybe_account_info;
   SafeBrowsingTokenFetcher fetcher(
-      identity_test_environment_.identity_manager(),
-      signin::ConsentLevel::kNotRequired,
-      base::BindOnce(
-          [](base::Optional<signin::AccessTokenInfo>* target_info,
-             base::Optional<signin::AccessTokenInfo> info) {
-            *target_info = info;
-          },
-          &maybe_account_info));
+      identity_test_environment_.identity_manager());
+  fetcher.Start(signin::ConsentLevel::kNotRequired,
+                base::BindOnce(
+                    [](base::Optional<signin::AccessTokenInfo>* target_info,
+                       base::Optional<signin::AccessTokenInfo> info) {
+                      *target_info = info;
+                    },
+                    &maybe_account_info));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           "token", base::Time::Now());
@@ -48,14 +48,14 @@ TEST_F(SafeBrowsingTokenFetcherTest, Failure) {
       "test@example.com");
   base::Optional<signin::AccessTokenInfo> maybe_account_info;
   SafeBrowsingTokenFetcher fetcher(
-      identity_test_environment_.identity_manager(),
-      signin::ConsentLevel::kNotRequired,
-      base::BindOnce(
-          [](base::Optional<signin::AccessTokenInfo>* target_info,
-             base::Optional<signin::AccessTokenInfo> info) {
-            *target_info = info;
-          },
-          &maybe_account_info));
+      identity_test_environment_.identity_manager());
+  fetcher.Start(signin::ConsentLevel::kNotRequired,
+                base::BindOnce(
+                    [](base::Optional<signin::AccessTokenInfo>* target_info,
+                       base::Optional<signin::AccessTokenInfo> info) {
+                      *target_info = info;
+                    },
+                    &maybe_account_info));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
           GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
@@ -67,14 +67,14 @@ TEST_F(SafeBrowsingTokenFetcherTest, NoSyncingAccount) {
       "test@example.com");
   base::Optional<signin::AccessTokenInfo> maybe_account_info;
   SafeBrowsingTokenFetcher fetcher(
-      identity_test_environment_.identity_manager(),
-      signin::ConsentLevel::kSync,
-      base::BindOnce(
-          [](base::Optional<signin::AccessTokenInfo>* target_info,
-             base::Optional<signin::AccessTokenInfo> info) {
-            *target_info = info;
-          },
-          &maybe_account_info));
+      identity_test_environment_.identity_manager());
+  fetcher.Start(signin::ConsentLevel::kSync,
+                base::BindOnce(
+                    [](base::Optional<signin::AccessTokenInfo>* target_info,
+                       base::Optional<signin::AccessTokenInfo> info) {
+                      *target_info = info;
+                    },
+                    &maybe_account_info));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           "token", base::Time::Now());
@@ -85,14 +85,14 @@ TEST_F(SafeBrowsingTokenFetcherTest, SyncSuccess) {
   identity_test_environment_.MakePrimaryAccountAvailable("test@example.com");
   base::Optional<signin::AccessTokenInfo> maybe_account_info;
   SafeBrowsingTokenFetcher fetcher(
-      identity_test_environment_.identity_manager(),
-      signin::ConsentLevel::kSync,
-      base::BindOnce(
-          [](base::Optional<signin::AccessTokenInfo>* target_info,
-             base::Optional<signin::AccessTokenInfo> info) {
-            *target_info = info;
-          },
-          &maybe_account_info));
+      identity_test_environment_.identity_manager());
+  fetcher.Start(signin::ConsentLevel::kSync,
+                base::BindOnce(
+                    [](base::Optional<signin::AccessTokenInfo>* target_info,
+                       base::Optional<signin::AccessTokenInfo> info) {
+                      *target_info = info;
+                    },
+                    &maybe_account_info));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           "token", base::Time::Now());

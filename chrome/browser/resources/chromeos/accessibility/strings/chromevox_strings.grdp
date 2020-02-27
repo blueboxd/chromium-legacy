@@ -3670,10 +3670,10 @@
     Cap <ph name="letter">$1<ex>A</ex></ph>
   </message>
   <message desc="The hint text and label for the search bar in the ChromeVox menus" name="IDS_CHROMEVOX_SEARCH_CHROMEVOX_MENUS">
-    Search ChromeVox menus
+    Search the menus
   </message>
   <message desc="Title displayed in the panel for the search menu." name="IDS_CHROMEVOX_PANEL_SEARCH_MENU">
-    Search menu
+    Search
   </message>
   <message desc="Hint text for the input in the ChromeVox panel used for creating annotations." name="IDS_CHROMEVOX_ANNOTATIONS_WIDGET_INTRO">
     Enter a custom label
@@ -3695,6 +3695,9 @@
   </message>
   <message desc="Labels the checkbox on the options page that enables displaying Perkins Brailler commands in the ChromeVox menus." name="IDS_CHROMEVOX_OPTIONS_MENU_BRAILLE_COMMANDS">
     Show braille commands in the ChromeVox menus
+  </message>
+  <message desc="Title displayed in the panel for the form controls node menu." name="IDS_CHROMEVOX_PANEL_MENU_FORM_CONTROLS">
+    Form Controls
   </message>
 
 </grit-part>

@@ -22345,6 +22345,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1445" label="AUTOTESTPRIVATE_WAITFOROVERVIEWSTATE"/>
   <int value="1446" label="AUTOTESTPRIVATE_GETSCROLLABLESHELFINFOFORSTATE"/>
   <int value="1447" label="ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEHOSTNAME"/>
+  <int value="1448" label="AUTOFILLPRIVATE_GETUPIIDLIST"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -64490,6 +64491,7 @@ Full version information for the fingerprint enum values:
   <int value="1897824456" label="CROS Cr50 0.4.23"/>
   <int value="1902169266" label="CROS Cr50 0.4.16"/>
   <int value="1903933708" label="CROS Cr50 0.4.3 Flags 0x10(pre-pvt)"/>
+  <int value="1935803215" label="CROS Cr50 0.3.25"/>
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
@@ -67365,6 +67367,21 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Abandoned"/>
 </enum>
 
+<enum name="WebAuthenticationCableV1DiscoveryEvent">
+  <int value="0" label="Discovery started"/>
+  <int value="1" label="Adapter found"/>
+  <int value="2" label="Adapter already powered on"/>
+  <int value="3" label="Adapter powered on by Chrome"/>
+  <int value="4" label="Adapter powered on by user"/>
+  <int value="5" label="Adapter powered off during request"/>
+  <int value="6" label="Scanning for BLE advertisements"/>
+  <int value="7" label="BLE advertisment registered"/>
+  <int value="8" label="caBLE device found"/>
+  <int value="9" label="GATT connection established"/>
+  <int value="10" label="caBLE handshake completed"/>
+  <int value="11" label="caBLE device timed out"/>
+</enum>
+
 <enum name="WebAuthenticationCableV1Event">
   <int value="0" label="Flow started"/>
   <int value="1" label="BLE hardware found"/>
@@ -67372,8 +67389,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="User prompted to allow Chrome to power BLE"/>
   <int value="4" label="User prompted to enable BLE in settings"/>
   <int value="5"
-      label="Transmitting caBLE advert after prompting user to power on
-             device"/>
+      label="Powering a BLE adapter that was not already powered succeeded"/>
   <int value="6" label="Success"/>
   <int value="7" label="Timeout"/>
 </enum>
@@ -67660,7 +67676,6 @@ Full version information for the fingerprint enum values:
   <int value="33" label="kProxyConnection"/>
   <int value="34" label="kRange"/>
   <int value="35" label="kReferer"/>
-  <int value="36" label="kSecOriginPolicy"/>
   <int value="37" label="kTe"/>
   <int value="38" label="kTransferEncoding"/>
   <int value="39" label="kUpgrade"/>

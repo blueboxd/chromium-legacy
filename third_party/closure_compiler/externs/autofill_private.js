@@ -203,6 +203,13 @@ chrome.autofillPrivate.logServerCardLinkClicked = function() {};
 chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState = function(enabled) {};
 
 /**
+ * Gets the list of UPI IDs (a.k.a. Virtual Payment Addresses).
+ * @param {function(!Array<!string>):void}
+ *     callback Callback which will be called with the list of UPI IDs.
+ */
+chrome.autofillPrivate.getUpiIdList = function(callback) {};
+
+/**
  * Fired when the perosnal data has changed, meaning that an entry has been
  * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}

@@ -267,8 +267,8 @@ static void ClearTruncation(LayoutBlockFlow* block_flow) {
   }
 }
 
-LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
-    : LayoutBlock(&element) {
+LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element* element)
+    : LayoutBlock(element) {
   DCHECK(!ChildrenInline());
   if (!IsAnonymous()) {
     const KURL& url = GetDocument().Url();

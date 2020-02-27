@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBuilder;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabParentIntent;
@@ -146,6 +147,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             TabDelegateFactory delegateFactory =
                     parent == null ? createDefaultTabDelegateFactory() : null;
             Tab tab;
+            @TabCreationState
+            int creationState = TabCreationState.LIVE_IN_FOREGROUND;
             if (asyncParams != null && asyncParams.getTabToReparent() != null) {
                 type = TabLaunchType.FROM_REPARENTING;
 
@@ -192,6 +195,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                               .setDelegateFactory(delegateFactory)
                               .setInitiallyHidden(!openInForeground)
                               .build();
+                creationState = TabCreationState.FROZEN_FOR_LAZY_LOAD;
             } else {
                 tab = (mStartupTabPreloader != null)
                         ? mStartupTabPreloader.takeTabIfMatchingOrDestroy(loadUrlParams, type)
@@ -218,7 +222,10 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                         tab.getWebContents());
             }
 
-            mTabModel.addTab(tab, position, type);
+            if (creationState == TabCreationState.LIVE_IN_FOREGROUND && !openInForeground) {
+                creationState = TabCreationState.LIVE_IN_BACKGROUND;
+            }
+            mTabModel.addTab(tab, position, type, creationState);
             return tab;
         } finally {
             TraceEvent.end("ChromeTabCreator.createNewTab");
@@ -249,7 +256,10 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                           .setDelegateFactory(delegateFactory)
                           .setInitiallyHidden(!openInForeground)
                           .build();
-        mTabModel.addTab(tab, position, type);
+        @TabCreationState
+        int creationState = openInForeground ? TabCreationState.LIVE_IN_FOREGROUND
+                                             : TabCreationState.LIVE_IN_BACKGROUND;
+        mTabModel.addTab(tab, position, type, creationState);
         return true;
     }
 
@@ -358,7 +368,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                           .setTabState(state)
                           .build();
         assert state.isIncognito() == mIncognito;
-        mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
+        mTabModel.addTab(
+                tab, index, TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE);
         return tab;
     }
 

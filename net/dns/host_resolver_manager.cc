@@ -2863,6 +2863,8 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
 
 void HostResolverManager::RegisterResolveContext(ResolveContext* context) {
   registered_contexts_.AddObserver(context);
+  context->InvalidateCaches(dns_client_ ? dns_client_->GetCurrentSession()
+                                        : nullptr);
 }
 
 void HostResolverManager::DeregisterResolveContext(

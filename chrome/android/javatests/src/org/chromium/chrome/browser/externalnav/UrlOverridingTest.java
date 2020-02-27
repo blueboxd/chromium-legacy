@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -173,7 +174,8 @@ public class UrlOverridingTest {
             mActivityTestRule.getActivity().getTabModelSelector().addObserver(
                     new EmptyTabModelSelectorObserver() {
                         @Override
-                        public void onNewTabCreated(Tab newTab) {
+                        public void onNewTabCreated(
+                                Tab newTab, @TabCreationState int creationState) {
                             newTabCallback.notifyCalled();
                             newTab.addObserver(new TestTabObserver(
                                     finishCallback, failCallback, destroyedCallback));

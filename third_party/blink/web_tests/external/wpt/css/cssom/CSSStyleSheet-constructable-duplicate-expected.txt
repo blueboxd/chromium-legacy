@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Cascade order of a stylesheet for duplicate sheets. assert_equals: duplicate stylesheet should take right position in the cascade expected "1" but got "auto"
+Harness: the test ran to completion.
+

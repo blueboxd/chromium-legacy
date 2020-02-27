@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -131,6 +132,15 @@ NOINLINE void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
 
 NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   const int line_number = __LINE__;
+
+  // Register the IO thread for hang watching before it starts running and set
+  // up a closure to automatically unregister it when Run() returns.
+  base::ScopedClosureRunner unregister_thread_closure;
+  if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+    unregister_thread_closure =
+        base::HangWatcher::GetInstance()->RegisterThread();
+  }
+
   Thread::Run(run_loop);
   base::debug::Alias(&line_number);
 }

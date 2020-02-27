@@ -19,6 +19,7 @@
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -59,10 +60,8 @@ constexpr char kDeskRemovalSmoothnessHistogramName[] =
 
 // Appends the given |windows| to the end of the currently active overview mode
 // session such that the most-recently used window is added first. If
-// |should_animate| is true, the windows will animate to their positions in the
-// overview grid.
-void AppendWindowsToOverview(const std::vector<aura::Window*>& windows,
-                             bool should_animate) {
+// The windows will animate to their positions in the overview grid.
+void AppendWindowsToOverview(const std::vector<aura::Window*>& windows) {
   DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_session =
@@ -74,20 +73,19 @@ void AppendWindowsToOverview(const std::vector<aura::Window*>& windows,
       continue;
     }
 
-    overview_session->AppendItem(window, /*reposition=*/true, should_animate);
+    overview_session->AppendItem(window, /*reposition=*/true, /*animate=*/true);
   }
 }
 
-// Removes the given |windows| from the currently active overview mode session.
-void RemoveWindowsFromOverview(const base::flat_set<aura::Window*>& windows) {
+// Removes all the items that currently exist in overview.
+void RemoveAllWindowsFromOverview() {
   DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
-  for (auto* window : windows) {
-    auto* item = overview_session->GetOverviewItemForWindow(window);
-    if (item)
-      overview_session->RemoveItem(item);
+  for (const auto& grid : overview_session->grid_list()) {
+    while (!grid->empty())
+      overview_session->RemoveItem(grid->window_list()[0].get());
   }
 }
 
@@ -812,11 +810,13 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     removed_desk->MoveWindowsToDesk(active_desk_);
 
     // If overview mode is active, we add the windows of the removed desk to the
-    // overview grid in the order of their MRU. Note that this can only be done
-    // after the windows have moved to the active desk above, so that building
+    // overview grid in the order of the new MRU (which changes after removing a
+    // desk by making the windows of the removed desk as the least recently used
+    // across all desks). Note that this can only be done after the windows have
+    // moved to the active desk in `MoveWindowsToDesk()` above, so that building
     // the window MRU list should contain those windows.
     if (in_overview)
-      AppendWindowsToOverview(removed_desk_windows, /*should_animate=*/true);
+      AppendWindowsToOverview(removed_desk_windows);
   } else {
     Desk* target_desk = nullptr;
     if (iter_after == desks_.begin()) {
@@ -841,13 +841,13 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
           ->EndSplitView(SplitViewController::EndReason::kDesksChange);
     }
 
-    // The removed desk is the active desk, so temporarily remove its windows
-    // from the overview grid which will result in removing the
+    // The removed desk is still the active desk, so temporarily remove its
+    // windows from the overview grid which will result in removing the
     // "OverviewModeLabel" widgets created by overview mode for these windows.
     // This way the removed desk tracks only real windows, which are now ready
     // to be moved to the target desk.
     if (in_overview)
-      RemoveWindowsFromOverview(removed_desk_windows);
+      RemoveAllWindowsFromOverview();
 
     // If overview mode is active, change desk activation without changing
     // window activation. Activation should remain on the dummy
@@ -859,9 +859,9 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     DCHECK_EQ(in_overview, overview_controller->InOverviewSession());
 
     // Now that the windows from the removed and target desks merged, add them
-    // all without animation to the grid in the order of their MRU.
+    // all to the grid in the order of the new MRU.
     if (in_overview)
-      AppendWindowsToOverview(target_desk->windows(), /*should_animate=*/false);
+      AppendWindowsToOverview(target_desk->windows());
   }
 
   // It's OK now to refresh the mini_views of *only* the active desk, and only

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -806,7 +807,8 @@ public class OfflinePageUtils {
         }
 
         @Override
-        public void didAddTab(Tab tab, @TabLaunchType int type) {
+        public void didAddTab(
+                Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
             tab.addObserver(sTabRestoreTracker);
         }
 

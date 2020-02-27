@@ -8,7 +8,7 @@ import "components/feed/core/proto/wire/feature.proto";
 import "components/feed/core/proto/wire/payload_metadata.proto";
 import "components/feed/core/proto/ui/piet/piet.proto";
 
-package components.feed.core.proto.wire;
+package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 

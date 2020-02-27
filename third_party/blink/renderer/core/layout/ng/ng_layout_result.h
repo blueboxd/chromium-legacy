@@ -63,6 +63,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return *physical_fragment_;
   }
 
+  int LinesUntilClamp() const {
+    return HasRareData() ? rare_data_->lines_until_clamp : 0;
+  }
+
   LogicalOffset OutOfFlowPositionedOffset() const {
     DCHECK(bitfields_.has_oof_positioned_offset);
     return HasRareData() ? rare_data_->oof_positioned_offset
@@ -372,6 +376,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     bool has_tallest_unbreakable_block_size = false;
 #endif
     bool is_single_use = false;
+    int lines_until_clamp = 0;
   };
 
   bool HasRareData() const { return bitfields_.has_rare_data; }

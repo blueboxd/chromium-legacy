@@ -464,7 +464,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // be reused based on the URL we want to load. This should return false,
   // unless there is a good reason otherwise.
   virtual bool ShouldTryToUseExistingProcessHost(
-      BrowserContext* browser_context, const GURL& url);
+      BrowserContext* browser_context,
+      const GURL& url);
 
   // Returns whether or not subframes of |main_frame| should try to
   // aggressively reuse existing processes, even when below process limit.
@@ -753,13 +754,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // can be uniquely identified by the combination of |partition_name| and
   // |in_memory| values. When a partition is not to be persisted, the
   // |in_memory| value must be set to true.
-  virtual void GetStoragePartitionConfigForSite(
-      BrowserContext* browser_context,
-      const GURL& site,
-      bool can_be_default,
-      std::string* partition_domain,
-      std::string* partition_name,
-      bool* in_memory);
+  virtual void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
+                                                const GURL& site,
+                                                bool can_be_default,
+                                                std::string* partition_domain,
+                                                std::string* partition_name,
+                                                bool* in_memory);
 
   // Create and return a new quota permission context.
   virtual scoped_refptr<QuotaPermissionContext> CreateQuotaPermissionContext();
@@ -836,7 +836,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to return a delegate for the SpeechRecognitionManager.
   // The delegate will be owned by the manager. It's valid to return nullptr.
   virtual SpeechRecognitionManagerDelegate*
-      CreateSpeechRecognitionManagerDelegate();
+  CreateSpeechRecognitionManagerDelegate();
 
   // Allows the embedder to return a delegate for the TtsController.
   virtual TtsControllerDelegate* GetTtsControllerDelegate();
@@ -880,8 +880,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void DidCreatePpapiPlugin(BrowserPpapiHost* browser_host) {}
 
   // Gets the host for an external out-of-process plugin.
-  virtual BrowserPpapiHost* GetExternalBrowserPpapiHost(
-      int plugin_child_id);
+  virtual BrowserPpapiHost* GetExternalBrowserPpapiHost(int plugin_child_id);
 
   // Returns true if the socket operation specified by |params| is allowed from
   // the given |browser_context| and |url|. If |params| is nullptr, this method
@@ -1643,7 +1642,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the HTML content of the error page for Origin Policy related
   // errors.
   virtual base::Optional<std::string> GetOriginPolicyErrorPage(
-      network::OriginPolicyState error_reason,
       content::NavigationHandle* navigation_handle);
 
   // Returns true if it is OK to accept untrusted exchanges, such as expired

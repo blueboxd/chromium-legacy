@@ -196,11 +196,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     /**
      * Executes the script passed in and waits for the result.
      */
-    public JSONObject executeScriptSync(String script, boolean useSeparateIsolate) {
+    public JSONObject executeScriptSync(String script, boolean useSeparateIsolate, Tab tab) {
         JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
         int count = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getBrowser().getActiveTab().executeScript(script, useSeparateIsolate,
+            Tab scriptTab = tab == null ? getActivity().getBrowser().getActiveTab() : tab;
+            scriptTab.executeScript(script, useSeparateIsolate,
                     (JSONObject result) -> { callbackHelper.notifyCalled(result); });
         });
         try {
@@ -209,6 +210,10 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
             throw new RuntimeException(e);
         }
         return callbackHelper.getResult();
+    }
+
+    public JSONObject executeScriptSync(String script, boolean useSeparateIsolate) {
+        return executeScriptSync(script, useSeparateIsolate, null);
     }
 
     public int executeScriptAndExtractInt(String script) {

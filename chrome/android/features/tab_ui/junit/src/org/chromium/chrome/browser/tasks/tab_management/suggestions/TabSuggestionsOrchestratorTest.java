@@ -29,6 +29,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -125,7 +126,8 @@ public class TabSuggestionsOrchestratorTest {
             public void onTabSuggestionInvalidated() {}
         };
         tabSuggestionsOrchestrator.addObserver(tabSuggestionsObserver);
-        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
+        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(
+                null, 0, TabCreationState.LIVE_IN_FOREGROUND);
         Assert.assertEquals(1, suggestions.size());
         Assert.assertEquals(TAB_IDS.length, suggestions.get(0).getTabsInfo().size());
         for (int idx = 0; idx < TAB_IDS.length; idx++) {
@@ -161,7 +163,8 @@ public class TabSuggestionsOrchestratorTest {
             @Override
             public void onTabSuggestionInvalidated() {}
         };
-        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
+        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(
+                null, 0, TabCreationState.LIVE_IN_FOREGROUND);
         Assert.assertEquals(0, suggestions.size());
     }
 
@@ -187,7 +190,8 @@ public class TabSuggestionsOrchestratorTest {
         };
 
         tabSuggestionsOrchestrator.addObserver(tabSuggestionsObserver);
-        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
+        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(
+                null, 0, TabCreationState.LIVE_IN_FOREGROUND);
         Assert.assertNotNull(tabSuggestionsOrchestrator.mTabSuggestionFeedback);
         Assert.assertEquals(tabSuggestionsOrchestrator.mTabSuggestionFeedback.tabSuggestionResponse,
                 TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED);

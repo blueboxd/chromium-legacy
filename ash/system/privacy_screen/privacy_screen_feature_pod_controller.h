@@ -5,13 +5,16 @@
 #ifndef ASH_SYSTEM_PRIVACY_SCREEN_PRIVACY_SCREEN_FEATURE_POD_CONTROLLER_H_
 #define ASH_SYSTEM_PRIVACY_SCREEN_PRIVACY_SCREEN_FEATURE_POD_CONTROLLER_H_
 
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 
 namespace ash {
 
 // Controller of a feature pod button for toggling the built-in privacy screen.
-class PrivacyScreenFeaturePodController : public FeaturePodControllerBase {
+class PrivacyScreenFeaturePodController
+    : public FeaturePodControllerBase,
+      public PrivacyScreenController::Observer {
  public:
   PrivacyScreenFeaturePodController();
   ~PrivacyScreenFeaturePodController() override;
@@ -30,6 +33,9 @@ class PrivacyScreenFeaturePodController : public FeaturePodControllerBase {
  private:
   void TogglePrivacyScreen();
   void UpdateButton();
+
+  // PrivacyScreenController::Observer:
+  void OnPrivacyScreenSettingChanged(bool enabled) override;
 
   // Unowned.
   FeaturePodButton* button_ = nullptr;

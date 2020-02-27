@@ -25,6 +25,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
@@ -292,10 +293,12 @@ public class NightModeReparentingControllerTest {
 
         int index;
         if (incognito) {
-            mIncognitoTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS);
+            mIncognitoTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS,
+                    TabCreationState.LIVE_IN_FOREGROUND);
             index = mIncognitoTabModel.indexOf(tab);
         } else {
-            mTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS);
+            mTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS,
+                    TabCreationState.LIVE_IN_FOREGROUND);
             index = mTabModel.indexOf(tab);
         }
         mTabIndexMapping.put(tab, index);

@@ -233,7 +233,11 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
 
   if (parentNode()) {
     ContainerNode::ChildrenChange change = {
-        ContainerNode::kTextChanged, this, previousSibling(), nextSibling(),
+        ContainerNode::kTextChanged,
+        this,
+        previousSibling(),
+        nextSibling(),
+        nullptr,
         ContainerNode::kChildrenChangeSourceAPI};
     parentNode()->ChildrenChanged(change);
   }

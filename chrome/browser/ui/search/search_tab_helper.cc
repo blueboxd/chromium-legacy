@@ -656,6 +656,12 @@ void SearchTabHelper::QueryAutocomplete(const base::string16& input,
   autocomplete_input.set_from_omnibox_focus(input.empty());
   autocomplete_input.set_prevent_inline_autocomplete(
       prevent_inline_autocomplete);
+
+  // We do not want keyword matches for the NTP realbox, which has no UI
+  // facilities to support them.
+  autocomplete_input.set_prefer_keyword(false);
+  autocomplete_input.set_allow_exact_keyword_match(false);
+
   autocomplete_controller_->Start(autocomplete_input);
 }
 

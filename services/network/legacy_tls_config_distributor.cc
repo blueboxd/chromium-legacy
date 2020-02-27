@@ -17,6 +17,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "crypto/sha2.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace network {
 
@@ -50,8 +51,16 @@ scoped_refptr<LegacyTLSExperimentConfig> LegacyTLSExperimentConfig::Parse(
 
 bool LegacyTLSExperimentConfig::ShouldSuppressLegacyTLSWarning(
     const std::string& hostname) const {
+  // Match on eTLD+1 rather than full hostname (to account for subdomains and
+  // redirects). If no registrable domain is found, default to using the
+  // hostname as-is.
+  auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      hostname, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (domain.empty())
+    domain = hostname;
+
   // Convert bytes from crypto::SHA256 so we can compare to the proto contents.
-  std::string host_hash_bytes = crypto::SHA256HashString(hostname);
+  std::string host_hash_bytes = crypto::SHA256HashString(domain);
   std::string host_hash = base::ToLowerASCII(
       base::HexEncode(host_hash_bytes.data(), host_hash_bytes.size()));
   const auto& control_site_hashes = proto_.control_site_hashes();

@@ -595,6 +595,12 @@ void ShelfLayoutManager::UpdateContextualNudges() {
   if (!ash::features::AreContextualNudgesEnabled())
     return;
 
+  // Do not allow nudges outside of an active session.
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return;
+  }
+
   const bool in_app_shelf = ShelfConfig::Get()->is_in_app();
   const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
 

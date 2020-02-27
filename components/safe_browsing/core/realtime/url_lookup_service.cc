@@ -122,9 +122,10 @@ void RealTimeUrlLookupService::StartLookup(
 
 void RealTimeUrlLookupService::Shutdown() {
   for (auto& pending : pending_requests_) {
-    // An empty response is treated as safe.
+    // Treat all pending requests as safe.
     auto response = std::make_unique<RTLookupResponse>();
-    std::move(pending.second).Run(std::move(response));
+    std::move(pending.second)
+        .Run(/* is_rt_lookup_successful */ true, std::move(response));
     delete pending.first;
   }
   pending_requests_.clear();
@@ -152,12 +153,14 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
       "SafeBrowsing.RT.Network.Result", net_error, response_code);
 
   auto response = std::make_unique<RTLookupResponse>();
-  bool success = (net_error == net::OK) && (response_code == net::HTTP_OK) &&
-                 response->ParseFromString(*response_body);
-  success ? HandleLookupSuccess() : HandleLookupError();
+  bool is_rt_lookup_successful = (net_error == net::OK) &&
+                                 (response_code == net::HTTP_OK) &&
+                                 response->ParseFromString(*response_body);
+  is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
 
   base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                 base::BindOnce(std::move(it->second), std::move(response)));
+                 base::BindOnce(std::move(it->second), is_rt_lookup_successful,
+                                std::move(response)));
 
   delete it->first;
   pending_requests_.erase(it);

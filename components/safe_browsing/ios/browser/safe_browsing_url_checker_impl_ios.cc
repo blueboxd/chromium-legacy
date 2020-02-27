@@ -17,6 +17,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
+    bool is_rt_lookup_successful,
     std::unique_ptr<RTLookupResponse> response) {
   NOTREACHED();
 }

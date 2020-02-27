@@ -29,7 +29,7 @@
 namespace base {
 class ListValue;
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -38,7 +38,7 @@ class BrowserContext;
 namespace extensions {
 class Extension;
 struct WebRequestInfo;
-}
+}  // namespace extensions
 
 namespace extension_web_request_api_helpers {
 
@@ -84,7 +84,7 @@ enum class RequestHeaderType {
   kProxyConnection = 33,
   kRange = 34,
   kReferer = 35,
-  kSecOriginPolicy = 36,
+  //  kSecOriginPolicy = 36, // no longer shipping
   kTe = 37,
   kTransferEncoding = 38,
   kUpgrade = 39,

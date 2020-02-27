@@ -201,7 +201,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request);
 
   // Called when the |response| from the real-time lookup service is received.
-  void OnRTLookupResponse(std::unique_ptr<RTLookupResponse> response);
+  // |is_rt_lookup_successful| is true if the response code is OK and the
+  // response body is successfully parsed.
+  void OnRTLookupResponse(bool is_rt_lookup_successful,
+                          std::unique_ptr<RTLookupResponse> response);
 
   void SetWebUIToken(int token);
 

@@ -36,6 +36,10 @@ FidoBleDevice::FidoBleDevice(std::unique_ptr<FidoBleConnection> connection)
 
 FidoBleDevice::~FidoBleDevice() = default;
 
+std::string FidoBleDevice::GetAddress() {
+  return connection_->address();
+}
+
 void FidoBleDevice::Connect() {
   if (state_ != State::kInit)
     return;
@@ -151,6 +155,11 @@ FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
                              weak_factory_.GetWeakPtr());
 }
 
+void FidoBleDevice::set_observer(FidoBleDevice::Observer* observer) {
+  DCHECK(!observer_);
+  observer_ = observer;
+}
+
 FidoDevice::CancelToken FidoBleDevice::DeviceTransact(
     std::vector<uint8_t> command,
     DeviceCallback callback) {
@@ -241,19 +250,20 @@ FidoBleDevice::PendingFrame::PendingFrame(PendingFrame&&) = default;
 FidoBleDevice::PendingFrame::~PendingFrame() = default;
 
 void FidoBleDevice::OnConnected(bool success) {
-  if (state_ == State::kDeviceError) {
+  if (state_ != State::kConnecting) {
     return;
   }
-
   StopTimeout();
+  if (observer_) {
+    observer_->FidoBleDeviceConnected(this, success);
+  }
   if (!success) {
-    FIDO_LOG(ERROR) << "Error while attempting to connect to BLE device.";
+    FIDO_LOG(ERROR) << "FidoBleDevice::Connect() failed";
     state_ = State::kDeviceError;
     Transition();
     return;
   }
-
-  FIDO_LOG(EVENT) << "BLE device connected successfully.";
+  FIDO_LOG(EVENT) << "FidoBleDevice connected";
   DCHECK_EQ(State::kConnecting, state_);
   StartTimeout();
   connection_->ReadControlPointLength(base::BindOnce(
@@ -301,6 +311,9 @@ void FidoBleDevice::StopTimeout() {
 void FidoBleDevice::OnTimeout() {
   FIDO_LOG(ERROR) << "FIDO BLE device timeout for " << GetId();
   state_ = State::kDeviceError;
+  if (observer_) {
+    observer_->FidoBleDeviceTimeout(this);
+  }
   Transition();
 }
 

@@ -183,6 +183,8 @@ void AuthenticatorRequestClientDelegate::FinishCollectToken() {
 void AuthenticatorRequestClientDelegate::OnRetryUserVerification(int attempts) {
 }
 
+void AuthenticatorRequestClientDelegate::OnInternalUserVerificationLocked() {}
+
 void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
     device::FidoDiscoveryFactory* discovery_factory) {}
 

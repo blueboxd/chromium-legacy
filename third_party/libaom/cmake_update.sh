@@ -136,6 +136,9 @@ toolchain="-DCMAKE_TOOLCHAIN_FILE=${SRC}/build/cmake/toolchains"
 
 reset_dirs linux/generic
 gen_config_files linux/generic "-DAOM_TARGET_CPU=generic ${all_platforms}"
+# Strip .pl files from gni
+sed -i.bak '/\.pl",$/d' libaom_srcs.gni
+rm libaom_srcs.gni.bak
 # libaom_srcs.gni and aom_version.h are shared.
 cp libaom_srcs.gni "${BASE}"
 cp config/aom_version.h "${CFG}/config/"

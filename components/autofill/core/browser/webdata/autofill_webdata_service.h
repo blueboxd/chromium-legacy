@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -140,6 +141,9 @@ class AutofillWebDataService : public WebDataServiceBase {
 
   // Store a UPI ID.
   void AddUpiId(const std::string& upi_id);
+
+  // Gets all the UPI IDs stored in the database.
+  WebDataServiceBase::Handle GetAllUpiIds(WebDataServiceConsumer* consumer);
 
   // Initiates the request for Payments customer data.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is

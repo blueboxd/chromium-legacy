@@ -88,8 +88,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       FidoAuthenticator* authenticator,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response);
-  void HandleTouch(FidoAuthenticator* authenticator);
-  void HandleAuthenticatorMissingUV(FidoAuthenticator* authenticator);
+  void CollectPINThenSendRequest(FidoAuthenticator* authenticator);
+  void StartPINFallbackForInternalUv(FidoAuthenticator* authenticator);
+  void TerminateUnsatisfiableRequestPostTouch(FidoAuthenticator* authenticator);
   void OnPinRetriesResponse(CtapDeviceResponseCode status,
                             base::Optional<pin::RetriesResponse> response);
   void OnHavePIN(std::string pin);

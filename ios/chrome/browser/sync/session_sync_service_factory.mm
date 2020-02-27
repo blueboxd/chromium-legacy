@@ -25,7 +25,7 @@
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #import "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
-#include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
+#include "ios/chrome/browser/tabs/ios_synced_window_delegate_getter.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "url/gurl.h"
@@ -56,7 +56,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   explicit SyncSessionsClientImpl(ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
-            std::make_unique<TabModelSyncedWindowDelegatesGetter>()),
+            std::make_unique<IOSSyncedWindowDelegatesGetter>()),
         local_session_event_router_(
             std::make_unique<IOSChromeLocalSessionEventRouter>(
                 browser_state_,

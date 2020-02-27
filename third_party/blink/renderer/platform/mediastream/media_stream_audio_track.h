@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {

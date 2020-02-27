@@ -30,6 +30,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
   static const BluetoothUUID& CableAdvertisementUUID();
   static bool IsCableDevice(const BluetoothDevice* device);
 
+  virtual void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
   virtual void OnSetPowered() = 0;
 
   void SetDiscoverySession(
@@ -38,8 +39,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
   BluetoothAdapter* adapter() { return adapter_.get(); }
 
  private:
-  void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
-
   // FidoDeviceDiscovery:
   void StartInternal() override;
 

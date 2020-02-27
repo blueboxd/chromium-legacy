@@ -28,9 +28,37 @@ _GPU_NOOP_JOBS = [scheduler_pb.Job(
     'Win7 ANGLE Tryserver (AMD)',
 )]
 
+# Android testers which are triggered by Android arm Builder (dbg)
+# on master, but not on branches.
+_ANDROID_NON_BRANCHED_TESTERS = (
+    'Android WebView L (dbg)',
+    'KitKat Phone Tester (dbg)',
+    'KitKat Tablet Tester',
+    'Lollipop Phone Tester',
+    'Lollipop Tablet Tester',
+    'Marshmallow Tablet Tester',
+)
+_ANDROID_TEST_NOOP_JOBS = [scheduler_pb.Job(
+    id = bucket + '-' + builder,
+    schedule = 'triggered',
+    acl_sets = [bucket],
+    noop = scheduler_pb.NoopTask(),
+) for builder in _ANDROID_NON_BRANCHED_TESTERS for bucket in (
+    'ci-beta',
+    'ci-stable',
+)]
+
+
 def _add_noop_jobs(ctx):
   cfg = ctx.output['luci-scheduler.cfg']
-  for j in _GPU_NOOP_JOBS:
+  for j in _GPU_NOOP_JOBS + _ANDROID_TEST_NOOP_JOBS:
     cfg.job.append(j)
 
+def _munge_trunk_only_jobs(ctx):
+  cfg = ctx.output['luci-scheduler.cfg']
+  for j in cfg.job:
+    if j.id in _ANDROID_NON_BRANCHED_TESTERS:
+      j.id = 'ci-' + j.id
+
 lucicfg.generator(_add_noop_jobs)
+lucicfg.generator(_munge_trunk_only_jobs)

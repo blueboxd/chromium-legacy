@@ -12,6 +12,7 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/time/time.h"
@@ -97,6 +98,13 @@ void HomeToOverviewNudgeController::SetNudgeAllowedForCurrentShelf(
     HideNudge();
     return;
   }
+
+  // Make sure that the overview, if opened, would show at least two app
+  // windows.
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+  if (windows.size() < 2)
+    return;
 
   DCHECK(!nudge_);
 

@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -264,7 +265,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
 
             menu.findItem(R.id.paint_preview_capture_id)
-                    .setVisible(CachedFeatureFlags.isPaintPreviewTestEnabled()
+                    .setVisible(CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_TEST)
                             && !isChromeOrInterstitialPage && !isIncognito);
 
             // Disable find in page on the native NTP.

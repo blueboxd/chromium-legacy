@@ -878,6 +878,37 @@ void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,
     ResetToDefaultSelection();
 }
 
+void HTMLSelectElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLFormControlElementWithState::ChildrenChanged(change);
+  if (change.type == kElementInserted) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(change.sibling_changed)) {
+      OptionInserted(*option, option->Selected());
+    } else if (auto* optgroup =
+                   DynamicTo<HTMLOptGroupElement>(change.sibling_changed)) {
+      for (auto& option : Traversal<HTMLOptionElement>::ChildrenOf(*optgroup))
+        OptionInserted(option, option.Selected());
+    }
+  } else if (change.type == kElementRemoved) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(change.sibling_changed)) {
+      OptionRemoved(*option);
+    } else if (auto* optgroup =
+                   DynamicTo<HTMLOptGroupElement>(change.sibling_changed)) {
+      for (auto& option : Traversal<HTMLOptionElement>::ChildrenOf(*optgroup))
+        OptionRemoved(option);
+    }
+  } else if (change.type == kAllChildrenRemoved) {
+    DCHECK(change.removed_nodes);
+    for (Node* node : *change.removed_nodes) {
+      if (auto* option = DynamicTo<HTMLOptionElement>(node))
+        OptionRemoved(*option);
+    }
+  }
+}
+
+bool HTMLSelectElement::ChildrenChangedAllChildrenRemovedNeedsList() const {
+  return true;
+}
+
 void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
                                        bool option_is_selected) {
   DCHECK_EQ(option.OwnerSelectElement(), this);

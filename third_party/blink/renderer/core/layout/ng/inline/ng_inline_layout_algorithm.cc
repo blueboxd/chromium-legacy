@@ -64,7 +64,8 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       context_(context),
       baseline_type_(container_builder_.Style().GetFontBaseline()),
       is_horizontal_writing_mode_(
-          blink::IsHorizontalWritingMode(space.GetWritingMode())) {
+          blink::IsHorizontalWritingMode(space.GetWritingMode())),
+      force_truncate_(space.LinesUntilClamp() == 1) {
   DCHECK(context);
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
 }
@@ -317,9 +318,12 @@ void NGInlineLayoutAlgorithm::CreateLine(
   }
 
   // Truncate the line if 'text-overflow: ellipsis' is set.
+  // TODO(sky): this also needs to truncate if |force_truncate_| and there are
+  // more lines (which needs to be injected in the constraints space).
   if (UNLIKELY(inline_size >
                    line_info->AvailableWidth() - line_info->TextIndent() &&
-               node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText())) {
+               node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
+      (force_truncate_ && !line_info->IsLastLine())) {
     inline_size = NGLineTruncator(*line_info)
                       .TruncateLine(inline_size, &line_box_, box_states_);
   }

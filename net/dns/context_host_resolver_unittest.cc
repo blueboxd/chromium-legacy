@@ -577,20 +577,23 @@ TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartDohProbeRequest) {
 TEST_F(ContextHostResolverTest, ResolveFromCache) {
   auto resolve_context = std::make_unique<ResolveContext>(
       nullptr /* url_request_context */, true /* enable_caching */);
+  HostCache* host_cache = resolve_context->host_cache();
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), std::move(resolve_context));
 
+  // Create the cache entry after creating the ContextHostResolver, as
+  // registering into the HostResolverManager initializes and invalidates the
+  // cache.
   base::SimpleTestTickClock clock;
   clock.Advance(base::TimeDelta::FromDays(62));  // Arbitrary non-zero time.
   AddressList expected(kEndpoint);
-  resolve_context->host_cache()->Set(
+  host_cache->Set(
       HostCache::Key("example.com", DnsQueryType::UNSPECIFIED,
                      0 /* host_resolver_flags */, HostResolverSource::ANY,
                      NetworkIsolationKey()),
       HostCache::Entry(OK, expected, HostCache::Entry::SOURCE_DNS,
                        base::TimeDelta::FromDays(1)),
       clock.NowTicks(), base::TimeDelta::FromDays(1));
-
-  auto resolver = std::make_unique<ContextHostResolver>(
-      manager_.get(), std::move(resolve_context));
   resolver->SetTickClockForTesting(&clock);
 
   // Allow stale results and then confirm the result is not stale in order to
@@ -715,14 +718,16 @@ TEST_F(ContextHostResolverTest, HostCacheInvalidation) {
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), std::move(resolve_context));
 
-  // No invalidations yet.
-  ASSERT_EQ(resolve_context_ptr->current_session_for_testing(), nullptr);
-  ASSERT_EQ(resolve_context_ptr->host_cache()->network_changes(), 0);
+  // No invalidations yet (other than the initialization "invalidation" from
+  // registering the context).
+  ASSERT_EQ(resolve_context_ptr->current_session_for_testing(),
+            dns_client_->GetCurrentSession());
+  ASSERT_EQ(resolve_context_ptr->host_cache()->network_changes(), 1);
 
   manager_->InvalidateCachesForTesting();
   EXPECT_EQ(resolve_context_ptr->current_session_for_testing(),
             dns_client_->GetCurrentSession());
-  EXPECT_EQ(resolve_context_ptr->host_cache()->network_changes(), 1);
+  EXPECT_EQ(resolve_context_ptr->host_cache()->network_changes(), 2);
 
   // Expect manager to be able to safely do invalidations after an individual
   // ContextHostResolver has been destroyed (and deregisters its ResolveContext)

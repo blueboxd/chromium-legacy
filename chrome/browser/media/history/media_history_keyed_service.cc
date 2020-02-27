@@ -54,13 +54,35 @@ void MediaHistoryKeyedService::Shutdown() {
 void MediaHistoryKeyedService::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  if (!deletion_info.IsAllHistory()) {
-    // TODO(https://crbug.com/1024352): Handle fine-grained history deletion.
+  if (deletion_info.IsAllHistory()) {
+    // Destroy the old database and create a new one.
+    media_history_store_->EraseDatabaseAndCreateNew();
     return;
   }
 
-  // Destroy the old database and create a new one.
-  media_history_store_->EraseDatabaseAndCreateNew();
+  // Build a set of all origins in |deleted_rows|.
+  std::set<url::Origin> origins;
+  for (const history::URLRow& row : deletion_info.deleted_rows()) {
+    origins.insert(url::Origin::Create(row.url()));
+  }
+
+  // Find any origins that do not have any more data in the history database.
+  std::set<url::Origin> no_more_origins;
+  for (const url::Origin& origin : origins) {
+    const auto& origin_count =
+        deletion_info.deleted_urls_origin_map().find(origin.GetURL());
+
+    if (origin_count->second.first > 0)
+      continue;
+
+    no_more_origins.insert(origin);
+  }
+
+  if (!no_more_origins.empty())
+    media_history_store_->DeleteAllOriginData(no_more_origins);
+
+  // TODO(https://crbug.com/1024352): For any origins that still have data we
+  // should remove data by URL.
 }
 
 }  // namespace media_history

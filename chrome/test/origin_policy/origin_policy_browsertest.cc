@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 namespace {
 const base::FilePath::CharType kDataRoot[] =
@@ -27,13 +31,15 @@ namespace content {
 
 class OriginPolicyBrowserTest : public InProcessBrowserTest {
  public:
-  OriginPolicyBrowserTest() : InProcessBrowserTest() {}
-  ~OriginPolicyBrowserTest() override {}
+  OriginPolicyBrowserTest() : status_(net::HTTP_OK) {}
+  ~OriginPolicyBrowserTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     server_ = std::make_unique<net::test_server::EmbeddedTestServer>(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
     server_->AddDefaultHandlers(base::FilePath(kDataRoot));
+    server_->RegisterRequestHandler(base::BindRepeating(
+        &OriginPolicyBrowserTest::HandleResponse, base::Unretained(this)));
     EXPECT_TRUE(server()->Start());
 
     feature_list_.InitAndEnableFeature(features::kOriginPolicy);
@@ -54,9 +60,38 @@ class OriginPolicyBrowserTest : public InProcessBrowserTest {
     return title;
   }
 
+  void SetStatus(const net::HttpStatusCode& status) { status_ = status; }
+  void SetLocationHeader(const std::string& header) {
+    location_header_ = header;
+  }
+
  private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleResponse(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+
+    if (request.relative_url == "/.well-known/origin-policy") {
+      response->set_code(status_);
+
+      if (status_ == net::HTTP_OK) {
+        response->set_content(R"({ "ids": ["my-policy"] })");
+      } else if (location_header_.has_value()) {
+        response->AddCustomHeader("Location", *location_header_);
+      }
+
+      return std::move(response);
+    }
+
+    // If we return nullptr, then the server will do the default behavior.
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  }
+
   std::unique_ptr<net::test_server::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList feature_list_;
+
+  net::HttpStatusCode status_;
+  base::Optional<std::string> location_header_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyBrowserTest);
 };
@@ -66,29 +101,49 @@ IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, PageWithoutPolicy) {
             NavigateToAndReturnTitle("/page-without-policy.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, PageWithoutPolicyPolicy404s) {
+  SetStatus(net::HTTP_NOT_FOUND);
+  EXPECT_EQ(base::ASCIIToUTF16("Page Without Policy"),
+            NavigateToAndReturnTitle("/page-without-policy.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, PageWithoutPolicyPolicy301s) {
+  SetStatus(net::HTTP_MOVED_PERMANENTLY);
+  SetLocationHeader("/.well-known/origin-policy/example-policy");
+  EXPECT_EQ(base::ASCIIToUTF16("Page Without Policy"),
+            NavigateToAndReturnTitle("/page-without-policy.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ApplyPolicy) {
   EXPECT_EQ(base::ASCIIToUTF16("Page With Policy"),
             NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorCantDownloadPolicy) {
+IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy404) {
+  SetStatus(net::HTTP_NOT_FOUND);
   EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
-            NavigateToAndReturnTitle("/page-policy-missing.html"));
+            NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy301Redirect) {
+  SetStatus(net::HTTP_MOVED_PERMANENTLY);
+  SetLocationHeader("/.well-known/origin-policy/example-policy");
   EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
-            NavigateToAndReturnTitle("/page-policy-301redirect.html"));
+            NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy302Redirect) {
+  SetStatus(net::HTTP_FOUND);
+  SetLocationHeader("/.well-known/origin-policy/example-policy");
   EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
-            NavigateToAndReturnTitle("/page-policy-302redirect.html"));
+            NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(OriginPolicyBrowserTest, ErrorPolicy307Redirect) {
+  SetStatus(net::HTTP_TEMPORARY_REDIRECT);
+  SetLocationHeader("/.well-known/origin-policy/example-policy");
   EXPECT_EQ(base::ASCIIToUTF16(kErrorInterstitialTitle),
-            NavigateToAndReturnTitle("/page-policy-307redirect.html"));
+            NavigateToAndReturnTitle("/page-with-policy.html"));
 }
 
 }  // namespace content

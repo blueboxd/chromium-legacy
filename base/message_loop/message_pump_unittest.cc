@@ -87,7 +87,8 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
   MockMessagePumpDelegate() = default;
 
   // MessagePump::Delegate:
-  void BeforeDoInternalWork() {}
+  void BeforeDoInternalWork() override {}
+  void BeforeWait() override {}
   MOCK_METHOD0(DoSomeWork, MessagePump::Delegate::NextWorkInfo());
   MOCK_METHOD0(DoWork, bool());
   MOCK_METHOD1(DoDelayedWork, bool(TimeTicks*));
@@ -203,6 +204,7 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
   }
 
   void BeforeDoInternalWork() override {}
+  void BeforeWait() override {}
 
   MessagePump::Delegate::NextWorkInfo DoSomeWork() override {
     switch (action_.load()) {

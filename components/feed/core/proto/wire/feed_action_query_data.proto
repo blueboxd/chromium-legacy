@@ -7,7 +7,7 @@ syntax = "proto2";
 import "components/feed/core/proto/wire/action_type.proto";
 import "components/feed/core/proto/wire/semantic_properties.proto";
 
-package components.feed.core.proto.wire;
+package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 

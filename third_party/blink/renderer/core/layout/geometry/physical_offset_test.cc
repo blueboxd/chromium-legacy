@@ -20,62 +20,52 @@ TEST(GeometryUnitsTest, ConvertPhysicalOffsetToLogicalOffset) {
   LogicalOffset offset;
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      outer_size, inner_size);
+      WritingMode::kHorizontalTb, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(20, offset.inline_offset);
   EXPECT_EQ(30, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kHorizontalTb, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      outer_size, inner_size);
+      WritingMode::kHorizontalTb, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(275, offset.inline_offset);
   EXPECT_EQ(30, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      outer_size, inner_size);
+      WritingMode::kVerticalRl, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(30, offset.inline_offset);
   EXPECT_EQ(275, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      outer_size, inner_size);
+      WritingMode::kVerticalRl, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(305, offset.inline_offset);
   EXPECT_EQ(275, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kSidewaysRl, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      outer_size, inner_size);
+      WritingMode::kSidewaysRl, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(30, offset.inline_offset);
   EXPECT_EQ(275, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kSidewaysRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      outer_size, inner_size);
+      WritingMode::kSidewaysRl, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(305, offset.inline_offset);
   EXPECT_EQ(275, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kVerticalLr, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      outer_size, inner_size);
+      WritingMode::kVerticalLr, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(30, offset.inline_offset);
   EXPECT_EQ(20, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kVerticalLr, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      outer_size, inner_size);
+      WritingMode::kVerticalLr, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(305, offset.inline_offset);
   EXPECT_EQ(20, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kSidewaysLr, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      outer_size, inner_size);
+      WritingMode::kSidewaysLr, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(305, offset.inline_offset);
   EXPECT_EQ(20, offset.block_offset);
 
   offset = physical_offset.ConvertToLogical(
-      WritingMode::kSidewaysLr, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      outer_size, inner_size);
+      WritingMode::kSidewaysLr, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(30, offset.inline_offset);
   EXPECT_EQ(20, offset.block_offset);
 }

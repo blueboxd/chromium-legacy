@@ -161,8 +161,7 @@ bool ThemePainterMac::PaintCapsLockIndicator(const LayoutObject& o,
   CGFloat min_x = CGRectGetMinX(cgr);
   CGFloat min_y = CGRectGetMinY(cgr);
   CGFloat height_scale = r.Height() / kSquareSize;
-  const bool is_rtl =
-      o.StyleRef().Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  const bool is_rtl = o.StyleRef().Direction() == TextDirection::kRtl;
   CGAffineTransform transform = CGAffineTransformMake(
       height_scale, 0,                              // A  B
       0, height_scale,                              // C  D
@@ -314,7 +313,7 @@ bool ThemePainterMac::PaintMenuListButton(const Node* node,
   float scaled_padding_end =
       LayoutThemeMac::kMenuListArrowPaddingEnd * style.EffectiveZoom();
   float left_edge;
-  if (style.Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+  if (style.Direction() == TextDirection::kLtr) {
     left_edge = bounds.MaxX() - scaled_padding_end - arrow_width;
   } else {
     left_edge = bounds.X() + scaled_padding_end;

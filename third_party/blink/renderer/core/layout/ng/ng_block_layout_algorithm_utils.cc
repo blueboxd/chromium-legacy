@@ -14,7 +14,7 @@ LayoutUnit CalculateOutOfFlowStaticInlineLevelOffset(
     const NGBfcOffset& origin_bfc_offset,
     const NGExclusionSpace& exclusion_space,
     LayoutUnit child_available_inline_size) {
-  const base::i18n::TextDirection direction = container_style.Direction();
+  const TextDirection direction = container_style.Direction();
 
   // Find a layout opportunity, where we would have placed a zero-sized line.
   NGLayoutOpportunity opportunity = exclusion_space.FindLayoutOpportunity(

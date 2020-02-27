@@ -11,6 +11,8 @@
 
 namespace blink {
 
+std::atomic_int IntegerObject::destructor_calls{0};
+
 // static
 void TestSupportingGC::PreciselyCollectGarbage(
     BlinkGC::SweepingType sweeping_type) {

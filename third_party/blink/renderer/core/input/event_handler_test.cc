@@ -1048,9 +1048,7 @@ class TooltipCapturingChromeClient : public EmptyChromeClient {
  public:
   TooltipCapturingChromeClient() = default;
 
-  void SetToolTip(LocalFrame&,
-                  const String& str,
-                  base::i18n::TextDirection) override {
+  void SetToolTip(LocalFrame&, const String& str, TextDirection) override {
     last_tool_tip_ = str;
   }
 

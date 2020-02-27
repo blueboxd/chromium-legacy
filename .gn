@@ -354,7 +354,6 @@ check_targets = [
   "//third_party/byte_buddy/*",
   "//third_party/cacheinvalidation/*",
   "//third_party/catapult/*",
-  "//third_party/cct_dynamic_module/*",
 
   # "//third_party/ced/*",  # 6 errors
   "//third_party/chaijs/*",

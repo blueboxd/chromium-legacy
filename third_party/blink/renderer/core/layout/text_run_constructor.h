@@ -71,24 +71,24 @@ TextRun ConstructTextRun(const Font&,
 TextRun ConstructTextRun(const Font&,
                          const String&,
                          const ComputedStyle&,
-                         base::i18n::TextDirection,
+                         TextDirection,
                          TextRunFlags = kDefaultTextRunFlags);
 TextRun ConstructTextRun(const Font&,
                          const LayoutText*,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle&,
-                         base::i18n::TextDirection);
+                         TextDirection);
 TextRun ConstructTextRun(const Font&,
                          const LChar*,
                          int length,
                          const ComputedStyle&,
-                         base::i18n::TextDirection);
+                         TextDirection);
 TextRun ConstructTextRun(const Font&,
                          const UChar*,
                          int length,
                          const ComputedStyle&,
-                         base::i18n::TextDirection);
+                         TextDirection);
 
 }  // namespace blink
 

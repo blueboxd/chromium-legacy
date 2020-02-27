@@ -37,9 +37,8 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
 
  private:
   // LayoutNG version adapters.
-  PhysicalRect PaintRectForImageStrip(
-      const PhysicalRect& rect,
-      base::i18n::TextDirection direction) const override {
+  PhysicalRect PaintRectForImageStrip(const PhysicalRect& rect,
+                                      TextDirection direction) const override {
     return PhysicalRect(PaintRectForImageStrip(rect.ToLayoutRect(), direction));
   }
   void PaintNormalBoxShadow(const PaintInfo& info,
@@ -61,8 +60,7 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
   }
 
   // Legacy version.
-  LayoutRect PaintRectForImageStrip(const LayoutRect&,
-                                    base::i18n::TextDirection) const;
+  LayoutRect PaintRectForImageStrip(const LayoutRect&, TextDirection) const;
   void PaintNormalBoxShadow(const PaintInfo&,
                             const ComputedStyle&,
                             const LayoutRect& paint_rect);

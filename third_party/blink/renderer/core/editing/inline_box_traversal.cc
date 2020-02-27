@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 // TODO(xiaochengh): Rename this file to |bidi_adjustment.cc|
 
@@ -76,7 +77,7 @@ class AbstractInlineBox {
                          : line_cursor_.Current().BidiLevel();
   }
 
-  base::i18n::TextDirection Direction() const {
+  TextDirection Direction() const {
     DCHECK(IsNotNull());
     return IsOldLayout() ? GetInlineBox().Direction()
                          : line_cursor_.Current().ResolvedDirection();
@@ -126,7 +127,7 @@ class AbstractInlineBox {
     return cursor ? AbstractInlineBox(cursor) : AbstractInlineBox();
   }
 
-  base::i18n::TextDirection ParagraphDirection() const {
+  TextDirection ParagraphDirection() const {
     DCHECK(IsNotNull());
     if (IsOldLayout())
       return ParagraphDirectionOf(GetInlineBox());
@@ -486,8 +487,7 @@ class CaretPositionResolutionAdjuster {
       const AbstractInlineBox& box) {
     DCHECK(box.IsNotNull());
 
-    const base::i18n::TextDirection primary_direction =
-        box.ParagraphDirection();
+    const TextDirection primary_direction = box.ParagraphDirection();
     if (box.Direction() == primary_direction)
       return AdjustForPrimaryDirectionAlgorithm(box);
 
@@ -857,7 +857,7 @@ SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
 }
 
 // TODO(xiaochengh): Move this function to a better place
-base::i18n::TextDirection ParagraphDirectionOf(const InlineBox& box) {
+TextDirection ParagraphDirectionOf(const InlineBox& box) {
   const ComputedStyle& block_style = *box.Root().Block().Style();
   if (block_style.GetUnicodeBidi() != UnicodeBidi::kPlaintext)
     return block_style.Direction();

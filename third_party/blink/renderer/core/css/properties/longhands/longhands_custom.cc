@@ -2234,7 +2234,7 @@ const CSSValue* Direction::CSSValueFromComputedStyleInternal(
 void Direction::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
   state.Style()->SetDirection(
-      To<CSSIdentifierValue>(value).ConvertTo<base::i18n::TextDirection>());
+      To<CSSIdentifierValue>(value).ConvertTo<TextDirection>());
 }
 
 const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,

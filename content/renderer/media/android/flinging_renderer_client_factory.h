@@ -41,7 +41,7 @@ class CONTENT_EXPORT FlingingRendererClientFactory
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::AudioRendererSink* audio_renderer_sink,
       media::VideoRendererSink* video_renderer_sink,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb,
+      media::RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) override;
 
   // Returns whether media flinging has started, based off of whether the

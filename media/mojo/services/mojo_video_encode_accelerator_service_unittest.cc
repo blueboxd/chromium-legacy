@@ -83,8 +83,8 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
   void CreateMojoVideoEncodeAccelerator(
       bool will_fake_vea_initialization_succeed = true) {
     mojo_vea_service_ = std::make_unique<MojoVideoEncodeAcceleratorService>(
-        base::Bind(&CreateAndInitializeFakeVEA,
-                   will_fake_vea_initialization_succeed),
+        base::BindRepeating(&CreateAndInitializeFakeVEA,
+                            will_fake_vea_initialization_succeed),
         gpu::GpuPreferences());
   }
 

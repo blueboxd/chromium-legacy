@@ -22,7 +22,8 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerModuleScriptFetcher);
 
  public:
-  explicit WorkerModuleScriptFetcher(WorkerGlobalScope*);
+  WorkerModuleScriptFetcher(WorkerGlobalScope*,
+                            util::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,

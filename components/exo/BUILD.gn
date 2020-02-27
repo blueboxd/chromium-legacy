@@ -96,7 +96,10 @@ source_set("exo") {
     "//ui/wm/public",
   ]
 
-  public_deps = [ "//ui/base/mojom:cursor_type" ]
+  public_deps = [
+    "//ui/base/cursor",
+    "//ui/base/mojom:cursor_type",
+  ]
 
   if (is_chromeos) {
     deps += [

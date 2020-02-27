@@ -43,15 +43,15 @@ DefaultRendererFactory::CreateAudioDecoders(
 std::vector<std::unique_ptr<VideoDecoder>>
 DefaultRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
 
-  decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
-                                        media_log_, request_overlay_info_cb,
-                                        target_color_space, &video_decoders);
+  decoder_factory_->CreateVideoDecoders(
+      media_task_runner, gpu_factories, media_log_,
+      std::move(request_overlay_info_cb), target_color_space, &video_decoders);
 
   return video_decoders;
 }
@@ -61,7 +61,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
   DCHECK(audio_renderer_sink);
 
@@ -99,8 +99,8 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::BindRepeating(&DefaultRendererFactory::CreateVideoDecoders,
                           base::Unretained(this), media_task_runner,
-                          request_overlay_info_cb, target_color_space,
-                          gpu_factories),
+                          std::move(request_overlay_info_cb),
+                          target_color_space, gpu_factories),
       true, media_log_, std::move(gmb_pool)));
 
   return std::make_unique<RendererImpl>(

@@ -298,7 +298,7 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* interface_provider) {
 #if defined(OS_ANDROID)
   return std::make_unique<AndroidCdmFactory>(
-      base::Bind(&CreateProvisionFetcher, interface_provider),
+      base::BindRepeating(&CreateProvisionFetcher, interface_provider),
       base::BindRepeating(&CreateMediaDrmStorage, interface_provider));
 #else
   return nullptr;

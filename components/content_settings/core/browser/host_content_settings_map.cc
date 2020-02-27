@@ -867,6 +867,21 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
     }
   }
 
+  // Check if the requested setting is in the force allowed list.
+  if (content_settings_info) {
+    url::Origin origin = url::Origin::Create(primary_url);
+    if (content_settings_info->force_allowed_origins().contains(origin)) {
+      DCHECK(content_settings::OriginCanBeForceAllowed(origin));
+      if (info) {
+        info->source = content_settings::SETTING_SOURCE_WHITELIST;
+        info->primary_pattern =
+            ContentSettingsPattern::FromURLNoWildcard(origin.GetURL());
+        info->secondary_pattern = ContentSettingsPattern::Wildcard();
+      }
+      return std::make_unique<base::Value>(CONTENT_SETTING_ALLOW);
+    }
+  }
+
   return GetWebsiteSettingInternal(primary_url, secondary_url, content_type,
                                    resource_identifier, kFirstProvider, info);
 }

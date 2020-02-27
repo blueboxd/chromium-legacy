@@ -174,7 +174,7 @@ static cc::LayerSelectionBound ComputeSelectionBound(
 static inline bool IsTextDirectionRTL(const Node& node,
                                       const LayoutObject& layout_object) {
   return layout_object.HasFlippedBlocksWritingMode() ||
-         PrimaryDirectionOf(node) == base::i18n::TextDirection::RIGHT_TO_LEFT;
+         PrimaryDirectionOf(node) == TextDirection::kRtl;
 }
 
 static GraphicsLayer* GetGraphicsLayerFor(const LayoutObject& layout_object) {

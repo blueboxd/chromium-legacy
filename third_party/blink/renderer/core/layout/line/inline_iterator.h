@@ -146,16 +146,14 @@ inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2) {
 }
 
 static inline WTF::unicode::CharDirection EmbedCharFromDirection(
-    base::i18n::TextDirection dir,
+    TextDirection dir,
     UnicodeBidi unicode_bidi) {
   if (unicode_bidi == UnicodeBidi::kEmbed) {
-    return dir == base::i18n::TextDirection::RIGHT_TO_LEFT
-               ? WTF::unicode::kRightToLeftEmbedding
-               : WTF::unicode::kLeftToRightEmbedding;
+    return dir == TextDirection::kRtl ? WTF::unicode::kRightToLeftEmbedding
+                                      : WTF::unicode::kLeftToRightEmbedding;
   }
-  return dir == base::i18n::TextDirection::RIGHT_TO_LEFT
-             ? WTF::unicode::kRightToLeftOverride
-             : WTF::unicode::kLeftToRightOverride;
+  return dir == TextDirection::kRtl ? WTF::unicode::kRightToLeftOverride
+                                    : WTF::unicode::kLeftToRightOverride;
 }
 
 static inline bool TreatAsIsolated(const ComputedStyle& style) {
@@ -597,12 +595,12 @@ inline BidiRun* InlineBidiResolver::AddTrailingRun(
     int stop,
     BidiRun* run,
     BidiContext* context,
-    base::i18n::TextDirection direction) const {
+    TextDirection direction) const {
   DCHECK(context);
   BidiRun* new_trailing_run = new BidiRun(
       context->Override(), context->Level(), start, stop,
       run->line_layout_item_, WTF::unicode::kOtherNeutral, context->Dir());
-  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
+  if (direction == TextDirection::kLtr)
     runs.AddRun(new_trailing_run);
   else
     runs.PrependRun(new_trailing_run);

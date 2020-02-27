@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "third_party/blink/public/platform/web_cursor_info.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/icon_util.h"
 
@@ -19,8 +20,8 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (platform_cursor_)
     return platform_cursor_;
 
-  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(cursor.GetBitmap(),
-                                                        cursor.GetHotspot())
+  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(
+                         GetCursorBitmap(cursor), GetCursorHotstop(cursor))
                          .release();
   return platform_cursor_;
 }

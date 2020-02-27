@@ -25,10 +25,8 @@ struct CORE_EXPORT NGLogicalStaticPosition {
   enum InlineEdge { kInlineStart, kInlineCenter, kInlineEnd };
   enum BlockEdge { kBlockStart, kBlockCenter, kBlockEnd };
 
-  inline NGPhysicalStaticPosition ConvertToPhysical(
-      WritingMode,
-      base::i18n::TextDirection,
-      const PhysicalSize& size) const;
+  inline NGPhysicalStaticPosition
+  ConvertToPhysical(WritingMode, TextDirection, const PhysicalSize& size) const;
 
   LogicalOffset offset;
   InlineEdge inline_edge;
@@ -45,7 +43,7 @@ struct CORE_EXPORT NGPhysicalStaticPosition {
   VerticalEdge vertical_edge;
 
   NGLogicalStaticPosition ConvertToLogical(WritingMode writing_mode,
-                                           base::i18n::TextDirection direction,
+                                           TextDirection direction,
                                            const PhysicalSize& size) const {
     LogicalOffset logical_offset =
         offset.ConvertToLogical(writing_mode, direction, /* outer_size */ size,
@@ -118,7 +116,7 @@ struct CORE_EXPORT NGPhysicalStaticPosition {
 
 inline NGPhysicalStaticPosition NGLogicalStaticPosition::ConvertToPhysical(
     WritingMode writing_mode,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     const PhysicalSize& size) const {
   PhysicalOffset physical_offset =
       offset.ConvertToPhysical(writing_mode, direction, /* outer_size */ size,

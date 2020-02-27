@@ -48,9 +48,8 @@ LineSegment ExcludedSegment(const NGExclusion& exclusion,
 
   // Adjust the segment offsets to be relative to the line-left margin edge.
   LayoutUnit margin_delta =
-      shape_data.margins.LineLeft(base::i18n::TextDirection::LEFT_TO_RIGHT) +
-      shape_data.shape_insets.LineLeft(
-          base::i18n::TextDirection::LEFT_TO_RIGHT);
+      shape_data.margins.LineLeft(TextDirection::kLtr) +
+      shape_data.shape_insets.LineLeft(TextDirection::kLtr);
   segment.logical_left += margin_delta;
   segment.logical_right += margin_delta;
 

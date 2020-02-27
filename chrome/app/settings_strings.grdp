@@ -1769,6 +1769,9 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON" desc="'Check' is a verb. By clicking this button, the user can quickly check whether their safety-related settings are fully protecting them.">
     Check now
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
+    Updates
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_PRIMARY_LABEL" desc="'Passwords' is an element in safety check that allows users to check for their passwords being compromised.">
     Passwords
   </message>

@@ -20,7 +20,7 @@ class NGFragmentationTest : public NGBaseLayoutAlgorithmTest,
       Element* element) {
     NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-        WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
+        WritingMode::kHorizontalTb, TextDirection::kLtr,
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
     return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }

@@ -32,9 +32,6 @@ const base::Feature kClearOldNavigationRecordsWorkaround{
 const base::Feature kSSLCommittedInterstitials{
     "SSLCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUseWKWebViewLoading{"UseWKWebViewLoading",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnablePersistentDownloads{
     "EnablePersistentDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -49,10 +46,6 @@ const base::Feature kPreserveScrollViewProperties{
 
 const base::Feature kSafeBrowsingAvailable{"SafeBrowsingAvailable",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool UseWKWebViewLoading() {
-  return base::FeatureList::IsEnabled(web::features::kUseWKWebViewLoading);
-}
 
 }  // namespace features
 }  // namespace web

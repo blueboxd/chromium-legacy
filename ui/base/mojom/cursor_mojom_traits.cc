@@ -14,13 +14,13 @@ namespace mojo {
 // static
 gfx::Point StructTraits<ui::mojom::CursorDataView, ui::Cursor>::hotspot(
     const ui::Cursor& c) {
-  return c.GetHotspot();
+  return c.custom_hotspot();
 }
 
 // static
 SkBitmap StructTraits<ui::mojom::CursorDataView, ui::Cursor>::bitmap(
     const ui::Cursor& c) {
-  return c.GetBitmap();
+  return c.custom_bitmap();
 }
 
 // static

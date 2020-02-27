@@ -796,6 +796,10 @@ TEST(ContentSettingsPatternTest, Schemes) {
             Pattern("www.example.com").GetScheme());
   EXPECT_EQ(ContentSettingsPattern::SCHEME_OTHER,
             Pattern("filesystem:http://www.google.com/temporary/").GetScheme());
+  EXPECT_EQ(ContentSettingsPattern::SCHEME_CHROME,
+            Pattern("chrome://sample/").GetScheme());
+  EXPECT_EQ(ContentSettingsPattern::SCHEME_CHROMEUNTRUSTED,
+            Pattern("chrome-untrusted://sample/").GetScheme());
 }
 
 TEST(ContentSettingsPatternTest, FileSchemeHasPath) {

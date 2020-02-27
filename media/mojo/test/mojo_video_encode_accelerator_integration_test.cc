@@ -69,7 +69,8 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
     mojo::PendingRemote<mojom::VideoEncodeAccelerator> mojo_vea;
     mojo_vea_receiver_ = mojo::MakeSelfOwnedReceiver(
         std::make_unique<MojoVideoEncodeAcceleratorService>(
-            base::Bind(&CreateAndInitializeFakeVEA), gpu::GpuPreferences()),
+            base::BindRepeating(&CreateAndInitializeFakeVEA),
+            gpu::GpuPreferences()),
         mojo_vea.InitWithNewPipeAndPassReceiver());
 
     mojo_vea_.reset(new MojoVideoEncodeAccelerator(

@@ -291,6 +291,7 @@ source_set("common") {
     "//third_party/boringssl",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/cursor",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events/blink",

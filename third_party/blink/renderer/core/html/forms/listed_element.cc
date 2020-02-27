@@ -387,9 +387,9 @@ void ListedElement::setCustomValidity(const String& error) {
 
 void ListedElement::FindCustomValidationMessageTextDirection(
     const String& message,
-    base::i18n::TextDirection& message_dir,
+    TextDirection& message_dir,
     String& sub_message,
-    base::i18n::TextDirection& sub_message_dir) {
+    TextDirection& sub_message_dir) {
   message_dir = DetermineDirectionality(message);
   if (!sub_message.IsEmpty()) {
     sub_message_dir = ToHTMLElement().GetLayoutObject()->Style()->Direction();
@@ -410,10 +410,8 @@ void ListedElement::UpdateVisibleValidationMessage() {
 
   has_validation_message_ = true;
   ValidationMessageClient* client = &page->GetValidationMessageClient();
-  base::i18n::TextDirection message_dir =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
-  base::i18n::TextDirection sub_message_dir =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection message_dir = TextDirection::kLtr;
+  TextDirection sub_message_dir = TextDirection::kLtr;
   String sub_message = ValidationSubMessage().StripWhiteSpace();
   if (message.IsEmpty()) {
     client->HideValidationMessage(element);

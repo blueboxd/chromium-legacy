@@ -42,7 +42,7 @@ class LayoutBR final : public LayoutText {
               unsigned /* len */,
               const Font&,
               LayoutUnit /* xpos */,
-              base::i18n::TextDirection,
+              TextDirection,
               HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */,
               FloatRect* /* glyphBounds */ = nullptr,
               float /* expansion */ = false) const override {
@@ -51,7 +51,7 @@ class LayoutBR final : public LayoutText {
   float Width(unsigned /* from */,
               unsigned /* len */,
               LayoutUnit /* xpos */,
-              base::i18n::TextDirection,
+              TextDirection,
               bool = false /* firstLine */,
               HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */,
               FloatRect* /* glyphBounds */ = nullptr,

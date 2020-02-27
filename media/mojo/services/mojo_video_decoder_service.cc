@@ -365,7 +365,7 @@ void MojoVideoDecoderService::OnOverlayInfoChanged(
 
 void MojoVideoDecoderService::OnDecoderRequestedOverlayInfo(
     bool restart_for_transitions,
-    const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+    ProvideOverlayInfoCB provide_overlay_info_cb) {
   DVLOG(2) << __func__;
   DCHECK(client_);
   DCHECK(decoder_);

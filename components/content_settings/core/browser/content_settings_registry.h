@@ -63,6 +63,7 @@ class ContentSettingsRegistry {
                 ContentSetting initial_default_value,
                 WebsiteSettingsInfo::SyncStatus sync_status,
                 const std::vector<std::string>& whitelisted_schemes,
+                const base::flat_set<url::Origin>& force_allowed_origins,
                 const std::set<ContentSetting>& valid_settings,
                 WebsiteSettingsInfo::ScopingType scoping_type,
                 Platforms platforms,

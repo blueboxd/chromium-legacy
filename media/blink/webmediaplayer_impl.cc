@@ -2587,7 +2587,7 @@ void WebMediaPlayerImpl::OnOverlayRoutingToken(
 
 void WebMediaPlayerImpl::OnOverlayInfoRequested(
     bool decoder_requires_restart_for_overlay,
-    const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+    ProvideOverlayInfoCB provide_overlay_info_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // If we get a non-null cb, a decoder is initializing and requires overlay
@@ -2610,7 +2610,7 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
       (overlay_mode_ == OverlayMode::kUseAndroidOverlay && is_encrypted_)
           ? false
           : decoder_requires_restart_for_overlay;
-  provide_overlay_info_cb_ = provide_overlay_info_cb;
+  provide_overlay_info_cb_ = std::move(provide_overlay_info_cb);
 
   // If the decoder doesn't require restarts for surface transitions, and we're
   // using AndroidOverlay mode, we can always enable the overlay and the decoder
@@ -2666,8 +2666,8 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
 
   RequestOverlayInfoCB request_overlay_info_cb;
 #if defined(OS_ANDROID)
-  request_overlay_info_cb = BindToCurrentLoop(
-      base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
+  request_overlay_info_cb = BindToCurrentLoop(base::BindRepeating(
+      &WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
 
   if (factory_type) {
@@ -2680,7 +2680,8 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
 
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_.get(), request_overlay_info_cb, client_->TargetColorSpace());
+      compositor_.get(), std::move(request_overlay_info_cb),
+      client_->TargetColorSpace());
 }
 
 void WebMediaPlayerImpl::StartPipeline() {

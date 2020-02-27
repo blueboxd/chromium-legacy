@@ -69,6 +69,8 @@ class CORE_EXPORT ModuleScriptLoader final
 
   void Trace(Visitor*) override;
 
+  friend class WorkletModuleResponsesMapTest;
+
  private:
   void FetchInternal(const ModuleScriptFetchRequest&,
                      ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -76,6 +78,14 @@ class CORE_EXPORT ModuleScriptLoader final
                      ModuleScriptCustomFetchType);
 
   void AdvanceState(State new_state);
+
+  using PassKey = util::PassKey<ModuleScriptLoader>;
+  // PassKey should be private and cannot be accessed from outside, but allow
+  // accessing only from friend classes for testing.
+  static util::PassKey<ModuleScriptLoader> CreatePassKeyForTests() {
+    return PassKey();
+  }
+
 #if DCHECK_IS_ON()
   static const char* StateToString(State);
 #endif

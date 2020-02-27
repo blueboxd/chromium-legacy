@@ -241,8 +241,8 @@ class CORE_EXPORT NGLineInfo {
   void SetEndItemIndex(unsigned index) { end_item_index_ = index; }
 
   // The base direction of this line for the bidi algorithm.
-  base::i18n::TextDirection BaseDirection() const { return base_direction_; }
-  void SetBaseDirection(base::i18n::TextDirection direction) {
+  TextDirection BaseDirection() const { return base_direction_; }
+  void SetBaseDirection(TextDirection direction) {
     base_direction_ = direction;
   }
 
@@ -273,8 +273,7 @@ class CORE_EXPORT NGLineInfo {
   unsigned end_offset_for_justify_;
 
   ETextAlign text_align_ = ETextAlign::kLeft;
-  base::i18n::TextDirection base_direction_ =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection base_direction_ = TextDirection::kLtr;
 
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;

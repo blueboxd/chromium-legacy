@@ -57,13 +57,13 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   scoped_refptr<const NGLayoutResult> layout_result;
   NGBoxStrut margins;
 
-  bool IsLineLeft(base::i18n::TextDirection cb_direction) const {
+  bool IsLineLeft(TextDirection cb_direction) const {
     return node.Style().Floating(cb_direction) == EFloat::kLeft;
   }
-  bool IsLineRight(base::i18n::TextDirection cb_direction) const {
+  bool IsLineRight(TextDirection cb_direction) const {
     return node.Style().Floating(cb_direction) == EFloat::kRight;
   }
-  EClear ClearType(base::i18n::TextDirection cb_direction) const {
+  EClear ClearType(TextDirection cb_direction) const {
     return node.Style().Clear(cb_direction);
   }
 };

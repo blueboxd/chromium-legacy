@@ -18,8 +18,8 @@ class NGInlineItemsBuilderTemplate;
 struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
  public:
   bool IsBidiEnabled() const { return is_bidi_enabled_; }
-  base::i18n::TextDirection BaseDirection() const {
-    return static_cast<base::i18n::TextDirection>(base_direction_);
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_direction_);
   }
 
   bool IsEmptyInline() const { return is_empty_inline_; }
@@ -33,7 +33,7 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
   }
 
  private:
-  void SetBaseDirection(base::i18n::TextDirection direction) {
+  void SetBaseDirection(TextDirection direction) {
     base_direction_ = static_cast<unsigned>(direction);
   }
 
@@ -54,7 +54,7 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
   std::unique_ptr<NGInlineItemsData> first_line_items_;
 
   unsigned is_bidi_enabled_ : 1;
-  unsigned base_direction_ : 2;  // base::i18n::TextDirection
+  unsigned base_direction_ : 1;  // TextDirection
 
   // We use this flag to determine if the inline node is empty, and will
   // produce a single zero block-size line box. If the node has text, atomic

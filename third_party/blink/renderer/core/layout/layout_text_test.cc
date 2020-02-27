@@ -87,23 +87,20 @@ INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutTextTest, testing::Bool());
 
 TEST_F(LayoutTextTest, WidthZeroFromZeroLength) {
   SetBasicBody(kTacoText);
-  ASSERT_EQ(0, GetBasicText()->Width(0u, 0u, LayoutUnit(),
-                                     base::i18n::TextDirection::LEFT_TO_RIGHT,
+  ASSERT_EQ(0, GetBasicText()->Width(0u, 0u, LayoutUnit(), TextDirection::kLtr,
                                      false));
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromZeroLength) {
   SetBasicBody(kTacoText);
-  ASSERT_EQ(0, GetBasicText()->Width(
-                   std::numeric_limits<unsigned>::max(), 0u, LayoutUnit(),
-                   base::i18n::TextDirection::LEFT_TO_RIGHT, false));
+  ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(), 0u,
+                                     LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
   SetBasicBody(kTacoText);
-  float width = GetBasicText()->Width(
-      0u, std::numeric_limits<unsigned>::max(), LayoutUnit(),
-      base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  float width = GetBasicText()->Width(0u, std::numeric_limits<unsigned>::max(),
+                                      LayoutUnit(), TextDirection::kLtr, false);
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   ASSERT_GE(width, 100.f);
@@ -112,10 +109,9 @@ TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
 
 TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
   SetBasicBody(kTacoText);
-  ASSERT_EQ(0, GetBasicText()->Width(
-                   std::numeric_limits<unsigned>::max(),
-                   std::numeric_limits<unsigned>::max(), LayoutUnit(),
-                   base::i18n::TextDirection::LEFT_TO_RIGHT, false));
+  ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(),
+                                     std::numeric_limits<unsigned>::max(),
+                                     LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
@@ -134,17 +130,15 @@ TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
   )HTML");
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
-  const float width =
-      GetBasicText()->Width(23u, 4294967282u, LayoutUnit(2.59375),
-                            base::i18n::TextDirection::RIGHT_TO_LEFT, false);
+  const float width = GetBasicText()->Width(
+      23u, 4294967282u, LayoutUnit(2.59375), TextDirection::kRtl, false);
   ASSERT_GE(width, 100.f);
   ASSERT_LE(width, 300.f);
 }
 
 TEST_F(LayoutTextTest, WidthFromBeyondLength) {
   SetBasicBody("x");
-  ASSERT_EQ(0u, GetBasicText()->Width(1u, 1u, LayoutUnit(),
-                                      base::i18n::TextDirection::LEFT_TO_RIGHT,
+  ASSERT_EQ(0u, GetBasicText()->Width(1u, 1u, LayoutUnit(), TextDirection::kLtr,
                                       false));
 }
 
@@ -152,8 +146,8 @@ TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
   SetBasicBody("x");
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
-  const float width = GetBasicText()->Width(
-      0u, 2u, LayoutUnit(), base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  const float width =
+      GetBasicText()->Width(0u, 2u, LayoutUnit(), TextDirection::kLtr, false);
   ASSERT_GE(width, 4.f);
   ASSERT_LE(width, 20.f);
 }
@@ -163,28 +157,24 @@ TEST_F(LayoutTextTest, ContainsOnlyWhitespaceOrNbsp) {
   // LayoutText creation from the div.
   SetBasicBody("&nbsp");
   // GetWidth will also compute |contains_only_whitespace_|.
-  GetBasicText()->Width(0u, 1u, LayoutUnit(),
-                        base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  GetBasicText()->Width(0u, 1u, LayoutUnit(), TextDirection::kLtr, false);
   EXPECT_EQ(OnlyWhitespaceOrNbsp::kYes,
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
 
   SetBasicBody("   \t\t\n \n\t &nbsp \n\t&nbsp\n \t");
   EXPECT_EQ(OnlyWhitespaceOrNbsp::kUnknown,
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
-  GetBasicText()->Width(0u, 18u, LayoutUnit(),
-                        base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  GetBasicText()->Width(0u, 18u, LayoutUnit(), TextDirection::kLtr, false);
   EXPECT_EQ(OnlyWhitespaceOrNbsp::kYes,
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
 
   SetBasicBody("abc");
-  GetBasicText()->Width(0u, 3u, LayoutUnit(),
-                        base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  GetBasicText()->Width(0u, 3u, LayoutUnit(), TextDirection::kLtr, false);
   EXPECT_EQ(OnlyWhitespaceOrNbsp::kNo,
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
 
   SetBasicBody("  \t&nbsp\nx \n");
-  GetBasicText()->Width(0u, 8u, LayoutUnit(),
-                        base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+  GetBasicText()->Width(0u, 8u, LayoutUnit(), TextDirection::kLtr, false);
   EXPECT_EQ(OnlyWhitespaceOrNbsp::kNo,
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
 }

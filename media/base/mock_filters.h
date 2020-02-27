@@ -407,7 +407,7 @@ class MockRendererFactory : public RendererFactory {
                    const scoped_refptr<base::TaskRunner>&,
                    AudioRendererSink*,
                    VideoRendererSink*,
-                   const RequestOverlayInfoCB&,
+                   RequestOverlayInfoCB,
                    const gfx::ColorSpace&));
 
  private:

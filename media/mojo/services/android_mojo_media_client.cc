@@ -42,7 +42,7 @@ std::unique_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
   }
 
   return std::make_unique<AndroidCdmFactory>(
-      base::Bind(&CreateProvisionFetcher, host_interfaces),
+      base::BindRepeating(&CreateProvisionFetcher, host_interfaces),
       base::BindRepeating(&CreateMediaDrmStorage, host_interfaces));
 }
 

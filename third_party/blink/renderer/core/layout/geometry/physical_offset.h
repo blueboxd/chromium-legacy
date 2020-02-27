@@ -39,7 +39,7 @@ struct CORE_EXPORT PhysicalOffset {
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
   LogicalOffset ConvertToLogical(WritingMode,
-                                 base::i18n::TextDirection,
+                                 TextDirection,
                                  PhysicalSize outer_size,
                                  PhysicalSize inner_size) const;
 

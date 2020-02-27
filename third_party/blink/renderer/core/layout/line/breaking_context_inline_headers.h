@@ -719,12 +719,12 @@ inline float FirstPositiveWidth(const WordMeasurements& word_measurements) {
   return 0;
 }
 
-ALWAYS_INLINE base::i18n::TextDirection TextDirectionFromUnicode(
-    WTF::unicode::CharDirection direction) {
+ALWAYS_INLINE TextDirection
+TextDirectionFromUnicode(WTF::unicode::CharDirection direction) {
   return direction == WTF::unicode::kRightToLeft ||
                  direction == WTF::unicode::kRightToLeftArabic
-             ? base::i18n::TextDirection::RIGHT_TO_LEFT
-             : base::i18n::TextDirection::LEFT_TO_RIGHT;
+             ? TextDirection::kRtl
+             : TextDirection::kLtr;
 }
 
 ALWAYS_INLINE float TextWidth(

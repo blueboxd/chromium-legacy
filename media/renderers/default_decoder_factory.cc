@@ -92,7 +92,7 @@ void DefaultDecoderFactory::CreateVideoDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
   base::AutoLock auto_lock(shutdown_lock_);
@@ -114,8 +114,8 @@ void DefaultDecoderFactory::CreateVideoDecoders(
     DCHECK_EQ(gpu_factories->GetTaskRunner(), task_runner);
 
     external_decoder_factory_->CreateVideoDecoders(
-        task_runner, gpu_factories, media_log, request_overlay_info_cb,
-        target_color_space, video_decoders);
+        task_runner, gpu_factories, media_log,
+        std::move(request_overlay_info_cb), target_color_space, video_decoders);
   }
 
 #if defined(OS_FUCHSIA)

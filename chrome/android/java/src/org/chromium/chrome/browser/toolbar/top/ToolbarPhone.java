@@ -542,8 +542,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             openHomepage();
             if (isNativeLibraryReady()
                     && PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) {
-                TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
-                        .notifyEvent(EventConstants.PARTNER_HOME_PAGE_BUTTON_PRESSED);
+                Profile profile = isIncognito()
+                        ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                        : Profile.getLastUsedRegularProfile();
+                TrackerFactory.getTrackerForProfile(profile).notifyEvent(
+                        EventConstants.PARTNER_HOME_PAGE_BUTTON_PRESSED);
             }
         }
     }

@@ -138,7 +138,7 @@ void CreateHyphen(NGInlineNode node,
                   NGInlineItemResult* item_result) {
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
-  base::i18n::TextDirection direction = style.Direction();
+  TextDirection direction = style.Direction();
   item_result->hyphen_string = style.HyphenString();
   HarfBuzzShaper shaper(item_result->hyphen_string);
   item_result->hyphen_shape_result = shaper.Shape(&style.GetFont(), direction);

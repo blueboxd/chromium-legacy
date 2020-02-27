@@ -229,9 +229,7 @@ class BASE_EXPORT Value {
   template <typename Predicate>
   size_t EraseListValueIf(Predicate pred) {
     CHECK(is_list());
-    const size_t old_size = list_.size();
-    base::EraseIf(list_, pred);
-    return old_size - list_.size();
+    return base::EraseIf(list_, pred);
   }
 
   // Erases all Values from the list.

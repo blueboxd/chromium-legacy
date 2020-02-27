@@ -116,10 +116,15 @@ Polymer({
   /** @private {settings.SafetyCheckBrowserProxy} */
   safetyCheckBrowserProxy_: null,
 
+  /** @private {?settings.LifetimeBrowserProxy} */
+  lifetimeBrowserProxy_: null,
+
   /** @override */
   attached: function() {
     this.safetyCheckBrowserProxy_ =
         settings.SafetyCheckBrowserProxyImpl.getInstance();
+    this.lifetimeBrowserProxy_ =
+        settings.LifetimeBrowserProxyImpl.getInstance();
 
     // Register for safety check status updates.
     this.addWebUIListener(
@@ -205,23 +210,6 @@ Polymer({
 
   /**
    * @private
-   * @return {string}
-   */
-  getParentPrimaryLabelText_: function() {
-    switch (this.parentStatus_) {
-      case ParentStatus.BEFORE:
-        return this.i18n('safetyCheckParentPrimaryLabelBefore');
-      case ParentStatus.CHECKING:
-        return this.i18n('safetyCheckParentPrimaryLabelChecking');
-      case ParentStatus.AFTER:
-        return this.i18n('safetyCheckParentPrimaryLabelAfter');
-      default:
-        assertNotReached();
-    }
-  },
-
-  /**
-   * @private
    * @return {?string}
    */
   getParentIcon_: function() {
@@ -273,10 +261,127 @@ Polymer({
 
   /**
    * @private
+   * @return {string}
+   */
+  getParentPrimaryLabelText_: function() {
+    switch (this.parentStatus_) {
+      case ParentStatus.BEFORE:
+        return this.i18n('safetyCheckParentPrimaryLabelBefore');
+      case ParentStatus.CHECKING:
+        return this.i18n('safetyCheckParentPrimaryLabelChecking');
+      case ParentStatus.AFTER:
+        return this.i18n('safetyCheckParentPrimaryLabelAfter');
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * @private
    * @return {boolean}
    */
   shouldShowChildren_: function() {
     return this.parentStatus_ != ParentStatus.BEFORE;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowUpdatesButton_: function() {
+    return this.updatesStatus_ == settings.SafetyCheckUpdatesStatus.RELAUNCH;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowUpdatesManagedIcon_: function() {
+    return this.updatesStatus_ ==
+        settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN;
+  },
+
+  /** @private */
+  onSafetyCheckUpdatesButtonClicked_: function() {
+    this.lifetimeBrowserProxy_.relaunch();
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getUpdatesIcon_: function() {
+    switch (this.updatesStatus_) {
+      case settings.SafetyCheckUpdatesStatus.CHECKING:
+      case settings.SafetyCheckUpdatesStatus.UPDATING:
+        return null;
+      case settings.SafetyCheckUpdatesStatus.UPDATED:
+        return 'cr:check';
+      case settings.SafetyCheckUpdatesStatus.RELAUNCH:
+      case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
+      case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
+        return 'cr:info';
+      case settings.SafetyCheckUpdatesStatus.FAILED:
+        return 'cr:warning';
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getUpdatesIconSrc_: function() {
+    switch (this.updatesStatus_) {
+      case settings.SafetyCheckUpdatesStatus.CHECKING:
+      case settings.SafetyCheckUpdatesStatus.UPDATING:
+        return 'chrome://resources/images/throbber_small.svg';
+      default:
+        return null;
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getUpdatesIconClass_: function() {
+    switch (this.updatesStatus_) {
+      case settings.SafetyCheckUpdatesStatus.CHECKING:
+      case settings.SafetyCheckUpdatesStatus.UPDATED:
+      case settings.SafetyCheckUpdatesStatus.UPDATING:
+        return 'icon-blue';
+      case settings.SafetyCheckUpdatesStatus.FAILED:
+        return 'icon-red';
+      default:
+        return '';
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getUpdatesSubLabelText_: function() {
+    switch (this.updatesStatus_) {
+      case settings.SafetyCheckUpdatesStatus.CHECKING:
+        return '';
+      case settings.SafetyCheckUpdatesStatus.UPDATED:
+        return this.i18n('aboutUpgradeUpToDate');
+      case settings.SafetyCheckUpdatesStatus.UPDATING:
+        return this.i18n('aboutUpgradeUpdating');
+      case settings.SafetyCheckUpdatesStatus.RELAUNCH:
+        return this.i18n('aboutUpgradeRelaunch');
+      case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
+        return this.i18n('safetyCheckUpdatesSubLabelDisabledByAdmin');
+      case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
+        return this.i18n('safetyCheckUpdatesSubLabelFailedOffline');
+      case settings.SafetyCheckUpdatesStatus.FAILED:
+        return this.i18n('safetyCheckUpdatesSubLabelFailed');
+      default:
+        assertNotReached();
+    }
   },
 
   /**

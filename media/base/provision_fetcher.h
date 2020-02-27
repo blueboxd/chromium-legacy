@@ -34,7 +34,8 @@ class ProvisionFetcher {
                         ResponseCB response_cb) = 0;
 };
 
-using CreateFetcherCB = base::Callback<std::unique_ptr<ProvisionFetcher>()>;
+using CreateFetcherCB =
+    base::RepeatingCallback<std::unique_ptr<ProvisionFetcher>()>;
 
 }  // namespace media
 

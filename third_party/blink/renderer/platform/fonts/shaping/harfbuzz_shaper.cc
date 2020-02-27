@@ -152,7 +152,7 @@ using FeaturesVector = Vector<hb_feature_t, 6>;
 struct RangeData {
   hb_buffer_t* buffer;
   const Font* font;
-  base::i18n::TextDirection text_direction;
+  TextDirection text_direction;
   unsigned start;
   unsigned end;
   FeaturesVector font_features;
@@ -166,7 +166,7 @@ struct RangeData {
                  CanvasRotationInVertical::kRotateCanvasUpright)
             ? HB_DIRECTION_TTB
             : HB_DIRECTION_LTR;
-    return text_direction == base::i18n::TextDirection::RIGHT_TO_LEFT
+    return text_direction == TextDirection::kRtl
                ? HB_DIRECTION_REVERSE(direction)
                : direction;
   }
@@ -760,7 +760,7 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
 }
 
 inline RangeData CreateRangeData(const Font* font,
-                                 base::i18n::TextDirection direction,
+                                 TextDirection direction,
                                  hb_buffer_t* buffer) {
   RangeData range_data;
   range_data.buffer = buffer;
@@ -965,11 +965,10 @@ void HarfBuzzShaper::ShapeSegment(
   }
 }
 
-scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
-    const Font* font,
-    base::i18n::TextDirection direction,
-    unsigned start,
-    unsigned end) const {
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
+                                                 TextDirection direction,
+                                                 unsigned start,
+                                                 unsigned end) const {
   DCHECK_GE(end, start);
   DCHECK_LE(end, text_.length());
 
@@ -1020,7 +1019,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     const Font* font,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     unsigned start,
     unsigned end,
     const Vector<RunSegmenter::RunSegmenterRange>& ranges) const {
@@ -1057,7 +1056,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     const Font* font,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     unsigned start,
     unsigned end,
     const RunSegmenter::RunSegmenterRange pre_segmented) const {
@@ -1087,7 +1086,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     const Font* font,
-    base::i18n::TextDirection direction) const {
+    TextDirection direction) const {
   return Shape(font, direction, 0, text_.length());
 }
 

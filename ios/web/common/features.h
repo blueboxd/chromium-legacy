@@ -36,9 +36,6 @@ extern const base::Feature kClearOldNavigationRecordsWorkaround;
 // Used to enable committed interstitials for SSL errors.
 extern const base::Feature kSSLCommittedInterstitials;
 
-// Used to enable using WKWebView.loading for WebState::IsLoading.
-extern const base::Feature kUseWKWebViewLoading;
-
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;
 
@@ -59,10 +56,6 @@ extern const base::Feature kPreserveScrollViewProperties;
 // Browsing available. When this flag is enabled, Safe Browsing is still
 // subject to an opt-out controlled by prefs::kSafeBrowsingEnabled.
 extern const base::Feature kSafeBrowsingAvailable;
-
-// Use WKWebView.loading to update WebState::IsLoading.
-// TODO(crbug.com/1006012): Clean up this flag after experiment.
-bool UseWKWebViewLoading();
 
 // Level at which battery power is considered low, and some cosmetic features
 // can be turned off.

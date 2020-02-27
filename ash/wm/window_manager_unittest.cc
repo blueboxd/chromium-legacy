@@ -15,6 +15,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/screen.h"

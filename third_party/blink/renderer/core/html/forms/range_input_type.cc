@@ -192,7 +192,7 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
   const Decimal big_step =
       std::max((step_range.Maximum() - step_range.Minimum()) / 10, step);
 
-  base::i18n::TextDirection dir = base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection dir = TextDirection::kLtr;
   bool is_vertical = false;
   if (GetElement().GetLayoutObject()) {
     dir = ComputedTextDirection();
@@ -207,13 +207,11 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
   } else if (key == "ArrowDown") {
     new_value = current - step;
   } else if (key == "ArrowLeft") {
-    new_value = (is_vertical || dir == base::i18n::TextDirection::RIGHT_TO_LEFT)
-                    ? current + step
-                    : current - step;
+    new_value = (is_vertical || dir == TextDirection::kRtl) ? current + step
+                                                            : current - step;
   } else if (key == "ArrowRight") {
-    new_value = (is_vertical || dir == base::i18n::TextDirection::RIGHT_TO_LEFT)
-                    ? current - step
-                    : current + step;
+    new_value = (is_vertical || dir == TextDirection::kRtl) ? current - step
+                                                            : current + step;
   } else if (key == "PageUp") {
     new_value = current + big_step;
   } else if (key == "PageDown") {

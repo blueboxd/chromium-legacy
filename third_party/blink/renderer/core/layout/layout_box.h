@@ -1725,7 +1725,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // For atomic inlines, returns its resolved direction in text flow. Not to be
   // confused with the CSS property 'direction'.
   // Returns the CSS 'direction' property value when it is not atomic inline.
-  base::i18n::TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const;
 
  private:
   inline bool LayoutOverflowIsSet() const {
@@ -1754,7 +1754,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       SizeType,
       const Length& logical_width,
       const LayoutBoxModelObject* container_block,
-      base::i18n::TextDirection container_direction,
+      TextDirection container_direction,
       LayoutUnit container_logical_width,
       LayoutUnit borders_plus_padding,
       const Length& logical_left,

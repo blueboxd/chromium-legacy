@@ -13,11 +13,10 @@
 namespace blink {
 
 // Returns the child's relative position wrt the containing fragment.
-PhysicalOffset ComputeRelativeOffset(
-    const ComputedStyle& child_style,
-    WritingMode container_writing_mode,
-    base::i18n::TextDirection container_direction,
-    PhysicalSize container_size) {
+PhysicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
+                                     WritingMode container_writing_mode,
+                                     TextDirection container_direction,
+                                     PhysicalSize container_size) {
   PhysicalOffset offset;
   if (child_style.GetPosition() != EPosition::kRelative)
     return offset;

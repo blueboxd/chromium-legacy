@@ -197,7 +197,7 @@ class ReusingTextShaper final {
   Vector<const ShapeResult*> CollectReusableShapeResults(
       unsigned start_offset,
       unsigned end_offset,
-      base::i18n::TextDirection direction) {
+      TextDirection direction) {
     DCHECK_LT(start_offset, end_offset);
     Vector<const ShapeResult*> shape_results;
     if (!reusable_items_)
@@ -223,7 +223,7 @@ class ReusingTextShaper final {
                                      unsigned start_offset,
                                      unsigned end_offset) {
     DCHECK_LT(start_offset, end_offset);
-    const base::i18n::TextDirection direction = start_item.Direction();
+    const TextDirection direction = start_item.Direction();
     const Font& font = start_item.Style()->GetFont();
     if (data_.segments) {
       return data_.segments->ShapeText(&shaper_, &font, direction, start_offset,
@@ -340,12 +340,11 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
 
 // Returns whether this text should break shaping. Even within a box, text runs
 // that have different shaping properties need to break shaping.
-inline bool ShouldBreakShapingBeforeText(
-    const NGInlineItem& item,
-    const NGInlineItem& start_item,
-    const ComputedStyle& start_style,
-    const Font& start_font,
-    base::i18n::TextDirection start_direction) {
+inline bool ShouldBreakShapingBeforeText(const NGInlineItem& item,
+                                         const NGInlineItem& start_item,
+                                         const ComputedStyle& start_style,
+                                         const Font& start_font,
+                                         TextDirection start_direction) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
@@ -974,7 +973,7 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
 // http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
 void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
   if (!data->is_bidi_enabled_) {
-    data->SetBaseDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
+    data->SetBaseDirection(TextDirection::kLtr);
     return;
   }
 
@@ -983,7 +982,7 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
   if (!bidi.SetParagraph(data->text_content, Style())) {
     // On failure, give up bidi resolving and reordering.
     data->is_bidi_enabled_ = false;
-    data->SetBaseDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
+    data->SetBaseDirection(TextDirection::kLtr);
     return;
   }
 
@@ -1037,7 +1036,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     const ComputedStyle& start_style = *start_item.Style();
     const Font& font = start_style.GetFont();
-    base::i18n::TextDirection direction = start_item.Direction();
+    TextDirection direction = start_item.Direction();
     unsigned end_index = index + 1;
     unsigned end_offset = start_item.EndOffset();
 

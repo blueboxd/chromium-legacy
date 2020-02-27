@@ -34,11 +34,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD2(IsDecoderConfigSupported,
                Supported(VideoDecoderImplementation,
                          const VideoDecoderConfig&));
-  MOCK_METHOD3(
-      CreateVideoDecoder,
-      std::unique_ptr<media::VideoDecoder>(MediaLog*,
-                                           VideoDecoderImplementation,
-                                           const RequestOverlayInfoCB&));
+  MOCK_METHOD3(CreateVideoDecoder,
+               std::unique_ptr<media::VideoDecoder>(MediaLog*,
+                                                    VideoDecoderImplementation,
+                                                    RequestOverlayInfoCB));
 
   // CreateVideoEncodeAccelerator returns scoped_ptr, which the mocking
   // framework does not want. Trampoline it.

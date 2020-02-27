@@ -57,6 +57,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request.h"
 #include "pdf/buildflags.h"
@@ -194,7 +195,9 @@ extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 #endif
 
 const char* const ChromeMainDelegate::kNonWildcardDomainNonPortSchemes[] = {
-    extensions::kExtensionScheme, chrome::kChromeSearchScheme};
+    extensions::kExtensionScheme, chrome::kChromeSearchScheme,
+    content::kChromeDevToolsScheme, content::kChromeUIScheme,
+    content::kChromeUIUntrustedScheme};
 const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
     base::size(kNonWildcardDomainNonPortSchemes);
 

@@ -8,7 +8,6 @@
 // TODO(xiaochengh): Rename this file to |bidi_adjustment.h|
 
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -17,6 +16,7 @@ class InlineBox;
 struct InlineBoxPosition;
 struct NGCaretPosition;
 class NGPaintFragment;
+enum class TextDirection : uint8_t;
 
 class BidiAdjustment final {
   STATIC_ONLY(BidiAdjustment);
@@ -43,8 +43,8 @@ class BidiAdjustment final {
       const PositionInFlatTreeWithAffinity&);
 };
 
-base::i18n::TextDirection ParagraphDirectionOf(const InlineBox&);
-base::i18n::TextDirection ParagraphDirectionOf(const NGPaintFragment&);
+TextDirection ParagraphDirectionOf(const InlineBox&);
+TextDirection ParagraphDirectionOf(const NGPaintFragment&);
 
 }  // namespace blink
 

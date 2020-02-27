@@ -54,7 +54,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
   NGBoxStrut border_scrollbar_padding_;
 
   const WritingMode writing_mode_;
-  const base::i18n::TextDirection direction_;
+  const TextDirection direction_;
 
   LayoutUnit child_available_inline_size_;
   PhysicalSize previous_physical_container_size_;

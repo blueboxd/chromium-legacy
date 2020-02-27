@@ -71,6 +71,76 @@ suite('SafetyCheckUiTests', function() {
     assertTrue(page.$$('#safetyCheckCollapse').opened);
   });
 
+  test('updatesCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.CHECKING,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesUpdatedUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.UPDATED,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesUpdatingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.UPDATING,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesRelaunchUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.RELAUNCH,
+    });
+    Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesDisabledByAdminUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertTrue(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesFailedOfflineUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
+  test('updatesFailedUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: 0, /* UPDATES */
+      newState: settings.SafetyCheckUpdatesStatus.FAILED,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
+    assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
+  });
+
   test('passwordsButtonVisibilityUiTest', function() {
     // Iterate over all states
     for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {

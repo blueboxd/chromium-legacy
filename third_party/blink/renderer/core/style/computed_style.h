@@ -1975,7 +1975,7 @@ class ComputedStyle : public ComputedStyleBase,
     return Floating(cb_style.Direction());
   }
 
-  EFloat Floating(base::i18n::TextDirection cb_direction) const {
+  EFloat Floating(TextDirection cb_direction) const {
     const EFloat value = FloatingInternal();
     switch (value) {
       case EFloat::kInlineStart:
@@ -1999,7 +1999,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Direction utility functions.
   bool IsLeftToRightDirection() const {
-    return Direction() == base::i18n::TextDirection::LEFT_TO_RIGHT;
+    return Direction() == TextDirection::kLtr;
   }
 
   // Perspective utility functions.
@@ -2044,7 +2044,7 @@ class ComputedStyle : public ComputedStyleBase,
     return Clear(cb_style.Direction());
   }
 
-  EClear Clear(base::i18n::TextDirection cb_direction) const {
+  EClear Clear(TextDirection cb_direction) const {
     const EClear value = ClearInternal();
     switch (value) {
       case EClear::kInlineStart:

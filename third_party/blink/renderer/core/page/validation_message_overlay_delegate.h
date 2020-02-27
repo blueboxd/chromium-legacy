@@ -30,9 +30,9 @@ class CORE_EXPORT ValidationMessageOverlayDelegate
   ValidationMessageOverlayDelegate(Page& main_page,
                                    const Element& anchor,
                                    const String& message,
-                                   base::i18n::TextDirection message_dir,
+                                   TextDirection message_dir,
                                    const String& sub_message,
-                                   base::i18n::TextDirection sub_message_dir);
+                                   TextDirection sub_message_dir);
   ~ValidationMessageOverlayDelegate() override;
 
   void CreatePage(const FrameOverlay&);
@@ -67,8 +67,8 @@ class CORE_EXPORT ValidationMessageOverlayDelegate
   Persistent<const Element> anchor_;
   String message_;
   String sub_message_;
-  base::i18n::TextDirection message_dir_;
-  base::i18n::TextDirection sub_message_dir_;
+  TextDirection message_dir_;
+  TextDirection sub_message_dir_;
 };
 
 }  // namespace blink

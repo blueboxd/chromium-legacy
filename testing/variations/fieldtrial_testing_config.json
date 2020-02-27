@@ -2625,21 +2625,6 @@
             ]
         }
     ],
-    "IOSUseWKLoading": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "UseWKWebViewLoading"
-                    ]
-                }
-            ]
-        }
-    ],
     "IdentityDiscIPH": [
         {
             "platforms": [

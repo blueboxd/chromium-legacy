@@ -315,7 +315,7 @@ void ThemePainterDefault::SetupMenuListArrow(
   // Put the arrow at the center of paddingForArrow area.
   // |arrowX| is the left position for Aura theme engine.
   extra_params.menu_list.arrow_x =
-      (style.Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT)
+      (style.Direction() == TextDirection::kRtl)
           ? left + (arrow_box_width - arrow_size) / 2
           : right - (arrow_box_width + arrow_size) / 2;
   extra_params.menu_list.arrow_size = arrow_size;

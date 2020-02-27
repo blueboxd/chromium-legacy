@@ -23,7 +23,7 @@ namespace {
 struct HarfBuzzShaperCallbackContext {
   const HarfBuzzShaper* shaper;
   const Font* font;
-  base::i18n::TextDirection direction;
+  TextDirection direction;
 };
 
 scoped_refptr<ShapeResult> HarfBuzzShaperCallback(void* untyped_context,
@@ -98,8 +98,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatin) {
       "opportunities.",
       56);
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -177,8 +176,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatin) {
 TEST_F(ShapingLineBreakerTest, ShapeLineLatinMultiLine) {
   String string = To16Bit("Line breaking test case.", 24);
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -208,8 +206,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinBreakAll) {
   String string = To16Bit("Testing break type-break all.", 29);
   LazyLineBreakIterator break_iterator(string, "en-US",
                                        LineBreakType::kBreakAll);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -234,8 +231,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinBreakAll) {
 TEST_F(ShapingLineBreakerTest, ShapeLineZeroAvailableWidth) {
   String string(u"Testing overflow line break.");
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -267,8 +263,7 @@ TEST_F(ShapingLineBreakerTest, DISABLED_ShapeLineArabicThaiHanLatin) {
                           0xE20, 0x65E5, 0x62,  0};
   LazyLineBreakIterator break_iterator(mixed_string, "ar_AE",
                                        LineBreakType::kNormal);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::RIGHT_TO_LEFT;
+  TextDirection direction = TextDirection::kRtl;
 
   HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
@@ -311,8 +306,7 @@ TEST_F(ShapingLineBreakerTest, DISABLED_ShapeLineArabicThaiHanLatin) {
 TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
   String string(u"Mid word");
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result =
@@ -355,7 +349,7 @@ TEST_P(BreakOpportunityTest, Next) {
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result =
-      shaper.Shape(&font, base::i18n::TextDirection::LEFT_TO_RIGHT);
+      shaper.Shape(&font, TextDirection::kLtr);
 
   HarfBuzzShaperCallbackContext context{&shaper, &font, result->Direction()};
   ShapingLineBreaker breaker(result, &break_iterator, nullptr,
@@ -377,7 +371,7 @@ TEST_P(BreakOpportunityTest, Previous) {
   LazyLineBreakIterator break_iterator(string);
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> result =
-      shaper.Shape(&font, base::i18n::TextDirection::LEFT_TO_RIGHT);
+      shaper.Shape(&font, TextDirection::kLtr);
 
   HarfBuzzShaperCallbackContext context{&shaper, &font, result->Direction()};
   ShapingLineBreaker breaker(result, &break_iterator, nullptr,

@@ -1080,7 +1080,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
         // block elements.
         // Direction is handled as the paragraph level by
         // NGBidiParagraph::SetParagraph().
-        if (style->Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT)
+        if (style->Direction() == TextDirection::kRtl)
           has_bidi_controls_ = true;
         break;
       case UnicodeBidi::kBidiOverride:

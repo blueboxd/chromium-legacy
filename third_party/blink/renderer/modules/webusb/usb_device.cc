@@ -125,20 +125,20 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
     vector->Append(static_cast<uint8_t*>(array_buffer->Data()),
                    static_cast<wtf_size_t>(array_buffer->ByteLengthAsSizeT()));
   } else {
-    ArrayBufferView* view = buffer_source.GetAsArrayBufferView().View()->View();
-    if (!view->Buffer() || view->Buffer()->IsDetached()) {
+    DOMArrayBufferView* view = buffer_source.GetAsArrayBufferView().View();
+    if (!view->buffer() || view->buffer()->IsDetached()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
       return false;
     }
-    if (view->ByteLengthAsSizeT() > std::numeric_limits<wtf_size_t>::max()) {
+    if (view->byteLengthAsSizeT() > std::numeric_limits<wtf_size_t>::max()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kDataError, kBufferTooBig));
       return false;
     }
 
     vector->Append(static_cast<uint8_t*>(view->BaseAddress()),
-                   static_cast<wtf_size_t>(view->ByteLengthAsSizeT()));
+                   static_cast<wtf_size_t>(view->byteLengthAsSizeT()));
   }
   return true;
 }

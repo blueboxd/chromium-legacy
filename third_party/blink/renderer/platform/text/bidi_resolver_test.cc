@@ -48,19 +48,17 @@ TEST(BidiResolver, Basic) {
   bidi_resolver.SetStatus(
       BidiStatus(run.Direction(), run.DirectionalOverride()));
   bidi_resolver.SetPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-  base::i18n::TextDirection direction =
-      bidi_resolver.DetermineParagraphDirectionality(
-          &has_strong_directionality);
+  TextDirection direction = bidi_resolver.DetermineParagraphDirectionality(
+      &has_strong_directionality);
   EXPECT_TRUE(has_strong_directionality);
-  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT, direction);
+  EXPECT_EQ(TextDirection::kLtr, direction);
 }
 
-base::i18n::TextDirection DetermineParagraphDirectionality(
+TextDirection DetermineParagraphDirectionality(
     const TextRun& text_run,
     bool* has_strong_directionality = nullptr) {
   BidiResolver<TextRunIterator, BidiCharacterRun> resolver;
-  resolver.SetStatus(
-      BidiStatus(base::i18n::TextDirection::LEFT_TO_RIGHT, false));
+  resolver.SetStatus(BidiStatus(TextDirection::kLtr, false));
   resolver.SetPositionIgnoringNestedIsolates(TextRunIterator(&text_run, 0));
   return resolver.DetermineParagraphDirectionality(has_strong_directionality);
 }
@@ -68,7 +66,7 @@ base::i18n::TextDirection DetermineParagraphDirectionality(
 struct TestData {
   UChar text[3];
   size_t length;
-  base::i18n::TextDirection expected_direction;
+  TextDirection expected_direction;
   bool expected_strong;
 };
 
@@ -76,7 +74,7 @@ void TestDirectionality(const TestData& entry) {
   bool has_strong_directionality;
   String data(entry.text, entry.length);
   TextRun run(data);
-  base::i18n::TextDirection direction =
+  TextDirection direction =
       DetermineParagraphDirectionality(run, &has_strong_directionality);
   EXPECT_EQ(entry.expected_strong, has_strong_directionality);
   EXPECT_EQ(entry.expected_direction, direction);
@@ -86,36 +84,33 @@ TEST(BidiResolver, ParagraphDirectionSurrogates) {
   const TestData kTestData[] = {
       // Test strong RTL, non-BMP. (U+10858 Imperial
       // Aramaic number one, strong RTL)
-      {{0xD802, 0xDC58}, 2, base::i18n::TextDirection::RIGHT_TO_LEFT, true},
+      {{0xD802, 0xDC58}, 2, TextDirection::kRtl, true},
 
       // Test strong LTR, non-BMP. (U+1D15F Musical
       // symbol quarter note, strong LTR)
-      {{0xD834, 0xDD5F}, 2, base::i18n::TextDirection::LEFT_TO_RIGHT, true},
+      {{0xD834, 0xDD5F}, 2, TextDirection::kLtr, true},
 
       // Test broken surrogate: valid leading, invalid
       // trail. (Lead of U+10858, space)
-      {{0xD802, ' '}, 2, base::i18n::TextDirection::LEFT_TO_RIGHT, false},
+      {{0xD802, ' '}, 2, TextDirection::kLtr, false},
 
       // Test broken surrogate: invalid leading. (Trail
       // of U+10858, U+05D0 Hebrew Alef)
-      {{0xDC58, 0x05D0}, 2, base::i18n::TextDirection::RIGHT_TO_LEFT, true},
+      {{0xDC58, 0x05D0}, 2, TextDirection::kRtl, true},
 
       // Test broken surrogate: valid leading, invalid
       // trail/valid lead, valid trail.
-      {{0xD802, 0xD802, 0xDC58},
-       3,
-       base::i18n::TextDirection::RIGHT_TO_LEFT,
-       true},
+      {{0xD802, 0xD802, 0xDC58}, 3, TextDirection::kRtl, true},
 
       // Test broken surrogate: valid leading, no trail
       // (string too short). (Lead of U+10858)
-      {{0xD802, 0xDC58}, 1, base::i18n::TextDirection::LEFT_TO_RIGHT, false},
+      {{0xD802, 0xDC58}, 1, TextDirection::kLtr, false},
 
       // Test broken surrogate: trail appearing before
       // lead. (U+10858 units reversed)
-      {{0xDC58, 0xD802}, 2, base::i18n::TextDirection::LEFT_TO_RIGHT, false}};
-  for (const auto& data : kTestData)
-    TestDirectionality(data);
+      {{0xDC58, 0xD802}, 2, TextDirection::kLtr, false}};
+  for (size_t i = 0; i < base::size(kTestData); ++i)
+    TestDirectionality(kTestData[i]);
 }
 
 class BidiTestRunner {
@@ -196,10 +191,10 @@ void BidiTestRunner::RunTest(const std::basic_string<UChar>& input,
       text_run.SetDirection(DetermineParagraphDirectionality(text_run));
       break;
     case bidi_test::kDirectionLTR:
-      text_run.SetDirection(base::i18n::TextDirection::LEFT_TO_RIGHT);
+      text_run.SetDirection(TextDirection::kLtr);
       break;
     case bidi_test::kDirectionRTL:
-      text_run.SetDirection(base::i18n::TextDirection::RIGHT_TO_LEFT);
+      text_run.SetDirection(TextDirection::kRtl);
       break;
     default:
       break;

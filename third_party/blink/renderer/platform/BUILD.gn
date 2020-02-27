@@ -1761,6 +1761,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "fonts/generic_font_family_settings_test.cc",
     "fonts/mac/font_matcher_mac_test.mm",
     "fonts/opentype/font_settings_test.cc",
+    "fonts/opentype/open_type_math_support_test.cc",
     "fonts/opentype/open_type_vertical_data_test.cc",
     "fonts/orientation_iterator_test.cc",
     "fonts/script_run_iterator_test.cc",
@@ -2035,6 +2036,9 @@ group("blink_platform_unittests_data") {
     # Required by some image decoder tests.
     "image-decoders/testing/",
     "//third_party/blink/web_tests/images/resources/",
+
+    # Required by some font tests.
+    "//third_party/blink/web_tests/external/wpt/fonts/",
   ]
 }
 

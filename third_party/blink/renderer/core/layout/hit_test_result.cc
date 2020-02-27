@@ -265,8 +265,8 @@ bool HitTestResult::IsSelected(const HitTestLocation& location) const {
   return false;
 }
 
-String HitTestResult::Title(base::i18n::TextDirection& dir) const {
-  dir = base::i18n::TextDirection::LEFT_TO_RIGHT;
+String HitTestResult::Title(TextDirection& dir) const {
+  dir = TextDirection::kLtr;
   // Find the title in the nearest enclosing DOM node.
   // For <area> tags in image maps, walk the tree for the <area>, not the <img>
   // using it.

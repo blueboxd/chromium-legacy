@@ -53,9 +53,9 @@ LocalFrameView* ValidationMessageClientImpl::CurrentView() {
 void ValidationMessageClientImpl::ShowValidationMessage(
     const Element& anchor,
     const String& message,
-    base::i18n::TextDirection message_dir,
+    TextDirection message_dir,
     const String& sub_message,
-    base::i18n::TextDirection sub_message_dir) {
+    TextDirection sub_message_dir) {
   if (message.IsEmpty()) {
     HideValidationMessage(anchor);
     return;

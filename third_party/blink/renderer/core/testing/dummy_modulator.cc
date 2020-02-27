@@ -184,7 +184,8 @@ ScriptValue DummyModulator::ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) {
 }
 
 ModuleScriptFetcher* DummyModulator::CreateModuleScriptFetcher(
-    ModuleScriptCustomFetchType) {
+    ModuleScriptCustomFetchType,
+    util::PassKey<ModuleScriptLoader> pass_key) {
   NOTREACHED();
   return nullptr;
 }

@@ -934,11 +934,14 @@ template <class Key,
           class GetKeyFromValue,
           class KeyCompare,
           typename Predicate>
-void EraseIf(base::internal::flat_tree<Key, Value, GetKeyFromValue, KeyCompare>&
-                 container,
-             Predicate pred) {
-  container.erase(std::remove_if(container.begin(), container.end(), pred),
-                  container.end());
+size_t EraseIf(
+    base::internal::flat_tree<Key, Value, GetKeyFromValue, KeyCompare>&
+        container,
+    Predicate pred) {
+  auto it = std::remove_if(container.begin(), container.end(), pred);
+  size_t removed = std::distance(it, container.end());
+  container.erase(it, container.end());
+  return removed;
 }
 
 }  // namespace base

@@ -78,7 +78,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
    public:
     // The direction of the container.
-    base::i18n::TextDirection direction;
+    TextDirection direction;
     // Logical in containing block coordinates.
     LogicalSize content_size_for_absolute;
     // Content size for fixed is different for the ICB.

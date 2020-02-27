@@ -104,7 +104,7 @@ MojoVideoDecoder::MojoVideoDecoder(
     MediaLog* media_log,
     mojo::PendingRemote<mojom::VideoDecoder> pending_remote_decoder,
     VideoDecoderImplementation implementation,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space)
     : task_runner_(task_runner),
       pending_remote_decoder_(std::move(pending_remote_decoder)),
@@ -114,7 +114,7 @@ MojoVideoDecoder::MojoVideoDecoder(
           GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO)),
       media_log_service_(media_log),
       media_log_receiver_(&media_log_service_),
-      request_overlay_info_cb_(request_overlay_info_cb),
+      request_overlay_info_cb_(std::move(request_overlay_info_cb)),
       target_color_space_(target_color_space),
       video_decoder_implementation_(implementation) {
   DVLOG(1) << __func__;

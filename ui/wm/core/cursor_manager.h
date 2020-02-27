@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,6 +19,7 @@
 
 namespace ui {
 class KeyEvent;
+enum class CursorSize;
 }
 
 namespace wm {

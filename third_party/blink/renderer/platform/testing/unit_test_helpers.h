@@ -75,6 +75,12 @@ String PlatformTestDataPath(const String& relative_path = String());
 // specified.
 String AccessibilityTestDataPath(const String& relative_path = String());
 
+// Returns Blink web_tests fonts as an absolute path, i.e.
+// <blinkRootDir>/src/third_party/blink/web_tests/external/wpt/fonts/<relative_path>.
+// It returns the top fonts test directory if |relative_path| was not
+// specified.
+String BlinkWebTestsFontsTestDataPath(const String& relative_path = String());
+
 scoped_refptr<SharedBuffer> ReadFromFile(const String& path);
 
 class LineReader {

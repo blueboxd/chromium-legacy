@@ -59,7 +59,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // If given arbitrary positions the results are not guaranteed to be correct.
   // May be called multiple times; font and direction may vary between calls.
   scoped_refptr<ShapeResult> Shape(const Font*,
-                                   base::i18n::TextDirection,
+                                   TextDirection,
                                    unsigned start,
                                    unsigned end) const;
 
@@ -68,14 +68,14 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // positions.
   scoped_refptr<ShapeResult> Shape(
       const Font*,
-      base::i18n::TextDirection,
+      TextDirection,
       unsigned start,
       unsigned end,
       const Vector<RunSegmenter::RunSegmenterRange>&) const;
 
   // Shape a single range. Start and end positions defined by the range.
   scoped_refptr<ShapeResult> Shape(const Font*,
-                                   base::i18n::TextDirection,
+                                   TextDirection,
                                    unsigned start,
                                    unsigned end,
                                    const RunSegmenter::RunSegmenterRange) const;
@@ -83,8 +83,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // Shape the entire string with a single font and direction.
   // Equivalent to calling the range version with a start offset of zero and an
   // end offset equal to the length.
-  scoped_refptr<ShapeResult> Shape(const Font*,
-                                   base::i18n::TextDirection) const;
+  scoped_refptr<ShapeResult> Shape(const Font*, TextDirection) const;
 
   const String& GetText() const { return text_; }
   unsigned TextLength() const { return text_.length(); }

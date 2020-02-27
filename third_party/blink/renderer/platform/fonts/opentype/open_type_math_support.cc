@@ -38,7 +38,7 @@ bool OpenTypeMathSupport::HasMathData(const HarfBuzzFace* harfbuzz_face) {
 base::Optional<float> OpenTypeMathSupport::MathConstant(
     const HarfBuzzFace* harfbuzz_face,
     MathConstants constant) {
-  if (!harfbuzz_face)
+  if (!HasMathData(harfbuzz_face))
     return base::nullopt;
 
   hb_font_t* font =

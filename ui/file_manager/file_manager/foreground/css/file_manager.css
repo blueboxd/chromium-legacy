@@ -1758,10 +1758,6 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   width: 100%;
 }
 
-.thumbnail-grid .img-container > .thumbnail.animate {
-  animation: fadeIn 250ms linear;
-}
-
 .thumbnail-grid .shield {
   background-color: rgba(160, 160, 160, 50%);
   bottom: 0;
@@ -2002,15 +1998,6 @@ li[renaming=''] .badge {
   justify-content: flex-end;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes fadeOut {
   from {
     opacity: 1;
@@ -2167,10 +2154,6 @@ body.check-select #list-container li[selected] .detail-checkmark {
   isolation: isolate;
   opacity: 1;
   width: 100%;
-}
-
-#list-container list li .detail-thumbnail > .thumbnail.animate {
-  animation: fadeIn 220ms ease;
 }
 
 body.check-select #list-container list li[selected] .detail-thumbnail

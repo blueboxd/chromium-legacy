@@ -43,22 +43,32 @@ namespace blink {
 //
 // Also used for resolved directions by UAX#9 UNICODE BIDIRECTIONAL ALGORITHM.
 // http://unicode.org/reports/tr9/
+enum class TextDirection : uint8_t { kLtr = 0, kRtl = 1 };
 
-inline bool IsLtr(base::i18n::TextDirection direction) {
-  return direction == base::i18n::TextDirection::LEFT_TO_RIGHT;
+inline bool IsLtr(TextDirection direction) {
+  return direction == TextDirection::kLtr;
 }
 
-inline bool IsRtl(base::i18n::TextDirection direction) {
-  return direction != base::i18n::TextDirection::LEFT_TO_RIGHT;
+inline bool IsRtl(TextDirection direction) {
+  return direction != TextDirection::kLtr;
 }
 
-inline base::i18n::TextDirection DirectionFromLevel(unsigned level) {
-  return level & 1 ? base::i18n::TextDirection::RIGHT_TO_LEFT
-                   : base::i18n::TextDirection::LEFT_TO_RIGHT;
+inline TextDirection DirectionFromLevel(unsigned level) {
+  return level & 1 ? TextDirection::kRtl : TextDirection::kLtr;
 }
 
-PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
-                                         base::i18n::TextDirection);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, TextDirection);
+
+inline base::i18n::TextDirection ToBaseTextDirection(TextDirection direction) {
+  switch (direction) {
+    case TextDirection::kLtr:
+      return base::i18n::TextDirection::LEFT_TO_RIGHT;
+    case TextDirection::kRtl:
+      return base::i18n::TextDirection::RIGHT_TO_LEFT;
+  }
+  NOTREACHED();
+  return base::i18n::TextDirection::UNKNOWN_DIRECTION;
+}
 
 }  // namespace blink
 

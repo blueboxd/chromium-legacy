@@ -23,7 +23,7 @@ struct CdmConfig;
 
 class MEDIA_EXPORT AndroidCdmFactory : public CdmFactory {
  public:
-  AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb,
+  AndroidCdmFactory(CreateFetcherCB create_fetcher_cb,
                     CreateStorageCB create_storage_cb);
   ~AndroidCdmFactory() final;
 

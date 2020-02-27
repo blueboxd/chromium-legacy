@@ -49,7 +49,7 @@ class CORE_EXPORT NGLineTruncator final {
 
   scoped_refptr<const ComputedStyle> line_style_;
   LayoutUnit available_width_;
-  base::i18n::TextDirection line_direction_;
+  TextDirection line_direction_;
 };
 
 }  // namespace blink

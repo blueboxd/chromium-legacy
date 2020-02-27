@@ -488,10 +488,9 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
   if (pending_item) {
     bool is_user_initiated = pending_item->NavigationInitiationType() ==
                              NavigationInitiationType::BROWSER_INITIATED;
-    bool safe_to_show_pending = is_user_initiated && pending_item_index_ == -1;
-    if (web::features::UseWKWebViewLoading()) {
-      safe_to_show_pending = safe_to_show_pending && GetWebState()->IsLoading();
-    }
+    bool safe_to_show_pending = is_user_initiated &&
+                                pending_item_index_ == -1 &&
+                                GetWebState()->IsLoading();
     if (safe_to_show_pending) {
       return pending_item;
     }

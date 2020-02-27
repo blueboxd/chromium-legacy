@@ -135,9 +135,7 @@ void PasswordSaveUpdateWithAccountStoreViewTest::CreateViewAndShow() {
   views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
 }
 
-// TODO(crbug.com/1054629): Flakily times out on all platforms.
-TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
-       DISABLED_HasTitleAndTwoButtons) {
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, HasTitleAndTwoButtons) {
   CreateViewAndShow();
   EXPECT_TRUE(view()->ShouldShowWindowTitle());
   EXPECT_TRUE(view()->GetOkButton());

@@ -22,14 +22,11 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
  public:
   NGTextFragmentBuilder(WritingMode writing_mode)
-      : NGFragmentBuilder(writing_mode,
-                          base::i18n::TextDirection::LEFT_TO_RIGHT) {}
+      : NGFragmentBuilder(writing_mode, TextDirection::kLtr) {}
 
   NGTextFragmentBuilder(const NGPhysicalTextFragment& fragment);
 
-  base::i18n::TextDirection ResolvedDirection() const {
-    return resolved_direction_;
-  }
+  TextDirection ResolvedDirection() const { return resolved_direction_; }
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGPhysicalTextFragment::NGTextType,
@@ -61,8 +58,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
       NGPhysicalTextFragment::kNormalText;
 
   // Set from |NGInlineItem| by |SetItem()|.
-  base::i18n::TextDirection resolved_direction_ =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection resolved_direction_ = TextDirection::kLtr;
 
   friend class NGPhysicalTextFragment;
 };

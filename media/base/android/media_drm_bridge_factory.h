@@ -26,7 +26,7 @@ struct CdmConfig;
 // at any time.
 class MEDIA_EXPORT MediaDrmBridgeFactory : public CdmFactory {
  public:
-  MediaDrmBridgeFactory(const CreateFetcherCB& create_fetcher_cb,
+  MediaDrmBridgeFactory(CreateFetcherCB create_fetcher_cb,
                         CreateStorageCB create_storage_cb);
   ~MediaDrmBridgeFactory() final;
 

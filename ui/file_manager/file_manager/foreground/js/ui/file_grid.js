@@ -228,7 +228,7 @@ class FileGrid extends cr.ui.Grid {
           FileGrid.setThumbnailImage_(
               assertInstanceof(box, HTMLDivElement), entry,
               assert(event.dataUrl), assert(event.width), assert(event.height),
-              /* should animate */ true, mimeType);
+              mimeType);
         }
       }
       listItem.classList.toggle('thumbnail-loaded', !!event.dataUrl);
@@ -691,8 +691,7 @@ class FileGrid extends cr.ui.Grid {
               .contentMimeType;
       FileGrid.setThumbnailImage_(
           box, entry, thumbnailData.dataUrl, (thumbnailData.width || 0),
-          (thumbnailData.height || 0),
-          /* should not animate */ false, mimeType);
+          (thumbnailData.height || 0), mimeType);
       li.classList.toggle('thumbnail-loaded', true);
     } else {
       FileGrid.setGenericThumbnail_(box, entry);
@@ -761,15 +760,10 @@ class FileGrid extends cr.ui.Grid {
    * @param {string} dataUrl Data url of thumbnail.
    * @param {number} width Width of thumbnail.
    * @param {number} height Height of thumbnail.
-   * @param {boolean} shouldAnimate Whether the thumbnail is shown with
-   *     animation or not.
    * @param {string=} opt_mimeType Optional mime type for the image.
    * @private
    */
-  static setThumbnailImage_(
-      box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) {
-    const oldThumbnails = box.querySelectorAll('.thumbnail');
-
+  static setThumbnailImage_(box, entry, dataUrl, width, height, opt_mimeType) {
     const thumbnail = box.ownerDocument.createElement('div');
     thumbnail.classList.add('thumbnail');
 
@@ -782,20 +776,12 @@ class FileGrid extends cr.ui.Grid {
     }
 
     thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-    thumbnail.addEventListener('animationend', () => {
-      // Remove animation css once animation is completed in order not to
-      // animate again when an item is attached to the dom again.
-      thumbnail.classList.remove('animate');
 
-      for (let i = 0; i < oldThumbnails.length; i++) {
-        if (box.contains(oldThumbnails[i])) {
-          box.removeChild(oldThumbnails[i]);
-        }
-      }
-    });
-    if (shouldAnimate) {
-      thumbnail.classList.add('animate');
+    const oldThumbnails = box.querySelectorAll('.thumbnail');
+    for (let i = 0; i < oldThumbnails.length; i++) {
+      box.removeChild(oldThumbnails[i]);
     }
+
     box.appendChild(thumbnail);
   }
 

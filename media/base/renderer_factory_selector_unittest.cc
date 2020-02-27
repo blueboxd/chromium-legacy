@@ -25,7 +25,7 @@ class RendererFactorySelectorTest : public testing::Test {
         const scoped_refptr<base::TaskRunner>& worker_task_runner,
         AudioRendererSink* audio_renderer_sink,
         VideoRendererSink* video_renderer_sink,
-        const RequestOverlayInfoCB& request_overlay_info_cb,
+        RequestOverlayInfoCB request_overlay_info_cb,
         const gfx::ColorSpace& target_color_space) override {
       return nullptr;
     }

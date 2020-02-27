@@ -44,7 +44,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,
       VideoRendererSink* video_renderer_sink,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
 
  private:
@@ -52,7 +52,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
   std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space,
       GpuVideoAcceleratorFactories* gpu_factories);
 

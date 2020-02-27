@@ -260,7 +260,7 @@ std::unique_ptr<media::VideoDecoder>
 GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
     media::MediaLog* media_log,
     media::VideoDecoderImplementation implementation,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
+    media::RequestOverlayInfoCB request_overlay_info_cb) {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(interface_factory_.is_bound());
@@ -274,7 +274,7 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
       video_decoder.InitWithNewPipeAndPassReceiver());
   return std::make_unique<media::MojoVideoDecoder>(
       task_runner_, this, media_log, std::move(video_decoder), implementation,
-      request_overlay_info_cb, rendering_color_space_);
+      std::move(request_overlay_info_cb), rendering_color_space_);
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)

@@ -173,7 +173,15 @@ class IncrementalMarkingTestDriver {
 
 class IntegerObject : public GarbageCollected<IntegerObject> {
  public:
-  void Trace(blink::Visitor* visitor) {}
+  static std::atomic_int destructor_calls;
+
+  explicit IntegerObject(int x) : x_(x) {}
+
+  virtual ~IntegerObject() {
+    destructor_calls.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  virtual void Trace(blink::Visitor* visitor) {}
 
   int Value() const { return x_; }
 
@@ -182,8 +190,6 @@ class IntegerObject : public GarbageCollected<IntegerObject> {
   }
 
   unsigned GetHash() { return IntHash<int>::GetHash(x_); }
-
-  explicit IntegerObject(int x) : x_(x) {}
 
  private:
   int x_;

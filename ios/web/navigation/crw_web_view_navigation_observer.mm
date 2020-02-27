@@ -132,9 +132,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 
 // Called when WKWebView loading state has been changed.
 - (void)webViewLoadingStateDidChange {
-  if (web::features::UseWKWebViewLoading()) {
-    self.webStateImpl->SetIsLoading(self.webView.loading);
-  }
+  self.webStateImpl->SetIsLoading(self.webView.loading);
 
   if (self.webView.loading)
     return;
@@ -272,9 +270,6 @@ using web::wk_navigation_util::IsPlaceholderUrl;
       if (!web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
         return;
 
-      if (!web::features::UseWKWebViewLoading()) {
-        self.webStateImpl->SetIsLoading(false);
-      }
       self.navigationManagerImpl->DiscardNonCommittedItems();
       self.navigationHandler.pendingNavigationInfo = nil;
         // Right after a history navigation that gets cancelled by a tap on

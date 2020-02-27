@@ -499,7 +499,7 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
     const auto& run = part.run_;
     unsigned graphemes_in_cluster = 1;
     float cluster_advance = 0;
-    bool rtl = Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+    bool rtl = Direction() == TextDirection::kRtl;
 
     // A "cluster" in this context means a cluster as it is used by HarfBuzz:
     // The minimal group of characters and corresponding glyphs, that cannot be

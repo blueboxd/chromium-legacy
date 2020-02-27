@@ -153,8 +153,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         gpu_preferences_, gpu_feature_info_, std::make_unique<NullMediaLog>(),
         device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::BindRepeating(&CreateAndroidOverlayCb),
-        base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
-                   base::Unretained(this)),
+        base::BindRepeating(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
+                            base::Unretained(this)),
         std::move(video_frame_factory));
     mcvd_.reset(observable_mcvd);
     mcvd_raw_ = observable_mcvd;
@@ -272,11 +272,10 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     }
   }
 
-  void RequestOverlayInfoCb(
-      bool restart_for_transitions,
-      const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+  void RequestOverlayInfoCb(bool restart_for_transitions,
+                            ProvideOverlayInfoCB provide_overlay_info_cb) {
     restart_for_transitions_ = restart_for_transitions;
-    provide_overlay_info_cb_ = provide_overlay_info_cb;
+    provide_overlay_info_cb_ = std::move(provide_overlay_info_cb);
   }
 
  protected:

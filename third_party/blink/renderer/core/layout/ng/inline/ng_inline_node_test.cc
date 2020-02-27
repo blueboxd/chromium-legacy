@@ -359,8 +359,7 @@ TEST_F(NGInlineNodeTest, SegmentASCII) {
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(1u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::kLtr);
 }
 
 TEST_F(NGInlineNodeTest, SegmentHebrew) {
@@ -370,8 +369,7 @@ TEST_F(NGInlineNodeTest, SegmentHebrew) {
   ASSERT_EQ(1u, node.Items().size());
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(1u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::kRtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
@@ -380,10 +378,8 @@ TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(2u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 11u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 11u, TextDirection::kRtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
@@ -394,14 +390,10 @@ TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(4u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 3u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[1], 3u, 6u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[2], 6u, 7u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[3], 7u, 11u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 3u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[1], 3u, 6u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[2], 6u, 7u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 7u, 11u, TextDirection::kRtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
@@ -413,14 +405,10 @@ TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(4u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[2], 7u, 10u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[2], 7u, 10u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u, TextDirection::kLtr);
 }
 
 static NGInlineNodeForTest CreateBidiIsolateNode(NGInlineNodeForTest node,
@@ -443,24 +431,15 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   node = CreateBidiIsolateNode(node, layout_object_);
   Vector<NGInlineItem>& items = node.Items();
   EXPECT_EQ(9u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[3], 13u, 14u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[4], 14u, 15u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u,
-                       base::i18n::TextDirection::RIGHT_TO_LEFT);
-  TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
-  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u,
-                       base::i18n::TextDirection::LEFT_TO_RIGHT);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 13u, 14u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[4], 14u, 15u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, TextDirection::kRtl);
+  TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
 }
 
 #define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \

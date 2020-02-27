@@ -46,7 +46,7 @@ void TextMetrics::Trace(Visitor* visitor) {
 TextMetrics::TextMetrics() : baselines_(Baselines::Create()) {}
 
 TextMetrics::TextMetrics(const Font& font,
-                         const base::i18n::TextDirection& direction,
+                         const TextDirection& direction,
                          const TextBaseline& baseline,
                          const TextAlign& align,
                          const String& text)
@@ -55,7 +55,7 @@ TextMetrics::TextMetrics(const Font& font,
 }
 
 void TextMetrics::Update(const Font& font,
-                         const base::i18n::TextDirection& direction,
+                         const TextDirection& direction,
                          const TextBaseline& baseline,
                          const TextAlign& align,
                          const String& text) {
@@ -82,10 +82,8 @@ void TextMetrics::Update(const Font& font,
   if (align == kCenterTextAlign)
     dx = real_width / 2.0f;
   else if (align == kRightTextAlign ||
-           (align == kStartTextAlign &&
-            direction == base::i18n::TextDirection::RIGHT_TO_LEFT) ||
-           (align == kEndTextAlign &&
-            direction != base::i18n::TextDirection::RIGHT_TO_LEFT))
+           (align == kStartTextAlign && direction == TextDirection::kRtl) ||
+           (align == kEndTextAlign && direction != TextDirection::kRtl))
     dx = real_width;
   actual_bounding_box_left_ = -glyph_bounds.X() + dx;
   actual_bounding_box_right_ = glyph_bounds.MaxX() - dx;

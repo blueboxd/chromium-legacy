@@ -120,7 +120,7 @@ class MultipleFieldsTemporalInputTypeView final
   void ValueAttributeChanged() override;
   void ListAttributeTargetChanged() final;
   void UpdateClearButtonVisibility() final;
-  base::i18n::TextDirection ComputedTextDirection() final;
+  TextDirection ComputedTextDirection() final;
   AXObject* PopupRootAXObject() final;
 
   DateTimeEditElement* GetDateTimeEditElement() const;

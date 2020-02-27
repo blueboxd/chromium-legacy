@@ -99,7 +99,7 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
   const LayoutBox* layout_box = unpositioned_float.node.GetLayoutBox();
   DCHECK(layout_box->GetShapeOutsideInfo());
   const NGConstraintSpace& parent_space = unpositioned_float.parent_space;
-  base::i18n::TextDirection direction = parent_space.Direction();
+  TextDirection direction = parent_space.Direction();
 
   // We make the margins on the shape-data relative to line-left/line-right.
   NGBoxStrut new_margins(margins.LineLeft(direction),
@@ -125,7 +125,7 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
       shape_insets =
           strut.ConvertToPhysical(style.GetWritingMode(), style.Direction())
               .ConvertToLogical(parent_space.GetWritingMode(),
-                                base::i18n::TextDirection::LEFT_TO_RIGHT);
+                                TextDirection::kLtr);
       break;
   }
 

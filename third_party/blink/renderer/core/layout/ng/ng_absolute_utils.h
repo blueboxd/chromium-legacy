@@ -68,7 +68,7 @@ ComputePartialAbsoluteWithChildInlineSize(
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const base::i18n::TextDirection container_direction);
+    const TextDirection container_direction);
 
 // Computes the rest of the absolute position which depends on child's
 // block-size.
@@ -80,7 +80,7 @@ CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
-    const base::i18n::TextDirection container_direction,
+    const TextDirection container_direction,
     NGLogicalOutOfFlowPosition* position);
 
 }  // namespace blink

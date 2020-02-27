@@ -85,7 +85,7 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
 
   void OnDecoderRequestedOverlayInfo(
       bool restart_for_transitions,
-      const ProvideOverlayInfoCB& provide_overlay_info_cb);
+      ProvideOverlayInfoCB provide_overlay_info_cb);
 
   // Whether this instance is active (Decode() was called at least once).
   bool is_active_instance_ = false;

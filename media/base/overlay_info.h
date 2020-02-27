@@ -45,7 +45,7 @@ struct MEDIA_EXPORT OverlayInfo {
 // WebMediaPlayerImpl::OnOverlayInfoRequested).
 using ProvideOverlayInfoCB = base::RepeatingCallback<void(const OverlayInfo&)>;
 using RequestOverlayInfoCB =
-    base::Callback<void(bool, const ProvideOverlayInfoCB&)>;
+    base::RepeatingCallback<void(bool, ProvideOverlayInfoCB)>;
 
 }  // namespace media
 

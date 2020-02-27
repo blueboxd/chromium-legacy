@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -161,6 +162,14 @@ bool IsMorePermissive(ContentSetting a, ContentSetting b) {
   }
   NOTREACHED();
   return true;
+}
+
+bool OriginCanBeForceAllowed(const url::Origin& origin) {
+  const auto& scheme = origin.scheme();
+  return scheme == content_settings::kChromeDevToolsScheme ||
+         scheme == content_settings::kExtensionScheme ||
+         scheme == content_settings::kChromeUIScheme ||
+         scheme == content_settings::kChromeUIUntrustedScheme;
 }
 
 }  // namespace content_settings

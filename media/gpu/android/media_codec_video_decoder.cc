@@ -495,8 +495,8 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
   bool restart_for_transitions = !device_info_->IsSetOutputSurfaceSupported();
   std::move(request_overlay_info_cb_)
       .Run(restart_for_transitions,
-           base::Bind(&MediaCodecVideoDecoder::OnOverlayInfoChanged,
-                      weak_factory_.GetWeakPtr()));
+           base::BindRepeating(&MediaCodecVideoDecoder::OnOverlayInfoChanged,
+                               weak_factory_.GetWeakPtr()));
 }
 
 void MediaCodecVideoDecoder::OnOverlayInfoChanged(

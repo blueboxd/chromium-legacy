@@ -20,9 +20,7 @@ namespace {
 
 class ChromeClientToolTipLogger : public EmptyChromeClient {
  public:
-  void SetToolTip(LocalFrame&,
-                  const String& text,
-                  base::i18n::TextDirection) override {
+  void SetToolTip(LocalFrame&, const String& text, TextDirection) override {
     tool_tip_for_last_set_tool_tip_ = text;
   }
 
@@ -56,21 +54,21 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
   // seToolTip(HitTestResult) again in the same condition.
   logger.ClearToolTipForLastSetToolTip();
   client->SetToolTip(*doc->GetFrame(), location, result);
-  // setToolTip(String,base::i18n::TextDirection) should not be called.
+  // setToolTip(String,TextDirection) should not be called.
   EXPECT_EQ(String(), logger.ToolTipForLastSetToolTip());
 
   // Cancel the tooltip, and setToolTip(HitTestResult) again.
   client->ClearToolTip(*doc->GetFrame());
   logger.ClearToolTipForLastSetToolTip();
   client->SetToolTip(*doc->GetFrame(), location, result);
-  // setToolTip(String,base::i18n::TextDirection) should not be called.
+  // setToolTip(String,TextDirection) should not be called.
   EXPECT_EQ(String(), logger.ToolTipForLastSetToolTip());
 
   logger.ClearToolTipForLastSetToolTip();
   element->setAttribute(html_names::kTitleAttr, "updated");
   client->SetToolTip(*doc->GetFrame(), location, result);
-  // setToolTip(String,base::i18n::TextDirection) should be called because
-  // tooltip string is different from the last one.
+  // setToolTip(String,TextDirection) should be called because tooltip string
+  // is different from the last one.
   EXPECT_EQ("updated", logger.ToolTipForLastSetToolTip());
 }
 

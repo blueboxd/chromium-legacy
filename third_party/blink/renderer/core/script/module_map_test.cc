@@ -108,8 +108,9 @@ class ModuleMapTestModulator final : public DummyModulator {
     USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
 
    public:
-    explicit TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
-        : modulator_(modulator) {}
+    TestModuleScriptFetcher(ModuleMapTestModulator* modulator,
+                            util::PassKey<ModuleScriptLoader> pass_key)
+        : ModuleScriptFetcher(pass_key), modulator_(modulator) {}
     void Fetch(FetchParameters& request,
                ResourceFetcher*,
                const Modulator* modulator_for_built_in_modules,
@@ -135,8 +136,9 @@ class ModuleMapTestModulator final : public DummyModulator {
   };
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) override {
-    return MakeGarbageCollected<TestModuleScriptFetcher>(this);
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader> pass_key) override {
+    return MakeGarbageCollected<TestModuleScriptFetcher>(this, pass_key);
   }
 
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(

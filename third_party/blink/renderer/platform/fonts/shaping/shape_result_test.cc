@@ -52,11 +52,10 @@ class ShapeResultTest : public testing::Test {
     }
   }
 
-  ShapeResult* CreateShapeResult(base::i18n::TextDirection direction) const {
-    return new ShapeResult(direction == base::i18n::TextDirection::LEFT_TO_RIGHT
-                               ? &font
-                               : &arabic_font,
-                           0, 0, direction);
+  ShapeResult* CreateShapeResult(TextDirection direction) const {
+    return new ShapeResult(
+        direction == TextDirection::kLtr ? &font : &arabic_font, 0, 0,
+        direction);
   }
 
   FontCachePurgePreventer font_cache_purge_preventer;
@@ -68,10 +67,10 @@ class ShapeResultTest : public testing::Test {
 void ShapeResultTest::TestCopyRangesLatin(const ShapeResult* result) const {
   const unsigned num_ranges = 4;
   ShapeResult::ShapeRange ranges[num_ranges] = {
-      {0, 10, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)},
-      {10, 20, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)},
-      {20, 30, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)},
-      {30, 38, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)}};
+      {0, 10, CreateShapeResult(TextDirection::kLtr)},
+      {10, 20, CreateShapeResult(TextDirection::kLtr)},
+      {20, 30, CreateShapeResult(TextDirection::kLtr)},
+      {30, 38, CreateShapeResult(TextDirection::kLtr)}};
   result->CopyRanges(&ranges[0], num_ranges);
 
   Vector<ShapeResultTestGlyphInfo> glyphs[num_ranges];
@@ -105,10 +104,10 @@ void ShapeResultTest::TestCopyRangesLatin(const ShapeResult* result) const {
 void ShapeResultTest::TestCopyRangesArabic(const ShapeResult* result) const {
   const unsigned num_ranges = 4;
   ShapeResult::ShapeRange ranges[num_ranges] = {
-      {0, 4, CreateShapeResult(base::i18n::TextDirection::RIGHT_TO_LEFT)},
-      {4, 7, CreateShapeResult(base::i18n::TextDirection::RIGHT_TO_LEFT)},
-      {7, 10, CreateShapeResult(base::i18n::TextDirection::RIGHT_TO_LEFT)},
-      {10, 15, CreateShapeResult(base::i18n::TextDirection::RIGHT_TO_LEFT)}};
+      {0, 4, CreateShapeResult(TextDirection::kRtl)},
+      {4, 7, CreateShapeResult(TextDirection::kRtl)},
+      {7, 10, CreateShapeResult(TextDirection::kRtl)},
+      {10, 15, CreateShapeResult(TextDirection::kRtl)}};
   result->CopyRanges(&ranges[0], num_ranges);
 
   Vector<ShapeResultTestGlyphInfo> glyphs[num_ranges];
@@ -141,8 +140,7 @@ void ShapeResultTest::TestCopyRangesArabic(const ShapeResult* result) const {
 
 TEST_F(ShapeResultTest, CopyRangeLatin) {
   String string = "Testing ShapeResultIterator::CopyRange";
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
@@ -153,8 +151,7 @@ TEST_F(ShapeResultTest, CopyRangeLatin) {
 // into multiple runs to test the handling of ranges spanning runs and runs
 // spanning ranges.
 TEST_F(ShapeResultTest, CopyRangeLatinMultiRun) {
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
   String string = "Testing ShapeResultIterator::CopyRange";
   HarfBuzzShaper shaper_a(string.Substring(0, 5));
   HarfBuzzShaper shaper_b(string.Substring(5, 7));
@@ -173,8 +170,7 @@ TEST_F(ShapeResultTest, CopyRangeLatinMultiRun) {
 }
 
 TEST_F(ShapeResultTest, CopyRangeLatinMultiRunWithHoles) {
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection direction = TextDirection::kLtr;
   String string = "Testing copying a range with holes";
   HarfBuzzShaper shaper_a(string.Substring(0, 5));
   HarfBuzzShaper shaper_b(string.Substring(5, 7));
@@ -189,9 +185,9 @@ TEST_F(ShapeResultTest, CopyRangeLatinMultiRunWithHoles) {
   shaper_d.Shape(&font, direction)->CopyRange(0u, 2u, result.get());
 
   ShapeResult::ShapeRange ranges[] = {
-      {4, 17, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)},
-      {20, 23, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)},
-      {25, 31, CreateShapeResult(base::i18n::TextDirection::LEFT_TO_RIGHT)}};
+      {4, 17, CreateShapeResult(TextDirection::kLtr)},
+      {20, 23, CreateShapeResult(TextDirection::kLtr)},
+      {25, 31, CreateShapeResult(TextDirection::kLtr)}};
   result->CopyRanges(&ranges[0], 3);
   Vector<ShapeResultTestGlyphInfo> glyphs[3];
   ComputeGlyphResults(*ranges[0].target, &glyphs[0]);
@@ -224,8 +220,7 @@ TEST_F(ShapeResultTest, CopyRangeArabic) {
   String string(
       u"\u0646\u0635\u0627\u062E\u062A\u0628\u0627\u0631\u0627\u0644\u0639"
       u"\u0631\u0628\u064A\u0629");
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::RIGHT_TO_LEFT;
+  TextDirection direction = TextDirection::kRtl;
 
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&arabic_font, direction);
@@ -240,8 +235,7 @@ TEST_F(ShapeResultTest, CopyRangeArabicMultiRun) {
   String string(
       u"\u0646\u0635\u0627\u062E\u062A\u0628\u0627\u0631\u0627\u0644\u0639"
       u"\u0631\u0628\u064A\u0629");
-  base::i18n::TextDirection direction =
-      base::i18n::TextDirection::RIGHT_TO_LEFT;
+  TextDirection direction = TextDirection::kRtl;
 
   HarfBuzzShaper shaper_a(string.Substring(0, 2));
   HarfBuzzShaper shaper_b(string.Substring(2, 9));
@@ -261,7 +255,7 @@ TEST_F(ShapeResultTest, CopyRangeArabicMultiRun) {
 TEST_F(ShapeResultTest, ComputeInkBoundsWithZeroOffset) {
   String string(u"abc");
   HarfBuzzShaper shaper(string);
-  auto result = shaper.Shape(&font, base::i18n::TextDirection::LEFT_TO_RIGHT);
+  auto result = shaper.Shape(&font, TextDirection::kLtr);
   EXPECT_FALSE(HasNonZeroGlyphOffsets(*result));
   EXPECT_FALSE(result->ComputeInkBounds().IsZero());
 }
@@ -272,7 +266,7 @@ TEST_F(ShapeResultTest, DISABLED_ComputeInkBoundsWithNonZeroOffset) {
   // U+0A81 has non-zero glyph offset
   String string(u"xy\u0A81z");
   HarfBuzzShaper shaper(string);
-  auto result = shaper.Shape(&font, base::i18n::TextDirection::LEFT_TO_RIGHT);
+  auto result = shaper.Shape(&font, TextDirection::kLtr);
   ASSERT_TRUE(HasNonZeroGlyphOffsets(*result));
   EXPECT_FALSE(result->ComputeInkBounds().IsZero());
 }

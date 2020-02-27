@@ -306,6 +306,15 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
 
 LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
     const LayoutObject* object) const {
+  DCHECK(object);
+
+  if (const NGFragmentItemsBuilder* items_builder = items_builder_) {
+    if (auto offset = items_builder->LogicalOffsetFor(*object))
+      return *offset;
+    NOTREACHED();
+    return LogicalOffset();
+  }
+
   for (const auto& child : children_) {
     if (child.fragment->GetLayoutObject() == object)
       return child.offset;

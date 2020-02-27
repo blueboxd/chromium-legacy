@@ -100,7 +100,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const std::string& key_system,
       const std::string& origin_id,
       SecurityLevel security_level,
-      const CreateFetcherCB& create_fetcher_cb);
+      CreateFetcherCB create_fetcher_cb);
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(
@@ -256,7 +256,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       SecurityLevel security_level,
       bool requires_media_crypto,
       std::unique_ptr<MediaDrmStorageBridge> storage,
-      const CreateFetcherCB& create_fetcher_cb,
+      CreateFetcherCB create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,

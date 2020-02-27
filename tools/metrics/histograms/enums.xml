@@ -10654,6 +10654,8 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="file"/>
   <int value="5" label="chrome-extension"/>
   <int value="6" label="chrome-search"/>
+  <int value="7" label="chrome"/>
+  <int value="8" label="chrome-untrusted"/>
 </enum>
 
 <enum name="ContentSuggestionsBreakingNewsMessageAction">
@@ -37456,6 +37458,7 @@ from previous Chrome versions.
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
+  <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
   <int value="-1560650271" label="WasmCodeCache:disabled"/>
@@ -38267,6 +38270,7 @@ from previous Chrome versions.
   <int value="-645455405" label="MacViewsNativeDialogs:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
+  <int value="-640191786" label="DesktopPWAsWithoutExtensions:enabled"/>
   <int value="-639070391" label="FreezeUserAgent:disabled"/>
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>

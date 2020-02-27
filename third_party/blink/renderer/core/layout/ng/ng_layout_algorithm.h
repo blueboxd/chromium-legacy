@@ -72,7 +72,7 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   NGLayoutAlgorithm(NGInputNodeType node,
                     scoped_refptr<const ComputedStyle> style,
                     const NGConstraintSpace& space,
-                    base::i18n::TextDirection direction,
+                    TextDirection direction,
                     const NGBreakTokenType* break_token)
       : node_(node),
         break_token_(break_token),

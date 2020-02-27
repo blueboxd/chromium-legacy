@@ -117,10 +117,10 @@ void FinishWait(base::WaitableEvent* waiter, bool* result_out, bool result) {
 }
 
 void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
-                          const media::ProvideOverlayInfoCB& overlay_info_cb) {
+                          media::ProvideOverlayInfoCB overlay_info_cb) {
   // Android overlays are not supported.
   if (overlay_info_cb)
-    overlay_info_cb.Run(media::OverlayInfo());
+    std::move(overlay_info_cb).Run(media::OverlayInfo());
 }
 
 }  // namespace

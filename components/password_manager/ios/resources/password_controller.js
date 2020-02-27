@@ -69,9 +69,12 @@ const getSameOriginFrames = function(win) {
   const frames = win.document.getElementsByTagName('iframe');
   const result = [];
   for (let i = 0; i < frames.length; i++) {
-    if (!frames[i].src ||
-        __gCrWeb.common.isSameOrigin(win.location.href, frames[i].src)) {
-      result.push(frames[i].contentWindow);
+    try {
+      if (__gCrWeb.common.isSameOrigin(
+              win.location.href, frames[i].contentWindow.location.href)) {
+        result.push(frames[i].contentWindow);
+      }
+    } catch (e) {
     }
   }
   return result;

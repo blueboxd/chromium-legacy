@@ -1281,15 +1281,15 @@ TEST(FlatTree, Comparison) {
 
 TEST(FlatSet, EraseIf) {
   IntTree x;
-  EraseIf(x, [](int) { return false; });
+  EXPECT_EQ(0u, EraseIf(x, [](int) { return false; }));
   EXPECT_THAT(x, ElementsAre());
 
   x = {1, 2, 3};
-  EraseIf(x, [](int elem) { return !(elem & 1); });
+  EXPECT_EQ(1u, EraseIf(x, [](int elem) { return !(elem & 1); }));
   EXPECT_THAT(x, ElementsAre(1, 3));
 
   x = {1, 2, 3, 4};
-  EraseIf(x, [](int elem) { return elem & 1; });
+  EXPECT_EQ(2u, EraseIf(x, [](int elem) { return elem & 1; }));
   EXPECT_THAT(x, ElementsAre(2, 4));
 }
 

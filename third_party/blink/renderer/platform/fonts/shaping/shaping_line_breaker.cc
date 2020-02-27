@@ -32,12 +32,11 @@ namespace {
 
 // ShapingLineBreaker computes using visual positions. This function flips
 // logical advance to visual, or vice versa.
-inline LayoutUnit FlipRtl(LayoutUnit value,
-                          base::i18n::TextDirection direction) {
+inline LayoutUnit FlipRtl(LayoutUnit value, TextDirection direction) {
   return IsLtr(direction) ? value : -value;
 }
 
-inline float FlipRtl(float value, base::i18n::TextDirection direction) {
+inline float FlipRtl(float value, TextDirection direction) {
   return IsLtr(direction) ? value : -value;
 }
 
@@ -219,7 +218,7 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
   // Find a candidate break opportunity by identifying the last offset before
   // exceeding the available space and the determine the closest valid break
   // preceding the candidate.
-  base::i18n::TextDirection direction = result_->Direction();
+  TextDirection direction = result_->Direction();
   float end_position = start_position + FlipRtl(available_space, direction);
   DCHECK_GE(FlipRtl(LayoutUnit::FromFloatCeil(end_position - start_position),
                     direction),

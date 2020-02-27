@@ -724,7 +724,7 @@ String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {
   return String();
 }
 
-static inline base::i18n::TextDirection ToTextDirection(
+static inline TextDirection ToTextDirection(
     CanvasRenderingContext2DState::Direction direction,
     HTMLCanvasElement* canvas,
     const ComputedStyle** computed_style = nullptr) {
@@ -737,15 +737,14 @@ static inline base::i18n::TextDirection ToTextDirection(
     *computed_style = style;
   switch (direction) {
     case CanvasRenderingContext2DState::kDirectionInherit:
-      return style ? style->Direction()
-                   : base::i18n::TextDirection::LEFT_TO_RIGHT;
+      return style ? style->Direction() : TextDirection::kLtr;
     case CanvasRenderingContext2DState::kDirectionRTL:
-      return base::i18n::TextDirection::RIGHT_TO_LEFT;
+      return TextDirection::kRtl;
     case CanvasRenderingContext2DState::kDirectionLTR:
-      return base::i18n::TextDirection::LEFT_TO_RIGHT;
+      return TextDirection::kLtr;
   }
   NOTREACHED();
-  return base::i18n::TextDirection::LEFT_TO_RIGHT;
+  return TextDirection::kLtr;
 }
 
 String CanvasRenderingContext2D::direction() const {
@@ -753,7 +752,7 @@ String CanvasRenderingContext2D::direction() const {
       CanvasRenderingContext2DState::kDirectionInherit)
     canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
   return ToTextDirection(GetState().GetDirection(), canvas()) ==
-                 base::i18n::TextDirection::RIGHT_TO_LEFT
+                 TextDirection::kRtl
              ? kRtlDirectionString
              : kLtrDirectionString;
 }
@@ -813,7 +812,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
 
   const Font& font = AccessFont();
 
-  base::i18n::TextDirection direction;
+  TextDirection direction;
   if (GetState().GetDirection() ==
       CanvasRenderingContext2DState::kDirectionInherit)
     direction = DetermineDirectionality(text);
@@ -861,9 +860,9 @@ void CanvasRenderingContext2D::DrawTextInternal(
   // FIXME: Need to turn off font smoothing.
 
   const ComputedStyle* computed_style = nullptr;
-  base::i18n::TextDirection direction =
+  TextDirection direction =
       ToTextDirection(GetState().GetDirection(), canvas(), &computed_style);
-  bool is_rtl = direction == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  bool is_rtl = direction == TextDirection::kRtl;
   bool override =
       computed_style ? IsOverride(computed_style->GetUnicodeBidi()) : false;
 

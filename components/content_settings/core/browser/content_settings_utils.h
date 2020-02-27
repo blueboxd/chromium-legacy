@@ -15,6 +15,10 @@
 
 class HostContentSettingsMap;
 
+namespace url {
+class Origin;
+}
+
 namespace content_settings {
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
@@ -44,7 +48,12 @@ class MapValueIterator {
 // content/public/common/url_constants.h to avoid complicated dependencies.
 const char kChromeDevToolsScheme[] = "devtools";
 const char kChromeUIScheme[] = "chrome";
+const char kChromeUIUntrustedScheme[] = "chrome-untrusted";
 const char kExtensionScheme[] = "chrome-extension";
+
+// These constants are copied from their respective Web UI headers to avoid
+// complicated dependencies.
+const char kChromeUIUntrustedTerminalAppURL[] = "chrome-untrusted://terminal";
 
 std::string ContentSettingToString(ContentSetting setting);
 
@@ -65,6 +74,9 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
 
 // Returns true if setting |a| is more permissive than setting |b|.
 bool IsMorePermissive(ContentSetting a, ContentSetting b);
+
+// Returns whether the provided origin can be force allowed permissions.
+bool OriginCanBeForceAllowed(const url::Origin& origin);
 
 }  // namespace content_settings
 

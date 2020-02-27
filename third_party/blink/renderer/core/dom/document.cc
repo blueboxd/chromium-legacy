@@ -2240,7 +2240,7 @@ void Document::PropagateStyleToViewport() {
     PROPAGATE_FROM(direction_style, GetWritingMode, SetWritingMode,
                    WritingMode::kHorizontalTb);
     PROPAGATE_FROM(direction_style, Direction, SetDirection,
-                   base::i18n::TextDirection::LEFT_TO_RIGHT);
+                   TextDirection::kLtr);
   }
 
   // Background

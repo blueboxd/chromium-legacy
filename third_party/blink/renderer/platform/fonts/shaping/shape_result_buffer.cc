@@ -27,7 +27,7 @@ unsigned CharactersInShapeResult(
 
 CharacterRange ShapeResultBuffer::GetCharacterRange(
     const StringView& text,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     float total_width,
     unsigned absolute_from,
     unsigned absolute_to) const {
@@ -41,7 +41,7 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
   float min_y = 0;
   float max_y = 0;
 
-  if (direction == base::i18n::TextDirection::RIGHT_TO_LEFT)
+  if (direction == TextDirection::kRtl)
     current_x = total_width;
 
   // The absoluteFrom and absoluteTo arguments represent the start/end offset
@@ -55,7 +55,7 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
     const scoped_refptr<const ShapeResult> result = results_[j];
     result->EnsureGraphemes(
         StringView(text, total_num_characters, result->NumCharacters()));
-    if (direction == base::i18n::TextDirection::RIGHT_TO_LEFT) {
+    if (direction == TextDirection::kRtl) {
       // Convert logical offsets to visual offsets, because results are in
       // logical order while runs are in visual order.
       if (!found_from_x && from >= 0 &&
@@ -69,8 +69,7 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
     for (unsigned i = 0; i < result->runs_.size(); i++) {
       if (!result->runs_[i])
         continue;
-      DCHECK_EQ(direction == base::i18n::TextDirection::RIGHT_TO_LEFT,
-                result->runs_[i]->Rtl());
+      DCHECK_EQ(direction == TextDirection::kRtl, result->runs_[i]->Rtl());
       int num_characters = result->runs_[i]->num_characters_;
       if (!found_from_x && from >= 0 && from < num_characters) {
         from_x = result->runs_[i]->XPositionForVisualOffset(
@@ -99,28 +98,24 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
         break;
       current_x += result->runs_[i]->width_;
     }
-    if (direction == base::i18n::TextDirection::RIGHT_TO_LEFT)
+    if (direction == TextDirection::kRtl)
       current_x -= result->Width();
     total_num_characters += result->NumCharacters();
   }
 
   // The position in question might be just after the text.
   if (!found_from_x && absolute_from == total_num_characters) {
-    from_x =
-        direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? 0 : total_width;
+    from_x = direction == TextDirection::kRtl ? 0 : total_width;
     found_from_x = true;
   }
   if (!found_to_x && absolute_to == total_num_characters) {
-    to_x =
-        direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? 0 : total_width;
+    to_x = direction == TextDirection::kRtl ? 0 : total_width;
     found_to_x = true;
   }
   if (!found_from_x)
     from_x = 0;
-  if (!found_to_x) {
-    to_x =
-        direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? 0 : total_width;
-  }
+  if (!found_to_x)
+    to_x = direction == TextDirection::kRtl ? 0 : total_width;
 
   // None of our runs is part of the selection, possibly invalid arguments.
   if (!found_to_x && !found_from_x)
@@ -131,11 +126,10 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
 }
 
 Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     float total_width) const {
   Vector<CharacterRange> ranges;
-  float current_x =
-      direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? total_width : 0;
+  float current_x = direction == TextDirection::kRtl ? total_width : 0;
   for (const scoped_refptr<const ShapeResult>& result : results_)
     current_x = result->IndividualCharacterRanges(&ranges, current_x);
   return ranges;
@@ -192,12 +186,11 @@ void ShapeResultBuffer::AddRunInfoAdvances(const ShapeResult::RunInfo& run_info,
 
 Vector<double> ShapeResultBuffer::IndividualCharacterAdvances(
     const StringView& text,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     float total_width) const {
   unsigned character_offset = 0;
   Vector<double> advances;
-  double current_x =
-      direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? total_width : 0;
+  double current_x = direction == TextDirection::kRtl ? total_width : 0;
 
   for (const scoped_refptr<const ShapeResult>& result : results_) {
     unsigned run_count = result->runs_.size();

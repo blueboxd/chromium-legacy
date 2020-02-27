@@ -228,7 +228,7 @@ inline bool IsValidSurrogatePair(const TextRun& run, unsigned index) {
 TextRun ConstructTextRun(LayoutSVGInlineText& text,
                          unsigned position,
                          unsigned length,
-                         base::i18n::TextDirection text_direction) {
+                         TextDirection text_direction) {
   const ComputedStyle& style = text.StyleRef();
 
   TextRun run(
@@ -349,7 +349,7 @@ void LayoutSVGInlineText::UpdateMetricsList(
   BidiResolver<TextRunIterator, BidiCharacterRun> bidi_resolver;
   BidiRunList<BidiCharacterRun>& bidi_runs = bidi_resolver.Runs();
   bool bidi_override = IsOverride(StyleRef().GetUnicodeBidi());
-  BidiStatus status(base::i18n::TextDirection::LEFT_TO_RIGHT, bidi_override);
+  BidiStatus status(TextDirection::kLtr, bidi_override);
   if (run.Is8Bit() || bidi_override) {
     WTF::unicode::CharDirection direction = WTF::unicode::kLeftToRight;
     // If BiDi override is in effect, use the specified direction.

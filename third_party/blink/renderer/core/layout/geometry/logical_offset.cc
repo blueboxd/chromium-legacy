@@ -11,20 +11,19 @@
 
 namespace blink {
 
-PhysicalOffset LogicalOffset::ConvertToPhysical(
-    WritingMode mode,
-    base::i18n::TextDirection direction,
-    PhysicalSize outer_size,
-    PhysicalSize inner_size) const {
+PhysicalOffset LogicalOffset::ConvertToPhysical(WritingMode mode,
+                                                TextDirection direction,
+                                                PhysicalSize outer_size,
+                                                PhysicalSize inner_size) const {
   switch (mode) {
     case WritingMode::kHorizontalTb:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
+      if (direction == TextDirection::kLtr)
         return PhysicalOffset(inline_offset, block_offset);
       return PhysicalOffset(outer_size.width - inline_offset - inner_size.width,
                             block_offset);
     case WritingMode::kVerticalRl:
     case WritingMode::kSidewaysRl:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+      if (direction == TextDirection::kLtr) {
         return PhysicalOffset(
             outer_size.width - block_offset - inner_size.width, inline_offset);
       }
@@ -32,12 +31,12 @@ PhysicalOffset LogicalOffset::ConvertToPhysical(
           outer_size.width - block_offset - inner_size.width,
           outer_size.height - inline_offset - inner_size.height);
     case WritingMode::kVerticalLr:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
+      if (direction == TextDirection::kLtr)
         return PhysicalOffset(block_offset, inline_offset);
       return PhysicalOffset(
           block_offset, outer_size.height - inline_offset - inner_size.height);
     case WritingMode::kSidewaysLr:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+      if (direction == TextDirection::kLtr) {
         return PhysicalOffset(block_offset, outer_size.height - inline_offset -
                                                 inner_size.height);
       }

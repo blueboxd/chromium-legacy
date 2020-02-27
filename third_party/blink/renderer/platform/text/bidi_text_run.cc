@@ -35,12 +35,11 @@
 
 namespace blink {
 
-base::i18n::TextDirection DirectionForRun(TextRun& run,
-                                          bool* has_strong_directionality) {
+TextDirection DirectionForRun(TextRun& run, bool* has_strong_directionality) {
   if (!has_strong_directionality) {
     // 8bit is Latin-1 and therefore is always LTR.
     if (run.Is8Bit())
-      return base::i18n::TextDirection::LEFT_TO_RIGHT;
+      return TextDirection::kLtr;
 
     // length == 1 for more than 90% of cases of width() for CJK text.
     if (run.length() == 1 && U16_IS_SINGLE(run.Characters16()[0]))
@@ -54,9 +53,8 @@ base::i18n::TextDirection DirectionForRun(TextRun& run,
   return bidi_resolver.DetermineDirectionality(has_strong_directionality);
 }
 
-base::i18n::TextDirection DetermineDirectionality(
-    const String& value,
-    bool* has_strong_directionality) {
+TextDirection DetermineDirectionality(const String& value,
+                                      bool* has_strong_directionality) {
   TextRun run(value);
   return DirectionForRun(run, has_strong_directionality);
 }
@@ -64,8 +62,7 @@ base::i18n::TextDirection DetermineDirectionality(
 TextRun TextRunWithDirectionality(const String& value,
                                   bool* has_strong_directionality) {
   TextRun run(value);
-  base::i18n::TextDirection direction =
-      DirectionForRun(run, has_strong_directionality);
+  TextDirection direction = DirectionForRun(run, has_strong_directionality);
   if (has_strong_directionality)
     run.SetDirection(direction);
   return run;

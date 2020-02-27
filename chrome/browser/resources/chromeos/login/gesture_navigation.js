@@ -45,7 +45,7 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'next' or 'get started' button.
+   * This is the 'on-tap' event handler for the 'next' or 'get started' button.
    * @private
    *
    */
@@ -66,6 +66,24 @@ Polymer({
         // updated until the next screen is shown.
         this.setPlayCurrentScreenAnimation(false);
         this.userActed('exit');
+        break;
+    }
+  },
+
+  /**
+   * This is the 'on-tap' event handler for the 'back' button.
+   * @private
+   */
+  onBack_() {
+    switch (this.currentPage_) {
+      case GesturePage.HOME:
+        this.setCurrentPage_(GesturePage.INTRO);
+        break;
+      case GesturePage.BACK:
+        this.setCurrentPage_(GesturePage.HOME);
+        break;
+      case GesturePage.OVERVIEW:
+        this.setCurrentPage_(GesturePage.BACK);
         break;
     }
   },

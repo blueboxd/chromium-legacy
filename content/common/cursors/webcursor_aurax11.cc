@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11.h"
 
@@ -18,10 +19,10 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (platform_cursor_)
     return platform_cursor_;
 
-  SkBitmap bitmap = cursor.GetBitmap();
+  SkBitmap bitmap = GetCursorBitmap(cursor);
 
   XcursorImage* image =
-      ui::SkBitmapToXcursorImage(&bitmap, cursor.GetHotspot());
+      ui::SkBitmapToXcursorImage(&bitmap, GetCursorHotstop(cursor));
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }

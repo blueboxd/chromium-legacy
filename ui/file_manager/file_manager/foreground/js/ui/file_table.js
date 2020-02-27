@@ -647,8 +647,7 @@ class FileTable extends cr.ui.Table {
       if (box) {
         if (event.dataUrl) {
           this.setThumbnailImage_(
-              assertInstanceof(box, HTMLDivElement), event.dataUrl,
-              true /* with animation */);
+              assertInstanceof(box, HTMLDivElement), event.dataUrl);
         } else {
           this.clearThumbnailImage_(assertInstanceof(box, HTMLDivElement));
         }
@@ -1129,8 +1128,7 @@ class FileTable extends cr.ui.Table {
         this.listThumbnailLoader_.getThumbnailFromCache(entry) :
         null;
     if (thumbnailData && thumbnailData.dataUrl) {
-      this.setThumbnailImage_(
-          box, thumbnailData.dataUrl, false /* without animation */);
+      this.setThumbnailImage_(box, thumbnailData.dataUrl);
     }
 
     return box;
@@ -1140,30 +1138,18 @@ class FileTable extends cr.ui.Table {
    * Sets thumbnail image to the box.
    * @param {!HTMLDivElement} box Detail thumbnail div element.
    * @param {string} dataUrl Data url of thumbnail.
-   * @param {boolean} shouldAnimate Whether the thumbnail is shown with
-   *     animation or not.
    * @private
    */
-  setThumbnailImage_(box, dataUrl, shouldAnimate) {
-    const oldThumbnails = box.querySelectorAll('.thumbnail');
-
+  setThumbnailImage_(box, dataUrl) {
     const thumbnail = box.ownerDocument.createElement('div');
     thumbnail.classList.add('thumbnail');
     thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-    thumbnail.addEventListener('animationend', () => {
-      // Remove animation css once animation is completed in order not to
-      // animate again when an item is attached to the dom again.
-      thumbnail.classList.remove('animate');
+    const oldThumbnails = box.querySelectorAll('.thumbnail');
 
-      for (let i = 0; i < oldThumbnails.length; i++) {
-        if (box.contains(oldThumbnails[i])) {
-          box.removeChild(oldThumbnails[i]);
-        }
+    for (let i = 0; i < oldThumbnails.length; i++) {
+      if (box.contains(oldThumbnails[i])) {
+        box.removeChild(oldThumbnails[i]);
       }
-    });
-
-    if (shouldAnimate) {
-      thumbnail.classList.add('animate');
     }
 
     box.appendChild(thumbnail);

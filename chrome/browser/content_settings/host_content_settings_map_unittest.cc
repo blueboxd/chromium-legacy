@@ -26,6 +26,7 @@
 #include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
@@ -2165,4 +2166,40 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
       EXPECT_FALSE(original_value);
     }
   }
+}
+
+TEST_F(HostContentSettingsMapTest, OriginAllowlist) {
+  TestingProfile profile;
+  auto* regular_map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  regular_map->SetDefaultContentSetting(
+      ContentSettingsType::CLIPBOARD_READ_WRITE, CONTENT_SETTING_BLOCK);
+
+  const GURL allowed_url =
+      GURL(content_settings::kChromeUIUntrustedTerminalAppURL);
+  const GURL ordinary_url = GURL("https://example.com/");
+
+  // The allowlist should take precedence, even if there is a user-defined BLOCK
+  // exception.
+  regular_map->SetContentSettingDefaultScope(
+      allowed_url, allowed_url, ContentSettingsType::CLIPBOARD_READ_WRITE,
+      std::string(), CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            regular_map->GetContentSetting(
+                allowed_url, allowed_url,
+                ContentSettingsType::CLIPBOARD_READ_WRITE, std::string()));
+
+  content_settings::SettingInfo setting_info;
+  regular_map->GetWebsiteSetting(allowed_url, allowed_url,
+                                 ContentSettingsType::CLIPBOARD_READ_WRITE,
+                                 std::string(), &setting_info);
+  EXPECT_EQ(content_settings::SETTING_SOURCE_WHITELIST, setting_info.source);
+  EXPECT_EQ(allowed_url.GetOrigin().spec(),
+            setting_info.primary_pattern.ToString());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), setting_info.secondary_pattern);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            regular_map->GetContentSetting(
+                ordinary_url, ordinary_url,
+                ContentSettingsType::CLIPBOARD_READ_WRITE, std::string()));
 }

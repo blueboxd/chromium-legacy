@@ -35,6 +35,7 @@ source_set("unittests") {
     "//skia/public/mojom",
     "//testing/gtest",
     "//ui/base",
+    "//ui/base/cursor",
     "//ui/events",
     "//ui/gfx/geometry/mojom:mojom_traits",
   ]

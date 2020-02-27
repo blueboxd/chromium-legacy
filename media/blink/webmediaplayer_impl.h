@@ -386,9 +386,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called by GpuVideoDecoder on Android to request a surface to render to (if
   // necessary).
-  void OnOverlayInfoRequested(
-      bool decoder_requires_restart_for_overlay,
-      const ProvideOverlayInfoCB& provide_overlay_info_cb);
+  void OnOverlayInfoRequested(bool decoder_requires_restart_for_overlay,
+                              ProvideOverlayInfoCB provide_overlay_info_cb);
 
   // Creates a Renderer via the |renderer_factory_selector_|. If the
   // |factory_type| is base::nullopt, create the base Renderer. Otherwise, set

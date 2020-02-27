@@ -53,8 +53,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // The base direction of this line. Also known as the paragraph direction.
   // This may be different from the direction of the container box when
   // first-line style is used, or when 'unicode-bidi: plaintext' is used.
-  base::i18n::TextDirection BaseDirection() const {
-    return static_cast<base::i18n::TextDirection>(base_or_resolved_direction_);
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_or_resolved_direction_);
   }
 
   // Compute the baseline metrics for this linebox.

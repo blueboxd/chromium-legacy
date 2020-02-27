@@ -222,9 +222,10 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void SetToolTip(LocalFrame&,
                   const String& tooltip_text,
-                  base::i18n::TextDirection dir) override {
+                  TextDirection dir) override {
     if (popup_->WidgetClient()) {
-      popup_->WidgetClient()->SetToolTipText(tooltip_text, dir);
+      popup_->WidgetClient()->SetToolTipText(tooltip_text,
+                                             ToBaseTextDirection(dir));
     }
   }
 

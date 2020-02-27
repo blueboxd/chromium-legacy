@@ -79,7 +79,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
       media::VideoDecoderImplementation implementation,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
+      media::RequestOverlayInfoCB request_overlay_info_cb) override;
   Supported IsDecoderConfigSupported(
       media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;

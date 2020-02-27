@@ -45,7 +45,7 @@ TSAN_TEST(TextRendererThreadedTest, MeasureText) {
     TextRun text_run(
         text, 0, 0,
         TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
-        base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+        TextDirection::kLtr, false);
     text_run.SetNormalizeSpace(true);
     FloatRect text_bounds = font.SelectionRectForText(
         text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0,
@@ -81,7 +81,7 @@ TSAN_TEST(TextRendererThreadedTest, DrawText) {
 
     FloatPoint location(0, 0);
     TextRun text_run(text, 0, 0, TextRun::kAllowTrailingExpansion,
-                     base::i18n::TextDirection::LEFT_TO_RIGHT, false);
+                     TextDirection::kLtr, false);
     text_run.SetNormalizeSpace(true);
 
     TextRunPaintInfo text_run_paint_info(text_run);

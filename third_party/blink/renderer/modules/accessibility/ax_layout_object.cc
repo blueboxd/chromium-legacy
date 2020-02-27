@@ -1095,19 +1095,22 @@ ax::mojom::TextDirection AXLayoutObject::GetTextDirection() const {
   if (!style)
     return AXNodeObject::GetTextDirection();
 
-  switch (style->Direction()) {
-    case base::i18n::TextDirection::LEFT_TO_RIGHT:
-      return style->IsHorizontalWritingMode()
-                 ? ax::mojom::blink::TextDirection::kLtr
-                 : ax::mojom::blink::TextDirection::kTtb;
-    case base::i18n::TextDirection::RIGHT_TO_LEFT:
-      return style->IsHorizontalWritingMode()
-                 ? ax::mojom::blink::TextDirection::kRtl
-                 : ax::mojom::blink::TextDirection::kBtt;
-    default:
-      NOTREACHED();
-      break;
+  if (style->IsHorizontalWritingMode()) {
+    switch (style->Direction()) {
+      case TextDirection::kLtr:
+        return ax::mojom::TextDirection::kLtr;
+      case TextDirection::kRtl:
+        return ax::mojom::TextDirection::kRtl;
+    }
+  } else {
+    switch (style->Direction()) {
+      case TextDirection::kLtr:
+        return ax::mojom::TextDirection::kTtb;
+      case TextDirection::kRtl:
+        return ax::mojom::TextDirection::kBtt;
+    }
   }
+
   return AXNodeObject::GetTextDirection();
 }
 

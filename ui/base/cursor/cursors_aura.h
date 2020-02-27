@@ -9,6 +9,8 @@
 #include "ui/base/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 
+class SkBitmap;
+
 namespace gfx {
 class Point;
 }
@@ -37,6 +39,10 @@ UI_BASE_EXPORT bool GetAnimatedCursorDataFor(CursorSize cursor_size,
                                              float scale_factor,
                                              int* resource_id,
                                              gfx::Point* point);
+
+SkBitmap GetDefaultBitmap(const Cursor& cursor);
+
+gfx::Point GetDefaultHotspot(const Cursor& cursor);
 
 }  // namespace ui
 

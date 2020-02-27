@@ -13,10 +13,9 @@
 
 namespace media {
 
-MediaDrmBridgeFactory::MediaDrmBridgeFactory(
-    const CreateFetcherCB& create_fetcher_cb,
-    CreateStorageCB create_storage_cb)
-    : create_fetcher_cb_(create_fetcher_cb),
+MediaDrmBridgeFactory::MediaDrmBridgeFactory(CreateFetcherCB create_fetcher_cb,
+                                             CreateStorageCB create_storage_cb)
+    : create_fetcher_cb_(std::move(create_fetcher_cb)),
       create_storage_cb_(std::move(create_storage_cb)) {
   DCHECK(create_fetcher_cb_);
   DCHECK(create_storage_cb_);

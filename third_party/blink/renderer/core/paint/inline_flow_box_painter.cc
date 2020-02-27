@@ -111,7 +111,7 @@ static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
 
 LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
     const LayoutRect& paint_rect,
-    base::i18n::TextDirection direction) const {
+    TextDirection direction) const {
   // We have a fill/border/mask image that spans multiple lines.
   // We need to adjust the offset by the width of all previous lines.
   // Think of background painting on inlines as though you had one long line, a
@@ -121,7 +121,7 @@ LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
   // off.
   LayoutUnit logical_offset_on_line;
   LayoutUnit total_logical_width;
-  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+  if (direction == TextDirection::kLtr) {
     for (const InlineFlowBox* curr = inline_flow_box_.PrevForSameLayoutObject();
          curr; curr = curr->PrevForSameLayoutObject())
       logical_offset_on_line += curr->LogicalWidth();
@@ -279,7 +279,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
         LayoutRect(paint_rect.Location(), paint_rect.Size()),
-        base::i18n::TextDirection::LEFT_TO_RIGHT);
+        TextDirection::kLtr);
     FloatRect clip_rect(ClipRectForNinePieceImageStrip(
         inline_flow_box_, mask_nine_piece_image, paint_rect));
     GraphicsContextStateSaver state_saver(paint_info.context);

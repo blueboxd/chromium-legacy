@@ -46,26 +46,6 @@ void Cursor::UnrefCustomCursor() {
 }
 #endif
 
-SkBitmap Cursor::GetBitmap() const {
-  if (native_type_ == mojom::CursorType::kCustom)
-    return custom_bitmap_;
-#if defined(USE_AURA)
-  return GetDefaultBitmap();
-#else
-  return SkBitmap();
-#endif
-}
-
-gfx::Point Cursor::GetHotspot() const {
-  if (native_type_ == mojom::CursorType::kCustom)
-    return custom_hotspot_;
-#if defined(USE_AURA)
-  return GetDefaultHotspot();
-#else
-  return gfx::Point();
-#endif
-}
-
 bool Cursor::operator==(const Cursor& cursor) const {
   return native_type_ == cursor.native_type_ &&
          platform_cursor_ == cursor.platform_cursor_ &&

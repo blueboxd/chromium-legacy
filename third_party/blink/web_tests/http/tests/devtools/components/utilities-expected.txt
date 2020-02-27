@@ -20,8 +20,6 @@ Running: stringHashTest
 
 Running: stringTrimURLTest
 
-Running: stringToBase64Test
-
 Running: trimMiddle
 
 !

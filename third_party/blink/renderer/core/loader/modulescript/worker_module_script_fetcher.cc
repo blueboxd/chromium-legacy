@@ -19,8 +19,9 @@
 namespace blink {
 
 WorkerModuleScriptFetcher::WorkerModuleScriptFetcher(
-    WorkerGlobalScope* global_scope)
-    : global_scope_(global_scope) {}
+    WorkerGlobalScope* global_scope,
+    util::PassKey<ModuleScriptLoader> pass_key)
+    : ModuleScriptFetcher(pass_key), global_scope_(global_scope) {}
 
 // <specdef href="https://html.spec.whatwg.org/C/#run-a-worker">
 void WorkerModuleScriptFetcher::Fetch(

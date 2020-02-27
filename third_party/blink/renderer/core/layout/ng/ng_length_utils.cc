@@ -966,7 +966,7 @@ void ResolveInlineMargins(const ComputedStyle& style,
 }
 
 LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
-                                  base::i18n::TextDirection direction,
+                                  TextDirection direction,
                                   LayoutUnit space_left) {
   bool is_ltr = IsLtr(direction);
   if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify)

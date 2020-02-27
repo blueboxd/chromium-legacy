@@ -190,10 +190,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Server predictions for CVC fields are used if the feature is enabled.
-const base::Feature kAutofillUseServerCVCPrediction{
-    "AutofillUseServerCVCPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAutofillSmsReceiver{"AutofillSmsReceiver",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -213,7 +213,8 @@ void ModuleScriptLoader::FetchInternal(
   // steps. Otherwise, fetch request. Return from this algorithm, and run the
   // remaining steps as part of the fetch's process response for the response
   // response.</spec>
-  module_fetcher_ = modulator_->CreateModuleScriptFetcher(custom_fetch_type);
+  module_fetcher_ =
+      modulator_->CreateModuleScriptFetcher(custom_fetch_type, PassKey());
   module_fetcher_->Fetch(fetch_params, fetch_client_settings_object_fetcher,
                          modulator_, level, this);
 }

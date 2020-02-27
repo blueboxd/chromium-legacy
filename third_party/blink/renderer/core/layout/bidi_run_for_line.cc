@@ -75,10 +75,9 @@ static LineLayoutItem FirstLayoutObjectForDirectionalityDetermination(
   return current;
 }
 
-base::i18n::TextDirection DeterminePlaintextDirectionality(
-    LineLayoutItem root,
-    LineLayoutItem current,
-    unsigned pos) {
+TextDirection DeterminePlaintextDirectionality(LineLayoutItem root,
+                                               LineLayoutItem current,
+                                               unsigned pos) {
   LineLayoutItem first_layout_object =
       FirstLayoutObjectForDirectionalityDetermination(root, current);
   InlineIterator iter(LineLayoutItem(root), first_layout_object,
@@ -140,7 +139,7 @@ void ConstructBidiRunsForLine(InlineBidiResolver& top_resolver,
     isolated_line_midpoint_state =
         top_resolver.MidpointStateForIsolatedRun(isolated_run.run_to_replace);
     UnicodeBidi unicode_bidi = isolated_inline.StyleRef().GetUnicodeBidi();
-    base::i18n::TextDirection direction;
+    TextDirection direction;
     if (unicode_bidi == UnicodeBidi::kPlaintext) {
       direction = DeterminePlaintextDirectionality(
           isolated_inline, is_new_uba_paragraph ? start_obj : nullptr);

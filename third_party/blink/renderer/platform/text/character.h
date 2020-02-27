@@ -79,11 +79,11 @@ class PLATFORM_EXPORT Character {
   }
 
   static unsigned ExpansionOpportunityCount(base::span<const LChar>,
-                                            base::i18n::TextDirection,
+                                            TextDirection,
                                             bool& is_after_expansion,
                                             const TextJustify);
   static unsigned ExpansionOpportunityCount(base::span<const UChar>,
-                                            base::i18n::TextDirection,
+                                            TextDirection,
                                             bool& is_after_expansion,
                                             const TextJustify);
   static unsigned ExpansionOpportunityCount(const TextRun& run,

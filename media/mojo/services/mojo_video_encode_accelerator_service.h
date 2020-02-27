@@ -35,20 +35,18 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
  public:
   // Create and initialize a VEA. Returns nullptr if either part fails.
   using CreateAndInitializeVideoEncodeAcceleratorCallback =
-      base::Callback<std::unique_ptr<::media::VideoEncodeAccelerator>(
+      base::OnceCallback<std::unique_ptr<::media::VideoEncodeAccelerator>(
           const ::media::VideoEncodeAccelerator::Config& config,
           Client* client,
           const gpu::GpuPreferences& gpu_preferences)>;
 
   static void Create(
       mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver,
-      const CreateAndInitializeVideoEncodeAcceleratorCallback&
-          create_vea_callback,
+      CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
       const gpu::GpuPreferences& gpu_preferences);
 
   MojoVideoEncodeAcceleratorService(
-      const CreateAndInitializeVideoEncodeAcceleratorCallback&
-          create_vea_callback,
+      CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
       const gpu::GpuPreferences& gpu_preferences);
   ~MojoVideoEncodeAcceleratorService() override;
 
@@ -80,7 +78,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   void NotifyError(::media::VideoEncodeAccelerator::Error error) override;
   void NotifyEncoderInfoChange(const ::media::VideoEncoderInfo& info) override;
 
-  const CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback_;
+  CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback_;
   const gpu::GpuPreferences& gpu_preferences_;
 
   // Owned pointer to the underlying VideoEncodeAccelerator.

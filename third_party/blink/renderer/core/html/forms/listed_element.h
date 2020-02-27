@@ -114,11 +114,10 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // This must be called only after the caller check the element is focusable.
   void ShowValidationMessage();
   bool IsValidationMessageVisible() const;
-  void FindCustomValidationMessageTextDirection(
-      const String& message,
-      base::i18n::TextDirection& message_dir,
-      String& sub_message,
-      base::i18n::TextDirection& sub_message_dir);
+  void FindCustomValidationMessageTextDirection(const String& message,
+                                                TextDirection& message_dir,
+                                                String& sub_message,
+                                                TextDirection& sub_message_dir);
   virtual Element& ValidationAnchor() const;
   bool ValidationAnchorOrHostIsFocusable() const;
 

@@ -43,7 +43,7 @@ class PhysicalToLogical {
 
  public:
   PhysicalToLogical(WritingMode writing_mode,
-                    base::i18n::TextDirection direction,
+                    TextDirection direction,
                     Value top,
                     Value right,
                     Value bottom,
@@ -103,7 +103,7 @@ class PhysicalToLogical {
 
  private:
   WritingMode writing_mode_;
-  base::i18n::TextDirection direction_;
+  TextDirection direction_;
   Value top_;
   Value right_;
   Value bottom_;
@@ -116,7 +116,7 @@ class LogicalToPhysical {
 
  public:
   LogicalToPhysical(WritingMode writing_mode,
-                    base::i18n::TextDirection direction,
+                    TextDirection direction,
                     Value inline_start,
                     Value inline_end,
                     Value block_start,
@@ -156,7 +156,7 @@ class LogicalToPhysical {
 
  private:
   WritingMode writing_mode_;
-  base::i18n::TextDirection direction_;
+  TextDirection direction_;
   Value inline_start_;  // a.k.a. start
   Value inline_end_;    // a.k.a. end
   Value block_start_;   // a.k.a. before
@@ -170,7 +170,7 @@ class LogicalToPhysicalGetter {
  public:
   using Getter = Value (Object::*)() const;
   LogicalToPhysicalGetter(WritingMode writing_mode,
-                          base::i18n::TextDirection direction,
+                          TextDirection direction,
                           const Object& object,
                           Getter inline_start_getter,
                           Getter inline_end_getter,
@@ -201,7 +201,7 @@ class PhysicalToLogicalGetter {
  public:
   using Getter = Value (Object::*)() const;
   PhysicalToLogicalGetter(WritingMode writing_mode,
-                          base::i18n::TextDirection direction,
+                          TextDirection direction,
                           const Object& object,
                           Getter top_getter,
                           Getter right_getter,
@@ -240,7 +240,7 @@ class PhysicalToLogicalSetter {
  public:
   using Setter = void (Object::*)(Value);
   PhysicalToLogicalSetter(WritingMode writing_mode,
-                          base::i18n::TextDirection direction,
+                          TextDirection direction,
                           Object& object,
                           Setter inline_start_setter,
                           Setter inline_end_setter,
@@ -273,7 +273,7 @@ class LogicalToPhysicalSetter {
  public:
   using Setter = void (Object::*)(Value);
   LogicalToPhysicalSetter(WritingMode writing_mode,
-                          base::i18n::TextDirection direction,
+                          TextDirection direction,
                           Object& object,
                           Setter top_setter,
                           Setter right_setter,

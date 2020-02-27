@@ -28,6 +28,7 @@ namespace blink {
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
+class ModuleScriptLoader;
 class ImportMap;
 class ReferrerScriptInfo;
 class ResourceFetcher;
@@ -217,7 +218,8 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   virtual ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) = 0;
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader> pass_key) = 0;
 };
 
 }  // namespace blink

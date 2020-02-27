@@ -4584,14 +4584,14 @@ void LayoutBox::ComputeInlineStaticDistance(
     return;
 
   LayoutObject* parent = child->Parent();
-  base::i18n::TextDirection parent_direction = parent->StyleRef().Direction();
+  TextDirection parent_direction = parent->StyleRef().Direction();
 
   // This method is using EnclosingBox() which is wrong for absolutely
   // positioned grid items, as they rely on the grid area. So for grid items if
   // both "left" and "right" properties are "auto", we can consider that one of
   // them (depending on the direction) is simply "0".
   if (parent->IsLayoutGrid() && parent == child->ContainingBlock()) {
-    if (parent_direction == base::i18n::TextDirection::LEFT_TO_RIGHT)
+    if (parent_direction == TextDirection::kLtr)
       logical_left = Length::Fixed(0);
     else
       logical_right = Length::Fixed(0);
@@ -4604,7 +4604,7 @@ void LayoutBox::ComputeInlineStaticDistance(
 
   // FIXME: The static distance computation has not been patched for mixed
   // writing modes yet.
-  if (parent_direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+  if (parent_direction == TextDirection::kLtr) {
     LayoutUnit static_position = child->Layer()->StaticInlinePosition() -
                                  container_block->BorderLogicalLeft();
     for (LayoutObject* curr = child->Parent(); curr && curr != container_block;
@@ -4709,8 +4709,7 @@ void LayoutBox::ComputePositionedLogicalWidth(
   // Use the container block's direction except when calculating the static
   // distance. This conforms with the reference results for
   // abspos-replaced-width-margin-000.htm of the CSS 2.1 test suite.
-  base::i18n::TextDirection container_direction =
-      container_block->StyleRef().Direction();
+  TextDirection container_direction = container_block->StyleRef().Direction();
 
   bool is_horizontal = IsHorizontalWritingMode();
   const LayoutUnit borders_plus_padding = BorderAndPaddingLogicalWidth();
@@ -4840,7 +4839,7 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
     SizeType width_size_type,
     const Length& logical_width,
     const LayoutBoxModelObject* container_block,
-    base::i18n::TextDirection container_direction,
+    TextDirection container_direction,
     LayoutUnit container_logical_width,
     LayoutUnit borders_plus_padding,
     const Length& logical_left,
@@ -4922,7 +4921,7 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
       } else {
         // Use the containing block's direction rather than the parent block's
         // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-        if (container_direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+        if (container_direction == TextDirection::kLtr) {
           margin_logical_left_value = LayoutUnit();
           margin_logical_right_value = available_space;  // will be negative
         } else {
@@ -4949,7 +4948,7 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
 
       // Use the containing block's direction rather than the parent block's
       // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-      if (container_direction == base::i18n::TextDirection::RIGHT_TO_LEFT)
+      if (container_direction == TextDirection::kRtl)
         logical_left_value = (available_space + logical_left_value) -
                              margin_logical_left_value -
                              margin_logical_right_value;
@@ -6587,7 +6586,7 @@ float LayoutBox::VisualRectOutsetForRasterEffects() const {
              : 0;
 }
 
-base::i18n::TextDirection LayoutBox::ResolvedDirection() const {
+TextDirection LayoutBox::ResolvedDirection() const {
   if (IsInline() && IsAtomicInlineLevel()) {
     if (IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;

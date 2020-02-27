@@ -607,14 +607,13 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
 
     if (auto* html_element = DynamicTo<HTMLElement>(state.GetElement())) {
       bool is_auto;
-      base::i18n::TextDirection text_direction =
+      TextDirection text_direction =
           html_element->DirectionalityIfhasDirAutoAttribute(is_auto);
       if (is_auto) {
         state.SetHasDirAutoAttribute(true);
         collector.AddElementStyleProperties(
-            text_direction == base::i18n::TextDirection::LEFT_TO_RIGHT
-                ? LeftToRightDeclaration()
-                : RightToLeftDeclaration());
+            text_direction == TextDirection::kLtr ? LeftToRightDeclaration()
+                                                  : RightToLeftDeclaration());
       }
     }
   }

@@ -318,9 +318,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
             decisionHandler(WKNavigationActionPolicyCancel);
             if (action.targetFrame.mainFrame) {
               [self.pendingNavigationInfo setCancelled:YES];
-              if (!web::features::UseWKWebViewLoading()) {
-                self.webStateImpl->SetIsLoading(false);
-              }
             }
           }
         }));
@@ -420,25 +417,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
       if (!self.beingDestroyed &&
           [self shouldClosePageOnNativeApplicationLoad]) {
-        if (!web::features::UseWKWebViewLoading()) {
-          // Loading was started for user initiated navigations and should be
-          // stopped because no other WKWebView callbacks are called.
-          // TODO(crbug.com/767092): Loading should not start until
-          // webView.loading is changed to YES.
-          self.webStateImpl->SetIsLoading(false);
-        }
         self.webStateImpl->CloseWebState();
         decisionHandler(WKNavigationActionPolicyCancel);
         return;
       }
-    }
-
-    if (!web::features::UseWKWebViewLoading() && !self.beingDestroyed) {
-      // Loading was started for user initiated navigations and should be
-      // stopped because no other WKWebView callbacks are called.
-      // TODO(crbug.com/767092): Loading should not start until webView.loading
-      // is changed to YES.
-      self.webStateImpl->SetIsLoading(false);
     }
   }
 
@@ -480,16 +462,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
             strongSelf.webStateImpl->OnNavigationStarted(context.get());
             strongSelf.webStateImpl->OnNavigationFinished(context.get());
             strongSelf->_safeBrowsingWarningDetectionTimer.Stop();
-            if (!web::features::UseWKWebViewLoading() && !existingContext) {
-              // If there's an existing context, observers will already be aware
-              // of a load in progress. Otherwise, observers need to be notified
-              // here, so that if the user decides to go back to the previous
-              // page (stopping the load), observers will be aware of a possible
-              // URL change and the URL displayed in the omnibox will get
-              // updated.
-              DCHECK(strongWebView.loading);
-              strongSelf.webStateImpl->SetIsLoading(true);
-            }
           }
         }));
   }
@@ -545,13 +517,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (!shouldRenderResponse && WKResponse.canShowMIMEType &&
       WKResponse.forMainFrame) {
     self.pendingNavigationInfo.cancelled = YES;
-  }
-
-  if (!web::features::UseWKWebViewLoading() && !WKResponse.forMainFrame &&
-      !webView.loading) {
-    // This is the terminal callback for iframe navigation and there is no
-    // pending main frame navigation. Last chance to flip IsLoading to false.
-    self.webStateImpl->SetIsLoading(false);
   }
 
   handler(shouldRenderResponse ? WKNavigationResponsePolicyAllow
@@ -1746,10 +1711,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
               navigationContext->GetUrl());
           return;
         } else if (!PageTransitionIsNewNavigation(transition)) {
-          if (!web::features::UseWKWebViewLoading() &&
-              transition & ui::PAGE_TRANSITION_RELOAD) {
-            self.webStateImpl->SetIsLoading(false);
-          }
           return;
         }
     }
@@ -1770,9 +1731,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         self.navigationManagerImpl->DiscardNonCommittedItems();
         [self.navigationStates removeNavigation:navigation];
       }
-      if (!web::features::UseWKWebViewLoading()) {
-        self.webStateImpl->SetIsLoading(false);
-      }
       return;
     }
 
@@ -1783,9 +1741,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         // item and fail the navigation.
         navigationContext->ReleaseItem();
         self.webStateImpl->OnNavigationFinished(navigationContext);
-        if (!web::features::UseWKWebViewLoading()) {
-          self.webStateImpl->SetIsLoading(false);
-        }
         self.webStateImpl->OnPageLoaded(navigationContext->GetUrl(), false);
         return;
       }
@@ -2154,9 +2109,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         [self.delegate navigationHandler:self
               didCompleteLoadWithSuccess:NO
                               forContext:context];
-        if (!web::features::UseWKWebViewLoading()) {
-          self.webStateImpl->SetIsLoading(false);
-        }
         self.webStateImpl->OnPageLoaded(failingURL, NO);
       }));
 }

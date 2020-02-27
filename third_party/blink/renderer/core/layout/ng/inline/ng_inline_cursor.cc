@@ -371,7 +371,7 @@ bool NGInlineCursorPosition::IsLineBox() const {
   return false;
 }
 
-base::i18n::TextDirection NGInlineCursorPosition::BaseDirection() const {
+TextDirection NGInlineCursorPosition::BaseDirection() const {
   DCHECK(IsLineBox());
   if (paint_fragment_) {
     return To<NGPhysicalLineBoxFragment>(paint_fragment_->PhysicalFragment())
@@ -380,7 +380,7 @@ base::i18n::TextDirection NGInlineCursorPosition::BaseDirection() const {
   if (item_)
     return item_->BaseDirection();
   NOTREACHED();
-  return base::i18n::TextDirection::LEFT_TO_RIGHT;
+  return TextDirection::kLtr;
 }
 
 UBiDiLevel NGInlineCursorPosition::BidiLevel() const {
@@ -530,13 +530,13 @@ const PhysicalRect NGInlineCursorPosition::SelfInkOverflow() const {
   return PhysicalRect();
 }
 
-base::i18n::TextDirection NGInlineCursorPosition::ResolvedDirection() const {
+TextDirection NGInlineCursorPosition::ResolvedDirection() const {
   if (paint_fragment_)
     return paint_fragment_->PhysicalFragment().ResolvedDirection();
   if (item_)
     return item_->ResolvedDirection();
   NOTREACHED();
-  return base::i18n::TextDirection::LEFT_TO_RIGHT;
+  return TextDirection::kLtr;
 }
 
 const ComputedStyle& NGInlineCursorPosition::Style() const {
@@ -650,7 +650,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
   DCHECK(IsItemCursor());
   const ComputedStyle& container_style = container.Style();
   const WritingMode writing_mode = container_style.GetWritingMode();
-  const base::i18n::TextDirection direction = container_style.Direction();
+  const TextDirection direction = container_style.Direction();
   const PhysicalSize& container_size = container.Size();
   const LayoutUnit point_block_offset =
       point
@@ -739,7 +739,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
   DCHECK_EQ(container->Type(), NGFragmentItem::kLine);
   const ComputedStyle& container_style = container->Style();
   const WritingMode writing_mode = container_style.GetWritingMode();
-  const base::i18n::TextDirection direction = container_style.Direction();
+  const TextDirection direction = container_style.Direction();
   const PhysicalSize& container_size = container->Size();
   const LayoutUnit point_inline_offset =
       point

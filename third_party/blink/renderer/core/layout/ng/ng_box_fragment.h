@@ -19,7 +19,7 @@ struct NGLineHeightMetrics;
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(WritingMode writing_mode,
-                base::i18n::TextDirection direction,
+                TextDirection direction,
                 const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_mode, physical_fragment), direction_(direction) {}
 
@@ -73,7 +73,7 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   }
 
  protected:
-  base::i18n::TextDirection direction_;
+  TextDirection direction_;
 };
 
 }  // namespace blink

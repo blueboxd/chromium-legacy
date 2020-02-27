@@ -27,11 +27,11 @@ FlingingRendererClientFactory::~FlingingRendererClientFactory() = default;
 
 std::unique_ptr<media::Renderer> FlingingRendererClientFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& /* worker_task_runner */,
-    media::AudioRendererSink* /* audio_renderer_sink */,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    media::AudioRendererSink* audio_renderer_sink,
     media::VideoRendererSink* video_renderer_sink,
-    const media::RequestOverlayInfoCB& /* request_overlay_info_cb */,
-    const gfx::ColorSpace& /* target_color_space */) {
+    media::RequestOverlayInfoCB request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space) {
   DCHECK(IsFlingingActive());
   DCHECK(remote_play_state_change_cb_);
 

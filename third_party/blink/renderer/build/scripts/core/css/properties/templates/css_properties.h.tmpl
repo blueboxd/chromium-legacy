@@ -81,7 +81,7 @@ class {{class_name}} final : public {{property.superclass}} {
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
   {% if property.direction_aware_options %}
-  const CSSProperty& ResolveDirectionAwareProperty(base::i18n::TextDirection, blink::WritingMode) const override;
+  const CSSProperty& ResolveDirectionAwareProperty(TextDirection, blink::WritingMode) const override;
   const CSSValue* CSSValueFromComputedStyleInternal(
       const ComputedStyle&,
       const SVGComputedStyle&,

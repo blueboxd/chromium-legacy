@@ -45,9 +45,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -4140,34 +4140,6 @@ void RawPtrInHashHelper() {
     EXPECT_EQ(42, **it);
     delete *it;
   }
-}
-
-TEST_F(HeapTest, HeapLinkedStack) {
-  ClearOutOldGarbage();
-  IntWrapper::destructor_calls_ = 0;
-
-  HeapLinkedStack<TerminatedArrayItem>* stack =
-      MakeGarbageCollected<HeapLinkedStack<TerminatedArrayItem>>();
-
-  const wtf_size_t kStackSize = 10;
-
-  for (wtf_size_t i = 0; i < kStackSize; i++)
-    stack->Push(TerminatedArrayItem(MakeGarbageCollected<IntWrapper>(i)));
-
-  ConservativelyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(kStackSize, stack->size());
-  while (!stack->IsEmpty()) {
-    EXPECT_EQ(stack->size() - 1,
-              static_cast<size_t>(stack->Peek().Payload()->Value()));
-    stack->Pop();
-  }
-
-  Persistent<HeapLinkedStack<TerminatedArrayItem>> p_stack = stack;
-
-  PreciselyCollectGarbage();
-  EXPECT_EQ(kStackSize, static_cast<size_t>(IntWrapper::destructor_calls_));
-  EXPECT_EQ(0u, p_stack->size());
 }
 
 TEST_F(HeapTest, AllocationDuringFinalization) {

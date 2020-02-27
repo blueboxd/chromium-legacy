@@ -8,8 +8,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
@@ -71,7 +73,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     FetchParameters fetch_params(std::move(resource_request));
     WorkletModuleScriptFetcher* module_fetcher =
-        MakeGarbageCollected<WorkletModuleScriptFetcher>(map_.Get());
+        MakeGarbageCollected<WorkletModuleScriptFetcher>(
+            map_.Get(), ModuleScriptLoader::CreatePassKeyForTests());
     module_fetcher->Fetch(fetch_params, fetcher_.Get(),
                           nullptr /* modulator_for_built_in_modules */,
                           ModuleGraphLevel::kTopLevelModuleFetch, client);

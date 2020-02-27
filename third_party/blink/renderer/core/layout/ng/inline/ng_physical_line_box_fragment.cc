@@ -109,8 +109,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     const NGPhysicalBoxFragment& container,
     const ComputedStyle& container_style) const {
   const WritingMode container_writing_mode = container_style.GetWritingMode();
-  const base::i18n::TextDirection container_direction =
-      container_style.Direction();
+  const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
@@ -149,8 +148,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
   DCHECK_EQ(&child, cursor.CurrentItem());
   DCHECK_EQ(child.LineBoxFragment(), this);
   const WritingMode container_writing_mode = container_style.GetWritingMode();
-  const base::i18n::TextDirection container_direction =
-      container_style.Direction();
+  const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
 
   for (NGInlineCursor descendants = cursor.CursorForDescendants();

@@ -16,6 +16,9 @@
 
 namespace blink {
 
+ModuleScriptFetcher::ModuleScriptFetcher(
+    util::PassKey<ModuleScriptLoader> pass_key) {}
+
 void ModuleScriptFetcher::Client::OnFetched(
     const base::Optional<ModuleScriptCreationParams>& params) {
   NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
@@ -23,6 +26,10 @@ void ModuleScriptFetcher::Client::OnFetched(
 
 void ModuleScriptFetcher::Client::OnFailed() {
   NotifyFetchFinished(base::nullopt, HeapVector<Member<ConsoleMessage>>());
+}
+
+void ModuleScriptFetcher::Trace(Visitor* visitor) {
+  ResourceClient::Trace(visitor);
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#fetch-a-single-module-script">

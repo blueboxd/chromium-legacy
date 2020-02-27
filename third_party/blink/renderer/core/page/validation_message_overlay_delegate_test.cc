@@ -57,9 +57,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   ASSERT_TRUE(anchor);
 
   auto delegate = std::make_unique<ValidationMessageOverlayDelegate>(
-      GetPage(), *anchor, "Test message",
-      base::i18n::TextDirection::LEFT_TO_RIGHT, "Sub-message",
-      base::i18n::TextDirection::LEFT_TO_RIGHT);
+      GetPage(), *anchor, "Test message", TextDirection::kLtr, "Sub-message",
+      TextDirection::kLtr);
   ValidationMessageOverlayDelegate* delegate_ptr = delegate.get();
 
   auto overlay =
@@ -109,9 +108,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   Element* anchor = GetElementById("anchor");
   ASSERT_TRUE(anchor);
 
-  client->ShowValidationMessage(
-      *anchor, "Test message", base::i18n::TextDirection::LEFT_TO_RIGHT,
-      "Sub-message", base::i18n::TextDirection::LEFT_TO_RIGHT);
+  client->ShowValidationMessage(*anchor, "Test message", TextDirection::kLtr,
+                                "Sub-message", TextDirection::kLtr);
   ValidationMessageOverlayDelegate* delegate = client->GetDelegateForTesting();
   ASSERT_TRUE(delegate);
 

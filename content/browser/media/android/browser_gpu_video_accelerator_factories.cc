@@ -109,7 +109,7 @@ std::unique_ptr<media::VideoDecoder>
 BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
     media::MediaLog* media_log,
     media::VideoDecoderImplementation implementation,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
+    media::RequestOverlayInfoCB request_overlay_info_cb) {
   return nullptr;
 }
 

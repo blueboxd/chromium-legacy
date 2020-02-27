@@ -120,7 +120,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->fragmentainer_offset_at_bfc = offset;
   }
 
-  void SetTextDirection(base::i18n::TextDirection direction) {
+  void SetTextDirection(TextDirection direction) {
     space_.bitfields_.direction = static_cast<unsigned>(direction);
   }
 

@@ -179,15 +179,12 @@ AbstractInlineTextBox::Direction LegacyAbstractInlineTextBox::GetDirection()
     return kLeftToRight;
 
   if (GetLineLayoutItem().StyleRef().IsHorizontalWritingMode()) {
-    return (inline_text_box_->Direction() ==
-                    base::i18n::TextDirection::RIGHT_TO_LEFT
+    return (inline_text_box_->Direction() == TextDirection::kRtl
                 ? kRightToLeft
                 : kLeftToRight);
   }
-  return (inline_text_box_->Direction() ==
-                  base::i18n::TextDirection::RIGHT_TO_LEFT
-              ? kBottomToTop
-              : kTopToBottom);
+  return (inline_text_box_->Direction() == TextDirection::kRtl ? kBottomToTop
+                                                               : kTopToBottom);
 }
 
 Node* AbstractInlineTextBox::GetNode() const {

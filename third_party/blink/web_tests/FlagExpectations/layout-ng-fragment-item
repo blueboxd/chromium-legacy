@@ -122,7 +122,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/982194 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Timeout ]
 crbug.com/982194 fast/css/getComputedStyle/computed-style-percentage-top-with-position-inline.html [ Failure ]
 crbug.com/835484 fast/css/outline-narrowLine.html [ Failure ]
-crbug.com/982194 fast/css/pseudo-element-hit-test.html [ Crash ]
 crbug.com/874695 fast/events/autoscroll-iframe-no-scrolling.html [ Pass ]
 crbug.com/663847 fast/events/context-no-deselect.html [ Failure ]
 crbug.com/346473 fast/events/drag-on-mouse-move-cancelled.html [ Failure ]

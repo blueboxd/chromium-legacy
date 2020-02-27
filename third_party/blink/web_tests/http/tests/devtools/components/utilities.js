@@ -232,19 +232,6 @@
       next();
     },
 
-    function stringToBase64Test(next) {
-      var testArray = [
-        '', '', 'a', 'YQ==', 'bc', 'YmM=', 'def', 'ZGVm', 'ghij', 'Z2hpag==', 'klmno', 'a2xtbm8=', 'pqrstu', 'cHFyc3R1',
-        String.fromCharCode(0x444, 0x5555, 0x66666, 0x777777), '0YTllZXmmabnnbc='
-      ];
-      for (var i = 0; i < testArray.length; i += 2) {
-        var string = testArray[i];
-        var encodedString = testArray[i + 1];
-        TestRunner.assertEquals(encodedString, string.toBase64());
-      }
-      next();
-    },
-
     function trimMiddle(next) {
       var testArray = [
         '', '!', '\uD83D\uDE48A\uD83D\uDE48L\uD83D\uDE48I\uD83D\uDE48N\uD83D\uDE48A\uD83D\uDE48\uD83D\uDE48', 'test'

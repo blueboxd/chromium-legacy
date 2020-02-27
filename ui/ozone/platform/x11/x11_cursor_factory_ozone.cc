@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
@@ -25,8 +26,8 @@ PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
 scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(mojom::CursorType type) {
   Cursor cursor(type);
   cursor.set_device_scale_factor(1);
-  SkBitmap bitmap = cursor.GetBitmap();
-  gfx::Point hotspot = cursor.GetHotspot();
+  SkBitmap bitmap = GetCursorBitmap(cursor);
+  gfx::Point hotspot = GetCursorHotstop(cursor);
   if (!bitmap.isNull())
     return new X11CursorOzone(bitmap, hotspot);
   return nullptr;

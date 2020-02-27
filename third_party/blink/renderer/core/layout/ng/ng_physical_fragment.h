@@ -288,7 +288,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   // Returns the resolved direction of a text or atomic inline fragment. Not to
   // be confused with the CSS 'direction' property.
-  base::i18n::TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const;
 
   // Utility functions for caret painting. Note that carets are painted as part
   // of the containing block's foreground.
@@ -359,9 +359,8 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_propagated_descendants_ : 1;
-
   // base (line box) or resolve (text) direction
-  unsigned base_or_resolved_direction_ : 2;  // base::i18n::TextDirection
+  unsigned base_or_resolved_direction_ : 1;  // TextDirection
   unsigned has_hanging_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalBoxFragment

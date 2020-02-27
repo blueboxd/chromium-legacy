@@ -20,7 +20,7 @@ struct PhysicalOffset;
 CORE_EXPORT PhysicalOffset
 ComputeRelativeOffset(const ComputedStyle& child_style,
                       WritingMode container_writing_mode,
-                      base::i18n::TextDirection container_direction,
+                      TextDirection container_direction,
                       PhysicalSize container_size);
 
 }  // namespace blink

@@ -86,7 +86,7 @@ bool Character::IsHangulSlow(UChar32 character) {
 
 unsigned Character::ExpansionOpportunityCount(
     base::span<const LChar> characters,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     bool& is_after_expansion,
     const TextJustify text_justify) {
   if (text_justify == TextJustify::kDistribute) {
@@ -95,9 +95,9 @@ unsigned Character::ExpansionOpportunityCount(
   }
 
   unsigned count = 0;
-  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
-    for (const auto& c : characters) {
-      if (TreatAsSpace(c)) {
+  if (direction == TextDirection::kLtr) {
+    for (unsigned i = 0; i < characters.size(); ++i) {
+      if (TreatAsSpace(characters[i])) {
         count++;
         is_after_expansion = true;
       } else {
@@ -120,11 +120,11 @@ unsigned Character::ExpansionOpportunityCount(
 
 unsigned Character::ExpansionOpportunityCount(
     base::span<const UChar> characters,
-    base::i18n::TextDirection direction,
+    TextDirection direction,
     bool& is_after_expansion,
     const TextJustify text_justify) {
   unsigned count = 0;
-  if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+  if (direction == TextDirection::kLtr) {
     for (unsigned i = 0; i < characters.size(); ++i) {
       UChar32 character = characters[i];
       if (TreatAsSpace(character)) {

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -17,6 +18,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content_settings {
 
@@ -201,6 +204,24 @@ TEST_F(ContentSettingsRegistryTest, GetInitialDefaultSetting) {
   const ContentSettingsInfo* popups =
       registry()->Get(ContentSettingsType::POPUPS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, popups->GetInitialDefaultSetting());
+}
+
+TEST_F(ContentSettingsRegistryTest, OriginAllowlist) {
+// On iOS, CLIPBOARD_READ_WRITE and chrome-untrusted:// are not available. Skip
+// testing here.
+#if !defined(OS_IOS)
+  const ContentSettingsInfo* info =
+      registry()->Get(ContentSettingsType::CLIPBOARD_READ_WRITE);
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->force_allowed_origins().contains(
+      url::Origin::Create(GURL(kChromeUIUntrustedTerminalAppURL))));
+  EXPECT_EQ(1U, info->force_allowed_origins().size());
+#endif
+
+  // We don't auto grant POPUPS permission.
+  const ContentSettingsInfo* info_popups =
+      registry()->Get(ContentSettingsType::POPUPS);
+  EXPECT_EQ(0U, info_popups->force_allowed_origins().size());
 }
 
 }  // namespace content_settings

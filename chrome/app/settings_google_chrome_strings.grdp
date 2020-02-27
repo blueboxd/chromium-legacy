@@ -89,6 +89,15 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE" desc="This text describes what the safety check is. (It's an area of the Settings page where users can quickly check whether their safety-related settings are fully protecting them.)">
     Chrome can help keep you safe from data breaches, bad extensions, and more
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_DISABLED_BY_ADMIN" desc="This text describles that updates are managed by the administrator.">
+    Your administrator manages Chrome updates
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED_OFFLINE" desc="This text describles that Chrome cannot check for updates because there currently is no internet connection.">
+    Chrome can't check for updates. Try checking your internet connection.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED" desc="This text describles that Chrome cannot update due to an unknown error.">
+    Chrome didn't update, something went wrong. Fix Chrome update problems and failed updates.
+  </message>
   <message name="IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_OFFLINE" desc="This text points out that the password check cannot run due to not having interent connection.">
     Chrome can't check your passwords. Try checking your internet connection.
   </message>

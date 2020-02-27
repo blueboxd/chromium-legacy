@@ -502,15 +502,11 @@ TEST_F(TabGridMediatorTest, AddNewItemAtEndCommand) {
   ASSERT_TRUE(web_state);
   EXPECT_EQ(web_state->GetBrowserState(), browser_state_.get());
   EXPECT_FALSE(web_state->HasOpener());
-  if (web::features::UseWKWebViewLoading()) {
-    // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
-    // here because WebState doesn't load the URL until it's visible and
-    // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
-    // to return pending item's URL.
-    EXPECT_EQ("", web_state->GetVisibleURL().spec());
-  } else {
-    EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
-  }
+  // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
+  // here because WebState doesn't load the URL until it's visible and
+  // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
+  // to return pending item's URL.
+  EXPECT_EQ("", web_state->GetVisibleURL().spec());
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
   // Consumer checks.
@@ -532,15 +528,11 @@ TEST_F(TabGridMediatorTest, InsertNewItemCommand) {
   ASSERT_TRUE(web_state);
   EXPECT_EQ(web_state->GetBrowserState(), browser_state_.get());
   EXPECT_FALSE(web_state->HasOpener());
-  if (web::features::UseWKWebViewLoading()) {
-    // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
-    // here because WebState doesn't load the URL until it's visible and
-    // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
-    // to return pending item's URL.
-    EXPECT_EQ("", web_state->GetVisibleURL().spec());
-  } else {
-    EXPECT_EQ(kChromeUINewTabURL, web_state->GetVisibleURL().spec());
-  }
+  // The URL of pending item (i.e. kChromeUINewTabURL) will not be returned
+  // here because WebState doesn't load the URL until it's visible and
+  // NavigationManager::GetVisibleURL requires WebState::IsLoading to be true
+  // to return pending item's URL.
+  EXPECT_EQ("", web_state->GetVisibleURL().spec());
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
   // Consumer checks.

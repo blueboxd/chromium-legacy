@@ -660,7 +660,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
     LayoutUnit& total_logical_width,
     LayoutUnit& available_logical_width,
     unsigned expansion_opportunity_count) {
-  base::i18n::TextDirection direction;
+  TextDirection direction;
   if (root_inline_box &&
       root_inline_box->GetLineLayoutItem().StyleRef().GetUnicodeBidi() ==
           UnicodeBidi::kPlaintext)
@@ -703,7 +703,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
       }
       FALLTHROUGH;
     case ETextAlign::kStart:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+      if (direction == TextDirection::kLtr) {
         UpdateLogicalWidthForLeftAlignedBlock(
             StyleRef().IsLeftToRightDirection(), trailing_space_run,
             logical_left, total_logical_width, available_logical_width);
@@ -714,7 +714,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
       }
       break;
     case ETextAlign::kEnd:
-      if (direction == base::i18n::TextDirection::LEFT_TO_RIGHT) {
+      if (direction == TextDirection::kLtr) {
         UpdateLogicalWidthForRightAlignedBlock(
             StyleRef().IsLeftToRightDirection(), trailing_space_run,
             logical_left, total_logical_width, available_logical_width);
@@ -1151,15 +1151,14 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
     } else {
       VisualDirectionOverride override =
           (style_to_use.RtlOrdering() == EOrder::kVisual
-               ? (style_to_use.Direction() ==
-                          base::i18n::TextDirection::LEFT_TO_RIGHT
+               ? (style_to_use.Direction() == TextDirection::kLtr
                       ? kVisualLeftToRightOverride
                       : kVisualRightToLeftOverride)
                : kNoVisualOverride);
       if (is_new_uba_paragraph &&
           style_to_use.GetUnicodeBidi() == UnicodeBidi::kPlaintext &&
           !resolver.Context()->Parent()) {
-        base::i18n::TextDirection direction = DeterminePlaintextDirectionality(
+        TextDirection direction = DeterminePlaintextDirectionality(
             resolver.GetPosition().Root(),
             resolver.GetPosition().GetLineLayoutItem(),
             resolver.GetPosition().Offset());
@@ -2201,7 +2200,7 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
     resolver.SetPosition(iter, NumberOfIsolateAncestors(iter));
     resolver.SetStatus(last->LineBreakBidiStatus());
   } else {
-    base::i18n::TextDirection direction = StyleRef().Direction();
+    TextDirection direction = StyleRef().Direction();
     if (StyleRef().GetUnicodeBidi() == UnicodeBidi::kPlaintext)
       direction = DeterminePlaintextDirectionality(LineLayoutItem(this));
     resolver.SetStatus(
@@ -2514,8 +2513,7 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
   const Font& first_line_font = FirstLineStyle()->GetFont();
   // FIXME: We should probably not hard-code the direction here.
   // https://crbug.com/333004
-  base::i18n::TextDirection ellipsis_direction =
-      base::i18n::TextDirection::LEFT_TO_RIGHT;
+  TextDirection ellipsis_direction = TextDirection::kLtr;
   float first_line_ellipsis_width = 0;
   float ellipsis_width = 0;
 

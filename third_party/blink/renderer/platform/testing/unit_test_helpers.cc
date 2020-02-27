@@ -131,6 +131,13 @@ scoped_refptr<SharedBuffer> ReadFromFile(const String& path) {
   return SharedBuffer::Create(buffer.data(), buffer.size());
 }
 
+String BlinkWebTestsFontsTestDataPath(const String& relative_path) {
+  return FilePathToWebString(
+      WebTestsFilePath()
+          .Append(FILE_PATH_LITERAL("external/wpt/fonts"))
+          .Append(WebStringToFilePath(relative_path)));
+}
+
 LineReader::LineReader(const String& text) : text_(text), index_(0) {}
 
 bool LineReader::GetNextLine(String* line) {

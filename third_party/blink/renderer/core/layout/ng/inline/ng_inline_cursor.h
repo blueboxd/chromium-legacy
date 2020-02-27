@@ -145,10 +145,10 @@ class CORE_EXPORT NGInlineCursorPosition {
   // Returns text direction of current text or atomic inline. It is error to
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
-  base::i18n::TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const;
   // Returns text direction of current line. It is error to call at other than
   // line.
-  base::i18n::TextDirection BaseDirection() const;
+  TextDirection BaseDirection() const;
 
  private:
   const NGPaintFragment* paint_fragment_ = nullptr;

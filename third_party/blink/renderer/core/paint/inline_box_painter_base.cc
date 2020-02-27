@@ -49,8 +49,8 @@ void InlineBoxPainterBase::PaintBoxDecorationBackground(
       // FIXME: What the heck do we do with RTL here? The math we're using is
       // obviously not right, but it isn't even clear how this should work at
       // all.
-      PhysicalRect image_strip_paint_rect = PaintRectForImageStrip(
-          adjusted_frame_rect, base::i18n::TextDirection::LEFT_TO_RIGHT);
+      PhysicalRect image_strip_paint_rect =
+          PaintRectForImageStrip(adjusted_frame_rect, TextDirection::kLtr);
       GraphicsContextStateSaver state_saver(paint_info.context);
       paint_info.context.Clip(adjusted_clip_rect);
       BoxPainterBase::PaintBorder(image_observer_, *document_, node_,

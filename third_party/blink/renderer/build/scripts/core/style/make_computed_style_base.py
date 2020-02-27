@@ -71,7 +71,6 @@ ALIGNMENT_ORDER = [
     'LayoutUnit',
     'LineClampValue',
     'OutlineValue',
-    'base::i18n::TextDirection',
     'unsigned',
     'size_t',
     'int',

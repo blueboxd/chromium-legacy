@@ -51,7 +51,7 @@ class MojoVideoDecoder final : public VideoDecoder,
       MediaLog* media_log,
       mojo::PendingRemote<mojom::VideoDecoder> pending_remote_decoder,
       VideoDecoderImplementation implementation,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space);
   ~MojoVideoDecoder() final;
 

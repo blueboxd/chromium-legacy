@@ -28,10 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_STACK_H_
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -44,36 +45,40 @@ namespace blink {
 // (now removed: https://codereview.chromium.org/2761853003/).
 // See https://codereview.chromium.org/17314010 for the original use-case.
 template <typename T>
-class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
+class HeapLinkedStack final : public GarbageCollected<HeapLinkedStack<T>> {
  public:
-  HeapLinkedStack() : size_(0) {}
-
-  bool IsEmpty();
-
-  void Push(const T&);
-  const T& Peek();
-  void Pop();
-
-  size_t size();
-
-  void Trace(blink::Visitor* visitor) {
-    for (Node* current = head_; current; current = current->next_)
-      visitor->Trace(current);
+  static void CheckType() {
+    static_assert(internal::IsMember<T>,
+                  "HeapLinkedStack supports only Member.");
   }
 
- private:
-  class Node : public GarbageCollected<Node> {
-   public:
-    Node(const T&, Node* next);
+  HeapLinkedStack() { CheckType(); }
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(data_); }
+  inline size_t size() const;
+  inline bool IsEmpty() const;
+
+  inline void Push(const T&);
+  inline const T& Peek() const;
+  inline void Pop();
+
+  void Trace(blink::Visitor* visitor) { visitor->Trace(head_); }
+
+ private:
+  class Node final : public GarbageCollected<Node> {
+   public:
+    Node(const T&, Node*);
+
+    void Trace(blink::Visitor* visitor) {
+      visitor->Trace(data_);
+      visitor->Trace(next_);
+    }
 
     T data_;
     Member<Node> next_;
   };
 
   Member<Node> head_;
-  size_t size_;
+  size_t size_ = 0;
 };
 
 template <typename T>
@@ -81,23 +86,23 @@ HeapLinkedStack<T>::Node::Node(const T& data, Node* next)
     : data_(data), next_(next) {}
 
 template <typename T>
-inline bool HeapLinkedStack<T>::IsEmpty() {
+bool HeapLinkedStack<T>::IsEmpty() const {
   return !head_;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::Push(const T& data) {
+void HeapLinkedStack<T>::Push(const T& data) {
   head_ = MakeGarbageCollected<Node>(data, head_);
   ++size_;
 }
 
 template <typename T>
-inline const T& HeapLinkedStack<T>::Peek() {
+const T& HeapLinkedStack<T>::Peek() const {
   return head_->data_;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::Pop() {
+void HeapLinkedStack<T>::Pop() {
   DCHECK(head_);
   DCHECK(size_);
   head_ = head_->next_;
@@ -105,10 +110,10 @@ inline void HeapLinkedStack<T>::Pop() {
 }
 
 template <typename T>
-inline size_t HeapLinkedStack<T>::size() {
+size_t HeapLinkedStack<T>::size() const {
   return size_;
 }
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_COLLECTION_SUPPORT_HEAP_LINKED_STACK_H_

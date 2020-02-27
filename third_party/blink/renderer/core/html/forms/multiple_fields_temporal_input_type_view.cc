@@ -685,11 +685,9 @@ void MultipleFieldsTemporalInputTypeView::UpdateClearButtonVisibility() {
   }
 }
 
-base::i18n::TextDirection
-MultipleFieldsTemporalInputTypeView::ComputedTextDirection() {
-  return GetElement().GetLocale().IsRTL()
-             ? base::i18n::TextDirection::RIGHT_TO_LEFT
-             : base::i18n::TextDirection::LEFT_TO_RIGHT;
+TextDirection MultipleFieldsTemporalInputTypeView::ComputedTextDirection() {
+  return GetElement().GetLocale().IsRTL() ? TextDirection::kRtl
+                                          : TextDirection::kLtr;
 }
 
 AXObject* MultipleFieldsTemporalInputTypeView::PopupRootAXObject() {

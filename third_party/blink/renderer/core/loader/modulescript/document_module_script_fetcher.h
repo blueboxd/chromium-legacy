@@ -21,8 +21,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 
  public:
-  DocumentModuleScriptFetcher() = default;
-  ~DocumentModuleScriptFetcher() override = default;
+  explicit DocumentModuleScriptFetcher(util::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,

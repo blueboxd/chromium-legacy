@@ -79,7 +79,8 @@ class DummyModulator : public Modulator {
       v8::Local<v8::Module>) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) override;
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader>) override;
 
   Member<ModuleRecordResolver> resolver_;
 };

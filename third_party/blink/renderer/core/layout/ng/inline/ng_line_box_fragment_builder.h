@@ -31,14 +31,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                            scoped_refptr<const ComputedStyle> style,
                            const NGConstraintSpace* space,
                            WritingMode writing_mode,
-                           base::i18n::TextDirection)
+                           TextDirection)
       : NGContainerFragmentBuilder(node,
                                    style,
                                    space,
                                    writing_mode,
-                                   base::i18n::TextDirection::LEFT_TO_RIGHT),
+                                   TextDirection::kLtr),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
-        base_direction_(base::i18n::TextDirection::LEFT_TO_RIGHT) {}
+        base_direction_(TextDirection::kLtr) {}
 
   void Reset();
 
@@ -60,7 +60,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
 
-  void SetBaseDirection(base::i18n::TextDirection direction) {
+  void SetBaseDirection(TextDirection direction) {
     base_direction_ = direction;
   }
 
@@ -98,8 +98,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     unsigned children_count = 0;
     UBiDiLevel bidi_level = 0xff;
     // The current text direction for OOF positioned items.
-    base::i18n::TextDirection container_direction =
-        base::i18n::TextDirection::LEFT_TO_RIGHT;
+    TextDirection container_direction = TextDirection::kLtr;
 
     // Empty constructor needed for |resize()|.
     Child() = default;
@@ -155,7 +154,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // Create an out-of-flow positioned object.
     Child(LayoutObject* out_of_flow_positioned_box,
           UBiDiLevel bidi_level,
-          base::i18n::TextDirection container_direction)
+          TextDirection container_direction)
         : out_of_flow_positioned_box(out_of_flow_positioned_box),
           bidi_level(bidi_level),
           container_direction(container_direction) {}
@@ -207,11 +206,11 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
         return &layout_result->PhysicalFragment();
       return fragment.get();
     }
-    base::i18n::TextDirection ResolvedDirection() const {
+    TextDirection ResolvedDirection() const {
       // Inline boxes are not leaves that they don't have directions.
       DCHECK(HasBidiLevel() || layout_result->PhysicalFragment().IsInlineBox());
       return HasBidiLevel() ? DirectionFromLevel(bidi_level)
-                            : base::i18n::TextDirection::LEFT_TO_RIGHT;
+                            : TextDirection::kLtr;
     }
   };
 
@@ -302,7 +301,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGLineHeightMetrics metrics_;
   LayoutUnit hang_inline_size_;
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
-  base::i18n::TextDirection base_direction_;
+  TextDirection base_direction_;
 
   friend class NGLayoutResult;
   friend class NGPhysicalLineBoxFragment;

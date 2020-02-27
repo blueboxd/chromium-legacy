@@ -827,14 +827,6 @@ void FormStructure::ProcessQueryResponse(
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;
 
-      // Clears the server prediction for CVC-fields if the corresponding Finch
-      // feature is not enabled.
-      if (!base::FeatureList::IsEnabled(
-              autofill::features::kAutofillUseServerCVCPrediction) &&
-          field_type == ServerFieldType::CREDIT_CARD_VERIFICATION_CODE) {
-        field_type = ServerFieldType::NO_SERVER_DATA;
-      }
-
       field->set_server_type(field_type);
       std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           server_predictions;

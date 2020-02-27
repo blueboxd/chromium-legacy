@@ -12,6 +12,10 @@
 
 namespace blink {
 
+DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
+    util::PassKey<ModuleScriptLoader> pass_key)
+    : ModuleScriptFetcher(pass_key) {}
+
 void DocumentModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -51,6 +55,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 }
 
 void DocumentModuleScriptFetcher::Trace(Visitor* visitor) {
+  ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(client_);
   ResourceClient::Trace(visitor);
 }

@@ -343,6 +343,9 @@ extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[];
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
 
+extern const char kDesktopPWAsWithoutExtensionsName[];
+extern const char kDesktopPWAsWithoutExtensionsDescription[];
+
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 

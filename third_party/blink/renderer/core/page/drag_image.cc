@@ -249,7 +249,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
       kDragLabelBorderX,
       kDragLabelBorderY + label_font.GetFontDescription().ComputedPixelSize());
   if (has_strong_directionality &&
-      text_run.Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT) {
+      text_run.Direction() == TextDirection::kRtl) {
     float text_width = label_font.Width(text_run);
     int available_width = image_size.Width() - kDragLabelBorderX * 2;
     text_pos.SetX(available_width - ceilf(text_width));

@@ -565,6 +565,13 @@ const char kDesktopPWAsTabStripDescription[] =
     "Experimental UI for exploring what PWA windows would look like with a tab "
     "strip.";
 
+const char kDesktopPWAsWithoutExtensionsName[] =
+    "Desktop PWAs without Extensions";
+const char kDesktopPWAsWithoutExtensionsDescription[] =
+    "New platform to manage Web Applications metadata. Warning: this feature "
+    "is incomplete and may corrupt your synced Chrome profile. Test accounts "
+    "only are advised.";
+
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

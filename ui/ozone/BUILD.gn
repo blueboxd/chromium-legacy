@@ -127,6 +127,7 @@ jumbo_component("ozone_base") {
     # Everyone should depend on //ui/ozone instead except a handful of
     # things that would otherwise create a cycle.
     "//ui/base",
+    "//ui/base/cursor",
     "//ui/events/ozone/*",
     "//ui/ozone/common/*",
     "//ui/ozone/public/mojom",

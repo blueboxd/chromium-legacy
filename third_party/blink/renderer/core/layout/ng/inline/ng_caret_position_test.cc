@@ -22,17 +22,16 @@ class NGCaretPositionTest : public NGLayoutTest {
   }
 
  protected:
-  void SetInlineFormattingContext(
-      const char* id,
-      const char* html,
-      unsigned width,
-      base::i18n::TextDirection dir = base::i18n::TextDirection::LEFT_TO_RIGHT,
-      const char* style = nullptr) {
+  void SetInlineFormattingContext(const char* id,
+                                  const char* html,
+                                  unsigned width,
+                                  TextDirection dir = TextDirection::kLtr,
+                                  const char* style = nullptr) {
     InsertStyleElement(
         "body { font: 10px/10px Ahem;  }"
         "bdo { display:block; }");
     const char* pattern =
-        dir == base::i18n::TextDirection::LEFT_TO_RIGHT
+        dir == TextDirection::kLtr
             ? "<div id='%s' style='width: %u0px; %s'>%s</div>"
             : "<bdo dir=rtl id='%s' style='width: %u0px; %s'>%s</bdo>";
     SetBodyInnerHTML(String::Format(
@@ -94,8 +93,7 @@ TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfText) {
 // We should not call |NGInlineCursor::CurrentBidiLevel()| for soft hyphen
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftHyphen) {
   // We have three fragment "foo\u00AD", "\u2010", "bar"
-  SetInlineFormattingContext("t", "foo&shy;bar", 3,
-                             base::i18n::TextDirection::LEFT_TO_RIGHT, "");
+  SetInlineFormattingContext("t", "foo&shy;bar", 3, TextDirection::kLtr, "");
   const LayoutText& text =
       *To<Text>(container_->firstChild())->GetLayoutObject();
   NGInlineCursor cursor;
@@ -249,7 +247,7 @@ TEST_F(NGCaretPositionTest,
                              "<span id=span-d>D</span>"
                              "<span>E</span>"
                              "<span>F</span>",
-                             3, base::i18n::TextDirection::RIGHT_TO_LEFT);
+                             3, TextDirection::kRtl);
   const Node* text_c = GetElementById("span-c")->firstChild();
   const Node* text_d = GetElementById("span-d")->firstChild();
   const NGInlineCursor& fragment_c = FragmentOf(text_c);

@@ -95,16 +95,17 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   }
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType custom_fetch_type) override {
+      ModuleScriptCustomFetchType custom_fetch_type,
+      util::PassKey<ModuleScriptLoader> pass_key) override {
     auto* execution_context = ExecutionContext::From(script_state_);
     if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
       return MakeGarbageCollected<WorkletModuleScriptFetcher>(
-          scope->GetModuleResponsesMap());
+          scope->GetModuleResponsesMap(), pass_key);
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-    return MakeGarbageCollected<DocumentModuleScriptFetcher>();
+    return MakeGarbageCollected<DocumentModuleScriptFetcher>(pass_key);
   }
 
   void Trace(Visitor*) override;

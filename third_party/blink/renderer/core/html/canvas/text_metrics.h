@@ -41,7 +41,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
  public:
   TextMetrics();
   TextMetrics(const Font& font,
-              const base::i18n::TextDirection& direction,
+              const TextDirection& direction,
               const TextBaseline& baseline,
               const TextAlign& align,
               const String& text);
@@ -66,7 +66,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
 
  private:
   void Update(const Font&,
-              const base::i18n::TextDirection&,
+              const TextDirection&,
               const TextBaseline&,
               const TextAlign&,
               const String&);

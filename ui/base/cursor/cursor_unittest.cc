@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/skia_util.h"
 
@@ -38,20 +39,22 @@ TEST(CursorTest, CustomType) {
 
   const gfx::Point kHotspot = gfx::Point(5, 2);
   cursor.set_custom_hotspot(kHotspot);
-  EXPECT_EQ(kHotspot, cursor.GetHotspot());
+  EXPECT_EQ(kHotspot, GetCursorHotstop(cursor));
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(10, 10);
   bitmap.eraseColor(SK_ColorRED);
   cursor.set_custom_bitmap(bitmap);
 
-  EXPECT_EQ(bitmap.getGenerationID(), cursor.GetBitmap().getGenerationID());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, cursor.GetBitmap()));
+  EXPECT_EQ(bitmap.getGenerationID(),
+            GetCursorBitmap(cursor).getGenerationID());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, GetCursorBitmap(cursor)));
 
   Cursor copy(cursor);
-  EXPECT_EQ(cursor.GetBitmap().getGenerationID(),
-            copy.GetBitmap().getGenerationID());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(cursor.GetBitmap(), copy.GetBitmap()));
+  EXPECT_EQ(GetCursorBitmap(cursor).getGenerationID(),
+            GetCursorBitmap(copy).getGenerationID());
+  EXPECT_TRUE(
+      gfx::BitmapsAreEqual(GetCursorBitmap(cursor), GetCursorBitmap(copy)));
   EXPECT_EQ(cursor, copy);
 }
 
@@ -69,9 +72,10 @@ TEST(CursorTest, CustomTypeComparesBitmapPixels) {
   bitmap2.eraseColor(SK_ColorRED);
   cursor2.set_custom_bitmap(bitmap2);
 
-  EXPECT_NE(cursor1.GetBitmap().getGenerationID(),
-            cursor2.GetBitmap().getGenerationID());
-  EXPECT_TRUE(gfx::BitmapsAreEqual(cursor1.GetBitmap(), cursor2.GetBitmap()));
+  EXPECT_NE(GetCursorBitmap(cursor1).getGenerationID(),
+            GetCursorBitmap(cursor2).getGenerationID());
+  EXPECT_TRUE(
+      gfx::BitmapsAreEqual(GetCursorBitmap(cursor1), GetCursorBitmap(cursor2)));
   EXPECT_EQ(cursor1, cursor2);
 }
 

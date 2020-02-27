@@ -28,9 +28,9 @@ void ReportMediaDrmBridgeKeySystemSupport(bool supported) {
 
 }  // namespace
 
-AndroidCdmFactory::AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb,
+AndroidCdmFactory::AndroidCdmFactory(CreateFetcherCB create_fetcher_cb,
                                      CreateStorageCB create_storage_cb)
-    : create_fetcher_cb_(create_fetcher_cb),
+    : create_fetcher_cb_(std::move(create_fetcher_cb)),
       create_storage_cb_(std::move(create_storage_cb)) {}
 
 AndroidCdmFactory::~AndroidCdmFactory() {

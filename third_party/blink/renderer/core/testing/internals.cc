@@ -2974,8 +2974,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
     return false;
   const ComputedStyle* item_style =
       select->ItemComputedStyle(*select->GetListItems()[item_index]);
-  return item_style &&
-         item_style->Direction() == base::i18n::TextDirection::RIGHT_TO_LEFT;
+  return item_style && item_style->Direction() == TextDirection::kRtl;
 }
 
 int Internals::selectPopupItemStyleFontHeight(Node* node, int item_index) {

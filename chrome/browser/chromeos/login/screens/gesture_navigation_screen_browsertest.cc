@@ -109,6 +109,27 @@ IN_PROC_BROWSER_TEST_F(GestureNavigationScreenTest, FlowTest) {
   CheckPageIsShown("gestureBack");
   test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
 
+  // Now tap back buttons until intro screen is shown once again.
+  CheckPageIsShown("gestureOverview");
+  test::OobeJS().TapOnPath(
+      {"gesture-navigation", "gesture-overview-back-button"});
+
+  CheckPageIsShown("gestureBack");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-back-button"});
+
+  CheckPageIsShown("gestureHome");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-back-button"});
+
+  // Go through flow all the way to screen exit.
+  CheckPageIsShown("gestureIntro");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-intro-next-button"});
+
+  CheckPageIsShown("gestureHome");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-home-next-button"});
+
+  CheckPageIsShown("gestureBack");
+  test::OobeJS().TapOnPath({"gesture-navigation", "gesture-back-next-button"});
+
   CheckPageIsShown("gestureOverview");
   test::OobeJS().TapOnPath(
       {"gesture-navigation", "gesture-overview-next-button"});

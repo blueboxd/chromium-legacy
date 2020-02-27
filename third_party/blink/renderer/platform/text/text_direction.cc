@@ -8,8 +8,7 @@
 
 namespace blink {
 
-std::ostream& operator<<(std::ostream& ostream,
-                         base::i18n::TextDirection direction) {
+std::ostream& operator<<(std::ostream& ostream, TextDirection direction) {
   return ostream << (IsLtr(direction) ? "LTR" : "RTL");
 }
 

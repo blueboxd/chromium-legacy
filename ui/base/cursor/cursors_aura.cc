@@ -476,17 +476,17 @@ bool GetAnimatedCursorDataFor(CursorSize cursor_size,
                      id, scale_factor, resource_id, point);
 }
 
-SkBitmap Cursor::GetDefaultBitmap() const {
+SkBitmap GetDefaultBitmap(const Cursor& cursor) {
 #if defined(OS_WIN)
-  Cursor cursor_copy = *this;
+  Cursor cursor_copy = cursor;
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);
   return IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform());
 #else
   int resource_id;
   gfx::Point hotspot;
-  if (!GetCursorDataFor(ui::CursorSize::kNormal, native_type(),
-                        device_scale_factor(), &resource_id, &hotspot)) {
+  if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
+                        cursor.device_scale_factor(), &resource_id, &hotspot)) {
     return SkBitmap();
   }
   return *ResourceBundle::GetSharedInstance()
@@ -495,17 +495,17 @@ SkBitmap Cursor::GetDefaultBitmap() const {
 #endif
 }
 
-gfx::Point Cursor::GetDefaultHotspot() const {
+gfx::Point GetDefaultHotspot(const Cursor& cursor) {
 #if defined(OS_WIN)
-  Cursor cursor_copy = *this;
+  Cursor cursor_copy = cursor;
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);
   return IconUtil::GetHotSpotFromHICON(cursor_copy.platform());
 #else
   int resource_id;
   gfx::Point hotspot;
-  if (!GetCursorDataFor(ui::CursorSize::kNormal, native_type(),
-                        device_scale_factor(), &resource_id, &hotspot)) {
+  if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
+                        cursor.device_scale_factor(), &resource_id, &hotspot)) {
     return gfx::Point();
   }
   return hotspot;

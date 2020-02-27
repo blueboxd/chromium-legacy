@@ -242,8 +242,7 @@ AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {
   const NGInlineCursor& cursor = GetCursor();
   if (!cursor)
     return kLeftToRight;
-  const base::i18n::TextDirection text_direction =
-      cursor.Current().ResolvedDirection();
+  const TextDirection text_direction = cursor.Current().ResolvedDirection();
   if (GetLineLayoutItem().Style()->IsHorizontalWritingMode())
     return IsLtr(text_direction) ? kLeftToRight : kRightToLeft;
   return IsLtr(text_direction) ? kTopToBottom : kBottomToTop;

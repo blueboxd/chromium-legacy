@@ -41,10 +41,10 @@ bool IsSupportedMediaMimeType(const std::string& mime_type) {
 }
 
 void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
-                          const media::ProvideOverlayInfoCB& overlay_info_cb) {
+                          media::ProvideOverlayInfoCB overlay_info_cb) {
   // No android overlay associated with video thumbnail.
   if (overlay_info_cb)
-    overlay_info_cb.Run(media::OverlayInfo());
+    std::move(overlay_info_cb).Run(media::OverlayInfo());
 }
 
 int64_t GetFileSize(const base::FilePath& file_path) {

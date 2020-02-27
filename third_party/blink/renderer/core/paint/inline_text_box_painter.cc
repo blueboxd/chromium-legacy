@@ -111,9 +111,7 @@ static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
     width = LayoutUnit(box.GetLineLayoutItem().Width(
         ltr == flow_is_ltr ? box.Start() : box.Start() + box.Truncation(),
         ltr == flow_is_ltr ? box.Truncation() : box.Len() - box.Truncation(),
-        box.TextPos(),
-        flow_is_ltr ? base::i18n::TextDirection::LEFT_TO_RIGHT
-                    : base::i18n::TextDirection::RIGHT_TO_LEFT,
+        box.TextPos(), flow_is_ltr ? TextDirection::kLtr : TextDirection::kRtl,
         box.IsFirstLineStyle()));
     if (!flow_is_ltr) {
       local_origin.Move(box.LogicalWidth() - width, LayoutUnit());

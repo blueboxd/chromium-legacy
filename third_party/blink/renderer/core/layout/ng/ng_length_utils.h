@@ -389,11 +389,10 @@ CORE_EXPORT NGBoxStrut ComputeMarginsFor(const NGConstraintSpace&,
                                          const ComputedStyle&,
                                          const NGConstraintSpace& compute_for);
 
-inline NGBoxStrut ComputeMarginsFor(
-    const ComputedStyle& child_style,
-    LayoutUnit percentage_resolution_size,
-    WritingMode container_writing_mode,
-    base::i18n::TextDirection container_direction) {
+inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
+                                    LayoutUnit percentage_resolution_size,
+                                    WritingMode container_writing_mode,
+                                    TextDirection container_direction) {
   return ComputePhysicalMargins(child_style, percentage_resolution_size)
       .ConvertToLogical(container_writing_mode, container_direction);
 }
@@ -436,7 +435,7 @@ inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLineLogical(constraint_space.GetWritingMode(),
-                            base::i18n::TextDirection::LEFT_TO_RIGHT);
+                            TextDirection::kLtr);
 }
 
 // Compute margins for a child during the min-max size calculation.
@@ -497,7 +496,7 @@ CORE_EXPORT void ResolveInlineMargins(
 // Calculate the adjustment needed for the line's left position, based on
 // text-align, direction and amount of unused space.
 CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
-                                              base::i18n::TextDirection,
+                                              TextDirection,
                                               LayoutUnit space_left);
 
 inline LayoutUnit ConstrainByMinMax(LayoutUnit length,

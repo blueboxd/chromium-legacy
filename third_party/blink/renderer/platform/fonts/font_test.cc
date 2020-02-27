@@ -29,9 +29,7 @@ class FontTest : public ::testing::Test {
     TextRun text_run(
         text, /* xpos */ 0, /* expansion */ 0,
         TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
-        ltr ? base::i18n::TextDirection::LEFT_TO_RIGHT
-            : base::i18n::TextDirection::RIGHT_TO_LEFT,
-        false);
+        ltr ? TextDirection::kLtr : TextDirection::kRtl, false);
 
     font.ExpandRangeToIncludePartialGlyphs(text_run, &from, &to);
     return Vector<int>({from, to});

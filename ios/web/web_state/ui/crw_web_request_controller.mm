@@ -366,7 +366,7 @@ enum class BackForwardNavigationType {
   if (!IsWKInternalUrl(requestURL) &&
       (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
        !placeholderNavigation) &&
-      (!web::features::UseWKWebViewLoading() || !rendererInitiated)) {
+      !rendererInitiated) {
     self.webState->SetIsLoading(true);
   }
 
@@ -413,14 +413,6 @@ enum class BackForwardNavigationType {
     // WebStateObserver callbacks will be called for load failure after
     // loading placeholder URL.
     return;
-  }
-  if (!web::features::UseWKWebViewLoading()) {
-    if (![self.navigationHandler.navigationStates
-                lastNavigationWithPendingItemInNavigationContext]) {
-      self.webState->SetIsLoading(false);
-    } else {
-      // There is another pending navigation, so the state is still loading.
-    }
   }
 
   self.webState->OnPageLoaded(currentURL, YES);

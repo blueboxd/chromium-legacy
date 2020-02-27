@@ -23,7 +23,8 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
 
   // Implements ModulatorImplBase.
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType) override;
+      ModuleScriptCustomFetchType,
+      util::PassKey<ModuleScriptLoader>) override;
 
  private:
   // Implements ModulatorImplBase.

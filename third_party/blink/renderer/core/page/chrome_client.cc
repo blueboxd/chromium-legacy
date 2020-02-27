@@ -226,7 +226,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
                               const HitTestLocation& location,
                               const HitTestResult& result) {
   // First priority is a tooltip for element with "title" attribute.
-  base::i18n::TextDirection tool_tip_direction;
+  TextDirection tool_tip_direction;
   String tool_tip = result.Title(tool_tip_direction);
 
   // Lastly, some elements provide default tooltip strings.  e.g. <input
@@ -240,7 +240,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
       // implementations don't use text direction information for
       // ChromeClient::setToolTip. We'll work on tooltip text
       // direction during bidi cleanup in form inputs.
-      tool_tip_direction = base::i18n::TextDirection::LEFT_TO_RIGHT;
+      tool_tip_direction = TextDirection::kLtr;
     }
   }
 
@@ -267,7 +267,7 @@ void ChromeClient::SetToolTip(LocalFrame& frame,
 void ChromeClient::ClearToolTip(LocalFrame& frame) {
   // Do not check m_lastToolTip* and do not update them intentionally.
   // We don't want to show tooltips with same content after clearToolTip().
-  SetToolTip(frame, String(), base::i18n::TextDirection::LEFT_TO_RIGHT);
+  SetToolTip(frame, String(), TextDirection::kLtr);
 }
 
 bool ChromeClient::Print(LocalFrame* frame) {

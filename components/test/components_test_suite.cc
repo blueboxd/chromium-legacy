@@ -42,8 +42,8 @@ namespace {
 
 // Not using kExtensionScheme and kChromeSearchScheme to avoid the dependency
 // to extensions and chrome/common.
-const char* const kNonWildcardDomainNonPortSchemes[] = {"chrome-extension",
-                                                        "chrome-search"};
+const char* const kNonWildcardDomainNonPortSchemes[] = {
+    "chrome-extension", "chrome-search", "chrome", "chrome-untrusted"};
 
 class ComponentsTestSuite : public base::TestSuite {
  public:

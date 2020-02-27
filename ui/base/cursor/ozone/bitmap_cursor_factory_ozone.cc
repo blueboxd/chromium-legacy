@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 
@@ -30,8 +31,8 @@ scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(
   // it can happen that cursor chooses wrong hotspots if max scaling value is
   // set to 200p, for example.
   cursor.set_device_scale_factor(1.0f);
-  SkBitmap bitmap = cursor.GetBitmap();
-  gfx::Point hotspot = cursor.GetHotspot();
+  SkBitmap bitmap = GetCursorBitmap(cursor);
+  gfx::Point hotspot = GetCursorHotstop(cursor);
   if (!bitmap.isNull())
     return new BitmapCursorOzone(bitmap, hotspot);
   return nullptr;

@@ -93,7 +93,7 @@ class LineLayoutText : public LineLayoutItem {
               unsigned len,
               const Font& font,
               LayoutUnit x_pos,
-              base::i18n::TextDirection text_direction,
+              TextDirection text_direction,
               HashSet<const SimpleFontData*>* fallback_fonts,
               FloatRect* glyph_bounds,
               float expansion = 0) const {
@@ -104,7 +104,7 @@ class LineLayoutText : public LineLayoutItem {
   float Width(unsigned from,
               unsigned len,
               LayoutUnit x_pos,
-              base::i18n::TextDirection text_direction,
+              TextDirection text_direction,
               bool first_line,
               HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
               FloatRect* glyph_bounds = nullptr,
@@ -113,8 +113,7 @@ class LineLayoutText : public LineLayoutItem {
                            fallback_fonts, glyph_bounds, expansion);
   }
 
-  float HyphenWidth(const Font& font,
-                    base::i18n::TextDirection text_direction) {
+  float HyphenWidth(const Font& font, TextDirection text_direction) {
     return ToText()->HyphenWidth(font, text_direction);
   }
 

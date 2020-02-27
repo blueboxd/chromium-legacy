@@ -301,7 +301,7 @@ class CORE_EXPORT NGLineBreaker {
   // The current base direction for the bidi algorithm.
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
-  base::i18n::TextDirection base_direction_;
+  TextDirection base_direction_;
 
 #if DCHECK_IS_ON()
   // These fields are to detect rewind-loop.

@@ -6,7 +6,7 @@ mojom = "//ui/base/mojom/cursor.mojom"
 public_headers = [ "//ui/base/cursor/cursor.h" ]
 traits_headers = [ "//ui/base/mojom/cursor_mojom_traits.h" ]
 sources = [ "//ui/base/mojom/cursor_mojom_traits.cc" ]
-public_deps = [ "//ui/base" ]
+public_deps = [ "//ui/base/cursor" ]
 deps = [
   "//ui/gfx/geometry",
   "//ui/gfx/geometry/mojom:mojom_traits",

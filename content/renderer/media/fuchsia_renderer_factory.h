@@ -47,13 +47,13 @@ class CONTENT_EXPORT FuchsiaRendererFactory : public media::RendererFactory {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::AudioRendererSink* audio_renderer_sink,
       media::VideoRendererSink* video_renderer_sink,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb,
+      media::RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
 
  private:
   std::vector<std::unique_ptr<media::VideoDecoder>> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb,
+      media::RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space,
       media::GpuVideoAcceleratorFactories* gpu_factories);
 

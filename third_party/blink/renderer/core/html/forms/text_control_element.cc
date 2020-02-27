@@ -980,10 +980,9 @@ String TextControlElement::DirectionForFormData() const {
 
     if (EqualIgnoringASCIICase(dir_attribute_value, "auto")) {
       bool is_auto;
-      base::i18n::TextDirection text_direction =
+      TextDirection text_direction =
           element->DirectionalityIfhasDirAutoAttribute(is_auto);
-      return text_direction == base::i18n::TextDirection::RIGHT_TO_LEFT ? "rtl"
-                                                                        : "ltr";
+      return text_direction == TextDirection::kRtl ? "rtl" : "ltr";
     }
   }
 

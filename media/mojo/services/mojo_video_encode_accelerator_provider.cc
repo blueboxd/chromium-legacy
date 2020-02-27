@@ -19,20 +19,18 @@ namespace media {
 // static
 void MojoVideoEncodeAcceleratorProvider::Create(
     mojo::PendingReceiver<mojom::VideoEncodeAcceleratorProvider> receiver,
-    const CreateAndInitializeVideoEncodeAcceleratorCallback&
-        create_vea_callback,
+    CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
     const gpu::GpuPreferences& gpu_preferences) {
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<MojoVideoEncodeAcceleratorProvider>(create_vea_callback,
-                                                           gpu_preferences),
+      std::make_unique<MojoVideoEncodeAcceleratorProvider>(
+          std::move(create_vea_callback), gpu_preferences),
       std::move(receiver));
 }
 
 MojoVideoEncodeAcceleratorProvider::MojoVideoEncodeAcceleratorProvider(
-    const CreateAndInitializeVideoEncodeAcceleratorCallback&
-        create_vea_callback,
+    CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback,
     const gpu::GpuPreferences& gpu_preferences)
-    : create_vea_callback_(create_vea_callback),
+    : create_vea_callback_(std::move(create_vea_callback)),
       gpu_preferences_(gpu_preferences) {}
 
 MojoVideoEncodeAcceleratorProvider::~MojoVideoEncodeAcceleratorProvider() =

@@ -23,8 +23,8 @@ void CheckLegacyLogicalDirections(const PhysicalToLogicalConverter& converter) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalHorizontalLtr) {
   PhysicalToLogical<int> converter(WritingMode::kHorizontalTb,
-                                   base::i18n::TextDirection::LEFT_TO_RIGHT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kLtr, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kLeft, converter.InlineStart());
   EXPECT_EQ(kRight, converter.InlineEnd());
   EXPECT_EQ(kTop, converter.BlockStart());
@@ -38,8 +38,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalHorizontalLtr) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalHorizontalRtl) {
   PhysicalToLogical<int> converter(WritingMode::kHorizontalTb,
-                                   base::i18n::TextDirection::RIGHT_TO_LEFT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kRtl, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kRight, converter.InlineStart());
   EXPECT_EQ(kLeft, converter.InlineEnd());
   EXPECT_EQ(kTop, converter.BlockStart());
@@ -53,8 +53,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalHorizontalRtl) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalVlrLtr) {
   PhysicalToLogical<int> converter(WritingMode::kVerticalLr,
-                                   base::i18n::TextDirection::LEFT_TO_RIGHT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kLtr, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kTop, converter.InlineStart());
   EXPECT_EQ(kBottom, converter.InlineEnd());
   EXPECT_EQ(kLeft, converter.BlockStart());
@@ -68,8 +68,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalVlrLtr) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalVlrRtl) {
   PhysicalToLogical<int> converter(WritingMode::kVerticalLr,
-                                   base::i18n::TextDirection::RIGHT_TO_LEFT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kRtl, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kBottom, converter.InlineStart());
   EXPECT_EQ(kTop, converter.InlineEnd());
   EXPECT_EQ(kLeft, converter.BlockStart());
@@ -83,8 +83,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalVlrRtl) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalVrlLtr) {
   PhysicalToLogical<int> converter(WritingMode::kVerticalRl,
-                                   base::i18n::TextDirection::LEFT_TO_RIGHT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kLtr, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kTop, converter.InlineStart());
   EXPECT_EQ(kBottom, converter.InlineEnd());
   EXPECT_EQ(kRight, converter.BlockStart());
@@ -98,8 +98,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalVrlLtr) {
 
 TEST(WritingModeUtilsTest, PhysicalToLogicalVrlRtl) {
   PhysicalToLogical<int> converter(WritingMode::kVerticalRl,
-                                   base::i18n::TextDirection::RIGHT_TO_LEFT,
-                                   kTop, kRight, kBottom, kLeft);
+                                   TextDirection::kRtl, kTop, kRight, kBottom,
+                                   kLeft);
   EXPECT_EQ(kBottom, converter.InlineStart());
   EXPECT_EQ(kTop, converter.InlineEnd());
   EXPECT_EQ(kRight, converter.BlockStart());
@@ -114,9 +114,9 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalVrlRtl) {
 enum { kInlineStart = 1000, kInlineEnd, kBlockStart, kBlockEnd };
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalHorizontalLtr) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kHorizontalTb, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kHorizontalTb,
+                                   TextDirection::kLtr, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kInlineStart, converter.Left());
   EXPECT_EQ(kInlineEnd, converter.Right());
   EXPECT_EQ(kBlockStart, converter.Top());
@@ -124,9 +124,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalHorizontalLtr) {
 }
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalHorizontalRtl) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kHorizontalTb, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kHorizontalTb,
+                                   TextDirection::kRtl, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kInlineEnd, converter.Left());
   EXPECT_EQ(kInlineStart, converter.Right());
   EXPECT_EQ(kBlockStart, converter.Top());
@@ -134,9 +134,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalHorizontalRtl) {
 }
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalVlrLtr) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kVerticalLr, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kVerticalLr,
+                                   TextDirection::kLtr, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kBlockStart, converter.Left());
   EXPECT_EQ(kBlockEnd, converter.Right());
   EXPECT_EQ(kInlineStart, converter.Top());
@@ -144,9 +144,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalVlrLtr) {
 }
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalVlrRtl) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kVerticalLr, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kVerticalLr,
+                                   TextDirection::kRtl, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kBlockStart, converter.Left());
   EXPECT_EQ(kBlockEnd, converter.Right());
   EXPECT_EQ(kInlineEnd, converter.Top());
@@ -154,9 +154,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalVlrRtl) {
 }
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalVrlLtr) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::LEFT_TO_RIGHT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kVerticalRl,
+                                   TextDirection::kLtr, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kBlockEnd, converter.Left());
   EXPECT_EQ(kBlockStart, converter.Right());
   EXPECT_EQ(kInlineStart, converter.Top());
@@ -164,9 +164,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalVrlLtr) {
 }
 
 TEST(WritingModeUtilsTest, LogicalToPhysicalVrlRtl) {
-  LogicalToPhysical<int> converter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      kInlineStart, kInlineEnd, kBlockStart, kBlockEnd);
+  LogicalToPhysical<int> converter(WritingMode::kVerticalRl,
+                                   TextDirection::kRtl, kInlineStart,
+                                   kInlineEnd, kBlockStart, kBlockEnd);
   EXPECT_EQ(kBlockEnd, converter.Left());
   EXPECT_EQ(kBlockStart, converter.Right());
   EXPECT_EQ(kInlineEnd, converter.Top());
@@ -196,9 +196,9 @@ class PhysicalValues {
 TEST(WritingModeUtilsTest, PhysicalToLogicalGetter) {
   PhysicalValues physical_values;
   PhysicalToLogicalGetter<int, PhysicalValues> getter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      physical_values, &PhysicalValues::Top, &PhysicalValues::Right,
-      &PhysicalValues::Bottom, &PhysicalValues::Left);
+      WritingMode::kVerticalRl, TextDirection::kRtl, physical_values,
+      &PhysicalValues::Top, &PhysicalValues::Right, &PhysicalValues::Bottom,
+      &PhysicalValues::Left);
 
   EXPECT_EQ(kBottom, getter.InlineStart());
   EXPECT_EQ(kTop, getter.InlineEnd());
@@ -214,8 +214,8 @@ TEST(WritingModeUtilsTest, PhysicalToLogicalGetter) {
 TEST(WritingModeUtilsTest, LogicalToPhysicalSetter) {
   PhysicalValues physical_values;
   LogicalToPhysicalSetter<int, PhysicalValues> setter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      physical_values, &PhysicalValues::SetTop, &PhysicalValues::SetRight,
+      WritingMode::kVerticalRl, TextDirection::kRtl, physical_values,
+      &PhysicalValues::SetTop, &PhysicalValues::SetRight,
       &PhysicalValues::SetBottom, &PhysicalValues::SetLeft);
   setter.SetInlineStart(kInlineStart);
   setter.SetInlineEnd(kInlineEnd);
@@ -271,8 +271,8 @@ class LogicalValues {
 TEST(WritingModeUtilsTest, LogicalToPhysicalGetter) {
   LogicalValues logical_values;
   LogicalToPhysicalGetter<int, LogicalValues> getter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      logical_values, &LogicalValues::InlineStart, &LogicalValues::InlineEnd,
+      WritingMode::kVerticalRl, TextDirection::kRtl, logical_values,
+      &LogicalValues::InlineStart, &LogicalValues::InlineEnd,
       &LogicalValues::BlockStart, &LogicalValues::BlockEnd);
 
   EXPECT_EQ(kBlockEnd, getter.Left());
@@ -284,10 +284,9 @@ TEST(WritingModeUtilsTest, LogicalToPhysicalGetter) {
 TEST(WritingModeUtilsTest, PhysicalToLogicalSetter) {
   LogicalValues logical_values;
   PhysicalToLogicalSetter<int, LogicalValues> setter(
-      WritingMode::kVerticalRl, base::i18n::TextDirection::RIGHT_TO_LEFT,
-      logical_values, &LogicalValues::SetInlineStart,
-      &LogicalValues::SetInlineEnd, &LogicalValues::SetBlockStart,
-      &LogicalValues::SetBlockEnd);
+      WritingMode::kVerticalRl, TextDirection::kRtl, logical_values,
+      &LogicalValues::SetInlineStart, &LogicalValues::SetInlineEnd,
+      &LogicalValues::SetBlockStart, &LogicalValues::SetBlockEnd);
   setter.SetTop(kTop);
   setter.SetRight(kRight);
   setter.SetBottom(kBottom);

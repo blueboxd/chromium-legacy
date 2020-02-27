@@ -253,7 +253,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   base::circular_deque<Display::PresentationGroupTiming>
       pending_presentation_group_timings_;
 
-  bool disable_swap_until_resize_ = true;
+  bool disable_draw_until_resize_ = true;
 
   // Callback that will be run after all pending swaps have acked.
   base::OnceClosure no_pending_swaps_callback_;

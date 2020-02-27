@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+PASS request Picture-in-Picture requires a user gesture
+PASS request Picture-in-Picture resolves on user click
+PASS request Picture-in-Picture takes an interactive option that can be true
+PASS request Picture-in-Picture takes an interactive option that can be false
+PASS request Picture-in-Picture validates interactive option
+PASS request Picture-in-Picture does not require width/height by default
+PASS request Picture-in-Picture requires width option if height present
+PASS request Picture-in-Picture requires height option if width present
+PASS request Picture-in-Picture requires width/height to be positive (both negative)
+PASS request Picture-in-Picture requires width/height to be positive (negative width)
+PASS request Picture-in-Picture requires width/height to be positive (negative height)
+PASS request Picture-in-Picture requires width/height to not be zero (both zero)
+PASS request Picture-in-Picture requires width/height to not be zero (width zero)
+PASS request Picture-in-Picture requires width/height to not be zero (height zero)
+PASS request Picture-in-Picture does not require options
+Harness: the test ran to completion.
+

@@ -52,4 +52,8 @@ bool NavigationID::operator==(const NavigationID& rhs) const {
   return tab_id == rhs.tab_id && main_frame_url == rhs.main_frame_url;
 }
 
+bool NavigationID::operator!=(const NavigationID& rhs) const {
+  return !(*this == rhs);
+}
+
 }  // namespace predictors

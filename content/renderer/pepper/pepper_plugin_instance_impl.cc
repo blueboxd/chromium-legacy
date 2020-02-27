@@ -120,6 +120,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -216,9 +217,9 @@ const char kHeight[] = "height";
 const char kBorder[] = "border";  // According to w3c, deprecated.
 const char kStyle[] = "style";
 
-#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, np_name)        \
-  static_assert(static_cast<int>(ui::CursorType::webkit_name) == \
-                    static_cast<int>(np_name),                   \
+#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, np_name)               \
+  static_assert(static_cast<int>(ui::mojom::CursorType::webkit_name) == \
+                    static_cast<int>(np_name),                          \
                 "mismatching enums: " #webkit_name)
 
 STATIC_ASSERT_MATCHING_ENUM(kPointer, PP_MOUSECURSOR_TYPE_POINTER);
@@ -2685,8 +2686,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
-    DoSetCursor(
-        std::make_unique<WebCursorInfo>(static_cast<ui::CursorType>(type)));
+    DoSetCursor(std::make_unique<WebCursorInfo>(
+        static_cast<ui::mojom::CursorType>(type)));
     return PP_TRUE;
   }
 
@@ -2700,7 +2701,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   if (!auto_mapper.is_valid())
     return PP_FALSE;
 
-  auto custom_cursor = std::make_unique<WebCursorInfo>(ui::CursorType::kCustom);
+  auto custom_cursor =
+      std::make_unique<WebCursorInfo>(ui::mojom::CursorType::kCustom);
   custom_cursor->hot_spot.SetPoint(hot_spot->x, hot_spot->y);
 
   SkBitmap bitmap(image_data->GetMappedBitmap());

@@ -19,6 +19,7 @@
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
@@ -219,13 +220,15 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_GlobalCursorState) {
 
   // Verify that setting the cursor using one cursor client
   // will set it for all root windows.
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client_a->GetCursor().native_type());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client_b->GetCursor().native_type());
-
-  cursor_client_b->SetCursor(ui::CursorType::kPointer);
-  EXPECT_EQ(ui::CursorType::kPointer,
+  EXPECT_EQ(ui::mojom::CursorType::kNone,
             cursor_client_a->GetCursor().native_type());
-  EXPECT_EQ(ui::CursorType::kPointer,
+  EXPECT_EQ(ui::mojom::CursorType::kNone,
+            cursor_client_b->GetCursor().native_type());
+
+  cursor_client_b->SetCursor(ui::mojom::CursorType::kPointer);
+  EXPECT_EQ(ui::mojom::CursorType::kPointer,
+            cursor_client_a->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer,
             cursor_client_b->GetCursor().native_type());
 
   // Verify that hiding the cursor using one cursor client will

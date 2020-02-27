@@ -177,9 +177,6 @@ using bookmarks::BookmarkNode;
   // Configure the table view.
   self.tableView.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  // Add a tableFooterView in order to disable separators at the bottom of the
-  // tableView.
-  self.tableView.tableFooterView = [[UIView alloc] init];
 
   self.tableView.estimatedRowHeight = kEstimatedFolderCellHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;

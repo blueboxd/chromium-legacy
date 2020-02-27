@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host_popup_impl.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 
 namespace chromeos {
@@ -81,8 +81,8 @@ class PinDialogManager final {
   RequestPinResult RequestPin(const std::string& extension_id,
                               const std::string& extension_name,
                               int sign_request_id,
-                              SecurityTokenPinCodeType code_type,
-                              SecurityTokenPinErrorLabel error_label,
+                              security_token_pin::CodeType code_type,
+                              security_token_pin::ErrorLabel error_label,
                               int attempts_left,
                               RequestPinCallback callback);
 
@@ -92,7 +92,7 @@ class PinDialogManager final {
   // the dialog with the error message is closed by the user).
   StopPinRequestResult StopPinRequestWithError(
       const std::string& extension_id,
-      SecurityTokenPinErrorLabel error_label,
+      security_token_pin::ErrorLabel error_label,
       StopPinRequestCallback callback);
 
   // Returns whether the last PIN dialog from this extension was closed by the
@@ -139,7 +139,7 @@ class PinDialogManager final {
                       const std::string& extension_id,
                       const std::string& extension_name,
                       int sign_request_id,
-                      SecurityTokenPinCodeType code_type);
+                      security_token_pin::CodeType code_type);
     ~ActiveDialogState();
 
     // Remember the host that was used to open the active dialog, as new hosts
@@ -150,7 +150,7 @@ class PinDialogManager final {
     const std::string extension_id;
     const std::string extension_name;
     const int sign_request_id;
-    const SecurityTokenPinCodeType code_type;
+    const security_token_pin::CodeType code_type;
     RequestPinCallback request_pin_callback;
     StopPinRequestCallback stop_pin_request_callback;
   };

@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
@@ -37,6 +38,7 @@
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "extensions/common/constants.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -83,6 +85,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::HELP)) {
     infos.emplace(SystemAppType::HELP,
                   SystemAppInfo("Help", GURL("chrome://help-app/pwa.html")));
+    infos.at(SystemAppType::HELP).additional_search_terms = {
+        IDS_GENIUS_APP_NAME, IDS_HELP_APP_PERKS, IDS_HELP_APP_OFFERS};
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {

@@ -13,21 +13,21 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [205, 1019],
+      "bounds": [205, 1021],
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [0, 997, 205, 22],
+          "rect": [0, 998, 205, 23],
           "reason": "subtree"
         },
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [0, 997, 205, 22],
+          "rect": [0, 998, 205, 23],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [3, 1003, 1, 13],
+          "rect": [3, 1003, 1, 15],
           "reason": "chunk appeared"
         }
       ],
@@ -63,7 +63,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -919, 0, 1]
+        [0, -921, 0, 1]
       ]
     }
   ]

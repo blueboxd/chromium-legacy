@@ -96,6 +96,8 @@ source_set("exo") {
     "//ui/wm/public",
   ]
 
+  public_deps = [ "//ui/base/mojom:cursor_type" ]
+
   if (is_chromeos) {
     deps += [
       "//ash/keyboard/ui",
@@ -253,6 +255,7 @@ source_set("unit_tests") {
       "//ash/keyboard/ui",
       "//ash/public/cpp",
       "//chromeos/constants",
+      "//ui/base/mojom:cursor_type",
     ]
   }
 

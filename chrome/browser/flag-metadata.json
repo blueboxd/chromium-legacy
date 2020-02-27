@@ -2731,6 +2731,16 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-compact-suggestions",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
+    "name": "omnibox-deferred-keyboard-popup",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "omnibox-disable-instant-extended-limit",
     "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85

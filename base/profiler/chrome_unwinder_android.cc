@@ -89,9 +89,10 @@ ChromeUnwinderAndroid::ChromeUnwinderAndroid(const ArmCFITable* cfi_table)
 ChromeUnwinderAndroid::~ChromeUnwinderAndroid() = default;
 
 void ChromeUnwinderAndroid::AddNonNativeModules(ModuleCache* module_cache) {
-  auto chrome_module = std::make_unique<ChromeModule>();
-  chrome_module_id_ = chrome_module->GetId();
-  module_cache->AddNonNativeModule(std::move(chrome_module));
+  std::vector<std::unique_ptr<const ModuleCache::Module>> modules;
+  modules.push_back(std::make_unique<ChromeModule>());
+  chrome_module_id_ = modules.back()->GetId();
+  module_cache->UpdateNonNativeModules({}, std::move(modules));
 }
 
 bool ChromeUnwinderAndroid::CanUnwindFrom(const Frame* current_frame) const {

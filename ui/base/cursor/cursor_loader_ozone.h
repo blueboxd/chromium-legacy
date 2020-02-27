@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/mojom/cursor_type.mojom-forward.h"
 
 namespace ui {
 
@@ -23,10 +24,10 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
   ~CursorLoaderOzone() override;
 
   // CursorLoader overrides:
-  void LoadImageCursor(CursorType id,
+  void LoadImageCursor(mojom::CursorType id,
                        int resource_id,
                        const gfx::Point& hot) override;
-  void LoadAnimatedCursor(CursorType id,
+  void LoadAnimatedCursor(mojom::CursorType id,
                           int resource_id,
                           const gfx::Point& hot,
                           int frame_delay_ms) override;
@@ -35,7 +36,7 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
 
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.
-  std::map<CursorType, PlatformCursor> image_cursors_;
+  std::map<mojom::CursorType, PlatformCursor> image_cursors_;
   CursorFactoryOzone* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);

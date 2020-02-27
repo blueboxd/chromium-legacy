@@ -38,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox - Chrome වෙත හඬ දීම</translation>
 <translation id="1225969361094801578">තද පතුරු පාෂාණ අළු</translation>
 <translation id="1229276918471378188">ආපස්සට පැනීම</translation>
+<translation id="1230503547248836149">තේරීම් ආරම්භය</translation>
 <translation id="1236794971743289975">නිමි සටහන</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1243477406442346359">කෝන්ෆ්ලවර් නිල්</translation>
@@ -120,6 +121,7 @@
 <translation id="1752708997038853212">සෙවුම් විමසුමක් ඇතුළත් කරන්න</translation>
 <translation id="1756785467854861272">තද මැජෙන්ටා</translation>
 <translation id="1765245556747822181">ඇඟිල්ලක් උඩට ස්වයිප් කරන්න</translation>
+<translation id="1771761307086386028">දකුණට අනුචලන කරන්න</translation>
 <translation id="1781173782405573156">අතරින් ගමන්කරන යතුර</translation>
 <translation id="1787176709638001873">රහස්වචනය වෙනස් කිරීමේ වදන්</translation>
 <translation id="1802710350767629429">යාවත්කාලීන සටහන් පෙන්වන්න</translation>
@@ -176,6 +178,7 @@
 <translation id="2199994615414171367">පෙර මැත්</translation>
 <translation id="2203046366315513658">අගය අඩු කරන්න</translation>
 <translation id="2216790501338699346">සබැඳියේ URL එක: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">එක අකුරක් පසුපසට යන්න</translation>
 <translation id="2220529011494928058">ගැටළුවක් වාර්තා කරන්න...</translation>
 <translation id="2223693656926968778">වත්මන් අයිතමය මත ක්‍රියාවට නංවන්න</translation>
 <translation id="224426591676115802">භාෂාව සඳහා හඬ කිසිවක් නොලැබේ: <ph name="LANGUAGE" /></translation>
@@ -225,6 +228,7 @@
 <translation id="2592212930811759050">සංස්කරණය ආරම්භ කිරීමට දෙවරක් තට්ටු කරන්න</translation>
 <translation id="2594420797397883935">සබැඳියක් නොවන පෙර අයිතමයක් නැත</translation>
 <translation id="2598495320872286378">ව්‍යාකරණ දේෂය</translation>
+<translation id="2603828437139726540">එක අකුරක් ඉදිරියට යන්න</translation>
 <translation id="2614981083756825552">ගණිත ML සැකැස්ම</translation>
 <translation id="2624431853467395961">ඉගෙනුම් ප්‍රකාරය විවෘත කරන්න</translation>
 <translation id="2626530649491650971">ක්ලික් කළ හැකි</translation>
@@ -232,6 +236,7 @@
 <translation id="2638785836053527382"><ph name="FILE_NAME" /> බාගැනීම යළි පටන් ගත්තා</translation>
 <translation id="2639750663247012216">ChromeVox වෙනස්කාරකය</translation>
 <translation id="2644542693584024604">වැරදියට අකුරු ලියූ</translation>
+<translation id="2654172656519784359">එක වචනයෙක් ඉදිරියට යන්න</translation>
 <translation id="2661530546602071611">නිවේදනය</translation>
 <translation id="2673280813984708147">සංස්කරණය කරනු ලබයි</translation>
 <translation id="267442004702508783">නැවුම් කිරීම</translation>
@@ -308,6 +313,7 @@
 <translation id="3090532668523289635">කණ්</translation>
 <translation id="3093176084511590672">ඊළඟ බිමි සලකුණ</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="309749186376891736">කර්සරය එහා මෙහා කරන්න</translation>
 <translation id="3103579948980282461">මධ්‍යම ජම්බූල රතු</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">හැකිළූ</translation>
@@ -439,6 +445,7 @@
 <translation id="3930498801443296724">අදින උද්ධරණය</translation>
 <translation id="3935615366277838204">මහකුරු <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">ලැවැණ්ඩර් රතු</translation>
+<translation id="3943857333388298514">අලවන්න</translation>
 <translation id="394953087167197343">වැරදි අක්‍ෂර වින්‍යාසය සඳහන් කරන්න:</translation>
 <translation id="3962990492275676168">වත්මන් ස්ථානයෙන් කියවීම අරඹන්න</translation>
 <translation id="3970951409746498040">වැළි දුඹුරු</translation>
@@ -448,6 +455,7 @@
 <translation id="4002709828007663583">තද උඩවැඩියා</translation>
 <translation id="4004802134384979325">පරීක්ෂා කළ</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">පහළට අනුචලනය කරන්න</translation>
 <translation id="4038349100599457191">මාසික පාලනය</translation>
 <translation id="4039983576244166038">හිස් පේළි ශීර්ෂය</translation>
 <translation id="4047216625641135770">ලකුණ</translation>
@@ -477,6 +485,7 @@
 <translation id="4206289001967551965">වගුව තුළ</translation>
 <translation id="4215733775853809057">ඊළඟ ස්ලයිඩරය</translation>
 <translation id="42164919740161077">කැඩට් නිල්</translation>
+<translation id="4217571870635786043">අනුලේඛනය</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ඩෑෂය}one{# ඩෑෂ්}other{# ඩෑෂ්}}</translation>
 <translation id="421884353938374759">වර්ණ අසුලනය</translation>
 <translation id="4221012616705981690">පෙර ලැයිස්තුවක් නැත</translation>
@@ -543,6 +552,7 @@
 <translation id="4688873778442829762">ග්‍රිඩ්</translation>
 <translation id="4693675773662933727">පෙර මඟසලකුණ</translation>
 <translation id="4710166929009737753">ඇඟිලි එකක් දකුණට ස්වයිප් කරන්න</translation>
+<translation id="4712898966495541134">තේරීම් අවසානය</translation>
 <translation id="4729095194763193578">කළින් වගු පේලිය</translation>
 <translation id="4736221692378411923">අගෝස්තු</translation>
 <translation id="4740661827607246557">උපකාර විධාන</translation>
@@ -575,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">තද සියන්</translation>
 <translation id="489907760999452556">අභ්‍යන්තර සබැඳිය</translation>
+<translation id="4909019435900810068">එක වචනයක් පසුපසට යන්න</translation>
 <translation id="4911349081560453449">පෙර පිරික්සුම් කොටු නැත</translation>
 <translation id="4915087353619183190">ඉගෙනීම් ප්‍රකාරය පටන් ගැනීම. Qwerty යතුරක් හෝ නැවුම් කළ හැකි බ්‍රේල් යතුරක් ඔබන්න, නැති නම් එහි කාර්ය දැන ගැනීමට අභිනය ස්පර්ශ කරන්න. W සමඟ Control, හෝ පිටත් වීමට Escape ඔබන්න.</translation>
 <translation id="492295894462528572">පෙරවදන</translation>
+<translation id="495046168593986294">ඉහළට අනුචලනය කරන්න</translation>
 <translation id="495170559598752135">ක්‍රියාමාර්ග</translation>
 <translation id="4953585991029886728">පෙළ සකසන්න</translation>
 <translation id="4954534434583049121">පෙර අවහිර කළ උපුටා දැක්වීම</translation>
@@ -638,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{කොමාව}one{# කොමා}other{# කොමා}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, පෙළ කොටුව</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, සබැඳිය</translation>
+<translation id="5331522683003474486">1 ස්විචයක් හෝ ස්විච 2 ක් සමඟ උපාංගය පාලන කරන්න.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">පසු සබැඳිය</translation>
 <translation id="5355014376930441909">මීළඟ කොටසක් නැත</translation>
@@ -659,6 +672,7 @@
 <translation id="549602578321198708">වදනක්</translation>
 <translation id="5502713021410870035">සැප්තැම්බර්</translation>
 <translation id="5507663321906818013">තත්ව පරීක්ෂාව නිදොස් කරන්න</translation>
+<translation id="5513242761114685513">සන්දර්භ මෙනුව</translation>
 <translation id="551361796444814639">මධ්‍යම නිල්</translation>
 <translation id="552195134157544755">රේඩියෝ බොත්තම</translation>
 <translation id="5534303576632885660">hdr</translation>
@@ -740,12 +754,14 @@
 <translation id="6006050241733874051">වෙතින්</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{පසු ඇළඉර}one{# පසු ඇළඉරි}other{# පසු ඇළඉරි}}</translation>
 <translation id="6017514345406065928">කොළ</translation>
+<translation id="602001110135236999">වමට අනුචලන කරන්න</translation>
 <translation id="6034000775414344507">ලා අළු</translation>
 <translation id="6037602951055904232">ඉදිරියට අදින්න</translation>
 <translation id="6044160928851315051">අඳුරු කළ තිරය</translation>
 <translation id="6082768461603900813">මූලික සංචාලනය</translation>
 <translation id="609281021724813947">පෙර ස්ලයිඩර නැත</translation>
 <translation id="6095514649509181044">සිම්පල්-කැපිටල් නොසලකා හරින්න</translation>
+<translation id="6100239002225743044">එක පේළියක් උඩට යන්න</translation>
 <translation id="6118126368611144850">Chrome සඳහා Android යෙදුම්. ඔබට ඔබේ උපාංගයේ Play Store තිබේ නම්, Android යෙදුම් සමඟ ChromeVox හිදී ඉක්මන් පෙනුමක් ලබා ගන්න. Play Store වෙතින් Google Chrome Canary බාගැනීමෙන් අත්හදා බැලීමේ සහාය අත්හදා බලන්න.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -844,14 +860,17 @@
 <translation id="6865519907510167493">අකුරු වැරදුණු</translation>
 <translation id="688976158310523235">සෙවුම් මෙනුව</translation>
 <translation id="6894148351896207544">වත්මන් දිනය හා වේලාව පවසන්න</translation>
+<translation id="6896758677409633944">පිටපත්</translation>
 <translation id="6897341342232909480">වමට ගෙනයන්න</translation>
 <translation id="6901540140423170855">දිනය</translation>
 <translation id="6910211073230771657">මකාදැමූ</translation>
 <translation id="6910969481785184048">ක්‍රියාත්මක, ක්‍රියාවිරහිත, සහ නැවැත්වීම</translation>
 <translation id="6919104639734799681">වගු ලැයිස්තුව පෙන්වන්න</translation>
+<translation id="6945221475159498467">තෝරන්න</translation>
 <translation id="6949846980769640811">මධ්‍යම නිල් වෛදූර්ය</translation>
 <translation id="6951482098621102657">මීළඟ 5 වෙනි මට්ටමේ ශීර්ෂ නැත</translation>
 <translation id="6955705049214951590">මිදුම් රෝස</translation>
+<translation id="696356426651109308">ආරම්භය වෙත පනින්න</translation>
 <translation id="699159175332639490">සෙවීම + O + W</translation>
 <translation id="6994042831499278539">ශබ්ද මාලා යොමුව</translation>
 <translation id="6996566555547746822">ඊලඟ සංයුක්ත කොටුව</translation>
@@ -859,6 +878,7 @@
 <translation id="700202842116345659">ග්‍රන්ථ නාමාවලිය ඇතුළත් කිරීම</translation>
 <translation id="7005146664810010831">URL හමු නොවීය</translation>
 <translation id="7010712454773919705">ChromeVox වෙනස්කාරක යතුර</translation>
+<translation id="7026338066939101231">අඩු වීම</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">කළින් ලැයිස්තුව</translation>
 <translation id="7039555289296502784">ඔප නැති ඔලිව්</translation>
@@ -868,6 +888,7 @@
 <translation id="7062635574500127092">සේරා</translation>
 <translation id="7086377898680121060">දීප්තිය වැඩි කිරීම</translation>
 <translation id="7088743565397416204">නාභිගත කර ඇති දෑ සක්‍රිය කිරීමට දෙවරක් තට්ටු කරන්න</translation>
+<translation id="7088960765736518739">ප්‍රවේශය මාරු කරන්න</translation>
 <translation id="7091296112653361280">නවාජෝ සුදු</translation>
 <translation id="7095834689119144465">පෙළ සංඛ්‍යාත්මකව පමණක් සකසන්න</translation>
 <translation id="7096001299300236431">පෙර මාධ්‍යය</translation>
@@ -962,6 +983,7 @@
 <translation id="7693840228159394336">පෙර රේඩියෝ බොත්තම</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">මීළඟ සංයුක්ත කොටුවක් නැත</translation>
+<translation id="7724603315864178912">කැපීම</translation>
 <translation id="7731785449856576010">මීළඟ මාධ්‍ය විජට්ටු නැත</translation>
 <translation id="773906353055481349">කොටුව මගින් සංචලනයට ඊතල සමඟ සෙවීම+Ctrl+Alt ඔබන්න.</translation>
 <translation id="7750184816513382104">සිම්පල්-කැපිටල් සංවේදී</translation>
@@ -974,9 +996,11 @@
 <translation id="7805247615045262757">පෙරනිමි ගවේශනය</translation>
 <translation id="7805768142964895445">තත්වය</translation>
 <translation id="7810781339813764006">ඊලඟ සමූහය</translation>
+<translation id="7813616274030162878">ප්‍රවේශය මාරු කිරීමේ මෙනුව</translation>
 <translation id="7819187121850078213">කවුළුව <ph name="TITLE" /> ටැබය</translation>
 <translation id="7828956995407538686">ඔක්තෝබර්</translation>
 <translation id="7839679365527550018">කළින් වචනය</translation>
+<translation id="7846634333498149051">යතුරු පුවරුව</translation>
 <translation id="7851132556376253786">මීළඟ ලිපියක් නැත</translation>
 <translation id="7851816175263618915">ඇතැම් විරාම ලකුණු</translation>
 <translation id="7870596830398826354">ගණිත ML වෘක්ෂය</translation>
@@ -997,6 +1021,7 @@
 <translation id="7972507042926081808">චොකොලට්</translation>
 <translation id="7974390230414479278">මෙනූ අයිතමය</translation>
 <translation id="8004507136466386272">වචන</translation>
+<translation id="8004512796067398576">වැඩිවීම</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{උද්ධරණය}one{# උද්ධරණ}other{# උද්ධරණ}}</translation>
 <translation id="8017588669690167134">කථනය ක්‍රියාවිරහිතයි</translation>
@@ -1015,6 +1040,7 @@
 <translation id="8096975275316362544">මින්ට් ක්‍රීම්</translation>
 <translation id="8098587210054821856">පතුරු පාෂාණ අළු</translation>
 <translation id="8121539003537428024">සිදුවීම් පෙරහන් සියල්ල සබල කරන්න</translation>
+<translation id="8123975449645947908">පසුපසට අනුචලන කරන්න</translation>
 <translation id="8126386426083591964">පෙර 5 වෙනි මට්ටමේ ශීර්ෂ නැත</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> බාගැනීම නැවැත්විය</translation>
 <translation id="8129445297241948503">ඉහළ කොටු නැත</translation>
@@ -1048,6 +1074,7 @@
 <translation id="8374154622594089836">මාසය</translation>
 <translation id="8378855320830505539">කලාපය</translation>
 <translation id="8382679411218029383">ස්වයංසම්පූර්ණ මැදිසන සහ ලැයිස්තුව</translation>
+<translation id="8428213095426709021">සැකසුම්</translation>
 <translation id="8428603554127842284">මට්ටම් <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">තවත් දැනගන්න</translation>
@@ -1135,6 +1162,7 @@
 <translation id="9074824103975499138">ChromeVox මෙනු සොයන්න</translation>
 <translation id="9077213568694924680">තේරිමෙන් ඉවත් කෙරිණි</translation>
 <translation id="9077305471618729969">ළා මුහුදු කොළ</translation>
+<translation id="9080299285199342830">අවසානය වෙත පනින්න</translation>
 <translation id="9089864840575085222">චක්‍රීය ටයිප් කිරීමේ දෝංකාරය</translation>
 <translation id="9108370397979208512">මැත්</translation>
 <translation id="9108589040018540527">scbr</translation>
@@ -1163,5 +1191,6 @@
 <translation id="962913030769097253">ඊලඟ මට්ටම් 1 ශීර්ෂය</translation>
 <translation id="966588271015727539">බ්ලූටූත් බ්‍රේල් සංදර්ශකයක් තෝරන්න</translation>
 <translation id="973955474346881951">ඇළවුම් ප්‍රකාරය සක්‍රීය/අක්‍රීය කරන්න</translation>
+<translation id="985654871861528815">එක පේළියක් පහතට යන්න</translation>
 <translation id="992256792861109788">රෝස</translation>
 </translationbundle>

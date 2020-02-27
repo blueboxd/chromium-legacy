@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "base/token.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 
 namespace ash {
@@ -338,16 +338,16 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
   AccountId account_id;
 
   // Type of the code requested from the user.
-  chromeos::SecurityTokenPinCodeType code_type =
-      chromeos::SecurityTokenPinCodeType::kPin;
+  chromeos::security_token_pin::CodeType code_type =
+      chromeos::security_token_pin::CodeType::kPin;
 
   // Whether the UI controls that allow user to enter the value should be
   // enabled. MUST be |false| when |attempts_left| is zero.
   bool enable_user_input = true;
 
   // An optional error to be displayed to the user.
-  chromeos::SecurityTokenPinErrorLabel error_label =
-      chromeos::SecurityTokenPinErrorLabel::kNone;
+  chromeos::security_token_pin::ErrorLabel error_label =
+      chromeos::security_token_pin::ErrorLabel::kNone;
 
   // When non-negative, the UI should indicate this number to the user;
   // otherwise must be equal to -1.

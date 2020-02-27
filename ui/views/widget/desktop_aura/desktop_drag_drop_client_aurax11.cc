@@ -20,6 +20,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/layout.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_drag_context.h"
 #include "ui/base/x/x11_util.h"
@@ -169,7 +170,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
   move_loop_->RunMoveLoop(source_window, cursor_manager_->GetInitializedCursor(
-                                             ui::CursorType::kGrabbing));
+                                             ui::mojom::CursorType::kGrabbing));
 
   if (alive) {
     auto resulting_operation = negotiated_operation();
@@ -344,19 +345,19 @@ int DesktopDragDropClientAuraX11::UpdateDrag(const gfx::Point& screen_point) {
 
 void DesktopDragDropClientAuraX11::UpdateCursor(
     ui::DragDropTypes::DragOperation negotiated_operation) {
-  ui::CursorType cursor_type = ui::CursorType::kNull;
+  ui::mojom::CursorType cursor_type = ui::mojom::CursorType::kNull;
   switch (negotiated_operation) {
     case ui::DragDropTypes::DRAG_NONE:
-      cursor_type = ui::CursorType::kDndNone;
+      cursor_type = ui::mojom::CursorType::kDndNone;
       break;
     case ui::DragDropTypes::DRAG_MOVE:
-      cursor_type = ui::CursorType::kDndMove;
+      cursor_type = ui::mojom::CursorType::kDndMove;
       break;
     case ui::DragDropTypes::DRAG_COPY:
-      cursor_type = ui::CursorType::kDndCopy;
+      cursor_type = ui::mojom::CursorType::kDndCopy;
       break;
     case ui::DragDropTypes::DRAG_LINK:
-      cursor_type = ui::CursorType::kDndLink;
+      cursor_type = ui::mojom::CursorType::kDndLink;
       break;
   }
   move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));

@@ -24,7 +24,7 @@ SearchGeolocationDisclosureInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ConvertUTF16ToJavaString(
           env, GetDelegate()->message_text());
   return Java_SearchGeolocationDisclosureInfoBar_show(
-      env, GetEnumeratedIconId(), message_text,
+      env, GetJavaIconId(), message_text,
       GetDelegate()->inline_link_range().start(),
       GetDelegate()->inline_link_range().end());
 }

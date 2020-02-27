@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <memory>
 #include <numeric>
 #include <utility>
@@ -140,6 +141,13 @@ class TestModule : public ModuleCache::Module {
   const size_t size_;
   const bool is_native_;
 };
+
+// Utility function to form a vector from a single module.
+std::vector<std::unique_ptr<const ModuleCache::Module>> ToModuleVector(
+    std::unique_ptr<const ModuleCache::Module> module) {
+  return std::vector<std::unique_ptr<const ModuleCache::Module>>(
+      std::make_move_iterator(&module), std::make_move_iterator(&module + 1));
+}
 
 // Injects a fake module covering the initial instruction pointer value, to
 // avoid asking the OS to look it up. Windows doesn't return a consistent error
@@ -311,8 +319,9 @@ TEST(StackSamplerImplTest, WalkStack_AuxUnwind) {
 
   // Treat the context instruction pointer as being in the aux unwinder's
   // non-native module.
-  module_cache.AddNonNativeModule(
-      std::make_unique<TestModule>(GetTestInstructionPointer(), 1u, false));
+  module_cache.UpdateNonNativeModules(
+      {}, ToModuleVector(std::make_unique<TestModule>(
+              GetTestInstructionPointer(), 1u, false)));
 
   FakeTestUnwinder aux_unwinder({{UnwindResult::ABORTED, {1u}}});
 
@@ -331,7 +340,8 @@ TEST(StackSamplerImplTest, WalkStack_AuxThenNative) {
 
   // Treat the context instruction pointer as being in the aux unwinder's
   // non-native module.
-  module_cache.AddNonNativeModule(std::make_unique<TestModule>(0u, 1u, false));
+  module_cache.UpdateNonNativeModules(
+      {}, ToModuleVector(std::make_unique<TestModule>(0u, 1u, false)));
   // Inject a fake native module for the second frame.
   module_cache.InjectNativeModuleForTesting(
       std::make_unique<TestModule>(1u, 1u));
@@ -362,7 +372,8 @@ TEST(StackSamplerImplTest, WalkStack_NativeThenAux) {
       std::make_unique<TestModule>(2u, 1u));
   // Treat the second frame's pointer as being in the aux unwinder's non-native
   // module.
-  module_cache.AddNonNativeModule(std::make_unique<TestModule>(1u, 1u, false));
+  module_cache.UpdateNonNativeModules(
+      {}, ToModuleVector(std::make_unique<TestModule>(1u, 1u, false)));
 
   FakeTestUnwinder aux_unwinder(
       {{false}, {UnwindResult::UNRECOGNIZED_FRAME, {2u}}, {false}});

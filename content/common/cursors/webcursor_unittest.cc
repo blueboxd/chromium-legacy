@@ -8,6 +8,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -26,20 +27,20 @@ SkBitmap CreateTestBitmap(int width, int height) {
 
 TEST(WebCursorTest, DefaultConstructor) {
   WebCursor cursor;
-  EXPECT_EQ(ui::CursorType::kPointer, cursor.info().type);
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, cursor.info().type);
   EXPECT_TRUE(cursor.info().custom_image.isNull());
   EXPECT_TRUE(cursor.info().hotspot.IsOrigin());
   EXPECT_EQ(1.f, cursor.info().image_scale_factor);
 }
 
 TEST(WebCursorTest, CursorInfoConstructor) {
-  CursorInfo info(ui::CursorType::kHand);
+  CursorInfo info(ui::mojom::CursorType::kHand);
   WebCursor cursor(info);
   EXPECT_EQ(info, cursor.info());
 }
 
 TEST(WebCursorTest, CursorInfoConstructorCustom) {
-  CursorInfo info(ui::CursorType::kCustom);
+  CursorInfo info(ui::mojom::CursorType::kCustom);
   info.custom_image = CreateTestBitmap(32, 32);
   info.hotspot = gfx::Point(10, 20);
   info.image_scale_factor = 2.f;
@@ -74,14 +75,14 @@ TEST(WebCursorTest, CursorInfoConstructorCustom) {
 }
 
 TEST(WebCursorTest, CopyConstructorType) {
-  CursorInfo info(ui::CursorType::kHand);
+  CursorInfo info(ui::mojom::CursorType::kHand);
   WebCursor cursor(info);
   WebCursor copy(cursor);
   EXPECT_EQ(cursor, copy);
 }
 
 TEST(WebCursorTest, CopyConstructorCustom) {
-  CursorInfo info(ui::CursorType::kCustom);
+  CursorInfo info(ui::mojom::CursorType::kCustom);
   info.custom_image = CreateTestBitmap(32, 32);
   info.hotspot = gfx::Point(10, 20);
   info.image_scale_factor = 1.5f;
@@ -92,7 +93,7 @@ TEST(WebCursorTest, CopyConstructorCustom) {
 
 TEST(WebCursorTest, ClampHotspot) {
   // Initialize a cursor with an invalid hotspot; it should be clamped.
-  CursorInfo info(ui::CursorType::kCustom);
+  CursorInfo info(ui::mojom::CursorType::kCustom);
   info.hotspot = gfx::Point(100, 100);
   info.custom_image = CreateTestBitmap(5, 7);
   WebCursor cursor(info);
@@ -105,10 +106,10 @@ TEST(WebCursorTest, ClampHotspot) {
 TEST(WebCursorTest, SetInfo) {
   WebCursor cursor;
   EXPECT_TRUE(cursor.SetInfo(CursorInfo()));
-  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::CursorType::kHand)));
-  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::CursorType::kCustom)));
+  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::mojom::CursorType::kHand)));
+  EXPECT_TRUE(cursor.SetInfo(CursorInfo(ui::mojom::CursorType::kCustom)));
 
-  CursorInfo info(ui::CursorType::kCustom);
+  CursorInfo info(ui::mojom::CursorType::kCustom);
   info.custom_image = CreateTestBitmap(32, 32);
   info.hotspot = gfx::Point(10, 20);
   info.image_scale_factor = 1.5f;
@@ -145,7 +146,7 @@ TEST(WebCursorTest, SetInfo) {
 #if defined(USE_AURA)
 TEST(WebCursorTest, CursorScaleFactor) {
   CursorInfo info;
-  info.type = ui::CursorType::kCustom;
+  info.type = ui::mojom::CursorType::kCustom;
   info.hotspot = gfx::Point(0, 1);
   info.image_scale_factor = 2.0f;
   info.custom_image = CreateTestBitmap(128, 128);
@@ -171,7 +172,7 @@ TEST(WebCursorTest, CursorScaleFactor) {
 
 TEST(WebCursorTest, UnscaledImageCopy) {
   CursorInfo info;
-  info.type = ui::CursorType::kCustom;
+  info.type = ui::mojom::CursorType::kCustom;
   info.hotspot = gfx::Point(0, 1);
   info.custom_image = CreateTestBitmap(2, 2);
   WebCursor cursor(info);
@@ -191,7 +192,7 @@ TEST(WebCursorTest, UnscaledImageCopy) {
 #if defined(OS_WIN)
 void ScaleCursor(float scale, int hotspot_x, int hotspot_y) {
   CursorInfo info;
-  info.type = ui::CursorType::kCustom;
+  info.type = ui::mojom::CursorType::kCustom;
   info.hotspot = gfx::Point(hotspot_x, hotspot_y);
   info.custom_image = CreateTestBitmap(10, 10);
   WebCursor cursor(info);

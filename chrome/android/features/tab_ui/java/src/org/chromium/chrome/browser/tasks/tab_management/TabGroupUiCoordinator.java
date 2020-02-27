@@ -44,8 +44,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private final Context mContext;
     private final PropertyModel mModel;
     private final ThemeColorProvider mThemeColorProvider;
-    private final PropertyModelChangeProcessor mModelChangeProcessor;
+    private final TabGroupUiToolbarView mToolbarView;
     private final ViewGroup mTabListContainerView;
+    private PropertyModelChangeProcessor mModelChangeProcessor;
     private TabGridDialogCoordinator mTabGridDialogCoordinator;
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
@@ -59,13 +60,10 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         mContext = parentView.getContext();
         mThemeColorProvider = themeColorProvider;
         mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
-        TabGroupUiToolbarView toolbarView =
-                (TabGroupUiToolbarView) LayoutInflater.from(mContext).inflate(
-                        R.layout.bottom_tab_strip_toolbar, parentView, false);
-        mTabListContainerView = toolbarView.getViewContainer();
-        parentView.addView(toolbarView);
-        mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                mModel, toolbarView, TabGroupUiViewBinder::bind);
+        mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(mContext).inflate(
+                R.layout.bottom_tab_strip_toolbar, parentView, false);
+        mTabListContainerView = mToolbarView.getViewContainer();
+        parentView.addView(mToolbarView);
     }
 
     /**
@@ -88,6 +86,11 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
                 mContext, tabModelSelector, null, null, false, null, null, null,
                 TabProperties.UiType.STRIP, null, mTabListContainerView, null, true,
                 COMPONENT_NAME);
+
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(mModel,
+                new TabGroupUiViewBinder.ViewHolder(
+                        mToolbarView, mTabStripCoordinator.getContainerView()),
+                TabGroupUiViewBinder::bind);
 
         boolean isTabGroupsUiImprovementsEnabled =
                 TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();

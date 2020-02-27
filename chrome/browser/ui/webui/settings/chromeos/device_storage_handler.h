@@ -5,25 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_STORAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_STORAGE_HANDLER_H_
 
-#include <stdint.h>
-
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/browsing_data/site_data_size_collector.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/mojom/storage_manager.mojom.h"
-#include "components/arc/session/connection_observer.h"
-#include "components/arc/storage_manager/arc_storage_manager.h"
-#include "components/user_manager/user.h"
 #include "third_party/re2/src/re2/re2.h"
 
 class Profile;
@@ -39,49 +24,25 @@ enum class CrostiniResult;
 namespace chromeos {
 namespace settings {
 
-class StorageHandler
-    : public ::settings::SettingsPageUIHandler,
-      public arc::ConnectionObserver<arc::mojom::StorageManagerInstance>,
-      public arc::ArcSessionManager::Observer,
-      public chromeos::disks::DiskMountManager::Observer {
+// Enumeration for device state about remaining space. These values must be
+// kept in sync with settings.StorageSpaceState in JS code.
+enum class StorageSpaceState {
+  kStorageSpaceNormal = 0,
+  kStorageSpaceLow = 1,
+  kStorageSpaceCriticallyLow = 2,
+};
+
+// Threshold to show a message indicating space is critically low (512 MB).
+const int64_t kSpaceCriticallyLowBytes = 512 * 1024 * 1024;
+
+// Threshold to show a message indicating space is low (1 GB).
+const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
+
+class StorageHandler : public ::settings::SettingsPageUIHandler,
+                       public arc::ArcSessionManager::Observer,
+                       public chromeos::disks::DiskMountManager::Observer,
+                       public calculator::SizeCalculator::Observer {
  public:
-  // Enumeration for device state about remaining space. These values must be
-  // kept in sync with settings.StorageSpaceState in JS code.
-  enum StorageSpaceState {
-    STORAGE_SPACE_NORMAL = 0,
-    STORAGE_SPACE_LOW = 1,
-    STORAGE_SPACE_CRITICALLY_LOW = 2,
-  };
-
-  // Class used by tests to interact with StorageHandler internals.
-  class TestAPI {
-   public:
-    explicit TestAPI(StorageHandler* handler) { handler_ = handler; }
-
-    TestAPI(const TestAPI&) = delete;
-    TestAPI& operator=(const TestAPI&) = delete;
-
-    // Simulate a request from WebUI to update global size statistics.
-    void UpdateSizeStat();
-
-    // Simulate a callback with controlled total and available size inputs.
-    void OnGetSizeStat(int64_t* total_size, int64_t* available_size);
-
-    // Simulate a request to update MyFiles size.
-    void UpdateMyFilesSize();
-
-    // Simulate a request to update apps and extensions size.
-    void UpdateAppsSize();
-
-    // Simulate android apps size callback.
-    void UpdateAndroidAppsSize(uint64_t total_code_bytes,
-                               uint64_t total_data_bytes,
-                               uint64_t total_cache_bytes);
-
-   private:
-    StorageHandler* handler_;  // Not owned.
-  };
-
   StorageHandler(Profile* profile, content::WebUIDataSource* html_source);
   ~StorageHandler() override;
 
@@ -89,10 +50,6 @@ class StorageHandler
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
-
-  // arc::ConnectionObserver<arc::mojom::StorageManagerInstance>:
-  void OnConnectionReady() override;
-  void OnConnectionClosed() override;
 
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
@@ -103,6 +60,15 @@ class StorageHandler
                     const chromeos::disks::DiskMountManager::MountPointInfo&
                         mount_info) override;
 
+  // chromeos::settings::calculator::SizeCalculator::Observer:
+  void OnSizeCalculated(
+      const std::string& event_name,
+      int64_t total_bytes,
+      const base::Optional<int64_t>& available_bytes) override;
+
+  // Remove the handler from the list of observers of every observed instances.
+  void StopObservingEvents();
+
  private:
   // Handlers of JS messages.
   void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);
@@ -111,59 +77,11 @@ class StorageHandler
   void HandleOpenArcStorage(const base::ListValue* unused_args);
   void HandleUpdateExternalStorages(const base::ListValue* unused_args);
 
-  // Requests updating disk space information.
-  void UpdateSizeStat();
-
-  // Callback to update the UI about disk space information.
-  void OnGetSizeStat(int64_t* total_size, int64_t* available_size);
-
-  // Requests updating the size of Downloads directory.
-  void UpdateMyFilesSize();
-
-  // Computes the size of My Files and Play files.
-  int64_t ComputeLocalFilesSize(const base::FilePath& my_files_path,
-                                const base::FilePath& android_files_path);
-
-  // Callback to update the UI about the size of Downloads directory.
-  void OnGetMyFilesSize(int64_t size);
-
-  // Requests updating the size of browsing data.
-  void UpdateBrowsingDataSize();
-
-  // Callback to receive the cache size.
-  void OnGetCacheSize(bool is_upper_limit, int64_t size);
-
-  // Callback to update the UI about the size of browsing data.
-  void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
-
-  // Requests updating the size of web store apps and extensions.
-  void UpdateAppsSize();
-
-  // Callback to update web store apps and extensions size.
-  void OnGetAppsSize(int64_t total_bytes);
-
-  // Requests updating the size of android apps.
-  void UpdateAndroidAppsSize();
-
-  // Callback to update Android apps and cache.
-  void OnGetAndroidAppsSize(bool succeeded,
-                            arc::mojom::ApplicationsSizePtr size);
-
-  // Callback to update the UI about apps and extensions.
-  void UpdateAppsAndExtensionsSize();
-
-  // Requests updating the space size used by Crostini VMs and their apps and
-  // cache.
-  void UpdateCrostiniSize();
-
-  // Callback to update the UI about Crostini VMs and their apps and cache.
-  void OnGetCrostiniSize(crostini::CrostiniResult result, int64_t size);
-
-  // Requests updating the total size of other users' data.
-  void UpdateOtherUsersSize();
-
-  // Callback to save the fetched user sizes and update the UI.
-  void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
+  // Update storage sizes on the UI.
+  void UpdateStorageItem(const std::string& event_name, int64_t total_bytes);
+  void UpdateSizeStat(const std::string& event_name,
+                      int64_t total_bytes,
+                      int64_t available_bytes);
 
   // Updates list of external storages.
   void UpdateExternalStorages();
@@ -172,45 +90,13 @@ class StorageHandler
   // storage.
   bool IsEligibleForAndroidStorage(std::string source_path);
 
-  // Total size of cache data in browsing data.
-  int64_t browser_cache_size_;
-
-  // True if we have already received the size of http cache.
-  bool has_browser_cache_size_;
-
-  // Total size of site data in browsing data.
-  int64_t browser_site_data_size_;
-
-  // True if we have already received the size of site data.
-  bool has_browser_site_data_size_;
-
-  // Total size of apps and extensions
-  int64_t apps_extensions_size_;
-
-  // Total size of android apps
-  int64_t android_apps_size_;
-
-  // Helper to compute the total size of all types of site date.
-  std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
-
-  // The list of other users whose directory sizes will be accumulated as the
-  // size of "Other users".
-  user_manager::UserList other_users_;
-
-  // Fetched sizes of user directories.
-  std::vector<int64_t> user_sizes_;
-
-  // Flags indicating fetch operations for storage sizes are ongoing.
-  bool updating_my_files_size_;
-  bool updating_browsing_data_size_;
-  bool updating_apps_size_;
-  bool updating_android_apps_size_;
-  bool updating_crostini_size_;
-  bool updating_other_users_size_;
-
-  // A flag for keeping track of the mojo connection status to the ARC
-  // container.
-  bool is_android_running_;
+  // Instances calculating the size of each storage items.
+  calculator::SizeStatCalculator size_stat_calculator_;
+  calculator::MyFilesSizeCalculator my_files_size_calculator_;
+  calculator::BrowsingDataSizeCalculator browsing_data_size_calculator_;
+  calculator::AppsSizeCalculator apps_size_calculator_;
+  calculator::CrostiniSizeCalculator crostini_size_calculator_;
+  calculator::OtherUsersSizeCalculator other_users_size_calculator_;
 
   Profile* const profile_;
   const std::string source_name_;

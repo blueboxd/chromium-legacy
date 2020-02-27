@@ -76,7 +76,7 @@ ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 
-  return Java_ConfirmInfoBar_create(env, GetEnumeratedIconId(), java_bitmap,
+  return Java_ConfirmInfoBar_create(env, GetJavaIconId(), java_bitmap,
                                     message_text, link_text, ok_button_text,
                                     cancel_button_text);
 }

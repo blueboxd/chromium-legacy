@@ -44,8 +44,8 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
     const std::string& extension_id,
     const std::string& extension_name,
     int sign_request_id,
-    SecurityTokenPinCodeType code_type,
-    SecurityTokenPinErrorLabel error_label,
+    security_token_pin::CodeType code_type,
+    security_token_pin::ErrorLabel error_label,
     int attempts_left,
     RequestPinCallback callback) {
   DCHECK_GE(attempts_left, -1);
@@ -96,9 +96,9 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
 PinDialogManager::StopPinRequestResult
 PinDialogManager::StopPinRequestWithError(
     const std::string& extension_id,
-    SecurityTokenPinErrorLabel error_label,
+    security_token_pin::ErrorLabel error_label,
     StopPinRequestCallback callback) {
-  DCHECK_NE(error_label, SecurityTokenPinErrorLabel::kNone);
+  DCHECK_NE(error_label, security_token_pin::ErrorLabel::kNone);
 
   // Perform sanity checks, as the extension might have issued this call
   // incorrectly.
@@ -197,7 +197,7 @@ PinDialogManager::ActiveDialogState::ActiveDialogState(
     const std::string& extension_id,
     const std::string& extension_name,
     int sign_request_id,
-    SecurityTokenPinCodeType code_type)
+    security_token_pin::CodeType code_type)
     : host(host),
       extension_id(extension_id),
       extension_name(extension_name),

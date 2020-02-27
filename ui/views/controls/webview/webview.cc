@@ -18,6 +18,7 @@
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
@@ -30,6 +31,16 @@ namespace {
 WebView::WebContentsCreator* GetCreatorForTesting() {
   static base::NoDestructor<WebView::WebContentsCreator> creator;
   return creator.get();
+}
+
+// Updates the parent accessible object on the NativeView. As WebView overrides
+// GetNativeViewAccessible() to return the accessible from the WebContents, it
+// needs to ensure the accessible from the parent is set on the NativeView.
+void UpdateNativeViewHostAccessibleParent(NativeViewHost* holder,
+                                          View* parent) {
+  if (!parent)
+    return;
+  holder->SetParentAccessible(parent->GetNativeViewAccessible());
 }
 
 }  // namespace
@@ -49,9 +60,12 @@ WebView::ScopedWebContentsCreatorForTesting::
 // WebView, public:
 
 WebView::WebView(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
+    : browser_context_(browser_context) {
+  ui::AXPlatformNode::AddAXModeObserver(this);
+}
 
 WebView::~WebView() {
+  ui::AXPlatformNode::RemoveAXModeObserver(this);
   SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.
 }
 
@@ -251,6 +265,17 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
   return View::GetNativeViewAccessible();
 }
 
+void WebView::OnAXModeAdded(ui::AXMode mode) {
+  if (!web_contents())
+    return;
+
+  // Normally, it is set during AttachWebContentsNativeView when the WebView is
+  // created but this may not happen on some platforms as the accessible object
+  // may not have been present when this WebView was created. So, update it when
+  // AX mode is added.
+  UpdateNativeViewHostAccessibleParent(holder(), parent());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsDelegate implementation:
 
@@ -363,8 +388,7 @@ void WebView::AttachWebContentsNativeView() {
     holder_->Layout();
 
   // We set the parent accessible of the native view to be our parent.
-  if (parent())
-    holder_->SetParentAccessible(parent()->GetNativeViewAccessible());
+  UpdateNativeViewHostAccessibleParent(holder(), parent());
 
   // The WebContents is not focused automatically when attached, so we need to
   // tell the WebContents it has focus if this has focus.

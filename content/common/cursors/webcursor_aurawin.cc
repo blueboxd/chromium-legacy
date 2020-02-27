@@ -7,12 +7,13 @@
 #include <windows.h>
 
 #include "third_party/blink/public/platform/web_cursor_info.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/icon_util.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (info_.type != ui::CursorType::kCustom)
+  if (info_.type != ui::mojom::CursorType::kCustom)
     return LoadCursor(nullptr, IDC_ARROW);
 
   if (platform_cursor_)

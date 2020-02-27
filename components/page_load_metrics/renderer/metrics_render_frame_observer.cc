@@ -32,6 +32,10 @@ base::TimeDelta ClampDelta(double event, double start) {
   return base::Time::FromDoubleT(event) - base::Time::FromDoubleT(start);
 }
 
+base::TimeTicks ClampToStart(base::TimeTicks event, base::TimeTicks start) {
+  return event < start ? start : event;
+}
+
 class MojoPageTimingSender : public PageTimingSender {
  public:
   explicit MojoPageTimingSender(content::RenderFrame* render_frame) {
@@ -252,8 +256,10 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   provisional_frame_resource_id_ =
       provisional_frame_resource_data_use_->resource_id();
 
+  Timing timing = GetTiming();
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
-      CreatePageTimingSender(), CreateTimer(), GetTiming(),
+      CreatePageTimingSender(), CreateTimer(),
+      std::move(timing.relative_timing), timing.monotonic_timing,
       std::move(provisional_frame_resource_data_use_));
 }
 
@@ -294,6 +300,18 @@ void MetricsRenderFrameObserver::MaybeSetCompletedBeforeFCP(int request_id) {
   if (perf.FirstContentfulPaint() == 0)
     before_fcp_request_ids_.insert(request_id);
 }
+
+MetricsRenderFrameObserver::Timing::Timing(
+    mojom::PageLoadTimingPtr relative_timing,
+    const PageTimingMetadataRecorder::MonotonicTiming& monotonic_timing)
+    : relative_timing(std::move(relative_timing)),
+      monotonic_timing(monotonic_timing) {}
+
+MetricsRenderFrameObserver::Timing::~Timing() = default;
+
+MetricsRenderFrameObserver::Timing::Timing(Timing&&) = default;
+MetricsRenderFrameObserver::Timing& MetricsRenderFrameObserver::Timing::
+operator=(Timing&&) = default;
 
 void MetricsRenderFrameObserver::UpdateResourceMetadata(int request_id) {
   if (!page_timing_metrics_sender_)
@@ -336,16 +354,21 @@ void MetricsRenderFrameObserver::SendMetrics() {
     return;
   if (HasNoRenderFrame())
     return;
-  page_timing_metrics_sender_->SendSoon(GetTiming());
+  Timing timing = GetTiming();
+  page_timing_metrics_sender_->Update(std::move(timing.relative_timing),
+                                      timing.monotonic_timing);
 }
 
-mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
+MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
+    const {
   const blink::WebPerformance& perf =
       render_frame()->GetWebFrame()->Performance();
 
   mojom::PageLoadTimingPtr timing(CreatePageLoadTiming());
+  PageTimingMetadataRecorder::MonotonicTiming monotonic_timing;
   double start = perf.NavigationStart();
   timing->navigation_start = base::Time::FromDoubleT(start);
+  monotonic_timing.navigation_start = perf.NavigationStartAsMonotonicTime();
   if (perf.InputForNavigationStart() > 0.0) {
     timing->input_to_navigation_start =
         ClampDelta(start, perf.InputForNavigationStart());
@@ -409,6 +432,9 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   if (perf.FirstContentfulPaint() > 0.0) {
     timing->paint_timing->first_contentful_paint =
         ClampDelta(perf.FirstContentfulPaint(), start);
+    monotonic_timing.first_contentful_paint =
+        ClampToStart(perf.FirstContentfulPaintAsMonotonicTime(),
+                     perf.NavigationStartAsMonotonicTime());
   }
   if (perf.FirstMeaningfulPaint() > 0.0) {
     timing->paint_timing->first_meaningful_paint =
@@ -458,7 +484,7 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
             perf.ParseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
 
-  return timing;
+  return Timing(std::move(timing), monotonic_timing);
 }
 
 std::unique_ptr<base::OneShotTimer> MetricsRenderFrameObserver::CreateTimer() {

@@ -8,22 +8,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [3, 39, 794, 28],
+          "rect": [6, 42, 788, 22],
           "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [3, 39, 794, 28],
+          "rect": [6, 42, 788, 22],
           "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [3, 39, 794, 28],
+          "rect": [6, 42, 788, 22],
           "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='editor'",
-          "rect": [3, 39, 794, 28],
+          "rect": [6, 42, 788, 22],
           "reason": "appeared"
         },
         {

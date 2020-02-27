@@ -422,6 +422,7 @@ source_set("blink_headers") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base/ime:text_input_types",
     "//ui/base/ime/mojom",
+    "//ui/base/mojom:cursor_type",
     "//url",
   ]
 

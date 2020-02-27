@@ -798,16 +798,6 @@ void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
 }
 
 #if defined(OS_ANDROID)
-void RecordFirstBackgroundDownloadInterruptReason(
-    DownloadInterruptReason reason,
-    bool download_started) {
-  if (download_started)
-    base::UmaHistogramSparse("MobileDownload.FirstBackground.StartedReason",
-                             reason);
-  else
-    base::UmaHistogramSparse("MobileDownload.FirstBackground.Reason", reason);
-}
-
 void RecordBackgroundTargetDeterminationResult(
     BackgroudTargetDeterminationResultTypes type) {
   base::UmaHistogramEnumeration(

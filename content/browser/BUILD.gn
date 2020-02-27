@@ -216,6 +216,7 @@ jumbo_source_set("browser") {
     "//ui/base/clipboard",
     "//ui/base/idle",
     "//ui/base/ime/init",
+    "//ui/base/mojom:cursor_type",
     "//ui/display",
     "//ui/display/types",
     "//ui/events",

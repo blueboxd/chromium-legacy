@@ -8,7 +8,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 
 /**
  * The Save Password infobar asks the user whether they want to save the password for the site.
@@ -17,10 +16,10 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     private final String mDetailsMessage;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, String message, String detailsMessage,
+    private static InfoBar show(int iconId, String message, String detailsMessage,
             String primaryButtonText, String secondaryButtonText) {
-        return new SavePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
-                detailsMessage, primaryButtonText, secondaryButtonText);
+        return new SavePasswordInfoBar(
+                iconId, message, detailsMessage, primaryButtonText, secondaryButtonText);
     }
 
     private SavePasswordInfoBar(int iconDrawbleId, String message, String detailsMessage,

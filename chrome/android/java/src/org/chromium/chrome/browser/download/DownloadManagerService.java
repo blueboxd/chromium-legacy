@@ -113,10 +113,6 @@ public class DownloadManagerService implements DownloadController.Observer,
 
     private final Handler mHandler;
 
-    // The first download that is triggered in background mode.
-    private String mFirstBackgroundDownloadId;
-    private int mFirstBackgroundDownloadInterruptionCount;
-
     /** Generic interface for notifying external UI components about downloads and their states. */
     public interface DownloadObserver extends DownloadSharedPreferenceHelper.Observer {
         /** Called in response to {@link DownloadManagerService#getAllDownloads(boolean)}. */
@@ -1949,14 +1945,6 @@ public class DownloadManagerService implements DownloadController.Observer,
         DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(
                 UmaBackgroundDownload.STARTED);
         sBackgroundDownloadIds.add(downloadGuid);
-        if (mFirstBackgroundDownloadId == null) {
-            mFirstBackgroundDownloadId = downloadGuid;
-            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
-                    UmaBackgroundDownload.STARTED, 0);
-            DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
-                    getNativeDownloadManagerService(), DownloadManagerService.this,
-                    mFirstBackgroundDownloadId, true /* downloadStarted */);
-        }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             mBackgroundDownloadUmaRecorder = new BackgroundDownloadUmaRecorder();
         }
@@ -1974,16 +1962,6 @@ public class DownloadManagerService implements DownloadController.Observer,
                 sBackgroundDownloadIds.remove(downloadGuid);
             }
             DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(event);
-        }
-        if (downloadGuid.equals(mFirstBackgroundDownloadId)) {
-            DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
-                    event, mFirstBackgroundDownloadInterruptionCount);
-            if (event == UmaBackgroundDownload.INTERRUPTED) {
-                mFirstBackgroundDownloadInterruptionCount++;
-                DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
-                        getNativeDownloadManagerService(), DownloadManagerService.this,
-                        mFirstBackgroundDownloadId, false /* downloadStarted */);
-            }
         }
     }
 
@@ -2059,7 +2037,5 @@ public class DownloadManagerService implements DownloadController.Observer,
         void onProfileAdded(long nativeDownloadManagerService, DownloadManagerService caller);
         void createInterruptedDownloadForTest(long nativeDownloadManagerService,
                 DownloadManagerService caller, String url, String guid, String targetPath);
-        void recordFirstBackgroundInterruptReason(long nativeDownloadManagerService,
-                DownloadManagerService caller, String guid, boolean downloadStarted);
     }
 }

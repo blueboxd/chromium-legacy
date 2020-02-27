@@ -26,6 +26,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -109,8 +110,8 @@ public class TabSuggestionsOrchestratorTest {
         for (int idx = 0; idx < TAB_IDS.length; idx++) {
             doReturn(sTabs[idx]).when(mTabModelFilter).getTabAt(eq(idx));
         }
-        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
-                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator = new TabSuggestionsOrchestrator(
+                mTabModelSelector, mDispatcher, new InMemorySharedPreferences());
         tabSuggestionsOrchestrator.setUseBaselineTabSuggestionsForTesting();
         List<TabSuggestion> suggestions = new LinkedList<>();
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
@@ -134,8 +135,8 @@ public class TabSuggestionsOrchestratorTest {
 
     @Test
     public void testRegisterUnregister() {
-        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
-                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator = new TabSuggestionsOrchestrator(
+                mTabModelSelector, mDispatcher, new InMemorySharedPreferences());
         tabSuggestionsOrchestrator.setUseBaselineTabSuggestionsForTesting();
         verify(mDispatcher, times(1)).register(eq(tabSuggestionsOrchestrator));
         tabSuggestionsOrchestrator.destroy();
@@ -146,8 +147,8 @@ public class TabSuggestionsOrchestratorTest {
     public void testTabFiltering() {
         doReturn(1).when(mTabModelFilter).getCount();
         doReturn(sTabs[0]).when(mTabModelFilter).getTabAt(eq(0));
-        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
-                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator = new TabSuggestionsOrchestrator(
+                mTabModelSelector, mDispatcher, new InMemorySharedPreferences());
         tabSuggestionsOrchestrator.setUseBaselineTabSuggestionsForTesting();
         List<TabSuggestion> suggestions = new LinkedList<>();
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
@@ -168,8 +169,8 @@ public class TabSuggestionsOrchestratorTest {
     public void testOrchestratorCallback() {
         doReturn(1).when(mTabModelFilter).getCount();
         doReturn(sTabs[0]).when(mTabModelFilter).getTabAt(eq(0));
-        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
-                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator = new TabSuggestionsOrchestrator(
+                mTabModelSelector, mDispatcher, new InMemorySharedPreferences());
         tabSuggestionsOrchestrator.setUseBaselineTabSuggestionsForTesting();
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
             @Override

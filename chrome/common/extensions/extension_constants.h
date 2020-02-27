@@ -223,6 +223,10 @@ extern const char kSwitchAccessExtensionId[];
 // Path to preinstalled Switch Access extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSwitchAccessExtensionPath[];
+// The manifest filename of the Switch Access extension.
+extern const char kSwitchAccessManifestFilename[];
+// The guest manifest filename of the Switch Access extension.
+extern const char kSwitchAccessGuestManifestFilename[];
 // Name of the manifest file in an extension when a special manifest is used
 // for guest mode.
 extern const char kGuestManifestFilename[];

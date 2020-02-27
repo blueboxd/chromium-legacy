@@ -17,6 +17,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -158,7 +159,7 @@ bool TouchEmulator::InitCursors(float device_scale_factor, bool force) {
       use_2x ? IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X :
           IDR_DEVTOOLS_PINCH_CURSOR_ICON);
 
-  pointer_cursor_ = WebCursor(CursorInfo(ui::CursorType::kPointer));
+  pointer_cursor_ = WebCursor(CursorInfo(ui::mojom::CursorType::kPointer));
   return true;
 }
 
@@ -167,7 +168,7 @@ gfx::SizeF TouchEmulator::InitCursorFromResource(
   gfx::Image& cursor_image =
       content::GetContentClient()->GetNativeImageNamed(resource_id);
   CursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kCustom;
+  cursor_info.type = ui::mojom::CursorType::kCustom;
   cursor_info.image_scale_factor = scale;
   cursor_info.custom_image = cursor_image.AsBitmap();
   cursor_info.hotspot =

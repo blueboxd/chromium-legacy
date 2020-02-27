@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace blink {
 
@@ -215,7 +216,7 @@ class ScrollbarsTest : public SimTest {
                                 offset);
   }
 
-  ui::CursorType CursorType() {
+  ui::mojom::CursorType CursorType() {
     return GetDocument()
         .GetFrame()
         ->GetChromeClient()
@@ -733,7 +734,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, CursorType());
 }
 
 // Ensure mouse cursor should be override when hovering over the custom
@@ -789,7 +790,7 @@ TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(ui::CursorType::kMove, CursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kMove, CursorType());
 }
 
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
@@ -844,13 +845,13 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
   // Mouse over link. Mouse cursor should be hand.
   HandleMouseMoveEvent(a_tag->OffsetLeft(), a_tag->OffsetTop());
 
-  EXPECT_EQ(ui::CursorType::kHand, CursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kHand, CursorType());
 
   // Mouse over enabled overlay scrollbar. Mouse cursor should be pointer and no
   // active hover element.
   HandleMouseMoveEvent(x, y);
 
-  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, CursorType());
 
   HandleMousePressEvent(x, y);
 
@@ -876,7 +877,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 
   HandleMouseMoveEvent(x, y);
 
-  EXPECT_EQ(ui::CursorType::kHand, CursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kHand, CursorType());
 
   HandleMousePressEvent(x, y);
 

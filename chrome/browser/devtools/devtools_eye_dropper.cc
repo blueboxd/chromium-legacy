@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
@@ -81,7 +82,7 @@ void DevToolsEyeDropper::DetachFromHost() {
     return;
   host_->RemoveMouseEventCallback(mouse_event_callback_);
   content::CursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kPointer;
+  cursor_info.type = ui::mojom::CursorType::kPointer;
   host_->SetCursor(cursor_info);
   video_capturer_.reset();
   host_ = nullptr;
@@ -255,7 +256,7 @@ void DevToolsEyeDropper::UpdateCursor() {
   canvas.drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
   content::CursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kCustom;
+  cursor_info.type = ui::mojom::CursorType::kCustom;
   cursor_info.image_scale_factor = device_scale_factor;
   cursor_info.custom_image = result;
   cursor_info.hotspot = gfx::Point(kHotspotOffset * device_scale_factor,

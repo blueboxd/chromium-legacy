@@ -17,6 +17,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/layout.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -63,7 +64,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
 WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)),
       widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::CursorType::kNull) {}
+      current_cursor_(ui::mojom::CursorType::kNull) {}
 
 void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
     ui::PlatformWindowInitProperties properties) {

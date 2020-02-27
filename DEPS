@@ -30,6 +30,7 @@ gclient_gn_args_file = 'src/build/config/gclient_args.gni'
 gclient_gn_args = [
   'build_with_chromium',
   'checkout_android',
+  'checkout_android_prebuilts_build_tools',
   'checkout_android_native_support',
   'checkout_google_benchmark',
   'checkout_ios_webkit',
@@ -56,6 +57,9 @@ vars = {
   # variables.
   # TODO(ehmaldonado): Remove this once the bug in gclient is fixed.
   'checkout_android': False,
+
+  # Pull in Android prebuilts build tools so we can create Java xrefs
+  'checkout_android_prebuilts_build_tools': False,
 
   # Pull in Android native toolchain dependencies for Chrome OS too, so we can
   # build ARC++ support libraries.
@@ -171,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6422722cbaf67d25f72b72dbf55c3e483f37f430',
+  'skia_revision': '913a2ec17514c32505731ebf49421a41d90885ac',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f8918f993aa5527146e183553a2fdfd913148f83',
+  'v8_revision': '60a026a7868f4dde15a744cb2d757b1da67a23d7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8aea6d5a87b866990f409d9f179660c685216d9b',
+  'angle_revision': '0a450363dbdc43bf3350b19493c88482dbc079e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -234,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '9abfc467c79fd2000026c28b6bd121897271621e',
+  'catapult_revision': '624dae6917b29751941bbb84087b70b21c8eeeb9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -242,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd9a5b6e2c1d257c72b1ea825b8dd404c9e43e8df',
+  'devtools_frontend_revision': 'e7fcd7dde1d9b54088642919c6d5e47426f62d04',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -880,7 +884,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b847c567e717cd861b8f1d778ef1a402af03a99a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '005269a51304917aed6d5f371bfe7f131f8cd248',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1214,7 +1218,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'f0cc231dab7d9aa92dc0363a7d2d39525efb3a4e',
+    Var('chromium_git') + '/openscreen' + '@' + '9931e7a88ec31d7ffe83d829d00ddae55ea109d3',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1231,7 +1235,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9bda3eea9509985fed5b0ce20d7460bdde243171',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ccb3a54defb597ae262dc108963a79a27a5821d9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1328,7 +1332,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'd8d0c66b9c076b24aa9d622096b7debfb4a541fa',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '36f7f246a827d12fa87ab86ae714754882d0abe8',
 
   'src/third_party/r8': {
       'packages': [
@@ -1507,7 +1511,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@97edc4e613872e3638c81a4ca8a783bffa8995cd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8f58baae1a1d6fd8a45dce9532c42cb69621136b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1520,6 +1524,11 @@ deps = {
       ],
       'condition': 'checkout_android',
       'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_prebuilts/build_tools': {
+      'url': Var('android_git') + '/platform/prebuilts/build-tools.git' + '@' + '5794e96eb8bae47bb48feee915d99583573b3887',
+      'condition': 'checkout_android_prebuilts_build_tools',
   },
 
   # === ANDROID_DEPS Generated Code Start ===

@@ -83,7 +83,7 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   SkBitmap primary_icon_;
   bool is_primary_icon_maskable_;
 
-  SkBitmap badge_icon_;
+  SkBitmap splash_icon_;
 
   base::WeakPtrFactory<WebApkUpdateDataFetcher> weak_ptr_factory_{this};
 

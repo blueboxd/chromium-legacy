@@ -421,4 +421,27 @@ suite('DragManager', () => {
     draggedTab.dispatchEvent(new DragEvent('dragend', {bubbles: true}));
     assertEquals(draggedTab, delegate.children[draggedIndex]);
   });
+
+  test('DragLeaveRemovesExternalTab', () => {
+    const externalTabId = 1000;
+    const mockDataTransfer = new MockDataTransfer();
+    mockDataTransfer.setData(strings.tabIdDataType, `${externalTabId}`);
+    const dragEnterEvent = new DragEvent('dragenter', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    delegate.dispatchEvent(dragEnterEvent);
+    assertTrue(
+        !!delegate.querySelector(`[data-tab-id="${PLACEHOLDER_TAB_ID}"]`));
+
+    const dragLeaveEvent = new DragEvent('dragleave', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    delegate.dispatchEvent(dragLeaveEvent);
+    assertFalse(
+        !!delegate.querySelector(`[data-tab-id="${PLACEHOLDER_TAB_ID}"]`));
+  });
 });

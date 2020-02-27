@@ -234,9 +234,9 @@ NativeLibrary LoadOtherLibrary() {
   // macros in a function returning non-null.
   const auto load = [](NativeLibrary* library) {
     FilePath other_library_path;
-    ASSERT_TRUE(PathService::Get(DIR_EXE, &other_library_path));
+    ASSERT_TRUE(PathService::Get(DIR_MODULE, &other_library_path));
     other_library_path = other_library_path.AppendASCII(
-        GetNativeLibraryName("base_profiler_test_support_library"));
+        GetLoadableModuleName("base_profiler_test_support_library"));
     NativeLibraryLoadError load_error;
     *library = LoadNativeLibrary(other_library_path, &load_error);
     ASSERT_TRUE(*library) << "error loading " << other_library_path.value()

@@ -16,6 +16,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -214,14 +215,14 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
 
 class ScreenshotController::ScopedCursorSetter {
  public:
-  explicit ScopedCursorSetter(ui::CursorType cursor) {
+  explicit ScopedCursorSetter(ui::mojom::CursorType cursor) {
     ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
     if (cursor_manager->IsCursorLocked()) {
       already_locked_ = true;
       return;
     }
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
-    if (cursor == ui::CursorType::kNone) {
+    if (cursor == ui::mojom::CursorType::kNone) {
       cursor_manager->HideCursor();
     } else {
       cursor_manager->SetCursor(cursor);
@@ -286,7 +287,8 @@ void ScreenshotController::StartWindowScreenshotSession() {
   }
   SetSelectedWindow(window_util::GetActiveWindow());
 
-  cursor_setter_ = std::make_unique<ScopedCursorSetter>(ui::CursorType::kCross);
+  cursor_setter_ =
+      std::make_unique<ScopedCursorSetter>(ui::mojom::CursorType::kCross);
 
   EnableMouseWarp(true);
 }
@@ -308,7 +310,7 @@ void ScreenshotController::StartPartialScreenshotSession(
 
   if (!pen_events_only_) {
     cursor_setter_ =
-        std::make_unique<ScopedCursorSetter>(ui::CursorType::kCross);
+        std::make_unique<ScopedCursorSetter>(ui::mojom::CursorType::kCross);
   }
 
   EnableMouseWarp(false);
@@ -356,7 +358,7 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
       // called before ctor is called.
       cursor_setter_.reset();
       cursor_setter_ =
-          std::make_unique<ScopedCursorSetter>(ui::CursorType::kNone);
+          std::make_unique<ScopedCursorSetter>(ui::mojom::CursorType::kNone);
     }
     Update(event);
   }

@@ -271,6 +271,7 @@ component("cpp") {
   public_deps = [
     "//ash/public/mojom",
     "//base",
+    "//chromeos/components/security_token_pin",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/network_config/public/mojom",
     "//components/arc/mojom:notifications",

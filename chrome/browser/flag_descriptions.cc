@@ -1239,6 +1239,19 @@ const char kOmniboxAutocompleteTitlesDescription[] =
     "Allows autocompleting bookmark, history, and document suggestions when the"
     " user input is a prefix of their titles, as opposed to their URLs.";
 
+const char kOmniboxCompactSuggestionsName[] = "Omnibox: Compact suggestions";
+const char kOmniboxCompactSuggestionsDescription[] =
+    "Conserve the space for Omnibox Suggestions by slightly reducing their "
+    "size.";
+
+const char kOmniboxDeferredKeyboardPopupName[] =
+    "Omnibox: Defer keyboard popup";
+const char kOmniboxDeferredKeyboardPopupDescription[] =
+    "Defer keyboard popup when user selects the Omnibox to allow presenting "
+    "more instant/zero-prefix suggestions. The soft keyboard will only be "
+    "shown when user taps the Omnibox again, or if there's no suggestions to "
+    "show to the user.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =

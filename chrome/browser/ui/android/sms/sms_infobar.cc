@@ -48,6 +48,6 @@ ScopedJavaLocalRef<jobject> SmsInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> window_android =
       web_contents_->GetNativeView()->GetWindowAndroid()->GetJavaObject();
 
-  return Java_SmsReceiverInfoBar_create(
-      env, window_android, GetEnumeratedIconId(), title, message, button);
+  return Java_SmsReceiverInfoBar_create(env, window_android, GetJavaIconId(),
+                                        title, message, button);
 }

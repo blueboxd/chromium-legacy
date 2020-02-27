@@ -213,6 +213,7 @@ jumbo_source_set("common_sources") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/mojom:mojom_platform_headers",
     "//ui/accessibility",
+    "//ui/base/mojom:cursor_type",
     "//ui/surface",
     "//url/ipc:url_ipc",
   ]

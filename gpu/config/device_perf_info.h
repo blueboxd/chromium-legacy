@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 
@@ -18,13 +19,9 @@
 namespace gpu {
 
 enum class IntelGpuGeneration {
-  kNonIntel = -1,
-  kUnknownIntel = 0,  // Intel GPU, but not one of the following generations.
-  kGen1 = 1,
-  kGen2 = 2,
-  kGen3 = 3,
-  kGen4 = 4,
-  kGen5 = 5,
+  kNonIntel = 0,
+  kUnknownIntel = 1,  // Intel GPU, but not one of the following generations.
+  // Don't care about Gen1 ~ Gen5. Detection code starts with Gen6.
   kGen6 = 6,
   kGen7 = 7,
   kGen8 = 8,
@@ -36,10 +33,10 @@ enum class IntelGpuGeneration {
 };
 
 enum class HasDiscreteGpu {
-  kUnknown = -1,
   kNo = 0,
   kYes = 1,
-  kMaxValue = kYes,
+  kUnknown = 2,
+  kMaxValue = kUnknown,
 };
 
 struct GPU_EXPORT DevicePerfInfo {
@@ -59,6 +56,10 @@ struct GPU_EXPORT DevicePerfInfo {
   IntelGpuGeneration intel_gpu_generation = IntelGpuGeneration::kNonIntel;
   bool software_rendering = false;
 };
+
+// Thread-safe getter and setter of global instance of DevicePerfInfo.
+GPU_EXPORT base::Optional<DevicePerfInfo> GetDevicePerfInfo();
+GPU_EXPORT void SetDevicePerfInfo(const DevicePerfInfo& device_perf_info);
 
 }  // namespace gpu
 

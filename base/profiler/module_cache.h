@@ -6,10 +6,12 @@
 #define BASE_PROFILER_MODULE_CACHE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 
@@ -73,40 +75,71 @@ class BASE_EXPORT ModuleCache {
   const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
-  // Add a non-native module to the cache. Non-native modules represent regions
-  // of non-native executable code, like v8 generated code or compiled
-  // Java.
+  // Updates the set of non-native modules maintained by the
+  // ModuleCache. Non-native modules represent regions of non-native executable
+  // code such as V8 generated code.
   //
   // Note that non-native modules may be embedded within native modules, as in
-  // the case of v8 builtin code compiled within Chrome. In that case
+  // the case of V8 builtin code compiled within Chrome. In that case
   // GetModuleForAddress() will return the non-native module rather than the
   // native module for the memory region it occupies.
-  void AddNonNativeModule(std::unique_ptr<const Module> module);
+  //
+  // Modules in |to_remove| are removed from the set of active modules;
+  // specifically they no longer participate in the GetModuleForAddress()
+  // lookup. They continue to exist for the lifetime of the ModuleCache,
+  // however, so that existing references to them remain valid. Modules in
+  // |to_add| are added to the set of active non-native modules.
+  void UpdateNonNativeModules(
+      const std::vector<const Module*>& to_remove,
+      std::vector<std::unique_ptr<const Module>> to_add);
 
   void InjectNativeModuleForTesting(std::unique_ptr<const Module> module);
 
  private:
-  // Looks for a module containing |address| in |modules| returns the module if
-  // found, or null if not.
-  static const Module* FindModuleForAddress(
-      const std::vector<std::unique_ptr<const Module>>& modules,
-      uintptr_t address);
+  // Heterogenously compares modules by base address, and modules and
+  // addresses. The module/address comparison considers the address equivalent
+  // to the module if the address is within the extent of the module. Combined
+  // with is_transparent this allows modules to be looked up by address in the
+  // using containers.
+  struct ModuleAndAddressCompare {
+    using is_transparent = void;
+    bool operator()(const std::unique_ptr<const Module>& m1,
+                    const std::unique_ptr<const Module>& m2) const;
+    bool operator()(const std::unique_ptr<const Module>& m1,
+                    uintptr_t address) const;
+    bool operator()(uintptr_t address,
+                    const std::unique_ptr<const Module>& m2) const;
+  };
 
   // Creates a Module object for the specified memory address. Returns null if
   // the address does not belong to a module.
   static std::unique_ptr<const Module> CreateModuleForAddress(
       uintptr_t address);
 
-  // Unsorted vector of cached native modules. The number of loaded modules is
-  // generally much less than 100, and more frequently seen modules will tend to
-  // be added earlier and thus be closer to the front to the vector. So linear
-  // search to find modules should be acceptable.
-  std::vector<std::unique_ptr<const Module>> native_modules_;
+  // Set of native modules sorted by base address. We use set rather than
+  // flat_set because the latter type has O(n^2) runtime for adding modules
+  // one-at-a-time, which is how modules are added on Windows and Mac.
+  std::set<std::unique_ptr<const Module>, ModuleAndAddressCompare>
+      native_modules_;
 
-  // Unsorted vector of non-native modules. Separate from native_modules_ to
-  // support preferential lookup of non-native modules embedded in native
-  // modules. See comment on AddNonNativeModule().
-  std::vector<std::unique_ptr<const Module>> non_native_modules_;
+  // Set of non-native modules currently mapped into the address space, sorted
+  // by base address. Represented as flat_set because std::set does not support
+  // extracting move-only element types prior to C++17's
+  // std::set<>::extract(). The non-native module insertion/removal patterns --
+  // initial bulk insertion, then infrequent inserts/removals -- should work
+  // reasonably well with the flat_set complexity guarantees. Separate from
+  // native_modules_ to support preferential lookup of non-native modules
+  // embedded in native modules; see comment on UpdateNonNativeModules().
+  base::flat_set<std::unique_ptr<const Module>, ModuleAndAddressCompare>
+      non_native_modules_;
+
+  // Unsorted vector of inactive non-native modules. Inactive modules are no
+  // longer mapped in the address space and don't participate in address lookup,
+  // but are retained by the cache so that existing references to the them
+  // remain valid. Note that this cannot be represented as a set/flat_set
+  // because it can contain multiple modules that were loaded (then subsequently
+  // unloaded) at the same base address.
+  std::vector<std::unique_ptr<const Module>> inactive_non_native_modules_;
 };
 
 }  // namespace base

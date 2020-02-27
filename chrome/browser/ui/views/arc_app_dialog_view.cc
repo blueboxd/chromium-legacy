@@ -214,11 +214,6 @@ void ArcAppDialogView::OnAppImageUpdated(const std::string& app_id,
   icon_view_->SetImage(image);
 }
 
-void HandleArcAppUninstall(base::OnceClosure closure, bool accept) {
-  if (accept)
-    std::move(closure).Run();
-}
-
 std::unique_ptr<ArcAppListPrefs::AppInfo> GetArcAppInfo(
     Profile* profile,
     const std::string& app_id) {
@@ -228,42 +223,6 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> GetArcAppInfo(
 }
 
 }  // namespace
-
-void ShowArcAppUninstallDialog(Profile* profile,
-                               AppListControllerDelegate* controller,
-                               const std::string& app_id) {
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      GetArcAppInfo(profile, app_id);
-  if (!app_info)
-    return;
-
-  bool is_shortcut = app_info->shortcut;
-
-  base::string16 window_title = l10n_util::GetStringUTF16(
-      is_shortcut ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
-                  : IDS_APP_UNINSTALL_PROMPT_TITLE);
-
-  base::string16 heading_text = base::UTF8ToUTF16(l10n_util::GetStringFUTF8(
-      is_shortcut ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
-                  : IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING,
-      base::UTF8ToUTF16(app_info->name)));
-  base::string16 subheading_text;
-  if (!is_shortcut) {
-    subheading_text = l10n_util::GetStringUTF16(
-        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
-  }
-
-  base::string16 confirm_button_text = l10n_util::GetStringUTF16(
-      is_shortcut ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON
-                  : IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON);
-
-  base::string16 cancel_button_text = l10n_util::GetStringUTF16(IDS_CANCEL);
-  new ArcAppDialogView(
-      profile, controller, app_id, window_title, heading_text, subheading_text,
-      confirm_button_text, cancel_button_text,
-      base::BindOnce(HandleArcAppUninstall,
-                     base::BindOnce(UninstallArcApp, app_id, profile)));
-}
 
 void ShowUsbScanDeviceListPermissionDialog(Profile* profile,
                                            const std::string& app_id,

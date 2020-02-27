@@ -22,7 +22,24 @@ cr.define('settings', function() {
     SECURE: 'secure',
   };
 
-  /** @typedef {{mode: settings.SecureDnsMode, templates: !Array<string>}} */
+  /**
+   * Contains the possible management modes. This should be kept in sync with
+   * the management modes in chrome/browser/net/dns_util.h.
+   * @enum {number}
+   */
+  const SecureDnsUiManagementMode = {
+    NO_OVERRIDE: 0,
+    DISABLED_MANAGED: 1,
+    DISABLED_PARENTAL_CONTROLS: 2,
+  };
+
+  /**
+   * @typedef {{
+   *   mode: settings.SecureDnsMode,
+   *   templates: !Array<string>,
+   *   managementMode: settings.SecureDnsUiManagementMode
+   * }}
+   */
   let SecureDnsSetting;
 
   /** @interface */
@@ -101,6 +118,7 @@ cr.define('settings', function() {
     PrivacyPageBrowserProxyImpl,
     ResolverOption,
     SecureDnsMode,
+    SecureDnsUiManagementMode,
     SecureDnsSetting,
   };
 });

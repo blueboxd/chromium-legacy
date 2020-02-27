@@ -52,7 +52,10 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     thumb_ui_resource_id_ = uid;
   }
 
+  // TODO(arakeri): Rename set_thumb_opacity to set_scrollbar_painted_opacity as
+  // a part of crbug.com/1055246.
   void set_thumb_opacity(float opacity) { thumb_opacity_ = opacity; }
+  float OverlayScrollbarOpacity() const override;
 
   void set_internal_contents_scale_and_bounds(float content_scale,
                                               const gfx::Size& content_bounds) {

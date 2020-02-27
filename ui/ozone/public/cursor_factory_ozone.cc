@@ -30,7 +30,7 @@ CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
   return g_instance;
 }
 
-PlatformCursor CursorFactoryOzone::GetDefaultCursor(CursorType type) {
+PlatformCursor CursorFactoryOzone::GetDefaultCursor(mojom::CursorType type) {
   NOTIMPLEMENTED();
   return NULL;
 }

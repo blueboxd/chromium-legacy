@@ -38,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox – Giving Voice to Chrome</translation>
 <translation id="1225969361094801578">Dark Slate Grey</translation>
 <translation id="1229276918471378188">Previous jump</translation>
+<translation id="1230503547248836149">Selection start</translation>
 <translation id="1236794971743289975">Endnote</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1243477406442346359">Cornflower Blue</translation>
@@ -120,6 +121,7 @@
 <translation id="1752708997038853212">Enter a search query</translation>
 <translation id="1756785467854861272">Dark Magenta</translation>
 <translation id="1765245556747822181">Swipe one finger up</translation>
+<translation id="1771761307086386028">Scroll right</translation>
 <translation id="1781173782405573156">Pass through key</translation>
 <translation id="1787176709638001873">Password edit text</translation>
 <translation id="1802710350767629429">Show update notes</translation>
@@ -176,6 +178,7 @@
 <translation id="2199994615414171367">Previous math</translation>
 <translation id="2203046366315513658">Decrease value</translation>
 <translation id="2216790501338699346">Link URL: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">Move backward one char</translation>
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2223693656926968778">Take action on current item</translation>
 <translation id="224426591676115802">No voice available for language: <ph name="LANGUAGE" /></translation>
@@ -225,6 +228,7 @@
 <translation id="2592212930811759050">Double-tap to start editing</translation>
 <translation id="2594420797397883935">No previous item that isn't a link</translation>
 <translation id="2598495320872286378">Grammar error</translation>
+<translation id="2603828437139726540">Move forward one char</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Open learn mode</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -232,6 +236,7 @@
 <translation id="2638785836053527382">Download resumed <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox modifier</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2654172656519784359">Move forward one word</translation>
 <translation id="2661530546602071611">Notice</translation>
 <translation id="2673280813984708147">is editing</translation>
 <translation id="267442004702508783">refresh</translation>
@@ -308,6 +313,7 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Next landmark</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="309749186376891736">Move cursor</translation>
 <translation id="3103579948980282461">Medium Violet Red</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Collapsed</translation>
@@ -439,6 +445,7 @@
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3935615366277838204">Cap <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lavender Blush</translation>
+<translation id="3943857333388298514">Paste</translation>
 <translation id="394953087167197343">Indicate misspell:</translation>
 <translation id="3962990492275676168">Start reading from current location</translation>
 <translation id="3970951409746498040">Sandy Brown</translation>
@@ -448,6 +455,7 @@
 <translation id="4002709828007663583">Dark Orchid</translation>
 <translation id="4004802134384979325">ticked</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">Scroll down</translation>
 <translation id="4038349100599457191">Month control</translation>
 <translation id="4039983576244166038">Empty row header</translation>
 <translation id="4047216625641135770">Mark</translation>
@@ -477,6 +485,7 @@
 <translation id="4206289001967551965">Inside table</translation>
 <translation id="4215733775853809057">Next slider</translation>
 <translation id="42164919740161077">Cadet Blue</translation>
+<translation id="4217571870635786043">Dictation</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dash}other{# dashes}}</translation>
 <translation id="421884353938374759">colour picker</translation>
 <translation id="4221012616705981690">No previous list</translation>
@@ -543,6 +552,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Previous landmark</translation>
 <translation id="4710166929009737753">Swipe one finger right</translation>
+<translation id="4712898966495541134">Selection end</translation>
 <translation id="4729095194763193578">Previous table row</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Help Commands</translation>
@@ -575,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Dark Cyan</translation>
 <translation id="489907760999452556">Internal link</translation>
+<translation id="4909019435900810068">Move backward one word</translation>
 <translation id="4911349081560453449">No previous tick box</translation>
 <translation id="4915087353619183190">Starting Learn Mode. Press a qwerty key, refreshable braille key or touch gesture to learn its function. Press control with w or escape to exit.</translation>
 <translation id="492295894462528572">Foreword</translation>
+<translation id="495046168593986294">Scroll up</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Edit text</translation>
 <translation id="4954534434583049121">Previous block quote</translation>
@@ -638,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{comma}other{# commas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, text box</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
+<translation id="5331522683003474486">Control the device with just 1 or 2 switches.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Back link</translation>
 <translation id="5355014376930441909">No next section</translation>
@@ -659,6 +672,7 @@
 <translation id="549602578321198708">Word</translation>
 <translation id="5502713021410870035">September</translation>
 <translation id="5507663321906818013">Debug benchmark</translation>
+<translation id="5513242761114685513">Context menu</translation>
 <translation id="551361796444814639">Medium Blue</translation>
 <translation id="552195134157544755">Radio button</translation>
 <translation id="5534303576632885660">hdr</translation>
@@ -740,12 +754,14 @@
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Green</translation>
+<translation id="602001110135236999">Scroll left</translation>
 <translation id="6034000775414344507">Light grey</translation>
 <translation id="6037602951055904232">Pan forward</translation>
 <translation id="6044160928851315051">Darken screen</translation>
 <translation id="6082768461603900813">Basic Navigation</translation>
 <translation id="609281021724813947">No previous slider</translation>
 <translation id="6095514649509181044">Ignoring case</translation>
+<translation id="6100239002225743044">Move up one line</translation>
 <translation id="6118126368611144850">Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -844,14 +860,17 @@
 <translation id="6865519907510167493">Misspelled</translation>
 <translation id="688976158310523235">Search menu</translation>
 <translation id="6894148351896207544">Speak the current time and date</translation>
+<translation id="6896758677409633944">Copy</translation>
 <translation id="6897341342232909480">Move left</translation>
 <translation id="6901540140423170855">date</translation>
 <translation id="6910211073230771657">Deleted</translation>
 <translation id="6910969481785184048">On, Off and Stop</translation>
 <translation id="6919104639734799681">Show tables list</translation>
+<translation id="6945221475159498467">Select</translation>
 <translation id="6949846980769640811">Medium Aqua Marine</translation>
 <translation id="6951482098621102657">No next level 5 heading</translation>
 <translation id="6955705049214951590">Misty Rose</translation>
+<translation id="696356426651109308">Jump to beginning</translation>
 <translation id="699159175332639490">Search + O + W</translation>
 <translation id="6994042831499278539">Glossary reference</translation>
 <translation id="6996566555547746822">Next combo box</translation>
@@ -859,6 +878,7 @@
 <translation id="700202842116345659">Bibliography entry</translation>
 <translation id="7005146664810010831">No URL found</translation>
 <translation id="7010712454773919705">ChromeVox modifier key</translation>
+<translation id="7026338066939101231">Decrement</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Previous list</translation>
 <translation id="7039555289296502784">Olive Drab</translation>
@@ -868,6 +888,7 @@
 <translation id="7062635574500127092">Teal</translation>
 <translation id="7086377898680121060">Brightness up</translation>
 <translation id="7088743565397416204">Double-tap to activate what is focused</translation>
+<translation id="7088960765736518739">Switch access</translation>
 <translation id="7091296112653361280">Navajo White</translation>
 <translation id="7095834689119144465">Edit text numeric only</translation>
 <translation id="7096001299300236431">Previous media</translation>
@@ -962,6 +983,7 @@
 <translation id="7693840228159394336">Previous radio button</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">No next combo box</translation>
+<translation id="7724603315864178912">Cut</translation>
 <translation id="7731785449856576010">No next media widget</translation>
 <translation id="773906353055481349">Press Search+Ctrl+Alt with arrows to navigate by cell</translation>
 <translation id="7750184816513382104">Case sensitive</translation>
@@ -974,9 +996,11 @@
 <translation id="7805247615045262757">default navigation</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Next Group</translation>
+<translation id="7813616274030162878">Switch Access Menu</translation>
 <translation id="7819187121850078213">window <ph name="TITLE" /> tab</translation>
 <translation id="7828956995407538686">October</translation>
 <translation id="7839679365527550018">Previous Word</translation>
+<translation id="7846634333498149051">Keyboard</translation>
 <translation id="7851132556376253786">No next article</translation>
 <translation id="7851816175263618915">Some punctuation</translation>
 <translation id="7870596830398826354">Math ML Tree</translation>
@@ -997,6 +1021,7 @@
 <translation id="7972507042926081808">Chocolate</translation>
 <translation id="7974390230414479278">Menu item</translation>
 <translation id="8004507136466386272">Words</translation>
+<translation id="8004512796067398576">Increment</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{quote}other{# quotes}}</translation>
 <translation id="8017588669690167134">Speech off</translation>
@@ -1015,6 +1040,7 @@
 <translation id="8096975275316362544">Mint Cream</translation>
 <translation id="8098587210054821856">Slate Grey</translation>
 <translation id="8121539003537428024">Enable all event filters</translation>
+<translation id="8123975449645947908">Scroll backwards</translation>
 <translation id="8126386426083591964">No previous level 5 heading</translation>
 <translation id="812886159861361726">Download stopped <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">No cell above</translation>
@@ -1048,6 +1074,7 @@
 <translation id="8374154622594089836">month</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Auto-completion inline and list</translation>
+<translation id="8428213095426709021">Settings</translation>
 <translation id="8428603554127842284">level <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Learn More</translation>
@@ -1135,6 +1162,7 @@
 <translation id="9074824103975499138">Search ChromeVox menus</translation>
 <translation id="9077213568694924680">removed from selection</translation>
 <translation id="9077305471618729969">Light Sea Green</translation>
+<translation id="9080299285199342830">Jump to end</translation>
 <translation id="9089864840575085222">Cycle typing echo</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>
@@ -1163,5 +1191,6 @@
 <translation id="962913030769097253">Next level 1 heading</translation>
 <translation id="966588271015727539">Select a Bluetooth braille display</translation>
 <translation id="973955474346881951">Enable / Disable sticky mode</translation>
+<translation id="985654871861528815">Move down one line</translation>
 <translation id="992256792861109788">Pink</translation>
 </translationbundle>

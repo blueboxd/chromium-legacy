@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
@@ -17,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents the entry point for the TabSuggestions component. Responsible for
@@ -24,12 +32,21 @@ import java.util.Set;
  */
 public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     public static final String TAB_SUGGESTIONS_UMA_PREFIX = "TabSuggestionsOrchestrator";
+    private static final String LAST_TIMESTAMP_KEY = "LastTimestamp";
+    private static final String BACKOFF_COUNT_KEY = "BackoffCountKey";
+    private static final String BACKOFF_IDX_KEY = "BackoffIdxKey";
+    private static final long[] BACKOFF_AMOUNTS = {TimeUnit.MINUTES.toMillis(1),
+            TimeUnit.MINUTES.toMillis(30), TimeUnit.HOURS.toMillis(1), TimeUnit.HOURS.toMillis(2),
+            TimeUnit.HOURS.toMillis(12), TimeUnit.DAYS.toMillis(1), TimeUnit.DAYS.toMillis(2),
+            TimeUnit.DAYS.toMillis(7), TimeUnit.DAYS.toMillis(10)};
     private static final String TAG = "TabSuggestDetailed";
     private static final int MIN_CLOSE_SUGGESTIONS_THRESHOLD = 3;
+    private static final String SHARED_PREFERENCES_ID = "TabsuggestionsPreferences";
 
     protected TabContextObserver mTabContextObserver;
     protected TabSuggestionFeedback mTabSuggestionFeedback;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    private final SharedPreferences mSharedPreferences;
     private List<TabSuggestionsFetcher> mTabSuggestionsFetchers;
     private List<TabSuggestion> mPrefetchedResults = new LinkedList<>();
     private TabContext mPrefetchedTabContext;
@@ -39,6 +56,15 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
 
     public TabSuggestionsOrchestrator(
             TabModelSelector selector, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+        this(selector, activityLifecycleDispatcher,
+                ContextUtils.getApplicationContext().getSharedPreferences(
+                        SHARED_PREFERENCES_ID, Context.MODE_PRIVATE));
+    }
+
+    @VisibleForTesting
+    TabSuggestionsOrchestrator(TabModelSelector selector,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            SharedPreferences sharedPreferences) {
         mTabModelSelector = selector;
         mTabSuggestionsFetchers = new LinkedList<>();
         mTabSuggestionsFetchers.add(new TabSuggestionsClientFetcher());
@@ -59,6 +85,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         };
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         activityLifecycleDispatcher.register(this);
+        mSharedPreferences = sharedPreferences;
     }
 
     protected void setUseBaselineTabSuggestionsForTesting() {
@@ -104,6 +131,9 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
      * thread on demand.
      */
     protected void prefetchSuggestions() {
+        if (isBackoffEnabled()) {
+            return;
+        }
         TabContext tabContext = TabContext.createCurrentContext(mTabModelSelector);
         synchronized (mPrefetchedResults) {
             mRemainingFetchers = 0;
@@ -115,6 +145,49 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                     tabSuggestionsFetcher.fetch(tabContext, res -> prefetchCallback(res));
                 }
             }
+        }
+    }
+
+    private boolean isBackoffEnabled() {
+        // TODO(crbug.com/1051709) expand to record/read and respond
+        // to close/group separately and determine if we can use
+        // shared prefs folder.
+        synchronized (mSharedPreferences) {
+            long lastTimestamp = mSharedPreferences.getLong(LAST_TIMESTAMP_KEY, -1);
+            // No lastTimestamp means no dismissals have been recorded, so we
+            // don't backoff
+            if (lastTimestamp == -1) {
+                return false;
+            }
+            long backoffCount = mSharedPreferences.getLong(BACKOFF_COUNT_KEY, -1);
+            // If counting down from the backoff amount is finished i.e. the count
+            // is below 0, enough time has elapsed and suggestions can be provided
+            // again
+            if (backoffCount <= 0) {
+                return false;
+            }
+            long currentTime = System.currentTimeMillis();
+            // Decrement time elapsed since last update to the backoff count
+            backoffCount -= currentTime - lastTimestamp;
+            Editor editor = mSharedPreferences.edit();
+            editor.putLong(LAST_TIMESTAMP_KEY, currentTime);
+            editor.putLong(BACKOFF_COUNT_KEY, backoffCount);
+            editor.apply();
+            // If the backoff count is above zero, continue to wait
+            // and don't provide suggestions
+            return backoffCount > 0;
+        }
+    }
+
+    private void recordDismissalBackoff() {
+        synchronized (mSharedPreferences) {
+            int backoffIdx = Math.min(
+                    mSharedPreferences.getInt(BACKOFF_IDX_KEY, 0), BACKOFF_AMOUNTS.length - 1);
+            Editor editor = mSharedPreferences.edit();
+            editor.putLong(BACKOFF_COUNT_KEY, BACKOFF_AMOUNTS[backoffIdx]);
+            editor.putInt(BACKOFF_IDX_KEY, backoffIdx + 1);
+            editor.putLong(LAST_TIMESTAMP_KEY, System.currentTimeMillis());
+            editor.apply();
         }
     }
 
@@ -156,6 +229,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         if (tabSuggestionFeedback.tabSuggestionResponse
                 == TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED) {
             RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Dismissed");
+            recordDismissalBackoff();
             return;
         } else {
             RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Accepted");

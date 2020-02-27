@@ -31,7 +31,7 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 
 #include "third_party/blink/renderer/platform/cursor.h"
-#include "ui/base/cursor/types/cursor_types.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace blink {
 
@@ -43,7 +43,7 @@ static SkBitmap GetCursorBitmap(const Cursor& cursor) {
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)
     : type(cursor.GetType()), image_scale_factor(cursor.ImageScaleFactor()) {
-  if (type == ui::CursorType::kCustom) {
+  if (type == ui::mojom::CursorType::kCustom) {
     hot_spot = cursor.HotSpot();
     custom_image = GetCursorBitmap(cursor);
   }

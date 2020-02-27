@@ -112,8 +112,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     }
 
     @Override
-    public void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl,
-            String badgeIconUrl) {
+    public void onGotManifestData(
+            WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
         mStorage.updateTimeOfLastCheckForUpdatedWebManifest();
         if (mUpdateFailureHandler != null) {
             mUpdateFailureHandler.removeCallbacksAndMessages(null);
@@ -121,7 +121,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
         boolean gotManifest = (fetchedInfo != null);
         @WebApkUpdateReason
-        int updateReason = needsUpdate(mInfo, fetchedInfo, primaryIconUrl, badgeIconUrl);
+        int updateReason = needsUpdate(mInfo, fetchedInfo, primaryIconUrl, splashIconUrl);
         boolean needsUpgrade = (updateReason != WebApkUpdateReason.NONE);
         if (mStorage.shouldForceUpdate() && needsUpgrade) {
             updateReason = WebApkUpdateReason.MANUALLY_TRIGGERED;
@@ -157,7 +157,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         recordUpdate(mStorage, WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
 
         if (fetchedInfo != null) {
-            buildUpdateRequestAndSchedule(fetchedInfo, primaryIconUrl, badgeIconUrl,
+            buildUpdateRequestAndSchedule(fetchedInfo, primaryIconUrl, splashIconUrl,
                     false /* isManifestStale */, updateReason);
             return;
         }
@@ -165,7 +165,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         // Tell the server that the our version of the Web Manifest might be stale and to ignore
         // our Web Manifest data if the server's Web Manifest data is newer. This scenario can
         // occur if the Web Manifest is temporarily unreachable.
-        buildUpdateRequestAndSchedule(mInfo, "" /* primaryIconUrl */, "" /* badgeIconUrl */,
+        buildUpdateRequestAndSchedule(mInfo, "" /* primaryIconUrl */, "" /* splashIconUrl */,
                 true /* isManifestStale */, updateReason);
     }
 
@@ -178,7 +178,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
     /** Builds proto to send to the WebAPK server. */
     private void buildUpdateRequestAndSchedule(WebApkInfo info, String primaryIconUrl,
-            String badgeIconUrl, boolean isManifestStale, @WebApkUpdateReason int updateReason) {
+            String splashIconUrl, boolean isManifestStale, @WebApkUpdateReason int updateReason) {
         Callback<Boolean> callback = (success) -> {
             if (!success) {
                 onFinishedUpdate(mStorage, WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
@@ -187,7 +187,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
             scheduleUpdate();
         };
         String updateRequestPath = mStorage.createAndSetUpdateRequestFilePath(info);
-        storeWebApkUpdateRequestToFile(updateRequestPath, info, primaryIconUrl, badgeIconUrl,
+        storeWebApkUpdateRequestToFile(updateRequestPath, info, primaryIconUrl, splashIconUrl,
                 isManifestStale, updateReason, callback);
     }
 
@@ -333,31 +333,31 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
      * @param fetchedInfo    Fetched data for Web Manifest.
      * @param primaryIconUrl The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
      *                       suited for use as the launcher icon on this device.
-     * @param badgeIconUrl   The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
-     *                       suited for use as the badge icon on this device.
+     * @param splashIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+     *                       suited for use as the splash icon on this device.
      * @return reason that an update is needed or {@link WebApkUpdateReason#NONE} if an update is
      *         not needed.
      */
     private static @WebApkUpdateReason int needsUpdate(WebApkInfo oldInfo, WebApkInfo fetchedInfo,
-            String primaryIconUrl, String badgeIconUrl) {
+            String primaryIconUrl, String splashIconUrl) {
         if (isShellApkVersionOutOfDate(oldInfo)) return WebApkUpdateReason.OLD_SHELL_APK;
         if (fetchedInfo == null) return WebApkUpdateReason.NONE;
 
         // We should have computed the Murmur2 hashes for the bitmaps at the primary icon URL and
-        // the badge icon for {@link fetchedInfo} (but not the other icon URLs.)
+        // the splash icon for {@link fetchedInfo} (but not the other icon URLs.)
         String fetchedPrimaryIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
                 .get(primaryIconUrl);
         String primaryIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
                 oldInfo.iconUrlToMurmur2HashMap(), primaryIconUrl);
-        String fetchedBadgeIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
-                .get(badgeIconUrl);
-        String badgeIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
-                oldInfo.iconUrlToMurmur2HashMap(), badgeIconUrl);
+        String fetchedSplashIconMurmur2Hash =
+                fetchedInfo.iconUrlToMurmur2HashMap().get(splashIconUrl);
+        String splashIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
+                oldInfo.iconUrlToMurmur2HashMap(), splashIconUrl);
 
         if (!TextUtils.equals(primaryIconMurmur2Hash, fetchedPrimaryIconMurmur2Hash)) {
             return WebApkUpdateReason.PRIMARY_ICON_HASH_DIFFERS;
-        } else if (!TextUtils.equals(badgeIconMurmur2Hash, fetchedBadgeIconMurmur2Hash)) {
-            return WebApkUpdateReason.BADGE_ICON_HASH_DIFFERS;
+        } else if (!TextUtils.equals(splashIconMurmur2Hash, fetchedSplashIconMurmur2Hash)) {
+            return WebApkUpdateReason.SPLASH_ICON_HASH_DIFFERS;
         } else if (!UrlUtilities.urlsMatchIgnoringFragments(
                            oldInfo.scopeUrl(), fetchedInfo.scopeUrl())) {
             return WebApkUpdateReason.SCOPE_DIFFERS;
@@ -402,7 +402,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     }
 
     protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
-            String primaryIconUrl, String badgeIconUrl, boolean isManifestStale,
+            String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
             @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
         int versionCode = info.webApkVersionCode();
         int size = info.iconUrlToMurmur2HashMap().size();
@@ -425,8 +425,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
         WebApkUpdateManagerJni.get().storeWebApkUpdateRequestToFile(updateRequestPath,
                 info.manifestStartUrl(), info.scopeUrl(), info.name(), info.shortName(),
-                primaryIconUrl, info.icon().bitmap(), info.isIconAdaptive(), badgeIconUrl,
-                info.badgeIcon().bitmap(), iconUrls, iconHashes, info.displayMode(),
+                primaryIconUrl, info.icon().bitmap(), info.isIconAdaptive(), splashIconUrl,
+                info.splashIcon().bitmap(), iconUrls, iconHashes, info.displayMode(),
                 info.orientation(), info.toolbarColor(), info.backgroundColor(),
                 info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
                 info.shareTarget().getParamText(), info.shareTarget().isShareMethodPost(),
@@ -439,8 +439,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     interface Natives {
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String primaryIconUrl,
-                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String badgeIconUrl,
-                Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
+                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String splashIconUrl,
+                Bitmap splashIcon, String[] iconUrls, String[] iconHashes,
                 @WebDisplayMode int displayMode, int orientation, long themeColor,
                 long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
                 String shareTargetParamText, boolean shareTargetParamIsMethodPost,

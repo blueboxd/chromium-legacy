@@ -73,14 +73,6 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
   child_style.SetAlignContent(StyleRef().AlignContent());
 }
 
-PhysicalRect LayoutButton::ControlClipRect(
-    const PhysicalOffset& additional_offset) const {
-  // Clip to the padding box to at least give content the extra padding space.
-  PhysicalRect rect(additional_offset, Size());
-  rect.Expand(BorderInsets());
-  return rect;
-}
-
 LayoutUnit LayoutButton::BaselinePosition(
     FontBaseline baseline,
     bool first_line,
@@ -106,8 +98,4 @@ LayoutUnit LayoutButton::BaselinePosition(
                                              line_position_mode);
 }
 
-// For compatibility with IE/FF we only clip overflow on input elements.
-bool LayoutButton::HasControlClip() const {
-  return !IsA<HTMLButtonElement>(GetNode());
-}
 }  // namespace blink

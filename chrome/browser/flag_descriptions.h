@@ -733,6 +733,12 @@ extern const char kOmniboxAssistantVoiceSearchDescription[];
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
+extern const char kOmniboxCompactSuggestionsName[];
+extern const char kOmniboxCompactSuggestionsDescription[];
+
+extern const char kOmniboxDeferredKeyboardPopupName[];
+extern const char kOmniboxDeferredKeyboardPopupDescription[];
+
 extern const char kOmniboxDisableInstantExtendedLimitName[];
 extern const char kOmniboxDisableInstantExtendedLimitDescription[];
 

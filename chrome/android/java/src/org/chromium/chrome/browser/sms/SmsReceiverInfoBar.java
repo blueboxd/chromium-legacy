@@ -14,7 +14,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
@@ -34,16 +33,15 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
 
     @VisibleForTesting
     @CalledByNative
-    static SmsReceiverInfoBar create(WindowAndroid windowAndroid, int enumeratedIconId,
-            String title, String message, String okButtonLabel) {
+    static SmsReceiverInfoBar create(WindowAndroid windowAndroid, int iconId, String title,
+            String message, String okButtonLabel) {
         if (DEBUG) Log.d(TAG, "SmsReceiverInfoBar.create()");
-        return new SmsReceiverInfoBar(
-                windowAndroid, enumeratedIconId, title, message, okButtonLabel);
+        return new SmsReceiverInfoBar(windowAndroid, iconId, title, message, okButtonLabel);
     }
 
-    private SmsReceiverInfoBar(WindowAndroid windowAndroid, int enumeratedIconId, String title,
+    private SmsReceiverInfoBar(WindowAndroid windowAndroid, int iconId, String title,
             String message, String okButtonLabel) {
-        super(ResourceId.mapToDrawableId(enumeratedIconId), R.color.infobar_icon_drawable_color,
+        super(iconId, R.color.infobar_icon_drawable_color,
                 /*iconBitmap=*/null, /*message=*/title, /*linkText=*/null, okButtonLabel,
                 /*secondaryButtonText=*/null);
         mMessage = message;

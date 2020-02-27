@@ -8,6 +8,7 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace content {
 
@@ -16,7 +17,7 @@ namespace content {
 // This structure is highly similar to blink::WebCursorInfo.
 struct CONTENT_EXPORT CursorInfo {
   CursorInfo() = default;
-  explicit CursorInfo(ui::CursorType cursor);
+  explicit CursorInfo(ui::mojom::CursorType cursor);
   explicit CursorInfo(const blink::WebCursorInfo& info);
 
   // Equality operator; performs bitmap content comparison as needed.
@@ -26,7 +27,7 @@ struct CONTENT_EXPORT CursorInfo {
   blink::WebCursorInfo GetWebCursorInfo() const;
 
   // One of the predefined cursors.
-  ui::CursorType type = ui::CursorType::kPointer;
+  ui::mojom::CursorType type = ui::mojom::CursorType::kPointer;
 
   // Custom cursor image.
   SkBitmap custom_image;

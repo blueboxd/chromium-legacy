@@ -145,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
 }
 
 // Verifies the cursor is hidden at startup on login screen.
-IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
+// DISABLED for flakiness. http://crbug.com/1056429
+IN_PROC_BROWSER_TEST_F(LoginCursorTest, DISABLED_CursorHidden) {
   // Login screen needs to be shown explicitly when running test.
   ShowLoginWizard(OobeScreen::SCREEN_SPECIAL_LOGIN);
 

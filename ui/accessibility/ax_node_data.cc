@@ -26,11 +26,19 @@ namespace ui {
 namespace {
 
 bool IsFlagSet(uint32_t bitfield, uint32_t flag) {
-  return (bitfield & (1 << flag)) != 0;
+  return (bitfield & (1U << flag)) != 0;
+}
+
+bool IsFlagSet(uint64_t bitfield, uint32_t flag) {
+  return (bitfield & (1ULL << flag)) != 0;
 }
 
 uint32_t ModifyFlag(uint32_t bitfield, uint32_t flag, bool set) {
-  return set ? (bitfield |= (1 << flag)) : (bitfield &= ~(1 << flag));
+  return set ? (bitfield |= (1U << flag)) : (bitfield &= ~(1U << flag));
+}
+
+uint64_t ModifyFlag(uint64_t bitfield, uint32_t flag, bool set) {
+  return set ? (bitfield |= (1ULL << flag)) : (bitfield &= ~(1ULL << flag));
 }
 
 std::string StateBitfieldToString(uint32_t state_enum) {
@@ -44,7 +52,7 @@ std::string StateBitfieldToString(uint32_t state_enum) {
   return str;
 }
 
-std::string ActionsBitfieldToString(uint32_t actions) {
+std::string ActionsBitfieldToString(uint64_t actions) {
   std::string str;
   for (uint32_t i = static_cast<uint32_t>(ax::mojom::Action::kNone) + 1;
        i <= static_cast<uint32_t>(ax::mojom::Action::kMaxValue); ++i) {
@@ -68,10 +76,9 @@ std::string IntVectorToString(const std::vector<int>& items) {
 }
 
 // Predicate that returns true if the first value of a pair is |first|.
-template<typename FirstType, typename SecondType>
+template <typename FirstType, typename SecondType>
 struct FirstIs {
-  FirstIs(FirstType first)
-      : first_(first) {}
+  explicit FirstIs(FirstType first) : first_(first) {}
   bool operator()(std::pair<FirstType, SecondType> const& p) {
     return p.first == first_;
   }
@@ -80,13 +87,12 @@ struct FirstIs {
 
 // Helper function that finds a key in a vector of pairs by matching on the
 // first value, and returns an iterator.
-template<typename FirstType, typename SecondType>
+template <typename FirstType, typename SecondType>
 typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
-    FindInVectorOfPairs(
-        FirstType first,
-        const std::vector<std::pair<FirstType, SecondType>>& vector) {
-  return std::find_if(vector.begin(),
-                      vector.end(),
+FindInVectorOfPairs(
+    FirstType first,
+    const std::vector<std::pair<FirstType, SecondType>>& vector) {
+  return std::find_if(vector.begin(), vector.end(),
                       FirstIs<FirstType, SecondType>(first));
 }
 
@@ -203,9 +209,7 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
 }
 
 AXNodeData::AXNodeData()
-    : role(ax::mojom::Role::kUnknown),
-      state(static_cast<uint32_t>(ax::mojom::State::kNone)),
-      actions(static_cast<uint32_t>(ax::mojom::Action::kNone)) {}
+    : role(ax::mojom::Role::kUnknown), state(0U), actions(0ULL) {}
 
 AXNodeData::~AXNodeData() = default;
 
@@ -420,8 +424,8 @@ bool AXNodeData::GetStringListAttribute(
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(
-    const char* html_attr, std::string* value) const {
+bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+                                  std::string* value) const {
   for (const std::pair<std::string, std::string>& html_attribute :
        html_attributes) {
     const std::string& attr = html_attribute.first;
@@ -434,8 +438,8 @@ bool AXNodeData::GetHtmlAttribute(
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(
-    const char* html_attr, base::string16* value) const {
+bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+                                  base::string16* value) const {
   std::string value_utf8;
   if (!GetHtmlAttribute(html_attr, &value_utf8))
     return false;
@@ -613,33 +617,33 @@ bool AXNodeData::HasAction(ax::mojom::Action action) const {
 
 bool AXNodeData::HasTextStyle(ax::mojom::TextStyle text_style_enum) const {
   int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  return IsFlagSet(style, static_cast<uint32_t>(text_style_enum));
+  return IsFlagSet(static_cast<uint32_t>(style),
+                   static_cast<uint32_t>(text_style_enum));
 }
 
 bool AXNodeData::HasDropeffect(ax::mojom::Dropeffect dropeffect_enum) const {
   int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
-  return IsFlagSet(dropeffect, static_cast<uint32_t>(dropeffect_enum));
+  return IsFlagSet(static_cast<uint32_t>(dropeffect),
+                   static_cast<uint32_t>(dropeffect_enum));
 }
 
-ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
+void AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
   DCHECK_LE(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), true);
-  return static_cast<ax::mojom::State>(state);
 }
 
-ax::mojom::State AXNodeData::RemoveState(ax::mojom::State state_enum) {
+void AXNodeData::RemoveState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
   DCHECK_LE(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
-  return static_cast<ax::mojom::State>(state);
 }
 
-ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
+void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   switch (action_enum) {
     case ax::mojom::Action::kNone:
       NOTREACHED();
@@ -691,7 +695,6 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
   }
 
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
-  return static_cast<ax::mojom::Action>(actions);
 }
 
 void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
@@ -700,7 +703,8 @@ void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
   DCHECK_LE(static_cast<int>(text_style_enum),
             static_cast<int>(ax::mojom::TextStyle::kMaxValue));
   int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  style = ModifyFlag(style, static_cast<uint32_t>(text_style_enum), true);
+  style = ModifyFlag(static_cast<uint32_t>(style),
+                     static_cast<uint32_t>(text_style_enum), true);
   RemoveIntAttribute(ax::mojom::IntAttribute::kTextStyle);
   AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, style);
 }
@@ -711,8 +715,8 @@ void AXNodeData::AddDropeffect(ax::mojom::Dropeffect dropeffect_enum) {
   DCHECK_LE(static_cast<int>(dropeffect_enum),
             static_cast<int>(ax::mojom::Dropeffect::kMaxValue));
   int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
-  dropeffect =
-      ModifyFlag(dropeffect, static_cast<uint32_t>(dropeffect_enum), true);
+  dropeffect = ModifyFlag(static_cast<uint32_t>(dropeffect),
+                          static_cast<uint32_t>(dropeffect_enum), true);
   RemoveIntAttribute(ax::mojom::IntAttribute::kDropeffect);
   AddIntAttribute(ax::mojom::IntAttribute::kDropeffect, dropeffect);
 }

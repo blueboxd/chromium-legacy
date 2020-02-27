@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/accessibility/ax_mode_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/webview_export.h"
@@ -36,7 +37,8 @@ namespace views {
 // whenever possible.
 class WEBVIEW_EXPORT WebView : public View,
                                public content::WebContentsDelegate,
-                               public content::WebContentsObserver {
+                               public content::WebContentsObserver,
+                               public ui::AXModeObserver {
  public:
   METADATA_HEADER(WebView);
 
@@ -157,6 +159,9 @@ class WEBVIEW_EXPORT WebView : public View,
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
+
+  // Override from ui::AXModeObserver
+  void OnAXModeAdded(ui::AXMode mode) override;
 
  private:
   friend class WebViewUnitTest;

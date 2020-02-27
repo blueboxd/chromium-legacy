@@ -83,6 +83,6 @@ void InfoBarAndroid::CloseJavaInfoBar() {
   }
 }
 
-int InfoBarAndroid::GetEnumeratedIconId() {
-  return ResourceMapper::MapFromChromiumId(delegate()->GetIconId());
+int InfoBarAndroid::GetJavaIconId() {
+  return ResourceMapper::MapToJavaDrawableId(delegate()->GetIconId());
 }

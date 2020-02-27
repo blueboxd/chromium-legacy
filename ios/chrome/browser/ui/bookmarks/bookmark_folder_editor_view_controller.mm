@@ -171,7 +171,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  self.tableView.tableFooterView = [[UIView alloc] init];
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kBookmarkCellHorizontalLeadingInset,
                                          0, 0)];

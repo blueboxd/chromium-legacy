@@ -7,9 +7,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow OPTION id='option'",
-          "rect": [1, 35, 12, 15],
-          "reason": "appeared"
+          "object": "VerticalScrollbar",
+          "rect": [14, 35, 15, 68],
+          "reason": "disappeared"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [14, 35, 15, 68],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow SELECT",
+          "rect": [1, 35, 13, 17],
+          "reason": "chunk appeared"
         }
       ]
     }

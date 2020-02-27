@@ -22,6 +22,10 @@ class AXPlatformNodeAuraLinuxTest : public AXPlatformNodeTest {
   AXPlatformNodeAuraLinuxTest& operator=(const AXPlatformNodeAuraLinuxTest&) =
       delete;
 
+  void SetUp() override {
+    AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  }
+
  protected:
   AXPlatformNodeAuraLinux* GetPlatformNode(AXNode* node) {
     TestAXNodeWrapper* wrapper =

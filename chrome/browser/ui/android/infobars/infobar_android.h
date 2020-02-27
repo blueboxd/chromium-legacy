@@ -59,9 +59,8 @@ class InfoBarAndroid : public infobars::InfoBar {
 
   void CloseJavaInfoBar();
 
-  // Maps from a Chromium ID (IDR_TRANSLATE) to a enum value that Java code can
-  // translate into a Drawable ID using the ResourceId class.
-  int GetEnumeratedIconId();
+  // Maps from a Chromium ID (IDR_TRANSLATE) to a Drawable ID.
+  int GetJavaIconId();
 
   // Acquire the java infobar from a different one.  This is used to do in-place
   // replacements.

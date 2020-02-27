@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [11, 11, 59, 19],
+          "rect": [11, 11, 69, 21],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [11, 11, 59, 19],
+          "rect": [11, 11, 69, 21],
           "reason": "chunk disappeared"
         }
       ]

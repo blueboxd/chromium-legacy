@@ -50,7 +50,8 @@ void CardUnmaskPromptViewAndroid::Show() {
 
   java_object_.Reset(Java_CardUnmaskBridge_create(
       env, reinterpret_cast<intptr_t>(this), dialog_title, instructions,
-      confirm, ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
+      confirm,
+      ResourceMapper::MapToJavaDrawableId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
       controller_->CanStoreLocally(), controller_->GetStoreLocallyStartState(),
       controller_->GetWebauthnOfferStartState(),

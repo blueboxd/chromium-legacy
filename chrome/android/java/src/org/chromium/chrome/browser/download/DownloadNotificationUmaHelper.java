@@ -185,19 +185,4 @@ public final class DownloadNotificationUmaHelper {
         RecordHistogram.recordEnumeratedHistogram(
                 "MobileDownload.Background", type, UmaBackgroundDownload.NUM_ENTRIES);
     }
-
-    /**
-     * Helper method to record the first background download resumption UMA.
-     * @param type UMA type to be recorded.
-     * @param interruptionCount Number of interruptions since process launch.
-     */
-    static void recordFirstBackgroundDownloadHistogram(
-            @UmaBackgroundDownload int type, int interruptionCount) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "MobileDownload.Background.FirstDownload", type, UmaBackgroundDownload.NUM_ENTRIES);
-        if (type != UmaBackgroundDownload.INTERRUPTED && type != UmaBackgroundDownload.STARTED) {
-            RecordHistogram.recordCountHistogram(
-                    "MobileDownload.FirstBackground.InterruptionCount", interruptionCount);
-        }
-    }
 }

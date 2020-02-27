@@ -58,6 +58,18 @@ class TestModule : public ModuleCache::Module {
   const std::string build_id_;
 };
 
+// Utility function to add a single non-native module during test setup. Returns
+// a pointer to the provided module.
+const ModuleCache::Module* AddNonNativeModule(
+    ModuleCache* cache,
+    std::unique_ptr<const ModuleCache::Module> module) {
+  const ModuleCache::Module* module_ptr = module.get();
+  std::vector<std::unique_ptr<const ModuleCache::Module>> modules;
+  modules.push_back(std::move(module));
+  cache->UpdateNonNativeModules({}, std::move(modules));
+  return module_ptr;
+}
+
 ArmCFITable::FrameEntry MakeFrameEntry(uint16_t cfa_offset,
                                        uint16_t ra_offset) {
   return ArmCFITable::FrameEntry{cfa_offset * sizeof(uintptr_t),
@@ -218,10 +230,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwind) {
       {reinterpret_cast<const uint8_t*>(cfi_data), sizeof(cfi_data)});
 
   ModuleCache module_cache;
-  module_cache.AddNonNativeModule(std::make_unique<TestModule>(0x1000, 0x500));
-  const ModuleCache::Module* chrome_module =
-      module_cache.GetModuleForAddress(0x1100);
-  ASSERT_TRUE(chrome_module);
+  const ModuleCache::Module* chrome_module = AddNonNativeModule(
+      &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
   ChromeUnwinderAndroid unwinder(cfi_table.get());
   unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());
@@ -258,9 +268,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindAbort) {
   ASSERT_TRUE(cfi_table);
 
   ModuleCache module_cache;
-  module_cache.AddNonNativeModule(std::make_unique<TestModule>(0x1000, 0x500));
-  const ModuleCache::Module* chrome_module =
-      module_cache.GetModuleForAddress(0x1100);
+  const ModuleCache::Module* chrome_module = AddNonNativeModule(
+      &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
   ChromeUnwinderAndroid unwinder(cfi_table.get());
   unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());
@@ -291,10 +300,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindNoData) {
       {reinterpret_cast<const uint8_t*>(cfi_data), sizeof(cfi_data)});
 
   ModuleCache module_cache;
-  module_cache.AddNonNativeModule(std::make_unique<TestModule>(0x1000, 0x500));
-  const ModuleCache::Module* chrome_module =
-      module_cache.GetModuleForAddress(0x1100);
-  ASSERT_TRUE(chrome_module);
+  const ModuleCache::Module* chrome_module = AddNonNativeModule(
+      &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
   ChromeUnwinderAndroid unwinder(cfi_table.get());
   unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());

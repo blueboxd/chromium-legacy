@@ -11,6 +11,7 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/goma.gni")
+import("//build/toolchain/kythe.gni")
 import("//build/util/generate_wrapper.gni")
 import("//build_overrides/build.gni")
 assert(is_android)
@@ -2795,6 +2796,11 @@ if (enable_java_templates) {
 
         # Override the default action_pool when goma is enabled.
         pool = "//build/config/android:goma_javac_pool"
+      }
+      # Flag enable_kythe_annotations requires
+      # checkout_android_prebuilts_build_tools=True in .gclient.
+      if (enable_kythe_annotations && !invoker.enable_errorprone) {
+        args += [ "--enable-kythe-annotations" ]
       }
       if (defined(invoker.srcjar_filearg)) {
         args += [ "--java-srcjars=${invoker.srcjar_filearg}" ]

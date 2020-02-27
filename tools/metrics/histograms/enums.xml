@@ -7428,6 +7428,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Skipped"/>
 </enum>
 
+<enum name="BooleanSoftwareRendering">
+  <int value="0" label="Hardware GPU"/>
+  <int value="1" label="Software Rendering"/>
+</enum>
+
 <enum name="BooleanStale">
   <int value="0" label="Fresh"/>
   <int value="1" label="Stale"/>
@@ -13563,6 +13568,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="10.0"/>
   <int value="8" label="10.1"/>
   <int value="9" label="11.0"/>
+  <int value="10" label="11.1"/>
+  <int value="11" label="12.0"/>
+  <int value="12" label="12.1"/>
 </enum>
 
 <enum name="D3D11InitializeResult">
@@ -31825,6 +31833,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Incognito mode disabled"/>
 </enum>
 
+<enum name="HasDiscreteGpu">
+  <int value="0" label="No"/>
+  <int value="1" label="Yes"/>
+  <int value="2" label="Unknown"/>
+</enum>
+
 <enum name="HeapProfilingMode">
   <int value="0" label="None"/>
   <int value="1" label="Minimal"/>
@@ -34395,6 +34409,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Bluetooth controller disappeared"/>
   <int value="10" label="MultiDevice host unverified"/>
   <int value="11" label="Better Together suite disabled"/>
+</enum>
+
+<enum name="IntelGpuGeneration">
+  <int value="0" label="Not Intel"/>
+  <int value="1" label="Unknown Intel"/>
+  <int value="6" label="6th Gen"/>
+  <int value="7" label="7th Gen"/>
+  <int value="8" label="8th Gen"/>
+  <int value="9" label="9th Gen"/>
+  <int value="10" label="10th Gen"/>
+  <int value="11" label="11th Gen"/>
+  <int value="12" label="12th Gen"/>
 </enum>
 
 <enum name="IntelMaxMicroArchitecture">
@@ -37748,6 +37774,7 @@ from previous Chrome versions.
   <int value="-1222556118" label="VirtualDesks:disabled"/>
   <int value="-1222159993"
       label="HappinessTrackingSurveysForDesktopSettings:enabled"/>
+  <int value="-1220675698" label="OmniboxDeferredKeyboardPopup:enabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217623062"
       label="AutofillAlwaysReturnCloudTokenizedCard:disabled"/>
@@ -37864,6 +37891,7 @@ from previous Chrome versions.
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
+  <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
@@ -38632,6 +38660,7 @@ from previous Chrome versions.
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-131673218" label="FileHandlingAPI:disabled"/>
+  <int value="-131257916" label="OmniboxCompactSuggestions:disabled"/>
   <int value="-128687277"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:disabled"/>
   <int value="-127666141" label="TabGroups:disabled"/>
@@ -39595,6 +39624,7 @@ from previous Chrome versions.
   <int value="1059007599" label="enable-gpu-appcontainer"/>
   <int value="1059698271" label="EnableZeroStateSuggestions:disabled"/>
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
+  <int value="1061947013" label="OmniboxDeferredKeyboardPopup:disabled"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
@@ -55928,6 +55958,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2109171099" label="device.mojom.SensorProvider"/>
   <int value="2137870010" label="web_ui_test.mojom.TestRunner"/>
   <int value="2147202291" label="shape_detection.mojom.TextDetection"/>
+</enum>
+
+<enum name="RenderingType">
+  <int value="0" label="Hardware GPU"/>
+  <int value="1" label="Software Rendering"/>
 </enum>
 
 <enum name="RenderViewContextMenuItem">

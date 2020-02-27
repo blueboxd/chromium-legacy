@@ -296,9 +296,10 @@ class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 // Parameters are:
 // 1. Is gem features enabled / disabled.
 // 2. Is ep_url already set via registry.
+// 3. Does reauth email exist.
 class GcpReauthCredentialGlsTest
     : public GcpReauthCredentialGlsRunnerTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
 
 TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
   USES_CONVERSION;
@@ -337,8 +338,11 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
   ASSERT_EQ(S_OK, ireauth->SetOSUserInfo(
                       kSid, CComBSTR(OSUserManager::GetLocalDomain().c_str()),
                       CComBSTR(W2COLE(L"username"))));
-  ASSERT_EQ(S_OK, ireauth->SetEmailForReauth(CComBSTR(
-                      A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
+  bool set_email_for_reauth = std::get<2>(GetParam());
+  if (set_email_for_reauth) {
+    ASSERT_EQ(S_OK, ireauth->SetEmailForReauth(CComBSTR(
+                        A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
+  }
 
   // Get user gls command line and extract the kGaiaUrl &
   // kGcpwEndpointPathSwitch switch from it.
@@ -367,9 +371,15 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
               command_line.GetSwitchValueASCII(switches::kGaiaUrl));
     ASSERT_TRUE(gcpw_path.empty());
   } else if (is_gem_features_enabled) {
-    ASSERT_EQ(gcpw_path,
-              base::StringPrintf("embedded/reauth/windows?device_id=%s",
-                                 device_id.c_str()));
+    if (set_email_for_reauth) {
+      ASSERT_EQ(gcpw_path,
+                base::StringPrintf("embedded/reauth/windows?device_id=%s",
+                                   device_id.c_str()));
+    } else {
+      ASSERT_EQ(gcpw_path,
+                base::StringPrintf("embedded/setup/windows?device_id=%s",
+                                   device_id.c_str()));
+    }
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
   } else {
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
@@ -380,6 +390,7 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpReauthCredentialGlsTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdOrEmailAvailable) {

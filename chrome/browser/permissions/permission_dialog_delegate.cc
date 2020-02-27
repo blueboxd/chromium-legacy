@@ -57,7 +57,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(
       env, reinterpret_cast<uintptr_t>(this),
       web_contents->GetTopLevelNativeWindow()->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types),
-      ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
+      ResourceMapper::MapToJavaDrawableId(permission_prompt_->GetIconId()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
       primaryButtonText, secondaryButtonText));
 }

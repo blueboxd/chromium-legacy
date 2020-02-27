@@ -6,6 +6,7 @@
 
 #include <atk/atk.h>
 
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -16,6 +17,10 @@ class ViewAXPlatformNodeDelegateAuraLinuxTest : public ViewsTestBase {
  public:
   ViewAXPlatformNodeDelegateAuraLinuxTest() = default;
   ~ViewAXPlatformNodeDelegateAuraLinuxTest() override = default;
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
+  }
 };
 
 TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {

@@ -20,6 +20,7 @@
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -84,7 +85,7 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
     if (visible) {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
-      gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
+      gfx::NativeCursor invisible_cursor(ui::mojom::CursorType::kNone);
       image_cursors_->SetPlatformCursor(&invisible_cursor);
       SetCursorOnAllRootWindows(invisible_cursor);
     }
@@ -327,7 +328,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
       std::make_unique<ShellNativeCursorManager>(this));
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
-  cursor_manager_->SetCursor(ui::CursorType::kPointer);
+  cursor_manager_->SetCursor(ui::mojom::CursorType::kPointer);
 
 #if defined(OS_CHROMEOS)
   user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace content {
 
@@ -34,7 +35,7 @@ WebCursor& WebCursor::operator=(const WebCursor& other) {
 bool WebCursor::SetInfo(const CursorInfo& info) {
   static constexpr int kMaxSize = 1024;
   if (info.image_scale_factor < 0.01f || info.image_scale_factor > 100.f ||
-      (info.type == ui::CursorType::kCustom &&
+      (info.type == ui::mojom::CursorType::kCustom &&
        (info.custom_image.width() > kMaxSize ||
         info.custom_image.height() > kMaxSize ||
         info.custom_image.width() / info.image_scale_factor > kMaxSize ||
@@ -46,7 +47,7 @@ bool WebCursor::SetInfo(const CursorInfo& info) {
   info_ = info;
 
   // Clamp the hotspot to the custom image's dimensions.
-  if (info_.type == ui::CursorType::kCustom) {
+  if (info_.type == ui::mojom::CursorType::kCustom) {
     info_.hotspot.set_x(std::max(
         0, std::min(info_.custom_image.width() - 1, info_.hotspot.x())));
     info_.hotspot.set_y(std::max(

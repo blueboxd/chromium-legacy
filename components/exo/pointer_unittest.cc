@@ -29,6 +29,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -202,7 +203,8 @@ TEST_F(PointerTest, SetCursorNull) {
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone,
+            cursor_client->GetCursor().native_type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -228,13 +230,14 @@ TEST_F(PointerTest, SetCursorType) {
   EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
 
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kIBeam,
+            cursor_client->GetCursor().native_type());
 
   // Set the pointer with surface after setting pointer type.
   std::unique_ptr<Surface> pointer_surface(new Surface);
@@ -257,11 +260,12 @@ TEST_F(PointerTest, SetCursorType) {
   }
 
   // Set the pointer type after the pointer surface is specified.
-  pointer->SetCursorType(ui::CursorType::kCross);
+  pointer->SetCursorType(ui::mojom::CursorType::kCross);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kCross, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCross,
+            cursor_client->GetCursor().native_type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -286,7 +290,7 @@ TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
   generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin() -
                         gfx::Vector2d(1, 1));
 
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(nullptr, pointer->root_surface());
@@ -294,7 +298,8 @@ TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
   // The cursor type shouldn't be the specified one, since the pointer is
   // located outside of the surface.
-  EXPECT_NE(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_NE(ui::mojom::CursorType::kIBeam,
+            cursor_client->GetCursor().native_type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
@@ -342,7 +347,7 @@ TEST_F(PointerTest, SetCursorAndSetCursorType) {
   }
 
   // Set the cursor type to the kNone through SetCursorType.
-  pointer->SetCursorType(ui::CursorType::kNone);
+  pointer->SetCursorType(ui::mojom::CursorType::kNone);
   EXPECT_TRUE(pointer->GetActivePresentationCallbacksForTesting().empty());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
@@ -401,19 +406,22 @@ TEST_F(PointerTest, SetCursorNullAndSetCursorType) {
   EXPECT_EQ(nullptr, pointer->root_surface());
   aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
       shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone,
+            cursor_client->GetCursor().native_type());
 
   // Set the cursor type.
-  pointer->SetCursorType(ui::CursorType::kIBeam);
+  pointer->SetCursorType(ui::mojom::CursorType::kIBeam);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kIBeam, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kIBeam,
+            cursor_client->GetCursor().native_type());
 
   // Set nullptr surface again.
   pointer->SetCursor(nullptr, gfx::Point());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, pointer->root_surface());
-  EXPECT_EQ(ui::CursorType::kNone, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNone,
+            cursor_client->GetCursor().native_type());
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

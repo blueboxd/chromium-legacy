@@ -42,7 +42,8 @@ namespace {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-// This should match enum D3DFeatureLevel in \tools\metrics\histograms\enums.xml
+// This should match enum D3D12FeatureLevel in
+// \tools\metrics\histograms\enums.xml
 enum class D3D12FeatureLevel {
   kD3DFeatureLevelUnknown = 0,
   kD3DFeatureLevel_12_0 = 1,
@@ -198,11 +199,10 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
   info->supports_dx12 = false;
   info->d3d12_feature_level = 0;
 
-  base::NativeLibrary d3d12_library =
-      base::LoadNativeLibrary(base::FilePath(L"d3d12.dll"), nullptr);
-  if (!d3d12_library) {
+  base::ScopedNativeLibrary d3d12_library(
+      base::FilePath(FILE_PATH_LITERAL("d3d12.dll")));
+  if (!d3d12_library.is_valid())
     return;
-  }
 
   // The order of feature levels to attempt to create in D3D CreateDevice
   const D3D_FEATURE_LEVEL feature_levels[] = {
@@ -211,7 +211,7 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
 
   PFN_D3D12_CREATE_DEVICE D3D12CreateDevice =
       reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
-          GetProcAddress(d3d12_library, "D3D12CreateDevice"));
+          d3d12_library.GetFunctionPointer("D3D12CreateDevice"));
   if (D3D12CreateDevice) {
     // For the default adapter only. (*pAdapter == nullptr)
     // Check to see if the adapter supports Direct3D 12, but don't create the
@@ -225,8 +225,6 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
       }
     }
   }
-
-  base::UnloadNativeLibrary(d3d12_library);
 }
 
 bool BadAMDVulkanDriverVersion() {

@@ -214,7 +214,8 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       ConvertUTF8ToJavaString(env,
                               payment_request_data.basic_card_issuer_network),
-      ResourceMapper::MapFromChromiumId(payment_request_data.icon_resource_id),
+      ResourceMapper::MapToJavaDrawableId(
+          payment_request_data.icon_resource_id),
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()));
 }

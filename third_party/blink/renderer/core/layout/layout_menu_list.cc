@@ -36,11 +36,4 @@ LayoutMenuList::LayoutMenuList(Element* element) : LayoutFlexibleBox(element) {
 
 LayoutMenuList::~LayoutMenuList() = default;
 
-PhysicalRect LayoutMenuList::ControlClipRect(
-    const PhysicalOffset& additional_offset) const {
-  PhysicalRect outer_box = PhysicalContentBoxRect();
-  outer_box.offset += additional_offset;
-  return outer_box;
-}
-
 }  // namespace blink

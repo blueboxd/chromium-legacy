@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
@@ -48,7 +49,7 @@ const unsigned int kModifiersMasks[] = {0,         // No additional modifier.
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
-      initial_cursor_(ui::CursorType::kNull),
+      initial_cursor_(ui::mojom::CursorType::kNull),
       should_reset_mouse_flags_(false),
       grab_input_window_(x11::None),
       grabbed_pointer_(false),

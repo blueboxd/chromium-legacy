@@ -197,17 +197,6 @@ void LayoutTextControlSingleLine::CapsLockStateMayHaveChanged() {
   }
 }
 
-bool LayoutTextControlSingleLine::HasControlClip() const {
-  return true;
-}
-
-PhysicalRect LayoutTextControlSingleLine::ControlClipRect(
-    const PhysicalOffset& additional_offset) const {
-  PhysicalRect clip_rect = PhysicalPaddingBoxRect();
-  clip_rect.offset += additional_offset;
-  return clip_rect;
-}
-
 LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
     float char_width) const {
   int factor;

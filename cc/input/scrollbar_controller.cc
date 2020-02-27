@@ -78,7 +78,12 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   if (!(layer_impl && layer_impl->ToScrollbarLayer()))
     return InputHandlerPointerResult();
 
+  // If the scrollbar layer has faded out (eg: Overlay scrollbars), don't
+  // initiate a scroll.
   const ScrollbarLayerImplBase* scrollbar = layer_impl->ToScrollbarLayer();
+  if (scrollbar->OverlayScrollbarOpacity() == 0.f)
+    return InputHandlerPointerResult();
+
   captured_scrollbar_metadata_ = CapturedScrollbarMetadata();
   captured_scrollbar_metadata_->scroll_element_id =
       scrollbar->scroll_element_id();

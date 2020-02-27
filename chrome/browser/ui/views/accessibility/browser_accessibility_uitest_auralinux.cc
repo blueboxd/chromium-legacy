@@ -11,10 +11,17 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 class AuraLinuxAccessibilityInProcessBrowserTest : public InProcessBrowserTest {
+ public:
+  void SetUp() override {
+    ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
+    InProcessBrowserTest::SetUp();
+  }
+
  protected:
-  AuraLinuxAccessibilityInProcessBrowserTest() {}
+  AuraLinuxAccessibilityInProcessBrowserTest() = default;
 
   void VerifyEmbedRelationships();
 

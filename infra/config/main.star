@@ -67,7 +67,6 @@ luci.cq_group(
     # TODO(crbug/959436): enable it.
     cancel_stale_tryjobs = False,
     retry_config = cq.RETRY_ALL_FAILURES,
-    tree_status_host = 'chromium-status.appspot.com/',
     watch = cq.refset(
         repo = 'https://chromium.googlesource.com/chromium/src',
         refs = ['refs/branch-heads/.+'],

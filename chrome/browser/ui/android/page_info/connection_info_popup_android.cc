@@ -89,7 +89,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   {
-    int icon_id = ResourceMapper::MapFromChromiumId(
+    int icon_id = ResourceMapper::MapToJavaDrawableId(
         PageInfoUI::GetIdentityIconID(identity_info.identity_status));
 
     // The headline and the certificate dialog link of the site's identity
@@ -128,7 +128,7 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
   }
 
   {
-    int icon_id = ResourceMapper::MapFromChromiumId(
+    int icon_id = ResourceMapper::MapToJavaDrawableId(
         PageInfoUI::GetConnectionIconID(identity_info.connection_status));
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(

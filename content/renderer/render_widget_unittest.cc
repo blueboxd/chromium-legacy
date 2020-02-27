@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/rect.h"
@@ -287,7 +288,7 @@ class RenderWidgetUnittest : public testing::Test {
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
   blink::WebCursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kPointer;
+  cursor_info.type = ui::mojom::CursorType::kPointer;
 
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);

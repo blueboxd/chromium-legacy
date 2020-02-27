@@ -25,6 +25,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -104,7 +105,7 @@ Pointer::Pointer(PointerDelegate* delegate, Seat* seat)
     : SurfaceTreeHost("ExoPointer"),
       delegate_(delegate),
       seat_(seat),
-      cursor_(ui::CursorType::kNull),
+      cursor_(ui::mojom::CursorType::kNull),
       capture_scale_(GetCaptureDisplayInfo().device_scale_factor()),
       capture_ratio_(GetCaptureDisplayInfo().GetDensityRatio()),
       cursor_capture_source_id_(base::UnguessableToken::Create()) {
@@ -161,7 +162,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     }
     UpdatePointerSurface(surface);
     cursor_changed = true;
-  } else if (!surface && cursor_ != ui::CursorType::kNone) {
+  } else if (!surface && cursor_ != ui::mojom::CursorType::kNone) {
     cursor_changed = true;
   }
 
@@ -178,17 +179,17 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   // snapshot of cursor, otherwise cancel pending capture and immediately set
   // the cursor to "none".
   if (root_surface()) {
-    cursor_ = ui::CursorType::kCustom;
+    cursor_ = ui::mojom::CursorType::kCustom;
     CaptureCursor(hotspot);
   } else {
-    cursor_ = ui::CursorType::kNone;
+    cursor_ = ui::mojom::CursorType::kNone;
     cursor_bitmap_.reset();
     cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
     UpdateCursor();
   }
 }
 
-void Pointer::SetCursorType(ui::CursorType cursor_type) {
+void Pointer::SetCursorType(ui::mojom::CursorType cursor_type) {
   // Early out if the pointer doesn't have a surface in focus.
   if (!focus_surface_)
     return;
@@ -521,7 +522,7 @@ void Pointer::OnCursorSizeChanged(ui::CursorSize cursor_size) {
   if (!focus_surface_)
     return;
 
-  if (cursor_ != ui::CursorType::kNull)
+  if (cursor_ != ui::mojom::CursorType::kNull)
     UpdateCursor();
 }
 
@@ -535,7 +536,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
   // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
   if (!cursor_client)
     return;
-  if (cursor_ == ui::CursorType::kCustom &&
+  if (cursor_ == ui::mojom::CursorType::kCustom &&
       cursor_client->GetCursor() == cursor_client->GetCursor()) {
     // If the current cursor is still the one created by us,
     // it's our responsibility to update the cursor for the new display.
@@ -672,7 +673,7 @@ void Pointer::UpdateCursor() {
   if (!cursor_client)
     return;
 
-  if (cursor_ == ui::CursorType::kCustom) {
+  if (cursor_ == ui::mojom::CursorType::kCustom) {
     SkBitmap bitmap = cursor_bitmap_;
     gfx::Point hotspot =
         gfx::ScaleToFlooredPoint(cursor_hotspot_, capture_ratio_);

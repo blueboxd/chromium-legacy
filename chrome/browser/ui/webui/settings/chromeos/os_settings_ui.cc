@@ -169,11 +169,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
 
-#if defined(OS_CHROMEOS)
   html_source->AddBoolean(
       "isSupportedArcVersion",
       AppManagementPageHandler::IsCurrentArcVersionSupported(profile));
-#endif  // OS_CHROMEOS
 
   AddSettingsPageUIHandler(
       base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));

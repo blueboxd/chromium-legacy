@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutButton BUTTON",
-          "rect": [3, 4, 56, 29],
+          "rect": [6, 6, 55, 25],
           "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Reset'",
-          "rect": [16, 11, 30, 14],
+          "rect": [16, 10, 35, 16],
           "reason": "subtree"
         }
       ]

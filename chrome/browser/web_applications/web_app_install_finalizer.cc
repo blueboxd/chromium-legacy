@@ -147,28 +147,14 @@ void WebAppInstallFinalizer::FinalizeInstall(
   const AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   const WebApp* existing_web_app = GetWebAppRegistrar().GetAppById(app_id);
 
-  if (existing_web_app && !existing_web_app->is_in_sync_install()) {
-    // There is an existing app from other source(s). Preserve
-    // is_locally_installed flag value, do not modify it.
-    ScopedRegistryUpdate update(sync_bridge_);
-    WebApp* local_web_app = update->UpdateApp(app_id);
-    local_web_app->AddSource(source);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), app_id,
-                                  InstallResultCode::kSuccessAlreadyInstalled));
-    return;
-  }
-
   std::unique_ptr<WebApp> web_app;
 
-  if (existing_web_app && existing_web_app->is_in_sync_install()) {
-    // There is an existing app awaiting for any online install completion, not
-    // only from kSync source. Prepare copy-on-write:
+  if (existing_web_app) {
+    // There is an existing app from other source(s). Preserve
+    // |is_locally_installed| and |user_display_mode| fields here, do not modify
+    // them. Prepare copy-on-write:
     DCHECK_EQ(web_app_info.app_url, existing_web_app->launch_url());
     web_app = std::make_unique<WebApp>(*existing_web_app);
-    // options.locally_installed is ignored here.
-    // |user_display_mode| is preserved here: we get it from sync.
   } else {
     // New app.
     web_app = std::make_unique<WebApp>(app_id);
@@ -183,6 +169,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetIsInSyncInstall(false);
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
+                                      /*is_new_install=*/true,
                                       std::move(callback));
 }
 
@@ -220,7 +207,8 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
       std::move(app_id), std::move(icon_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(fallback_install_callback), std::move(web_app)));
+                     std::move(fallback_install_callback), std::move(web_app),
+                     /*is_new_install=*/true));
 }
 
 void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
@@ -312,6 +300,7 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   auto web_app = std::make_unique<WebApp>(*existing_web_app);
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
+                                      /*is_new_install=*/false,
                                       std::move(callback));
 }
 
@@ -355,6 +344,7 @@ void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
 void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
     const WebApplicationInfo& web_app_info,
     std::unique_ptr<WebApp> web_app,
+    bool is_new_install,
     InstallFinalizedCallback callback) {
   web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
   web_app->SetDisplayMode(web_app_info.display_mode);
@@ -381,12 +371,13 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
       std::move(app_id), web_app_info.icon_bitmaps,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(web_app)));
+                     std::move(web_app), is_new_install));
 }
 
 void WebAppInstallFinalizer::OnIconsDataWritten(
     InstallFinalizedCallback callback,
     std::unique_ptr<WebApp> web_app,
+    bool is_new_install,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
@@ -408,7 +399,7 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
       std::move(update),
       base::BindOnce(&WebAppInstallFinalizer::OnDatabaseCommitCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(app_id), /*new_app_created=*/!app_to_override));
+                     std::move(app_id), is_new_install));
 }
 
 void WebAppInstallFinalizer::OnIconsDataDeleted(
@@ -422,7 +413,7 @@ void WebAppInstallFinalizer::OnIconsDataDeleted(
 void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
     InstallFinalizedCallback callback,
     const AppId& app_id,
-    bool new_app_created,
+    bool is_new_install,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
@@ -432,8 +423,8 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
 
   registrar().NotifyWebAppInstalled(app_id);
   std::move(callback).Run(
-      app_id, new_app_created ? InstallResultCode::kSuccessNewInstall
-                              : InstallResultCode::kSuccessAlreadyInstalled);
+      app_id, is_new_install ? InstallResultCode::kSuccessNewInstall
+                             : InstallResultCode::kSuccessAlreadyInstalled);
 }
 
 void WebAppInstallFinalizer::OnFallbackInstallFinalized(

@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow INPUT id='checkbox'",
-          "rect": [10, 61, 31, 30],
+          "object": "LayoutNGBlockFlow INPUT id='checkbox'",
+          "rect": [12, 61, 30, 30],
           "reason": "subtree"
         }
       ]

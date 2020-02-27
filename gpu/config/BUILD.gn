@@ -111,6 +111,7 @@ jumbo_source_set("config_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "device_perf_info.cc",
     "device_perf_info.h",
     "dx_diag_node.cc",
     "dx_diag_node.h",

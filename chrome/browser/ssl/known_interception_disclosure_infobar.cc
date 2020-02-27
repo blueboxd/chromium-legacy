@@ -51,7 +51,7 @@ KnownInterceptionDisclosureInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   return Java_KnownInterceptionDisclosureInfoBar_create(
-      env, GetEnumeratedIconId(), java_bitmap, message_text, link_text,
+      env, GetJavaIconId(), java_bitmap, message_text, link_text,
       ok_button_text, description_text);
 }
 

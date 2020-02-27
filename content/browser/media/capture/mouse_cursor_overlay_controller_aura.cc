@@ -8,6 +8,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/public/activation_client.h"
@@ -17,7 +18,7 @@ namespace content {
 namespace {
 
 ui::Cursor CreateDefaultPointerCursor() {
-  ui::Cursor cursor(ui::CursorType::kPointer);
+  ui::Cursor cursor(ui::mojom::CursorType::kPointer);
   std::unique_ptr<ui::CursorLoader> loader(ui::CursorLoader::Create());
   loader->SetPlatformCursor(&cursor);
   return cursor;
@@ -156,7 +157,7 @@ gfx::NativeCursor MouseCursorOverlayController::GetCurrentCursorOrDefault()
   if (auto* window = Observer::GetTargetWindow(observer_)) {
     if (auto* host = window->GetHost()) {
       gfx::NativeCursor cursor = host->last_cursor();
-      if (cursor != ui::CursorType::kNull) {
+      if (cursor != ui::mojom::CursorType::kNull) {
         if (cursor.device_scale_factor() < 1.0f) {
           cursor.set_device_scale_factor(1.0f);
         }
@@ -210,8 +211,8 @@ void MouseCursorOverlayController::DisconnectFromToolkitForTesting() {
 
   observer_->StopTracking();
 
-  // The default cursor is ui::CursorType::kNone. Make it kPointer
-  // so the tests have a non-empty cursor bitmap to work with.
+  // The default cursor is ui::mojom::CursorType::kNone. Make it kPointer so
+  // the tests have a non-empty cursor bitmap to work with.
   auto* const window = Observer::GetTargetWindow(observer_);
   CHECK(window);
   auto* const host = window->GetHost();

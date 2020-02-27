@@ -9,6 +9,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace views {
 
@@ -18,7 +19,7 @@ DesktopNativeCursorManager::DesktopNativeCursorManager()
 DesktopNativeCursorManager::~DesktopNativeCursorManager() = default;
 
 gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(
-    ui::CursorType type) {
+    ui::mojom::CursorType type) {
   gfx::NativeCursor cursor(type);
   cursor_loader_->SetPlatformCursor(&cursor);
   return cursor;
@@ -63,7 +64,7 @@ void DesktopNativeCursorManager::SetVisibility(
   if (visible) {
     SetCursor(delegate->GetCursor(), delegate);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
+    gfx::NativeCursor invisible_cursor(ui::mojom::CursorType::kNone);
     cursor_loader_->SetPlatformCursor(&invisible_cursor);
     for (auto* host : hosts_)
       host->SetCursor(invisible_cursor);

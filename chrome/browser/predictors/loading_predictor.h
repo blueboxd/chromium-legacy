@@ -14,6 +14,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/navigation_id.h"
@@ -49,10 +50,15 @@ class LoadingPredictor : public KeyedService,
   ~LoadingPredictor() override;
 
   // Hints that a page load is expected for |url|, with the hint coming from a
-  // given |origin|. May trigger actions, such as prefetch and/or preconnect.
-  void PrepareForPageLoad(const GURL& url,
+  // given |origin|. If |preconnect_prediction| is provided, this will use it
+  // over local predictions to trigger actions, such as prefetch and/or
+  // preconnect. Returns true if no more preconnect actions should be taken by
+  // the caller.
+  bool PrepareForPageLoad(const GURL& url,
                           HintOrigin origin,
-                          bool preconnectable = false);
+                          bool preconnectable = false,
+                          base::Optional<PreconnectPrediction>
+                              preconnect_prediction = base::nullopt);
 
   // Indicates that a page load hint is no longer active.
   void CancelPageLoadHint(const GURL& url);
@@ -68,7 +74,10 @@ class LoadingPredictor : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  void OnNavigationStarted(const NavigationID& navigation_id);
+  // OnNavigationStarted is invoked when a navigation with |navigation_id| has
+  // started. It returns whether any actions were taken, such as preconnecting
+  // to known resource hosts, at that time.
+  bool OnNavigationStarted(const NavigationID& navigation_id);
   void OnNavigationFinished(const NavigationID& old_navigation_id,
                             const NavigationID& new_navigation_id,
                             bool is_error_page);

@@ -15,6 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -55,8 +56,9 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 
-  cursor_manager->SetCursor(ui::CursorType::kCopy);
-  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::mojom::CursorType::kCopy);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy,
+            test_api.GetCurrentCursor().native_type());
   UpdateDisplay("800x800*2/r");
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(ui::CursorSize::kNormal, test_api.GetCurrentCursorSize());
@@ -76,8 +78,9 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   EXPECT_EQ(ui::CursorSize::kNormal, test_api.GetCurrentCursorSize());
 
   // Cursor type does not change while cursor is locked.
-  cursor_manager->SetCursor(ui::CursorType::kPointer);
-  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy,
+            test_api.GetCurrentCursor().native_type());
 
   // Device scale factor and rotation do change even while cursor is locked.
   UpdateDisplay("800x800/u");
@@ -88,7 +91,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
 
   // Cursor type changes to the one specified while cursor is locked.
-  EXPECT_EQ(ui::CursorType::kPointer,
+  EXPECT_EQ(ui::mojom::CursorType::kPointer,
             test_api.GetCurrentCursor().native_type());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
@@ -97,11 +100,12 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
 TEST_F(NativeCursorManagerAshTest, SetCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
-  cursor_manager->SetCursor(ui::CursorType::kCopy);
-  EXPECT_EQ(ui::CursorType::kCopy, test_api.GetCurrentCursor().native_type());
+  cursor_manager->SetCursor(ui::mojom::CursorType::kCopy);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy,
+            test_api.GetCurrentCursor().native_type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
-  cursor_manager->SetCursor(ui::CursorType::kPointer);
-  EXPECT_EQ(ui::CursorType::kPointer,
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
+  EXPECT_EQ(ui::mojom::CursorType::kPointer,
             test_api.GetCurrentCursor().native_type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }

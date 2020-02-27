@@ -17,7 +17,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
@@ -30,16 +29,14 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
     private boolean mIsHiding;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, Bitmap iconBitmap, String messageText,
-            String url, boolean isIconAdaptive) {
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-
+    private static InfoBar show(
+            int iconId, Bitmap iconBitmap, String messageText, String url, boolean isIconAdaptive) {
         Bitmap iconBitmapToUse = iconBitmap;
         if (isIconAdaptive && ShortcutHelper.doesAndroidSupportMaskableIcons()) {
             iconBitmapToUse = ShortcutHelper.generateAdaptiveIconBitmap(iconBitmap);
         }
 
-        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmapToUse, messageText, url);
+        return new InstallableAmbientBadgeInfoBar(iconId, iconBitmapToUse, messageText, url);
     }
 
     @Override

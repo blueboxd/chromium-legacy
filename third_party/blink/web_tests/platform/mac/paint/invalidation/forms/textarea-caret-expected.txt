@@ -8,32 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [5, 5, 167, 44],
+          "rect": [6, 6, 185, 40],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [5, 5, 167, 44],
+          "rect": [6, 6, 185, 40],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 161, 38],
+          "rect": [8, 8, 181, 36],
           "reason": "chunk disappeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 11, 159, 16],
+          "rect": [9, 11, 179, 16],
           "reason": "chunk appeared"
         },
         {
           "object": "HorizontalScrollbar",
-          "rect": [9, 30, 159, 15],
+          "rect": [9, 28, 179, 15],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [153, 30, 15, 15],
+          "rect": [173, 28, 15, 15],
           "reason": "chunk disappeared"
         }
       ]

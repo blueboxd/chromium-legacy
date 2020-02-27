@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/layout.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
 namespace ash {
@@ -98,7 +99,7 @@ void NativeCursorManagerAsh::SetCursor(
   if (native_cursor_enabled_) {
     image_cursors_->SetPlatformCursor(&cursor);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
+    gfx::NativeCursor invisible_cursor(ui::mojom::CursorType::kNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
     cursor.SetPlatformCursor(invisible_cursor.platform());
   }
@@ -134,7 +135,7 @@ void NativeCursorManagerAsh::SetVisibility(
   if (visible) {
     SetCursor(delegate->GetCursor(), delegate);
   } else {
-    gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
+    gfx::NativeCursor invisible_cursor(ui::mojom::CursorType::kNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
     SetCursorOnAllRootWindows(invisible_cursor);
   }

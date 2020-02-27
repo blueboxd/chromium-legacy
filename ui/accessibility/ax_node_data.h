@@ -156,9 +156,9 @@ struct AX_EXPORT AXNodeData {
   bool HasDropeffect(ax::mojom::Dropeffect dropeffect) const;
 
   // Set or remove bits in the given enum's corresponding bitfield.
-  ax::mojom::State AddState(ax::mojom::State state);
-  ax::mojom::State RemoveState(ax::mojom::State state);
-  ax::mojom::Action AddAction(ax::mojom::Action action);
+  void AddState(ax::mojom::State state);
+  void RemoveState(ax::mojom::State state);
+  void AddAction(ax::mojom::Action action);
   void AddTextStyle(ax::mojom::TextStyle text_style);
   // aria-dropeffect is deprecated in WAI-ARIA 1.1.
   void AddDropeffect(ax::mojom::Dropeffect dropeffect);
@@ -232,7 +232,7 @@ struct AX_EXPORT AXNodeData {
   int32_t id = -1;
   ax::mojom::Role role;
   uint32_t state;
-  uint32_t actions;
+  uint64_t actions;
   std::vector<std::pair<ax::mojom::StringAttribute, std::string>>
       string_attributes;
   std::vector<std::pair<ax::mojom::IntAttribute, int32_t>> int_attributes;

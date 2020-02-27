@@ -38,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox – daje Chromeu glas</translation>
 <translation id="1225969361094801578">Tamna plavosiva</translation>
 <translation id="1229276918471378188">Prethodni skok</translation>
+<translation id="1230503547248836149">Početak odabira</translation>
 <translation id="1236794971743289975">Završna napomena</translation>
 <translation id="1237866625126425153">gmbgr</translation>
 <translation id="1243477406442346359">Različak plava</translation>
@@ -120,6 +121,7 @@
 <translation id="1752708997038853212">Unesite upit za pretraživanje</translation>
 <translation id="1756785467854861272">Tamna magenta</translation>
 <translation id="1765245556747822181">Prelazak jednim prstom prema gore</translation>
+<translation id="1771761307086386028">Pomicanje udesno</translation>
 <translation id="1781173782405573156">Tipka za izravni pristup</translation>
 <translation id="1787176709638001873">Tekst uređivanja zaporke</translation>
 <translation id="1802710350767629429">Prikaz napomena o ažuriranju</translation>
@@ -176,6 +178,7 @@
 <translation id="2199994615414171367">Prethodni matematički izraz</translation>
 <translation id="2203046366315513658">Smanjivanje vrijednosti</translation>
 <translation id="2216790501338699346">URL veze: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">Premjesti jedan znak unatrag</translation>
 <translation id="2220529011494928058">Prijavite poteškoću</translation>
 <translation id="2223693656926968778">Radnja na trenutačnoj stavci</translation>
 <translation id="224426591676115802">Glas nije dostupan za jezik: <ph name="LANGUAGE" /></translation>
@@ -225,6 +228,7 @@
 <translation id="2592212930811759050">Dvaput dodirnite za početak uređivanja</translation>
 <translation id="2594420797397883935">Nema prethodne stavke koja nije veza</translation>
 <translation id="2598495320872286378">Gramatička pogreška</translation>
+<translation id="2603828437139726540">Premjesti jedan znak unaprijed</translation>
 <translation id="2614981083756825552">Math ML raspored</translation>
 <translation id="2624431853467395961">Otvaranje načina vodiča</translation>
 <translation id="2626530649491650971">može se kliknuti</translation>
@@ -232,6 +236,7 @@
 <translation id="2638785836053527382">Nastavljeno je preuzimanje datoteke <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">Modifikator ChromeVoxa</translation>
 <translation id="2644542693584024604">pravopisna pogreška</translation>
+<translation id="2654172656519784359">Premjesti jednu riječ unaprijed</translation>
 <translation id="2661530546602071611">Obavijest</translation>
 <translation id="2673280813984708147">uređuje</translation>
 <translation id="267442004702508783">osvježavanje</translation>
@@ -308,6 +313,7 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Sljedeći orijentir</translation>
 <translation id="3096671415663099226">kmbokv</translation>
+<translation id="309749186376891736">Pomicanje pokazivača</translation>
 <translation id="3103579948980282461">Srednja ljubičastocrvena</translation>
 <translation id="3104705064753753826">dij upoz</translation>
 <translation id="3109724472072898302">Sažeto</translation>
@@ -439,6 +445,7 @@
 <translation id="3930498801443296724">Izdvojeno</translation>
 <translation id="3935615366277838204">Veliko slovo <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Crvenkastoljubičasta</translation>
+<translation id="3943857333388298514">Zalijepi</translation>
 <translation id="394953087167197343">Naznači pogrešku u pisanju:</translation>
 <translation id="3962990492275676168">Počni čitati od trenutačne lokacije</translation>
 <translation id="3970951409746498040">Pješčano smeđa</translation>
@@ -448,6 +455,7 @@
 <translation id="4002709828007663583">Tamna orhideja</translation>
 <translation id="4004802134384979325">označen</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">Pomakni prema dolje</translation>
 <translation id="4038349100599457191">Upravljanje mjesecima</translation>
 <translation id="4039983576244166038">Prazan redak zaglavlja</translation>
 <translation id="4047216625641135770">Oznaka</translation>
@@ -477,6 +485,7 @@
 <translation id="4206289001967551965">Unutar tablice</translation>
 <translation id="4215733775853809057">Sljedeći klizač</translation>
 <translation id="42164919740161077">Sivkastoplava</translation>
+<translation id="4217571870635786043">Diktat</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{crtica}one{# crtica}few{# crtice}other{# crtica}}</translation>
 <translation id="421884353938374759">odabir boja</translation>
 <translation id="4221012616705981690">Nema prethodnog popisa</translation>
@@ -543,6 +552,7 @@
 <translation id="4688873778442829762">rštk</translation>
 <translation id="4693675773662933727">Prethodni orijentir</translation>
 <translation id="4710166929009737753">Prelazak jednim prstom udesno</translation>
+<translation id="4712898966495541134">Završetak odabira</translation>
 <translation id="4729095194763193578">Prethodni redak tablice</translation>
 <translation id="4736221692378411923">kolovoz</translation>
 <translation id="4740661827607246557">Naredbe pomoći</translation>
@@ -575,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Tamnocijan</translation>
 <translation id="489907760999452556">Interna veza</translation>
+<translation id="4909019435900810068">Premjesti jednu riječ unatrag</translation>
 <translation id="4911349081560453449">Nema prethodnog potvrdnog okvira</translation>
 <translation id="4915087353619183190">Pokretanje načina vodiča. Pritisnite tipku qwerty tipkovnice, tipku brajevog retka s mogućnošću osvježavanja ili pokret dodira da biste saznali njezinu funkciju. Pritisnite tipku Control i "w" ili Esc za zatvaranje.</translation>
 <translation id="492295894462528572">Predgovor</translation>
+<translation id="495046168593986294">Pomakni prema gore</translation>
 <translation id="495170559598752135">Radnje</translation>
 <translation id="4953585991029886728">Uređivanje teksta</translation>
 <translation id="4954534434583049121">Prethodni blok citata</translation>
@@ -638,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{zarez}one{# zarez}few{# zareza}other{# zareza}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstualni okvir</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, veza</translation>
+<translation id="5331522683003474486">Kontrolirajte uređaj samo jednim ili dvama prekidačima.</translation>
 <translation id="5336381510091010269">autougr+pop</translation>
 <translation id="5349770431644471053">Povratna veza</translation>
 <translation id="5355014376930441909">Nema sljedećeg odjeljka</translation>
@@ -659,6 +672,7 @@
 <translation id="549602578321198708">Riječ</translation>
 <translation id="5502713021410870035">rujan</translation>
 <translation id="5507663321906818013">Usporedna analiza za otklanjanje pogrešaka</translation>
+<translation id="5513242761114685513">Kontekstni izbornik</translation>
 <translation id="551361796444814639">Srednjeplava</translation>
 <translation id="552195134157544755">Izborni gumb</translation>
 <translation id="5534303576632885660">zglvlj</translation>
@@ -740,12 +754,14 @@
 <translation id="6006050241733874051">Obrazac</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kosa crta ulijevo}one{# kosa crta ulijevo}few{# kose crte ulijevo}other{# kosih crta ulijevo}}</translation>
 <translation id="6017514345406065928">Zelena</translation>
+<translation id="602001110135236999">Pomicanje ulijevo</translation>
 <translation id="6034000775414344507">Svijetlosiva</translation>
 <translation id="6037602951055904232">Pomiči se prema naprijed</translation>
 <translation id="6044160928851315051">Zatamni zaslon</translation>
 <translation id="6082768461603900813">Osnovno kretanje</translation>
 <translation id="609281021724813947">Nema prethodnog klizača</translation>
 <translation id="6095514649509181044">Zanemarivanje velikih i malih slova</translation>
+<translation id="6100239002225743044">Premjesti jedan redak prema gore</translation>
 <translation id="6118126368611144850">Android aplikacije za Chrome. Ako na uređaju imate Trgovinu Play, pogledajte kako ChromeVox funkcionira s Android aplikacijama. Preuzmite Google Chrome Canary iz Trgovine Play i isprobajte eksperimentalnu podršku.</translation>
 <translation id="611827076493383239">psjćn</translation>
 <translation id="6122013438240733403">gmb</translation>
@@ -844,14 +860,17 @@
 <translation id="6865519907510167493">Pravopisna pogreška</translation>
 <translation id="688976158310523235">Izbornik pretraživanja</translation>
 <translation id="6894148351896207544">Izgovara trenutačno vrijeme i datum</translation>
+<translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6897341342232909480">Pomakni lijevo</translation>
 <translation id="6901540140423170855">datum</translation>
 <translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6910969481785184048">Uključivanje, isključivanje i zaustavljanje</translation>
 <translation id="6919104639734799681">Prikaz popisa tablica</translation>
+<translation id="6945221475159498467">Odaberi</translation>
 <translation id="6949846980769640811">Srednjeakvamarin</translation>
 <translation id="6951482098621102657">Nema sljedećeg naslova 5. razine</translation>
 <translation id="6955705049214951590">Maglenoružičasta</translation>
+<translation id="696356426651109308">Skoči na početak</translation>
 <translation id="699159175332639490">Pretraživanje + O + W</translation>
 <translation id="6994042831499278539">Referenca iz pojmovnika</translation>
 <translation id="6996566555547746822">Sljedeći kombinirani okvir</translation>
@@ -859,6 +878,7 @@
 <translation id="700202842116345659">Bibliografski unos</translation>
 <translation id="7005146664810010831">Nije pronađen nijedan URL</translation>
 <translation id="7010712454773919705">Modifikatorska tipka ChromeVox</translation>
+<translation id="7026338066939101231">Pomak unatrag</translation>
 <translation id="7031651751836475482">stvk pops</translation>
 <translation id="7037042857287298941">Prethodni popis</translation>
 <translation id="7039555289296502784">Sivomaslinasta</translation>
@@ -868,6 +888,7 @@
 <translation id="7062635574500127092">Tirkiznoplava</translation>
 <translation id="7086377898680121060">povećavanje svjetline</translation>
 <translation id="7088743565397416204">Dvaput dodirnite da biste aktivirali ono što je u fokusu</translation>
+<translation id="7088960765736518739">Prekidač za pristup</translation>
 <translation id="7091296112653361280">Navajo bijela</translation>
 <translation id="7095834689119144465">Samo numeričko uređivanje teksta</translation>
 <translation id="7096001299300236431">Prethodni medij</translation>
@@ -962,6 +983,7 @@
 <translation id="7693840228159394336">Prethodni izborni gumb</translation>
 <translation id="7701196182766842984">autopop</translation>
 <translation id="7714340021005120797">Nema sljedećeg kombiniranog okvira</translation>
+<translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Nema sljedećeg widgeta medija</translation>
 <translation id="773906353055481349">Za kretanje od ćelije do ćelije pritisnite tipku za pretraživanje + Ctrl + Alt i strelice</translation>
 <translation id="7750184816513382104">Razlikovanje velikih/malih slova</translation>
@@ -974,9 +996,11 @@
 <translation id="7805247615045262757">zadana navigacija</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Sljedeća grupa</translation>
+<translation id="7813616274030162878">Izbornik prekidača za pristup</translation>
 <translation id="7819187121850078213">kartica prozora <ph name="TITLE" /></translation>
 <translation id="7828956995407538686">listopad</translation>
 <translation id="7839679365527550018">Prethodna riječ</translation>
+<translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7851132556376253786">Nema sljedećeg članka</translation>
 <translation id="7851816175263618915">Neki interpunkcijski znakovi</translation>
 <translation id="7870596830398826354">Math ML stablo</translation>
@@ -997,6 +1021,7 @@
 <translation id="7972507042926081808">Čokolada</translation>
 <translation id="7974390230414479278">Stavka izbornika</translation>
 <translation id="8004507136466386272">Riječi</translation>
+<translation id="8004512796067398576">Pomak unaprijed</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{navodnik}one{# navodnik}few{# navodnika}other{# navodnika}}</translation>
 <translation id="8017588669690167134">Govor je isključen</translation>
@@ -1015,6 +1040,7 @@
 <translation id="8096975275316362544">Zelenkastobež</translation>
 <translation id="8098587210054821856">Sivoplava</translation>
 <translation id="8121539003537428024">Omogućite sve filtre događaja</translation>
+<translation id="8123975449645947908">Pomicanje unatrag</translation>
 <translation id="8126386426083591964">Nema prethodnog naslova 5. razine</translation>
 <translation id="812886159861361726">Zaustavljeno je preuzimanje datoteke <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">Iznad nema ćelije</translation>
@@ -1048,6 +1074,7 @@
 <translation id="8374154622594089836">mjesec</translation>
 <translation id="8378855320830505539">Regija</translation>
 <translation id="8382679411218029383">Automatsko dovršavanje retka i popisa</translation>
+<translation id="8428213095426709021">Postavke</translation>
 <translation id="8428603554127842284">razina <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">trizb</translation>
 <translation id="8446884382197647889">Saznajte više</translation>
@@ -1135,6 +1162,7 @@
 <translation id="9074824103975499138">Pretraživanje izbornika ChromeVoxa</translation>
 <translation id="9077213568694924680">uklonjeno iz odabira</translation>
 <translation id="9077305471618729969">Svijetla morskozelena</translation>
+<translation id="9080299285199342830">Skoči na kraj</translation>
 <translation id="9089864840575085222">Kružna izmjena odjeka tipkanja</translation>
 <translation id="9108370397979208512">mat</translation>
 <translation id="9108589040018540527">klzč</translation>
@@ -1163,5 +1191,6 @@
 <translation id="962913030769097253">Sljedeći naslov razine  1</translation>
 <translation id="966588271015727539">Odaberite Bluetooth brajev redak</translation>
 <translation id="973955474346881951">Omogućivanje/onemogućivanje ljepljivog načina</translation>
+<translation id="985654871861528815">Premjesti jedan redak prema dolje</translation>
 <translation id="992256792861109788">Ružičasta</translation>
 </translationbundle>

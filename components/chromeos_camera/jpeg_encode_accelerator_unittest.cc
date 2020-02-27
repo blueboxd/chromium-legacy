@@ -31,7 +31,7 @@
 #include "media/gpu/buildflags.h"
 #include "media/gpu/chromeos/generic_dmabuf_video_frame_mapper.h"
 #include "media/gpu/test/local_gpu_memory_buffer_manager.h"
-#include "media/gpu/test/video_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_test_helpers.h"
 #include "media/parsers/jpeg_parser.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"

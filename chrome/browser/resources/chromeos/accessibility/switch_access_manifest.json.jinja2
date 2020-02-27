@@ -1,0 +1,55 @@
+{
+{% if key is defined %}
+  "key": "{{key}}",
+{% endif %}
+  "manifest_version": 2,
+  "name": "__MSG_SWITCH_ACCESS_NAME__",
+  "version": "{{set_version}}",
+  "description": "__MSG_SWITCH_ACCESS_DESCRIPTION__",
+{% if is_guest_manifest == '1' %}
+  "incognito": "split",
+{% endif %}
+  "background": {
+    "scripts": [
+      "switch_access/auto_scan_manager.js",
+      "switch_access/closure_shim.js",
+      "switch_access/commands.js",
+      "switch_access/constants.js",
+      "switch_access/event_helper.js",
+      "switch_access/focus_ring_manager.js",
+      "switch_access/menu_manager.js",
+      "switch_access/metrics.js",
+      "switch_access/navigation_manager.js",
+      "switch_access/nodes/switch_access_node.js",
+      "switch_access/nodes/node_wrapper.js",
+      "switch_access/nodes/back_button_node.js",
+      "switch_access/nodes/desktop_node.js",
+      "switch_access/nodes/editable_text_node.js",
+      "switch_access/nodes/group_node.js",
+      "switch_access/nodes/keyboard_node.js",
+      "switch_access/nodes/system_menu_node.js",
+      "switch_access/nodes/tab_node.js",
+      "switch_access/preferences.js",
+      "switch_access/rect_helper.js",
+      "switch_access/switch_access.js",
+      "switch_access/switch_access_constants.js",
+      "switch_access/switch_access_predicate.js",
+      "switch_access/text_navigation_manager.js",
+      "switch_access/tree_walker.js",
+      "switch_access/background.js"
+    ]
+  },
+  "permissions": [
+    "accessibilityPrivate",
+    "clipboard",
+    "clipboardRead",
+    "commandLinePrivate",
+    "metricsPrivate",
+    "settingsPrivate",
+    "tabs"
+  ],
+  "automation": {
+    "desktop": true
+  },
+  "default_locale": "en"
+}

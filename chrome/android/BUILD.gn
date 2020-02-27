@@ -630,7 +630,7 @@ proto_java_library("usage_stats_proto_java") {
 
 java_cpp_template("resource_id_javagen") {
   sources = [ "java/ResourceId.template" ]
-  package_path = "org/chromium/chrome/browser"
+  package_path = "org/chromium/chrome/browser/resources"
   inputs = [
     "../browser/android/resource_id.h",
     "//components/permissions/android/resource_id.h",
@@ -2789,6 +2789,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/provider/ChromeBrowserProvider.java",
     "java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java",
     "java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java",
+    "java/src/org/chromium/chrome/browser/resources/ResourceMapper.java",
     "java/src/org/chromium/chrome/browser/rlz/RevenueStats.java",
     "java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingBridge.java",

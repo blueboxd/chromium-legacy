@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 
@@ -19,9 +18,8 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
     public static final String FROM_INFOBAR = "FromInfoBar";
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, String message, String linkText) {
-        return new PreviewsLitePageInfoBar(
-                ResourceId.mapToDrawableId(enumeratedIconId), message, linkText);
+    private static InfoBar show(int iconId, String message, String linkText) {
+        return new PreviewsLitePageInfoBar(iconId, message, linkText);
     }
 
     private PreviewsLitePageInfoBar(int iconDrawbleId, String message, String linkText) {

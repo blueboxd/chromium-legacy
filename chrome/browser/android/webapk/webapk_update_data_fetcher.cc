@@ -116,7 +116,7 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
       ShortcutHelper::DoesAndroidSupportMaskableIcons();
   params.has_worker = true;
   params.valid_primary_icon = true;
-  params.valid_badge_icon = true;
+  params.valid_splash_icon = true;
   params.wait_for_worker = true;
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
@@ -153,14 +153,14 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   primary_icon_ = *data.primary_icon;
   is_primary_icon_maskable_ = data.has_maskable_primary_icon;
 
-  if (data.badge_icon && !data.badge_icon->drawsNothing()) {
-    info_.best_badge_icon_url = data.badge_icon_url;
-    badge_icon_ = *data.badge_icon;
+  if (data.splash_icon && !data.splash_icon->drawsNothing()) {
+    info_.splash_image_url = data.splash_icon_url;
+    splash_icon_ = *data.splash_icon;
   }
 
   std::set<GURL> urls{info_.best_primary_icon_url};
-  if (!info_.best_badge_icon_url.is_empty())
-    urls.insert(info_.best_badge_icon_url);
+  if (!info_.splash_image_url.is_empty())
+    urls.insert(info_.splash_image_url);
 
   for (const auto& shortcut_url : info_.best_shortcut_icon_urls) {
     if (shortcut_url.is_valid())
@@ -203,15 +203,15 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
   ScopedJavaLocalRef<jobject> java_primary_icon =
       gfx::ConvertToJavaBitmap(&primary_icon_);
   jboolean java_is_primary_icon_maskable = is_primary_icon_maskable_;
-  ScopedJavaLocalRef<jstring> java_badge_icon_url =
+  ScopedJavaLocalRef<jstring> java_splash_icon_url =
       base::android::ConvertUTF8ToJavaString(env,
-                                             info_.best_badge_icon_url.spec());
-  ScopedJavaLocalRef<jstring> java_badge_icon_murmur2_hash =
+                                             info_.splash_image_url.spec());
+  ScopedJavaLocalRef<jstring> java_splash_icon_murmur2_hash =
       base::android::ConvertUTF8ToJavaString(
-          env, (*hashes)[info_.best_badge_icon_url.spec()].hash);
-  ScopedJavaLocalRef<jobject> java_badge_icon;
-  if (!badge_icon_.drawsNothing())
-    java_badge_icon = gfx::ConvertToJavaBitmap(&badge_icon_);
+          env, (*hashes)[info_.splash_image_url.spec()].hash);
+  ScopedJavaLocalRef<jobject> java_splash_icon;
+  if (!splash_icon_.drawsNothing())
+    java_splash_icon = gfx::ConvertToJavaBitmap(&splash_icon_);
   ScopedJavaLocalRef<jobjectArray> java_icon_urls =
       base::android::ToJavaArrayOfStrings(env, info_.icon_urls);
 
@@ -274,8 +274,8 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
       java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
-      java_is_primary_icon_maskable, java_badge_icon_url,
-      java_badge_icon_murmur2_hash, java_badge_icon, java_icon_urls,
+      java_is_primary_icon_maskable, java_splash_icon_url,
+      java_splash_icon_murmur2_hash, java_splash_icon, java_icon_urls,
       static_cast<int>(info_.display), info_.orientation,
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,

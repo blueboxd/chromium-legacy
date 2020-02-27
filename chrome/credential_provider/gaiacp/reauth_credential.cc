@@ -16,8 +16,6 @@
 
 namespace credential_provider {
 
-// TODO(rakeshsoma): Change the path from "setup" to "reauth" once
-// identity team has the URL ready for consumption.
 constexpr char kGaiaReauthPath[] = "embedded/reauth/windows";
 
 CReauthCredential::CReauthCredential() = default;
@@ -76,16 +74,22 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
     get_cmd_line_status = true;
   }
 
+  HRESULT hr;
   // If there is an existing email with an SID then pass it to the GLS
   // as PrefillEmail switch.
   if (email_for_reauth_.Length()) {
     get_cmd_line_status = true;
     command_line->AppendSwitchNative(kPrefillEmailSwitch,
                                      OLE2CW(email_for_reauth_));
+    // Use kGaiaReauthPath when there is no email_for_reauth_ field set.
+    hr = SetGaiaEndpointCommandLineIfNeeded(L"ep_reauth_url", kGaiaReauthPath,
+                                            IsGemEnabled(), command_line);
+  } else {
+    // Use kGaiaSetupPath when there is no email_for_reauth_ field set.
+    hr = SetGaiaEndpointCommandLineIfNeeded(L"ep_reauth_url", kGaiaSetupPath,
+                                            IsGemEnabled(), command_line);
   }
 
-  HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
-      L"ep_reauth_url", kGaiaReauthPath, IsGemEnabled(), command_line);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "Setting gaia url for reauth credential on user="
                  << os_username_ << " failed";

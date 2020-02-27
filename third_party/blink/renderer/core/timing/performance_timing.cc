@@ -311,6 +311,14 @@ uint64_t PerformanceTiming::loadEventEnd() const {
   return MonotonicTimeToIntegerMilliseconds(timing->LoadEventEnd());
 }
 
+base::TimeTicks PerformanceTiming::NavigationStartAsMonotonicTime() const {
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!timing)
+    return base::TimeTicks();
+
+  return timing->NavigationStart();
+}
+
 uint64_t PerformanceTiming::FirstPaint() const {
   const PaintTiming* timing = GetPaintTiming();
   if (!timing)
@@ -333,6 +341,14 @@ uint64_t PerformanceTiming::FirstContentfulPaint() const {
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(timing->FirstContentfulPaint());
+}
+
+base::TimeTicks PerformanceTiming::FirstContentfulPaintAsMonotonicTime() const {
+  const PaintTiming* timing = GetPaintTiming();
+  if (!timing)
+    return base::TimeTicks();
+
+  return timing->FirstContentfulPaint();
 }
 
 uint64_t PerformanceTiming::FirstMeaningfulPaint() const {

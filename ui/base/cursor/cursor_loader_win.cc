@@ -4,12 +4,13 @@
 
 #include "ui/base/cursor/cursor_loader_win.h"
 
+#include <windows.h>
+
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/resources/grit/ui_unscaled_resources.h"
-
-#include <windows.h>
 
 namespace ui {
 
@@ -20,98 +21,98 @@ base::LazyInstance<base::string16>::DestructorAtExit
 
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {
-    case CursorType::kNull:
+    case mojom::CursorType::kNull:
       return IDC_ARROW;
-    case CursorType::kPointer:
+    case mojom::CursorType::kPointer:
       return IDC_ARROW;
-    case CursorType::kCross:
+    case mojom::CursorType::kCross:
       return IDC_CROSS;
-    case CursorType::kHand:
+    case mojom::CursorType::kHand:
       return IDC_HAND;
-    case CursorType::kIBeam:
+    case mojom::CursorType::kIBeam:
       return IDC_IBEAM;
-    case CursorType::kWait:
+    case mojom::CursorType::kWait:
       return IDC_WAIT;
-    case CursorType::kHelp:
+    case mojom::CursorType::kHelp:
       return IDC_HELP;
-    case CursorType::kEastResize:
+    case mojom::CursorType::kEastResize:
       return IDC_SIZEWE;
-    case CursorType::kNorthResize:
+    case mojom::CursorType::kNorthResize:
       return IDC_SIZENS;
-    case CursorType::kNorthEastResize:
+    case mojom::CursorType::kNorthEastResize:
       return IDC_SIZENESW;
-    case CursorType::kNorthWestResize:
+    case mojom::CursorType::kNorthWestResize:
       return IDC_SIZENWSE;
-    case CursorType::kSouthResize:
+    case mojom::CursorType::kSouthResize:
       return IDC_SIZENS;
-    case CursorType::kSouthEastResize:
+    case mojom::CursorType::kSouthEastResize:
       return IDC_SIZENWSE;
-    case CursorType::kSouthWestResize:
+    case mojom::CursorType::kSouthWestResize:
       return IDC_SIZENESW;
-    case CursorType::kWestResize:
+    case mojom::CursorType::kWestResize:
       return IDC_SIZEWE;
-    case CursorType::kNorthSouthResize:
+    case mojom::CursorType::kNorthSouthResize:
       return IDC_SIZENS;
-    case CursorType::kEastWestResize:
+    case mojom::CursorType::kEastWestResize:
       return IDC_SIZEWE;
-    case CursorType::kNorthEastSouthWestResize:
+    case mojom::CursorType::kNorthEastSouthWestResize:
       return IDC_SIZENESW;
-    case CursorType::kNorthWestSouthEastResize:
+    case mojom::CursorType::kNorthWestSouthEastResize:
       return IDC_SIZENWSE;
-    case CursorType::kMove:
+    case mojom::CursorType::kMove:
       return IDC_SIZEALL;
-    case CursorType::kProgress:
+    case mojom::CursorType::kProgress:
       return IDC_APPSTARTING;
-    case CursorType::kNoDrop:
+    case mojom::CursorType::kNoDrop:
       return IDC_NO;
-    case CursorType::kNotAllowed:
+    case mojom::CursorType::kNotAllowed:
       return IDC_NO;
-    case CursorType::kColumnResize:
+    case mojom::CursorType::kColumnResize:
       return MAKEINTRESOURCE(IDC_COLRESIZE);
-    case CursorType::kRowResize:
+    case mojom::CursorType::kRowResize:
       return MAKEINTRESOURCE(IDC_ROWRESIZE);
-    case CursorType::kMiddlePanning:
+    case mojom::CursorType::kMiddlePanning:
       return MAKEINTRESOURCE(IDC_PAN_MIDDLE);
-    case CursorType::kMiddlePanningVertical:
+    case mojom::CursorType::kMiddlePanningVertical:
       return MAKEINTRESOURCE(IDC_PAN_MIDDLE_VERTICAL);
-    case CursorType::kMiddlePanningHorizontal:
+    case mojom::CursorType::kMiddlePanningHorizontal:
       return MAKEINTRESOURCE(IDC_PAN_MIDDLE_HORIZONTAL);
-    case CursorType::kEastPanning:
+    case mojom::CursorType::kEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_EAST);
-    case CursorType::kNorthPanning:
+    case mojom::CursorType::kNorthPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH);
-    case CursorType::kNorthEastPanning:
+    case mojom::CursorType::kNorthEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH_EAST);
-    case CursorType::kNorthWestPanning:
+    case mojom::CursorType::kNorthWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_NORTH_WEST);
-    case CursorType::kSouthPanning:
+    case mojom::CursorType::kSouthPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH);
-    case CursorType::kSouthEastPanning:
+    case mojom::CursorType::kSouthEastPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH_EAST);
-    case CursorType::kSouthWestPanning:
+    case mojom::CursorType::kSouthWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_SOUTH_WEST);
-    case CursorType::kWestPanning:
+    case mojom::CursorType::kWestPanning:
       return MAKEINTRESOURCE(IDC_PAN_WEST);
-    case CursorType::kVerticalText:
+    case mojom::CursorType::kVerticalText:
       return MAKEINTRESOURCE(IDC_VERTICALTEXT);
-    case CursorType::kCell:
+    case mojom::CursorType::kCell:
       return MAKEINTRESOURCE(IDC_CELL);
-    case CursorType::kZoomIn:
+    case mojom::CursorType::kZoomIn:
       return MAKEINTRESOURCE(IDC_ZOOMIN);
-    case CursorType::kZoomOut:
+    case mojom::CursorType::kZoomOut:
       return MAKEINTRESOURCE(IDC_ZOOMOUT);
-    case CursorType::kGrab:
+    case mojom::CursorType::kGrab:
       return MAKEINTRESOURCE(IDC_HAND_GRAB);
-    case CursorType::kGrabbing:
+    case mojom::CursorType::kGrabbing:
       return MAKEINTRESOURCE(IDC_HAND_GRABBING);
-    case CursorType::kCopy:
+    case mojom::CursorType::kCopy:
       return MAKEINTRESOURCE(IDC_COPYCUR);
-    case CursorType::kAlias:
+    case mojom::CursorType::kAlias:
       return MAKEINTRESOURCE(IDC_ALIAS);
-    case CursorType::kNone:
+    case mojom::CursorType::kNone:
       return MAKEINTRESOURCE(IDC_CURSOR_NONE);
-    case CursorType::kContextMenu:
-    case CursorType::kCustom:
+    case mojom::CursorType::kContextMenu:
+    case mojom::CursorType::kCustom:
       NOTIMPLEMENTED();
       return IDC_ARROW;
     default:
@@ -132,13 +133,13 @@ CursorLoaderWin::CursorLoaderWin() {
 CursorLoaderWin::~CursorLoaderWin() {
 }
 
-void CursorLoaderWin::LoadImageCursor(CursorType id,
+void CursorLoaderWin::LoadImageCursor(mojom::CursorType id,
                                       int resource_id,
                                       const gfx::Point& hot) {
   // NOTIMPLEMENTED();
 }
 
-void CursorLoaderWin::LoadAnimatedCursor(CursorType id,
+void CursorLoaderWin::LoadAnimatedCursor(mojom::CursorType id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
@@ -150,7 +151,7 @@ void CursorLoaderWin::UnloadAll() {
 }
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  if (cursor->native_type() != CursorType::kCustom) {
+  if (cursor->native_type() != mojom::CursorType::kCustom) {
     if (cursor->platform()) {
       cursor->SetPlatformCursor(cursor->platform());
     } else {

@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='target'",
-          "rect": [8, 8, 225, 19],
+          "rect": [8, 8, 226, 21],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [210, 11, 2, 13],
+          "rect": [211, 11, 2, 15],
           "reason": "chunk appeared"
         }
       ]

@@ -463,13 +463,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordParallelRequestCreationFailure(
     DownloadInterruptReason reason);
 
 #if defined(OS_ANDROID)
-// Records the download interrupt reason for the first background download.
-// If |download_started| is true, this records the last interrupt reason
-// before download is started manually or by the task scheduler.
-COMPONENTS_DOWNLOAD_EXPORT void RecordFirstBackgroundDownloadInterruptReason(
-    DownloadInterruptReason reason,
-    bool download_started);
-
 enum class BackgroudTargetDeterminationResultTypes {
   // Target determination succeeded.
   kSuccess = 0,

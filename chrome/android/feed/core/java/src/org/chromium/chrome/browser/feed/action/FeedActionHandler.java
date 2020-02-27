@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
@@ -43,6 +44,7 @@ public class FeedActionHandler implements ActionApi {
     private final Activity mActivity;
     private final Profile mProfile;
     private static final String TAG = "FeedActionHandler";
+    private static final String FEEDBACK_REPORT_TYPE = "USER_INITIATED_FEEDBACK_REPORT";
 
     // This must match the FeedSendFeedbackType enum in enums.xml.
     public @interface FeedFeedbackType {
@@ -139,7 +141,6 @@ public class FeedActionHandler implements ActionApi {
     public void sendFeedback(ContentMetadata contentMetadata) {
         RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.SendFeedback",
                 FeedFeedbackType.FEEDBACK_TAPPED_ON_CARD, FeedFeedbackType.NUM_ENTRIES);
-        String feedbackContext = "mobile_browser";
         HashMap<String, String> feedContext = new HashMap<String, String>();
 
         if (contentMetadata != null) {
@@ -157,8 +158,14 @@ public class FeedActionHandler implements ActionApi {
             feedContext.put(CARD_TITLE, title);
         }
 
+        String feedbackContext = "mobile_browser";
+        // Reports for Chrome mobile must have a contextTag of the form
+        // com.chrome.canary.USER_INITIATED_FEEDBACK_REPORT, or they will be discarded.
+        String contextTag =
+                ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE;
+
         HelpAndFeedback.getInstance().showFeedback(mActivity, mProfile, contentMetadata.getUrl(),
-                "InterestFeed", feedContext, feedbackContext);
+                contextTag, feedContext, feedbackContext);
         return;
     }
 

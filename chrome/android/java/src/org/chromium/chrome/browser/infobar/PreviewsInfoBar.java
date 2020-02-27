@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 
 /**
  * An InfoBar that lets the user know that a Preview page has been loaded, and gives the user
@@ -16,10 +15,8 @@ public class PreviewsInfoBar extends ConfirmInfoBar {
     private final String mTimestampText;
 
     @CalledByNative
-    private static InfoBar show(
-            int enumeratedIconId, String message, String linkText, String timestampText) {
-        return new PreviewsInfoBar(
-                ResourceId.mapToDrawableId(enumeratedIconId), message, linkText, timestampText);
+    private static InfoBar show(int iconId, String message, String linkText, String timestampText) {
+        return new PreviewsInfoBar(iconId, message, linkText, timestampText);
     }
 
     private PreviewsInfoBar(

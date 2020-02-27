@@ -23,6 +23,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -1099,7 +1100,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
 TEST_F(AutoclickTest, HidesBubbleInFullscreenWhenCursorHides) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
-  cursor_manager->SetCursor(ui::CursorType::kPointer);
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
 
   const struct {
     const std::string display_spec;
@@ -1141,11 +1142,11 @@ TEST_F(AutoclickTest, HidesBubbleInFullscreenWhenCursorHides) {
 
     // Changing the type to another visible type doesn't cause the bubble to
     // hide.
-    cursor_manager->SetCursor(ui::CursorType::kHand);
+    cursor_manager->SetCursor(ui::mojom::CursorType::kHand);
     EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
 
     // Changing the type to an kNone causes the bubble to hide.
-    cursor_manager->SetCursor(ui::CursorType::kNone);
+    cursor_manager->SetCursor(ui::mojom::CursorType::kNone);
     EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
 
     // Hiding and showing don't re-show the bubble because the type is still
@@ -1156,7 +1157,7 @@ TEST_F(AutoclickTest, HidesBubbleInFullscreenWhenCursorHides) {
     EXPECT_FALSE(GetAutoclickBubbleWidget()->IsVisible());
 
     // The bubble is shown when the cursor is a visible type again.
-    cursor_manager->SetCursor(ui::CursorType::kPointer);
+    cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
     EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
   }
 }
@@ -1165,7 +1166,7 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenNotOverFullscreenWindow) {
   UpdateDisplay("800x600,800x600");
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
-  cursor_manager->SetCursor(ui::CursorType::kPointer);
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),
@@ -1186,7 +1187,7 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenNotOverFullscreenWindow) {
 TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
-  cursor_manager->SetCursor(ui::CursorType::kPointer);
+  cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
 
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, desks_util::GetActiveDeskContainerId(),

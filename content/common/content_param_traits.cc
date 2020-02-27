@@ -25,6 +25,7 @@
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
@@ -32,7 +33,7 @@ namespace IPC {
 void ParamTraits<content::WebCursor>::Write(base::Pickle* m,
                                             const param_type& p) {
   WriteParam(m, p.info().type);
-  if (p.info().type == ui::CursorType::kCustom) {
+  if (p.info().type == ui::mojom::CursorType::kCustom) {
     WriteParam(m, p.info().hotspot);
     WriteParam(m, p.info().image_scale_factor);
     WriteParam(m, p.info().custom_image);
@@ -46,7 +47,7 @@ bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &info.type))
     return false;
 
-  if (info.type == ui::CursorType::kCustom &&
+  if (info.type == ui::mojom::CursorType::kCustom &&
       (!ReadParam(m, iter, &info.hotspot) ||
        !ReadParam(m, iter, &info.image_scale_factor) ||
        !ReadParam(m, iter, &info.custom_image))) {

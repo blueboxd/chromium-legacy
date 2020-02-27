@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+FAIL request Picture-in-Picture requires a user gesture promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture resolves on user click promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture takes an interactive option that can be true promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture takes an interactive option that can be false promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture validates interactive option promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture does not require width/height by default promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width option if height present promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires height option if width present promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to be positive (both negative) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to be positive (negative width) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to be positive (negative height) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to not be zero (both zero) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to not be zero (width zero) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture requires width/height to not be zero (height zero) promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+FAIL request Picture-in-Picture does not require options promise_test: Unhandled rejection with value: object "TypeError: element.requestPictureInPicture is not a function"
+Harness: the test ran to completion.
+

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/base/cursor/types/cursor_types.h"
+#include "ui/base/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
@@ -38,7 +38,7 @@ class UI_BASE_EXPORT CursorLoader {
   }
 
   // Creates a cursor from an image resource and puts it in the cursor map.
-  virtual void LoadImageCursor(CursorType id,
+  virtual void LoadImageCursor(mojom::CursorType id,
                                int resource_id,
                                const gfx::Point& hot) = 0;
 
@@ -47,7 +47,7 @@ class UI_BASE_EXPORT CursorLoader {
   // from left to right. Also, each frame is assumed to be square
   // (width == height).
   // |frame_delay_ms| is the delay between frames in millisecond.
-  virtual void LoadAnimatedCursor(CursorType id,
+  virtual void LoadAnimatedCursor(mojom::CursorType id,
                                   int resource_id,
                                   const gfx::Point& hot,
                                   int frame_delay_ms) = 0;

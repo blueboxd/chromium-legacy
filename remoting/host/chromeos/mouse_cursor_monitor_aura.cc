@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace {
 
@@ -66,7 +67,7 @@ void MouseCursorMonitorAura::Capture() {
 }
 
 void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
-  if (cursor.native_type() == ui::CursorType::kNone) {
+  if (cursor.native_type() == ui::mojom::CursorType::kNone) {
     callback_->OnMouseCursor(CreateEmptyMouseCursor());
     return;
   }

@@ -162,9 +162,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.clearsSelectionOnViewWillAppear = NO;
   self.tableView.allowsMultipleSelection = YES;
-  // Add a tableFooterView in order to disable separators at the bottom of the
-  // tableView.
-  self.tableView.tableFooterView = [[UIView alloc] init];
   self.tableView.accessibilityIdentifier = kHistoryTableViewIdentifier;
 
   // ContextMenu gesture recognizer.

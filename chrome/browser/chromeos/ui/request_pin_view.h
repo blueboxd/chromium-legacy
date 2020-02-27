@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -46,7 +46,7 @@ class RequestPinView final : public views::DialogDelegateView,
   // |pin_entered_callback| - called every time the user submits the input.
   // |view_destruction_callback| - called by the destructor.
   RequestPinView(const std::string& extension_name,
-                 SecurityTokenPinCodeType code_type,
+                 security_token_pin::CodeType code_type,
                  int attempts_left,
                  const PinEnteredCallback& pin_entered_callback,
                  ViewDestructionCallback view_destruction_callback);
@@ -75,8 +75,8 @@ class RequestPinView final : public views::DialogDelegateView,
   //     have to enter correct code.
   // |accept_input| - specifies whether the textfield is enabled. If disabled
   //     the user is unable to provide input.
-  void SetDialogParameters(SecurityTokenPinCodeType code_type,
-                           SecurityTokenPinErrorLabel error_label,
+  void SetDialogParameters(security_token_pin::CodeType code_type,
+                           security_token_pin::ErrorLabel error_label,
                            int attempts_left,
                            bool accept_input);
 
@@ -91,7 +91,7 @@ class RequestPinView final : public views::DialogDelegateView,
   // This initializes the view, with all the UI components.
   void Init();
   void SetAcceptInput(bool accept_input);
-  void SetErrorMessage(SecurityTokenPinErrorLabel error_label,
+  void SetErrorMessage(security_token_pin::ErrorLabel error_label,
                        int attempts_left,
                        bool accept_input);
   // Updates the header text |header_label_| based on values from

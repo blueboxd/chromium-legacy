@@ -22,6 +22,7 @@
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/compositor_switches.h"
@@ -355,7 +356,7 @@ WindowTreeHost::RequestUnadjustedMovement() {
 WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
     : window_(window.release()),  // See header for details on ownership.
       occlusion_state_(Window::OcclusionState::UNKNOWN),
-      last_cursor_(ui::CursorType::kNull),
+      last_cursor_(ui::mojom::CursorType::kNull),
       input_method_(nullptr),
       owned_input_method_(false) {
   if (!window_)

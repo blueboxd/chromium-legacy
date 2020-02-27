@@ -8,11 +8,11 @@
 
 namespace content {
 
-CursorInfo::CursorInfo(ui::CursorType cursor) : type(cursor) {}
+CursorInfo::CursorInfo(ui::mojom::CursorType cursor) : type(cursor) {}
 
 CursorInfo::CursorInfo(const blink::WebCursorInfo& info)
     : type(info.type), image_scale_factor(info.image_scale_factor) {
-  if (type == ui::CursorType::kCustom) {
+  if (type == ui::mojom::CursorType::kCustom) {
     custom_image = info.custom_image;
     hotspot = info.hot_spot;
   }
@@ -20,7 +20,7 @@ CursorInfo::CursorInfo(const blink::WebCursorInfo& info)
 
 bool CursorInfo::operator==(const CursorInfo& other) const {
   return type == other.type && image_scale_factor == other.image_scale_factor &&
-         (type != ui::CursorType::kCustom ||
+         (type != ui::mojom::CursorType::kCustom ||
           (hotspot == other.hotspot &&
            gfx::BitmapsAreEqual(custom_image, other.custom_image)));
 }
@@ -29,7 +29,7 @@ blink::WebCursorInfo CursorInfo::GetWebCursorInfo() const {
   blink::WebCursorInfo info;
   info.type = type;
   info.image_scale_factor = image_scale_factor;
-  if (type == ui::CursorType::kCustom) {
+  if (type == ui::mojom::CursorType::kCustom) {
     info.hot_spot = hotspot;
     info.custom_image = custom_image;
   }

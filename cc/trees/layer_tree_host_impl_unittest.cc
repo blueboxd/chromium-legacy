@@ -34,6 +34,7 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/solid_color_layer_impl.h"
@@ -12120,6 +12121,119 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
     EXPECT_EQ(15, CurrentScrollOffset(scrolling_layer).y());
     host_impl_->DidFinishImplFrame(begin_frame_args);
   }
+}
+
+// This tests that faded-out Aura scrollbars can't be interacted with.
+TEST_F(LayerTreeHostImplTest, FadedOutPaintedOverlayScrollbarHitTest) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedOverlayScrollbarLayerImpl>(layer_tree_impl,
+                                                               VERTICAL, false);
+  SetupScrollbarLayerCommon(scroll_layer, scrollbar);
+  scrollbar->SetHitTestable(true);
+
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackStart(0);
+  scrollbar->SetTrackLength(575);
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  // Set up the scroll node and other state required for scrolling.
+  host_impl_->ScrollBegin(
+      BeginState(gfx::Point(350, 18), gfx::Vector2dF(), InputHandler::SCROLLBAR)
+          .get(),
+      InputHandler::SCROLLBAR);
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // PaintedOverlayScrollbarLayerImpl(s) don't have a track, so we test thumb
+  // drags instead. Start with 0.8 opacity. Scrolling is expected to occur in
+  // this case.
+  auto& scrollbar_effect_node = CreateEffectNode(scrollbar);
+  scrollbar_effect_node.opacity = 0.8;
+
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  InputHandlerPointerResult result =
+      host_impl_->MouseMoveAt(gfx::Point(350, 28));
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+  host_impl_->MouseUp(gfx::PointF(350, 28));
+
+  // Scrolling shouldn't occur at opacity = 0.
+  scrollbar_effect_node.opacity = 0;
+
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 28));
+  EXPECT_EQ(result.scroll_offset.y(), 0u);
+  host_impl_->MouseUp(gfx::PointF(350, 28));
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
+// This tests that faded-out Mac scrollbars can't be interacted with.
+TEST_F(LayerTreeHostImplTest, FadedOutPaintedScrollbarHitTest) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(layer_tree_impl,
+                                                        VERTICAL, false, true);
+  SetupScrollbarLayerCommon(scroll_layer, scrollbar);
+  scrollbar->SetHitTestable(true);
+
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // MouseDown on the track of a scrollbar with opacity 0 should not produce a
+  // scroll.
+  scrollbar->set_thumb_opacity(0);
+  InputHandlerPointerResult result =
+      host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
+  EXPECT_EQ(result.scroll_offset.y(), 0u);
+
+  // MouseDown on the track of a scrollbar with opacity > 0 should produce a
+  // scroll.
+  scrollbar->set_thumb_opacity(1);
+  result =
+      host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
 }
 
 TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {

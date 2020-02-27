@@ -20,7 +20,6 @@ class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate,
       const ViewAXPlatformNodeDelegateAuraLinux&) = delete;
   ViewAXPlatformNodeDelegateAuraLinux& operator=(
       const ViewAXPlatformNodeDelegateAuraLinux&) = delete;
-  ~ViewAXPlatformNodeDelegateAuraLinux() override;
 
   // |ViewAXPlatformNodeDelegate| overrides:
   gfx::NativeViewAccessible GetParent() override;

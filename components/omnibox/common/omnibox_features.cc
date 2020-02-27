@@ -298,10 +298,20 @@ const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
     "OmniboxHistoryQuickProviderAllowMidwordContinuations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, shows slightly more compact suggestions, allowing the
+// kAdaptiveSuggestionsCount feature to fit more suggestions on screen.
+const base::Feature kCompactSuggestions{"OmniboxCompactSuggestions",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, shows a confirm dialog before removing search suggestions from
 // the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.
 const base::Feature kConfirmOmniboxSuggestionRemovals{
     "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, defers keyboard popup when user highlights the omnibox until
+// the user taps the Omnibox again.
+extern const base::Feature kDeferredKeyboardPopup{
+    "OmniboxDeferredKeyboardPopup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that enables not counting submatches towards the maximum
 // suggestion limit.

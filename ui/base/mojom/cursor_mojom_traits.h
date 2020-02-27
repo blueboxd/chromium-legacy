@@ -7,18 +7,13 @@
 
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor.mojom-shared.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<ui::mojom::CursorType, ui::CursorType> {
-  static ui::mojom::CursorType ToMojom(ui::CursorType input);
-  static bool FromMojom(ui::mojom::CursorType input, ui::CursorType* out);
-};
-
-template <>
 struct StructTraits<ui::mojom::CursorDataView, ui::Cursor> {
-  static ui::CursorType native_type(const ui::Cursor& c) {
+  static ui::mojom::CursorType native_type(const ui::Cursor& c) {
     return c.native_type();
   }
   static gfx::Point hotspot(const ui::Cursor& c);

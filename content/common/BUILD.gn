@@ -235,6 +235,7 @@ source_set("common") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
     "//ui/accessibility",
+    "//ui/base/mojom:cursor_type",
     "//ui/events/ipc",
   ]
   deps = [

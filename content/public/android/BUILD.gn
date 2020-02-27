@@ -437,6 +437,7 @@ android_library("content_javatests") {
     "//third_party/junit",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
+    "//ui/base/mojom:cursor_type_java",
     "//ui/gfx/geometry/mojom:mojom_java",
     "//url:gurl_java",
   ]

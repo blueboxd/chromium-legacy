@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
@@ -262,11 +263,12 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::WindowTreeHost* host0 = root_windows[0]->GetHost();
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();
-  EXPECT_EQ(ui::CursorType::kPointer, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::CursorType::kNull, host1->last_cursor().native_type());
-  Shell::Get()->cursor_manager()->SetCursor(ui::CursorType::kCopy);
-  EXPECT_EQ(ui::CursorType::kCopy, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::CursorType::kCopy, host1->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer,
+            host0->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kNull, host1->last_cursor().native_type());
+  Shell::Get()->cursor_manager()->SetCursor(ui::mojom::CursorType::kCopy);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host0->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host1->last_cursor().native_type());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {

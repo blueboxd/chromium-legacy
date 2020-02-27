@@ -103,8 +103,10 @@ const char kSelectToSpeakManifestFilename[] = "select_to_speak_manifest.json";
 const char kSelectToSpeakGuestManifestFilename[] =
     "select_to_speak_manifest_guest.json";
 const char kSwitchAccessExtensionId[] = "pmehocpgjmkenlokgjfkaichfjdhpeol";
-const char kSwitchAccessExtensionPath[] =
-    "chromeos/accessibility/switch_access";
+const char kSwitchAccessExtensionPath[] = "chromeos/accessibility";
+const char kSwitchAccessManifestFilename[] = "switch_access_manifest.json";
+const char kSwitchAccessGuestManifestFilename[] =
+    "switch_access_manifest_guest.json";
 const char kGuestManifestFilename[] = "manifest_guest.json";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";

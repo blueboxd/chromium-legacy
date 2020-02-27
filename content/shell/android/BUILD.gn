@@ -81,6 +81,7 @@ android_library("content_shell_java") {
     "//mojo/public/java:system_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
+    "//ui/base/mojom:cursor_type_java",
   ]
   sources = [
     "java/src/org/chromium/content_shell/Shell.java",

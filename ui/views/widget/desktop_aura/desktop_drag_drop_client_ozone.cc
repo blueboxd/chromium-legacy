@@ -20,6 +20,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -78,7 +79,7 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   initial_cursor_ = source_window->GetHost()->last_cursor();
   drag_operation_ = operation;
   cursor_client->SetCursor(
-      cursor_manager_->GetInitializedCursor(ui::CursorType::kGrabbing));
+      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing));
 
   drag_handler_->StartDrag(
       *data.get(), operation, cursor_client->GetCursor(),

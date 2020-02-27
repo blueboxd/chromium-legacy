@@ -182,8 +182,7 @@ class DragSession {
   }
 
   cancel() {
-    if (isTabElement(this.element_) &&
-        this.element_.tab.id === PLACEHOLDER_TAB_ID) {
+    if (this.isDraggingPlaceholder()) {
       this.element_.remove();
       return;
     }
@@ -200,10 +199,15 @@ class DragSession {
     this.element_.setDragging(false);
   }
 
+  /** @return {boolean} */
+  isDraggingPlaceholder() {
+    return isTabElement(this.element_) &&
+        this.element_.tab.id == PLACEHOLDER_TAB_ID;
+  }
+
   /** @param {!DragEvent} event */
   finish(event) {
-    if (isTabElement(this.element_) &&
-        this.element_.tab.id === PLACEHOLDER_TAB_ID) {
+    if (this.isDraggingPlaceholder()) {
       const id = Number(event.dataTransfer.getData(getTabIdDataType()));
       this.element_.tab = Object.assign({}, this.element_.tab, {id});
     }
@@ -351,6 +355,11 @@ export class DragManager {
 
   /** @private */
   onDragLeave_() {
+    if (this.dragSession_ && this.dragSession_.isDraggingPlaceholder()) {
+      this.dragSession_.cancel();
+      this.dragSession_ = null;
+    }
+
     // TODO(johntlee): Handle drag and drop groups from other windows with
     // DragSession.
     this.dropPlaceholder_.remove();

@@ -43,6 +43,7 @@ source_set("common") {
       "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
       "//chromeos/constants",
+      "//chromeos/strings",
     ]
   }
 }

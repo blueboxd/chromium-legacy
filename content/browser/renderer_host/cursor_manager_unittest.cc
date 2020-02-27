@@ -19,6 +19,7 @@
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 // CursorManager is only instantiated on Aura and Mac.
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -134,7 +135,7 @@ TEST_F(CursorManagerTest, CursorOnSingleView) {
   // The view should be using the default cursor.
   EXPECT_EQ(top_view_->cursor(), WebCursor());
 
-  CursorInfo cursor_info(ui::CursorType::kHand);
+  CursorInfo cursor_info(ui::mojom::CursorType::kHand);
   WebCursor cursor_hand(cursor_info);
 
   // Update the view with a non-default cursor.
@@ -151,7 +152,7 @@ TEST_F(CursorManagerTest, CursorOverChildView) {
   std::unique_ptr<MockRenderWidgetHostViewForCursors> child_view(
       new MockRenderWidgetHostViewForCursors(widget_host.get(), false));
 
-  CursorInfo cursor_info(ui::CursorType::kHand);
+  CursorInfo cursor_info(ui::mojom::CursorType::kHand);
   WebCursor cursor_hand(cursor_info);
 
   // Set the child frame's cursor to a hand. This should not propagate to the
@@ -179,13 +180,13 @@ TEST_F(CursorManagerTest, CursorOverMultipleChildViews) {
   std::unique_ptr<MockRenderWidgetHostViewForCursors> child_view2(
       new MockRenderWidgetHostViewForCursors(widget_host2.get(), false));
 
-  CursorInfo cursor_info_hand(ui::CursorType::kHand);
+  CursorInfo cursor_info_hand(ui::mojom::CursorType::kHand);
   WebCursor cursor_hand(cursor_info_hand);
 
-  CursorInfo cursor_info_cross(ui::CursorType::kCross);
+  CursorInfo cursor_info_cross(ui::mojom::CursorType::kCross);
   WebCursor cursor_cross(cursor_info_cross);
 
-  CursorInfo cursor_info_pointer(ui::CursorType::kPointer);
+  CursorInfo cursor_info_pointer(ui::mojom::CursorType::kPointer);
   WebCursor cursor_pointer(cursor_info_pointer);
 
   // Initialize each View to a different cursor.

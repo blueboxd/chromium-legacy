@@ -30,6 +30,6 @@ PreviewsLitePageInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ConvertUTF16ToJavaString(env, delegate->GetMessageText());
   base::android::ScopedJavaLocalRef<jstring> link_text =
       base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText());
-  return Java_PreviewsLitePageInfoBar_show(env, GetEnumeratedIconId(),
-                                           message_text, link_text);
+  return Java_PreviewsLitePageInfoBar_show(env, GetJavaIconId(), message_text,
+                                           link_text);
 }

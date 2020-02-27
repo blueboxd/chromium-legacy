@@ -220,9 +220,6 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
       kEstimatedTableSectionFooterHeight;
   self.view.accessibilityIdentifier = kBookmarkEditViewContainerIdentifier;
 
-  // Add a tableFooterView in order to disable separators at the bottom of the
-  // tableView.
-  self.tableView.tableFooterView = [[UIView alloc] init];
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kBookmarkCellHorizontalLeadingInset,
                                          0, 0)];

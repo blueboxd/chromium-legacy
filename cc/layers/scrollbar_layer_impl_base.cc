@@ -284,6 +284,10 @@ bool ScrollbarLayerImplBase::HasFindInPageTickmarks() const {
   return false;
 }
 
+float ScrollbarLayerImplBase::OverlayScrollbarOpacity() const {
+  return Opacity();
+}
+
 bool ScrollbarLayerImplBase::SupportsDragSnapBack() const {
   return false;
 }

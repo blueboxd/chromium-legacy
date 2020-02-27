@@ -14,7 +14,6 @@ import android.view.View;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
@@ -95,25 +94,23 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
      * Creates a new instance of the infobar.
      *
      * @param nativeAutofillSaveCardInfoBar The pointer to the native object for callbacks.
-     * @param enumeratedIconId ID corresponding to the icon that will be shown for the InfoBar.
-     *                         The ID must have been mapped using the ResourceMapper class before
-     *                         passing it to this function.
-     * @param iconBitmap Bitmap to use if there is no equivalent Java resource for enumeratedIconId.
+     * @param iconId ID corresponding to the icon that will be shown for the InfoBar.
+     * @param iconBitmap Bitmap to use if there is no equivalent Java resource for iconId.
      * @param message Title of the infobar to display along the icon.
      * @param linkText Link text to display in addition to the message.
      * @param buttonOk String to display on the OK button.
      * @param buttonCancel String to display on the Cancel button.
      */
-    private AutofillSaveCardInfoBar(long nativeAutofillSaveCardInfoBar, int enumeratedIconId,
+    private AutofillSaveCardInfoBar(long nativeAutofillSaveCardInfoBar, int iconId,
             Bitmap iconBitmap, String message, String linkText, String buttonOk,
             String buttonCancel, boolean isGooglePayBrandingEnabled) {
         // If Google Pay branding is enabled, no icon is specified here; it is rather added in
         // |createContent|. This hides the ImageView that normally shows the icon and gets rid of
         // the left padding of the infobar content.
-        super(isGooglePayBrandingEnabled ? 0 : ResourceId.mapToDrawableId(enumeratedIconId),
+        super(isGooglePayBrandingEnabled ? 0 : iconId,
                 isGooglePayBrandingEnabled ? 0 : R.color.infobar_icon_drawable_color, iconBitmap,
                 message, linkText, buttonOk, buttonCancel);
-        mIconDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
+        mIconDrawableId = iconId;
         mTitleText = message;
         mIsGooglePayBrandingEnabled = isGooglePayBrandingEnabled;
         mNativeAutofillSaveCardInfoBar = nativeAutofillSaveCardInfoBar;
@@ -123,10 +120,8 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
      * Creates an infobar for saving a credit card.
      *
      * @param nativeAutofillSaveCardInfoBar The pointer to the native object for callbacks.
-     * @param enumeratedIconId ID corresponding to the icon that will be shown for the InfoBar.
-     *                         The ID must have been mapped using the ResourceMapper class before
-     *                         passing it to this function.
-     * @param iconBitmap Bitmap to use if there is no equivalent Java resource for enumeratedIconId.
+     * @param iconId ID corresponding to the icon that will be shown for the InfoBar.
+     * @param iconBitmap Bitmap to use if there is no equivalent Java resource for iconId.
      * @param message Title of the infobar to display along the icon.
      * @param linkText Link text to display in addition to the message.
      * @param buttonOk String to display on the OK button.
@@ -134,25 +129,23 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
      * @return A new instance of the infobar.
      */
     @CalledByNative
-    private static AutofillSaveCardInfoBar create(long nativeAutofillSaveCardInfoBar,
-            int enumeratedIconId, Bitmap iconBitmap, String message, String linkText,
-            String buttonOk, String buttonCancel, boolean isGooglePayBrandingEnabled) {
-        return new AutofillSaveCardInfoBar(nativeAutofillSaveCardInfoBar, enumeratedIconId,
-                iconBitmap, message, linkText, buttonOk, buttonCancel, isGooglePayBrandingEnabled);
+    private static AutofillSaveCardInfoBar create(long nativeAutofillSaveCardInfoBar, int iconId,
+            Bitmap iconBitmap, String message, String linkText, String buttonOk,
+            String buttonCancel, boolean isGooglePayBrandingEnabled) {
+        return new AutofillSaveCardInfoBar(nativeAutofillSaveCardInfoBar, iconId, iconBitmap,
+                message, linkText, buttonOk, buttonCancel, isGooglePayBrandingEnabled);
     }
 
     /**
      * Adds information to the infobar about the credit card that will be saved.
      *
-     * @param enumeratedIconId ID corresponding to the icon that will be shown for this credit card.
-     *                         The ID must have been mapped using the ResourceMapper class before
-     *                         passing it to this function.
+     * @param iconId ID corresponding to the icon that will be shown for this credit card.
      * @param label The credit card label, for example "***1234".
      * @param subLabel The credit card sub-label, for example "Exp: 06/17".
      */
     @CalledByNative
-    private void addDetail(int enumeratedIconId, String label, String subLabel) {
-        mCardDetails.add(new CardDetail(enumeratedIconId, label, subLabel));
+    private void addDetail(int iconId, String label, String subLabel) {
+        mCardDetails.add(new CardDetail(iconId, label, subLabel));
     }
 
     /**

@@ -36,4 +36,7 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 
   views::LinuxUI::SetInstance(linux_ui);
   linux_ui->Initialize();
+
+  DCHECK(ui::LinuxInputMethodContextFactory::instance())
+      << "LinuxUI must set LinuxInputMethodContextFactory instance.";
 }

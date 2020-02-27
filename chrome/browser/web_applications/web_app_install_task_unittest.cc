@@ -442,21 +442,19 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_EQ(expected_theme_color, web_app->theme_color());
 }
 
-TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
+TEST_F(WebAppInstallTaskTest, ForceReinstall) {
   const GURL url = GURL("https://example.com/path");
-  const std::string name = "Name";
-  const std::string description = "Description";
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
   CreateDefaultDataToRetrieve(url);
-  CreateRendererAppInfo(url, name, description);
+  CreateRendererAppInfo(url, "Name", "Description");
 
   const AppId installed_web_app = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(app_id, installed_web_app);
 
-  // Second attempt.
-  CreateRendererAppInfo(url, name, description);
+  // Force reinstall:
+  CreateRendererAppInfo(url, "Name2", "Description2");
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -466,9 +464,12 @@ TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
       web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
-          [&](const AppId& already_installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
-            EXPECT_EQ(app_id, already_installed_app_id);
+          [&](const AppId& force_installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(app_id, force_installed_app_id);
+            const WebApp* web_app = registrar().GetAppById(app_id);
+            EXPECT_EQ(web_app->name(), "Name2");
+            EXPECT_EQ(web_app->description(), "Description2");
             callback_called = true;
             run_loop.Quit();
           }));
@@ -1236,7 +1237,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
     InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
-    EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
     EXPECT_EQ(app_id, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id));
   }

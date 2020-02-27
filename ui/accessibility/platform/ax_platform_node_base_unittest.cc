@@ -63,6 +63,10 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
   auto* root = static_cast<AXPlatformNodeBase*>(
       TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
 
+  // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
+  // determine if it should enable accessibility.
+  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+
   EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
 
   // Setting invisible or ignored on a static text node causes it to be included

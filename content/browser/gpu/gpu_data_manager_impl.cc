@@ -180,12 +180,6 @@ gpu::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {
   return private_->GetGpuExtraInfo();
 }
 
-base::Optional<gpu::DevicePerfInfo> GpuDataManagerImpl::GetDevicePerfInfo()
-    const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetDevicePerfInfo();
-}
-
 bool GpuDataManagerImpl::IsGpuCompositingDisabled() const {
   base::AutoLock auto_lock(lock_);
   return private_->IsGpuCompositingDisabled();

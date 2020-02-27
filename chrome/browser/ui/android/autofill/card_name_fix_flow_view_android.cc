@@ -89,7 +89,7 @@ CardNameFixFlowViewAndroid::GetOrCreateJavaObject() {
   return java_object_internal_ = Java_AutofillNameFixFlowBridge_create(
              env, reinterpret_cast<intptr_t>(this), dialog_title, inferred_name,
              confirm,
-             ResourceMapper::MapFromChromiumId(controller_->GetIconId()),
+             ResourceMapper::MapToJavaDrawableId(controller_->GetIconId()),
              view_android->GetWindowAndroid()->GetJavaObject());
 }
 

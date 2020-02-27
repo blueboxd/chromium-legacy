@@ -102,20 +102,24 @@ class CrostiniExportImport : public KeyedService,
   // Import the crostini container showing FileDialog.
   void ImportContainer(content::WebContents* web_contents);
 
-  // Export |container| to |path| and invoke |callback| when complete.
+  // Export |container_id| to |path| and invoke |callback| when complete.
   void ExportContainer(ContainerId container_id,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
-  // Import |container| to |path| and invoke |callback| when complete.
+  // Import |container_id| from |path| and invoke |callback| when complete.
   void ImportContainer(ContainerId container_id,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
-  void ExportContainer(content::WebContents* web_contents,
-                       ContainerId container_id,
+  // Export |container_id| showing FileDialog, and using |tracker_factory| for
+  // status tracking.
+  void ExportContainer(ContainerId container_id,
+                       content::WebContents* web_contents,
                        OnceTrackerFactory tracker_factory);
-  void ImportContainer(content::WebContents* web_contents,
-                       ContainerId container_id,
+  // Import |container_id| showing FileDialog, and using |tracker_factory| for
+  // status tracking.
+  void ImportContainer(ContainerId container_id,
+                       content::WebContents* web_contents,
                        OnceTrackerFactory tracker_factory);
 
   // Cancel currently running export/import.

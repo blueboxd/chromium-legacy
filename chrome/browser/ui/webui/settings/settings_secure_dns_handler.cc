@@ -20,6 +20,8 @@
 #include "net/dns/public/doh_provider_list.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using chrome_browser_net::SecureDnsUiManagementMode;
+
 namespace settings {
 
 namespace {
@@ -33,9 +35,10 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
+  SecureDnsUiManagementMode management_mode;
   SystemNetworkContextManager::GetStubResolverConfig(
       g_browser_process->local_state(), &insecure_stub_resolver_enabled,
-      &secure_dns_mode, &dns_over_https_servers);
+      &secure_dns_mode, &dns_over_https_servers, &management_mode);
 
   std::string secure_dns_mode_str;
   switch (secure_dns_mode) {
@@ -62,6 +65,7 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("mode", secure_dns_mode_str);
   dict->SetList("templates", std::move(secure_dns_templates));
+  dict->SetInteger("managementMode", static_cast<int>(management_mode));
   return dict;
 }
 

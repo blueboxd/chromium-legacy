@@ -36,7 +36,6 @@ luci.cq_group(
     name = vars.cq_group.get(),
     cancel_stale_tryjobs = True,
     retry_config = cq.RETRY_ALL_FAILURES,
-    tree_status_host = 'chromium-status.appspot.com/',
     watch = cq.refset(
         repo = 'https://chromium.googlesource.com/chromium/src',
         refs = [milestone_vars.cq_ref_regexp],

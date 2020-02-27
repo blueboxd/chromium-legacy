@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,4 +29,12 @@ IN_PROC_BROWSER_TEST_F(HelpAppIntegrationTest, HelpAppV2) {
   const GURL url(chromeos::kChromeUIHelpAppURL);
   EXPECT_NO_FATAL_FAILURE(
       ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Discover"));
+}
+
+// Test that the Help App is searchable by additional strings.
+IN_PROC_BROWSER_TEST_F(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
+  WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  EXPECT_EQ(
+      std::vector<std::string>({"Get Help", "Perks", "Offers"}),
+      GetManager().GetAdditionalSearchTerms(web_app::SystemAppType::HELP));
 }

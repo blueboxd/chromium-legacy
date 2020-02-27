@@ -28,4 +28,9 @@ bool ShouldDisableDohForManaged() {
   return false;
 }
 
+// TODO(crbug.com/1037961): Implement this method.
+bool ShouldDisableDohForParentalControls() {
+  return false;
+}
+
 }  // namespace chrome_browser_net

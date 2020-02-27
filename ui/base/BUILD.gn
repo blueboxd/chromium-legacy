@@ -95,7 +95,6 @@ jumbo_component("base") {
     "cursor/cursor.h",
     "cursor/cursor_loader.h",
     "cursor/cursor_size.h",
-    "cursor/types/cursor_types.h",
     "default_style.h",
     "device_form_factor.h",
     "device_form_factor_desktop.cc",
@@ -427,6 +426,7 @@ jumbo_component("base") {
     ":ui_data_pack",
     "//base",
     "//skia",
+    "//ui/base/mojom:cursor_type",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -828,10 +828,6 @@ if (is_android) {
       "../android/java/src/org/chromium/ui/base/TouchDevice.java",
     ]
   }
-
-  java_cpp_enum("ui_base_cursor_type_java_enums_srcjar") {
-    sources = [ "./cursor/types/cursor_types.h" ]
-  }
 }
 
 bundle_data("ui_base_unittests_bundle_data") {
@@ -975,6 +971,7 @@ test("ui_base_unittests") {
     deps += [
       ":pixel_diff_test_support",
       "//components/system_media_controls:test_support",
+      "//ui/base/mojom:cursor_type",
     ]
 
     if (is_linux) {

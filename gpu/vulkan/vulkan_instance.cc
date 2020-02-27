@@ -276,17 +276,6 @@ void VulkanInstance::CollectInfo() {
     DLOG_IF(ERROR, result != VK_SUCCESS)
         << "vkEnumerateDeviceExtensionProperties failed: " << result;
 
-    count = 0;
-    result = vkEnumerateDeviceLayerProperties(device, &count, nullptr);
-    DLOG_IF(ERROR, result != VK_SUCCESS)
-        << "vkEnumerateDeviceLayerProperties failed: " << result;
-
-    info.layers.resize(count);
-    result =
-        vkEnumerateDeviceLayerProperties(device, &count, info.layers.data());
-    DLOG_IF(ERROR, result != VK_SUCCESS)
-        << "vkEnumerateDeviceLayerProperties failed: " << result;
-
     // The API version of the VkInstance might be different than the supported
     // API version of the VkPhysicalDevice, so we need to check the GPU's
     // API version instead of just testing to see if

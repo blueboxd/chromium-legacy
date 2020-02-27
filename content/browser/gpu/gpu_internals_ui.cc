@@ -39,6 +39,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
@@ -474,7 +475,7 @@ const char* HasDiscreteGpuToString(gpu::HasDiscreteGpu has_discrete_gpu) {
 std::unique_ptr<base::ListValue> GetDevicePerfInfo() {
   auto list = std::make_unique<base::ListValue>();
   const base::Optional<gpu::DevicePerfInfo> device_perf_info =
-      GpuDataManagerImpl::GetInstance()->GetDevicePerfInfo();
+      gpu::GetDevicePerfInfo();
   if (device_perf_info.has_value()) {
     list->Append(NewDescriptionValuePair(
         "Total Physical Memory (Gb)",

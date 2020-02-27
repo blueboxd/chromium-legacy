@@ -175,9 +175,6 @@ ViewAXPlatformNodeDelegateAuraLinux::ViewAXPlatformNodeDelegateAuraLinux(
   view->AddObserver(this);
 }
 
-ViewAXPlatformNodeDelegateAuraLinux::~ViewAXPlatformNodeDelegateAuraLinux() =
-    default;
-
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegateAuraLinux::GetParent() {
   if (gfx::NativeViewAccessible parent =
           ViewAXPlatformNodeDelegate::GetParent())

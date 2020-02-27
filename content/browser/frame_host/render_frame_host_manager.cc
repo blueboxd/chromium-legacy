@@ -2140,11 +2140,20 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // TODO(https://crbug.com/1006814): Remove this.
   if (recreated_main_frame && !new_render_frame_host->IsRenderFrameLive()) {
     static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "IsRenderFrameLive crash key", base::debug::CrashKeySize::Size32);
+        "IsRenderFrameLive", base::debug::CrashKeySize::Size32);
     std::string message = base::StringPrintf(
-        "process=%d,created=%d", new_render_frame_host->IsRenderFrameCreated(),
-        new_render_frame_host->GetProcess()->IsInitializedAndNotDead());
+        "created=%d,process=%d,proxy=%d",
+        new_render_frame_host->IsRenderFrameCreated(),
+        new_render_frame_host->GetProcess()->IsInitializedAndNotDead(),
+        !!GetRenderFrameProxyHost(instance));
     base::debug::SetCrashKeyString(crash_key, message);
+    DEBUG_ALIAS_FOR_CSTR(message_debug, message.c_str(), 32);
+    DEBUG_ALIAS_FOR_GURL(last_committed_url,
+                         current_frame_host()
+                             ? current_frame_host()->GetLastCommittedURL()
+                             : GURL());
+    DEBUG_ALIAS_FOR_GURL(new_last_committed_url,
+                         new_render_frame_host->GetLastCommittedURL());
     base::debug::DumpWithoutCrashing();
     NOTREACHED() << message;
   }

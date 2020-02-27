@@ -62,17 +62,19 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void SetWebAppManifestFieldsAndWriteData(
       const WebApplicationInfo& web_app_info,
       std::unique_ptr<WebApp> web_app,
+      bool is_new_install,
       InstallFinalizedCallback callback);
 
   void OnIconsDataWritten(InstallFinalizedCallback callback,
                           std::unique_ptr<WebApp> web_app,
+                          bool is_new_install,
                           bool success);
   void OnIconsDataDeleted(const AppId& app_id,
                           UninstallWebAppCallback callback,
                           bool success);
   void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
                                  const AppId& app_id,
-                                 bool new_app_created,
+                                 bool is_new_install,
                                  bool success);
   void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
                                   InstallFinalizedCallback callback,

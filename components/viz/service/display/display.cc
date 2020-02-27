@@ -354,7 +354,7 @@ void Display::SetVisible(bool visible) {
 }
 
 void Display::Resize(const gfx::Size& size) {
-  disable_swap_until_resize_ = false;
+  disable_draw_until_resize_ = false;
 
   if (size == current_surface_size_)
     return;
@@ -376,7 +376,7 @@ void Display::DisableSwapUntilResize(
   TRACE_EVENT0("viz", "Display::DisableSwapUntilResize");
   DCHECK(no_pending_swaps_callback_.is_null());
 
-  if (!disable_swap_until_resize_) {
+  if (!disable_draw_until_resize_) {
     DCHECK(scheduler_);
 
     if (!swapped_since_resize_)
@@ -388,7 +388,7 @@ void Display::DisableSwapUntilResize(
       no_pending_swaps_callback_ = std::move(no_pending_swaps_callback);
     }
 
-    disable_swap_until_resize_ = true;
+    disable_draw_until_resize_ = true;
   }
 
   // There are no pending swaps for current size so immediately run callback.
@@ -618,7 +618,8 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   if (!size_matches)
     TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
-  bool should_draw = have_copy_requests || (have_damage && size_matches);
+  bool should_draw = !disable_draw_until_resize_ &&
+                     (have_copy_requests || (have_damage && size_matches));
   client_->DisplayWillDrawAndSwap(should_draw, &frame.render_pass_list);
 
   base::Optional<base::ElapsedTimer> draw_timer;
@@ -665,7 +666,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
 
-  bool should_swap = !disable_swap_until_resize_ && should_draw && size_matches;
+  bool should_swap = should_draw && size_matches;
   if (should_swap) {
     PresentationGroupTiming presentation_group_timing;
     presentation_group_timing.OnDraw(draw_timer->Begin());

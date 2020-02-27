@@ -41,6 +41,7 @@ bool RebootUtil::IsValidRebootSource(RebootShlib::RebootSource reboot_source) {
     case RebootShlib::RebootSource::SW_OTHER:
     case RebootShlib::RebootSource::OVERHEAT:
     case RebootShlib::RebootSource::REGENERATE_CLOUD_ID:
+    case RebootShlib::RebootSource::REPEATED_OOM:
       return true;
     default:
       return false;

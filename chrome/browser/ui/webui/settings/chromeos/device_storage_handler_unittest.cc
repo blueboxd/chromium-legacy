@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator_test_api.h"
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -71,10 +72,31 @@ class StorageHandlerTest : public testing::Test {
     content::WebUIDataSource* html_source =
         content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
     handler_ = std::make_unique<TestStorageHandler>(profile_, html_source);
-    handler_test_api_ =
-        std::make_unique<StorageHandler::TestAPI>(handler_.get());
     handler_->set_web_ui(&web_ui_);
     handler_->AllowJavascriptForTesting();
+
+    // Initialize tests APIs.
+    size_stat_test_api_ = std::make_unique<calculator::SizeStatTestAPI>(
+        handler_.get(), new calculator::SizeStatCalculator(
+                            "storage-size-stat-changed", profile_));
+    my_files_size_test_api_ = std::make_unique<calculator::MyFilesSizeTestAPI>(
+        handler_.get(), new calculator::MyFilesSizeCalculator(
+                            "storage-my-files-size-changed", profile_));
+    browsing_data_size_test_api_ =
+        std::make_unique<calculator::BrowsingDataSizeTestAPI>(
+            handler_.get(),
+            new calculator::BrowsingDataSizeCalculator(
+                "storage-browsing-data-size-changed", profile_));
+    apps_size_test_api_ = std::make_unique<calculator::AppsSizeTestAPI>(
+        handler_.get(), new calculator::AppsSizeCalculator(
+                            "storage-apps-size-changed", profile_));
+    crostini_size_test_api_ = std::make_unique<calculator::CrostiniSizeTestAPI>(
+        handler_.get(), new calculator::CrostiniSizeCalculator(
+                            "storage-crostini-size-changed", profile_));
+    other_users_size_test_api_ =
+        std::make_unique<calculator::OtherUsersSizeTestAPI>(
+            handler_.get(), new calculator::OtherUsersSizeCalculator(
+                                "storage-other-users-size-changed"));
 
     // Create and register My files directory.
     // By emulating chromeos running, GetMyFilesFolderForProfile will return the
@@ -92,7 +114,12 @@ class StorageHandlerTest : public testing::Test {
 
   void TearDown() override {
     handler_.reset();
-    handler_test_api_.reset();
+    size_stat_test_api_.reset();
+    my_files_size_test_api_.reset();
+    browsing_data_size_test_api_.reset();
+    apps_size_test_api_.reset();
+    crostini_size_test_api_.reset();
+    other_users_size_test_api_.reset();
     chromeos::disks::DiskMountManager::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
   }
@@ -101,7 +128,7 @@ class StorageHandlerTest : public testing::Test {
   // From a given amount of total size and available size as input, returns the
   // space state determined by the OnGetSizeState function.
   int GetSpaceState(int64_t* total_size, int64_t* available_size) {
-    handler_test_api_->OnGetSizeStat(total_size, available_size);
+    size_stat_test_api_->SimulateOnGetSizeStat(total_size, available_size);
     task_environment_.RunUntilIdle();
     const base::Value* dictionary =
         GetWebUICallbackMessage("storage-size-stat-changed");
@@ -161,11 +188,17 @@ class StorageHandlerTest : public testing::Test {
   }
 
   std::unique_ptr<TestStorageHandler> handler_;
-  std::unique_ptr<TestStorageHandler::TestAPI> handler_test_api_;
   content::TestWebUI web_ui_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
+  std::unique_ptr<calculator::SizeStatTestAPI> size_stat_test_api_;
+  std::unique_ptr<calculator::MyFilesSizeTestAPI> my_files_size_test_api_;
+  std::unique_ptr<calculator::BrowsingDataSizeTestAPI>
+      browsing_data_size_test_api_;
+  std::unique_ptr<calculator::AppsSizeTestAPI> apps_size_test_api_;
+  std::unique_ptr<calculator::CrostiniSizeTestAPI> crostini_size_test_api_;
+  std::unique_ptr<calculator::OtherUsersSizeTestAPI> other_users_size_test_api_;
 
  private:
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
@@ -183,7 +216,7 @@ TEST_F(StorageHandlerTest, GlobalSizeStat) {
   double used_ratio = static_cast<double>(used_size) / total_size;
 
   // Get statistics from storage handler's UpdateSizeStat.
-  handler_test_api_->UpdateSizeStat();
+  size_stat_test_api_->StartCalculation();
   task_environment_.RunUntilIdle();
 
   const base::Value* dictionary =
@@ -216,20 +249,22 @@ TEST_F(StorageHandlerTest, StorageSpaceState) {
   int64_t total_size = 1024 * 1024 * 1024;
   int64_t available_size = 512 * 1024 * 1024 - 1;
   int space_state = GetSpaceState(&total_size, &available_size);
-  EXPECT_EQ(handler_->STORAGE_SPACE_CRITICALLY_LOW, space_state);
+  EXPECT_EQ(static_cast<int>(StorageSpaceState::kStorageSpaceCriticallyLow),
+            space_state);
 
   // Less than 1GB available, space state is low.
   available_size = 512 * 1024 * 1024;
   space_state = GetSpaceState(&total_size, &available_size);
-  EXPECT_EQ(handler_->STORAGE_SPACE_LOW, space_state);
+  EXPECT_EQ(static_cast<int>(StorageSpaceState::kStorageSpaceLow), space_state);
   available_size = 1024 * 1024 * 1024 - 1;
   space_state = GetSpaceState(&total_size, &available_size);
-  EXPECT_EQ(handler_->STORAGE_SPACE_LOW, space_state);
+  EXPECT_EQ(static_cast<int>(StorageSpaceState::kStorageSpaceLow), space_state);
 
   // From 1GB, normal space state.
   available_size = 1024 * 1024 * 1024;
   space_state = GetSpaceState(&total_size, &available_size);
-  EXPECT_EQ(handler_->STORAGE_SPACE_NORMAL, space_state);
+  EXPECT_EQ(static_cast<int>(StorageSpaceState::kStorageSpaceNormal),
+            space_state);
 }
 
 TEST_F(StorageHandlerTest, MyFilesSize) {
@@ -264,7 +299,7 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
   AddFile("video.ogv", 59943, android_files_download_path);
 
   // Calculate My files size.
-  handler_test_api_->UpdateMyFilesSize();
+  my_files_size_test_api_->StartCalculation();
   task_environment_.RunUntilIdle();
 
   const base::Value* callback =
@@ -287,7 +322,7 @@ TEST_F(StorageHandlerTest, AppsExtensionsSize) {
   AddFile("id3Audio.mp3", 180999, extensions_data_path);  // ~177 KB
 
   // Calculate web store apps and extensions size.
-  handler_test_api_->UpdateAppsSize();
+  apps_size_test_api_->StartCalculation();
   task_environment_.RunUntilIdle();
 
   const base::Value* callback =
@@ -299,7 +334,8 @@ TEST_F(StorageHandlerTest, AppsExtensionsSize) {
 
   // Simulate android apps size callback.
   // 592840 + 25284 + 9987 = 628111  ~613 KB.
-  handler_test_api_->UpdateAndroidAppsSize(592840, 25284, 9987);
+  apps_size_test_api_->SimulateOnGetAndroidAppsSize(true /* succeeded */,
+                                                    592840, 25284, 9987);
   task_environment_.RunUntilIdle();
 
   callback = GetWebUICallbackMessage("storage-apps-size-changed");
@@ -308,19 +344,19 @@ TEST_F(StorageHandlerTest, AppsExtensionsSize) {
   // Check return value.
   EXPECT_EQ("790 KB", callback->GetString());
 
-  // Add more data in the Extensions folder to check that the sum of web store
-  // apps and extensions + android apps is correctly updated.
+  // Add more data in the Extensions folder. Android is not running and the size
+  // of android apps is back down to 0 B.
   AddFile("video_long.ogv", 230096, extensions_data_path);  // ~225 KB
 
   // Calculate web store apps and extensions size.
-  handler_test_api_->UpdateAppsSize();
+  apps_size_test_api_->StartCalculation();
   task_environment_.RunUntilIdle();
 
   callback = GetWebUICallbackMessage("storage-apps-size-changed");
   ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
 
   // Check return value.
-  EXPECT_EQ("1,015 KB", callback->GetString());
+  EXPECT_EQ("401 KB", callback->GetString());
 }
 
 }  // namespace

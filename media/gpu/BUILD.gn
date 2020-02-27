@@ -431,6 +431,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu",
+      "//media/gpu/test:test_helpers",
       "//media/parsers",
       "//mojo/core/embedder",
       "//testing/gtest",

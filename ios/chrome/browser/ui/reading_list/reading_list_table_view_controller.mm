@@ -207,9 +207,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   self.tableView.allowsMultipleSelection = YES;
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
-  // TODO(crbug.com/863606): Remove this workaround when iOS10 is no longer
-  // supported, as it is not necessary in iOS 11.
-  self.tableView.tableFooterView = [[UIView alloc] init];
 
   // Add gesture recognizer for the context menu.
   UILongPressGestureRecognizer* longPressRecognizer =

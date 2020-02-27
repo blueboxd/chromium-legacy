@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, birleşik kutu</translation>
 <translation id="1161762950103988776">Git</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menü öğesi, alt menüye sahip</translation>
+<translation id="1175914831232945926">Basamak</translation>
 <translation id="1177863135347784049">Özel</translation>
 <translation id="1188858454923323853">tamamlayıcı</translation>
 <translation id="1195238899008218998">Sonsöz</translation>
@@ -37,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox - Chrome'un Sesi</translation>
 <translation id="1225969361094801578">Koyu Kurşun Grisi</translation>
 <translation id="1229276918471378188">Önceki atlama</translation>
+<translation id="1230503547248836149">Seçim alanı başlangıcı</translation>
 <translation id="1236794971743289975">Son not</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1243477406442346359">Kantaron Mavisi</translation>
@@ -119,6 +121,7 @@
 <translation id="1752708997038853212">Arama sorgusu girin</translation>
 <translation id="1756785467854861272">Koyu Macenta</translation>
 <translation id="1765245556747822181">Bir parmağınızı yukarı kaydırın</translation>
+<translation id="1771761307086386028">Sağa kaydır</translation>
 <translation id="1781173782405573156">Geçiş tuşu</translation>
 <translation id="1787176709638001873">Şifre düzenleme metni</translation>
 <translation id="1802710350767629429">Güncelleme notlarını göster</translation>
@@ -146,6 +149,7 @@
 <translation id="1969092762068865084">Temmuz</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Önceki atlama noktası yok</translation>
+<translation id="1988733631391393183">ChromeVox menülerinde braille komutlarını göster</translation>
 <translation id="1990932729021763163">Satır üst bilgisi:</translation>
 <translation id="2002895034995108595">Geçerli tuş eşleşmesini sıfırla</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{sol köşeli ayraç}other{# sol köşeli ayraç}}</translation>
@@ -174,6 +178,7 @@
 <translation id="2199994615414171367">Önceki matematik tuşu</translation>
 <translation id="2203046366315513658">Değeri azaltma</translation>
 <translation id="2216790501338699346">Bağlantı URL'si: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">Bir karakter geri git</translation>
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2223693656926968778">Mevcut öğe üzerinde işlem yap</translation>
 <translation id="224426591676115802">Şu dil için ses yok: <ph name="LANGUAGE" /></translation>
@@ -223,6 +228,7 @@
 <translation id="2592212930811759050">Düzenlemeye başlamak için iki kez dokunun</translation>
 <translation id="2594420797397883935">Bağlantı olmayan önceki öğe yok</translation>
 <translation id="2598495320872286378">Dil bilgisi hatası</translation>
+<translation id="2603828437139726540">Bir karakter ileri git</translation>
 <translation id="2614981083756825552">Matematik ML Düzeni</translation>
 <translation id="2624431853467395961">Öğrenme modunu açar</translation>
 <translation id="2626530649491650971">tıklanabilir</translation>
@@ -230,6 +236,7 @@
 <translation id="2638785836053527382"><ph name="FILE_NAME" /> dosyasını indirme işlemi devam ediyor</translation>
 <translation id="2639750663247012216">ChromeVox değiştirici</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2654172656519784359">Bir kelime ileri git</translation>
 <translation id="2661530546602071611">Bildirim</translation>
 <translation id="2673280813984708147">düzenleniyor</translation>
 <translation id="267442004702508783">yenile</translation>
@@ -306,11 +313,13 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Sonraki önemli nokta</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="309749186376891736">İmleci taşı</translation>
 <translation id="3103579948980282461">Orta Ton Mora Çalan Kırmızı</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Daraltılmış</translation>
 <translation id="3112457281078985179">ChromeVox'u açmak veya kapatmak için Control+Alt+Z tuşlarını kullanın.</translation>
 <translation id="3128896337293924532">Sonraki blok alıntı yok</translation>
+<translation id="3131002934070407451">Numaraları şu şekilde oku:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Zeytin Yeşili</translation>
 <translation id="3138767756593758860">Önemli nokta listesini göster</translation>
@@ -436,6 +445,7 @@
 <translation id="3930498801443296724">Alıntı</translation>
 <translation id="3935615366277838204">Büyük harf <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lila</translation>
+<translation id="3943857333388298514">Yapıştır</translation>
 <translation id="394953087167197343">Yazım hatasını belirtin:</translation>
 <translation id="3962990492275676168">Mevcut konumdan okumaya başla</translation>
 <translation id="3970951409746498040">Kumlu Kahverengi</translation>
@@ -445,6 +455,7 @@
 <translation id="4002709828007663583">Koyu Orkide</translation>
 <translation id="4004802134384979325">işaretli</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">Aşağı kaydır</translation>
 <translation id="4038349100599457191">Ay denetimi</translation>
 <translation id="4039983576244166038">Boş satır üst bilgisi</translation>
 <translation id="4047216625641135770">İşaretle</translation>
@@ -474,6 +485,7 @@
 <translation id="4206289001967551965">Tablo içinde</translation>
 <translation id="4215733775853809057">Sonraki kaydırma çubuğu</translation>
 <translation id="42164919740161077">Camgöbeği</translation>
+<translation id="4217571870635786043">Dikte</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{kısa çizgi}other{# kısa çizgi}}</translation>
 <translation id="421884353938374759">renk seçici</translation>
 <translation id="4221012616705981690">Önceki liste yok</translation>
@@ -540,6 +552,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Önceki önemli nokta</translation>
 <translation id="4710166929009737753">Bir parmağınızı sağa kaydırın</translation>
+<translation id="4712898966495541134">Seçim alanı sonu</translation>
 <translation id="4729095194763193578">Önceki tablo satırı</translation>
 <translation id="4736221692378411923">Ağustos</translation>
 <translation id="4740661827607246557">Yardım Komutları</translation>
@@ -572,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Koyu Camgöbeği</translation>
 <translation id="489907760999452556">Dahili bağlantı</translation>
+<translation id="4909019435900810068">Bir kelime geri git</translation>
 <translation id="4911349081560453449">Önceki onay kutusu yok</translation>
 <translation id="4915087353619183190">Öğrenme Modu başlatılıyor. İşlevini öğrenmek istediğiniz qwerty tuşuna, yenilenebilir braille tuşuna veya dokunma hareketine basın. Çıkmak için control+w tuş kombinasyonuna ya da escape tuşuna basın.</translation>
 <translation id="492295894462528572">Önsöz</translation>
+<translation id="495046168593986294">Yukarı kaydır</translation>
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4953585991029886728">Metni düzenle</translation>
 <translation id="4954534434583049121">Önceki blok alıntı</translation>
@@ -635,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{virgül}other{# virgül}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, metin kutusu</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, bağlantı</translation>
+<translation id="5331522683003474486">Cihazı yalnızca 1 veya 2 anahtarla kontrol edin.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Geri bağlantı</translation>
 <translation id="5355014376930441909">Sonraki bölüm yok</translation>
@@ -656,6 +672,7 @@
 <translation id="549602578321198708">Kelime</translation>
 <translation id="5502713021410870035">Eylül</translation>
 <translation id="5507663321906818013">Hata ayıklama değerlendirmesi</translation>
+<translation id="5513242761114685513">İçerik menüsü</translation>
 <translation id="551361796444814639">Orta Ton Mavi</translation>
 <translation id="552195134157544755">Radyo düğmesi</translation>
 <translation id="5534303576632885660">hdr</translation>
@@ -737,12 +754,14 @@
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ters eğik çizgi}other{# ters eğik çizgi}}</translation>
 <translation id="6017514345406065928">Yeşil</translation>
+<translation id="602001110135236999">Sola kaydır</translation>
 <translation id="6034000775414344507">Açık Gri</translation>
 <translation id="6037602951055904232">İleri kaydır</translation>
 <translation id="6044160928851315051">Ekranı kapat</translation>
 <translation id="6082768461603900813">Temel Gezinme</translation>
 <translation id="609281021724813947">Önceki kaydırma çubuğu yok</translation>
 <translation id="6095514649509181044">Büyük/küçük harf yok sayılıyor</translation>
+<translation id="6100239002225743044">Bir satır yukarı git</translation>
 <translation id="6118126368611144850">Chrome için Android uygulamaları. Cihazınızda Play Store varsa Android uygulamaları ile ChromeVox'a önceden göz atın. Play Store'dan Google Chrome Canary sürümünü indirerek deneysel desteği deneyin.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -841,14 +860,17 @@
 <translation id="6865519907510167493">Yazım hatası</translation>
 <translation id="688976158310523235">Arama menüsü</translation>
 <translation id="6894148351896207544">Geçerli saati ve tarihi söyle</translation>
+<translation id="6896758677409633944">Kopyala</translation>
 <translation id="6897341342232909480">Sola git</translation>
 <translation id="6901540140423170855">date</translation>
 <translation id="6910211073230771657">Silindi</translation>
 <translation id="6910969481785184048">Açma, Kapatma ve Durdurma</translation>
 <translation id="6919104639734799681">Tablo listesini göster</translation>
+<translation id="6945221475159498467">Seç</translation>
 <translation id="6949846980769640811">Orta Ton Mavimsi Yeşil</translation>
 <translation id="6951482098621102657">Sonraki 5. düzey başlık yok</translation>
 <translation id="6955705049214951590">Buğulu Roze</translation>
+<translation id="696356426651109308">Başa atla</translation>
 <translation id="699159175332639490">Arama + O + W</translation>
 <translation id="6994042831499278539">Terimler sözlüğü referansı</translation>
 <translation id="6996566555547746822">Sonraki birleşik kutu</translation>
@@ -856,6 +878,7 @@
 <translation id="700202842116345659">Kaynakça girişi</translation>
 <translation id="7005146664810010831">URL bulunamadı.</translation>
 <translation id="7010712454773919705">ChromeVox değiştirici tuş</translation>
+<translation id="7026338066939101231">Azalt</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Önceki liste</translation>
 <translation id="7039555289296502784">Zeytin Yeşili</translation>
@@ -865,6 +888,7 @@
 <translation id="7062635574500127092">Turkuaz</translation>
 <translation id="7086377898680121060">Parlaklığı artır</translation>
 <translation id="7088743565397416204">Odaklanılan öğeyi etkinleştirmek için iki kez dokunun</translation>
+<translation id="7088960765736518739">Anahtar Erişimi</translation>
 <translation id="7091296112653361280">Navaho Beyazı</translation>
 <translation id="7095834689119144465">Yalnızca sayısal düzenleme metni</translation>
 <translation id="7096001299300236431">Önceki medya tuşu</translation>
@@ -959,6 +983,7 @@
 <translation id="7693840228159394336">Önceki radyo düğmesi</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Sonraki birleşik giriş kutusu yok</translation>
+<translation id="7724603315864178912">Kes</translation>
 <translation id="7731785449856576010">Sonraki medya widget'ı yok</translation>
 <translation id="773906353055481349">Hücreden hücreye gitmek için Arama+Ctrl+Alt ve ok tuşlarına basın</translation>
 <translation id="7750184816513382104">Büyük/küçük harfe duyarlı</translation>
@@ -971,9 +996,11 @@
 <translation id="7805247615045262757">varsayılan gezinme</translation>
 <translation id="7805768142964895445">Durum</translation>
 <translation id="7810781339813764006">Sonraki Grup</translation>
+<translation id="7813616274030162878">Anahtar Erişimi Menüsü</translation>
 <translation id="7819187121850078213">pencere <ph name="TITLE" /> sekmesi</translation>
 <translation id="7828956995407538686">Ekim</translation>
 <translation id="7839679365527550018">Önceki Kelime</translation>
+<translation id="7846634333498149051">Klavye</translation>
 <translation id="7851132556376253786">Sonraki makale yok</translation>
 <translation id="7851816175263618915">Bazı noktalama işaretleri</translation>
 <translation id="7870596830398826354">Matematik ML Ağacı</translation>
@@ -993,6 +1020,8 @@
 <translation id="7968340748835037139">Koyu Yeşil</translation>
 <translation id="7972507042926081808">Çikolata</translation>
 <translation id="7974390230414479278">Menü öğesi</translation>
+<translation id="8004507136466386272">Kelime</translation>
+<translation id="8004512796067398576">Artır</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{tırnak işareti}other{# tırnak işareti}}</translation>
 <translation id="8017588669690167134">Konuşma kapalı</translation>
@@ -1011,6 +1040,7 @@
 <translation id="8096975275316362544">Nane Yeşili</translation>
 <translation id="8098587210054821856">Kurşun Grisi</translation>
 <translation id="8121539003537428024">Tüm etkinlik filtrelerini etkinleştir</translation>
+<translation id="8123975449645947908">Geriye kaydırma</translation>
 <translation id="8126386426083591964">Önceki 5. düzey başlık yok</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> dosyasını indirme işlemi durduruldu</translation>
 <translation id="8129445297241948503">Yukarıda hücre yok</translation>
@@ -1044,6 +1074,7 @@
 <translation id="8374154622594089836">ay</translation>
 <translation id="8378855320830505539">Bölge</translation>
 <translation id="8382679411218029383">Satır içi ve liste otomatik tamamlama</translation>
+<translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8428603554127842284">seviye: <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
@@ -1131,6 +1162,7 @@
 <translation id="9074824103975499138">Arama ChromeVox menüleri</translation>
 <translation id="9077213568694924680">seçimden kaldırıldı</translation>
 <translation id="9077305471618729969">Açık Deniz Yeşili</translation>
+<translation id="9080299285199342830">Sona atla</translation>
 <translation id="9089864840575085222">Yazma yansıtmayı döngüsel yap</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>
@@ -1159,5 +1191,6 @@
 <translation id="962913030769097253">Sonraki 1. düzey başlık</translation>
 <translation id="966588271015727539">Bluetooth braille ekran seçin</translation>
 <translation id="973955474346881951">Yapışkan modu etkinleştir/devre dışı bırak</translation>
+<translation id="985654871861528815">Bir satır aşağı git</translation>
 <translation id="992256792861109788">Pembe</translation>
 </translationbundle>

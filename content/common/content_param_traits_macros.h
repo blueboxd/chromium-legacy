@@ -21,6 +21,7 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -39,7 +40,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     network::mojom::ContentSecurityPolicySource::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ContentSecurityPolicyType,
                           network::mojom::ContentSecurityPolicyType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ui::CursorType, ui::CursorType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::CursorType,
+                          ui::mojom::CursorType::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)

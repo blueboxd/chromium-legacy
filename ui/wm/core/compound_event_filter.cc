@@ -13,6 +13,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -52,23 +53,23 @@ gfx::NativeCursor CompoundEventFilter::CursorForWindowComponent(
     int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return ui::CursorType::kSouthResize;
+      return ui::mojom::CursorType::kSouthResize;
     case HTBOTTOMLEFT:
-      return ui::CursorType::kSouthWestResize;
+      return ui::mojom::CursorType::kSouthWestResize;
     case HTBOTTOMRIGHT:
-      return ui::CursorType::kSouthEastResize;
+      return ui::mojom::CursorType::kSouthEastResize;
     case HTLEFT:
-      return ui::CursorType::kWestResize;
+      return ui::mojom::CursorType::kWestResize;
     case HTRIGHT:
-      return ui::CursorType::kEastResize;
+      return ui::mojom::CursorType::kEastResize;
     case HTTOP:
-      return ui::CursorType::kNorthResize;
+      return ui::mojom::CursorType::kNorthResize;
     case HTTOPLEFT:
-      return ui::CursorType::kNorthWestResize;
+      return ui::mojom::CursorType::kNorthWestResize;
     case HTTOPRIGHT:
-      return ui::CursorType::kNorthEastResize;
+      return ui::mojom::CursorType::kNorthEastResize;
     default:
-      return ui::CursorType::kNull;
+      return ui::mojom::CursorType::kNull;
   }
 }
 

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.permissions;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -107,29 +106,29 @@ public class PermissionDialogDelegate {
      * @param nativeDelegatePtr     The native counterpart that this object owns.
      * @param window                   The window to create the dialog for.
      * @param contentSettingsTypes  The content settings types requested by this dialog.
-     * @param iconResourceId        The id of the icon to display in the dialog.
+     * @param iconId                The id of the icon to display in the dialog.
      * @param message               The message to display in the dialog.
      * @param primaryTextButton     The text to display on the primary button.
      * @param secondaryTextButton   The text to display on the primary button.
      */
     @CalledByNative
     private static PermissionDialogDelegate create(long nativeDelegatePtr, WindowAndroid window,
-            int[] contentSettingsTypes, int enumeratedIconId, String message,
-            String primaryButtonText, String secondaryButtonText) {
-        return new PermissionDialogDelegate(nativeDelegatePtr, window, contentSettingsTypes,
-                enumeratedIconId, message, primaryButtonText, secondaryButtonText);
+            int[] contentSettingsTypes, int iconId, String message, String primaryButtonText,
+            String secondaryButtonText) {
+        return new PermissionDialogDelegate(nativeDelegatePtr, window, contentSettingsTypes, iconId,
+                message, primaryButtonText, secondaryButtonText);
     }
 
     /**
      * Upon construction, this class takes ownership of the passed in native delegate.
      */
     private PermissionDialogDelegate(long nativeDelegatePtr, WindowAndroid window,
-            int[] contentSettingsTypes, int enumeratedIconId, String message,
-            String primaryButtonText, String secondaryButtonText) {
+            int[] contentSettingsTypes, int iconId, String message, String primaryButtonText,
+            String secondaryButtonText) {
         mNativeDelegatePtr = nativeDelegatePtr;
         mWindow = window;
         mContentSettingsTypes = contentSettingsTypes;
-        mDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
+        mDrawableId = iconId;
         mMessageText = message;
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;

@@ -9,7 +9,6 @@ import android.widget.Spinner;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.infobar.InfoBarControlLayout.InfoBarArrayAdapter;
 
 /**
@@ -22,10 +21,10 @@ public class UpdatePasswordInfoBar extends ConfirmInfoBar {
     private Spinner mUsernamesSpinner;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, String[] usernames, int selectedUsername,
+    private static InfoBar show(int iconId, String[] usernames, int selectedUsername,
             String message, String detailsMessage, String primaryButtonText) {
-        return new UpdatePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), usernames,
-                selectedUsername, message, detailsMessage, primaryButtonText);
+        return new UpdatePasswordInfoBar(
+                iconId, usernames, selectedUsername, message, detailsMessage, primaryButtonText);
     }
 
     private UpdatePasswordInfoBar(int iconDrawableId, String[] usernames, int selectedUsername,

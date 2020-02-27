@@ -302,7 +302,7 @@ void CursorWindowController::UpdateCursorImage() {
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
 
   gfx::ImageSkia image;
-  if (cursor_.native_type() == ui::CursorType::kCustom) {
+  if (cursor_.native_type() == ui::mojom::CursorType::kCustom) {
     SkBitmap bitmap = cursor_.GetBitmap();
     if (bitmap.isNull())
       return;
@@ -353,7 +353,8 @@ void CursorWindowController::UpdateCursorImage() {
 }
 
 void CursorWindowController::UpdateCursorVisibility() {
-  bool visible = (visible_ && cursor_.native_type() != ui::CursorType::kNone);
+  bool visible =
+      (visible_ && cursor_.native_type() != ui::mojom::CursorType::kNone);
   if (visible) {
     if (cursor_view_)
       cursor_view_->GetWidget()->Show();

@@ -33,7 +33,7 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/types/cursor_types.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 
 #ifdef WIN32
@@ -46,14 +46,14 @@ namespace blink {
 class Cursor;
 
 struct WebCursorInfo {
-  ui::CursorType type;
+  ui::mojom::CursorType type;
   gfx::Point hot_spot;
   float image_scale_factor;
   SkBitmap custom_image;
 
-  explicit WebCursorInfo(ui::CursorType type = ui::CursorType::kPointer)
-      : type(type), image_scale_factor(1) {
-  }
+  explicit WebCursorInfo(
+      ui::mojom::CursorType type = ui::mojom::CursorType::kPointer)
+      : type(type), image_scale_factor(1) {}
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const Cursor&);

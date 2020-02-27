@@ -127,6 +127,8 @@ webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
       return webapk::WebApk::PRIMARY_ICON_MASKABLE_DIFFERS;
     case WebApkUpdateReason::BADGE_ICON_HASH_DIFFERS:
       return webapk::WebApk::BADGE_ICON_HASH_DIFFERS;
+    case WebApkUpdateReason::SPLASH_ICON_HASH_DIFFERS:
+      return webapk::WebApk::SPLASH_ICON_HASH_DIFFERS;
     case WebApkUpdateReason::SCOPE_DIFFERS:
       return webapk::WebApk::SCOPE_DIFFERS;
     case WebApkUpdateReason::START_URL_DIFFERS:
@@ -339,7 +341,7 @@ bool StoreUpdateRequestToFileInBackground(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
-    const SkBitmap& badge_icon,
+    const SkBitmap& splash_icon,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -348,10 +350,8 @@ bool StoreUpdateRequestToFileInBackground(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  // TODO(crbug.com/1043271): Passing an empty SkBitmap for now as webapk update
-  // does not include splash_icon image yet.
   std::unique_ptr<std::string> proto = BuildProtoInBackground(
-      shortcut_info, primary_icon, is_primary_icon_maskable, SkBitmap(),
+      shortcut_info, primary_icon, is_primary_icon_maskable, splash_icon,
       package_name, version, std::move(icon_url_to_murmur2_hash),
       is_manifest_stale, update_reason);
 
@@ -464,7 +464,7 @@ void WebApkInstaller::StoreUpdateRequestToFile(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
     bool is_primary_icon_maskable,
-    const SkBitmap& badge_icon,
+    const SkBitmap& splash_icon,
     const std::string& package_name,
     const std::string& version,
     std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
@@ -475,7 +475,7 @@ void WebApkInstaller::StoreUpdateRequestToFile(
       GetBackgroundTaskRunner().get(), FROM_HERE,
       base::BindOnce(&StoreUpdateRequestToFileInBackground, update_request_path,
                      shortcut_info, primary_icon, is_primary_icon_maskable,
-                     badge_icon, package_name, version,
+                     splash_icon, package_name, version,
                      std::move(icon_url_to_murmur2_hash), is_manifest_stale,
                      update_reason),
       std::move(callback));

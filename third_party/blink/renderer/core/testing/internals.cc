@@ -186,6 +186,7 @@
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "v8/include/v8.h"
 
@@ -2667,109 +2668,109 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
   return MakeGarbageCollected<DOMRectList>(quads);
 }
 
-static const char* CursorTypeToString(ui::CursorType cursor_type) {
+static const char* CursorTypeToString(ui::mojom::CursorType cursor_type) {
   switch (cursor_type) {
-    case ui::CursorType::kPointer:
+    case ui::mojom::CursorType::kPointer:
       return "Pointer";
-    case ui::CursorType::kCross:
+    case ui::mojom::CursorType::kCross:
       return "Cross";
-    case ui::CursorType::kHand:
+    case ui::mojom::CursorType::kHand:
       return "Hand";
-    case ui::CursorType::kIBeam:
+    case ui::mojom::CursorType::kIBeam:
       return "IBeam";
-    case ui::CursorType::kWait:
+    case ui::mojom::CursorType::kWait:
       return "Wait";
-    case ui::CursorType::kHelp:
+    case ui::mojom::CursorType::kHelp:
       return "Help";
-    case ui::CursorType::kEastResize:
+    case ui::mojom::CursorType::kEastResize:
       return "EastResize";
-    case ui::CursorType::kNorthResize:
+    case ui::mojom::CursorType::kNorthResize:
       return "NorthResize";
-    case ui::CursorType::kNorthEastResize:
+    case ui::mojom::CursorType::kNorthEastResize:
       return "NorthEastResize";
-    case ui::CursorType::kNorthWestResize:
+    case ui::mojom::CursorType::kNorthWestResize:
       return "NorthWestResize";
-    case ui::CursorType::kSouthResize:
+    case ui::mojom::CursorType::kSouthResize:
       return "SouthResize";
-    case ui::CursorType::kSouthEastResize:
+    case ui::mojom::CursorType::kSouthEastResize:
       return "SouthEastResize";
-    case ui::CursorType::kSouthWestResize:
+    case ui::mojom::CursorType::kSouthWestResize:
       return "SouthWestResize";
-    case ui::CursorType::kWestResize:
+    case ui::mojom::CursorType::kWestResize:
       return "WestResize";
-    case ui::CursorType::kNorthSouthResize:
+    case ui::mojom::CursorType::kNorthSouthResize:
       return "NorthSouthResize";
-    case ui::CursorType::kEastWestResize:
+    case ui::mojom::CursorType::kEastWestResize:
       return "EastWestResize";
-    case ui::CursorType::kNorthEastSouthWestResize:
+    case ui::mojom::CursorType::kNorthEastSouthWestResize:
       return "NorthEastSouthWestResize";
-    case ui::CursorType::kNorthWestSouthEastResize:
+    case ui::mojom::CursorType::kNorthWestSouthEastResize:
       return "NorthWestSouthEastResize";
-    case ui::CursorType::kColumnResize:
+    case ui::mojom::CursorType::kColumnResize:
       return "ColumnResize";
-    case ui::CursorType::kRowResize:
+    case ui::mojom::CursorType::kRowResize:
       return "RowResize";
-    case ui::CursorType::kMiddlePanning:
+    case ui::mojom::CursorType::kMiddlePanning:
       return "MiddlePanning";
-    case ui::CursorType::kMiddlePanningVertical:
+    case ui::mojom::CursorType::kMiddlePanningVertical:
       return "MiddlePanningVertical";
-    case ui::CursorType::kMiddlePanningHorizontal:
+    case ui::mojom::CursorType::kMiddlePanningHorizontal:
       return "MiddlePanningHorizontal";
-    case ui::CursorType::kEastPanning:
+    case ui::mojom::CursorType::kEastPanning:
       return "EastPanning";
-    case ui::CursorType::kNorthPanning:
+    case ui::mojom::CursorType::kNorthPanning:
       return "NorthPanning";
-    case ui::CursorType::kNorthEastPanning:
+    case ui::mojom::CursorType::kNorthEastPanning:
       return "NorthEastPanning";
-    case ui::CursorType::kNorthWestPanning:
+    case ui::mojom::CursorType::kNorthWestPanning:
       return "NorthWestPanning";
-    case ui::CursorType::kSouthPanning:
+    case ui::mojom::CursorType::kSouthPanning:
       return "SouthPanning";
-    case ui::CursorType::kSouthEastPanning:
+    case ui::mojom::CursorType::kSouthEastPanning:
       return "SouthEastPanning";
-    case ui::CursorType::kSouthWestPanning:
+    case ui::mojom::CursorType::kSouthWestPanning:
       return "SouthWestPanning";
-    case ui::CursorType::kWestPanning:
+    case ui::mojom::CursorType::kWestPanning:
       return "WestPanning";
-    case ui::CursorType::kMove:
+    case ui::mojom::CursorType::kMove:
       return "Move";
-    case ui::CursorType::kVerticalText:
+    case ui::mojom::CursorType::kVerticalText:
       return "VerticalText";
-    case ui::CursorType::kCell:
+    case ui::mojom::CursorType::kCell:
       return "Cell";
-    case ui::CursorType::kContextMenu:
+    case ui::mojom::CursorType::kContextMenu:
       return "ContextMenu";
-    case ui::CursorType::kAlias:
+    case ui::mojom::CursorType::kAlias:
       return "Alias";
-    case ui::CursorType::kProgress:
+    case ui::mojom::CursorType::kProgress:
       return "Progress";
-    case ui::CursorType::kNoDrop:
+    case ui::mojom::CursorType::kNoDrop:
       return "NoDrop";
-    case ui::CursorType::kCopy:
+    case ui::mojom::CursorType::kCopy:
       return "Copy";
-    case ui::CursorType::kNone:
+    case ui::mojom::CursorType::kNone:
       return "None";
-    case ui::CursorType::kNotAllowed:
+    case ui::mojom::CursorType::kNotAllowed:
       return "NotAllowed";
-    case ui::CursorType::kZoomIn:
+    case ui::mojom::CursorType::kZoomIn:
       return "ZoomIn";
-    case ui::CursorType::kZoomOut:
+    case ui::mojom::CursorType::kZoomOut:
       return "ZoomOut";
-    case ui::CursorType::kGrab:
+    case ui::mojom::CursorType::kGrab:
       return "Grab";
-    case ui::CursorType::kGrabbing:
+    case ui::mojom::CursorType::kGrabbing:
       return "Grabbing";
-    case ui::CursorType::kCustom:
+    case ui::mojom::CursorType::kCustom:
       return "Custom";
-    case ui::CursorType::kNull:
+    case ui::mojom::CursorType::kNull:
       return "Null";
-    case ui::CursorType::kDndNone:
+    case ui::mojom::CursorType::kDndNone:
       return "DragAndDropNone";
-    case ui::CursorType::kDndMove:
+    case ui::mojom::CursorType::kDndMove:
       return "DragAndDropMove";
-    case ui::CursorType::kDndCopy:
+    case ui::mojom::CursorType::kDndCopy:
       return "DragAndDropCopy";
-    case ui::CursorType::kDndLink:
+    case ui::mojom::CursorType::kDndLink:
       return "DragAndDropLink";
   }
 

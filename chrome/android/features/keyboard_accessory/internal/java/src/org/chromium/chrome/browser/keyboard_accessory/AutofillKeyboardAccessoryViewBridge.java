@@ -11,7 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -154,7 +153,7 @@ public class AutofillKeyboardAccessoryViewBridge
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
             String label, String sublabel, int iconId, int suggestionId, boolean isDeletable) {
-        int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
+        int drawableId = iconId == 0 ? DropdownItem.NO_ICON : iconId;
         array[index] = new AutofillSuggestion(label, sublabel, drawableId,
                 false /* isIconAtStart */, suggestionId, isDeletable, false /* isMultilineLabel */,
                 false /* isBoldLabel */);

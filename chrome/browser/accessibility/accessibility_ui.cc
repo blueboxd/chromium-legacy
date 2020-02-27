@@ -555,6 +555,8 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   // because we are about to show the accessibility tree
   web_contents->SetAccessibilityMode(
       ui::AXMode(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents));
+  // Enable AXMode to access to AX objects.
+  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
 
   std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
       property_filters;

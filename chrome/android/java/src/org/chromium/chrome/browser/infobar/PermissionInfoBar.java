@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.permissions.AndroidPermissionRequester;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
@@ -138,9 +137,7 @@ public class PermissionInfoBar
      * Creates and begins the process for showing a PermissionInfoBar.
      * @param window                The window this infobar will be displayed upon.
      * @param contentSettingsTypes  The list of ContentSettingTypes being requested by this infobar.
-     * @param enumeratedIconId      ID corresponding to the icon that will be shown for the infobar.
-     *                              The ID must have been mapped using the ResourceMapper class
-     *                              before passing it to this function.
+     * @param iconId                ID corresponding to the icon that will be shown for the infobar.
      * @param compactMessage        Message to show in the compact state.
      * @param compactLinkText       Text of link displayed right to the message in compact state.
      * @param message               Primary message in the extended state.
@@ -150,11 +147,9 @@ public class PermissionInfoBar
      */
     @CalledByNative
     private static PermissionInfoBar create(WindowAndroid window, int[] contentSettingsTypes,
-            int enumeratedIconId, String compactMessage, String compactLinkText, String message,
+            int iconId, String compactMessage, String compactLinkText, String message,
             String description, String buttonOk, String buttonManage) {
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-
-        PermissionInfoBar infoBar = new PermissionInfoBar(window, contentSettingsTypes, drawableId,
+        PermissionInfoBar infoBar = new PermissionInfoBar(window, contentSettingsTypes, iconId,
                 compactMessage, compactLinkText, message, description, buttonOk, buttonManage);
 
         return infoBar;

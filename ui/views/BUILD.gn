@@ -750,6 +750,7 @@ jumbo_component("views") {
         "widget/desktop_aura/desktop_screen_position_client.cc",
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
+      public_deps += [ "//ui/base/mojom:cursor_type" ]
       if (use_x11) {
         deps += [ "//ui/platform_window/x11" ]
         public += [
@@ -1232,6 +1233,7 @@ test("views_unittests") {
       "//ui/accessibility:test_support",
       "//ui/aura",
       "//ui/aura:test_support",
+      "//ui/base/mojom:cursor_type",
       "//ui/touch_selection",
       "//ui/wm",
       "//ui/wm/public",

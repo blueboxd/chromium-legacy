@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
@@ -16,20 +17,20 @@ namespace {
 
 TEST(CursorTest, Null) {
   Cursor cursor;
-  EXPECT_EQ(CursorType::kNull, cursor.native_type());
+  EXPECT_EQ(mojom::CursorType::kNull, cursor.native_type());
 }
 
 TEST(CursorTest, BasicType) {
-  Cursor cursor(CursorType::kPointer);
-  EXPECT_EQ(CursorType::kPointer, cursor.native_type());
+  Cursor cursor(mojom::CursorType::kPointer);
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor.native_type());
 
   Cursor copy(cursor);
   EXPECT_EQ(cursor, copy);
 }
 
 TEST(CursorTest, CustomType) {
-  Cursor cursor(CursorType::kCustom);
-  EXPECT_EQ(CursorType::kCustom, cursor.native_type());
+  Cursor cursor(mojom::CursorType::kCustom);
+  EXPECT_EQ(mojom::CursorType::kCustom, cursor.native_type());
 
   const float kScale = 2.0f;
   cursor.set_device_scale_factor(kScale);
@@ -55,8 +56,8 @@ TEST(CursorTest, CustomType) {
 }
 
 TEST(CursorTest, CustomTypeComparesBitmapPixels) {
-  Cursor cursor1(CursorType::kCustom);
-  Cursor cursor2(CursorType::kCustom);
+  Cursor cursor1(mojom::CursorType::kCustom);
+  Cursor cursor2(mojom::CursorType::kCustom);
 
   SkBitmap bitmap1;
   bitmap1.allocN32Pixels(10, 10);

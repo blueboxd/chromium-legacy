@@ -13,6 +13,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/native/native_view_host_test_base.h"
@@ -162,12 +163,13 @@ TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
 TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
   CreateHost();
 
-  toplevel()->SetCursor(ui::CursorType::kHand);
-  child()->SetCursor(ui::CursorType::kWait);
+  toplevel()->SetCursor(ui::mojom::CursorType::kHand);
+  child()->SetCursor(ui::mojom::CursorType::kWait);
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                             gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
-  EXPECT_EQ(ui::CursorType::kWait, host()->GetCursor(move_event).native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kWait,
+            host()->GetCursor(move_event).native_type());
 
   DestroyHost();
 }

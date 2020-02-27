@@ -103,6 +103,7 @@ jumbo_component("ozone_base") {
     "//ipc",
     "//skia",
     "//ui/base/clipboard:clipboard_types",
+    "//ui/base/mojom:cursor_type",
     "//ui/display",
     "//ui/display/types",
     "//ui/display/util",

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor_size.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image_skia.h"
@@ -29,7 +30,7 @@ struct HotPoint {
 };
 
 struct CursorData {
-  CursorType id;
+  mojom::CursorType id;
   int resource_id;
   HotPoint hot_1x;
   HotPoint hot_2x;
@@ -44,71 +45,86 @@ struct CursorSizeData {
 };
 
 const CursorData kNormalCursors[] = {
-    {CursorType::kNull, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
-    {CursorType::kPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
-    {CursorType::kNoDrop, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
-    {CursorType::kNotAllowed, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
-    {CursorType::kCopy, IDR_AURA_CURSOR_COPY, {9, 9}, {18, 18}},
-    {CursorType::kHand, IDR_AURA_CURSOR_HAND, {9, 4}, {19, 8}},
-    {CursorType::kMove, IDR_AURA_CURSOR_MOVE, {11, 11}, {23, 23}},
-    {CursorType::kNorthEastResize,
+    {mojom::CursorType::kNull, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
+    {mojom::CursorType::kPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
+    {mojom::CursorType::kNoDrop, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
+    {mojom::CursorType::kNotAllowed, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
+    {mojom::CursorType::kCopy, IDR_AURA_CURSOR_COPY, {9, 9}, {18, 18}},
+    {mojom::CursorType::kHand, IDR_AURA_CURSOR_HAND, {9, 4}, {19, 8}},
+    {mojom::CursorType::kMove, IDR_AURA_CURSOR_MOVE, {11, 11}, {23, 23}},
+    {mojom::CursorType::kNorthEastResize,
      IDR_AURA_CURSOR_NORTH_EAST_RESIZE,
      {12, 11},
      {25, 23}},
-    {CursorType::kSouthWestResize,
+    {mojom::CursorType::kSouthWestResize,
      IDR_AURA_CURSOR_SOUTH_WEST_RESIZE,
      {12, 11},
      {25, 23}},
-    {CursorType::kSouthEastResize,
+    {mojom::CursorType::kSouthEastResize,
      IDR_AURA_CURSOR_SOUTH_EAST_RESIZE,
      {11, 11},
      {24, 23}},
-    {CursorType::kNorthWestResize,
+    {mojom::CursorType::kNorthWestResize,
      IDR_AURA_CURSOR_NORTH_WEST_RESIZE,
      {11, 11},
      {24, 23}},
-    {CursorType::kNorthResize,
+    {mojom::CursorType::kNorthResize,
      IDR_AURA_CURSOR_NORTH_RESIZE,
      {11, 12},
      {23, 23}},
-    {CursorType::kSouthResize,
+    {mojom::CursorType::kSouthResize,
      IDR_AURA_CURSOR_SOUTH_RESIZE,
      {11, 12},
      {23, 23}},
-    {CursorType::kEastResize, IDR_AURA_CURSOR_EAST_RESIZE, {12, 11}, {25, 23}},
-    {CursorType::kWestResize, IDR_AURA_CURSOR_WEST_RESIZE, {12, 11}, {25, 23}},
-    {CursorType::kIBeam, IDR_AURA_CURSOR_IBEAM, {12, 12}, {24, 25}},
-    {CursorType::kAlias, IDR_AURA_CURSOR_ALIAS, {8, 6}, {15, 11}},
-    {CursorType::kCell, IDR_AURA_CURSOR_CELL, {11, 11}, {24, 23}},
-    {CursorType::kContextMenu, IDR_AURA_CURSOR_CONTEXT_MENU, {4, 4}, {8, 9}},
-    {CursorType::kCross, IDR_AURA_CURSOR_CROSSHAIR, {12, 12}, {24, 24}},
-    {CursorType::kHelp, IDR_AURA_CURSOR_HELP, {4, 4}, {8, 9}},
-    {CursorType::kVerticalText,
+    {mojom::CursorType::kEastResize,
+     IDR_AURA_CURSOR_EAST_RESIZE,
+     {12, 11},
+     {25, 23}},
+    {mojom::CursorType::kWestResize,
+     IDR_AURA_CURSOR_WEST_RESIZE,
+     {12, 11},
+     {25, 23}},
+    {mojom::CursorType::kIBeam, IDR_AURA_CURSOR_IBEAM, {12, 12}, {24, 25}},
+    {mojom::CursorType::kAlias, IDR_AURA_CURSOR_ALIAS, {8, 6}, {15, 11}},
+    {mojom::CursorType::kCell, IDR_AURA_CURSOR_CELL, {11, 11}, {24, 23}},
+    {mojom::CursorType::kContextMenu,
+     IDR_AURA_CURSOR_CONTEXT_MENU,
+     {4, 4},
+     {8, 9}},
+    {mojom::CursorType::kCross, IDR_AURA_CURSOR_CROSSHAIR, {12, 12}, {24, 24}},
+    {mojom::CursorType::kHelp, IDR_AURA_CURSOR_HELP, {4, 4}, {8, 9}},
+    {mojom::CursorType::kVerticalText,
      IDR_AURA_CURSOR_XTERM_HORIZ,
      {12, 11},
      {26, 23}},
-    {CursorType::kZoomIn, IDR_AURA_CURSOR_ZOOM_IN, {10, 10}, {20, 20}},
-    {CursorType::kZoomOut, IDR_AURA_CURSOR_ZOOM_OUT, {10, 10}, {20, 20}},
-    {CursorType::kRowResize, IDR_AURA_CURSOR_ROW_RESIZE, {11, 12}, {23, 23}},
-    {CursorType::kColumnResize, IDR_AURA_CURSOR_COL_RESIZE, {12, 11}, {25, 23}},
-    {CursorType::kEastWestResize,
+    {mojom::CursorType::kZoomIn, IDR_AURA_CURSOR_ZOOM_IN, {10, 10}, {20, 20}},
+    {mojom::CursorType::kZoomOut, IDR_AURA_CURSOR_ZOOM_OUT, {10, 10}, {20, 20}},
+    {mojom::CursorType::kRowResize,
+     IDR_AURA_CURSOR_ROW_RESIZE,
+     {11, 12},
+     {23, 23}},
+    {mojom::CursorType::kColumnResize,
+     IDR_AURA_CURSOR_COL_RESIZE,
+     {12, 11},
+     {25, 23}},
+    {mojom::CursorType::kEastWestResize,
      IDR_AURA_CURSOR_EAST_WEST_RESIZE,
      {12, 11},
      {25, 23}},
-    {CursorType::kNorthSouthResize,
+    {mojom::CursorType::kNorthSouthResize,
      IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE,
      {11, 12},
      {23, 23}},
-    {CursorType::kNorthEastSouthWestResize,
+    {mojom::CursorType::kNorthEastSouthWestResize,
      IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE,
      {12, 11},
      {25, 23}},
-    {CursorType::kNorthWestSouthEastResize,
+    {mojom::CursorType::kNorthWestSouthEastResize,
      IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE,
      {11, 11},
      {24, 23}},
-    {CursorType::kGrab, IDR_AURA_CURSOR_GRAB, {8, 5}, {16, 10}},
-    {CursorType::kGrabbing, IDR_AURA_CURSOR_GRABBING, {9, 9}, {18, 18}},
+    {mojom::CursorType::kGrab, IDR_AURA_CURSOR_GRAB, {8, 5}, {16, 10}},
+    {mojom::CursorType::kGrabbing, IDR_AURA_CURSOR_GRABBING, {9, 9}, {18, 18}},
 };
 
 const CursorData kLargeCursors[] = {
@@ -117,91 +133,109 @@ const CursorData kLargeCursors[] = {
     // cursor assets (64x64) are internally enlarged to the double size
     // (128x128)
     // by ResourceBundleImageSource.
-    {CursorType::kNull, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
-    {CursorType::kPointer, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
-    {CursorType::kNoDrop, IDR_AURA_CURSOR_BIG_NO_DROP, {10, 10}, {20, 20}},
-    {CursorType::kNotAllowed, IDR_AURA_CURSOR_BIG_NO_DROP, {10, 10}, {20, 20}},
-    {CursorType::kCopy, IDR_AURA_CURSOR_BIG_COPY, {10, 10}, {20, 20}},
-    {CursorType::kHand, IDR_AURA_CURSOR_BIG_HAND, {25, 7}, {50, 14}},
-    {CursorType::kMove, IDR_AURA_CURSOR_BIG_MOVE, {32, 31}, {64, 62}},
-    {CursorType::kNorthEastResize,
+    {mojom::CursorType::kNull, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
+    {mojom::CursorType::kPointer, IDR_AURA_CURSOR_BIG_PTR, {10, 10}, {20, 20}},
+    {mojom::CursorType::kNoDrop,
+     IDR_AURA_CURSOR_BIG_NO_DROP,
+     {10, 10},
+     {20, 20}},
+    {mojom::CursorType::kNotAllowed,
+     IDR_AURA_CURSOR_BIG_NO_DROP,
+     {10, 10},
+     {20, 20}},
+    {mojom::CursorType::kCopy, IDR_AURA_CURSOR_BIG_COPY, {10, 10}, {20, 20}},
+    {mojom::CursorType::kHand, IDR_AURA_CURSOR_BIG_HAND, {25, 7}, {50, 14}},
+    {mojom::CursorType::kMove, IDR_AURA_CURSOR_BIG_MOVE, {32, 31}, {64, 62}},
+    {mojom::CursorType::kNorthEastResize,
      IDR_AURA_CURSOR_BIG_NORTH_EAST_RESIZE,
      {31, 28},
      {62, 56}},
-    {CursorType::kSouthWestResize,
+    {mojom::CursorType::kSouthWestResize,
      IDR_AURA_CURSOR_BIG_SOUTH_WEST_RESIZE,
      {31, 28},
      {62, 56}},
-    {CursorType::kSouthEastResize,
+    {mojom::CursorType::kSouthEastResize,
      IDR_AURA_CURSOR_BIG_SOUTH_EAST_RESIZE,
      {28, 28},
      {56, 56}},
-    {CursorType::kNorthWestResize,
+    {mojom::CursorType::kNorthWestResize,
      IDR_AURA_CURSOR_BIG_NORTH_WEST_RESIZE,
      {28, 28},
      {56, 56}},
-    {CursorType::kNorthResize,
+    {mojom::CursorType::kNorthResize,
      IDR_AURA_CURSOR_BIG_NORTH_RESIZE,
      {29, 32},
      {58, 64}},
-    {CursorType::kSouthResize,
+    {mojom::CursorType::kSouthResize,
      IDR_AURA_CURSOR_BIG_SOUTH_RESIZE,
      {29, 32},
      {58, 64}},
-    {CursorType::kEastResize,
+    {mojom::CursorType::kEastResize,
      IDR_AURA_CURSOR_BIG_EAST_RESIZE,
      {35, 29},
      {70, 58}},
-    {CursorType::kWestResize,
+    {mojom::CursorType::kWestResize,
      IDR_AURA_CURSOR_BIG_WEST_RESIZE,
      {35, 29},
      {70, 58}},
-    {CursorType::kIBeam, IDR_AURA_CURSOR_BIG_IBEAM, {30, 32}, {60, 64}},
-    {CursorType::kAlias, IDR_AURA_CURSOR_BIG_ALIAS, {19, 11}, {38, 22}},
-    {CursorType::kCell, IDR_AURA_CURSOR_BIG_CELL, {30, 30}, {60, 60}},
-    {CursorType::kContextMenu,
+    {mojom::CursorType::kIBeam, IDR_AURA_CURSOR_BIG_IBEAM, {30, 32}, {60, 64}},
+    {mojom::CursorType::kAlias, IDR_AURA_CURSOR_BIG_ALIAS, {19, 11}, {38, 22}},
+    {mojom::CursorType::kCell, IDR_AURA_CURSOR_BIG_CELL, {30, 30}, {60, 60}},
+    {mojom::CursorType::kContextMenu,
      IDR_AURA_CURSOR_BIG_CONTEXT_MENU,
      {11, 11},
      {22, 22}},
-    {CursorType::kCross, IDR_AURA_CURSOR_BIG_CROSSHAIR, {30, 32}, {60, 64}},
-    {CursorType::kHelp, IDR_AURA_CURSOR_BIG_HELP, {10, 11}, {20, 22}},
-    {CursorType::kVerticalText,
+    {mojom::CursorType::kCross,
+     IDR_AURA_CURSOR_BIG_CROSSHAIR,
+     {30, 32},
+     {60, 64}},
+    {mojom::CursorType::kHelp, IDR_AURA_CURSOR_BIG_HELP, {10, 11}, {20, 22}},
+    {mojom::CursorType::kVerticalText,
      IDR_AURA_CURSOR_BIG_XTERM_HORIZ,
      {32, 30},
      {64, 60}},
-    {CursorType::kZoomIn, IDR_AURA_CURSOR_BIG_ZOOM_IN, {25, 26}, {50, 52}},
-    {CursorType::kZoomOut, IDR_AURA_CURSOR_BIG_ZOOM_OUT, {26, 26}, {52, 52}},
-    {CursorType::kRowResize,
+    {mojom::CursorType::kZoomIn,
+     IDR_AURA_CURSOR_BIG_ZOOM_IN,
+     {25, 26},
+     {50, 52}},
+    {mojom::CursorType::kZoomOut,
+     IDR_AURA_CURSOR_BIG_ZOOM_OUT,
+     {26, 26},
+     {52, 52}},
+    {mojom::CursorType::kRowResize,
      IDR_AURA_CURSOR_BIG_ROW_RESIZE,
      {29, 32},
      {58, 64}},
-    {CursorType::kColumnResize,
+    {mojom::CursorType::kColumnResize,
      IDR_AURA_CURSOR_BIG_COL_RESIZE,
      {35, 29},
      {70, 58}},
-    {CursorType::kEastWestResize,
+    {mojom::CursorType::kEastWestResize,
      IDR_AURA_CURSOR_BIG_EAST_WEST_RESIZE,
      {35, 29},
      {70, 58}},
-    {CursorType::kNorthSouthResize,
+    {mojom::CursorType::kNorthSouthResize,
      IDR_AURA_CURSOR_BIG_NORTH_SOUTH_RESIZE,
      {29, 32},
      {58, 64}},
-    {CursorType::kNorthEastSouthWestResize,
+    {mojom::CursorType::kNorthEastSouthWestResize,
      IDR_AURA_CURSOR_BIG_NORTH_EAST_SOUTH_WEST_RESIZE,
      {32, 30},
      {64, 60}},
-    {CursorType::kNorthWestSouthEastResize,
+    {mojom::CursorType::kNorthWestSouthEastResize,
      IDR_AURA_CURSOR_BIG_NORTH_WEST_SOUTH_EAST_RESIZE,
      {32, 31},
      {64, 62}},
-    {CursorType::kGrab, IDR_AURA_CURSOR_BIG_GRAB, {21, 11}, {42, 22}},
-    {CursorType::kGrabbing, IDR_AURA_CURSOR_BIG_GRABBING, {20, 12}, {40, 24}},
+    {mojom::CursorType::kGrab, IDR_AURA_CURSOR_BIG_GRAB, {21, 11}, {42, 22}},
+    {mojom::CursorType::kGrabbing,
+     IDR_AURA_CURSOR_BIG_GRABBING,
+     {20, 12},
+     {40, 24}},
 };
 
 const CursorData kAnimatedCursors[] = {
-    {CursorType::kWait, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
-    {CursorType::kProgress, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
+    {mojom::CursorType::kWait, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
+    {mojom::CursorType::kProgress, IDR_AURA_CURSOR_THROBBER, {7, 7}, {14, 14}},
 };
 
 const CursorSizeData kCursorSizes[] = {
@@ -224,7 +258,7 @@ const CursorSizeData* GetCursorSizeByType(CursorSize cursor_size) {
 
 bool SearchTable(const CursorData* table,
                  size_t table_length,
-                 CursorType id,
+                 mojom::CursorType id,
                  float scale_factor,
                  int* resource_id,
                  gfx::Point* point) {
@@ -248,156 +282,156 @@ bool SearchTable(const CursorData* table,
 
 }  // namespace
 
-const char* CursorCssNameFromId(CursorType id) {
+const char* CursorCssNameFromId(mojom::CursorType id) {
   switch (id) {
-    case CursorType::kMiddlePanning:
+    case mojom::CursorType::kMiddlePanning:
       return "all-scroll";
-    case CursorType::kMiddlePanningVertical:
+    case mojom::CursorType::kMiddlePanningVertical:
       return "v-scroll";
-    case CursorType::kMiddlePanningHorizontal:
+    case mojom::CursorType::kMiddlePanningHorizontal:
       return "h-scroll";
-    case CursorType::kEastPanning:
+    case mojom::CursorType::kEastPanning:
       return "e-resize";
-    case CursorType::kNorthPanning:
+    case mojom::CursorType::kNorthPanning:
       return "n-resize";
-    case CursorType::kNorthEastPanning:
+    case mojom::CursorType::kNorthEastPanning:
       return "ne-resize";
-    case CursorType::kNorthWestPanning:
+    case mojom::CursorType::kNorthWestPanning:
       return "nw-resize";
-    case CursorType::kSouthPanning:
+    case mojom::CursorType::kSouthPanning:
       return "s-resize";
-    case CursorType::kSouthEastPanning:
+    case mojom::CursorType::kSouthEastPanning:
       return "se-resize";
-    case CursorType::kSouthWestPanning:
+    case mojom::CursorType::kSouthWestPanning:
       return "sw-resize";
-    case CursorType::kWestPanning:
+    case mojom::CursorType::kWestPanning:
       return "w-resize";
-    case CursorType::kNone:
+    case mojom::CursorType::kNone:
       return "none";
-    case CursorType::kGrab:
+    case mojom::CursorType::kGrab:
       return "grab";
-    case CursorType::kGrabbing:
+    case mojom::CursorType::kGrabbing:
       return "grabbing";
 
 #if defined(OS_CHROMEOS)
-    case CursorType::kNull:
-    case CursorType::kPointer:
-    case CursorType::kNoDrop:
-    case CursorType::kNotAllowed:
-    case CursorType::kCopy:
-    case CursorType::kMove:
-    case CursorType::kEastResize:
-    case CursorType::kNorthResize:
-    case CursorType::kSouthResize:
-    case CursorType::kWestResize:
-    case CursorType::kNorthEastResize:
-    case CursorType::kNorthWestResize:
-    case CursorType::kSouthWestResize:
-    case CursorType::kSouthEastResize:
-    case CursorType::kIBeam:
-    case CursorType::kAlias:
-    case CursorType::kCell:
-    case CursorType::kContextMenu:
-    case CursorType::kCross:
-    case CursorType::kHelp:
-    case CursorType::kWait:
-    case CursorType::kNorthSouthResize:
-    case CursorType::kEastWestResize:
-    case CursorType::kNorthEastSouthWestResize:
-    case CursorType::kNorthWestSouthEastResize:
-    case CursorType::kProgress:
-    case CursorType::kColumnResize:
-    case CursorType::kRowResize:
-    case CursorType::kVerticalText:
-    case CursorType::kZoomIn:
-    case CursorType::kZoomOut:
-    case CursorType::kHand:
-    case CursorType::kDndNone:
-    case CursorType::kDndMove:
-    case CursorType::kDndCopy:
-    case CursorType::kDndLink:
+    case mojom::CursorType::kNull:
+    case mojom::CursorType::kPointer:
+    case mojom::CursorType::kNoDrop:
+    case mojom::CursorType::kNotAllowed:
+    case mojom::CursorType::kCopy:
+    case mojom::CursorType::kMove:
+    case mojom::CursorType::kEastResize:
+    case mojom::CursorType::kNorthResize:
+    case mojom::CursorType::kSouthResize:
+    case mojom::CursorType::kWestResize:
+    case mojom::CursorType::kNorthEastResize:
+    case mojom::CursorType::kNorthWestResize:
+    case mojom::CursorType::kSouthWestResize:
+    case mojom::CursorType::kSouthEastResize:
+    case mojom::CursorType::kIBeam:
+    case mojom::CursorType::kAlias:
+    case mojom::CursorType::kCell:
+    case mojom::CursorType::kContextMenu:
+    case mojom::CursorType::kCross:
+    case mojom::CursorType::kHelp:
+    case mojom::CursorType::kWait:
+    case mojom::CursorType::kNorthSouthResize:
+    case mojom::CursorType::kEastWestResize:
+    case mojom::CursorType::kNorthEastSouthWestResize:
+    case mojom::CursorType::kNorthWestSouthEastResize:
+    case mojom::CursorType::kProgress:
+    case mojom::CursorType::kColumnResize:
+    case mojom::CursorType::kRowResize:
+    case mojom::CursorType::kVerticalText:
+    case mojom::CursorType::kZoomIn:
+    case mojom::CursorType::kZoomOut:
+    case mojom::CursorType::kHand:
+    case mojom::CursorType::kDndNone:
+    case mojom::CursorType::kDndMove:
+    case mojom::CursorType::kDndCopy:
+    case mojom::CursorType::kDndLink:
       // In some environments, the image assets are not set (e.g. in
       // content-browsertests, content-shell etc.).
       return "left_ptr";
 #else   // defined(OS_CHROMEOS)
-    case CursorType::kNull:
+    case mojom::CursorType::kNull:
       return "left_ptr";
-    case CursorType::kPointer:
+    case mojom::CursorType::kPointer:
       return "left_ptr";
-    case CursorType::kMove:
+    case mojom::CursorType::kMove:
       // Returning "move" is the correct thing here, but Blink doesn't
       // make a distinction between move and all-scroll.  Other
       // platforms use a cursor more consistent with all-scroll, so
       // use that.
       return "all-scroll";
-    case CursorType::kCross:
+    case mojom::CursorType::kCross:
       return "crosshair";
-    case CursorType::kHand:
+    case mojom::CursorType::kHand:
       return "pointer";
-    case CursorType::kIBeam:
+    case mojom::CursorType::kIBeam:
       return "text";
-    case CursorType::kProgress:
+    case mojom::CursorType::kProgress:
       return "progress";
-    case CursorType::kWait:
+    case mojom::CursorType::kWait:
       return "wait";
-    case CursorType::kHelp:
+    case mojom::CursorType::kHelp:
       return "help";
-    case CursorType::kEastResize:
+    case mojom::CursorType::kEastResize:
       return "e-resize";
-    case CursorType::kNorthResize:
+    case mojom::CursorType::kNorthResize:
       return "n-resize";
-    case CursorType::kNorthEastResize:
+    case mojom::CursorType::kNorthEastResize:
       return "ne-resize";
-    case CursorType::kNorthWestResize:
+    case mojom::CursorType::kNorthWestResize:
       return "nw-resize";
-    case CursorType::kSouthResize:
+    case mojom::CursorType::kSouthResize:
       return "s-resize";
-    case CursorType::kSouthEastResize:
+    case mojom::CursorType::kSouthEastResize:
       return "se-resize";
-    case CursorType::kSouthWestResize:
+    case mojom::CursorType::kSouthWestResize:
       return "sw-resize";
-    case CursorType::kWestResize:
+    case mojom::CursorType::kWestResize:
       return "w-resize";
-    case CursorType::kNorthSouthResize:
+    case mojom::CursorType::kNorthSouthResize:
       return "ns-resize";
-    case CursorType::kEastWestResize:
+    case mojom::CursorType::kEastWestResize:
       return "ew-resize";
-    case CursorType::kColumnResize:
+    case mojom::CursorType::kColumnResize:
       return "col-resize";
-    case CursorType::kRowResize:
+    case mojom::CursorType::kRowResize:
       return "row-resize";
-    case CursorType::kNorthEastSouthWestResize:
+    case mojom::CursorType::kNorthEastSouthWestResize:
       return "nesw-resize";
-    case CursorType::kNorthWestSouthEastResize:
+    case mojom::CursorType::kNorthWestSouthEastResize:
       return "nwse-resize";
-    case CursorType::kVerticalText:
+    case mojom::CursorType::kVerticalText:
       return "vertical-text";
-    case CursorType::kZoomIn:
+    case mojom::CursorType::kZoomIn:
       return "zoom-in";
-    case CursorType::kZoomOut:
+    case mojom::CursorType::kZoomOut:
       return "zoom-out";
-    case CursorType::kCell:
+    case mojom::CursorType::kCell:
       return "cell";
-    case CursorType::kContextMenu:
+    case mojom::CursorType::kContextMenu:
       return "context-menu";
-    case CursorType::kAlias:
+    case mojom::CursorType::kAlias:
       return "alias";
-    case CursorType::kNoDrop:
+    case mojom::CursorType::kNoDrop:
       return "no-drop";
-    case CursorType::kCopy:
+    case mojom::CursorType::kCopy:
       return "copy";
-    case CursorType::kNotAllowed:
+    case mojom::CursorType::kNotAllowed:
       return "not-allowed";
-    case CursorType::kDndNone:
+    case mojom::CursorType::kDndNone:
       return "dnd-none";
-    case CursorType::kDndMove:
+    case mojom::CursorType::kDndMove:
       return "dnd-move";
-    case CursorType::kDndCopy:
+    case mojom::CursorType::kDndCopy:
       return "dnd-copy";
-    case CursorType::kDndLink:
+    case mojom::CursorType::kDndLink:
       return "dnd-link";
 #endif  // defined(OS_CHROMEOS)
-    case CursorType::kCustom:
+    case mojom::CursorType::kCustom:
       NOTREACHED();
       return "left_ptr";
   }
@@ -406,7 +440,7 @@ const char* CursorCssNameFromId(CursorType id) {
 }
 
 bool GetCursorDataFor(CursorSize cursor_size,
-                      CursorType id,
+                      mojom::CursorType id,
                       float scale_factor,
                       int* resource_id,
                       gfx::Point* point) {
@@ -424,7 +458,7 @@ bool GetCursorDataFor(CursorSize cursor_size,
 }
 
 bool GetAnimatedCursorDataFor(CursorSize cursor_size,
-                              CursorType id,
+                              mojom::CursorType id,
                               float scale_factor,
                               int* resource_id,
                               gfx::Point* point) {

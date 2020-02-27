@@ -52,16 +52,15 @@ V8Unwinder::V8Unwinder(const v8::UnwindState& unwind_state)
 V8Unwinder::~V8Unwinder() = default;
 
 void V8Unwinder::AddNonNativeModules(base::ModuleCache* module_cache) {
-  std::vector<std::unique_ptr<base::ModuleCache::Module>> modules;
+  std::vector<std::unique_ptr<const base::ModuleCache::Module>> modules;
   modules.emplace_back(std::make_unique<V8Module>(
       unwind_state_.embedded_code_range, kV8EmbeddedCodeRangeBuildId,
       "Embedded Code Range"));
   modules.emplace_back(std::make_unique<V8Module>(
       unwind_state_.code_range, kV8CodeRangeBuildId, "Code Range"));
-  for (auto& module : modules) {
+  for (const std::unique_ptr<const base::ModuleCache::Module>& module : modules)
     v8_modules_.insert(module.get());
-    module_cache->AddNonNativeModule(std::move(module));
-  }
+  module_cache->UpdateNonNativeModules({}, std::move(modules));
 }
 
 bool V8Unwinder::CanUnwindFrom(const base::Frame* current_frame) const {

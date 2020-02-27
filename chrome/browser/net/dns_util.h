@@ -16,9 +16,23 @@ namespace chrome_browser_net {
 // at this time.
 bool ShouldDisableDohForManaged();
 
+// Returns true if there are parental controls detected on the device.
+bool ShouldDisableDohForParentalControls();
+
 const char kDnsOverHttpsModeOff[] = "off";
 const char kDnsOverHttpsModeAutomatic[] = "automatic";
 const char kDnsOverHttpsModeSecure[] = "secure";
+
+// Forced management description types. We will check for the override cases in
+// the order they are listed in the enum.
+enum class SecureDnsUiManagementMode {
+  // Chrome did not override the secure DNS settings.
+  kNoOverride,
+  // Secure DNS was disabled due to detection of a managed environment.
+  kDisabledManaged,
+  // Secure DNS was disabled due to detection of OS-level parental controls.
+  kDisabledParentalControls,
+};
 
 }  // namespace chrome_browser_net
 

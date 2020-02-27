@@ -24,8 +24,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForN;
+import org.chromium.ui.mojom.CursorType;
 import org.chromium.ui.touchless.TouchlessEventHandler;
-import org.chromium.ui_base.web.CursorType;
 
 /**
  * Class to acquire, position, and remove anchor views from the implementing View.

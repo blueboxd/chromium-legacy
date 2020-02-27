@@ -29,13 +29,13 @@
         id="secureDnsToggle"
         pref="{{secureDnsToggle_}}"
         label="$i18n{secureDns}"
-        sub-label="$i18n{secureDnsDescription}"
+        sub-label="[[secureDnsDescription_]]"
         on-change="onToggleChanged_">
     </settings-toggle-button>
     <cr-radio-group id="secureDnsRadioGroup" class="list-frame"
         selected="{{secureDnsRadio_}}"
         on-selected-changed="onRadioSelectionChanged_"
-        hidden="[[!secureDnsToggle_.value]]">
+        hidden="[[!showRadioGroup_]]">
       <cr-radio-button class="list-item" name="[[secureDnsModeEnum_.AUTOMATIC]]"
           label="$i18n{secureDnsAutomaticModeDescription}">
       </cr-radio-button>

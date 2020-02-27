@@ -78,6 +78,13 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_thumb_opacity(thumb_opacity_);
 }
 
+float PaintedScrollbarLayerImpl::OverlayScrollbarOpacity() const {
+  // This is relevant in case of Mac overlay scrollbars because they fade out by
+  // animating the opacity via Blink paint. This member will be renamed as a
+  // part of crbug.com/1055246.
+  return thumb_opacity_;
+}
+
 bool PaintedScrollbarLayerImpl::WillDraw(
     DrawMode draw_mode,
     viz::ClientResourceProvider* resource_provider) {

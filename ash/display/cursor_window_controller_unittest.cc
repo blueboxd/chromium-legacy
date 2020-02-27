@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -41,7 +42,7 @@ class CursorWindowControllerTest : public AshTestBase {
     SetCursorCompositionEnabled(true);
   }
 
-  ui::CursorType GetCursorType() const {
+  ui::mojom::CursorType GetCursorType() const {
     return cursor_window_controller_->cursor_.native_type();
   }
 
@@ -102,7 +103,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
 
   EXPECT_TRUE(primary_root->Contains(GetCursorWindow()));
   EXPECT_EQ(primary_display_id, GetCursorDisplayId());
-  EXPECT_EQ(ui::CursorType::kNull, GetCursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kNull, GetCursorType());
   gfx::Point hot_point = GetCursorHotPoint();
   EXPECT_EQ("4,4", hot_point.ToString());
   gfx::Rect cursor_bounds = GetCursorWindow()->GetBoundsInScreen();
@@ -126,7 +127,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
 
   EXPECT_TRUE(secondary_root->Contains(GetCursorWindow()));
   EXPECT_EQ(secondary_display_id, GetCursorDisplayId());
-  EXPECT_EQ(ui::CursorType::kNull, GetCursorType());
+  EXPECT_EQ(ui::mojom::CursorType::kNull, GetCursorType());
   hot_point = GetCursorHotPoint();
   EXPECT_EQ("3,3", hot_point.ToString());
   cursor_bounds = GetCursorWindow()->GetBoundsInScreen();

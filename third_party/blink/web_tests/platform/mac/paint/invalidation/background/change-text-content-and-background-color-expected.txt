@@ -13,12 +13,12 @@
         },
         {
           "object": "InlineTextBox 'NEW'",
-          "rect": [30, 29, 45, 25],
+          "rect": [30, 29, 47, 24],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'OLD'",
-          "rect": [30, 29, 40, 25],
+          "rect": [30, 29, 42, 24],
           "reason": "disappeared"
         }
       ]

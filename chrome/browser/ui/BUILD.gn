@@ -1969,6 +1969,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/android_apps_handler.h",
       "webui/settings/chromeos/app_management/app_management_page_handler_factory.cc",
       "webui/settings/chromeos/app_management/app_management_page_handler_factory.h",
+      "webui/settings/chromeos/calculator/size_calculator.cc",
+      "webui/settings/chromeos/calculator/size_calculator.h",
       "webui/settings/chromeos/change_picture_handler.cc",
       "webui/settings/chromeos/change_picture_handler.h",
       "webui/settings/chromeos/crostini_handler.cc",

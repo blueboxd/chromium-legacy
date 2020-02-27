@@ -13,6 +13,7 @@
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -50,100 +51,100 @@ template <typename... Ts>
   return LoadFontCursor(ts...);
 }
 
-::Cursor LoadFontCursorForCursorType(CursorType id) {
+::Cursor LoadFontCursorForCursorType(mojom::CursorType id) {
   switch (id) {
-    case CursorType::kMiddlePanning:
+    case mojom::CursorType::kMiddlePanning:
       return LoadFontCursor("all-scroll", XC_fleur);
-    case CursorType::kMiddlePanningVertical:
+    case mojom::CursorType::kMiddlePanningVertical:
       return LoadFontCursor("v-scroll");
-    case CursorType::kMiddlePanningHorizontal:
+    case mojom::CursorType::kMiddlePanningHorizontal:
       return LoadFontCursor("h-scroll");
-    case CursorType::kNone:
+    case mojom::CursorType::kNone:
       return LoadFontCursor("none");
-    case CursorType::kGrab:
+    case mojom::CursorType::kGrab:
       return LoadFontCursor("openhand", "grab");
-    case CursorType::kGrabbing:
+    case mojom::CursorType::kGrabbing:
       return LoadFontCursor("closedhand", "grabbing", XC_hand2);
-    case CursorType::kNull:
-    case CursorType::kPointer:
+    case mojom::CursorType::kNull:
+    case mojom::CursorType::kPointer:
       return LoadFontCursor("left_ptr", XC_left_ptr);
-    case CursorType::kMove:
+    case mojom::CursorType::kMove:
       return LoadFontCursor("move", XC_fleur);
-    case CursorType::kCross:
+    case mojom::CursorType::kCross:
       return LoadFontCursor("crosshair", XC_cross);
-    case CursorType::kHand:
+    case mojom::CursorType::kHand:
       return LoadFontCursor("pointer", "hand", XC_hand2);
-    case CursorType::kIBeam:
+    case mojom::CursorType::kIBeam:
       return LoadFontCursor("text", XC_xterm);
-    case CursorType::kProgress:
+    case mojom::CursorType::kProgress:
       return LoadFontCursor("progress", "left_ptr_watch", XC_watch);
-    case CursorType::kWait:
+    case mojom::CursorType::kWait:
       return LoadFontCursor("wait", XC_watch);
-    case CursorType::kHelp:
+    case mojom::CursorType::kHelp:
       return LoadFontCursor("help");
-    case CursorType::kEastResize:
-    case CursorType::kEastPanning:
+    case mojom::CursorType::kEastResize:
+    case mojom::CursorType::kEastPanning:
       return LoadFontCursor("e-resize", XC_right_side);
-    case CursorType::kNorthResize:
-    case CursorType::kNorthPanning:
+    case mojom::CursorType::kNorthResize:
+    case mojom::CursorType::kNorthPanning:
       return LoadFontCursor("n-resize", XC_top_side);
-    case CursorType::kNorthEastResize:
-    case CursorType::kNorthEastPanning:
+    case mojom::CursorType::kNorthEastResize:
+    case mojom::CursorType::kNorthEastPanning:
       return LoadFontCursor("ne-resize", XC_top_right_corner);
-    case CursorType::kNorthWestResize:
-    case CursorType::kNorthWestPanning:
+    case mojom::CursorType::kNorthWestResize:
+    case mojom::CursorType::kNorthWestPanning:
       return LoadFontCursor("nw-resize", XC_top_left_corner);
-    case CursorType::kSouthResize:
-    case CursorType::kSouthPanning:
+    case mojom::CursorType::kSouthResize:
+    case mojom::CursorType::kSouthPanning:
       return LoadFontCursor("s-resize", XC_bottom_side);
-    case CursorType::kSouthEastResize:
-    case CursorType::kSouthEastPanning:
+    case mojom::CursorType::kSouthEastResize:
+    case mojom::CursorType::kSouthEastPanning:
       return LoadFontCursor("se-resize", XC_bottom_right_corner);
-    case CursorType::kSouthWestResize:
-    case CursorType::kSouthWestPanning:
+    case mojom::CursorType::kSouthWestResize:
+    case mojom::CursorType::kSouthWestPanning:
       return LoadFontCursor("sw-resize", XC_bottom_left_corner);
-    case CursorType::kWestResize:
-    case CursorType::kWestPanning:
+    case mojom::CursorType::kWestResize:
+    case mojom::CursorType::kWestPanning:
       return LoadFontCursor("w-resize", XC_right_side);
-    case CursorType::kNorthSouthResize:
+    case mojom::CursorType::kNorthSouthResize:
       return LoadFontCursor(XC_sb_v_double_arrow, "ns-resize");
-    case CursorType::kEastWestResize:
+    case mojom::CursorType::kEastWestResize:
       return LoadFontCursor(XC_sb_h_double_arrow, "ew-resize");
-    case CursorType::kColumnResize:
+    case mojom::CursorType::kColumnResize:
       return LoadFontCursor("col-resize", XC_sb_h_double_arrow);
-    case CursorType::kRowResize:
+    case mojom::CursorType::kRowResize:
       return LoadFontCursor("row-resize", XC_sb_v_double_arrow);
-    case CursorType::kNorthEastSouthWestResize:
+    case mojom::CursorType::kNorthEastSouthWestResize:
       return LoadFontCursor("size_bdiag", "nesw-resize", "fd_double_arrow");
-    case CursorType::kNorthWestSouthEastResize:
+    case mojom::CursorType::kNorthWestSouthEastResize:
       return LoadFontCursor("size_fdiag", "nwse-resize", "bd_double_arrow");
-    case CursorType::kVerticalText:
+    case mojom::CursorType::kVerticalText:
       return LoadFontCursor("vertical-text");
-    case CursorType::kZoomIn:
+    case mojom::CursorType::kZoomIn:
       return LoadFontCursor("zoom-in");
-    case CursorType::kZoomOut:
+    case mojom::CursorType::kZoomOut:
       return LoadFontCursor("zoom-out");
-    case CursorType::kCell:
+    case mojom::CursorType::kCell:
       return LoadFontCursor("cell", XC_plus);
-    case CursorType::kContextMenu:
+    case mojom::CursorType::kContextMenu:
       return LoadFontCursor("context-menu");
-    case CursorType::kAlias:
+    case mojom::CursorType::kAlias:
       return LoadFontCursor("alias");
-    case CursorType::kNoDrop:
+    case mojom::CursorType::kNoDrop:
       return LoadFontCursor("no-drop");
-    case CursorType::kCopy:
+    case mojom::CursorType::kCopy:
       return LoadFontCursor("copy");
-    case CursorType::kNotAllowed:
+    case mojom::CursorType::kNotAllowed:
       return LoadFontCursor("not-allowed", "crossed_circle");
-    case CursorType::kDndNone:
+    case mojom::CursorType::kDndNone:
       return LoadFontCursor("dnd-none", XC_hand2);
-    case CursorType::kDndMove:
+    case mojom::CursorType::kDndMove:
       return LoadFontCursor("dnd-move", XC_hand2);
-    case CursorType::kDndCopy:
+    case mojom::CursorType::kDndCopy:
       return LoadFontCursor("dnd-copy", XC_hand2);
-    case CursorType::kDndLink:
+    case mojom::CursorType::kDndLink:
       return LoadFontCursor("dnd-link", XC_hand2);
-    case CursorType::kCustom:
+    case mojom::CursorType::kCustom:
       NOTREACHED();
       return LoadFontCursor();
   }
@@ -180,7 +181,7 @@ CursorLoaderX11::~CursorLoaderX11() {
   UnloadAll();
 }
 
-void CursorLoaderX11::LoadImageCursor(CursorType id,
+void CursorLoaderX11::LoadImageCursor(mojom::CursorType id,
                                       int resource_id,
                                       const gfx::Point& hot) {
   SkBitmap bitmap;
@@ -192,7 +193,7 @@ void CursorLoaderX11::LoadImageCursor(CursorType id,
       std::make_unique<ImageCursor>(x_image, scale(), rotation());
 }
 
-void CursorLoaderX11::LoadAnimatedCursor(CursorType id,
+void CursorLoaderX11::LoadAnimatedCursor(mojom::CursorType id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
@@ -229,19 +230,20 @@ void CursorLoaderX11::UnloadAll() {
 void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
   DCHECK(cursor);
 
-  if (*cursor == CursorType::kNone) {
+  if (*cursor == mojom::CursorType::kNone) {
     cursor->SetPlatformCursor(invisible_cursor_.get());
     return;
   }
 
-  if (*cursor == CursorType::kCustom)
+  if (*cursor == mojom::CursorType::kCustom)
     return;
 
   cursor->set_device_scale_factor(scale());
   cursor->SetPlatformCursor(CursorFromId(cursor->native_type()));
 }
 
-const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(CursorType id) {
+const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(
+    mojom::CursorType id) {
   return test::GetCachedXcursorImage(image_cursors_[id]->cursor);
 }
 
@@ -257,11 +259,11 @@ void CursorLoaderX11::OnCursorThemeSizeChanged(int cursor_theme_size) {
 }
 
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
-  CursorType type = native_cursor.native_type();
+  mojom::CursorType type = native_cursor.native_type();
   return image_cursors_.count(type) || animated_cursors_.count(type);
 }
 
-::Cursor CursorLoaderX11::CursorFromId(CursorType id) {
+::Cursor CursorLoaderX11::CursorFromId(mojom::CursorType id) {
   auto font_it = font_cursors_.find(id);
   if (font_it != font_cursors_.end())
     return font_it->second;

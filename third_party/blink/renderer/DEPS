@@ -70,6 +70,7 @@ include_rules = [
     "-ui/base/l10n",
     "-ui/base/resource",
 
+    "+ui/base/mojom/cursor_type.mojom-shared.h",
     "+ui/events/keycodes/dom",
     "+v8",
 ]

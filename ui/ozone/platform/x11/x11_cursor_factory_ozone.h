@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -24,7 +25,7 @@ class X11CursorFactoryOzone : public CursorFactoryOzone {
   ~X11CursorFactoryOzone() override;
 
   // CursorFactoryOzone:
-  PlatformCursor GetDefaultCursor(CursorType type) override;
+  PlatformCursor GetDefaultCursor(mojom::CursorType type) override;
   PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
                                    const gfx::Point& hotspot,
                                    float bitmap_dpi) override;
@@ -37,13 +38,14 @@ class X11CursorFactoryOzone : public CursorFactoryOzone {
 
  private:
   // Loads/caches default cursor or returns cached version.
-  scoped_refptr<X11CursorOzone> GetDefaultCursorInternal(CursorType type);
+  scoped_refptr<X11CursorOzone> GetDefaultCursorInternal(
+      mojom::CursorType type);
 
   // Holds a single instance of the invisible cursor. X11 has no way to hide
   // the cursor so an invisible cursor mimics that.
   scoped_refptr<X11CursorOzone> invisible_cursor_;
 
-  std::map<CursorType, scoped_refptr<X11CursorOzone>> default_cursors_;
+  std::map<mojom::CursorType, scoped_refptr<X11CursorOzone>> default_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(X11CursorFactoryOzone);
 };

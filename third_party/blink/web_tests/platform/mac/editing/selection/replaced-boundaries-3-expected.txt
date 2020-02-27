@@ -11,15 +11,15 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 777x36
           text run at (0,0) width 777: "This tests that when a selection that ends at [replaced element, 0] is painted, the replaced element doesn't appear selected."
           text run at (0,18) width 329: "This test uses a select box for the replaced element."
-      LayoutBlockFlow {DIV} at (0,52) size 784x36
+      LayoutBlockFlow {DIV} at (0,52) size 784x37
         LayoutText {#text} at (0,0) size 23x18
           text run at (0,0) width 23: "abc"
         LayoutBR {BR} at (22,14) size 1x0
-        LayoutMenuList {SELECT} at (0,18) size 224x18 [bgcolor=#F8F8F8]
+        LayoutMenuList {SELECT} at (0,18) size 235x19 [bgcolor=#FFFFFF] [border: (1px solid #767676)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (16,78) size 193x18
-  LayoutBlockFlow {DIV} at (8,0) size 193x18
-    LayoutText {#text} at (0,2) size 193x13
-      text run at (0,2) width 193: "this select box shouldn't be selected"
+layer at (13,79) size 213x17 scrollWidth 214
+  LayoutBlockFlow {DIV} at (5,1) size 213x17
+    LayoutText {#text} at (0,1) size 213x15
+      text run at (0,1) width 213: "this select box shouldn't be selected"
 selection start: position 1 of child 0 {#text} of child 3 {DIV} of body
 selection end:   position 1 of child 1 {BR} of child 3 {DIV} of body

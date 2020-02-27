@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/security_token_pin/error_generator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -36,7 +37,7 @@ constexpr int kDefaultTextWidth = 200;
 
 RequestPinView::RequestPinView(
     const std::string& extension_name,
-    SecurityTokenPinCodeType code_type,
+    security_token_pin::CodeType code_type,
     int attempts_left,
     const PinEnteredCallback& pin_entered_callback,
     ViewDestructionCallback view_destruction_callback)
@@ -45,7 +46,7 @@ RequestPinView::RequestPinView(
   Init();
   SetExtensionName(extension_name);
   const bool accept_input = (attempts_left != 0);
-  SetDialogParameters(code_type, SecurityTokenPinErrorLabel::kNone,
+  SetDialogParameters(code_type, security_token_pin::ErrorLabel::kNone,
                       attempts_left, accept_input);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::REQUEST_PIN);
 }
@@ -120,19 +121,20 @@ gfx::Size RequestPinView::CalculatePreferredSize() const {
   return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
-void RequestPinView::SetDialogParameters(SecurityTokenPinCodeType code_type,
-                                         SecurityTokenPinErrorLabel error_label,
-                                         int attempts_left,
-                                         bool accept_input) {
+void RequestPinView::SetDialogParameters(
+    security_token_pin::CodeType code_type,
+    security_token_pin::ErrorLabel error_label,
+    int attempts_left,
+    bool accept_input) {
   locked_ = false;
   SetErrorMessage(error_label, attempts_left, accept_input);
   SetAcceptInput(accept_input);
 
   switch (code_type) {
-    case SecurityTokenPinCodeType::kPin:
+    case security_token_pin::CodeType::kPin:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PIN);
       break;
-    case SecurityTokenPinCodeType::kPuk:
+    case security_token_pin::CodeType::kPuk:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PUK);
       break;
   }
@@ -220,55 +222,22 @@ void RequestPinView::SetAcceptInput(bool accept_input) {
   }
 }
 
-void RequestPinView::SetErrorMessage(SecurityTokenPinErrorLabel error_label,
+void RequestPinView::SetErrorMessage(security_token_pin::ErrorLabel error_label,
                                      int attempts_left,
                                      bool accept_input) {
-  base::string16 error_message;
-  switch (error_label) {
-    case SecurityTokenPinErrorLabel::kInvalidPin:
-      error_message =
-          l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR);
-      break;
-    case SecurityTokenPinErrorLabel::kInvalidPuk:
-      error_message =
-          l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR);
-      break;
-    case SecurityTokenPinErrorLabel::kMaxAttemptsExceeded:
-      error_message = l10n_util::GetStringUTF16(
-          IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR);
-      break;
-    case SecurityTokenPinErrorLabel::kUnknown:
-      error_message =
-          l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
-      break;
-    case SecurityTokenPinErrorLabel::kNone:
-      if (attempts_left < 0) {
-        error_label_->SetVisible(false);
-        textfield_->SetInvalid(false);
-        return;
-      }
-      break;
+  if (error_label == security_token_pin::ErrorLabel::kNone &&
+      attempts_left < 0) {
+    error_label_->SetVisible(false);
+    textfield_->SetInvalid(false);
+    return;
   }
 
-  base::string16 display_message;
-  if (!accept_input) {
-    display_message = error_message;
-  } else if (attempts_left == -1) {
-    display_message = l10n_util::GetStringFUTF16(
-        IDS_REQUEST_PIN_DIALOG_ERROR_RETRY, error_message);
-  } else if (error_message.empty()) {
-    display_message =
-        l10n_util::GetStringFUTF16(IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT,
-                                   base::FormatNumber(attempts_left));
-  } else {
-    display_message = l10n_util::GetStringFUTF16(
-        IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS, error_message,
-        base::FormatNumber(attempts_left));
-  }
+  base::string16 error_message = security_token_pin::GenerateErrorMessage(
+      error_label, attempts_left, accept_input);
 
   error_label_->SetVisible(true);
-  error_label_->SetText(display_message);
-  error_label_->SetTooltipText(display_message);
+  error_label_->SetText(error_message);
+  error_label_->SetTooltipText(error_message);
   error_label_->SetEnabledColor(gfx::kGoogleRed600);
   error_label_->SizeToPreferredSize();
   textfield_->SetInvalid(true);

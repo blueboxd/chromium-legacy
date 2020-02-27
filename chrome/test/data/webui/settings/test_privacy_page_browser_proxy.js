@@ -26,8 +26,9 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
      * @private
      */
     this.secureDnsSetting = {
-      mode: 'secure',
+      mode: settings.SecureDnsMode.SECURE,
       templates: [],
+      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
     };
 
     /**

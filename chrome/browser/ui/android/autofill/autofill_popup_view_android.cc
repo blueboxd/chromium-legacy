@@ -84,7 +84,7 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
 
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (!suggestion.icon.empty()) {
-      android_icon_id = ResourceMapper::MapFromChromiumId(
+      android_icon_id = ResourceMapper::MapToJavaDrawableId(
           controller_->layout_model().GetIconResourceID(suggestion.icon));
     }
 

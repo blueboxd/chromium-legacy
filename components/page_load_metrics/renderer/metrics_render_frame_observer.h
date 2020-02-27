@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
+#include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -86,6 +87,22 @@ class MetricsRenderFrameObserver
   void OnAdResourceTrackerGoingAway() override;
   void OnAdResourceObserved(int request_id) override;
 
+ protected:
+  // The relative and monotonic page load timings.
+  struct Timing {
+    Timing(mojom::PageLoadTimingPtr relative_timing,
+           const PageTimingMetadataRecorder::MonotonicTiming& monotonic_timing);
+    ~Timing();
+
+    Timing(const Timing&) = delete;
+    Timing& operator=(const Timing&) = delete;
+    Timing(Timing&&);
+    Timing& operator=(Timing&&);
+
+    mojom::PageLoadTimingPtr relative_timing;
+    PageTimingMetadataRecorder::MonotonicTiming monotonic_timing;
+  };
+
  private:
   // Updates the metadata for the page resource associated with the given
   // request_id. Removes the request_id from the list of known ads if it is an
@@ -97,7 +114,7 @@ class MetricsRenderFrameObserver
   void MaybeSetCompletedBeforeFCP(int request_id);
 
   void SendMetrics();
-  virtual mojom::PageLoadTimingPtr GetTiming() const;
+  virtual Timing GetTiming() const;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
   virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender();
   virtual bool HasNoRenderFrame() const;

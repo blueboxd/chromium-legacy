@@ -749,8 +749,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestClosingATab) {
                                TopChromeShownState::kFullyHidden);
 }
 
+// Disabled for flakes. See http://crbug.com/1049178
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       TestFocusEditableElements) {
+                       DISABLE_TestFocusEditableElements) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

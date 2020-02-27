@@ -2380,7 +2380,8 @@ if (is_win) {
 if (is_win || is_mac) {
   if (current_cpu == "x64" || (current_cpu == "arm64" && is_win)) {
     # Must be a shared library so that it can be unloaded during testing.
-    shared_library("base_profiler_test_support_library") {
+    loadable_module("base_profiler_test_support_library") {
+      testonly = true
       sources = [ "profiler/test_support_library.cc" ]
     }
   }
@@ -3014,7 +3015,7 @@ test("base_unittests") {
       "Foundation.framework",
     ]
     if (current_cpu == "x64") {
-      data_deps += [ ":base_profiler_test_support_library" ]
+      deps += [ ":base_profiler_test_support_library" ]
     }
   }
 
@@ -3060,6 +3061,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
+      "fuchsia/test_component_context_for_process_unittest.cc",
       "fuchsia/time_zone_data_unittest.cc",
       "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
@@ -3101,7 +3103,7 @@ test("base_unittests") {
     deps += [ "//base:scoped_handle_test_dll" ]
     if (current_cpu == "x64" || current_cpu == "arm64") {
       sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
-      data_deps += [ ":base_profiler_test_support_library" ]
+      deps += [ ":base_profiler_test_support_library" ]
     }
     sources += [ "files/os_validation_win_unittest.cc" ]
   }

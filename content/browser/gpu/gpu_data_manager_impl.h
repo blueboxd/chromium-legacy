@@ -102,8 +102,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
 
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
-  base::Optional<gpu::DevicePerfInfo> GetDevicePerfInfo() const;
-
   bool IsGpuCompositingDisabled() const;
 
   // This only handles the state of GPU compositing. Instead call

@@ -34,11 +34,14 @@ class BrowserAccessibilityAuraLinuxTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAuraLinuxTest);
 };
 
-BrowserAccessibilityAuraLinuxTest::BrowserAccessibilityAuraLinuxTest() {}
+BrowserAccessibilityAuraLinuxTest::BrowserAccessibilityAuraLinuxTest() =
+    default;
 
-BrowserAccessibilityAuraLinuxTest::~BrowserAccessibilityAuraLinuxTest() {}
+BrowserAccessibilityAuraLinuxTest::~BrowserAccessibilityAuraLinuxTest() =
+    default;
 
 void BrowserAccessibilityAuraLinuxTest::SetUp() {
+  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
   test_browser_accessibility_delegate_ =
       std::make_unique<TestBrowserAccessibilityDelegate>();
 }

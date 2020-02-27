@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ResourceId;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -62,23 +61,19 @@ public class ConfirmInfoBar extends InfoBar {
 
     /**
      * Creates and begins the process for showing a ConfirmInfoBar.
-     * @param enumeratedIconId ID corresponding to the icon that will be shown for the infobar.
-     *                         The ID must have been mapped using the ResourceMapper class before
-     *                         passing it to this function.
+     * @param iconId ID corresponding to the icon that will be shown for the infobar.
      * @param iconBitmap Bitmap to use if there is no equivalent Java resource for
-     *                   enumeratedIconId.
+     *                   iconId.
      * @param message Message to display to the user indicating what the infobar is for.
      * @param linkText Link text to display in addition to the message.
      * @param buttonOk String to display on the OK button.
      * @param buttonCancel String to display on the Cancel button.
      */
     @CalledByNative
-    private static ConfirmInfoBar create(int enumeratedIconId, Bitmap iconBitmap, String message,
+    private static ConfirmInfoBar create(int iconId, Bitmap iconBitmap, String message,
             String linkText, String buttonOk, String buttonCancel) {
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-
         ConfirmInfoBar infoBar = new ConfirmInfoBar(
-                drawableId, 0, iconBitmap, message, linkText, buttonOk, buttonCancel);
+                iconId, 0, iconBitmap, message, linkText, buttonOk, buttonCancel);
 
         return infoBar;
     }

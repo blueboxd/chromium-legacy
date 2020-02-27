@@ -30,9 +30,11 @@ TEST(AXNodeDataMojomTraitsTest, State) {
   input.state = 0;
   input.AddState(ax::mojom::State::kCollapsed);
   input.AddState(ax::mojom::State::kHorizontal);
+  input.AddState(ax::mojom::State::kMaxValue);
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
   EXPECT_TRUE(output.HasState(ax::mojom::State::kCollapsed));
   EXPECT_TRUE(output.HasState(ax::mojom::State::kHorizontal));
+  EXPECT_TRUE(output.HasState(ax::mojom::State::kMaxValue));
   EXPECT_FALSE(output.HasState(ax::mojom::State::kFocusable));
   EXPECT_FALSE(output.HasState(ax::mojom::State::kMultiline));
 }
@@ -42,9 +44,11 @@ TEST(AXNodeDataMojomTraitsTest, Actions) {
   input.actions = 0;
   input.AddAction(ax::mojom::Action::kDoDefault);
   input.AddAction(ax::mojom::Action::kDecrement);
+  input.AddAction(ax::mojom::Action::kMaxValue);
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
   EXPECT_TRUE(output.HasAction(ax::mojom::Action::kDoDefault));
   EXPECT_TRUE(output.HasAction(ax::mojom::Action::kDecrement));
+  EXPECT_TRUE(output.HasAction(ax::mojom::Action::kMaxValue));
   EXPECT_FALSE(output.HasAction(ax::mojom::Action::kFocus));
   EXPECT_FALSE(output.HasAction(ax::mojom::Action::kBlur));
 }

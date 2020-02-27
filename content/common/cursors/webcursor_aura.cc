@@ -8,13 +8,14 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace content {
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
-  if (info_.type == ui::CursorType::kCustom) {
+  if (info_.type == ui::mojom::CursorType::kCustom) {
     if (!custom_cursor_) {
-      custom_cursor_.emplace(ui::CursorType::kCustom);
+      custom_cursor_.emplace(ui::mojom::CursorType::kCustom);
       SkBitmap bitmap;
       gfx::Point hotspot;
       float scale;

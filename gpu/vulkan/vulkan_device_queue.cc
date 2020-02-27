@@ -89,18 +89,6 @@ bool VulkanDeviceQueue::Initialize(
   queue_create_info.flags =
       allow_protected_memory ? VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT : 0;
 
-  std::vector<const char*> enabled_layer_names;
-#if DCHECK_IS_ON()
-  std::unordered_set<std::string> desired_layers({
-      "VK_LAYER_KHRONOS_validation",
-  });
-
-  for (const auto& layer : physical_device_info.layers) {
-    if (desired_layers.find(layer.layerName) != desired_layers.end())
-      enabled_layer_names.push_back(layer.layerName);
-  }
-#endif  // DCHECK_IS_ON()
-
   std::vector<const char*> enabled_extensions;
   enabled_extensions.insert(std::end(enabled_extensions),
                             std::begin(required_extensions),
@@ -148,8 +136,6 @@ bool VulkanDeviceQueue::Initialize(
   device_create_info.pNext = enabled_device_features_2_.pNext;
   device_create_info.queueCreateInfoCount = 1;
   device_create_info.pQueueCreateInfos = &queue_create_info;
-  device_create_info.enabledLayerCount = enabled_layer_names.size();
-  device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
   device_create_info.enabledExtensionCount = enabled_extensions.size();
   device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
   device_create_info.pEnabledFeatures = &enabled_device_features_2_.features;

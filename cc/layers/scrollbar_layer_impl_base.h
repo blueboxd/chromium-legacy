@@ -79,6 +79,12 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   // tickmarks's state.
   virtual bool HasFindInPageTickmarks() const;
 
+  // Mac overlay scrollbars are faded during paint but the compositor layer is
+  // always fully opaque where as Aura scrollbars fade by animating the layer
+  // opacity. This method will return the user visible opacity of an overlay
+  // scrollbar regardless of the underlying mechanism or platform.
+  virtual float OverlayScrollbarOpacity() const;
+
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,
                          int id,

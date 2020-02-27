@@ -20,7 +20,6 @@
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
@@ -67,8 +66,8 @@
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
+#include "media/gpu/test/video_test_helpers.h"
 #include "media/parsers/vp8_parser.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_level_limits.h"
@@ -220,53 +219,6 @@ VideoEncodeAcceleratorTestEnvironment* g_env;
 // "--num_frames_to_encode". Ignored if 0.
 int g_num_frames_to_encode = 0;
 
-#if defined(ARCH_CPU_ARM_FAMILY)
-// ARM performs CPU cache management with CPU cache line granularity. We thus
-// need to ensure our buffers are CPU cache line-aligned (64 byte-aligned).
-// Otherwise newer kernels will refuse to accept them, and on older kernels
-// we'll be treating ourselves to random corruption.
-// Moreover, some hardware codecs require 128-byte alignment for physical
-// buffers.
-const size_t kPlatformBufferAlignment = 128;
-#else
-const size_t kPlatformBufferAlignment = 8;
-#endif
-
-inline static size_t AlignToPlatformRequirements(size_t value) {
-  return base::bits::Align(value, kPlatformBufferAlignment);
-}
-
-// An aligned STL allocator.
-template <typename T, size_t ByteAlignment>
-class AlignedAllocator : public std::allocator<T> {
- public:
-  typedef size_t size_type;
-  typedef T* pointer;
-
-  template <class T1>
-  struct rebind {
-    typedef AlignedAllocator<T1, ByteAlignment> other;
-  };
-
-  AlignedAllocator() {}
-  explicit AlignedAllocator(const AlignedAllocator&) {}
-  template <class T1>
-  explicit AlignedAllocator(const AlignedAllocator<T1, ByteAlignment>&) {}
-  ~AlignedAllocator() {}
-
-  pointer allocate(size_type n, const void* = 0) {
-    return static_cast<pointer>(base::AlignedAlloc(n, ByteAlignment));
-  }
-
-  void deallocate(pointer p, size_type n) {
-    base::AlignedFree(static_cast<void*>(p));
-  }
-
-  size_type max_size() const {
-    return std::numeric_limits<size_t>::max() / sizeof(T);
-  }
-};
-
 struct TestStream {
   TestStream()
       : num_frames(0),
@@ -288,7 +240,8 @@ struct TestStream {
   // A vector used to prepare aligned input buffers of |in_filename|. This
   // makes sure starting addresses of YUV planes are aligned to
   // kPlatformBufferAlignment bytes.
-  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
+  std::vector<char,
+              test::AlignedAllocator<char, test::kPlatformBufferAlignment>>
       aligned_in_file_data;
 
   // Byte size of a frame of |aligned_in_file_data|.
@@ -535,7 +488,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
         VideoFrame::Rows(i, pixel_format, test_stream->visible_size.height());
     size_t coded_area_size =
         coded_bpl[i] * VideoFrame::Rows(i, pixel_format, coded_size.height());
-    const size_t aligned_size = AlignToPlatformRequirements(coded_area_size);
+    const size_t aligned_size =
+        test::AlignToPlatformRequirements(coded_area_size);
     test_stream->aligned_plane_size.push_back(aligned_size);
     test_stream->aligned_buffer_size += aligned_size;
   }
@@ -582,7 +536,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_EQ(0u, dest_offset & (kPlatformBufferAlignment - 1))
+      ASSERT_EQ(0u, dest_offset & (test::kPlatformBufferAlignment - 1))
           << "Planes of frame should be mapped per platform requirements";
       char* dst_ptr = &test_stream->aligned_in_file_data[dest_offset];
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
@@ -2676,7 +2630,7 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   for (size_t i = 0; i < num_planes; i++) {
     size_t plane_size = base::bits::Align(
         VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea(),
-        kPlatformBufferAlignment);
+        test::kPlatformBufferAlignment);
 
     planes[i].stride =
         VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
@@ -2686,7 +2640,7 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   }
   auto layout = VideoFrameLayout::CreateWithPlanes(
       pixel_format, input_coded_size, std::move(planes),
-      kPlatformBufferAlignment);
+      test::kPlatformBufferAlignment);
   ASSERT_TRUE(layout);
   scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrameWithLayout(
       *layout, gfx::Rect(input_coded_size), input_coded_size,

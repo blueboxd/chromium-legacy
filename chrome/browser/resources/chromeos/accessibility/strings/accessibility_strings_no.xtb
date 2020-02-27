@@ -38,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox – gir Chrome en stemme</translation>
 <translation id="1225969361094801578">Mørk skifergrå</translation>
 <translation id="1229276918471378188">Forrige hopp</translation>
+<translation id="1230503547248836149">Starten av utvalget</translation>
 <translation id="1236794971743289975">Sluttnote</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1243477406442346359">Kornblomstblå</translation>
@@ -120,6 +121,7 @@
 <translation id="1752708997038853212">Angi et søkeord</translation>
 <translation id="1756785467854861272">Mørk magenta</translation>
 <translation id="1765245556747822181">Sveip én finger opp</translation>
+<translation id="1771761307086386028">Rull til høyre</translation>
 <translation id="1781173782405573156">Passér-tast</translation>
 <translation id="1787176709638001873">Tekst for redigering av passord</translation>
 <translation id="1802710350767629429">Vis oppdateringsmerknader</translation>
@@ -176,6 +178,7 @@
 <translation id="2199994615414171367">Forrige matteuttrykk</translation>
 <translation id="2203046366315513658">Reduser verdien</translation>
 <translation id="2216790501338699346">Nettadresse for link: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">Flytt bakover ett tegn</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2223693656926968778">Gjør noe med det aktuelle elementet</translation>
 <translation id="224426591676115802">Tale er ikke tilgjengelig for dette språket: <ph name="LANGUAGE" /></translation>
@@ -225,6 +228,7 @@
 <translation id="2592212930811759050">Dobbelttrykk for å begynne å redigere</translation>
 <translation id="2594420797397883935">Det finnes ingen tidligere elementer som ikke er linker</translation>
 <translation id="2598495320872286378">Grammatikkfeil</translation>
+<translation id="2603828437139726540">Flytt fremover ett tegn</translation>
 <translation id="2614981083756825552">MathML-utforming</translation>
 <translation id="2624431853467395961">Åpne læremodus</translation>
 <translation id="2626530649491650971">klikkbart</translation>
@@ -232,6 +236,7 @@
 <translation id="2638785836053527382">Nedlastingen av <ph name="FILE_NAME" /> ble gjenopptatt</translation>
 <translation id="2639750663247012216">ChromeVox-modifikator</translation>
 <translation id="2644542693584024604">feilstavet</translation>
+<translation id="2654172656519784359">Flytt fremover ett ord</translation>
 <translation id="2661530546602071611">Merknad</translation>
 <translation id="2673280813984708147">redigerer</translation>
 <translation id="267442004702508783">last inn på nytt</translation>
@@ -308,6 +313,7 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Neste landemerke</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="309749186376891736">Flytt markøren</translation>
 <translation id="3103579948980282461">Middels lillarød</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Skjult</translation>
@@ -439,6 +445,7 @@
 <translation id="3930498801443296724">Sitat</translation>
 <translation id="3935615366277838204">Stor <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lavendelbluss</translation>
+<translation id="3943857333388298514">Lim inn</translation>
 <translation id="394953087167197343">Indiker stavefeil:</translation>
 <translation id="3962990492275676168">Begynn å lese fra nåværende plassering</translation>
 <translation id="3970951409746498040">Sandbrun</translation>
@@ -448,6 +455,7 @@
 <translation id="4002709828007663583">Mørk orkide</translation>
 <translation id="4004802134384979325">merket av</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">Rull ned</translation>
 <translation id="4038349100599457191">Månedskontroll</translation>
 <translation id="4039983576244166038">Tom radoverskrift</translation>
 <translation id="4047216625641135770">Mark-tag</translation>
@@ -477,6 +485,7 @@
 <translation id="4206289001967551965">Inne i tabellen</translation>
 <translation id="4215733775853809057">Neste glidebryter</translation>
 <translation id="42164919740161077">Kadettblå</translation>
+<translation id="4217571870635786043">Diktering</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{tankestrek}other{# tankestreker}}</translation>
 <translation id="421884353938374759">fargevelger</translation>
 <translation id="4221012616705981690">Det finnes ingen tidligere lister</translation>
@@ -543,6 +552,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Forrige landemerke</translation>
 <translation id="4710166929009737753">Sveip én finger til høyre</translation>
+<translation id="4712898966495541134">Slutten av utvalget</translation>
 <translation id="4729095194763193578">Forrige tabellrad</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Kommandoer for Hjelp</translation>
@@ -575,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Mørk cyan</translation>
 <translation id="489907760999452556">Intern link</translation>
+<translation id="4909019435900810068">Flytt bakover ett ord</translation>
 <translation id="4911349081560453449">Det finnes ingen tidligere avmerkingsbokser</translation>
 <translation id="4915087353619183190">Starter læremodus. Trykk på en qwerty-tast, en dynamisk punktskrifttast eller en berøringshandling for å lære den tilhørende funksjonen. Trykk på Ctrl + W eller Esc for å avslutte.</translation>
 <translation id="492295894462528572">Forord</translation>
+<translation id="495046168593986294">Rull opp</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953585991029886728">Rediger teksten</translation>
 <translation id="4954534434583049121">Forrige blokksitat</translation>
@@ -638,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# kommaer}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstfelt</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
+<translation id="5331522683003474486">Styr enheten med kun én eller to brytere.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Tilbakelink</translation>
 <translation id="5355014376930441909">Det finnes ingen flere deler</translation>
@@ -659,6 +672,7 @@
 <translation id="549602578321198708">Ord</translation>
 <translation id="5502713021410870035">September</translation>
 <translation id="5507663321906818013">Feilsøk referansemålingen</translation>
+<translation id="5513242761114685513">Kontekstuell meny</translation>
 <translation id="551361796444814639">Mellomblå</translation>
 <translation id="552195134157544755">Alternativknapp</translation>
 <translation id="5534303576632885660">hdr</translation>
@@ -740,12 +754,14 @@
 <translation id="6006050241733874051">Skjema</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstrek}other{# omvendte skråstreker}}</translation>
 <translation id="6017514345406065928">Grønn</translation>
+<translation id="602001110135236999">Rull til venstre</translation>
 <translation id="6034000775414344507">Lysegrå</translation>
 <translation id="6037602951055904232">Panorer frem</translation>
 <translation id="6044160928851315051">Gjør skjermen mørk</translation>
 <translation id="6082768461603900813">Grunnleggende navigering</translation>
 <translation id="609281021724813947">Det finnes ingen tidligere glidebrytere</translation>
 <translation id="6095514649509181044">Skiller ikke mellom store og små bokstaver</translation>
+<translation id="6100239002225743044">Flytt opp én linje</translation>
 <translation id="6118126368611144850">Android-apper for Chrome. Hvis du har Play Butikk på enheten din, kan du ta en sniktitt på ChromeVox med Android-apper. Prøv den eksperimentelle støtten ved å laste ned Google Chrome Canary fra Play-butikken.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -844,14 +860,17 @@
 <translation id="6865519907510167493">Feilstavet</translation>
 <translation id="688976158310523235">Søkemeny</translation>
 <translation id="6894148351896207544">Les opp nåværende dato og klokkeslett</translation>
+<translation id="6896758677409633944">Kopiér</translation>
 <translation id="6897341342232909480">Flytt til venstre</translation>
 <translation id="6901540140423170855">date</translation>
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6910969481785184048">På, av og stopp</translation>
 <translation id="6919104639734799681">Vis tabellisten</translation>
+<translation id="6945221475159498467">Velg</translation>
 <translation id="6949846980769640811">Middels havblå</translation>
 <translation id="6951482098621102657">Det finnes ingen flere overskrifter på nivå 5</translation>
 <translation id="6955705049214951590">Tåkete rosa</translation>
+<translation id="696356426651109308">Hopp til begynnelsen</translation>
 <translation id="699159175332639490">Søk + O + W</translation>
 <translation id="6994042831499278539">Ordlistereferanse</translation>
 <translation id="6996566555547746822">Neste kombinasjonsfelt</translation>
@@ -859,6 +878,7 @@
 <translation id="700202842116345659">Bibliografioppføring</translation>
 <translation id="7005146664810010831">Fant ingen nettadresse</translation>
 <translation id="7010712454773919705">ChromeVox-modifikatortast</translation>
+<translation id="7026338066939101231">Reduser</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Forrige liste</translation>
 <translation id="7039555289296502784">Matt oliven</translation>
@@ -868,6 +888,7 @@
 <translation id="7062635574500127092">Blågrønn</translation>
 <translation id="7086377898680121060">Lysstyrke opp</translation>
 <translation id="7088743565397416204">Dobbeltklikk for å aktivere det fokuserte elementet</translation>
+<translation id="7088960765736518739">Brytertilgang</translation>
 <translation id="7091296112653361280">Navaho-hvit</translation>
 <translation id="7095834689119144465">Rediger bare tallene i teksten</translation>
 <translation id="7096001299300236431">Forrige media</translation>
@@ -962,6 +983,7 @@
 <translation id="7693840228159394336">Forrige alternativknapp</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Det finnes ingen flere kombinasjonsfelt</translation>
+<translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7731785449856576010">Det finnes ingen flere mediemoduler</translation>
 <translation id="773906353055481349">Trykk på Søk + Ctrl + Alt og piltastene for å navigere mellom cellene</translation>
 <translation id="7750184816513382104">Skiller mellom store og små bokstaver</translation>
@@ -974,9 +996,11 @@
 <translation id="7805247615045262757">standardnavigasjon</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Neste gruppe</translation>
+<translation id="7813616274030162878">Meny for brytertilgang</translation>
 <translation id="7819187121850078213">vinduet med <ph name="TITLE" />-fanen</translation>
 <translation id="7828956995407538686">Oktober</translation>
 <translation id="7839679365527550018">Forrige ord</translation>
+<translation id="7846634333498149051">Tastatur</translation>
 <translation id="7851132556376253786">Det finnes ingen flere artikler</translation>
 <translation id="7851816175263618915">Noe tegnsetting</translation>
 <translation id="7870596830398826354">MathML-tre</translation>
@@ -997,6 +1021,7 @@
 <translation id="7972507042926081808">Sjokoladebrun</translation>
 <translation id="7974390230414479278">Menyelement</translation>
 <translation id="8004507136466386272">Ord</translation>
+<translation id="8004512796067398576">Øk</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{anførselstegn}other{# anførselstegn}}</translation>
 <translation id="8017588669690167134">Slå av tale</translation>
@@ -1015,6 +1040,7 @@
 <translation id="8096975275316362544">Mintkrem</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8121539003537428024">Slå på alle hendelsesfiltre</translation>
+<translation id="8123975449645947908">Rull bakover</translation>
 <translation id="8126386426083591964">Det finnes ingen tidligere overskrifter på nivå 5</translation>
 <translation id="812886159861361726">Nedlastingen av <ph name="FILE_NAME" /> er stanset</translation>
 <translation id="8129445297241948503">Det finnes ingen celler ovenfor</translation>
@@ -1048,6 +1074,7 @@
 <translation id="8374154622594089836">måned</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Autofullføring – innebygd og liste</translation>
+<translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8428603554127842284">nivå <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Les mer</translation>
@@ -1135,6 +1162,7 @@
 <translation id="9074824103975499138">Søk i ChromeVox-menyer</translation>
 <translation id="9077213568694924680">fjernet fra utvalget</translation>
 <translation id="9077305471618729969">Lys sjøgrønn</translation>
+<translation id="9080299285199342830">Hopp til slutten</translation>
 <translation id="9089864840575085222">Slå av eller på innskrivingsekko</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9108589040018540527">scbr</translation>
@@ -1163,5 +1191,6 @@
 <translation id="962913030769097253">Neste overskrift på nivå 1</translation>
 <translation id="966588271015727539">Velg en Bluetooth-leselist</translation>
 <translation id="973955474346881951">Slå av eller på trege taster</translation>
+<translation id="985654871861528815">Flytt ned én linje</translation>
 <translation id="992256792861109788">Rosa</translation>
 </translationbundle>

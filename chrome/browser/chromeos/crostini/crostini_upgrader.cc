@@ -134,9 +134,8 @@ void CrostiniUpgrader::StatusTracker::SetStatusFailedWithMessageUI(
 
 void CrostiniUpgrader::Backup(const ContainerId& container_id,
                               content::WebContents* web_contents) {
-  CrostiniExportImport::OnceTrackerFactory factory = MakeFactory();
   CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
-      web_contents, container_id, std::move(factory));
+      container_id, web_contents, MakeFactory());
 }
 
 void CrostiniUpgrader::OnBackup(CrostiniResult result) {
@@ -243,9 +242,8 @@ void CrostiniUpgrader::OnUpgrade(CrostiniResult result) {
 
 void CrostiniUpgrader::Restore(const ContainerId& container_id,
                                content::WebContents* web_contents) {
-  CrostiniExportImport::OnceTrackerFactory factory = MakeFactory();
   CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
-      web_contents, container_id, std::move(factory));
+      container_id, web_contents, MakeFactory());
 }
 
 void CrostiniUpgrader::OnRestore(CrostiniResult result) {

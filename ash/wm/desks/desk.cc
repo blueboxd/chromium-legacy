@@ -303,19 +303,30 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
 
     // Moving windows will change the hierarchy and hence |windows_|, and has to
     // be done without changing the relative z-order. So we make a copy of all
-    // the top-level windows on all the containers of this desk.
+    // the top-level windows on all the containers of this desk, such that
+    // windows in each container are copied from top-most (z-order) to
+    // bottom-most.
     std::vector<aura::Window*> windows_to_move;
     windows_to_move.reserve(windows_.size());
     for (aura::Window* root : Shell::GetAllRootWindows()) {
       const aura::Window* container = GetDeskContainerForRoot(root);
       const auto& children = container->children();
-      std::copy(children.begin(), children.end(),
+      std::copy(children.rbegin(), children.rend(),
                 std::back_inserter(windows_to_move));
     }
 
+    auto* mru_tracker = Shell::Get()->mru_window_tracker();
     for (auto* window : windows_to_move) {
-      if (CanMoveWindowOutOfDeskContainer(window))
-        MoveWindowToDeskInternal(window, target_desk);
+      if (!CanMoveWindowOutOfDeskContainer(window))
+        continue;
+
+      // Note that windows that belong to the same container in
+      // |windows_to_move| are sorted from top-most to bottom-most, hence
+      // calling |StackChildAtBottom()| on each in this order will maintain that
+      // same order in the |target_desk|'s container.
+      MoveWindowToDeskInternal(window, target_desk);
+      window->parent()->StackChildAtBottom(window);
+      mru_tracker->OnWindowMovedOutFromRemovingDesk(window);
     }
   }
 

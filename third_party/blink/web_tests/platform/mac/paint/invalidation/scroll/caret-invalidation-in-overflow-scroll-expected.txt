@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "Caret",
-          "rect": [407, 11, 2, 13],
+          "rect": [408, 11, 2, 15],
           "reason": "caret"
         },
         {
           "object": "Caret",
-          "rect": [405, 11, 2, 13],
+          "rect": [405, 11, 2, 15],
           "reason": "caret"
         }
       ]

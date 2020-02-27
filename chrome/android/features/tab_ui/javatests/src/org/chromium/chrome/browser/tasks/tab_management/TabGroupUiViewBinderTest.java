@@ -16,6 +16,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,9 +63,16 @@ public class TabGroupUiViewBinderTest extends DummyUiActivityTestCase {
         mRightButton = toolbarView.findViewById(R.id.toolbar_right_button);
         mContainerView = toolbarView.findViewById(R.id.toolbar_container_view);
         mMainContent = toolbarView.findViewById(R.id.main_content);
+        RecyclerView recyclerView =
+                (TabListRecyclerView) LayoutInflater.from(getActivity())
+                        .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
 
         mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
-        mMCP = PropertyModelChangeProcessor.create(mModel, toolbarView, TabGroupUiViewBinder::bind);
+        mMCP = PropertyModelChangeProcessor.create(mModel,
+                new TabGroupUiViewBinder.ViewHolder(toolbarView, recyclerView),
+                TabGroupUiViewBinder::bind);
     }
 
     @Override

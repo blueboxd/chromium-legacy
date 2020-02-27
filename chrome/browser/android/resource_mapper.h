@@ -16,8 +16,9 @@ class ResourceMapper {
   static const int kMissingId;
 
   // Converts the given chromium |resource_id| (e.g. IDR_INFOBAR_TRANSLATE) to
-  // an enumerated ID.  Returns |kMissingId| if a mapping wasn't found.
-  static int MapFromChromiumId(int resource_id);
+  // an Android drawable resource ID. Returns |kMissingId| if a mapping wasn't
+  // found.
+  static int MapToJavaDrawableId(int resource_id);
 
  private:
   // Create the mapping.  IDs start at 0 to correspond to the array that gets

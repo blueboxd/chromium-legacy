@@ -41,9 +41,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectMenuList || LayoutFlexibleBox::IsOfType(type);
   }
-
-  PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
-  bool HasControlClip() const override { return true; }
 };
 
 }  // namespace blink

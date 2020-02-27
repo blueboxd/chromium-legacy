@@ -67,7 +67,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
-#include "chromeos/constants/security_token_pin_types.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "chromeos/login/auth/cryptohome_key_constants.h"
@@ -75,6 +74,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
@@ -298,9 +298,9 @@ PinDialogManager* GetLoginScreenPinDialogManager() {
 }
 
 base::Value MakeSecurityTokenPinDialogParameters(
-    SecurityTokenPinCodeType code_type,
+    security_token_pin::CodeType code_type,
     bool enable_user_input,
-    SecurityTokenPinErrorLabel error_label,
+    security_token_pin::ErrorLabel error_label,
     int attempts_left) {
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetIntKey("codeType", static_cast<int>(code_type));
@@ -1306,9 +1306,9 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
 
 void GaiaScreenHandler::ShowSecurityTokenPinDialog(
     const std::string& /*caller_extension_name*/,
-    SecurityTokenPinCodeType code_type,
+    security_token_pin::CodeType code_type,
     bool enable_user_input,
-    SecurityTokenPinErrorLabel error_label,
+    security_token_pin::ErrorLabel error_label,
     int attempts_left,
     const base::Optional<AccountId>& /*authenticating_user_account_id*/,
     SecurityTokenPinEnteredCallback pin_entered_callback,

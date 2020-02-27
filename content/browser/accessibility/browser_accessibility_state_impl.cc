@@ -215,6 +215,9 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
   if (accessibility_mode_ == previous_mode)
     return;
 
+  // Proxy the AXMode to AXPlatformNode to enable accessibility.
+  ui::AXPlatformNode::NotifyAddAXModeFlags(accessibility_mode_);
+
   // Retrieve only newly added modes for the purposes of logging.
   int new_mode_flags = mode.mode() & (~previous_mode.mode());
   if (new_mode_flags & ui::AXMode::kNativeAPIs)

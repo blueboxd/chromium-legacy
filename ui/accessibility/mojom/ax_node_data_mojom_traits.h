@@ -16,7 +16,7 @@ struct StructTraits<ax::mojom::AXNodeDataDataView, ui::AXNodeData> {
   static int32_t id(const ui::AXNodeData& p) { return p.id; }
   static ax::mojom::Role role(const ui::AXNodeData& p) { return p.role; }
   static uint32_t state(const ui::AXNodeData& p) { return p.state; }
-  static uint32_t actions(const ui::AXNodeData& p) { return p.actions; }
+  static uint64_t actions(const ui::AXNodeData& p) { return p.actions; }
   static std::unordered_map<ax::mojom::StringAttribute, std::string>
   string_attributes(const ui::AXNodeData& p);
   static std::unordered_map<ax::mojom::IntAttribute, int32_t> int_attributes(

@@ -49,8 +49,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_UpdatePasswordInfoBar_show(
-      env, GetEnumeratedIconId(), display_usernames, selected_username,
-      message_text, details_message_text, ok_button_text));
+      env, GetJavaIconId(), display_usernames, selected_username, message_text,
+      details_message_text, ok_button_text));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;

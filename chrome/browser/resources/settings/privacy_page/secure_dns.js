@@ -39,14 +39,31 @@ Polymer({
     },
 
     /**
+     * The setting sublabel.
+     * @private
+     */
+    secureDnsDescription_: String,
+
+    /**
      * Represents whether the main toggle for the secure DNS setting is switched
      * on or off.
-     * @private
+     * @private {!chrome.settingsPrivate.PrefObject}
      */
     secureDnsToggle_: {
       type: Object,
-      value: {value: false},
+      value() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        });
+      },
     },
+
+    /**
+     * Whether the radio buttons should be shown.
+     * @private
+     */
+    showRadioGroup_: Boolean,
 
     /**
      * Represents the selected radio button. Should always have a value of
@@ -131,6 +148,8 @@ Polymer({
       default:
         assertNotReached('Received unknown secure DNS mode');
     }
+
+    this.updateManagementView_(setting.managementMode);
   },
 
   /**
@@ -140,6 +159,8 @@ Polymer({
    * @private
    */
   onToggleChanged_: function() {
+    this.showRadioGroup_ =
+        /** @type {boolean} */ (this.secureDnsToggle_.value);
     this.updateDnsPrefs_(
         this.secureDnsToggle_.value ? this.secureDnsRadio_ :
                                       settings.SecureDnsMode.OFF);
@@ -203,6 +224,60 @@ Polymer({
       this.updateDnsPrefs_(settings.SecureDnsMode.SECURE);
     }
     this.updatePrivacyPolicyLine_();
+  },
+
+  /**
+   * Updates the setting to communicate the type of management, if any. The
+   * setting is always collapsed if there is any management.
+   * @param {!settings.SecureDnsUiManagementMode} managementMode
+   * @private
+   */
+  updateManagementView_: function(managementMode) {
+    // If the underlying secure DNS mode pref has an enforced value, communicate
+    // that via the toggle pref.
+    const pref = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: this.secureDnsToggle_.value,
+    };
+    if (this.getPref('dns_over_https.mode').enforcement ===
+        chrome.settingsPrivate.Enforcement.ENFORCED) {
+      pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+      pref.controlledBy = this.getPref('dns_over_https.mode').controlledBy;
+      this.secureDnsDescription_ =
+          loadTimeData.getString('secureDnsDescription');
+    } else {
+      // If the secure DNS mode was forcefully overridden by Chrome, provide an
+      // explanation in the setting subtitle.
+      switch (managementMode) {
+        case settings.SecureDnsUiManagementMode.NO_OVERRIDE:
+          this.secureDnsDescription_ =
+              loadTimeData.getString('secureDnsDescription');
+          break;
+        case settings.SecureDnsUiManagementMode.DISABLED_MANAGED:
+          pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+          this.secureDnsDescription_ =
+              loadTimeData.getString('secureDnsDisabledForManagedEnvironment');
+          break;
+        case settings.SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS:
+          pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+          this.secureDnsDescription_ =
+              loadTimeData.getString('secureDnsDisabledForParentalControl');
+          break;
+        default:
+          assertNotReached(
+              'Received unknown secure DNS management mode ' + managementMode);
+      }
+    }
+    this.secureDnsToggle_ = pref;
+
+    if (this.secureDnsToggle_.enforcement ===
+        chrome.settingsPrivate.Enforcement.ENFORCED) {
+      this.showRadioGroup_ = false;
+    } else {
+      this.showRadioGroup_ =
+          /** @type {boolean} */ (this.secureDnsToggle_.value);
+    }
   },
 
   /**

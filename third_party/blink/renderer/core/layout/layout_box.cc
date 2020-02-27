@@ -2207,10 +2207,31 @@ PhysicalRect LayoutBox::OverflowClipRect(
   if (HasOverflowClip())
     ExcludeScrollbars(clip_rect, overlay_scrollbar_clip_behavior);
 
-  if (HasControlClip())
-    clip_rect.Intersect(ControlClipRect(location));
+  auto* input = DynamicTo<HTMLInputElement>(GetNode());
+  if (UNLIKELY(input)) {
+    // As for LayoutButton, ControlClip is to for not BUTTONs but INPUT
+    // buttons for IE/Firefox compatibility.
+    if (IsTextField() || IsLayoutButton()) {
+      DCHECK(HasControlClip());
+      PhysicalRect control_clip = PhysicalPaddingBoxRect();
+      control_clip.Move(location);
+      clip_rect.Intersect(control_clip);
+    }
+  } else if (UNLIKELY(IsMenuList(this))) {
+    DCHECK(HasControlClip());
+    PhysicalRect control_clip = PhysicalContentBoxRect();
+    control_clip.Move(location);
+    clip_rect.Intersect(control_clip);
+  } else {
+    DCHECK(!HasControlClip());
+  }
 
   return clip_rect;
+}
+
+bool LayoutBox::HasControlClip() const {
+  return UNLIKELY(IsTextField() || IsFileUploadControl() || IsMenuList(this) ||
+                  (IsLayoutButton() && IsA<HTMLInputElement>(GetNode())));
 }
 
 void LayoutBox::ExcludeScrollbars(

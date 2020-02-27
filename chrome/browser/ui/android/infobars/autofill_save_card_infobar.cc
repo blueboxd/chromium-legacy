@@ -50,7 +50,7 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillSaveCardInfoBar_create(
-          env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
+          env, reinterpret_cast<intptr_t>(this), GetJavaIconId(),
           ScopedJavaLocalRef<jobject>(),
           base::android::ConvertUTF16ToJavaString(env,
                                                   delegate->GetMessageText()),
@@ -68,7 +68,7 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   Java_AutofillSaveCardInfoBar_addDetail(
       env, java_delegate,
-      ResourceMapper::MapFromChromiumId(delegate->issuer_icon_id()),
+      ResourceMapper::MapToJavaDrawableId(delegate->issuer_icon_id()),
       base::android::ConvertUTF16ToJavaString(env, delegate->card_label()),
       base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label()));
 

@@ -67,7 +67,7 @@ void AutofillKeyboardAccessoryView::Show() {
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     int android_icon_id = 0;
     if (!suggestion.icon.empty()) {
-      android_icon_id = ResourceMapper::MapFromChromiumId(
+      android_icon_id = ResourceMapper::MapToJavaDrawableId(
           controller_->layout_model().GetIconResourceID(suggestion.icon));
     }
 

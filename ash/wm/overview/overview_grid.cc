@@ -733,6 +733,14 @@ bool OverviewGrid::MaybeUpdateDesksWidgetBounds() {
     // Note that the desks widget window is placed on the active desk container,
     // which has the kUsesScreenCoordinatesKey property set to true, and hence
     // we use the screen coordinates when positioning the desks widget.
+    //
+    // On certain display zooms, the requested |desks_widget_bounds| may differ
+    // than the current screen bounds of the desks widget by 1dp, but internally
+    // it will end up being the same and therefore a layout may not be
+    // triggered. This can cause mini views not to show up at all. We must
+    // guarantee that a layout will always occur by invalidating the layout.
+    // See https://crbug.com/1056371 for more details.
+    desks_bar_view_->InvalidateLayout();
     desks_widget_->SetBounds(desks_widget_bounds);
     return true;
   }

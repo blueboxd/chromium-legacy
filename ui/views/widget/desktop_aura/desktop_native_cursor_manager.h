@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/base/mojom/cursor_type.mojom-forward.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/core/native_cursor_manager.h"
 
@@ -37,7 +38,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager : public wm::NativeCursorManager {
 
   // Builds a cursor and sets the internal platform representation. The return
   // value should not be cached.
-  gfx::NativeCursor GetInitializedCursor(ui::CursorType type);
+  gfx::NativeCursor GetInitializedCursor(ui::mojom::CursorType type);
 
   // Adds |host| to the set |hosts_|.
   void AddHost(aura::WindowTreeHost* host);

@@ -280,6 +280,29 @@ Try tapping the mic to ask me anything.
       <message name="IDS_HELP_APP_PERKS" desc="Name of a tab in the Help app that offers users additional perks like apps or drive storage space.">
         Perks
       </message>
+
+      <!-- Pin dialog error messages -->
+      <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PIN was entered. Should end with a full stop since it can be chained with more text.">
+        Invalid PIN.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PUK was entered. Should end with a full stop since it can be chained with more text.">
+        Invalid PUK.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when maximum allowed attempts exceeded.">
+        Maximum allowed attempts exceeded.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when unknown error occurred in extension code. Should end with a full stop since it can be chained with more text.">
+        Unknown error.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT" desc="The text displayed in the certificate provider PIN request dialog about the number of attempts left">
+        Attempts left: <ph name="ATTEMPTS_LEFT">$1<ex>3</ex></ph>
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_ERROR_RETRY" desc="The text displayed in the certificate provider PIN request dialog when the previous login attempt was unsuccessful, including the reason for the previous failure.">
+        <ph name="ERROR_MESSAGE">$1<ex>Invalid PIN.</ex></ph> Please try again.
+      </message>
+      <message name="IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS" desc="The text displayed in the certificate provider PIN request dialog when the previous login attempt was unsuccessful but there are more attempts remaining. Includes the reason for the previous failure.">
+        <ph name="ERROR_MESSAGE">$1<ex>Invalid PIN.</ex></ph> Please try again. Attempts left: <ph name="ATTEMPTS_LEFT">$2<ex>3</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

@@ -93,15 +93,15 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        public void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl,
-                String badgeIconUrl) {
-            super.onGotManifestData(fetchedInfo, primaryIconUrl, badgeIconUrl);
+        public void onGotManifestData(
+                WebApkInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+            super.onGotManifestData(fetchedInfo, primaryIconUrl, splashIconUrl);
             mWaiter.notifyCalled();
         }
 
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
-                String primaryIconUrl, String badgeIconUrl, boolean isManifestStale,
+                String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
                 @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
             mNeedsUpdate = true;
         }

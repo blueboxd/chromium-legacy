@@ -527,7 +527,8 @@ void SystemNetworkContextManager::GetStubResolverConfig(
     bool* insecure_stub_resolver_enabled,
     net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers) {
+        dns_over_https_servers,
+    chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode) {
   DCHECK(!dns_over_https_servers->has_value());
 
   *insecure_stub_resolver_enabled =
@@ -535,10 +536,24 @@ void SystemNetworkContextManager::GetStubResolverConfig(
 
   std::string doh_mode;
   if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
-      chrome_browser_net::ShouldDisableDohForManaged())
+      chrome_browser_net::ShouldDisableDohForManaged()) {
     doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-  else
+    if (forced_management_mode)
+      *forced_management_mode =
+          chrome_browser_net::SecureDnsUiManagementMode::kDisabledManaged;
+  } else if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)
+                  ->IsManaged() &&
+             chrome_browser_net::ShouldDisableDohForParentalControls()) {
+    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
+    if (forced_management_mode)
+      *forced_management_mode = chrome_browser_net::SecureDnsUiManagementMode::
+          kDisabledParentalControls;
+  } else {
     doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
+    if (forced_management_mode)
+      *forced_management_mode =
+          chrome_browser_net::SecureDnsUiManagementMode::kNoOverride;
+  }
 
   if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;

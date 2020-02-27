@@ -53,8 +53,6 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   HTMLInputElement* InputElement() const;
 
  private:
-  bool HasControlClip() const final;
-  PhysicalRect ControlClipRect(const PhysicalOffset&) const final;
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTextField || LayoutTextControl::IsOfType(type);
   }

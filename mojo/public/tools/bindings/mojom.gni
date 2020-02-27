@@ -15,6 +15,7 @@ import("//ui/webui/webui_features.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/nacl/config.gni")
+import("//build/toolchain/kythe.gni")
 import("//components/nacl/features.gni")
 import("//third_party/jinja2/jinja2.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
@@ -39,10 +40,6 @@ declare_args() {
   # where compilation is supported, any mojom target "foo" will also have a
   # corresponding "foo_js_library_for_compile" target generated.
   enable_mojom_closure_compile = closure_compile && optimize_webui
-
-  # Enable adding annotations to generated C++ headers that are used for
-  # cross-references in CodeSearch.
-  enable_kythe_annotations = false
 
   # Enables generating Typescript bindings and compiling them to JS bindings.
   enable_typescript_bindings = false
@@ -709,6 +706,8 @@ template("mojom") {
         ]
       }
 
+      # Enable adding annotations to generated C++ headers that are used for
+      # cross-references in CodeSearch.
       if (enable_kythe_annotations) {
         args += [ "--enable_kythe_annotations" ]
       }

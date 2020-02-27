@@ -73,21 +73,16 @@ String LayoutFileUploadControl::FileTextValue() const {
   return StringTruncator::CenterTruncate(text, width, StyleRef().GetFont());
 }
 
-PhysicalRect LayoutFileUploadControl::ControlClipRect(
-    const PhysicalOffset& additional_offset) const {
+// Override to allow effective clip rect to be bigger than the padding box
+// because of kButtonShadowHeight.
+PhysicalRect LayoutFileUploadControl::OverflowClipRect(
+    const PhysicalOffset& additional_offset,
+    OverlayScrollbarClipBehavior) const {
   PhysicalRect rect(additional_offset, Size());
   rect.Expand(BorderInsets());
   rect.offset.top -= LayoutUnit(kButtonShadowHeight);
   rect.size.height += LayoutUnit(kButtonShadowHeight) * 2;
   return rect;
-}
-
-// Override to allow effective ControlClipRect to be bigger than the padding
-// box because of kButtonShadowHeight.
-PhysicalRect LayoutFileUploadControl::OverflowClipRect(
-    const PhysicalOffset& additional_offset,
-    OverlayScrollbarClipBehavior) const {
-  return ControlClipRect(additional_offset);
 }
 
 }  // namespace blink

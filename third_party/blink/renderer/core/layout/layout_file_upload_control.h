@@ -48,8 +48,6 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
 
   HTMLInputElement* UploadButton() const;
 
-  bool HasControlClip() const override { return true; }
-  PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
   PhysicalRect OverflowClipRect(const PhysicalOffset&,
                                 OverlayScrollbarClipBehavior) const override;
 

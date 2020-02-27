@@ -18,6 +18,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -51,6 +52,55 @@
 namespace gpu {
 
 namespace {
+
+#if defined(OS_WIN)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum D3D11FeatureLevel in
+//  \tools\metrics\histograms\enums.xml
+enum class D3D11FeatureLevel {
+  kUnknown = 0,
+  k9_1 = 4,
+  k9_2 = 5,
+  k9_3 = 6,
+  k10_0 = 7,
+  k10_1 = 8,
+  k11_0 = 9,
+  k11_1 = 10,
+  k12_0 = 11,
+  k12_1 = 12,
+  kMaxValue = k12_1,
+};
+
+inline D3D11FeatureLevel ConvertToHistogramD3D11FeatureLevel(
+    D3D_FEATURE_LEVEL d3d11_feature_level) {
+  switch (d3d11_feature_level) {
+    case D3D_FEATURE_LEVEL_1_0_CORE:
+      return D3D11FeatureLevel::kUnknown;
+    case D3D_FEATURE_LEVEL_9_1:
+      return D3D11FeatureLevel::k9_1;
+    case D3D_FEATURE_LEVEL_9_2:
+      return D3D11FeatureLevel::k9_2;
+    case D3D_FEATURE_LEVEL_9_3:
+      return D3D11FeatureLevel::k9_3;
+    case D3D_FEATURE_LEVEL_10_0:
+      return D3D11FeatureLevel::k10_0;
+    case D3D_FEATURE_LEVEL_10_1:
+      return D3D11FeatureLevel::k10_1;
+    case D3D_FEATURE_LEVEL_11_0:
+      return D3D11FeatureLevel::k11_0;
+    case D3D_FEATURE_LEVEL_11_1:
+      return D3D11FeatureLevel::k11_1;
+    case D3D_FEATURE_LEVEL_12_0:
+      return D3D11FeatureLevel::k12_0;
+    case D3D_FEATURE_LEVEL_12_1:
+      return D3D11FeatureLevel::k12_1;
+    default:
+      NOTREACHED();
+      return D3D11FeatureLevel::kUnknown;
+  }
+}
+#endif  // OS_WIN
 
 GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
     const std::set<int>& blacklisted_features,
@@ -884,6 +934,29 @@ void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info) {
         has_discrete_gpu ? HasDiscreteGpu::kYes : HasDiscreteGpu::kNo;
   }
 #endif
+}
+
+void RecordDevicePerfInfoHistograms() {
+  base::Optional<DevicePerfInfo> device_perf_info = GetDevicePerfInfo();
+  if (!device_perf_info.has_value())
+    return;
+  UMA_HISTOGRAM_COUNTS_1000("Hardware.TotalDiskSpace",
+                            device_perf_info->total_disk_space_mb / 1024);
+  UMA_HISTOGRAM_COUNTS_100("Hardware.Concurrency",
+                           device_perf_info->hardware_concurrency);
+#if defined(OS_WIN)
+  UMA_HISTOGRAM_COUNTS_100("Memory.Total.SystemCommitLimit",
+                           device_perf_info->system_commit_limit_mb / 1024);
+  UMA_HISTOGRAM_ENUMERATION("GPU.D3D11FeatureLevel",
+                            ConvertToHistogramD3D11FeatureLevel(
+                                device_perf_info->d3d11_feature_level));
+  UMA_HISTOGRAM_ENUMERATION("GPU.HasDiscreteGpu",
+                            device_perf_info->has_discrete_gpu);
+#endif  // OS_WIN
+  UMA_HISTOGRAM_ENUMERATION("GPU.IntelGpuGeneration",
+                            device_perf_info->intel_gpu_generation);
+  UMA_HISTOGRAM_BOOLEAN("GPU.SoftwareRendering",
+                        device_perf_info->software_rendering);
 }
 
 #if defined(OS_WIN)

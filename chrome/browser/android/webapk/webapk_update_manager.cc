@@ -58,8 +58,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     const JavaParamRef<jstring>& java_primary_icon_url,
     const JavaParamRef<jobject>& java_primary_icon_bitmap,
     jboolean java_is_primary_icon_maskable,
-    const JavaParamRef<jstring>& java_badge_icon_url,
-    const JavaParamRef<jobject>& java_badge_icon_bitmap,
+    const JavaParamRef<jstring>& java_splash_icon_url,
+    const JavaParamRef<jobject>& java_splash_icon_bitmap,
     const JavaParamRef<jobjectArray>& java_icon_urls,
     const JavaParamRef<jobjectArray>& java_icon_hashes,
     jint java_display_mode,
@@ -97,8 +97,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   info.background_color = JavaColorToOptionalSkColor(java_background_color);
   info.best_primary_icon_url =
       GURL(ConvertJavaStringToUTF8(env, java_primary_icon_url));
-  info.best_badge_icon_url =
-      GURL(ConvertJavaStringToUTF8(env, java_badge_icon_url));
+  info.splash_image_url =
+      GURL(ConvertJavaStringToUTF8(env, java_splash_icon_url));
   info.manifest_url = GURL(ConvertJavaStringToUTF8(env, java_web_manifest_url));
 
   GURL share_target_action =
@@ -156,11 +156,11 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
       gfx::CreateSkBitmapFromJavaBitmap(java_primary_icon_bitmap_lock);
   primary_icon.setImmutable();
 
-  SkBitmap badge_icon;
-  if (!java_badge_icon_bitmap.is_null()) {
-    gfx::JavaBitmap java_badge_icon_bitmap_lock(java_badge_icon_bitmap);
-    gfx::CreateSkBitmapFromJavaBitmap(java_badge_icon_bitmap_lock);
-    badge_icon.setImmutable();
+  SkBitmap splash_icon;
+  if (!java_splash_icon_bitmap.is_null()) {
+    gfx::JavaBitmap java_splash_icon_bitmap_lock(java_splash_icon_bitmap);
+    gfx::CreateSkBitmapFromJavaBitmap(java_splash_icon_bitmap_lock);
+    splash_icon.setImmutable();
   }
 
   std::string webapk_package;
@@ -194,7 +194,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
 
   WebApkInstaller::StoreUpdateRequestToFile(
       base::FilePath(update_request_path), info, primary_icon,
-      java_is_primary_icon_maskable, badge_icon, webapk_package,
+      java_is_primary_icon_maskable, splash_icon, webapk_package,
       base::NumberToString(java_webapk_version),
       std::move(icon_url_to_murmur2_hash), java_is_manifest_stale,
       update_reason,

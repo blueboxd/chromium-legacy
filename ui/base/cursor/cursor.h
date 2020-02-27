@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/types/cursor_types.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -33,7 +33,7 @@ class UI_BASE_EXPORT Cursor {
   Cursor();
 
   // Implicit constructor.
-  Cursor(CursorType type);
+  Cursor(mojom::CursorType type);
 
   // Allow copy.
   Cursor(const Cursor& cursor);
@@ -45,7 +45,7 @@ class UI_BASE_EXPORT Cursor {
   void RefCustomCursor();
   void UnrefCustomCursor();
 
-  CursorType native_type() const { return native_type_; }
+  mojom::CursorType native_type() const { return native_type_; }
   PlatformCursor platform() const { return platform_cursor_; }
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
@@ -62,8 +62,8 @@ class UI_BASE_EXPORT Cursor {
   bool operator==(const Cursor& cursor) const;
   bool operator!=(const Cursor& cursor) const { return !(*this == cursor); }
 
-  bool operator==(CursorType type) const { return native_type_ == type; }
-  bool operator!=(CursorType type) const { return native_type_ != type; }
+  bool operator==(mojom::CursorType type) const { return native_type_ == type; }
+  bool operator!=(mojom::CursorType type) const { return native_type_ != type; }
 
   void operator=(const Cursor& cursor);
 
@@ -74,7 +74,7 @@ class UI_BASE_EXPORT Cursor {
 #endif
 
   // The basic cursor type.
-  CursorType native_type_ = CursorType::kNull;
+  mojom::CursorType native_type_ = mojom::CursorType::kNull;
 
   // The native platform cursor.
   PlatformCursor platform_cursor_ = 0;

@@ -214,6 +214,8 @@ if (!is_ios) {
     sources = [
       "gpu/gpu_metrics_provider.cc",
       "gpu/gpu_metrics_provider.h",
+      "gpu/rendering_perf_metrics_provider.cc",
+      "gpu/rendering_perf_metrics_provider.h",
     ]
 
     public_deps = [ ":metrics" ]

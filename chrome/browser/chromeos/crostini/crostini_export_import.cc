@@ -134,8 +134,8 @@ void CrostiniExportImport::ImportContainer(content::WebContents* web_contents) {
   OpenFileDialog(NewOperationData(ExportImportType::IMPORT), web_contents);
 }
 
-void CrostiniExportImport::ExportContainer(content::WebContents* web_contents,
-                                           ContainerId container_id,
+void CrostiniExportImport::ExportContainer(ContainerId container_id,
+                                           content::WebContents* web_contents,
                                            OnceTrackerFactory tracker_factory) {
   OpenFileDialog(
       NewOperationData(ExportImportType::EXPORT, std::move(container_id),
@@ -143,8 +143,8 @@ void CrostiniExportImport::ExportContainer(content::WebContents* web_contents,
       web_contents);
 }
 
-void CrostiniExportImport::ImportContainer(content::WebContents* web_contents,
-                                           ContainerId container_id,
+void CrostiniExportImport::ImportContainer(ContainerId container_id,
+                                           content::WebContents* web_contents,
                                            OnceTrackerFactory tracker_factory) {
   OpenFileDialog(
       NewOperationData(ExportImportType::IMPORT, std::move(container_id),

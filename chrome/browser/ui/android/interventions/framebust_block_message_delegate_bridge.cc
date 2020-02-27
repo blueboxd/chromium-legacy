@@ -46,7 +46,7 @@ ScopedJavaLocalRef<jstring> FramebustBlockMessageDelegateBridge::GetBlockedUrl(
 jint FramebustBlockMessageDelegateBridge::GetEnumeratedIcon(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return ResourceMapper::MapFromChromiumId(message_delegate_->GetIconId());
+  return ResourceMapper::MapToJavaDrawableId(message_delegate_->GetIconId());
 }
 
 void FramebustBlockMessageDelegateBridge::OnLinkTapped(

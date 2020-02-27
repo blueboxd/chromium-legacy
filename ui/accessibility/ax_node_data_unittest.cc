@@ -267,4 +267,11 @@ TEST(AXNodeDataTest, TestSupportsExpandCollapse) {
   }
 }
 
+TEST(AXNodeDataTest, BitFieldsSanityCheck) {
+  EXPECT_LT(static_cast<size_t>(ax::mojom::State::kMaxValue),
+            sizeof(AXNodeData::state) * 8);
+  EXPECT_LT(static_cast<size_t>(ax::mojom::Action::kMaxValue),
+            sizeof(AXNodeData::actions) * 8);
+}
+
 }  // namespace ui

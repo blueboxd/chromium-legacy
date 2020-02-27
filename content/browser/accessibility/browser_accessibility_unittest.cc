@@ -28,11 +28,12 @@ class BrowserAccessibilityTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
 
-BrowserAccessibilityTest::BrowserAccessibilityTest() {}
+BrowserAccessibilityTest::BrowserAccessibilityTest() = default;
 
-BrowserAccessibilityTest::~BrowserAccessibilityTest() {}
+BrowserAccessibilityTest::~BrowserAccessibilityTest() = default;
 
 void BrowserAccessibilityTest::SetUp() {
+  ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
   test_browser_accessibility_delegate_ =
       std::make_unique<TestBrowserAccessibilityDelegate>();
 }

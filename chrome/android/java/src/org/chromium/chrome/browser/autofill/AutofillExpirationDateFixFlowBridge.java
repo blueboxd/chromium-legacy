@@ -11,7 +11,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.AutofillExpirationDateFixFlowPrompt.AutofillExpirationDateFixFlowPromptDelegate;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.WindowAndroid;
@@ -75,8 +74,8 @@ final class AutofillExpirationDateFixFlowBridge
             return;
         }
 
-        mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(activity, this,
-                mTitle, mConfirmButtonLabel, ResourceId.mapToDrawableId(mIconId), mCardLabel);
+        mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(
+                activity, this, mTitle, mConfirmButtonLabel, mIconId, mCardLabel);
         mExpirationDateFixFlowPrompt.show((ChromeActivity) activity);
     }
 

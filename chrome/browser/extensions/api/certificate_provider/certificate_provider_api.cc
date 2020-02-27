@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "chrome/common/extensions/api/certificate_provider_internal.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "extensions/browser/quota_service.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
@@ -29,8 +29,8 @@
 
 namespace api_cp = extensions::api::certificate_provider;
 namespace api_cpi = extensions::api::certificate_provider_internal;
-using PinCodeType = chromeos::SecurityTokenPinCodeType;
-using PinErrorLabel = chromeos::SecurityTokenPinErrorLabel;
+using PinCodeType = chromeos::security_token_pin::CodeType;
+using PinErrorLabel = chromeos::security_token_pin::ErrorLabel;
 
 namespace {
 

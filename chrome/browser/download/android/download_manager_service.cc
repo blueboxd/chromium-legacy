@@ -626,19 +626,6 @@ download::DownloadItem* DownloadManagerService::GetDownload(
   return coordinator ? coordinator->GetDownloadByGuid(download_guid) : nullptr;
 }
 
-void DownloadManagerService::RecordFirstBackgroundInterruptReason(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jdownload_guid,
-    jboolean download_started) {
-  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  download::DownloadItem* download = GetDownload(download_guid, false);
-  if (download) {
-    download::RecordFirstBackgroundDownloadInterruptReason(
-        download->GetLastReason(), download_started);
-  }
-}
-
 void DownloadManagerService::OnPendingDownloadsLoaded() {
   is_pending_downloads_loaded_ = true;
 

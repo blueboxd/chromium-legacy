@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
@@ -79,12 +80,17 @@ class SystemNetworkContextManager {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns the current host resolver configuration. |forced_management_mode|
+  // is an optional param that will be set to indicate the type of override
+  // applied by Chrome if provided.
   static void GetStubResolverConfig(
       PrefService* local_state,
       bool* insecure_stub_resolver_enabled,
       net::DnsConfig::SecureDnsMode* secure_dns_mode,
       base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-          dns_over_https_servers);
+          dns_over_https_servers,
+      chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode =
+          nullptr);
 
   // Returns the System NetworkContext. May only be called after SetUp(). Does
   // any initialization of the NetworkService that may be needed when first

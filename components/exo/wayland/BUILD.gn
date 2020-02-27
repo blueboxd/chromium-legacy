@@ -69,45 +69,6 @@ source_set("wayland") {
 
   defines = [ "EXO_IMPLEMENTATION" ]
 
-  if (is_chromeos) {
-    sources += [
-      "wayland_keyboard_delegate.cc",
-      "wayland_keyboard_delegate.h",
-      "wayland_positioner.cc",
-      "wayland_positioner.h",
-      "wl_shell.cc",
-      "wl_shell.h",
-      "zcr_color_space.cc",
-      "zcr_color_space.h",
-      "zcr_cursor_shapes.cc",
-      "zcr_cursor_shapes.h",
-      "zcr_gaming_input.cc",
-      "zcr_gaming_input.h",
-      "zcr_keyboard_configuration.cc",
-      "zcr_keyboard_configuration.h",
-      "zcr_keyboard_extension.cc",
-      "zcr_keyboard_extension.h",
-      "zcr_notification_shell.cc",
-      "zcr_notification_shell.h",
-      "zcr_remote_shell.cc",
-      "zcr_remote_shell.h",
-      "zcr_stylus_tools.cc",
-      "zcr_stylus_tools.h",
-      "zwp_input_timestamps_manager.cc",
-      "zwp_input_timestamps_manager.h",
-      "zwp_pointer_constraints.cc",
-      "zwp_pointer_constraints.h",
-      "zwp_pointer_gestures.cc",
-      "zwp_pointer_gestures.h",
-      "zwp_relative_pointer_manager.cc",
-      "zwp_relative_pointer_manager.h",
-      "zwp_text_input_manager.cc",
-      "zwp_text_input_manager.h",
-      "zxdg_shell.cc",
-      "zxdg_shell.h",
-    ]
-  }
-
   deps = [
     "//base",
     "//components/exo",
@@ -181,6 +142,47 @@ source_set("wayland") {
       "zwp_fullscreen_shell.h",
     ]
     deps += [ "//third_party/wayland-protocols:fullscreen_shell_protocol" ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "wayland_keyboard_delegate.cc",
+      "wayland_keyboard_delegate.h",
+      "wayland_positioner.cc",
+      "wayland_positioner.h",
+      "wl_shell.cc",
+      "wl_shell.h",
+      "zcr_color_space.cc",
+      "zcr_color_space.h",
+      "zcr_cursor_shapes.cc",
+      "zcr_cursor_shapes.h",
+      "zcr_gaming_input.cc",
+      "zcr_gaming_input.h",
+      "zcr_keyboard_configuration.cc",
+      "zcr_keyboard_configuration.h",
+      "zcr_keyboard_extension.cc",
+      "zcr_keyboard_extension.h",
+      "zcr_notification_shell.cc",
+      "zcr_notification_shell.h",
+      "zcr_remote_shell.cc",
+      "zcr_remote_shell.h",
+      "zcr_stylus_tools.cc",
+      "zcr_stylus_tools.h",
+      "zwp_input_timestamps_manager.cc",
+      "zwp_input_timestamps_manager.h",
+      "zwp_pointer_constraints.cc",
+      "zwp_pointer_constraints.h",
+      "zwp_pointer_gestures.cc",
+      "zwp_pointer_gestures.h",
+      "zwp_relative_pointer_manager.cc",
+      "zwp_relative_pointer_manager.h",
+      "zwp_text_input_manager.cc",
+      "zwp_text_input_manager.h",
+      "zxdg_shell.cc",
+      "zxdg_shell.h",
+    ]
+
+    deps += [ "//ui/base/mojom:cursor_type" ]
   }
 }
 

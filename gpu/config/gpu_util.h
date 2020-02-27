@@ -86,6 +86,7 @@ GPU_EXPORT std::string GetIntelGpuGeneration(uint32_t vendor_id,
 GPU_EXPORT IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info);
 
 GPU_EXPORT void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info);
+GPU_EXPORT void RecordDevicePerfInfoHistograms();
 
 #if defined(OS_WIN)
 GPU_EXPORT std::string D3DFeatureLevelToString(uint32_t d3d_feature_level);

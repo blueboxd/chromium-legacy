@@ -16,7 +16,7 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [1, 1],
-      "bounds": [189, 270],
+      "bounds": [189, 337],
       "contentsOpaque": true,
       "backgroundColor": "#CCCCCC",
       "transform": 2
@@ -42,7 +42,7 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [1, 1],
-      "bounds": [189, 270],
+      "bounds": [189, 337],
       "contentsOpaque": true,
       "backgroundColor": "#CCCCCC",
       "transform": 4

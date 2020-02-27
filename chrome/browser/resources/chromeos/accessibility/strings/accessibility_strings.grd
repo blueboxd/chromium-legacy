@@ -143,6 +143,7 @@
     <messages fallback_to_english="true">
       <part file="chromevox_strings.grdp" />
       <part file="select_to_speak_strings.grdp" />
+      <part file="switch_access_strings.grdp" />
     </messages>
   </release>
 </grit>

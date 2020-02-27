@@ -3,23 +3,13 @@
 # found in the LICENSE file.
 
 mojom = "//ui/base/mojom/cursor.mojom"
-public_headers = [
-  "//ui/base/cursor/cursor.h",
-  "//ui/base/cursor/types/cursor_types.h",
-]
+public_headers = [ "//ui/base/cursor/cursor.h" ]
 traits_headers = [ "//ui/base/mojom/cursor_mojom_traits.h" ]
-sources = [
-  "//ui/base/mojom/cursor_mojom_traits.cc",
-]
-public_deps = [
-  "//ui/base",
-]
+sources = [ "//ui/base/mojom/cursor_mojom_traits.cc" ]
+public_deps = [ "//ui/base" ]
 deps = [
   "//ui/gfx/geometry",
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
-type_mappings = [
-  "ui.mojom.Cursor=::ui::Cursor[copyable_pass_by_value]",
-  "ui.mojom.CursorType=::ui::CursorType",
-]
+type_mappings = [ "ui.mojom.Cursor=::ui::Cursor[copyable_pass_by_value]" ]

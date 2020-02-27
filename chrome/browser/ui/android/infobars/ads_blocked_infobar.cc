@@ -35,7 +35,7 @@ AdsBlockedInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   ScopedJavaLocalRef<jstring> toggle_text =
       ConvertUTF16ToJavaString(env, ads_blocked_delegate->GetToggleText());
-  return Java_AdsBlockedInfoBar_show(env, GetEnumeratedIconId(), message_text,
+  return Java_AdsBlockedInfoBar_show(env, GetJavaIconId(), message_text,
                                      ok_button_text, reload_button_text,
                                      toggle_text, explanation_message);
 }

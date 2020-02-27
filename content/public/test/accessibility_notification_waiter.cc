@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -44,6 +45,11 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
+  // Add the the accessibility mode on BrowserAccessibilityState so it can be
+  // also be added to AXPlatformNode, auralinux uses this to determine if it
+  // should enable accessibility or not.
+  BrowserAccessibilityState::GetInstance()->AddAccessibilityModeFlags(
+      accessibility_mode);
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
@@ -57,9 +63,14 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
+  // Add the the accessibility mode on BrowserAccessibilityState so it can be
+  // also be added to AXPlatformNode, auralinux uses this to determine if it
+  // should enable accessibility or not.
+  BrowserAccessibilityState::GetInstance()->AddAccessibilityModeFlags(
+      accessibility_mode);
 }
 
-AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {}
+AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() = default;
 
 void AccessibilityNotificationWaiter::ListenToAllFrames(
     WebContents* web_contents) {

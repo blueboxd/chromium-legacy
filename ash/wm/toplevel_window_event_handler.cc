@@ -21,6 +21,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -573,7 +574,7 @@ aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
-    cursor_client->SetCursor(ui::CursorType::kPointer);
+    cursor_client->SetCursor(ui::mojom::CursorType::kPointer);
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 

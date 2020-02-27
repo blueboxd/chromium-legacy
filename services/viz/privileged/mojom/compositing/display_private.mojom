@@ -15,9 +15,7 @@ import "ui/latency/mojom/latency_info.mojom";
 import "services/viz/privileged/mojom/compositing/layered_window_updater.mojom";
 import "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom";
 
-// See ui/compositor/compositor.h: ContextFactoryPrivate.
 // The DisplayPrivate is used by privileged clients to talk to Display.
-// DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
 interface DisplayPrivate {
   SetDisplayVisible(bool visible);
 

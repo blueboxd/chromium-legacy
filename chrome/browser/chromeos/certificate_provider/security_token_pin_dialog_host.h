@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
-#include "chromeos/constants/security_token_pin_types.h"
+#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 
 namespace chromeos {
@@ -53,9 +53,9 @@ class SecurityTokenPinDialogHost {
   //     CloseSecurityTokenPinDialog()).
   virtual void ShowSecurityTokenPinDialog(
       const std::string& caller_extension_name,
-      SecurityTokenPinCodeType code_type,
+      security_token_pin::CodeType code_type,
       bool enable_user_input,
-      SecurityTokenPinErrorLabel error_label,
+      security_token_pin::ErrorLabel error_label,
       int attempts_left,
       const base::Optional<AccountId>& authenticating_user_account_id,
       SecurityTokenPinEnteredCallback pin_entered_callback,

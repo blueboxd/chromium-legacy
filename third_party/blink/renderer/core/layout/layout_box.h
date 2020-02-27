@@ -1532,7 +1532,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void EnsureIsReadyForPaintInvalidation() override;
 
-  virtual bool HasControlClip() const { return false; }
+  bool HasControlClip() const;
 
   class MutableForPainting : public LayoutObject::MutableForPainting {
    public:
@@ -1625,9 +1625,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   ~LayoutBox() override;
 
   virtual bool ComputeShouldClipOverflow() const;
-  virtual PhysicalRect ControlClipRect(const PhysicalOffset&) const {
-    return PhysicalRect();
-  }
 
   void WillBeDestroyed() override;
 

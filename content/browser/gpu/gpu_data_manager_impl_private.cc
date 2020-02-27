@@ -574,11 +574,6 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
   return gpu_info_for_hardware_gpu_;
 }
 
-base::Optional<gpu::DevicePerfInfo>
-GpuDataManagerImplPrivate::GetDevicePerfInfo() const {
-  return device_perf_info_;
-}
-
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
@@ -837,8 +832,9 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanDevicePerfInfo(
     const gpu::DevicePerfInfo& device_perf_info) {
   gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
   gpu_info_dx12_vulkan_valid_ = true;
-  device_perf_info_ = device_perf_info;
-  CollectExtraDevicePerfInfo(gpu_info_, &(device_perf_info_.value()));
+  gpu::DevicePerfInfo mutable_device_perf_info = device_perf_info;
+  CollectExtraDevicePerfInfo(gpu_info_, &mutable_device_perf_info);
+  gpu::SetDevicePerfInfo(mutable_device_perf_info);
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
 }

@@ -38,6 +38,7 @@
 <translation id="1213216066620407844">ChromeVox – annab Chrome'ile hääle</translation>
 <translation id="1225969361094801578">Tume kiltsinine</translation>
 <translation id="1229276918471378188">Eelmine hüpe</translation>
+<translation id="1230503547248836149">Valiku algus</translation>
 <translation id="1236794971743289975">Järelmärkus</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1243477406442346359">Rukkilillesinine</translation>
@@ -120,6 +121,7 @@
 <translation id="1752708997038853212">Otsingupäringu sisestamine</translation>
 <translation id="1756785467854861272">Tume magenta</translation>
 <translation id="1765245556747822181">Pühkige ühe sõrmega üles</translation>
+<translation id="1771761307086386028">Keri paremale</translation>
 <translation id="1781173782405573156">Läbimisklahv</translation>
 <translation id="1787176709638001873">Parooli muutmise tekst</translation>
 <translation id="1802710350767629429">Kuva värskenduse märkmed</translation>
@@ -176,6 +178,7 @@
 <translation id="2199994615414171367">Eelmine valem</translation>
 <translation id="2203046366315513658">Väärtuse vähendamine</translation>
 <translation id="2216790501338699346">Lingi URL: <ph name="LINK_URL" /></translation>
+<translation id="2220205454259065436">Liigu ühe tähemärgi võrra tagasi</translation>
 <translation id="2220529011494928058">Probleemist teatamine</translation>
 <translation id="2223693656926968778">Toiming praeguse üksusega</translation>
 <translation id="224426591676115802"><ph name="LANGUAGE" /> keele jaoks pole häält saadaval</translation>
@@ -225,6 +228,7 @@
 <translation id="2592212930811759050">Topeltpuudutage muutmise alustamiseks</translation>
 <translation id="2594420797397883935">Kõik eelmised üksused on lingid</translation>
 <translation id="2598495320872286378">Grammatikaviga</translation>
+<translation id="2603828437139726540">Liigu ühe tähemärgi võrra edasi</translation>
 <translation id="2614981083756825552">Math ML-i paigutus</translation>
 <translation id="2624431853467395961">Õppimisrežiimi avamine</translation>
 <translation id="2626530649491650971">klõpsatav</translation>
@@ -232,6 +236,7 @@
 <translation id="2638785836053527382">Allalaadimine jätkub: <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVoxi muuteklahv</translation>
 <translation id="2644542693584024604">kirjaviga</translation>
+<translation id="2654172656519784359">Liigu ühe sõna võrra edasi</translation>
 <translation id="2661530546602071611">Teatis</translation>
 <translation id="2673280813984708147">muudab</translation>
 <translation id="267442004702508783">värskendab</translation>
@@ -308,6 +313,7 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Järgmine maamärk</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="309749186376891736">Kursori liigutamine</translation>
 <translation id="3103579948980282461">Keskmine lillakaspunane</translation>
 <translation id="3104705064753753826">alm dlg</translation>
 <translation id="3109724472072898302">Ahendatud</translation>
@@ -439,6 +445,7 @@
 <translation id="3930498801443296724">Tsitaat</translation>
 <translation id="3935615366277838204">Suurtäht <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Lavendliroosa</translation>
+<translation id="3943857333388298514">Kleebi</translation>
 <translation id="394953087167197343">Viita õigekirjaveale:</translation>
 <translation id="3962990492275676168">Alusta lugemist praegusest asukohast</translation>
 <translation id="3970951409746498040">Kollakaspruun</translation>
@@ -448,6 +455,7 @@
 <translation id="4002709828007663583">Tume orhideeroosa</translation>
 <translation id="4004802134384979325">märgitud</translation>
 <translation id="4006140876663370126">img</translation>
+<translation id="4021716437419160885">Keri alla</translation>
 <translation id="4038349100599457191">Kuu kontroll</translation>
 <translation id="4039983576244166038">Rea päis on tühi</translation>
 <translation id="4047216625641135770">Märk</translation>
@@ -477,6 +485,7 @@
 <translation id="4206289001967551965">Tabelis</translation>
 <translation id="4215733775853809057">Järgmine liugur</translation>
 <translation id="42164919740161077">Hallikassinine</translation>
+<translation id="4217571870635786043">Dikteerimine</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{kriips}other{# kriipsu}}</translation>
 <translation id="421884353938374759">värvivalija</translation>
 <translation id="4221012616705981690">Eelmist loendit ei ole</translation>
@@ -543,6 +552,7 @@
 <translation id="4688873778442829762">võrg</translation>
 <translation id="4693675773662933727">Eelmine maamärk</translation>
 <translation id="4710166929009737753">Pühkige ühe sõrmega paremale</translation>
+<translation id="4712898966495541134">Valiku lõpp</translation>
 <translation id="4729095194763193578">Eelmine tabeli rida</translation>
 <translation id="4736221692378411923">August</translation>
 <translation id="4740661827607246557">Abikäsud</translation>
@@ -575,9 +585,11 @@
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Tume tsüaan</translation>
 <translation id="489907760999452556">Siselink</translation>
+<translation id="4909019435900810068">Liigu ühe sõna võrra tagasi</translation>
 <translation id="4911349081560453449">Eelmist märkeruutu ei ole</translation>
 <translation id="4915087353619183190">Õppimisrežiimi käivitamine. Vajutage qwerty-klahvi, värskendatavat Braille' klahvi või puuteliigutust, et vaadata selle funktsiooni. Väljumiseks vajutage paoklahvi või korraga juhtklahvi ja klahvi W.</translation>
 <translation id="492295894462528572">Eessõna</translation>
+<translation id="495046168593986294">Keri üles</translation>
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4953585991029886728">Teksti muutmine</translation>
 <translation id="4954534434583049121">Eelmine tsitaat</translation>
@@ -638,6 +650,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstikast</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
+<translation id="5331522683003474486">Võimaldab juhtida seadet vaid 1 või 2 lülitiga.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Tagasilink</translation>
 <translation id="5355014376930441909">Järgmist jaotist ei ole</translation>
@@ -659,6 +672,7 @@
 <translation id="549602578321198708">Sõna</translation>
 <translation id="5502713021410870035">September</translation>
 <translation id="5507663321906818013">Silumise etalon</translation>
+<translation id="5513242761114685513">Kontekstimenüü</translation>
 <translation id="551361796444814639">Keskmine sinine</translation>
 <translation id="552195134157544755">Raadionupp</translation>
 <translation id="5534303576632885660">päi</translation>
@@ -740,12 +754,14 @@
 <translation id="6006050241733874051">Vorm</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kurakriips}other{# kurakaldkriipsu}}</translation>
 <translation id="6017514345406065928">Roheline</translation>
+<translation id="602001110135236999">Keri vasakule</translation>
 <translation id="6034000775414344507">Helehall</translation>
 <translation id="6037602951055904232">Edasi navigeerimine</translation>
 <translation id="6044160928851315051">Ekraanikuva tumendamine</translation>
 <translation id="6082768461603900813">Navigeerimise põhifunktsioonid</translation>
 <translation id="609281021724813947">Eelmist liugurit ei ole</translation>
 <translation id="6095514649509181044">Tähe suurust eiratakse</translation>
+<translation id="6100239002225743044">Liigu ühe rea võrra üles</translation>
 <translation id="6118126368611144850">Androidi rakendused Chrome'i jaoks. Kui teie seadmes on Play pood, saate  vaadata, kuidas ChromeVox Androidi rakendustega töötab. Proovige katselist tuge, laadides Play poest alla Google Chrome Canary.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">nupp</translation>
@@ -844,14 +860,17 @@
 <translation id="6865519907510167493">Kirjaviga</translation>
 <translation id="688976158310523235">Otsingumenüü</translation>
 <translation id="6894148351896207544">Esitage praegune kellaaeg ja kuupäev</translation>
+<translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6897341342232909480">Teisalda vasakule</translation>
 <translation id="6901540140423170855">kuupäev</translation>
 <translation id="6910211073230771657">Kustutatud</translation>
 <translation id="6910969481785184048">Sisse- ja väljalülitamine ning peatamine</translation>
 <translation id="6919104639734799681">Kuva tabelite loend</translation>
+<translation id="6945221475159498467">Vali</translation>
 <translation id="6949846980769640811">Keskmine akvamariin</translation>
 <translation id="6951482098621102657">Järgmist 5. taseme pealkirja ei ole</translation>
 <translation id="6955705049214951590">Hägune roosa</translation>
+<translation id="696356426651109308">Liigu algusesse</translation>
 <translation id="699159175332639490">Otsinguklahv + O + W</translation>
 <translation id="6994042831499278539">Sõnastiku viide</translation>
 <translation id="6996566555547746822">Järgmine liitboks</translation>
@@ -859,6 +878,7 @@
 <translation id="700202842116345659">Bibliograafia kirje</translation>
 <translation id="7005146664810010831">URL-i ei leitud</translation>
 <translation id="7010712454773919705">ChromeVoxi muuteklahv</translation>
+<translation id="7026338066939101231">Vähenemine</translation>
 <translation id="7031651751836475482">lnd üksus</translation>
 <translation id="7037042857287298941">Eelmine loend</translation>
 <translation id="7039555289296502784">Oliivhall</translation>
@@ -868,6 +888,7 @@
 <translation id="7062635574500127092">Sinakasroheline</translation>
 <translation id="7086377898680121060">Suurendab heledust</translation>
 <translation id="7088743565397416204">Fokuseeritud üksuse aktiveerimiseks topeltpuudutage</translation>
+<translation id="7088960765736518739">Lülitiga juurdepääs</translation>
 <translation id="7091296112653361280">Navajo valge</translation>
 <translation id="7095834689119144465">Tekstis olevate numbrite muutmine</translation>
 <translation id="7096001299300236431">Eelmine meediaüksus</translation>
@@ -962,6 +983,7 @@
 <translation id="7693840228159394336">Eelmine raadionupp</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Järgmist liitboksi ei ole</translation>
+<translation id="7724603315864178912">Lõika</translation>
 <translation id="7731785449856576010">Järgmist meediavidinat ei ole</translation>
 <translation id="773906353055481349">Lahtri kaupa navigeerimiseks vajutage korraga otsinguklahvi, klahve Ctrl + Alt ja nooleklahve</translation>
 <translation id="7750184816513382104">Tõstutundlik</translation>
@@ -974,9 +996,11 @@
 <translation id="7805247615045262757">vaikimisi navigeerimine</translation>
 <translation id="7805768142964895445">Olek</translation>
 <translation id="7810781339813764006">Järgmine rühm</translation>
+<translation id="7813616274030162878">Lülitiga juurdepääsu menüü</translation>
 <translation id="7819187121850078213">akna vaheleht <ph name="TITLE" /></translation>
 <translation id="7828956995407538686">Oktoober</translation>
 <translation id="7839679365527550018">Eelmine sõna</translation>
+<translation id="7846634333498149051">Klaviatuur</translation>
 <translation id="7851132556376253786">Järgmist artiklit ei ole</translation>
 <translation id="7851816175263618915">Mõned kirjavahemärgid</translation>
 <translation id="7870596830398826354">Math ML-i puu</translation>
@@ -997,6 +1021,7 @@
 <translation id="7972507042926081808">Šokolaadpruun</translation>
 <translation id="7974390230414479278">Menüü-üksus</translation>
 <translation id="8004507136466386272">Sõnad</translation>
+<translation id="8004512796067398576">Juurdekasv</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{jutumärk}other{# jutumärki}}</translation>
 <translation id="8017588669690167134">Kõne väljalülitamine</translation>
@@ -1015,6 +1040,7 @@
 <translation id="8096975275316362544">Kahvatu mündiroheline</translation>
 <translation id="8098587210054821856">Kilthall</translation>
 <translation id="8121539003537428024">Luba kõik sündmuste filtrid</translation>
+<translation id="8123975449645947908">Keri tagasi</translation>
 <translation id="8126386426083591964">Eelmist 5. taseme pealkirja ei ole</translation>
 <translation id="812886159861361726">Allalaadimine katkes: <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">Ülal ei ole ühtki lahtrit</translation>
@@ -1048,6 +1074,7 @@
 <translation id="8374154622594089836">kuu</translation>
 <translation id="8378855320830505539">Piirkond</translation>
 <translation id="8382679411218029383">Rea ja loendi automaatne täitmine</translation>
+<translation id="8428213095426709021">Seaded</translation>
 <translation id="8428603554127842284"><ph name="DEPTH" />. tase</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Lisateave</translation>
@@ -1135,6 +1162,7 @@
 <translation id="9074824103975499138">Otsige ChromeVoxi menüüdest</translation>
 <translation id="9077213568694924680">eemaldatakse valikust</translation>
 <translation id="9077305471618729969">Hele mereroheline</translation>
+<translation id="9080299285199342830">Liigu lõppu</translation>
 <translation id="9089864840575085222">Teksti sisestamise kaja tsükkel</translation>
 <translation id="9108370397979208512">matemaatika</translation>
 <translation id="9108589040018540527">scbr</translation>
@@ -1163,5 +1191,6 @@
 <translation id="962913030769097253">Järgmine 1. taseme pealkiri</translation>
 <translation id="966588271015727539">Valige Bluetoothiga Braille' ekraan</translation>
 <translation id="973955474346881951">Luba/keela püsiv režiim</translation>
+<translation id="985654871861528815">Liigu ühe rea võrra alla</translation>
 <translation id="992256792861109788">Roosa</translation>
 </translationbundle>

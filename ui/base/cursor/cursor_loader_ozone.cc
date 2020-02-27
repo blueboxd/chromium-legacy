@@ -8,6 +8,7 @@
 
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
@@ -20,7 +21,7 @@ CursorLoaderOzone::~CursorLoaderOzone() {
   UnloadAll();
 }
 
-void CursorLoaderOzone::LoadImageCursor(CursorType id,
+void CursorLoaderOzone::LoadImageCursor(mojom::CursorType id,
                                         int resource_id,
                                         const gfx::Point& hot) {
   SkBitmap bitmap;
@@ -31,7 +32,7 @@ void CursorLoaderOzone::LoadImageCursor(CursorType id,
   image_cursors_[id] = factory_->CreateImageCursor(bitmap, hotspot, scale());
 }
 
-void CursorLoaderOzone::LoadAnimatedCursor(CursorType id,
+void CursorLoaderOzone::LoadAnimatedCursor(mojom::CursorType id,
                                            int resource_id,
                                            const gfx::Point& hot,
                                            int frame_delay_ms) {
@@ -52,13 +53,13 @@ void CursorLoaderOzone::UnloadAll() {
 }
 
 void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  CursorType native_type = cursor->native_type();
+  mojom::CursorType native_type = cursor->native_type();
   PlatformCursor platform;
 
   if (image_cursors_.count(native_type)) {
     // An image cursor is loaded for this type.
     platform = image_cursors_[native_type];
-  } else if (native_type == CursorType::kCustom) {
+  } else if (native_type == mojom::CursorType::kCustom) {
     // The platform cursor was already set via WebCursor::GetPlatformCursor.
     platform = cursor->platform();
   } else {

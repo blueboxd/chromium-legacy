@@ -75,7 +75,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL);
 
   int permission_icon =
-      ResourceMapper::MapFromChromiumId(delegate->GetIconId());
+      ResourceMapper::MapToJavaDrawableId(delegate->GetIconId());
 
   std::vector<int> content_settings_types;
   for (size_t i = 0; i < delegate->PermissionCount(); i++) {

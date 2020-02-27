@@ -588,7 +588,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
       }));
 
   InstallResult result = InstallWebAppsAfterSync({app});
-  EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
   EXPECT_EQ(app->app_id(), result.app_id);
 
   EXPECT_EQ(1u, registrar().GetAppIds().size());
@@ -653,7 +653,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
       }));
 
   InstallResult result = InstallWebAppsAfterSync({app});
-  EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
   EXPECT_EQ(app->app_id(), result.app_id);
 
   EXPECT_EQ(1u, registrar().GetAppIds().size());

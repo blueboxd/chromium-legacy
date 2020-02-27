@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "ui/base/cursor/types/cursor_types.h"
 
 namespace blink {
 
@@ -62,7 +61,7 @@ IntPoint DetermineHotSpot(Image* image,
 }
 
 Cursor::Cursor(Image* image, bool hot_spot_specified, const IntPoint& hot_spot)
-    : type_(ui::CursorType::kCustom),
+    : type_(ui::mojom::CursorType::kCustom),
       image_(image),
       hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
       image_scale_factor_(1) {}
@@ -71,12 +70,13 @@ Cursor::Cursor(Image* image,
                bool hot_spot_specified,
                const IntPoint& hot_spot,
                float scale)
-    : type_(ui::CursorType::kCustom),
+    : type_(ui::mojom::CursorType::kCustom),
       image_(image),
       hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
       image_scale_factor_(scale) {}
 
-Cursor::Cursor(ui::CursorType type) : type_(type), image_scale_factor_(1) {}
+Cursor::Cursor(ui::mojom::CursorType type)
+    : type_(type), image_scale_factor_(1) {}
 
 Cursor::Cursor(const Cursor& other) {
   *this = other;
@@ -85,7 +85,7 @@ Cursor::Cursor(const Cursor& other) {
 Cursor& Cursor::operator=(const Cursor& other) {
   type_ = other.type_;
   image_scale_factor_ = other.image_scale_factor_;
-  if (type_ == ui::CursorType::kCustom) {
+  if (type_ == ui::mojom::CursorType::kCustom) {
     image_ = other.image_;
     hot_spot_ = other.hot_spot_;
   }
@@ -95,227 +95,231 @@ Cursor& Cursor::operator=(const Cursor& other) {
 Cursor::~Cursor() = default;
 
 const Cursor& PointerCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kPointer));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kPointer));
   return c;
 }
 
 const Cursor& CrossCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kCross));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kCross));
   return c;
 }
 
 const Cursor& HandCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kHand));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kHand));
   return c;
 }
 
 const Cursor& MoveCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kMove));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kMove));
   return c;
 }
 
 const Cursor& VerticalTextCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kVerticalText));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kVerticalText));
   return c;
 }
 
 const Cursor& CellCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kCell));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kCell));
   return c;
 }
 
 const Cursor& ContextMenuCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kContextMenu));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kContextMenu));
   return c;
 }
 
 const Cursor& AliasCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kAlias));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kAlias));
   return c;
 }
 
 const Cursor& ZoomInCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kZoomIn));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kZoomIn));
   return c;
 }
 
 const Cursor& ZoomOutCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kZoomOut));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kZoomOut));
   return c;
 }
 
 const Cursor& CopyCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kCopy));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kCopy));
   return c;
 }
 
 const Cursor& NoneCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNone));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNone));
   return c;
 }
 
 const Cursor& ProgressCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kProgress));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kProgress));
   return c;
 }
 
 const Cursor& NoDropCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNoDrop));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNoDrop));
   return c;
 }
 
 const Cursor& NotAllowedCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNotAllowed));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNotAllowed));
   return c;
 }
 
 const Cursor& IBeamCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kIBeam));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kIBeam));
   return c;
 }
 
 const Cursor& WaitCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kWait));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kWait));
   return c;
 }
 
 const Cursor& HelpCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kHelp));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kHelp));
   return c;
 }
 
 const Cursor& EastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kEastResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kEastResize));
   return c;
 }
 
 const Cursor& NorthResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthResize));
   return c;
 }
 
 const Cursor& NorthEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthEastResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthEastResize));
   return c;
 }
 
 const Cursor& NorthWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthWestResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthWestResize));
   return c;
 }
 
 const Cursor& SouthResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthResize));
   return c;
 }
 
 const Cursor& SouthEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthEastResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthEastResize));
   return c;
 }
 
 const Cursor& SouthWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthWestResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthWestResize));
   return c;
 }
 
 const Cursor& WestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kWestResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kWestResize));
   return c;
 }
 
 const Cursor& NorthSouthResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthSouthResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthSouthResize));
   return c;
 }
 
 const Cursor& EastWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kEastWestResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kEastWestResize));
   return c;
 }
 
 const Cursor& NorthEastSouthWestResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthEastSouthWestResize));
+  DEFINE_STATIC_LOCAL(Cursor, c,
+                      (ui::mojom::CursorType::kNorthEastSouthWestResize));
   return c;
 }
 
 const Cursor& NorthWestSouthEastResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthWestSouthEastResize));
+  DEFINE_STATIC_LOCAL(Cursor, c,
+                      (ui::mojom::CursorType::kNorthWestSouthEastResize));
   return c;
 }
 
 const Cursor& ColumnResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kColumnResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kColumnResize));
   return c;
 }
 
 const Cursor& RowResizeCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kRowResize));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kRowResize));
   return c;
 }
 
 const Cursor& MiddlePanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kMiddlePanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kMiddlePanning));
   return c;
 }
 
 const Cursor& MiddlePanningVerticalCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kMiddlePanningVertical));
+  DEFINE_STATIC_LOCAL(Cursor, c,
+                      (ui::mojom::CursorType::kMiddlePanningVertical));
   return c;
 }
 
 const Cursor& MiddlePanningHorizontalCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kMiddlePanningHorizontal));
+  DEFINE_STATIC_LOCAL(Cursor, c,
+                      (ui::mojom::CursorType::kMiddlePanningHorizontal));
   return c;
 }
 
 const Cursor& EastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kEastPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kEastPanning));
   return c;
 }
 
 const Cursor& NorthPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthPanning));
   return c;
 }
 
 const Cursor& NorthEastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthEastPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthEastPanning));
   return c;
 }
 
 const Cursor& NorthWestPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kNorthWestPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kNorthWestPanning));
   return c;
 }
 
 const Cursor& SouthPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthPanning));
   return c;
 }
 
 const Cursor& SouthEastPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthEastPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthEastPanning));
   return c;
 }
 
 const Cursor& SouthWestPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kSouthWestPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kSouthWestPanning));
   return c;
 }
 
 const Cursor& WestPanningCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kWestPanning));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kWestPanning));
   return c;
 }
 
 const Cursor& GrabCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kGrab));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kGrab));
   return c;
 }
 
 const Cursor& GrabbingCursor() {
-  DEFINE_STATIC_LOCAL(Cursor, c, (ui::CursorType::kGrabbing));
+  DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kGrabbing));
   return c;
 }
 

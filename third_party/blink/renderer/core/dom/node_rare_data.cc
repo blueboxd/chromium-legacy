@@ -91,7 +91,7 @@ void NodeData::Trace(Visitor* visitor) {
 NodeRenderingData::NodeRenderingData(
     LayoutObject* layout_object,
     scoped_refptr<const ComputedStyle> computed_style)
-    : NodeData(false),
+    : NodeData(false, false),
       layout_object_(layout_object),
       computed_style_(computed_style) {}
 

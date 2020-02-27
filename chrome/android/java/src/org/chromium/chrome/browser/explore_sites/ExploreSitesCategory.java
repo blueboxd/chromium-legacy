@@ -12,7 +12,7 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

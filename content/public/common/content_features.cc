@@ -683,10 +683,6 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 #endif
 };
 
-// Enable garbage collection of WebAssembly code.
-const base::Feature kWebAssemblyCodeGC{"WebAssemblyCodeGC",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable WebAssembly lazy compilation (JIT on first call).
 const base::Feature kWebAssemblyLazyCompilation{
     "WebAssemblyLazyCompilation", base::FEATURE_DISABLED_BY_DEFAULT};

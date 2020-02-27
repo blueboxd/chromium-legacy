@@ -176,6 +176,10 @@ class BrowserPolicyConnectorChromeOS
     return system_proxy_settings_policy_handler_.get();
   }
 
+  HostnameHandler* GetHostnameHandler() const {
+    return hostname_handler_.get();
+  }
+
   // Returns device's market segment.
   MarketSegment GetEnterpriseMarketSegment() const;
 

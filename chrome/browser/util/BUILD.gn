@@ -17,13 +17,13 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/util/IntentUtils.java",
     "android/java/src/org/chromium/chrome/browser/util/KeyNavigationUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
-    "android/java/src/org/chromium/chrome/browser/util/UrlConstants.java",
     "android/java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
     "android/java/src/org/chromium/chrome/browser/util/VoiceRecognitionUtil.java",
   ]
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_support_compat_java",

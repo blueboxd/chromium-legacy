@@ -43,6 +43,7 @@ specific_include_rules = {
 
     "-components",
     "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
+    "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/util",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/view",
     "+components/navigation_interception/android/java/src/org/chromium/components/navigation_interception",
     "+ui/android/java/src/org/chromium/ui/base",

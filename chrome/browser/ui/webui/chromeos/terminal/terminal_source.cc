@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/terminal/terminal_source.h"
 
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -31,9 +33,10 @@ constexpr char kDefaultMime[] = "text/html";
 constexpr char kDefaultTheme[] = "#101010";
 constexpr char kPrefKeyTheme[] = "/hterm/profiles/default/background-color";
 
-void ReadFile(const base::FilePath& path,
+void ReadFile(const std::string& relative_path,
               content::URLDataSource::GotDataCallback callback) {
   std::string content;
+  base::FilePath path = base::FilePath(kTerminalRoot).Append(relative_path);
   // First look for uncompressed resource, then try for gzipped file.
   bool result = base::ReadFileToString(path, &content);
   if (!result) {
@@ -43,11 +46,32 @@ void ReadFile(const base::FilePath& path,
     result = compression::GzipUncompress(content, &uncompressed);
     content = std::move(uncompressed);
   }
-  // Allow missing files in <root>/_locales only.
-  DCHECK(result || base::FilePath(kTerminalRoot)
-                       .Append("_locales")
-                       .AppendRelativePath(path, nullptr))
-      << path;
+
+  // Terminal gets files from /usr/share/chromeos-assets/crosh-builtin.
+  // In chromium tests, these files don't exist, so we serve dummy values.
+  if (!result) {
+    static const base::NoDestructor<base::flat_map<std::string, std::string>>
+        kTestFiles({
+            {"html/pwa.html",
+             "<html><head><link rel='manifest' "
+             "href='/manifest.json'></head></html>"},
+            {"manifest.json", R"({
+               "name": "Test Terminal",
+               "icons": [{ "src": "/icon.svg", "sizes": "any" }],
+               "start_url": "/html/pwa.html"})"},
+            {"icon.svg",
+             "<svg xmlns='http://www.w3.org/2000/svg'><rect "
+             "fill='red'/></svg>"},
+        });
+    auto it = kTestFiles->find(relative_path);
+    if (it != kTestFiles->end()) {
+      content = it->second;
+      result = true;
+    }
+  }
+
+  DCHECK(result) << path;
+
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
   std::move(callback).Run(response.get());
@@ -72,22 +96,18 @@ void TerminalSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
-  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
-  const std::string path = content::URLDataSource::URLToRequestPath(url);
-  // Reparse path to strip any query or fragment, skip first '/' in path.
-  std::string reparsed =
-      GURL(chrome::kChromeUITerminalURL + path).path().substr(1);
-  if (reparsed.empty())
-    reparsed = kDefaultFile;
-  base::FilePath file_path = base::FilePath(kTerminalRoot).Append(reparsed);
+  // skip first '/' in path.
+  std::string path = url.path().substr(1);
+  if (path.empty())
+    path = kDefaultFile;
 
   // Replace $i8n{themeColor} in *.html.
-  if (base::EndsWith(reparsed, ".html", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII))
     replacements_["themeColor"] = GetThemeColorFromPrefs();
 
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&ReadFile, file_path, std::move(callback)));
+      base::BindOnce(&ReadFile, path, std::move(callback)));
 }
 
 std::string TerminalSource::GetMimeType(const std::string& path) {

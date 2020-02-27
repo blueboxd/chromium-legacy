@@ -553,7 +553,7 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
   crostini_helper.ReInitializeAppServiceIntegration();
-  const std::string app_id = crostini::kCrostiniTerminalId;
+  const std::string app_id = crostini::GetTerminalId();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
 

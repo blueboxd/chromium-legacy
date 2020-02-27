@@ -40,14 +40,14 @@ class WebString;
 
 // TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
 // blink::WebUserMediaRequest and remove this struct.
-//
-// TODO(crbug.com/704136): Move this object to Oilpan (and avoid Persistent<>).
-struct UserMediaRequestInfo {
+struct UserMediaRequestInfo : public GarbageCollected<UserMediaRequestInfo> {
   UserMediaRequestInfo(int request_id,
                        UserMediaRequest* web_request,
                        bool is_processing_user_gesture);
+  void Trace(Visitor* visitor) { visitor->Trace(web_request); }
+
   const int request_id;
-  Persistent<UserMediaRequest> web_request;
+  Member<UserMediaRequest> web_request;
   const bool is_processing_user_gesture;
 };
 
@@ -79,7 +79,7 @@ class MODULES_EXPORT UserMediaProcessor
   // processing of |request| is complete, it notifies by invoking |callback|.
   // This method must be called only if there is no request currently being
   // processed.
-  void ProcessRequest(std::unique_ptr<UserMediaRequestInfo> request,
+  void ProcessRequest(UserMediaRequestInfo* request,
                       base::OnceClosure callback);
 
   // If |web_request| is the request currently being processed, stops processing

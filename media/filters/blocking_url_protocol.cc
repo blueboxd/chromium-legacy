@@ -61,8 +61,8 @@ int BlockingUrlProtocol::Read(int size, uint8_t* data) {
     //   1) |last_read_bytes_| is set and |read_complete_| is signalled
     //   2) |aborted_| is signalled
     data_source_->Read(read_position_, size, data,
-                       base::Bind(&BlockingUrlProtocol::SignalReadCompleted,
-                                  base::Unretained(this)));
+                       base::BindOnce(&BlockingUrlProtocol::SignalReadCompleted,
+                                      base::Unretained(this)));
   }
 
   base::WaitableEvent* events[] = { &aborted_, &read_complete_ };

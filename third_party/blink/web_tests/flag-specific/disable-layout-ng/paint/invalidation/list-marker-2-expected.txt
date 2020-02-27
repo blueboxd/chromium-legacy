@@ -12,12 +12,12 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutListMarker (anonymous)",
+          "object": "LayoutListMarker ::marker",
           "rect": [30, 185, 7, 19],
           "reason": "geometry"
         },
         {
-          "object": "LayoutListMarker (anonymous)",
+          "object": "LayoutListMarker ::marker",
           "rect": [30, 135, 7, 19],
           "reason": "geometry"
         }

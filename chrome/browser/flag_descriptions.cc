@@ -853,10 +853,6 @@ const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
 
-const char kEnableWasmCodeGCName[] = "WebAssembly code garbage collection";
-const char kEnableWasmCodeGCDescription[] =
-    "Enables garbage collection of WebAssembly code.";
-
 const char kEnableWasmLazyCompilationName[] = "WebAssembly lazy compilation";
 const char kEnableWasmLazyCompilationDescription[] =
     "Enables lazy (JIT on first call) compilation of WebAssembly modules.";

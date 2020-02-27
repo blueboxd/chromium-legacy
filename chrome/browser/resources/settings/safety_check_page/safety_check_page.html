@@ -66,51 +66,77 @@
     <iron-collapse id="safetyCheckCollapse"
         opened="[[shouldShowChildren_(parentStatus_)]]">
       <div class="settings-box two-line">
-          <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
-              src="[[getUpdatesIconSrc_(updatesStatus_)]]"
-              class$="[[getUpdatesIconClass_(updatesStatus_)]]">
-          </iron-icon>
-          <div class="start settings-box-text">
-            <div>$i18n{safetyCheckUpdatesPrimaryLabel}</div>
-            <div class="secondary" no-search>
-              [[getUpdatesSubLabelText_(updatesStatus_)]]
-            </div>
+        <iron-icon icon="[[getUpdatesIcon_(updatesStatus_)]]"
+            src="[[getUpdatesIconSrc_(updatesStatus_)]]"
+            class$="[[getUpdatesIconClass_(updatesStatus_)]]">
+        </iron-icon>
+        <div class="start settings-box-text">
+          <div>$i18n{safetyCheckUpdatesPrimaryLabel}</div>
+          <div class="secondary" no-search>
+            [[getUpdatesSubLabelText_(updatesStatus_)]]
           </div>
-          <template is="dom-if"
-              if="[[shouldShowUpdatesButton_(updatesStatus_)]]" restamp>
-            <div class="separator"></div>
-            <cr-button id="safetyCheckUpdatesButton"
-                on-click="onSafetyCheckUpdatesButtonClicked_" no-search>
-              $i18n{aboutRelaunch}
-            </cr-button>
-          </template>
-          <template is="dom-if"
-              if="[[shouldShowUpdatesManagedIcon_(updatesStatus_)]]" restamp>
-            <iron-icon id="safetyCheckUpdatesManagedIcon"
-                icon="cr20:domain">
-            </iron-icon>
-          </template>
         </div>
-        <div class="settings-box two-line">
-          <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
-              src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
-              class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
+        <template is="dom-if"
+            if="[[shouldShowUpdatesButton_(updatesStatus_)]]" restamp>
+          <div class="separator"></div>
+          <cr-button id="safetyCheckUpdatesButton"
+              on-click="onSafetyCheckUpdatesButtonClicked_" no-search>
+            $i18n{aboutRelaunch}
+          </cr-button>
+        </template>
+        <template is="dom-if"
+            if="[[shouldShowUpdatesManagedIcon_(updatesStatus_)]]" restamp>
+          <iron-icon id="safetyCheckUpdatesManagedIcon"
+              icon="cr20:domain">
           </iron-icon>
-          <div class="start settings-box-text">
-            <div>$i18n{safetyCheckPasswordsPrimaryLabel}</div>
-            <div class="secondary" no-search>
-              [[getPasswordsSubLabelText_(passwordsStatus_)]]
-            </div>
+        </template>
+      </div>
+      <div class="settings-box two-line">
+        <iron-icon icon="[[getPasswordsIcon_(passwordsStatus_)]]"
+            src="[[getPasswordsIconSrc_(passwordsStatus_)]]"
+            class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
+        </iron-icon>
+        <div class="start settings-box-text">
+          <div>$i18n{safetyCheckPasswordsPrimaryLabel}</div>
+          <div class="secondary" no-search>
+            [[getPasswordsSubLabelText_(passwordsStatus_)]]
           </div>
-          <template is="dom-if"
-              if="[[shouldShowPasswordsButton_(passwordsStatus_)]]" restamp>
-            <div class="separator"></div>
-            <cr-button id="safetyCheckPasswordsButton"
-                on-click="onPasswordsButtonClick_" no-search>
-              [[getPasswordsButtonText_(passwordsStatus_)]]
-            </cr-button>
-          </template>
         </div>
+        <template is="dom-if"
+            if="[[shouldShowPasswordsButton_(passwordsStatus_)]]" restamp>
+          <div class="separator"></div>
+          <cr-button id="safetyCheckPasswordsButton"
+              on-click="onPasswordsButtonClick_" no-search>
+            [[getPasswordsButtonText_(passwordsStatus_)]]
+          </cr-button>
+        </template>
+      </div>
+      <div class="settings-box two-line">
+        <iron-icon icon="[[getExtensionsIcon_(extensionsStatus_)]]"
+            src="[[getExtensionsIconSrc_(extensionsStatus_)]]"
+            class$="[[getExtensionsIconClass_(extensionsStatus_)]]">
+        </iron-icon>
+        <div class="start settings-box-text">
+          <div>$i18n{safetyCheckExtensionsPrimaryLabel}</div>
+          <div class="secondary" no-search>
+            [[getExtensionsSubLabelText_(extensionsStatus_)]]
+          </div>
+        </div>
+        <template is="dom-if"
+            if="[[shouldShowExtensionsButton_(extensionsStatus_)]]" restamp>
+          <div class="separator"></div>
+          <cr-button id="safetyCheckExtensionsButton"
+              on-click="onSafetyCheckExtensionsButtonClicked_" no-search>
+            $i18n{safetyCheckExtensionsButton}
+          </cr-button>
+        </template>
+        <template is="dom-if"
+            if="[[shouldShowExtensionsManagedIcon_(extensionsStatus_)]]"
+            restamp>
+          <iron-icon id="safetyCheckExtensionsManagedIcon" icon="cr20:domain">
+          </iron-icon>
+        </template>
+      </div>
     </iron-collapse>
   </template>
   <script src="safety_check_page.js"></script>

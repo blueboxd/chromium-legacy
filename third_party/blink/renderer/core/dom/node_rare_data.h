@@ -69,12 +69,14 @@ class GC_PLUGIN_IGNORE(
     "NodeRenderingData::TraceAfterDispatch.") NodeData
     : public GarbageCollected<NodeData> {
  public:
-  NodeData(bool is_rare_data)
+  NodeData(bool is_rare_data, bool is_element_rare_data)
       : connected_frame_count_(0),
         element_flags_(0),
         restyle_flags_(0),
-        is_element_rare_data_(false),
-        is_rare_data_(is_rare_data) {}
+        is_element_rare_data_(is_element_rare_data),
+        is_rare_data_(is_rare_data) {
+    DCHECK(!is_element_rare_data || is_rare_data);
+  }
   void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor*) {}
 
@@ -92,8 +94,8 @@ class GC_PLUGIN_IGNORE(
   unsigned connected_frame_count_ : kConnectedFrameCountBits;
   unsigned element_flags_ : kNumberOfElementFlags;
   unsigned restyle_flags_ : kNumberOfDynamicRestyleFlags;
-  unsigned is_element_rare_data_ : 1;
-  unsigned is_rare_data_ : 1;
+  const unsigned is_element_rare_data_ : 1;
+  const unsigned is_rare_data_ : 1;
 };
 
 class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.")
@@ -130,9 +132,7 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
     : public NodeData {
  public:
   explicit NodeRareData(NodeRenderingData* node_layout_data)
-      : NodeData(true), node_layout_data_(node_layout_data) {
-    CHECK_NE(node_layout_data, nullptr);
-  }
+      : NodeRareData(node_layout_data, false) {}
 
   NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
   void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
@@ -198,6 +198,13 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
   void FinalizeGarbageCollectedObject();
 
  protected:
+  explicit NodeRareData(NodeRenderingData* node_layout_data,
+                        bool is_element_rare_data)
+      : NodeData(true, is_element_rare_data),
+        node_layout_data_(node_layout_data) {
+    CHECK_NE(node_layout_data, nullptr);
+  }
+
   Member<NodeRenderingData> node_layout_data_;
 
  private:

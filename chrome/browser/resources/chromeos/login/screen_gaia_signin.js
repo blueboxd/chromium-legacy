@@ -945,10 +945,10 @@ Polymer({
     // Workaround to hide flashing scroll bar.
     this.async(function() {
       this.loadingFrameContents_ = false;
-    }.bind(this), 100);
 
-    if (!this.$['offline-gaia'].hidden)
-      this.$['offline-gaia'].focus();
+      if (!this.$['offline-gaia'].hidden)
+        this.$['offline-gaia'].focus();
+    }.bind(this), 100);
   },
 
   /**

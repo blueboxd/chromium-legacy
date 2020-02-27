@@ -74,20 +74,13 @@ void InvalidateInlineItems(LayoutObject* object) {
 }  // namespace
 
 void LayoutObjectChildList::DestroyLeftoverChildren() {
-  while (FirstChild()) {
-    // List markers are owned by their enclosing list and so don't get destroyed
-    // by this container.
-    if (FirstChild()->IsListMarkerIncludingNGOutside()) {
-      FirstChild()->Remove();
-      continue;
-    }
-
-    // Destroy any anonymous children remaining in the layout tree, as well as
-    // implicit (shadow) DOM elements like those used in the engine-based text
-    // fields.
-    if (FirstChild()->GetNode())
-      FirstChild()->GetNode()->SetLayoutObject(nullptr);
-    FirstChild()->Destroy();
+  // Destroy any anonymous children remaining in the layout tree, as well as
+  // implicit (shadow) DOM elements like those used in the engine-based text
+  // fields.
+  while (LayoutObject* child = FirstChild()) {
+    if (Node* child_node = child->GetNode())
+      child_node->SetLayoutObject(nullptr);
+    child->Destroy();
   }
 }
 

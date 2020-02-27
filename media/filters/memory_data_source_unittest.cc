@@ -35,7 +35,7 @@ class MemoryDataSourceTest : public ::testing::Test {
     EXPECT_CALL(*this, ReadCB(expected_read_size));
     memory_data_source_->Read(
         position, size, data.data(),
-        base::Bind(&MemoryDataSourceTest::ReadCB, base::Unretained(this)));
+        base::BindOnce(&MemoryDataSourceTest::ReadCB, base::Unretained(this)));
 
     if (expected_read_size != DataSource::kReadError) {
       EXPECT_EQ(

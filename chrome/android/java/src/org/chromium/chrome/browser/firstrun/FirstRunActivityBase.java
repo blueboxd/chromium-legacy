@@ -10,12 +10,12 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /** Base class for First Run Experience. */
 public abstract class FirstRunActivityBase extends AsyncInitializationActivity {

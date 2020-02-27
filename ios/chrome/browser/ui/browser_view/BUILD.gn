@@ -49,6 +49,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/language",
     "//ios/chrome/browser/main",
+    "//ios/chrome/browser/metrics:metrics_browser_agent",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/ntp",

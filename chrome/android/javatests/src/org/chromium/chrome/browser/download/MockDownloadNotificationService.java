@@ -12,7 +12,7 @@ import android.graphics.Bitmap;
 
 import org.junit.Assert;
 
-import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;

@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
 
-import org.chromium.chrome.browser.util.UrlConstants;
-
 import androidx.annotation.Nullable;
+
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * A class to canonically represent a HTTP or HTTPS web origin in Java. In comparison to

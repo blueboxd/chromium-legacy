@@ -329,7 +329,7 @@ class UserMediaProcessor::RequestInfo final
     GENERATED,
   };
 
-  explicit RequestInfo(std::unique_ptr<UserMediaRequestInfo> request);
+  explicit RequestInfo(UserMediaRequestInfo* request);
 
   void StartAudioTrack(const blink::WebMediaStreamTrack& track,
                        bool is_pending);
@@ -345,7 +345,7 @@ class UserMediaProcessor::RequestInfo final
                             MediaStreamRequestResult result,
                             const String& result_name);
 
-  UserMediaRequestInfo* request() { return request_.get(); }
+  UserMediaRequestInfo* request() { return request_; }
   int request_id() const { return request_->request_id; }
 
   State state() const { return state_; }
@@ -416,7 +416,7 @@ class UserMediaProcessor::RequestInfo final
     return request_->is_processing_user_gesture;
   }
 
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) { visitor->Trace(request_); }
 
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
@@ -428,7 +428,7 @@ class UserMediaProcessor::RequestInfo final
   // that |this| might be deleted when the function returns.
   void CheckAllTracksStarted();
 
-  std::unique_ptr<UserMediaRequestInfo> request_;
+  Member<UserMediaRequestInfo> request_;
   State state_ = State::NOT_SENT_FOR_GENERATION;
   blink::AudioCaptureSettings audio_capture_settings_;
   bool is_audio_content_capture_ = false;
@@ -449,9 +449,8 @@ class UserMediaProcessor::RequestInfo final
 
 // TODO(guidou): Initialize request_result_name_ as a null WTF::String.
 // https://crbug.com/764293
-UserMediaProcessor::RequestInfo::RequestInfo(
-    std::unique_ptr<UserMediaRequestInfo> request)
-    : request_(std::move(request)), request_result_name_("") {}
+UserMediaProcessor::RequestInfo::RequestInfo(UserMediaRequestInfo* request)
+    : request_(request), request_result_name_("") {}
 
 void UserMediaProcessor::RequestInfo::StartAudioTrack(
     const blink::WebMediaStreamTrack& track,
@@ -565,13 +564,12 @@ UserMediaRequestInfo* UserMediaProcessor::CurrentRequest() {
   return current_request_info_ ? current_request_info_->request() : nullptr;
 }
 
-void UserMediaProcessor::ProcessRequest(
-    std::unique_ptr<UserMediaRequestInfo> request,
-    base::OnceClosure callback) {
+void UserMediaProcessor::ProcessRequest(UserMediaRequestInfo* request,
+                                        base::OnceClosure callback) {
   DCHECK(!request_completed_cb_);
   DCHECK(!current_request_info_);
   request_completed_cb_ = std::move(callback);
-  current_request_info_ = MakeGarbageCollected<RequestInfo>(std::move(request));
+  current_request_info_ = MakeGarbageCollected<RequestInfo>(request);
   SendLogMessage(base::StringPrintf(
       "ProcessRequest({request_id=%d}, {audio=%d}, "
       "{video=%d})",

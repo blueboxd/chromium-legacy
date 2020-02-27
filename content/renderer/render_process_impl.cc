@@ -131,9 +131,6 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--liftoff");
   SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-liftoff");
 
-  SetV8FlagIfFeature(features::kWebAssemblyCodeGC, "--wasm-code-gc");
-  SetV8FlagIfNotFeature(features::kWebAssemblyCodeGC, "--no-wasm-code-gc");
-
   SetV8FlagIfFeature(features::kWebAssemblyLazyCompilation,
                      "--wasm-lazy-compilation");
   SetV8FlagIfNotFeature(features::kWebAssemblyLazyCompilation,

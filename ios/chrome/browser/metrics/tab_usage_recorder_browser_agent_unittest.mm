@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 
 #import <UIKit/UIKit.h>
 
@@ -11,12 +11,13 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -34,7 +35,7 @@ const int kAliveTabsCountAtRendererTermination = 2;
 // that are not counted in the RecentlyAliveTabs metric.
 const int kExpiredTimesAddedCount = 2;
 
-// URL constants used by TabUsageRecorderTest.
+// URL constants used by TabUsageRecorderBrowserAgentTest.
 const char kURL[] = "http://www.chromium.org";
 const char kNativeURL[] = "chrome://version";
 
@@ -44,16 +45,16 @@ enum WebStateInMemoryOption { NOT_IN_MEMORY = 0, IN_MEMORY };
 
 }  // namespace
 
-class TabUsageRecorderTest : public PlatformTest {
+class TabUsageRecorderBrowserAgentTest : public PlatformTest {
  protected:
-  TabUsageRecorderTest()
-      : web_state_list_(&web_state_list_delegate_),
-        tab_usage_recorder_(&web_state_list_, nullptr),
-        application_(OCMClassMock([UIApplication class])) {
+  TabUsageRecorderBrowserAgentTest()
+      : application_(OCMClassMock([UIApplication class])) {
+    TabUsageRecorderBrowserAgent::CreateForBrowser(&browser_);
+    tab_usage_recorder_ = TabUsageRecorderBrowserAgent::FromBrowser(&browser_);
     OCMStub([application_ sharedApplication]).andReturn(application_);
   }
 
-  ~TabUsageRecorderTest() override { [application_ stopMocking]; }
+  ~TabUsageRecorderBrowserAgentTest() override { [application_ stopMocking]; }
 
   web::TestWebState* InsertTestWebState(const char* url,
                                         WebStateInMemoryOption in_memory) {
@@ -67,12 +68,12 @@ class TabUsageRecorderTest : public PlatformTest {
     test_web_state->SetNavigationManager(std::move(test_navigation_manager));
     test_web_state->SetIsEvicted(in_memory == NOT_IN_MEMORY);
 
-    const int insertion_index = web_state_list_.InsertWebState(
+    const int insertion_index = browser_.GetWebStateList()->InsertWebState(
         WebStateList::kInvalidIndex, std::move(test_web_state),
         WebStateList::INSERT_NO_FLAGS, WebStateOpener());
 
     return static_cast<web::TestWebState*>(
-        web_state_list_.GetWebStateAt(insertion_index));
+        browser_.GetWebStateList()->GetWebStateAt(insertion_index));
   }
 
   web::NavigationItem* InsertItemToTestNavigationManager(
@@ -86,94 +87,94 @@ class TabUsageRecorderTest : public PlatformTest {
   }
 
   void AddTimeToDequeInTabUsageRecorder(base::TimeTicks time) {
-    tab_usage_recorder_.termination_timestamps_.push_back(time);
+    tab_usage_recorder_->termination_timestamps_.push_back(time);
   }
 
-  base::test::TaskEnvironment task_environment_;
-  FakeWebStateListDelegate web_state_list_delegate_;
-  WebStateList web_state_list_;
+  web::WebTaskEnvironment task_environment_;
+  TestBrowser browser_;
   base::HistogramTester histogram_tester_;
-  TabUsageRecorder tab_usage_recorder_;
+  TabUsageRecorderBrowserAgent* tab_usage_recorder_;
   id application_;
 };
 
-TEST_F(TabUsageRecorderTest, SwitchBetweenInMemoryTabs) {
+TEST_F(TabUsageRecorderBrowserAgentTest, SwitchBetweenInMemoryTabs) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
 
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kSelectedTabHistogramName,
       tab_usage_recorder::IN_MEMORY, 1);
 }
 
-TEST_F(TabUsageRecorderTest, SwitchToEvictedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest, SwitchToEvictedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kSelectedTabHistogramName,
       tab_usage_recorder::EVICTED, 1);
 }
 
-TEST_F(TabUsageRecorderTest, SwitchFromEvictedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest, SwitchFromEvictedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
 
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kSelectedTabHistogramName,
       tab_usage_recorder::IN_MEMORY, 1);
 }
 
-TEST_F(TabUsageRecorderTest, SwitchBetweenEvictedTabs) {
+TEST_F(TabUsageRecorderBrowserAgentTest, SwitchBetweenEvictedTabs) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kSelectedTabHistogramName,
       tab_usage_recorder::EVICTED, 1);
 }
 
-TEST_F(TabUsageRecorderTest, CountPageLoadsBeforeEvictedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest, CountPageLoadsBeforeEvictedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
   // Call reload an arbitrary number of times.
   const int kNumReloads = 4;
   for (int i = 0; i < kNumReloads; i++) {
-    tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
+    tab_usage_recorder_->RecordPageLoadStart(mock_tab_a);
   }
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, kNumReloads, 1);
 }
 
 // Tests that chrome:// URLs are not counted in page load stats.
-TEST_F(TabUsageRecorderTest, CountNativePageLoadsBeforeEvictedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest, CountNativePageLoadsBeforeEvictedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kNativeURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kNativeURL, NOT_IN_MEMORY);
 
   // Call reload an arbitrary number of times.
   const int kNumReloads = 4;
   for (int i = 0; i < kNumReloads; i++) {
-    tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
+    tab_usage_recorder_->RecordPageLoadStart(mock_tab_a);
   }
 
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   histogram_tester_.ExpectTotalCount(
       tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, 0);
 }
 
 // Tests that page load stats is not updated for an evicted tab that has a
 // pending chrome:// URL.
-TEST_F(TabUsageRecorderTest, CountPendingNativePageLoadBeforeEvictedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest,
+       CountPendingNativePageLoadBeforeEvictedTab) {
   web::TestWebState* old_tab = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* new_evicted_tab = InsertTestWebState(kURL, NOT_IN_MEMORY);
 
-  tab_usage_recorder_.RecordPageLoadStart(old_tab);
+  tab_usage_recorder_->RecordPageLoadStart(old_tab);
 
   auto* test_navigation_manager = static_cast<web::TestNavigationManager*>(
       new_evicted_tab->GetNavigationManager());
@@ -181,25 +182,26 @@ TEST_F(TabUsageRecorderTest, CountPendingNativePageLoadBeforeEvictedTab) {
       InsertItemToTestNavigationManager(test_navigation_manager, kNativeURL);
   test_navigation_manager->SetPendingItem(item);
 
-  tab_usage_recorder_.RecordTabSwitched(old_tab, new_evicted_tab);
+  tab_usage_recorder_->RecordTabSwitched(old_tab, new_evicted_tab);
   histogram_tester_.ExpectTotalCount(
       tab_usage_recorder::kPageLoadsBeforeEvictedTabSelected, 0);
 }
 
-TEST_F(TabUsageRecorderTest, TestColdStartTabs) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestColdStartTabs) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_c = InsertTestWebState(kURL, NOT_IN_MEMORY);
   // Set A and B as cold-start evicted tabs.  Leave C just evicted.
   std::vector<web::WebState*> cold_start_web_states = {
-      mock_tab_a, mock_tab_b,
+      mock_tab_a,
+      mock_tab_b,
   };
-  tab_usage_recorder_.InitialRestoredTabs(mock_tab_a, cold_start_web_states);
+  tab_usage_recorder_->InitialRestoredTabs(mock_tab_a, cold_start_web_states);
 
   // Switch from A (cold start evicted) to B (cold start evicted).
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Switch from B (cold start evicted) to C (evicted).
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_c);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_b, mock_tab_c);
   histogram_tester_.ExpectTotalCount(
       tab_usage_recorder::kSelectedTabHistogramName, 2);
   histogram_tester_.ExpectBucketCount(
@@ -210,16 +212,16 @@ TEST_F(TabUsageRecorderTest, TestColdStartTabs) {
       tab_usage_recorder::EVICTED, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestSwitchedModeTabs) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestSwitchedModeTabs) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_c = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordPrimaryTabModelChange(false, nullptr);
+  tab_usage_recorder_->RecordPrimaryTabModelChange(false, nullptr);
 
   // Switch from A (incognito evicted) to B (incognito evicted).
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Switch from B (incognito evicted) to C (evicted).
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_c);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_b, mock_tab_c);
   histogram_tester_.ExpectTotalCount(
       tab_usage_recorder::kSelectedTabHistogramName, 2);
   histogram_tester_.ExpectBucketCount(
@@ -230,100 +232,101 @@ TEST_F(TabUsageRecorderTest, TestSwitchedModeTabs) {
       tab_usage_recorder::EVICTED, 2);
 }
 
-TEST_F(TabUsageRecorderTest, TestEvictedTabReloadTime) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestEvictedTabReloadTime) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadDone(mock_tab_b, true);
   histogram_tester_.ExpectTotalCount(tab_usage_recorder::kEvictedTabReloadTime,
                                      1);
 }
 
-TEST_F(TabUsageRecorderTest, TestEvictedTabReloadSuccess) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestEvictedTabReloadSuccess) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadDone(mock_tab_b, true);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kEvictedTabReloadSuccessRate,
       tab_usage_recorder::LOAD_SUCCESS, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestEvictedTabReloadFailure) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestEvictedTabReloadFailure) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, false);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadDone(mock_tab_b, false);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kEvictedTabReloadSuccessRate,
       tab_usage_recorder::LOAD_FAILURE, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestUserWaitedForEvictedTabLoad) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestUserWaitedForEvictedTabLoad) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadDone(mock_tab_b, true);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadDone(mock_tab_b, true);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_b, mock_tab_a);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kDidUserWaitForEvictedTabReload,
       tab_usage_recorder::USER_WAITED, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestUserDidNotWaitForEvictedTabLoad) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestUserDidNotWaitForEvictedTabLoad) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_b, mock_tab_a);
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kDidUserWaitForEvictedTabReload,
       tab_usage_recorder::USER_DID_NOT_WAIT, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestUserBackgroundedDuringEvictedTabLoad) {
+TEST_F(TabUsageRecorderBrowserAgentTest,
+       TestUserBackgroundedDuringEvictedTabLoad) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.AppDidEnterBackground();
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->AppDidEnterBackground();
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kDidUserWaitForEvictedTabReload,
       tab_usage_recorder::USER_LEFT_CHROME, 1);
 }
 
-TEST_F(TabUsageRecorderTest, TestTimeBetweenRestores) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestTimeBetweenRestores) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Should record the time since launch until this page load begins.
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_b, mock_tab_a);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_b, mock_tab_a);
   // Should record the time since previous restore until this restore.
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_a);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_a);
   histogram_tester_.ExpectTotalCount(tab_usage_recorder::kTimeBetweenRestores,
                                      2);
 }
 
-TEST_F(TabUsageRecorderTest, TestTimeAfterLastRestore) {
+TEST_F(TabUsageRecorderBrowserAgentTest, TestTimeAfterLastRestore) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
   // Should record time since launch until background.
-  tab_usage_recorder_.AppDidEnterBackground();
-  tab_usage_recorder_.AppWillEnterForeground();
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->AppDidEnterBackground();
+  tab_usage_recorder_->AppWillEnterForeground();
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
   // Should record nothing.
-  tab_usage_recorder_.RecordPageLoadStart(mock_tab_b);
+  tab_usage_recorder_->RecordPageLoadStart(mock_tab_b);
   histogram_tester_.ExpectTotalCount(tab_usage_recorder::kTimeAfterLastRestore,
                                      1);
 }
 
 // Verifies that metrics are recorded correctly when a renderer terminates.
-TEST_F(TabUsageRecorderTest, RendererTerminated) {
+TEST_F(TabUsageRecorderBrowserAgentTest, RendererTerminated) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, NOT_IN_MEMORY);
   OCMStub([application_ applicationState]).andReturn(UIApplicationStateActive);
 
@@ -381,13 +384,13 @@ TEST_F(TabUsageRecorderTest, RendererTerminated) {
 
 // Verifies that metrics are recorded correctly when a renderer terminated tab
 // is switched to and reloaded.
-TEST_F(TabUsageRecorderTest, SwitchToRendererTerminatedTab) {
+TEST_F(TabUsageRecorderBrowserAgentTest, SwitchToRendererTerminatedTab) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, NOT_IN_MEMORY);
   OCMStub([application_ applicationState]).andReturn(UIApplicationStateActive);
 
   mock_tab_b->OnRenderProcessGone();
-  tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
+  tab_usage_recorder_->RecordTabSwitched(mock_tab_a, mock_tab_b);
 
   histogram_tester_.ExpectUniqueSample(
       tab_usage_recorder::kSelectedTabHistogramName,
@@ -396,7 +399,7 @@ TEST_F(TabUsageRecorderTest, SwitchToRendererTerminatedTab) {
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
 // when the application is in the foreground.
-TEST_F(TabUsageRecorderTest, StateAtRendererTerminationForeground) {
+TEST_F(TabUsageRecorderBrowserAgentTest, StateAtRendererTerminationForeground) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
   OCMStub([application_ applicationState]).andReturn(UIApplicationStateActive);
@@ -415,7 +418,7 @@ TEST_F(TabUsageRecorderTest, StateAtRendererTerminationForeground) {
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
 // when the application is in the background.
-TEST_F(TabUsageRecorderTest, StateAtRendererTerminationBackground) {
+TEST_F(TabUsageRecorderBrowserAgentTest, StateAtRendererTerminationBackground) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
   OCMStub([application_ applicationState])
@@ -435,7 +438,7 @@ TEST_F(TabUsageRecorderTest, StateAtRendererTerminationBackground) {
 
 // Verifies that Tab.StateAtRendererTermination metric is correctly reported
 // when the application is in the inactive state.
-TEST_F(TabUsageRecorderTest, StateAtRendererTerminationInactive) {
+TEST_F(TabUsageRecorderBrowserAgentTest, StateAtRendererTerminationInactive) {
   web::TestWebState* mock_tab_a = InsertTestWebState(kURL, IN_MEMORY);
   web::TestWebState* mock_tab_b = InsertTestWebState(kURL, IN_MEMORY);
   OCMStub([application_ applicationState])

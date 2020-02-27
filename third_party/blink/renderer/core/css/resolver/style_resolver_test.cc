@@ -52,12 +52,8 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
 
   ASSERT_TRUE(resolver->StyleForElement(div));
   EXPECT_EQ(20, resolver->StyleForElement(div)->FontSize());
-#if DCHECK_IS_ON()
-  EXPECT_FALSE(animations.BaseComputedStyle());
-#else
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
-#endif
 
   // Getting style with customized parent style should not affect cached
   // animation base computed style.
@@ -66,12 +62,8 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   EXPECT_EQ(
       10,
       resolver->StyleForElement(div, parent_style, parent_style)->FontSize());
-#if DCHECK_IS_ON()
-  EXPECT_FALSE(animations.BaseComputedStyle());
-#else
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
-#endif
   EXPECT_EQ(20, resolver->StyleForElement(div)->FontSize());
 }
 

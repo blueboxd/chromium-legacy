@@ -27,7 +27,9 @@ import java.util.ArrayList;
 
 /**
  * Utilities dealing with extracting information from intents and creating common intents.
+ * @deprecated Use the version in //base instead.
  */
+@Deprecated
 public class IntentUtils {
     private static final String TAG = "IntentUtils";
 

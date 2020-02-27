@@ -691,19 +691,6 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
             fake_manager_->GetAndResetConfigureReason());
 }
 
-TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
-  const char* nonsense = "slon";
-  base::FilePath temp_directory =
-      temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
-  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
-  ASSERT_TRUE(base::CreateDirectory(temp_directory));
-  ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));
-
-  InitializeBackend(true);
-
-  EXPECT_FALSE(base::PathExists(sync_file));
-}
-
 // If bookmarks encounter an error that results in disabling without purging
 // (such as when the type is unready), and then is explicitly disabled, the
 // SyncEngine needs to tell the manager to purge the type, even though

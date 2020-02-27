@@ -9,7 +9,8 @@
           "--browser=android-chrome",
           "--upload-results",
           "--test-shard-map-filename=android-nexus5x-perf-fyi_map.json",
-          "--output-format=histograms"
+          "--output-format=histograms",
+          "--experimental-tbmv3-metrics"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

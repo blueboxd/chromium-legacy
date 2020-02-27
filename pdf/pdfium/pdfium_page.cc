@@ -183,6 +183,24 @@ bool FloatEquals(float f1, float f2) {
          kEpsilonScale * fmaxf(fmaxf(fabsf(f1), fabsf(f2)), kEpsilonScale);
 }
 
+using GetFormFieldPropertyFunction =
+    base::RepeatingCallback<unsigned long(unsigned short* buffer,
+                                          unsigned long buflen)>;
+
+// Helper method to fetch string properties of form fields.
+std::string GetFormFieldProperty(GetFormFieldPropertyFunction function) {
+  base::string16 data;
+  size_t buffer_size = function.Run(nullptr, 0);
+  if (buffer_size > 0) {
+    PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> api_string_adapter(
+        &data, buffer_size, true);
+    api_string_adapter.Close(function.Run(
+        reinterpret_cast<unsigned short*>(api_string_adapter.GetData()),
+        buffer_size));
+  }
+  return base::UTF16ToUTF8(data);
+}
+
 }  // namespace
 
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
@@ -266,7 +284,7 @@ void PDFiumPage::CalculatePageObjectTextRunBreaks() {
     }
   }
 
-  PopulateHighlights();
+  PopulateAnnotations();
   for (const auto& highlight : highlights_) {
     if (highlight.start_char_index >= 0 &&
         highlight.start_char_index < chars_count) {
@@ -568,7 +586,7 @@ PDFiumPage::GetHighlightInfo() {
   if (!available_)
     return highlight_info;
 
-  PopulateHighlights();
+  PopulateAnnotations();
 
   highlight_info.reserve(highlights_.size());
   for (const Highlight& highlight : highlights_) {
@@ -1041,57 +1059,98 @@ void PDFiumPage::PopulateImageAltTextForStructElement(
   }
 }
 
-void PDFiumPage::PopulateHighlights() {
-  if (calculated_highlights_)
+void PDFiumPage::PopulateAnnotations() {
+  if (calculated_annotations_)
     return;
 
   FPDF_PAGE page = GetPage();
   if (!page)
     return;
 
-  calculated_highlights_ = true;
-  // Populate highlights from within the pdf page into data structures ready
-  // to be passed to mimehandler. Currently scoped to highlights only.
   int annotation_count = FPDFPage_GetAnnotCount(page);
   for (int i = 0; i < annotation_count; ++i) {
     ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, i));
     DCHECK(annot);
     FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annot.get());
-    if (subtype != FPDF_ANNOT_HIGHLIGHT)
-      continue;
 
-    FS_RECTF rect;
-    if (!FPDFAnnot_GetRect(annot.get(), &rect))
-      continue;
-
-    Highlight highlight;
-    // We use the bounding box of the highlight as the bounding rect.
-    highlight.bounding_rect =
-        PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
-                     rect.bottom, PageOrientation::kOriginal);
-    GetUnderlyingTextRangeForRect(
-        pp::FloatRect(rect.left, rect.bottom, std::abs(rect.right - rect.left),
-                      std::abs(rect.bottom - rect.top)),
-        &highlight.start_char_index, &highlight.char_count);
-
-    // Retrieve the color of the highlight.
-    unsigned int color_r;
-    unsigned int color_g;
-    unsigned int color_b;
-    unsigned int color_a;
-    FPDF_PAGEOBJECT page_object = FPDFAnnot_GetObject(annot.get(), 0);
-    if (FPDFPageObj_GetFillColor(page_object, &color_r, &color_g, &color_b,
-                                 &color_a)) {
-      highlight.color = MakeARGB(color_a, color_r, color_g, color_b);
-    } else {
-      // Set the same default color as in pdfium. See calls to
-      // GetColorStringWithDefault() in CPVT_GenerateAP::Generate*AP() in
-      // pdfium.
-      highlight.color = MakeARGB(255, 255, 255, 0);
+    switch (subtype) {
+      case FPDF_ANNOT_HIGHLIGHT: {
+        PopulateHighlight(annot.get());
+        break;
+      }
+      case FPDF_ANNOT_WIDGET: {
+        // TODO(crbug.com/1030242): Populate other types of form fields too.
+        if (FPDFAnnot_GetFormFieldType(engine_->form(), annot.get()) ==
+            FPDF_FORMFIELD_TEXTFIELD) {
+          PopulateTextField(annot.get());
+        }
+        break;
+      }
+      default:
+        break;
     }
-
-    highlights_.push_back(std::move(highlight));
   }
+  calculated_annotations_ = true;
+}
+
+void PDFiumPage::PopulateHighlight(FPDF_ANNOTATION annot) {
+  DCHECK(annot);
+  DCHECK_EQ(FPDFAnnot_GetSubtype(annot), FPDF_ANNOT_HIGHLIGHT);
+
+  FS_RECTF rect;
+  if (!FPDFAnnot_GetRect(annot, &rect))
+    return;
+
+  Highlight highlight;
+  // We use the bounding box of the highlight as the bounding rect.
+  highlight.bounding_rect =
+      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+                   rect.bottom, PageOrientation::kOriginal);
+  GetUnderlyingTextRangeForRect(
+      pp::FloatRect(rect.left, rect.bottom, std::abs(rect.right - rect.left),
+                    std::abs(rect.bottom - rect.top)),
+      &highlight.start_char_index, &highlight.char_count);
+
+  // Retrieve the color of the highlight.
+  unsigned int color_r;
+  unsigned int color_g;
+  unsigned int color_b;
+  unsigned int color_a;
+  FPDF_PAGEOBJECT page_object = FPDFAnnot_GetObject(annot, 0);
+  if (FPDFPageObj_GetFillColor(page_object, &color_r, &color_g, &color_b,
+                               &color_a)) {
+    highlight.color = MakeARGB(color_a, color_r, color_g, color_b);
+  } else {
+    // Set the same default color as in pdfium. See calls to
+    // GetColorStringWithDefault() in CPVT_GenerateAP::Generate*AP() in
+    // pdfium.
+    highlight.color = MakeARGB(255, 255, 255, 0);
+  }
+
+  highlights_.push_back(std::move(highlight));
+}
+
+void PDFiumPage::PopulateTextField(FPDF_ANNOTATION annot) {
+  DCHECK(annot);
+  FPDF_FORMHANDLE form_handle = engine_->form();
+  DCHECK_EQ(FPDFAnnot_GetFormFieldType(form_handle, annot),
+            FPDF_FORMFIELD_TEXTFIELD);
+
+  FS_RECTF rect;
+  if (!FPDFAnnot_GetRect(annot, &rect))
+    return;
+
+  TextField text_field;
+  // We use the bounding box of the text field as the bounding rect.
+  text_field.bounding_rect =
+      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+                   rect.bottom, PageOrientation::kOriginal);
+  text_field.value = GetFormFieldProperty(
+      base::BindRepeating(FPDFAnnot_GetFormFieldValue, form_handle, annot));
+  text_field.name = GetFormFieldProperty(
+      base::BindRepeating(FPDFAnnot_GetFormFieldName, form_handle, annot));
+  text_field.flags = FPDFAnnot_GetFormFieldFlags(form_handle, annot);
+  text_fields_.push_back(std::move(text_field));
 }
 
 bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
@@ -1243,6 +1302,12 @@ PDFiumPage::Highlight::Highlight() = default;
 PDFiumPage::Highlight::Highlight(const Highlight& that) = default;
 
 PDFiumPage::Highlight::~Highlight() = default;
+
+PDFiumPage::TextField::TextField() = default;
+
+PDFiumPage::TextField::TextField(const TextField& that) = default;
+
+PDFiumPage::TextField::~TextField() = default;
 
 int ToPDFiumRotation(PageOrientation orientation) {
   // Could static_cast<int>(orientation), but using an exhaustive switch will

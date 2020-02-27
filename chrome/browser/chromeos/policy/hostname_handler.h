@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_HOSTNAME_HANDLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,6 +29,10 @@ class HostnameHandler : public chromeos::NetworkStateHandlerObserver {
 
   void Shutdown();
 
+  // Returns the device hostname that HostnameHandler has last set in shill.
+  // This is the hostname after formatting (by FormatHostname()).
+  const std::string& GetDeviceHostname() const;
+
  private:
   friend class HostnameHandlerTest;
 
@@ -48,6 +53,7 @@ class HostnameHandler : public chromeos::NetworkStateHandlerObserver {
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;
+  std::string hostname_;
   base::WeakPtrFactory<HostnameHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostnameHandler);

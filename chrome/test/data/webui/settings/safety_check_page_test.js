@@ -46,19 +46,19 @@ suite('SafetyCheckUiTests', function() {
 
     // Mock all incoming messages that indicate safety check completion.
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.UPDATED,
     });
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 1, /* PASSWORDS */
+      safetyCheckComponent: settings.SafetyCheckComponent.PASSWORDS,
       newState: settings.SafetyCheckPasswordsStatus.SAFE,
     });
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 2, /* SAFE_BROWSING */
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
       newState: settings.SafetyCheckSafeBrowsingStatus.ENABLED,
     });
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 3, /* EXTENSIONS */
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
       newState: settings.SafetyCheckExtensionsStatus.SAFE,
     });
 
@@ -73,7 +73,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesCheckingUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.CHECKING,
     });
     Polymer.dom.flush();
@@ -83,7 +83,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesUpdatedUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.UPDATED,
     });
     Polymer.dom.flush();
@@ -93,7 +93,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesUpdatingUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.UPDATING,
     });
     Polymer.dom.flush();
@@ -103,7 +103,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesRelaunchUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.RELAUNCH,
     });
     Polymer.dom.flush();
@@ -113,7 +113,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesDisabledByAdminUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN,
     });
     Polymer.dom.flush();
@@ -123,7 +123,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesFailedOfflineUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE,
     });
     Polymer.dom.flush();
@@ -133,7 +133,7 @@ suite('SafetyCheckUiTests', function() {
 
   test('updatesFailedUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
-      safetyCheckComponent: 0, /* UPDATES */
+      safetyCheckComponent: settings.SafetyCheckComponent.UPDATES,
       newState: settings.SafetyCheckUpdatesStatus.FAILED,
     });
     Polymer.dom.flush();
@@ -145,7 +145,7 @@ suite('SafetyCheckUiTests', function() {
     // Iterate over all states
     for (const state of Object.values(settings.SafetyCheckPasswordsStatus)) {
       cr.webUIListenerCallback('safety-check-status-changed', {
-        safetyCheckComponent: 1, /* PASSWORDS */
+        safetyCheckComponent: settings.SafetyCheckComponent.PASSWORDS,
         newState: state,
       });
       Polymer.dom.flush();
@@ -161,5 +161,65 @@ suite('SafetyCheckUiTests', function() {
           break;
       }
     }
+  });
+
+  test('extensionsCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.CHECKING,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsErrorUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.ERROR,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsSafeUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.SAFE,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsBadExtensionsOnUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON,
+    });
+    Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsBadExtensionsOffUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF,
+    });
+    Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
+    assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
+  });
+
+  test('extensionsManagedByAdminUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,
+      newState: settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
+    assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));
   });
 });

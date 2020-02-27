@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (177,0) size 177x22 [bgcolor=#FFFFFF] [border: (2px inset #767676)]
       LayoutBlockFlow {UL} at (0,74) size 784x20
         LayoutListItem {LI} at (40,0) size 744x20
-          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
+          LayoutListMarker {::marker} at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 43x19
             text run at (0,0) width 43: "Passed"
 layer at (12,47) size 169x16

@@ -4708,7 +4708,7 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
 
   // Load pinned Terminal from prefs without Crostini UI being allowed
   syncer::SyncChangeList sync_list;
-  InsertAddPinChange(&sync_list, 1, crostini::kCrostiniTerminalId);
+  InsertAddPinChange(&sync_list, 1, crostini::GetTerminalId());
   SendPinChanges(sync_list, true);
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
@@ -4721,11 +4721,11 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 
   // Unpin the Terminal
-  launcher_controller_->UnpinAppWithID(crostini::kCrostiniTerminalId);
+  launcher_controller_->UnpinAppWithID(crostini::GetTerminalId());
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
   // Pin Terminal again.
-  launcher_controller_->PinAppWithID(crostini::kCrostiniTerminalId);
+  launcher_controller_->PinAppWithID(crostini::GetTerminalId());
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 }
 

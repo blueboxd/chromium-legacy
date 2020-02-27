@@ -10,7 +10,6 @@
 
 class ChromeBrowserState;
 class TabModelSyncedWindowDelegate;
-class TabUsageRecorder;
 class WebStateList;
 class Browser;
 
@@ -27,9 +26,6 @@ class Browser;
 
 // BrowserState associated with this TabModel.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
-
-// Records UMA metrics about Tab usage.
-@property(nonatomic, readonly) TabUsageRecorder* tabUsageRecorder;
 
 // YES if this tab set is off the record.
 @property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;

@@ -93,16 +93,16 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
   DiscardableMemoryImpl(
       std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
-      const base::Closure& deleted_callback)
+      base::OnceClosure deleted_callback)
       : shared_memory_(std::move(shared_memory)),
-        deleted_callback_(deleted_callback),
+        deleted_callback_(std::move(deleted_callback)),
         is_locked_(true) {}
 
   ~DiscardableMemoryImpl() override {
     if (is_locked_)
       shared_memory_->Unlock(0, 0);
 
-    deleted_callback_.Run();
+    std::move(deleted_callback_).Run();
   }
 
   // Overridden from base::DiscardableMemory:
@@ -146,7 +146,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 
  private:
   std::unique_ptr<base::DiscardableSharedMemory> shared_memory_;
-  const base::Closure deleted_callback_;
+  base::OnceClosure deleted_callback_;
   bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
@@ -228,8 +228,8 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
-          base::Bind(&DiscardableSharedMemoryManager::OnMemoryPressure,
-                     base::Unretained(this)))),
+          base::BindRepeating(&DiscardableSharedMemoryManager::OnMemoryPressure,
+                              base::Unretained(this)))),
       // Current thread might not have a task runner in tests.
       enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
@@ -239,8 +239,8 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
   g_instance = this;
   DCHECK_NE(memory_limit_, 0u);
   enforce_memory_policy_callback_ =
-      base::Bind(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindRepeating(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
+                          weak_ptr_factory_.GetWeakPtr());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
@@ -320,7 +320,7 @@ DiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(size_t size) {
   memory->Close();
   return std::make_unique<DiscardableMemoryImpl>(
       std::move(memory),
-      base::Bind(
+      base::BindOnce(
           &DiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
           base::Unretained(this), new_id, kInvalidUniqueClientID));
 }

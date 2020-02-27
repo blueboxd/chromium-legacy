@@ -39,7 +39,7 @@ class IPCDataSource : public media::DataSource {
   void Read(int64_t position,
             int size,
             uint8_t* destination,
-            const ReadCB& callback) override;
+            ReadCB callback) override;
   bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;
@@ -47,11 +47,11 @@ class IPCDataSource : public media::DataSource {
  private:
   // Media data read helpers: must be run on the utility thread.
   void ReadMediaData(uint8_t* destination,
-                     const ReadCB& callback,
+                     ReadCB callback,
                      int64_t position,
                      int size);
   void ReadDone(uint8_t* destination,
-                const ReadCB& callback,
+                ReadCB callback,
                 const std::vector<uint8_t>& data);
 
   mojo::Remote<chrome::mojom::MediaDataSource> media_data_source_;

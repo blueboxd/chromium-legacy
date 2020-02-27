@@ -98,6 +98,7 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--output-format=histograms',
+          '--experimental-tbmv3-metrics',
         ],
       }
     ],

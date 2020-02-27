@@ -156,8 +156,10 @@ class PinRequestView::AccessCodeInput : public views::View,
   // Sets the color of the input text.
   virtual void SetInputColor(SkColor color) = 0;
 
-  // Enables/disables input.
   virtual void SetInputEnabled(bool input_enabled) = 0;
+
+  // Clears the input field(s).
+  virtual void ClearInput() = 0;
 };
 
 class PinRequestView::FlexCodeInput : public AccessCodeInput {
@@ -251,6 +253,12 @@ class PinRequestView::FlexCodeInput : public AccessCodeInput {
 
   void SetInputEnabled(bool input_enabled) override {
     code_field_->SetEnabled(input_enabled);
+  }
+
+  // Clears text in input text field.
+  void ClearInput() override {
+    code_field_->SetText(base::string16());
+    on_input_change_.Run(false);
   }
 
   void RequestFocus() override { code_field_->RequestFocus(); }
@@ -582,9 +590,13 @@ class PinRequestView::FixedLengthCodeInput : public AccessCodeInput {
     return true;
   }
 
-  // Enables/disables input. Currently, there is no use-case the uses this with
-  // fixed length PINs.
+  // Enables/disables entering a PIN. Currently, there is no use-case the uses
+  // this with fixed length PINs.
   void SetInputEnabled(bool input_enabled) override { NOTIMPLEMENTED(); }
+
+  // Clears the PIN fields. Currently, there is no use-case the uses this with
+  // fixed length PINs.
+  void ClearInput() override { NOTIMPLEMENTED(); }
 
  private:
   // Moves focus to the previous input field if it exists.
@@ -785,6 +797,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   // Main view title.
   title_label_ = new views::Label(default_title_, views::style::CONTEXT_LABEL,
                                   views::style::STYLE_PRIMARY);
+  title_label_->SetMultiLine(true);
   title_label_->SetLineHeight(kTitleLineHeightDp);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -1013,6 +1026,10 @@ void PinRequestView::UpdateState(PinRequestViewState state,
       return;
     }
   }
+}
+
+void PinRequestView::ClearInput() {
+  access_code_view_->ClearInput();
 }
 
 void PinRequestView::SetInputEnabled(bool input_enabled) {

@@ -20,7 +20,7 @@ class AtomicString;
 
 namespace blink {
 
-class RespondWithObserver;
+class CanMakePaymentRespondWithObserver;
 class ScriptState;
 
 class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
@@ -31,12 +31,12 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
                                      const CanMakePaymentEventInit*);
   static CanMakePaymentEvent* Create(const AtomicString& type,
                                      const CanMakePaymentEventInit*,
-                                     RespondWithObserver*,
+                                     CanMakePaymentRespondWithObserver*,
                                      WaitUntilObserver*);
 
   CanMakePaymentEvent(const AtomicString& type,
                       const CanMakePaymentEventInit*,
-                      RespondWithObserver*,
+                      CanMakePaymentRespondWithObserver*,
                       WaitUntilObserver*);
   ~CanMakePaymentEvent() override;
 
@@ -55,13 +55,18 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
   void Trace(Visitor*) override;
 
  private:
+  void RespondToCanMakePaymentEvent(ScriptState*,
+                                    ScriptPromise,
+                                    ExceptionState&,
+                                    bool is_minimal_ui);
+
   String top_origin_;
   String payment_request_origin_;
   HeapVector<Member<PaymentMethodData>> method_data_;
   HeapVector<Member<PaymentDetailsModifier>> modifiers_;
   String currency_;
 
-  Member<RespondWithObserver> observer_;
+  Member<CanMakePaymentRespondWithObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CanMakePaymentEvent);
 };

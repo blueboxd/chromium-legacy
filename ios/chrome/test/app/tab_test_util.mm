@@ -10,7 +10,7 @@
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -42,6 +42,11 @@ TabModel* GetCurrentTabModel() {
 WebStateList* GetCurrentWebStateList() {
   TabModel* tab_model = GetCurrentTabModel();
   return tab_model ? tab_model.webStateList : nullptr;
+}
+
+// Returns the browser for the current mode.
+Browser* GetCurrentBrowser() {
+  return GetMainController().interfaceProvider.currentInterface.browser;
 }
 
 }  // namespace
@@ -180,40 +185,44 @@ NSUInteger GetIncognitoTabCount() {
 }
 
 BOOL ResetTabUsageRecorder() {
-  if (!GetCurrentTabModel().tabUsageRecorder)
+  TabUsageRecorderBrowserAgent* tab_usage_recorder =
+      TabUsageRecorderBrowserAgent::FromBrowser(GetCurrentBrowser());
+  if (!tab_usage_recorder)
     return NO;
-  GetCurrentTabModel().tabUsageRecorder->ResetAll();
+  tab_usage_recorder->ResetAll();
   return YES;
 }
 
 BOOL SetCurrentTabsToBeColdStartTabs() {
-  if (!GetCurrentTabModel().tabUsageRecorder)
+  TabUsageRecorderBrowserAgent* tab_usage_recorder =
+      TabUsageRecorderBrowserAgent::FromBrowser(GetCurrentBrowser());
+
+  if (!tab_usage_recorder)
     return NO;
-  TabModel* tab_model = GetCurrentTabModel();
-  WebStateList* web_state_list = tab_model.webStateList;
+  WebStateList* web_state_list = GetCurrentBrowser()->GetWebStateList();
 
   std::vector<web::WebState*> web_states;
   web_states.reserve(web_state_list->count());
   for (int index = 0; index < web_state_list->count(); ++index) {
     web_states.push_back(web_state_list->GetWebStateAt(index));
   }
-
-  tab_model.tabUsageRecorder->InitialRestoredTabs(
-      web_state_list->GetActiveWebState(), web_states);
+  tab_usage_recorder->InitialRestoredTabs(web_state_list->GetActiveWebState(),
+                                          web_states);
   return YES;
 }
 
 BOOL SimulateTabsBackgrounding() {
-  if (!GetCurrentTabModel().tabUsageRecorder)
+  TabUsageRecorderBrowserAgent* tab_usage_recorder =
+      TabUsageRecorderBrowserAgent::FromBrowser(GetCurrentBrowser());
+  if (!tab_usage_recorder)
     return NO;
-  GetCurrentTabModel().tabUsageRecorder->AppDidEnterBackground();
+  tab_usage_recorder->AppDidEnterBackground();
   return YES;
 }
 
 void SaveSessionImmediately() {
-  Browser* browser =
-      GetMainController().interfaceProvider.mainInterface.browser;
-  SessionRestorationBrowserAgent::FromBrowser(browser)->SaveSession(true);
+  SessionRestorationBrowserAgent::FromBrowser(GetCurrentBrowser())
+      ->SaveSession(true);
 }
 
 void EvictOtherTabModelTabs() {
@@ -251,11 +260,13 @@ BOOL CloseAllIncognitoTabs() {
 }
 
 NSUInteger GetEvictedMainTabCount() {
-  TabModel* tabModel =
-      GetMainController().interfaceProvider.mainInterface.tabModel;
-  if (!tabModel.tabUsageRecorder)
+  Browser* browser =
+      GetMainController().interfaceProvider.mainInterface.browser;
+  TabUsageRecorderBrowserAgent* tab_usage_recorder =
+      TabUsageRecorderBrowserAgent::FromBrowser(browser);
+  if (!tab_usage_recorder)
     return 0;
-  return tabModel.tabUsageRecorder->EvictedTabsMapSize();
+  return tab_usage_recorder->EvictedTabsMapSize();
 }
 
 }  // namespace chrome_test_util

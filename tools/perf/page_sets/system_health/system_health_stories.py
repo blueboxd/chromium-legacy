@@ -19,19 +19,32 @@ class SystemHealthStorySet(story.StorySet):
 
   See https://goo.gl/Jek2NL.
   """
-  def __init__(self, platform, case=None, take_memory_measurement=False):
+
+  def __init__(self,
+               platform,
+               case=None,
+               take_memory_measurement=False,
+               tag=None):
     super(SystemHealthStorySet, self).__init__(
         archive_data_file=('../data/system_health_%s.json' % platform),
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     assert platform in platforms.ALL_PLATFORMS
 
+    def IncludeStory(story_class):
+      if story_class.ABSTRACT_STORY:
+        return False
+      if platform not in story_class.SUPPORTED_PLATFORMS:
+        return False
+      if case and not story_class.NAME.startswith(case + ':'):
+        return False
+      if tag and not tag in story_class.TAGS:
+        return False
+      return True
+
     for story_class in IterAllSystemHealthStoryClasses():
-      if (story_class.ABSTRACT_STORY or
-          platform not in story_class.SUPPORTED_PLATFORMS or
-          case and not story_class.NAME.startswith(case + ':')):
-        continue
-      self.AddStory(story_class(self, take_memory_measurement))
+      if IncludeStory(story_class):
+        self.AddStory(story_class(self, take_memory_measurement))
 
   def GetAbridgedStorySetTagFilter(self):
     return story_tags.HEALTH_CHECK.name

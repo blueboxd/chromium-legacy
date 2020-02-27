@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**

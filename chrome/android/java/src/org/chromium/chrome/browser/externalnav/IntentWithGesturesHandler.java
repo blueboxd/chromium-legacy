@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.externalnav;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.io.IOException;
 import java.security.SecureRandom;

@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.bookmarks;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * A class representing the UI state of the {@link BookmarkManager}. All

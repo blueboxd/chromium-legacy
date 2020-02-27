@@ -17,8 +17,8 @@ import android.widget.RemoteViews;
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * Widget that shows a preview of the user's bookmarks.

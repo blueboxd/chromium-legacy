@@ -7,8 +7,24 @@
  * 'settings-safety-check-page' is the settings page containing the browser
  * safety check.
  */
-(function() {
+cr.define('settings', function() {
+  /**
+   * Values used to identify safety check components in the callback dictionary.
+   * Needs to be kept in sync with SafetyCheckComponent in
+   * chrome/browser/ui/webui/settings/safety_check_handler.h
+   * @enum {number}
+   */
+  const SafetyCheckComponent = {
+    UPDATES: 0,
+    PASSWORDS: 1,
+    SAFE_BROWSING: 2,
+    EXTENSIONS: 3,
+  };
+  // #cr_define_end
+  return {SafetyCheckComponent};
+});
 
+(function() {
 /**
  * States of the safety check parent element.
  * @enum {number}
@@ -20,21 +36,8 @@ const ParentStatus = {
 };
 
 /**
- * Values used to identify safety check components in the callback dictionary.
- * Needs to be kept in sync with SafetyCheckComponent in
- * chrome/browser/ui/webui/settings/safety_check_handler.h
- * @enum {number}
- */
-const SafetyCheckComponent = {
-  UPDATES: 0,
-  PASSWORDS: 1,
-  SAFE_BROWSING: 2,
-  EXTENSIONS: 3,
-};
-
-/**
  * @typedef {{
- *   safetyCheckComponent: SafetyCheckComponent,
+ *   safetyCheckComponent: settings.SafetyCheckComponent,
  *   newState: number,
  *   passwordsCompromised: (number|undefined),
  *   badExtensions: (number|undefined),
@@ -156,17 +159,17 @@ Polymer({
   onSafetyCheckStatusUpdate_: function(event) {
     const status = event['newState'];
     switch (event.safetyCheckComponent) {
-      case SafetyCheckComponent.UPDATES:
+      case settings.SafetyCheckComponent.UPDATES:
         this.updatesStatus_ = status;
         break;
-      case SafetyCheckComponent.PASSWORDS:
+      case settings.SafetyCheckComponent.PASSWORDS:
         this.passwordsCompromisedCount_ = event['passwordsCompromised'];
         this.passwordsStatus_ = status;
         break;
-      case SafetyCheckComponent.SAFE_BROWSING:
+      case settings.SafetyCheckComponent.SAFE_BROWSING:
         this.safeBrowsingStatus_ = status;
         break;
-      case SafetyCheckComponent.EXTENSIONS:
+      case settings.SafetyCheckComponent.EXTENSIONS:
         this.badExtensionsCount_ = event['badExtensions'];
         this.extensionsStatus_ = status;
         break;
@@ -511,6 +514,126 @@ Polymer({
         break;
       default:
         break;
+    }
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowExtensionsButton_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+        return true;
+      default:
+        return false;
+    }
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowExtensionsManagedIcon_: function() {
+    return this.extensionsStatus_ ==
+        settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN;
+  },
+
+  /** @private */
+  onSafetyCheckExtensionsButtonClicked_: function() {
+    // TODO(crbug.com/1010001): Implement once behavior has been agreed on.
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getExtensionsIcon_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.CHECKING:
+        return null;
+      case settings.SafetyCheckExtensionsStatus.ERROR:
+      case settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN:
+        return 'cr:info';
+      case settings.SafetyCheckExtensionsStatus.SAFE:
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+        return 'cr:check';
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+        return 'cr:warning';
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getExtensionsIconSrc_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.CHECKING:
+        return 'chrome://resources/images/throbber_small.svg';
+      default:
+        return null;
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getExtensionsIconClass_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.CHECKING:
+      case settings.SafetyCheckExtensionsStatus.SAFE:
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+        return 'icon-blue';
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+        return 'icon-red';
+      default:
+        return '';
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getExtensionsSubLabelText_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.CHECKING:
+        return '';
+      case settings.SafetyCheckExtensionsStatus.ERROR:
+        return this.i18n('safetyCheckExtensionsSubLabelError');
+      case settings.SafetyCheckExtensionsStatus.SAFE:
+        return this.i18n('safetyCheckExtensionsSubLabelSafe');
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+        if (this.badExtensionsCount_ == 1) {
+          return this.i18n(
+              'safetyCheckExtensionsSubLabelBadExtensionsOnSingular');
+        }
+        return this.i18n(
+            'safetyCheckExtensionsSubLabelBadExtensionsOnPlural',
+            this.badExtensionsCount_);
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_OFF:
+        if (this.badExtensionsCount_ == 1) {
+          return this.i18n(
+              'safetyCheckExtensionsSubLabelBadExtensionsOffSingular');
+        }
+        return this.i18n(
+            'safetyCheckExtensionsSubLabelBadExtensionsOffPlural',
+            this.badExtensionsCount_);
+      case settings.SafetyCheckExtensionsStatus.MANAGED_BY_ADMIN:
+        if (this.badExtensionsCount_ == 1) {
+          return this.i18n(
+              'safetyCheckExtensionsSubLabelManagedByAdminSingular');
+        }
+        return this.i18n(
+            'safetyCheckExtensionsSubLabelManagedByAdminPlural',
+            this.badExtensionsCount_);
+      default:
+        assertNotReached();
     }
   },
 });

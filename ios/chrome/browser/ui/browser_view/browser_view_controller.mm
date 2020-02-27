@@ -42,7 +42,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
-#include "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
@@ -2562,9 +2562,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   DCHECK(self.browser->GetWebStateList()->GetIndexOfWebState(webState) !=
          WebStateList::kInvalidIndex);
+  TabUsageRecorderBrowserAgent* tabUsageRecoder =
+      TabUsageRecorderBrowserAgent::FromBrowser(_browser);
   // TODO(crbug.com/904588): Move |RecordPageLoadStart| to TabUsageRecorder.
-  if (webState->IsEvicted() && [self.tabModel tabUsageRecorder]) {
-    [self.tabModel tabUsageRecorder] -> RecordPageLoadStart(webState);
+  if (webState->IsEvicted() && tabUsageRecoder) {
+    tabUsageRecoder->RecordPageLoadStart(webState);
   }
   if (!webState->IsCrashed()) {
     // Load the page if it was evicted by browsing data clearing logic.

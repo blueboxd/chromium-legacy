@@ -70,6 +70,10 @@ void HostnameHandler::Shutdown() {
   }
 }
 
+const std::string& HostnameHandler::GetDeviceHostname() const {
+  return hostname_;
+}
+
 // static
 std::string HostnameHandler::FormatHostname(const std::string& name_template,
                                             const std::string& asset_id,
@@ -147,8 +151,9 @@ void HostnameHandler::
     }
   }
 
-  handler->SetHostname(FormatHostname(hostname_template, asset_id, serial, mac,
-                                      machine_name, location));
+  hostname_ = FormatHostname(hostname_template, asset_id, serial, mac,
+                             machine_name, location);
+  handler->SetHostname(hostname_);
 }
 
 }  // namespace policy

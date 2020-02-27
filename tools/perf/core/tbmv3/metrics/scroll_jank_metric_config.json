@@ -3,13 +3,13 @@
   "description": "Counts the number of janky periods during scroll.",
   "histograms": [
     {
-      "name": "all_janks",
+      "name": "num_janks",
       "description": "Number of all janky periods.",
       "requiredCategories": ["latencyInfo"],
       "unit": "count_smallerIsBetter"
     },
     {
-      "name": "big_janks",
+      "name": "num_big_janks",
       "description": "Number of big janky periods.",
       "requiredCategories": ["latencyInfo"],
       "unit": "count_smallerIsBetter"

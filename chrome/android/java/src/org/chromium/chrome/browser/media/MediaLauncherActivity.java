@@ -13,9 +13,9 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

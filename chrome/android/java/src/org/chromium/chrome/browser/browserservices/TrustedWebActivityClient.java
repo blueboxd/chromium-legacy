@@ -17,6 +17,12 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 
+import androidx.annotation.Nullable;
+import androidx.browser.trusted.Token;
+import androidx.browser.trusted.TrustedWebActivityService;
+import androidx.browser.trusted.TrustedWebActivityServiceConnection;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
+
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.base.ContextUtils;
@@ -30,7 +36,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
@@ -40,12 +46,6 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import androidx.annotation.Nullable;
-import androidx.browser.trusted.Token;
-import androidx.browser.trusted.TrustedWebActivityService;
-import androidx.browser.trusted.TrustedWebActivityServiceConnection;
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 /**
  * Uses a Trusted Web Activity client to display notifications.

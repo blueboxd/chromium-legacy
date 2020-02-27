@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 
 #import <UIKit/UIKit.h>
 
 #include "base/metrics/histogram_macros.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -23,18 +26,26 @@
 #error "This file requires ARC support."
 #endif
 
-TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
-                                   PrerenderService* prerender_service)
-    : restore_start_time_(base::TimeTicks::Now()),
-      web_state_list_(web_state_list),
-      prerender_service_(prerender_service) {
-  DCHECK(web_state_list_);
+BROWSER_USER_DATA_KEY_IMPL(TabUsageRecorderBrowserAgent)
 
+TabUsageRecorderBrowserAgent::TabUsageRecorderBrowserAgent(Browser* browser)
+    : restore_start_time_(base::TimeTicks::Now()),
+      web_state_list_(browser->GetWebStateList()),
+      prerender_service_(PrerenderServiceFactory::GetForBrowserState(
+          browser->GetBrowserState())) {
+  browser->AddObserver(this);
+
+  DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
   for (int index = 0; index < web_state_list_->count(); ++index) {
     web::WebState* web_state = web_state_list_->GetWebStateAt(index);
     web_state->AddObserver(this);
   }
+
+  SessionRestorationBrowserAgent* restoration_agent =
+      SessionRestorationBrowserAgent::FromBrowser(browser);
+  if (restoration_agent)
+    restoration_agent->AddObserver(this);
 
   // Register for backgrounding and foregrounding notifications. It is safe for
   // the block to capture a pointer to |this| as they are unregistered in the
@@ -56,15 +67,24 @@ TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
               }];
 }
 
-TabUsageRecorder::~TabUsageRecorder() {
-  DCHECK(web_state_list_);
+TabUsageRecorderBrowserAgent::~TabUsageRecorderBrowserAgent() {
+  DCHECK(!application_foregrounding_observer_);
+  DCHECK(!application_backgrounding_observer_);
+}
 
+void TabUsageRecorderBrowserAgent::BrowserDestroyed(Browser* browser) {
+  DCHECK_EQ(browser->GetWebStateList(), web_state_list_);
   for (int index = 0; index < web_state_list_->count(); ++index) {
     web::WebState* web_state = web_state_list_->GetWebStateAt(index);
     web_state->RemoveObserver(this);
   }
-  web_state_list_->RemoveObserver(this);
 
+  web_state_list_->RemoveObserver(this);
+  browser->RemoveObserver(this);
+  SessionRestorationBrowserAgent* restoration_agent =
+      SessionRestorationBrowserAgent::FromBrowser(browser);
+  if (restoration_agent)
+    restoration_agent->RemoveObserver(this);
   if (application_backgrounding_observer_) {
     [[NSNotificationCenter defaultCenter]
         removeObserver:application_backgrounding_observer_];
@@ -76,9 +96,10 @@ TabUsageRecorder::~TabUsageRecorder() {
         removeObserver:application_foregrounding_observer_];
     application_foregrounding_observer_ = nil;
   }
+  web_state_list_ = nullptr;
 }
 
-void TabUsageRecorder::InitialRestoredTabs(
+void TabUsageRecorderBrowserAgent::InitialRestoredTabs(
     web::WebState* active_web_state,
     const std::vector<web::WebState*>& web_states) {
 #if !defined(NDEBUG)
@@ -108,8 +129,9 @@ void TabUsageRecorder::InitialRestoredTabs(
   }
 }
 
-void TabUsageRecorder::RecordTabSwitched(web::WebState* old_web_state,
-                                         web::WebState* new_web_state) {
+void TabUsageRecorderBrowserAgent::RecordTabSwitched(
+    web::WebState* old_web_state,
+    web::WebState* new_web_state) {
   // If a tab was created to be selected, and is selected shortly thereafter,
   // it should not add its state to the "kSelectedTabHistogramName" metric.
   // |web_state_created_selected_| is reset at the first tab switch seen after
@@ -165,7 +187,7 @@ void TabUsageRecorder::RecordTabSwitched(web::WebState* old_web_state,
                             tab_usage_recorder::TAB_STATE_COUNT);
 }
 
-void TabUsageRecorder::RecordPrimaryTabModelChange(
+void TabUsageRecorderBrowserAgent::RecordPrimaryTabModelChange(
     bool primary_tab_model,
     web::WebState* active_web_state) {
   if (primary_tab_model) {
@@ -182,7 +204,8 @@ void TabUsageRecorder::RecordPrimaryTabModelChange(
   }
 }
 
-void TabUsageRecorder::RecordPageLoadStart(web::WebState* web_state) {
+void TabUsageRecorderBrowserAgent::RecordPageLoadStart(
+    web::WebState* web_state) {
   if (!ShouldIgnoreWebState(web_state)) {
     page_loads_++;
     if (web_state->IsEvicted()) {
@@ -208,8 +231,8 @@ void TabUsageRecorder::RecordPageLoadStart(web::WebState* web_state) {
   }
 }
 
-void TabUsageRecorder::RecordPageLoadDone(web::WebState* web_state,
-                                          bool success) {
+void TabUsageRecorderBrowserAgent::RecordPageLoadDone(web::WebState* web_state,
+                                                      bool success) {
   if (!web_state)
     return;
   if (web_state == evicted_web_state_) {
@@ -231,15 +254,16 @@ void TabUsageRecorder::RecordPageLoadDone(web::WebState* web_state,
   }
 }
 
-void TabUsageRecorder::RecordReload(web::WebState* web_state) {
+void TabUsageRecorderBrowserAgent::RecordReload(web::WebState* web_state) {
   if (!ShouldIgnoreWebState(web_state)) {
     page_loads_++;
   }
 }
 
-void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
-                                          bool web_state_visible,
-                                          bool application_active) {
+void TabUsageRecorderBrowserAgent::RendererTerminated(
+    web::WebState* terminated_web_state,
+    bool web_state_visible,
+    bool application_active) {
   // Log the tab state for the termination.
   const tab_usage_recorder::RendererTerminationTabState web_state_state =
       application_active
@@ -312,7 +336,7 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
   }
 }
 
-void TabUsageRecorder::AppDidEnterBackground() {
+void TabUsageRecorderBrowserAgent::AppDidEnterBackground() {
   base::TimeTicks time_now = base::TimeTicks::Now();
   LOCAL_HISTOGRAM_TIMES(tab_usage_recorder::kTimeAfterLastRestore,
                         time_now - restore_start_time_);
@@ -326,31 +350,32 @@ void TabUsageRecorder::AppDidEnterBackground() {
   }
 }
 
-void TabUsageRecorder::AppWillEnterForeground() {
+void TabUsageRecorderBrowserAgent::AppWillEnterForeground() {
   restore_start_time_ = base::TimeTicks::Now();
 }
 
-void TabUsageRecorder::ResetPageLoads() {
+void TabUsageRecorderBrowserAgent::ResetPageLoads() {
   page_loads_ = 0;
 }
 
-int TabUsageRecorder::EvictedTabsMapSize() {
+int TabUsageRecorderBrowserAgent::EvictedTabsMapSize() {
   return evicted_web_states_.size();
 }
 
-void TabUsageRecorder::ResetAll() {
+void TabUsageRecorderBrowserAgent::ResetAll() {
   ResetEvictedTab();
   ResetPageLoads();
   evicted_web_states_.clear();
 }
 
-void TabUsageRecorder::ResetEvictedTab() {
+void TabUsageRecorderBrowserAgent::ResetEvictedTab() {
   evicted_web_state_ = nullptr;
   evicted_web_state_state_ = tab_usage_recorder::IN_MEMORY;
   evicted_web_state_reload_start_time_ = base::TimeTicks();
 }
 
-bool TabUsageRecorder::ShouldIgnoreWebState(web::WebState* web_state) {
+bool TabUsageRecorderBrowserAgent::ShouldIgnoreWebState(
+    web::WebState* web_state) {
   // Do not count chrome:// urls to avoid data noise.  For example, if they were
   // counted, every new tab created would add noise to the page load count.
   web::NavigationItem* pending_item =
@@ -366,13 +391,14 @@ bool TabUsageRecorder::ShouldIgnoreWebState(web::WebState* web_state) {
   return false;
 }
 
-bool TabUsageRecorder::WebStateAlreadyEvicted(web::WebState* web_state) {
+bool TabUsageRecorderBrowserAgent::WebStateAlreadyEvicted(
+    web::WebState* web_state) {
   auto iter = evicted_web_states_.find(web_state);
   return iter != evicted_web_states_.end();
 }
 
-tab_usage_recorder::TabStateWhenSelected TabUsageRecorder::ExtractWebStateState(
-    web::WebState* web_state) {
+tab_usage_recorder::TabStateWhenSelected
+TabUsageRecorderBrowserAgent::ExtractWebStateState(web::WebState* web_state) {
   if (!web_state->IsEvicted())
     return tab_usage_recorder::IN_MEMORY;
 
@@ -386,7 +412,7 @@ tab_usage_recorder::TabStateWhenSelected TabUsageRecorder::ExtractWebStateState(
   return tab_usage_recorder::EVICTED;
 }
 
-void TabUsageRecorder::RecordRestoreStartTime() {
+void TabUsageRecorderBrowserAgent::RecordRestoreStartTime() {
   base::TimeTicks time_now = base::TimeTicks::Now();
   // Record the time delta since the last eviction reload was seen.
   LOCAL_HISTOGRAM_TIMES(tab_usage_recorder::kTimeBetweenRestores,
@@ -395,7 +421,7 @@ void TabUsageRecorder::RecordRestoreStartTime() {
   evicted_web_state_reload_start_time_ = time_now;
 }
 
-int TabUsageRecorder::GetLiveWebStatesCount() const {
+int TabUsageRecorderBrowserAgent::GetLiveWebStatesCount() const {
   int count = 0;
   for (int index = 0; index < web_state_list_->count(); ++index) {
     if (!web_state_list_->GetWebStateAt(index)->IsEvicted())
@@ -404,7 +430,8 @@ int TabUsageRecorder::GetLiveWebStatesCount() const {
   return count;
 }
 
-void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
+void TabUsageRecorderBrowserAgent::OnWebStateDestroyed(
+    web::WebState* web_state) {
   if (web_state == web_state_created_selected_)
     web_state_created_selected_ = nullptr;
 
@@ -421,7 +448,7 @@ void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
 }
 
-void TabUsageRecorder::DidStartNavigation(
+void TabUsageRecorderBrowserAgent::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
@@ -430,14 +457,14 @@ void TabUsageRecorder::DidStartNavigation(
   }
 }
 
-void TabUsageRecorder::PageLoaded(
+void TabUsageRecorderBrowserAgent::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   RecordPageLoadDone(web_state, load_completion_status ==
                                     web::PageLoadCompletionStatus::SUCCESS);
 }
 
-void TabUsageRecorder::RenderProcessGone(web::WebState* web_state) {
+void TabUsageRecorderBrowserAgent::RenderProcessGone(web::WebState* web_state) {
   bool is_active;
   switch ([UIApplication sharedApplication].applicationState) {
     case UIApplicationStateActive:
@@ -451,7 +478,7 @@ void TabUsageRecorder::RenderProcessGone(web::WebState* web_state) {
   RendererTerminated(web_state, web_state->IsVisible(), is_active);
 }
 
-void TabUsageRecorder::WebStateDestroyed(web::WebState* web_state) {
+void TabUsageRecorderBrowserAgent::WebStateDestroyed(web::WebState* web_state) {
   // TabUsageRecorder only watches WebState inserted in a WebStateList. The
   // WebStateList owns the WebStates it manages. TabUsageRecorder removes
   // itself from WebStates' WebStateObservers when notified by WebStateList
@@ -460,42 +487,46 @@ void TabUsageRecorder::WebStateDestroyed(web::WebState* web_state) {
   NOTREACHED();
 }
 
-void TabUsageRecorder::WebStateInsertedAt(WebStateList* web_state_list,
-                                          web::WebState* web_state,
-                                          int index,
-                                          bool activating) {
+void TabUsageRecorderBrowserAgent::WebStateInsertedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index,
+    bool activating) {
   if (activating)
     web_state_created_selected_ = web_state;
 
   web_state->AddObserver(this);
 }
 
-void TabUsageRecorder::WebStateReplacedAt(WebStateList* web_state_list,
-                                          web::WebState* old_web_state,
-                                          web::WebState* new_web_state,
-                                          int index) {
+void TabUsageRecorderBrowserAgent::WebStateReplacedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int index) {
   OnWebStateDestroyed(old_web_state);
 
   if (new_web_state)
     new_web_state->AddObserver(this);
 }
 
-void TabUsageRecorder::WebStateDetachedAt(WebStateList* web_state_list,
-                                          web::WebState* web_state,
-                                          int index) {
+void TabUsageRecorderBrowserAgent::WebStateDetachedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index) {
   OnWebStateDestroyed(web_state);
 }
 
-void TabUsageRecorder::WebStateActivatedAt(WebStateList* web_state_list,
-                                           web::WebState* old_web_state,
-                                           web::WebState* new_web_state,
-                                           int active_index,
-                                           int reason) {
+void TabUsageRecorderBrowserAgent::WebStateActivatedAt(
+    WebStateList* web_state_list,
+    web::WebState* old_web_state,
+    web::WebState* new_web_state,
+    int active_index,
+    int reason) {
   if (reason & WebStateListObserver::CHANGE_REASON_USER_ACTION)
     RecordTabSwitched(old_web_state, new_web_state);
 }
 
-void TabUsageRecorder::SessionRestorationFinished(
+void TabUsageRecorderBrowserAgent::SessionRestorationFinished(
     const std::vector<web::WebState*>& restored_web_states) {
   InitialRestoredTabs(web_state_list_->GetActiveWebState(),
                       restored_web_states);

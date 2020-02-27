@@ -1365,12 +1365,12 @@ void LoginAuthUserView::OnChallengeResponseAuthComplete(
   if (!auth_success.has_value() || !auth_success.value()) {
     password_view_->Clear();
     password_view_->SetReadOnly(false);
-    // If the user cancelled the PIN request during ChallengeResponse,
+    // If the user canceled the PIN request during ChallengeResponse,
     // ChallengeResponse will fail with an unknown error. Since this is
     // expected, we do not show this error.
     if (Shell::Get()
             ->login_screen_controller()
-            ->GetSecurityTokenPinRequestCancelled()) {
+            ->GetSecurityTokenPinRequestCanceled()) {
       challenge_response_view_->SetState(
           ChallengeResponseView::State::kInitial);
     } else {

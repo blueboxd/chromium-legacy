@@ -71,5 +71,20 @@ class EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction
       ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEANNOTATEDLOCATION)
 };
 
+class EnterpriseDeviceAttributesGetDeviceHostnameFunction
+    : public ExtensionFunction {
+ public:
+  EnterpriseDeviceAttributesGetDeviceHostnameFunction();
+
+ protected:
+  ~EnterpriseDeviceAttributesGetDeviceHostnameFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("enterprise.deviceAttributes.getDeviceHostname",
+                             ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEHOSTNAME)
+};
+
 }  //  namespace extensions
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_DEVICE_ATTRIBUTES_ENTERPRISE_DEVICE_ATTRIBUTES_API_H_

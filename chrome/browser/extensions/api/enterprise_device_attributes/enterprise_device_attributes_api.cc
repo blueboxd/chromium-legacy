@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/hostname_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/enterprise_device_attributes.h"
@@ -19,6 +20,9 @@
 namespace extensions {
 
 namespace {
+
+// TODO(http://crbug.com/1056550): Return an error if the user is not permitted
+// to get device attributes instead of an empty string.
 
 // Checks for the current browser context if the user is affiliated or belongs
 // to the sign-in profile.
@@ -108,6 +112,26 @@ EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction::Run() {
   return RespondNow(ArgumentList(
       api::enterprise_device_attributes::GetDeviceAnnotatedLocation::Results::
           Create(annotated_location)));
+}
+
+EnterpriseDeviceAttributesGetDeviceHostnameFunction::
+    EnterpriseDeviceAttributesGetDeviceHostnameFunction() = default;
+
+EnterpriseDeviceAttributesGetDeviceHostnameFunction::
+    ~EnterpriseDeviceAttributesGetDeviceHostnameFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterpriseDeviceAttributesGetDeviceHostnameFunction::Run() {
+  std::string hostname;
+  if (IsPermittedToGetDeviceAttributes(browser_context())) {
+    hostname = g_browser_process->platform_part()
+                   ->browser_policy_connector_chromeos()
+                   ->GetHostnameHandler()
+                   ->GetDeviceHostname();
+  }
+  return RespondNow(ArgumentList(
+      api::enterprise_device_attributes::GetDeviceHostname::Results::Create(
+          hostname)));
 }
 
 }  // namespace extensions

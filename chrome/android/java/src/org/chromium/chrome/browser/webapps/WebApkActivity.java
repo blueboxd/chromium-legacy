@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.webapk.lib.common.WebApkConstants;
 

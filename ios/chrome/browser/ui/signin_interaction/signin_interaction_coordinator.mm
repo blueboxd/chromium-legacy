@@ -157,7 +157,7 @@
 #pragma mark - Properties
 
 - (BOOL)isActive {
-  return self.controller != nil || self.isSettingsViewPresented;
+  return self.controller != nil || self.coordinator != nil;
 }
 
 - (BOOL)isSettingsViewPresented {

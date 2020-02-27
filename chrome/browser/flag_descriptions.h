@@ -496,9 +496,6 @@ extern const char kExperimentalWebAssemblyFeaturesDescription[];
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 
-extern const char kEnableWasmCodeGCName[];
-extern const char kEnableWasmCodeGCDescription[];
-
 extern const char kEnableWasmLazyCompilationName[];
 extern const char kEnableWasmLazyCompilationDescription[];
 

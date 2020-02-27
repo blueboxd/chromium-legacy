@@ -355,7 +355,8 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
 
   // Called when the user submits the input. Will not be called if the UI is
   // closed before that happens.
-  base::OnceCallback<void(const std::string& user_input)> pin_entered_callback;
+  using OnPinEntered = base::OnceCallback<void(const std::string& user_input)>;
+  OnPinEntered pin_entered_callback;
 
   // Called when the PIN request UI gets closed. Will not be called when the
   // browser itself requests the UI to be closed.

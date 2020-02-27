@@ -13,6 +13,12 @@ android_library("application_java") {
   ]
 }
 
+android_library("util_java") {
+  sources = [
+    "java/src/org/chromium/components/embedder_support/util/UrlConstants.java",
+  ]
+}
+
 static_library("view") {
   sources = [
     "view/content_view_render_view.cc",

@@ -10,8 +10,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * {@code ShareActivity} is the base class for share options, which

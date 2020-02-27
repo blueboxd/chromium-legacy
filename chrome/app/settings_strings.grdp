@@ -1790,6 +1790,36 @@
   <message name="IDS_SAFETY_CHECK_PASSWORDS_BUTTON_ERROR" desc="This button allows users to try the password check again.">
     Try again
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL" desc="'Extensions' is an element in safety check that shows the safety check status of installed extensions.">
+    Extensions
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_ERROR" desc="This text describles that safety check could not check extensions for an unkown reason.">
+    The extension status could not be checked, something went wrong. Try again later.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_SAFE" desc="This text describles that the user is protected from bad extensions.">
+    You're protected from bad extensions
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_ON_SINGULAR" desc="This text describles that the user has turned bad extensions back on.">
+    You turned 1 bad extension back on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_ON_PLURAL" desc="This text describles that the user has turned bad extensions back on.">
+    You turned <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions back on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_OFF_SINGULAR" desc="This text describles that bad extensions have been disabled.">
+    1 bad extension has been disabled. You can also remove it.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_BAD_EXTENSIONS_OFF_PLURAL" desc="This text describles that bad extensions have been disabled.">
+    <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions have been disabled. You can also remove them.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_MANAGED_BY_ADMIN_SINGULAR" desc="This text describles that an administrator has turned bad extensions back on.">
+    Your administrator turned 1 bad extension back on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_SUB_LABEL_MANAGED_BY_ADMIN_PLURAL" desc="This text describles that an administrator has turned bad extensions back on.">
+    Your administrator turned <ph name="NUM_EXTENSIONS">$1<ex>42</ex></ph> bad extensions back on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON" desc="This button allows users to review their extensions settings.">
+    Review
+  </message>
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching
   </message>

@@ -239,7 +239,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   // base::Unretained(this) here.
   std::unique_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_->Grow(
       std::move(shared_memory), allocation_size_in_bytes, new_id,
-      base::Bind(
+      base::BindOnce(
           &ClientDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
           base::Unretained(this), new_id)));
   new_span->set_is_locked(true);

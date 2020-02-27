@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
@@ -71,8 +72,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   bool ValidateParentAccessCode(const AccountId& account_id,
                                 base::Time validation_time,
                                 const std::string& code);
-  void OnSecurityTokenPinRequestCancelledByUser();
-  bool GetSecurityTokenPinRequestCancelled() const;
+  bool GetSecurityTokenPinRequestCanceled() const;
   void HardlockPod(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
   void OnNoPodFocused();
@@ -161,14 +161,10 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   SystemTrayNotifier* system_tray_notifier_;
 
+  SecurityTokenRequestController security_token_request_controller_;
+
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
-
-  // Original OnUiClosed callback of a pending security token pin request.
-  // Invoked by OnSecurityTokenPinRequestCancelledByUser.
-  SecurityTokenPinRequest::OnUiClosed on_request_security_token_ui_closed_;
-
-  bool security_token_pin_request_cancelled_ = false;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_{this};
 

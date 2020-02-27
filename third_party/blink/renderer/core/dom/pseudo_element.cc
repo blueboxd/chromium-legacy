@@ -188,10 +188,15 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(CanHaveGeneratedChildren(*layout_object->Parent()));
 
   const ComputedStyle& style = layout_object->StyleRef();
-  switch (style.StyleType()) {
+  switch (pseudo_id_) {
     case kPseudoIdMarker: {
-      if (ListMarker* marker = ListMarker::Get(layout_object))
+      if (ListMarker* marker = ListMarker::Get(layout_object)) {
         marker->UpdateMarkerContentIfNeeded(*layout_object);
+      } else {
+        DCHECK(layout_object->IsListMarker());
+        // TODO(obrufau): support non-normal content in legacy markers.
+        return;
+      }
       if (style.ContentBehavesAsNormal())
         return;
       break;

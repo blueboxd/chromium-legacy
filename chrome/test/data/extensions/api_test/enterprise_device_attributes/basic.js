@@ -11,6 +11,7 @@ chrome.test.getConfig(function(config) {
   var expectedSerialNumber = customArg.expectedSerialNumber;
   var expectedAssetId = customArg.expectedAssetId;
   var expectedAnnotatedLocation = customArg.expectedAnnotatedLocation;
+  var expectedHostname = customArg.expectedHostname;
 
   chrome.test.runTests([
     function testDirectoryDeviceId() {
@@ -38,6 +39,12 @@ chrome.test.getConfig(function(config) {
       chrome.enterprise.deviceAttributes.getDeviceAnnotatedLocation(function(
           annotatedLocation) {
         chrome.test.assertEq(expectedAnnotatedLocation, annotatedLocation);
+        chrome.test.succeed();
+      });
+    },
+    function testDeviceHostname() {
+      chrome.enterprise.deviceAttributes.getDeviceHostname(function(hostname) {
+        chrome.test.assertEq(expectedHostname, hostname);
         chrome.test.succeed();
       });
     }

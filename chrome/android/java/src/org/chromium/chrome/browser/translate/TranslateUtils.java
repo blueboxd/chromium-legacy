@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.translate;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * Utility classes related to the translate feature.

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.share;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  *  A collection of helper functions for sharing in a non static context.

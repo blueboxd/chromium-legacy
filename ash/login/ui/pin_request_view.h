@@ -151,8 +151,12 @@ class ASH_EXPORT PinRequestView : public views::DialogDelegateView,
   void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
-  // Sets whether the user can enter a PIN.
+  // Sets whether the user can enter a PIN. Other buttons (back, submit etc.)
+  // are unaffected.
   void SetInputEnabled(bool input_enabled);
+
+  // Clears previously entered PIN from the PIN input field(s).
+  void ClearInput();
 
   // Updates state of the view.
   void UpdateState(PinRequestViewState state,

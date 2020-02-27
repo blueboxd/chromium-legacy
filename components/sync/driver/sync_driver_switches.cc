@@ -59,7 +59,7 @@ const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
 
 // Enable USS implementation of Nigori datatype.
 const base::Feature kSyncUSSNigori{"SyncUSSNigori",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable syncing of Wi-Fi configurations.
 const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",

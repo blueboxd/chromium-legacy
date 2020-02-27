@@ -308,7 +308,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/content_settings/',
   '^components/cronet/',
   '^components/data_reduction_proxy/',
-  '^components/discardable_memory/',
   '^components/domain_reliability/',
   '^components/dom_distiller/',
   '^components/download/',

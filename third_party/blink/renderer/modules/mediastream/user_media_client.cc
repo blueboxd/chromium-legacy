@@ -47,8 +47,8 @@ void UpdateAPICount(UserMediaRequest::MediaType media_type) {
 
 }  // namespace
 
-UserMediaClient::Request::Request(std::unique_ptr<UserMediaRequestInfo> request)
-    : user_media_request_(std::move(request)) {
+UserMediaClient::Request::Request(UserMediaRequestInfo* request)
+    : user_media_request_(request) {
   DCHECK(user_media_request_);
   DCHECK(!apply_constraints_request_);
   DCHECK(web_track_to_stop_.IsNull());
@@ -71,9 +71,10 @@ UserMediaClient::Request::Request(
 
 UserMediaClient::Request::~Request() = default;
 
-std::unique_ptr<UserMediaRequestInfo>
-UserMediaClient::Request::MoveUserMediaRequest() {
-  return std::move(user_media_request_);
+UserMediaRequestInfo* UserMediaClient::Request::MoveUserMediaRequest() {
+  auto user_media_request = user_media_request_;
+  user_media_request_ = nullptr;
+  return user_media_request;
 }
 
 UserMediaClient::UserMediaClient(
@@ -165,11 +166,9 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* web_request) {
                                         ->GetFrame()
                                         ->Frame::HasTransientUserActivation();
   }
-  std::unique_ptr<UserMediaRequestInfo> request_info =
-      std::make_unique<UserMediaRequestInfo>(request_id, web_request,
-                                             has_transient_user_activation);
-  pending_request_infos_.push_back(
-      MakeGarbageCollected<Request>(std::move(request_info)));
+  auto* request_info = MakeGarbageCollected<UserMediaRequestInfo>(
+      request_id, web_request, has_transient_user_activation);
+  pending_request_infos_.push_back(MakeGarbageCollected<Request>(request_info));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }

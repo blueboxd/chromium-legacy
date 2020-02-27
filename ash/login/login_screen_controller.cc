@@ -8,6 +8,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/login/parent_access_controller.h"
+#include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -210,13 +211,8 @@ bool LoginScreenController::ValidateParentAccessCode(
   return client_->ValidateParentAccessCode(account_id, code, validation_time);
 }
 
-void LoginScreenController::OnSecurityTokenPinRequestCancelledByUser() {
-  security_token_pin_request_cancelled_ = true;
-  std::move(on_request_security_token_ui_closed_).Run();
-}
-
-bool LoginScreenController::GetSecurityTokenPinRequestCancelled() const {
-  return security_token_pin_request_cancelled_;
+bool LoginScreenController::GetSecurityTokenPinRequestCanceled() const {
+  return security_token_request_controller_.request_canceled();
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -415,33 +411,11 @@ void LoginScreenController::ShowParentAccessWidget(
 
 void LoginScreenController::RequestSecurityTokenPin(
     SecurityTokenPinRequest request) {
-  if (LockScreen::HasInstance() && !security_token_pin_request_cancelled_) {
-    // The caller must ensure that there is no unresolved pin request currently
-    // in progress.
-    on_request_security_token_ui_closed_ =
-        std::move(request.pin_ui_closed_callback);
-    // base::Unretained(this) could lead to errors if this controller is
-    // destroyed before the callback happens. This will be fixed by
-    // crbug.com/1001288 by using a UI owned by the controller.
-    request.pin_ui_closed_callback = base::BindOnce(
-        &LoginScreenController::OnSecurityTokenPinRequestCancelledByUser,
-        base::Unretained(this));
-    LockScreen::Get()->RequestSecurityTokenPin(std::move(request));
-  } else {
-    // The user closed the PIN UI on a previous request that was part of the
-    // same smart card login attempt, or the PIN request is made at an
-    // inappropriate time, racing with the lock screen showing/hiding.
-    std::move(request.pin_ui_closed_callback).Run();
-  }
+  security_token_request_controller_.SetPinUiState(std::move(request));
 }
 
 void LoginScreenController::ClearSecurityTokenPinRequest() {
-  if (!LockScreen::HasInstance()) {
-    // Corner case: the request is made at inappropriate time, racing with the
-    // lock screen showing/hiding.
-    return;
-  }
-  LockScreen::Get()->ClearSecurityTokenPinRequest();
+  security_token_request_controller_.ClosePinUi();
 }
 
 void LoginScreenController::ShowLockScreen() {
@@ -506,9 +480,13 @@ void LoginScreenController::OnAuthenticateComplete(
     bool success) {
   authentication_stage_ = AuthenticationStage::kUserCallback;
   std::move(callback).Run(base::make_optional<bool>(success));
-  security_token_pin_request_cancelled_ = false;
-  on_request_security_token_ui_closed_.Reset();
   authentication_stage_ = AuthenticationStage::kIdle;
+
+  // During smart card login flow, multiple security token requests can be made.
+  // If the user cancels one, all others should also be canceled.
+  // At this point, the flow is ending and new security token requests are
+  // displayed again.
+  security_token_request_controller_.ResetRequestCanceled();
 }
 
 void LoginScreenController::OnShow() {

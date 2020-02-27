@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * Handles the DOFF flow when Chrome is launched in VR mode and the FRE is not complete. This is

@@ -28,8 +28,7 @@ PinRequestWidget::TestApi::TestApi(PinRequestWidget* widget)
 PinRequestWidget::TestApi::~TestApi() = default;
 
 PinRequestView* PinRequestWidget::TestApi::pin_request_view() {
-  return static_cast<PinRequestView*>(
-      pin_request_widget_->widget_->widget_delegate());
+  return pin_request_widget_->GetView();
 }
 
 // static
@@ -48,8 +47,17 @@ void PinRequestWidget::UpdateState(PinRequestViewState state,
                                    const base::string16& title,
                                    const base::string16& description) {
   DCHECK_EQ(instance_, this);
-  static_cast<PinRequestView*>(widget_->widget_delegate())
-      ->UpdateState(state, title, description);
+  GetView()->UpdateState(state, title, description);
+}
+
+void PinRequestWidget::SetPinInputEnabled(bool enabled) {
+  DCHECK_EQ(instance_, this);
+  GetView()->SetInputEnabled(enabled);
+}
+
+void PinRequestWidget::ClearInput() {
+  DCHECK_EQ(instance_, this);
+  GetView()->ClearInput();
 }
 
 void PinRequestWidget::Close(bool success) {
@@ -105,6 +113,10 @@ void PinRequestWidget::Show() {
   auto* keyboard_controller = Shell::Get()->keyboard_controller();
   if (keyboard_controller && keyboard_controller->IsKeyboardEnabled())
     keyboard_controller->HideKeyboard(HideReason::kSystem);
+}
+
+PinRequestView* PinRequestWidget::GetView() {
+  return static_cast<PinRequestView*>(widget_->widget_delegate());
 }
 
 }  // namespace ash

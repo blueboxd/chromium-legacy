@@ -28,9 +28,9 @@ import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeStringConstants;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.Passphrase;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;

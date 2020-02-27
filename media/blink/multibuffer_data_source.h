@@ -117,7 +117,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   void Read(int64_t position,
             int size,
             uint8_t* data,
-            const DataSource::ReadCB& read_cb) override;
+            DataSource::ReadCB read_cb) override;
   bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;

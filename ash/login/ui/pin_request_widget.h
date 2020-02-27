@@ -60,6 +60,12 @@ class ASH_EXPORT PinRequestWidget {
                    const base::string16& title,
                    const base::string16& description);
 
+  // Enables or disables PIN input.
+  void SetPinInputEnabled(bool enabled);
+
+  // Clears previously entered PIN from the PIN input field(s).
+  void ClearInput();
+
   // Closes the widget.
   // |success| describes whether the validation was successful and is passed to
   // |on_pin_request_done_|.
@@ -71,6 +77,9 @@ class ASH_EXPORT PinRequestWidget {
 
   // Shows the |widget_| and |dimmer_| if applicable.
   void Show();
+
+  // Returns the associated view.
+  PinRequestView* GetView();
 
   // Callback invoked when closing the widget.
   PinRequest::OnPinRequestDone on_pin_request_done_;

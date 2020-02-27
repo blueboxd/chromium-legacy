@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.url.URI;
 
 import java.net.URISyntaxException;

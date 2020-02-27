@@ -210,7 +210,7 @@ TEST_F(CrostiniRegistryServiceTest, NAppsInstalledHistogram) {
   *app_list.add_apps() = app5;
 
   // Force the registry to have a prefs entry for the Terminal.
-  service()->AppLaunched(kCrostiniTerminalId);
+  service()->AppLaunched(GetTerminalId());
 
   // Update the list of apps so that they can be counted.
   service()->UpdateApplicationList(app_list);
@@ -288,7 +288,7 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
 
   EXPECT_THAT(GetRegisteredAppIds(),
               testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
-                                            kCrostiniTerminalId));
+                                            GetTerminalId()));
 
   // Clobber app_id_2
   service()->UpdateApplicationList(
@@ -298,7 +298,7 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
 
   EXPECT_THAT(GetRegisteredAppIds(),
               testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id,
-                                            kCrostiniTerminalId));
+                                            GetTerminalId()));
 }
 
 // Test that ClearApplicationList works, and only removes apps from the
@@ -323,13 +323,12 @@ TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
 
   EXPECT_THAT(GetRegisteredAppIds(),
               testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
-                                            app_id_4, kCrostiniTerminalId));
+                                            app_id_4, GetTerminalId()));
 
   service()->ClearApplicationList("vm 2", "");
 
-  EXPECT_THAT(
-      GetRegisteredAppIds(),
-      testing::UnorderedElementsAre(app_id_1, app_id_2, kCrostiniTerminalId));
+  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(
+                                         app_id_1, app_id_2, GetTerminalId()));
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {

@@ -43,7 +43,7 @@ class SecurityTokenPinDialogHostAshImpl final
   // Screen UI.
   void OnUserInputReceived(const std::string& user_input);
   // Called when the PIN UI gets closed.
-  void OnClosed();
+  void OnClosedByUser();
 
   // Resets the internal state and weak pointers associated with the previously
   // started requests.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_H_
-#define IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_H_
+#ifndef IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_BROWSER_AGENT_H_
+#define IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_BROWSER_AGENT_H_
 
 #include <map>
 #include <memory>
@@ -11,7 +11,10 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/main/browser_observer.h"
+#include "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder_metrics.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -24,15 +27,20 @@ namespace web {
 class WebState;
 }
 
-// Reports usage about the lifecycle of a single TabModel's tabs.
-class TabUsageRecorder : public web::WebStateObserver,
-                         public WebStateListObserver,
-                         public SessionRestorationObserver {
+// Reports usage about the lifecycle of a single Browser's tabs.
+class TabUsageRecorderBrowserAgent
+    : BrowserObserver,
+      public BrowserUserData<TabUsageRecorderBrowserAgent>,
+      web::WebStateObserver,
+      public WebStateListObserver,
+      public SessionRestorationObserver {
  public:
-  // Initializes the TabUsageRecorder to watch |web_state_list|.
-  TabUsageRecorder(WebStateList* web_state_list,
-                   PrerenderService* prerender_service);
-  ~TabUsageRecorder() override;
+  // Not copyable or moveable
+  TabUsageRecorderBrowserAgent(const TabUsageRecorderBrowserAgent&) = delete;
+  TabUsageRecorderBrowserAgent& operator=(const TabUsageRecorderBrowserAgent&) =
+      delete;
+
+  ~TabUsageRecorderBrowserAgent() override;
 
   // Called during startup when the tab model is created, or shortly after a
   // post-crash launch if the tabs are restored.  |web_states| is an array
@@ -90,7 +98,14 @@ class TabUsageRecorder : public web::WebStateObserver,
  private:
   // TODO(crbug.com/731724): remove this once the code has been refactored not
   // to depends on injecting values in |termination_timestamps_|.
-  friend class TabUsageRecorderTest;
+  friend class TabUsageRecorderBrowserAgentTest;
+  explicit TabUsageRecorderBrowserAgent(Browser* browser);
+
+  friend class BrowserUserData<TabUsageRecorderBrowserAgent>;
+  BROWSER_USER_DATA_KEY_DECL();
+
+  // BrowserObserver methods
+  void BrowserDestroyed(Browser* browser) override;
 
   // Clear out all state regarding a current evicted tab.
   void ResetEvictedTab();
@@ -194,8 +209,6 @@ class TabUsageRecorder : public web::WebStateObserver,
   // Observers for NSNotificationCenter notifications.
   __strong id<NSObject> application_backgrounding_observer_;
   __strong id<NSObject> application_foregrounding_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabUsageRecorder);
 };
 
-#endif  // IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_H_
+#endif  // IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_BROWSER_AGENT_H_

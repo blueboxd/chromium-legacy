@@ -16,8 +16,7 @@ namespace media {
 
 class MEDIA_EXPORT DataSource {
  public:
-  typedef base::Callback<void(int64_t, int64_t)> StatusCallback;
-  typedef base::Callback<void(int)> ReadCB;
+  using ReadCB = base::OnceCallback<void(int)>;
 
   enum { kReadError = -1, kAborted = -2 };
 
@@ -30,7 +29,7 @@ class MEDIA_EXPORT DataSource {
   virtual void Read(int64_t position,
                     int size,
                     uint8_t* data,
-                    const DataSource::ReadCB& read_cb) = 0;
+                    DataSource::ReadCB read_cb) = 0;
 
   // Stops the DataSource. Once this is called all future Read() calls will
   // return an error. This is a synchronous call and may be called from any

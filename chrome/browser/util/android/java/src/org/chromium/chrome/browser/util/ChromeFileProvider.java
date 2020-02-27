@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * Utility class for Uri related operations.

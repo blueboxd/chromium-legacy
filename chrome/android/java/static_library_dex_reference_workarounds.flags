@@ -72,5 +72,4 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.NotificationSuspender$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.SuspensionTracker { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.usage_stats.UsageStatsService { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.util.IntentUtils { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.vr.ArImmersiveOverlay { *; }

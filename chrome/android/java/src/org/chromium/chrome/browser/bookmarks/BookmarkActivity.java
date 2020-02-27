@@ -11,8 +11,8 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.SnackbarActivity;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * The activity that displays the bookmark UI on the phone. It keeps a {@link BookmarkManager}

@@ -76,7 +76,12 @@ public class NfcSystemLevelSetting {
     }
 
     public static Intent getNfcSystemLevelSettingIntent() {
-        return new Intent(Settings.ACTION_NFC_SETTINGS);
+        Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+        Context context = ContextUtils.getApplicationContext();
+        if (intent.resolveActivity(context.getPackageManager()) == null) {
+            return null;
+        }
+        return intent;
     }
 
     /** Disable/enable Android NFC setting for testing use only. */

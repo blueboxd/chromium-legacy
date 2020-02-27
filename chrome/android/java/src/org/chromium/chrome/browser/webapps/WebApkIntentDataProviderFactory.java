@@ -22,13 +22,13 @@ import org.xmlpull.v1.XmlPullParser;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareData;
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;

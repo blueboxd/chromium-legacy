@@ -166,7 +166,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
       GUARDED_BY(lock_);
   scoped_refptr<base::SingleThreadTaskRunner> enforce_memory_policy_task_runner_
       GUARDED_BY(lock_);
-  base::Closure enforce_memory_policy_callback_ GUARDED_BY(lock_);
+  base::RepeatingClosure enforce_memory_policy_callback_ GUARDED_BY(lock_);
   bool enforce_memory_policy_pending_ GUARDED_BY(lock_);
 
   // The message loop for running mojom::DiscardableSharedMemoryManager

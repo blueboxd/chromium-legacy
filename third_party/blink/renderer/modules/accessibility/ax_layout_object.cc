@@ -3082,18 +3082,6 @@ void AXLayoutObject::AddImageMapChildren() {
   }
 }
 
-void AXLayoutObject::AddListMarker() {
-  if (!CanHaveChildren() || !GetLayoutObject() || AccessibilityIsIgnored() ||
-      !GetLayoutObject()->IsListItem()) {
-    return;
-  }
-  LayoutListItem* list_item = ToLayoutListItem(GetLayoutObject());
-  LayoutObject* list_marker = list_item->Marker();
-  AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
-  if (list_marker_obj)
-    children_.push_back(list_marker_obj);
-}
-
 void AXLayoutObject::AddPopupChildren() {
   auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
   if (!html_input_element)

@@ -29,7 +29,7 @@
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
-#import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
@@ -117,8 +117,8 @@ BOOL IsTransitionBetweenDesktopAndMobileUserAgent(web::UserAgentType lhs,
   return lhs != rhs;
 }
 
-// Returns whether TabUsageRecorder::RecordPageLoadStart should be called for
-// the given navigation.
+// Returns whether TabUsageRecorderBrowserAgent::RecordPageLoadStart should be
+// called for the given navigation.
 BOOL ShouldRecordPageLoadStartForNavigation(
     web::NavigationContext* navigation) {
   web::NavigationManager* navigation_manager =
@@ -226,7 +226,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   WebStateListMetricsObserver* _webStateListMetricsObserver;
 
   // Backs up property with the same name.
-  std::unique_ptr<TabUsageRecorder> _tabUsageRecorder;
+  TabUsageRecorderBrowserAgent* _tabUsageRecorder;
 
   // Weak reference to the session restoration agent.
   SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
@@ -255,9 +255,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 #pragma mark - Public methods
-- (TabUsageRecorder*)tabUsageRecorder {
-  return _tabUsageRecorder.get();
-}
 
 - (BOOL)isOffTheRecord {
   return _browserState && _browserState->IsOffTheRecord();
@@ -288,17 +285,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _sessionRestorationBrowserAgent =
         SessionRestorationBrowserAgent::FromBrowser(browser);
 
-    // Normal browser states are the only ones to get tab restore. Tab sync
-    // handles incognito browser states by filtering on profile, so it's
-    // important to the backend code to always have a sync window delegate.
-    if (!_browserState->IsOffTheRecord()) {
-      // Set up the usage recorder before tabs are created.
-      _tabUsageRecorder = std::make_unique<TabUsageRecorder>(
-          _webStateList,
-          PrerenderServiceFactory::GetForBrowserState(_browserState));
-      _sessionRestorationBrowserAgent->AddObserver(_tabUsageRecorder.get());
-    }
-
+    _tabUsageRecorder = TabUsageRecorderBrowserAgent::FromBrowser(browser);
+    // Tab sync handles incognito browser states by filtering on profile, so
+    // it's important to the backend code to always have a sync window delegate.
     std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
         std::make_unique<TabModelSyncedWindowDelegate>(_webStateList);
 
@@ -384,10 +373,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   TabModelList::UnregisterTabModelFromChromeBrowserState(_browserState, self);
 
   _sessionRestorationBrowserAgent->RemoveObserver(_webStateListMetricsObserver);
-  if (_tabUsageRecorder)
-    _sessionRestorationBrowserAgent->RemoveObserver(_tabUsageRecorder.get());
 
   _sessionRestorationBrowserAgent = nullptr;
+  _tabUsageRecorder = nullptr;
   _browserState = nullptr;
 
   // Clear weak pointer to observers before destroying them.
@@ -411,7 +399,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateList = nullptr;
 
   _clearPoliciesTaskTracker.TryCancelAll();
-  _tabUsageRecorder.reset();
   _webStateObserver.reset();
 }
 

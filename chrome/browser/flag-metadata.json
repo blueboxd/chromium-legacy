@@ -2010,11 +2010,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "enable-webassembly-code-gc",
-    "owners": [ "clemensb", "wasm-team@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-webassembly-lazy-compilation",
     "owners": [ "clemensb", "wasm-team@google.com" ],
     "expiry_milestone": 86

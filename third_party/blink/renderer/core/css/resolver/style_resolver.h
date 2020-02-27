@@ -139,6 +139,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void Trace(Visitor*);
 
  private:
+  void InitStyleAndApplyInheritance(Element& element,
+                                    StyleResolverState& state);
   void ApplyBaseComputedStyle(Element* element,
                               StyleResolverState& state,
                               RuleMatchingBehavior matching_behavior,

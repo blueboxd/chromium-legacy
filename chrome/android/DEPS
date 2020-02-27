@@ -12,6 +12,7 @@ include_rules = [
   "+components/browser_ui/widget/android",
   "+components/content_capture",
   "+components/download",
+  "+components/embedder_support/android",
   "+components/favicon_base",
   "+components/find_in_page/android",
   "+components/invalidation",

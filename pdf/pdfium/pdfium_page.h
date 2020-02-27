@@ -170,6 +170,7 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestImageAltText);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, TestPopulateHighlights);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageTextFieldTest, TestPopulateTextFields);
 
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
@@ -182,8 +183,12 @@ class PDFiumPage {
   void PopulateAnnotationLinks();
   // Calculate the locations of images on the page.
   void CalculateImages();
-  // Populate highlights on the page.
-  void PopulateHighlights();
+  // Populate annotations like highlight and text field on the page.
+  void PopulateAnnotations();
+  // Populate |highlights_| with |annot|.
+  void PopulateHighlight(FPDF_ANNOTATION annot);
+  // Populate |text_fields_| with |annot|.
+  void PopulateTextField(FPDF_ANNOTATION annot);
   // Returns link type and fills target associated with a link. Returns
   // NONSELECTABLE_AREA if link detection failed.
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
@@ -275,6 +280,20 @@ class PDFiumPage {
     uint32_t color;
   };
 
+  // Represents a text field within the page.
+  struct TextField {
+    TextField();
+    TextField(const TextField& other);
+    ~TextField();
+
+    // Represents the name of form field as defined in the field dictionary.
+    std::string name;
+    std::string value;
+    pp::Rect bounding_rect;
+    // Represents the flags of form field as defined in the field dictionary.
+    int flags;
+  };
+
   PDFiumEngine* engine_;
   ScopedFPDFPage page_;
   ScopedFPDFTextPage text_page_;
@@ -285,8 +304,9 @@ class PDFiumPage {
   std::vector<Link> links_;
   bool calculated_images_ = false;
   std::vector<Image> images_;
-  bool calculated_highlights_ = false;
+  bool calculated_annotations_ = false;
   std::vector<Highlight> highlights_;
+  std::vector<TextField> text_fields_;
   bool calculated_page_object_text_run_breaks_ = false;
   // The set of character indices on which text runs need to be broken for page
   // objects.

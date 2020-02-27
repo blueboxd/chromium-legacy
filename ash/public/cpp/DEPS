@@ -1,6 +1,4 @@
 include_rules = [
-  "+chromeos/components/security_token_pin",
-  "+chromeos/constants",
   "+chromeos/services",
   "+components/arc/mojom",
   "+components/prefs",

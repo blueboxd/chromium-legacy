@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 

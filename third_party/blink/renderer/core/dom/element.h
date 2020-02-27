@@ -549,6 +549,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void RecalcStyleForTraversalRootAncestor();
   void RebuildLayoutTreeForTraversalRootAncestor() {
     RebuildFirstLetterLayoutTree();
+    WhitespaceAttacher whitespace_attacher;
+    RebuildMarkerLayoutTree(whitespace_attacher);
   }
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
@@ -1057,6 +1059,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
   void RebuildFirstLetterLayoutTree();
+  void RebuildMarkerLayoutTree(WhitespaceAttacher&);
   void RebuildShadowRootLayoutTree(WhitespaceAttacher&);
   inline void CheckForEmptyStyleChange(const Node* node_before_change,
                                        const Node* node_after_change);

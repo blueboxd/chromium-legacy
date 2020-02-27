@@ -79,12 +79,13 @@ class _AvdManagerAgent(object):
 
     self._env = dict(os.environ)
 
-    # avdmanager, like many tools that have evolved from `android`
-    # (http://bit.ly/2m9JiTx), uses toolsdir to find the SDK root.
+    # The avdmanager from cmdline-tools would look two levels
+    # up from toolsdir to find the SDK root.
     # Pass avdmanager a fake directory under the directory in which
     # we install the system images s.t. avdmanager can find the
     # system images.
-    fake_tools_dir = os.path.join(self._sdk_root, 'non-existent-tools')
+    fake_tools_dir = os.path.join(self._sdk_root, 'non-existent-tools',
+                                  'non-existent-version')
     self._env.update({
         'ANDROID_AVD_HOME':
         self._avd_home,
@@ -203,7 +204,7 @@ class AvdConfig(object):
       cipd_json_output: string path to pass to `cipd create` via -json-output.
     """
     logging.info('Installing required packages.')
-    self.Install(packages=[
+    self._InstallCipdPackages(packages=[
         self._config.emulator_package,
         self._config.system_image_package,
     ])
@@ -234,19 +235,24 @@ class AvdConfig(object):
       with open(root_ini, 'a') as root_ini_file:
         root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
 
+      if os.path.exists(config_ini):
+        with open(config_ini) as config_ini_file:
+          config_ini_contents = ini.load(config_ini_file)
+      else:
+        config_ini_contents = {}
       height = (self._config.avd_settings.screen.height
                 or _DEFAULT_SCREEN_HEIGHT)
       width = (self._config.avd_settings.screen.width or _DEFAULT_SCREEN_WIDTH)
       density = (self._config.avd_settings.screen.density
                  or _DEFAULT_SCREEN_DENSITY)
 
-      config_ini_contents = {
+      config_ini_contents.update({
           'disk.dataPartition.size': '4G',
           'hw.lcd.density': density,
           'hw.lcd.height': height,
           'hw.lcd.width': width,
-      }
-      with open(config_ini, 'a') as config_ini_file:
+      })
+      with open(config_ini, 'w') as config_ini_file:
         ini.dump(config_ini_contents, config_ini_file)
 
       # Start & stop the AVD.

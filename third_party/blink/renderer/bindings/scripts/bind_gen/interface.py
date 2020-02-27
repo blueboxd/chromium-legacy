@@ -1593,7 +1593,8 @@ def make_exposed_construct_callback_def(cg_context, function_name):
 
     v8_set_return_value = _format(
         "bindings::V8SetReturnValue"
-        "(${info}, {}::GetWrapperTypeInfo(), InterfaceObject);",
+        "(${info}, {}::GetWrapperTypeInfo(), "
+        "bindings::V8ReturnValue::kInterfaceObject);",
         v8_bridge_class_name(cg_context.exposed_construct))
     body.extend([
         make_runtime_call_timer_scope(cg_context),

@@ -23,9 +23,12 @@ import android.widget.ListView;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListProperties.SuggestionListObserver;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.ViewUtils;
 
 import java.util.ArrayList;
@@ -43,8 +46,11 @@ public class OmniboxSuggestionsList extends ListView {
     private OmniboxSuggestionListEmbedder mEmbedder;
     private View mAnchorView;
     private View mAlignmentView;
+    private SuggestionListObserver mObserver;
     private OnGlobalLayoutListener mAnchorViewLayoutListener;
     private OnLayoutChangeListener mAlignmentViewLayoutListener;
+    private int mListViewMaxHeight;
+    private int mLastBroadcastedListViewMaxHeight;
 
     /**
      * Constructs a new list designed for containing omnibox suggestions.
@@ -106,6 +112,10 @@ public class OmniboxSuggestionsList extends ListView {
         }
     }
 
+    void setObserver(SuggestionListObserver observer) {
+        mObserver = observer;
+    }
+
     private void adjustSidePadding() {
         if (mAlignmentView == null) return;
 
@@ -161,6 +171,24 @@ public class OmniboxSuggestionsList extends ListView {
             }
             mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
             int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
+
+            if (availableViewportHeight != mListViewMaxHeight) {
+                mListViewMaxHeight = availableViewportHeight;
+                if (mObserver != null) {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                        // Detect if there was another change since this task posted.
+                        // This indicates a subsequent task being posted too.
+                        if (mListViewMaxHeight != availableViewportHeight) return;
+                        // Detect if the new height is the same as previously broadcasted.
+                        // The two checks (one above and one below) allow us to detect quick
+                        // A->B->A transitions and suppress the broadcasts.
+                        if (mLastBroadcastedListViewMaxHeight == availableViewportHeight) return;
+                        if (mObserver == null) return;
+                        mObserver.onSuggestionListHeightChanged(availableViewportHeight);
+                        mLastBroadcastedListViewMaxHeight = availableViewportHeight;
+                    });
+                }
+            }
 
             super.onMeasure(MeasureSpec.makeMeasureSpec(
                                     mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),

@@ -358,13 +358,6 @@ template("linux_package") {
   assert(defined(invoker.channel))
   channel = invoker.channel
 
-  if (current_cpu == "x86") {
-    # The shell scripts use "ia32" instead of "x86".
-    build_script_arch = "ia32"
-  } else {
-    build_script_arch = current_cpu
-  }
-
   deb_target_name = "${target_name}_deb"
   action(deb_target_name) {
     visibility = [ ":*" ]
@@ -375,7 +368,7 @@ template("linux_package") {
     } else if (current_cpu == "x64") {
       deb_arch = "amd64"
     } else if (current_cpu == "arm") {
-      deb_arch = "arm"
+      deb_arch = "armhf"
     } else if (current_cpu == "arm64") {
       deb_arch = "arm64"
     } else if (current_cpu == "mipsel") {
@@ -397,7 +390,7 @@ template("linux_package") {
     args = [
       rebase_path("$root_out_dir/installer/debian/build.sh", root_build_dir),
       "-a",
-      build_script_arch,
+      deb_arch,
       "-b",
       rebase_path(root_out_dir, root_build_dir),
       "-c",
@@ -431,9 +424,9 @@ template("linux_package") {
       } else if (current_cpu == "x64") {
         rpm_arch = "x86_64"
       } else if (current_cpu == "arm") {
-        rpm_arch = "arm"
+        rpm_arch = "armhf"
       } else if (current_cpu == "arm64") {
-        rpm_arch = "arm64"
+        rpm_arch = "aarch64"
       } else if (current_cpu == "mipsel") {
         rpm_arch = "mipsel"
       } else if (current_cpu == "mips64el") {
@@ -453,7 +446,7 @@ template("linux_package") {
       args = [
         rebase_path("$root_out_dir/installer/rpm/build.sh", root_build_dir),
         "-a",
-        build_script_arch,
+        rpm_arch,
         "-b",
         rebase_path(root_out_dir, root_build_dir),
         "-c",

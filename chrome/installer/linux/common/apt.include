@@ -305,6 +305,14 @@ get_lib_dir() {
     LIBDIR=lib/i386-linux-gnu
   elif [ "$DEFAULT_ARCH" = "amd64" ]; then
     LIBDIR=lib/x86_64-linux-gnu
+  elif [ "$DEFAULT_ARCH" = "armhf" ]; then
+    LIBDIR=lib/arm-linux-gnueabihf
+  elif [ "$DEFAULT_ARCH" = "arm64" ]; then
+    LIBDIR=lib/aarch64-linux-gnu
+  elif [ "$DEFAULT_ARCH" = "mipsel" ]; then
+    LIBDIR=lib/mipsel-linux-gnu
+  elif [ "$DEFAULT_ARCH" = "mips64el" ]; then
+    LIBDIR=lib/mips64el-linux-gnuabi64
   else
     echo Unknown CPU Architecture: "$DEFAULT_ARCH"
     exit 1

@@ -67,19 +67,20 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         Context context = parent.getContext();
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
+        ModelList listItems = new ModelList();
+        mMediator =
+                new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);
         listModel.set(SuggestionListProperties.VISIBLE, false);
-
-        ModelList listItems = new ModelList();
+        listModel.set(SuggestionListProperties.OBSERVER, mMediator);
         listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
+
         ViewProvider<SuggestionListViewHolder> viewProvider =
                 createViewProvider(context, listItems);
         viewProvider.whenLoaded((holder) -> { mListView = holder.listView; });
         LazyConstructionPropertyMcp.create(listModel, SuggestionListProperties.VISIBLE,
                 viewProvider, SuggestionListViewBinder::bind);
-
-        mMediator =
-                new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
 
         // https://crbug.com/966227 Set initial layout direction ahead of inflating the suggestions.
         updateSuggestionListLayoutDirection();

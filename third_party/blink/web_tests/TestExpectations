@@ -6578,10 +6578,6 @@ crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animatio
 crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/missing-values-first-keyframe.html [ Failure ]
 crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/missing-values-last-keyframe.html [ Failure ]
 
-# The transformed region bleeds into the foreground with SkiaRenderer enabled.
-crbug.com/1044032 [ Linux ] css3/filters/backdrop-filter-transform.html [ Failure ]
-crbug.com/1044032 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-transform.html [ Failure ]
-
 # Required to land DevTools change
 crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
 crbug.com/106759 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]

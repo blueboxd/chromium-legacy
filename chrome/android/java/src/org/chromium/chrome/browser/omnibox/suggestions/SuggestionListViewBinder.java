@@ -51,6 +51,8 @@ class SuggestionListViewBinder {
             }
         } else if (SuggestionListProperties.EMBEDDER.equals(propertyKey)) {
             view.listView.setEmbedder(model.get(SuggestionListProperties.EMBEDDER));
+        } else if (SuggestionListProperties.OBSERVER.equals(propertyKey)) {
+            view.listView.setObserver(model.get(SuggestionListProperties.OBSERVER));
         } else if (SuggestionListProperties.SUGGESTION_MODELS.equals(propertyKey)) {
             // This should only ever be bound once.
             model.get(SuggestionListProperties.SUGGESTION_MODELS)

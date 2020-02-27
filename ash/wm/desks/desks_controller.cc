@@ -59,8 +59,10 @@ constexpr char kDeskRemovalSmoothnessHistogramName[] =
 
 // Appends the given |windows| to the end of the currently active overview mode
 // session such that the most-recently used window is added first. If
-// The windows will animate to their positions in the overview grid.
-void AppendWindowsToOverview(const std::vector<aura::Window*>& windows) {
+// |should_animate| is true, the windows will animate to their positions in the
+// overview grid.
+void AppendWindowsToOverview(const std::vector<aura::Window*>& windows,
+                             bool should_animate) {
   DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_session =
@@ -72,7 +74,7 @@ void AppendWindowsToOverview(const std::vector<aura::Window*>& windows) {
       continue;
     }
 
-    overview_session->AppendItem(window, /*reposition=*/true, /*animate=*/true);
+    overview_session->AppendItem(window, /*reposition=*/true, should_animate);
   }
 }
 
@@ -810,13 +812,11 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     removed_desk->MoveWindowsToDesk(active_desk_);
 
     // If overview mode is active, we add the windows of the removed desk to the
-    // overview grid in the order of the new MRU (which changes after removing a
-    // desk by making the windows of the removed desk as the least recently used
-    // across all desks). Note that this can only be done after the windows have
-    // moved to the active desk in `MoveWindowsToDesk()` above, so that building
+    // overview grid in the order of their MRU. Note that this can only be done
+    // after the windows have moved to the active desk above, so that building
     // the window MRU list should contain those windows.
     if (in_overview)
-      AppendWindowsToOverview(removed_desk_windows);
+      AppendWindowsToOverview(removed_desk_windows, /*should_animate=*/true);
   } else {
     Desk* target_desk = nullptr;
     if (iter_after == desks_.begin()) {
@@ -859,9 +859,9 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     DCHECK_EQ(in_overview, overview_controller->InOverviewSession());
 
     // Now that the windows from the removed and target desks merged, add them
-    // all to the grid in the order of the new MRU.
+    // all without animation to the grid in the order of their MRU.
     if (in_overview)
-      AppendWindowsToOverview(target_desk->windows());
+      AppendWindowsToOverview(target_desk->windows(), /*should_animate=*/false);
   }
 
   // It's OK now to refresh the mini_views of *only* the active desk, and only

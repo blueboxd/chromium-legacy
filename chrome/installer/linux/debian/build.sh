@@ -137,7 +137,7 @@ cleanup() {
 usage() {
   echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
   echo "                      -d branding [-f] [-o 'dir'] -s 'dir' -t target_os"
-  echo "-a arch      package architecture (ia32 or x64)"
+  echo "-a arch      deb package architecture"
   echo "-b dir       build input directory    [${BUILDDIR}]"
   echo "-c channel   the package channel (unstable, beta, stable)"
   echo "-d brand     either chromium or google_chrome"
@@ -177,7 +177,7 @@ process_opts() {
   do
     case $OPTNAME in
       a )
-        TARGETARCH="$OPTARG"
+        ARCHITECTURE="$OPTARG"
         ;;
       b )
         BUILDDIR=$(readlink -f "${OPTARG}")
@@ -225,12 +225,6 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-# Default target architecture to same as build host.
-if [ "$(uname -m)" = "x86_64" ]; then
-  TARGETARCH="x64"
-else
-  TARGETARCH="ia32"
-fi
 
 # call cleanup() on exit
 trap cleanup 0
@@ -264,6 +258,7 @@ verify_channel
 # Some Debian packaging tools want these set.
 export DEBFULLNAME="${MAINTNAME}"
 export DEBEMAIL="${MAINTMAIL}"
+export ARCHITECTURE="${ARCHITECTURE}"
 
 DEB_COMMON_DEPS="${BUILDDIR}/deb_common.deps"
 COMMON_DEPS=$(sed ':a;N;$!ba;s/\n/, /g' "${DEB_COMMON_DEPS}")
@@ -274,33 +269,6 @@ COMMON_RECOMMENDS=$(grep -v ^$ "${MANUAL_RECOMMENDS}" | grep -v ^# |
 
 # Make everything happen in the OUTPUTDIR.
 cd "${OUTPUTDIR}"
-
-case "$TARGETARCH" in
-  arm )
-    export ARCHITECTURE="armhf"
-    ;;
-  arm64 )
-    export ARCHITECTURE="arm64"
-    ;;
-  ia32 )
-    export ARCHITECTURE="i386"
-    ;;
-  x64 )
-    export ARCHITECTURE="amd64"
-    ;;
-  mipsel )
-    export ARCHITECTURE="mipsel"
-    ;;
-  mips64el )
-    export ARCHITECTURE="mips64el"
-    ;;
-  * )
-    echo
-    echo "ERROR: Don't know how to build DEBs for '$TARGETARCH'."
-    echo
-    exit 1
-    ;;
-esac
 BASEREPOCONFIG="dl.google.com/linux/chrome/deb/ stable main"
 # Only use the default REPOCONFIG if it's unset (e.g. verify_channel might have
 # set it to an empty string)

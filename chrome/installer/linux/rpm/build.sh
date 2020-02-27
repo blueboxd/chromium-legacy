@@ -128,7 +128,7 @@ cleanup() {
 usage() {
   echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
   echo "                      -d branding [-f] [-o 'dir'] -t target_os"
-  echo "-a arch     package architecture (ia32 or x64)"
+  echo "-a arch     rpm package architecture"
   echo "-b dir      build input directory    [${BUILDDIR}]"
   echo "-c channel  the package channel (unstable, beta, stable)"
   echo "-d brand    either chromium or google_chrome"
@@ -164,7 +164,7 @@ process_opts() {
   do
     case $OPTNAME in
       a )
-        TARGETARCH="$OPTARG"
+        ARCHITECTURE="$OPTARG"
         ;;
       b )
         BUILDDIR=$(readlink -f "${OPTARG}")
@@ -210,16 +210,11 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-# Default target architecture to same as build host.
-if [ "$(uname -m)" = "x86_64" ]; then
-  TARGETARCH="x64"
-else
-  TARGETARCH="ia32"
-fi
 
 # call cleanup() on exit
 trap cleanup 0
 process_opts "$@"
+export ARCHITECTURE="${ARCHITECTURE}"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
 IS_OFFICIAL_BUILD=${IS_OFFICIAL_BUILD:=0}
 
@@ -247,36 +242,5 @@ REPOCONFIG="http://dl.google.com/linux/${PACKAGE#google-}/rpm/stable"
 verify_channel
 export USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
 
-# Make everything happen in the OUTPUTDIR.
-cd "${OUTPUTDIR}"
-
-case "$TARGETARCH" in
-  arm )
-    export ARCHITECTURE="armhf"
-    stage_install_rpm
-    ;;
-  ia32 )
-    export ARCHITECTURE="i386"
-    stage_install_rpm
-    ;;
-  x64 )
-    export ARCHITECTURE="x86_64"
-    stage_install_rpm
-    ;;
-  mipsel )
-    export ARCHITECTURE="mipsel"
-    stage_install_rpm
-    ;;
-  mips64el )
-    export ARCHITECTURE="mips64el"
-    stage_install_rpm
-    ;;
-  * )
-    echo
-    echo "ERROR: Don't know how to build RPMs for '$TARGETARCH'."
-    echo
-    exit 1
-    ;;
-esac
-
+stage_install_rpm
 do_package

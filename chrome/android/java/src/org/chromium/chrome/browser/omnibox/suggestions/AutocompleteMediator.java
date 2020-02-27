@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListProperties.SuggestionListObserver;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
@@ -68,8 +70,8 @@ import java.util.List;
 /**
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
-class AutocompleteMediator
-        implements OnSuggestionsReceivedListener, SuggestionHost, StartStopWithNativeObserver {
+class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionHost,
+                                      StartStopWithNativeObserver, SuggestionListObserver {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo {
         /** Processor managing the suggestion. */
@@ -119,6 +121,7 @@ class AutocompleteMediator
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
+    private boolean mEnableAdaptiveSuggestionsCount;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
@@ -431,6 +434,9 @@ class AutocompleteMediator
      */
     void onNativeInitialized() {
         mNativeInitialized = true;
+
+        mEnableAdaptiveSuggestionsCount =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT);
 
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
@@ -1156,5 +1162,18 @@ class AutocompleteMediator
         public boolean shouldLog() {
             return mShouldLog;
         }
+    }
+
+    /**
+     * Respond to Suggestion list height change and update list of presented suggestions.
+     *
+     * This typically happens as a result of soft keyboard being shown or hidden.
+     *
+     * @param newHeightPx New height of the suggestion list in pixels.
+     */
+    @Override
+    public void onSuggestionListHeightChanged(int newHeightPx) {
+        if (!mEnableAdaptiveSuggestionsCount) return;
+        // TODO(crbug.com/1050813): Update visibility of loaded suggestions.
     }
 }

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -32,6 +33,9 @@ struct V8ReturnValue {
 
   // Main world or not
   enum MainWorld { kMainWorld };
+
+  // Returns the interface object of the given type.
+  enum InterfaceObject { kInterfaceObject };
 };
 
 // V8 handle types
@@ -235,6 +239,20 @@ void V8SetReturnValue(const CallbackInfo& info,
 
   info.GetReturnValue().Set(
       wrappable->Wrap(info.GetIsolate(), creation_context->Global()));
+}
+
+// Interface object
+PLATFORM_EXPORT v8::Local<v8::Value> GetInterfaceObjectExposedOnGlobal(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creation_context,
+    const WrapperTypeInfo* wrapper_type_info);
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      const WrapperTypeInfo* wrapper_type_info,
+                      V8ReturnValue::InterfaceObject) {
+  info.GetReturnValue().Set(GetInterfaceObjectExposedOnGlobal(
+      info.GetIsolate(), info.This(), wrapper_type_info));
 }
 
 // Nullable types

@@ -2267,30 +2267,30 @@
     'deqp_android_release_trybot_arm64': [
       'angle_deqp_tests',
       'android',
-      'release_trybot',
+      'shared_release_trybot',
       'arm64'
     ],
     'deqp_android_vulkan_ndk_release_trybot': [
       'angle_deqp_tests',
       'android',
       'vulkan_ndk',
-      'release_trybot'
+      'shared_release_trybot'
     ],
     'deqp_android_vulkan_ndk_release_trybot_arm64': [
       'angle_deqp_tests',
       'android',
       'vulkan_ndk',
-      'release_trybot',
+      'shared_release_trybot',
       'arm64'
     ],
     'deqp_release_trybot_x86': [
       'angle_deqp_tests',
-      'release_trybot',
+      'shared_release_trybot',
       'x86'
     ],
     'deqp_release_trybot': [
       'angle_deqp_tests',
-      'release_trybot'
+      'shared_release_trybot'
     ],
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests',

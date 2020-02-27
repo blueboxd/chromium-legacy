@@ -241,15 +241,6 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
     SetActiveWindow(window_util::GetActiveWindow());
 }
 
-void MruWindowTracker::OnWindowMovedOutFromRemovingDesk(aura::Window* window) {
-  DCHECK(window);
-
-  auto iter = std::find(mru_windows_.begin(), mru_windows_.end(), window);
-  DCHECK(iter != mru_windows_.end());
-  mru_windows_.erase(iter);
-  mru_windows_.insert(mru_windows_.begin(), window);
-}
-
 void MruWindowTracker::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

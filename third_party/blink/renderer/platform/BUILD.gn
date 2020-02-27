@@ -458,6 +458,7 @@ jumbo_component("platform") {
     "bindings/v8_per_isolate_data.h",
     "bindings/v8_private_property.cc",
     "bindings/v8_private_property.h",
+    "bindings/v8_set_return_value.cc",
     "bindings/v8_set_return_value.h",
     "bindings/v8_throw_exception.cc",
     "bindings/v8_throw_exception.h",

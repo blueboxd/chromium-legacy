@@ -28,14 +28,8 @@ class TabGroupUiProperties {
             new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableIntPropertyKey LEFT_BUTTON_DRAWABLE_ID =
             new PropertyModel.WritableIntPropertyKey();
-    /**
-     * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
-     * the same value.
-     */
-    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
-            new PropertyModel.WritableObjectPropertyKey(true);
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {LEFT_BUTTON_ON_CLICK_LISTENER,
-            RIGHT_BUTTON_ON_CLICK_LISTENER, IS_MAIN_CONTENT_VISIBLE, PRIMARY_COLOR, TINT,
-            LEFT_BUTTON_DRAWABLE_ID, INITIAL_SCROLL_INDEX};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {LEFT_BUTTON_ON_CLICK_LISTENER, RIGHT_BUTTON_ON_CLICK_LISTENER,
+                    IS_MAIN_CONTENT_VISIBLE, PRIMARY_COLOR, TINT, LEFT_BUTTON_DRAWABLE_ID};
 }

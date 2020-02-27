@@ -116,16 +116,16 @@ typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
   return std::move(result);
 }
 
-base::Optional<size_t> FindIndexInEnumStringTable(
+CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     base::span<const char* const> enum_value_table,
     const char* enum_type_name,
     ExceptionState& exception_state);
 
-bool IsEsIterableObject(v8::Isolate* isolate,
-                        v8::Local<v8::Value> value,
-                        ExceptionState& exception_state);
+CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
+                                    v8::Local<v8::Value> value,
+                                    ExceptionState& exception_state);
 
 }  // namespace bindings
 

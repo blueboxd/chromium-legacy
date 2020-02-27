@@ -84,11 +84,6 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   // windows to the front of the MRU window list.
   void SetIgnoreActivations(bool ignore);
 
-  // Called after |window| moved out of its about-to-be-removed desk, to a new
-  // target desk's container. This causes |window| to be made the least-recently
-  // used window across all desks.
-  void OnWindowMovedOutFromRemovingDesk(aura::Window* window);
-
   // Add/Remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

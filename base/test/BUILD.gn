@@ -247,10 +247,6 @@ static_library("test_support") {
 
   if (is_fuchsia) {
     deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
-    sources += [
-      "../fuchsia/test_component_context_for_process.cc",
-      "../fuchsia/test_component_context_for_process.h",
-    ]
   }
 
   if (is_nacl_nonsfi) {

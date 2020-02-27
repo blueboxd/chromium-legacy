@@ -1085,6 +1085,31 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
           "shards": 20
         },
         "test": "angle_deqp_gles2_tests",
@@ -1217,6 +1242,31 @@
   },
   "win-swangle-tot-angle-x86": {
     "gtest_tests": [
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
       {
         "args": [
           "--deqp-egl-display-type=angle-swiftshader",
@@ -1389,6 +1439,31 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
           "shards": 20
         },
         "test": "angle_deqp_gles2_tests",
@@ -1521,6 +1596,31 @@
   },
   "win-swangle-tot-swiftshader-x86": {
     "gtest_tests": [
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
       {
         "args": [
           "--deqp-egl-display-type=angle-swiftshader",
@@ -1693,6 +1793,31 @@
           ],
           "hard_timeout": 900,
           "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
           "shards": 20
         },
         "test": "angle_deqp_gles2_tests",
@@ -1825,6 +1950,31 @@
   },
   "win-swangle-x86": {
     "gtest_tests": [
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-swiftshader",
+          "--test-launcher-batch-limit=512",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "hard_timeout": 900,
+          "io_timeout": 900,
+          "shards": 2
+        },
+        "test": "angle_deqp_egl_tests",
+        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+      },
       {
         "args": [
           "--deqp-egl-display-type=angle-swiftshader",

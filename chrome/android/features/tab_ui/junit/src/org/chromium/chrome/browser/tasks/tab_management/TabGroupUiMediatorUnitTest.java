@@ -409,26 +409,6 @@ public class TabGroupUiMediatorUnitTest {
     }
 
     @Test
-    public void tabSelection_ScrollToSelectedIndex() {
-        initAndAssertProperties(mTab1);
-        assertThat(mModel.get(TabGroupUiProperties.INITIAL_SCROLL_INDEX), equalTo(null));
-
-        // Mock that {tab2, tab3} are in the same tab group.
-        List<Tab> tabGroup = mTabGroupModelFilter.getRelatedTabList(TAB2_ID);
-        assertThat(tabGroup.size(), equalTo(2));
-
-        // Mock selecting tab 3, and the last selected tab is tab 1 which is a single tab.
-        doReturn(mTab3).when(mTabModelSelector).getCurrentTab();
-        mTabModelObserverArgumentCaptor.getValue().didSelectTab(
-                mTab3, TabSelectionType.FROM_USER, TAB1_ID);
-
-        // Strip should be showing since we are selecting a group, and it should scroll to the index
-        // of currently selected tab.
-        verifyResetStrip(true, tabGroup);
-        assertThat(mModel.get(TabGroupUiProperties.INITIAL_SCROLL_INDEX), equalTo(1));
-    }
-
-    @Test
     public void tabClosure_NotLastTabInGroup() {
         initAndAssertProperties(mTab2);
 
@@ -518,23 +498,6 @@ public class TabGroupUiMediatorUnitTest {
 
         // Strip should be be reset when long pressing a link and add a tab into group.
         verifyResetStrip(true, mTabGroup2);
-    }
-
-    @Test
-    public void tabAddition_TabGroup_ScrollToTheLast() {
-        initAndAssertProperties(mTab2);
-        assertThat(mModel.get(TabGroupUiProperties.INITIAL_SCROLL_INDEX), equalTo(0));
-
-        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
-        mTabGroup2.add(newTab);
-        doReturn(mTabGroup2).when(mTabGroupModelFilter).getRelatedTabList(TAB4_ID);
-
-        mTabModelObserverArgumentCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
-
-        // Strip should be not be reset through adding tab from UI.
-        verifyNeverReset();
-        assertThat(mTabGroupModelFilter.getRelatedTabList(TAB4_ID).size(), equalTo(3));
-        assertThat(mModel.get(TabGroupUiProperties.INITIAL_SCROLL_INDEX), equalTo(2));
     }
 
     @Test

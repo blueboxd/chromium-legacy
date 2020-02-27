@@ -11,27 +11,14 @@
 #include "base/no_destructor.h"
 
 namespace base {
+namespace fuchsia {
 
-namespace {
-std::unique_ptr<sys::ComponentContext>* ProcessComponentContextPtr() {
+sys::ComponentContext* ComponentContextForCurrentProcess() {
   static base::NoDestructor<std::unique_ptr<sys::ComponentContext>> value(
       std::make_unique<sys::ComponentContext>(
           sys::ServiceDirectory::CreateFromNamespace()));
-  return value.get();
+  return value.get()->get();
 }
-}  // namespace
 
-namespace fuchsia {
-sys::ComponentContext* ComponentContextForCurrentProcess() {
-  return ProcessComponentContextPtr()->get();
-}
 }  // namespace fuchsia
-
-std::unique_ptr<sys::ComponentContext>
-ReplaceComponentContextForCurrentProcessForTest(
-    std::unique_ptr<sys::ComponentContext> context) {
-  std::swap(*ProcessComponentContextPtr(), context);
-  return context;
-}
-
 }  // namespace base

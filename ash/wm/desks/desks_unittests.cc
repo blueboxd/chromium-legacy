@@ -913,32 +913,26 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
 
-  // Create 3 windows on desk_1.
+  // Create two windows on desk_1.
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
-  auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
-  auto* mru_tracker = Shell::Get()->mru_window_tracker();
-  EXPECT_EQ(std::vector<aura::Window*>({win0.get(), win2.get(), win1.get()}),
-            mru_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
-
-  // Active desk_4 and enter overview mode, and add a single window.
+  // Active desk_4 and enter overview mode. Expect that the grid is currently
+  // empty.
   Desk* desk_4 = controller->desks()[3].get();
   ActivateDesk(desk_4);
   auto* overview_controller = Shell::Get()->overview_controller();
-  auto win3 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(1u, overview_grid->window_list().size());
+  EXPECT_TRUE(overview_grid->window_list().empty());
 
   // Remove desk_1 using the close button on its mini view. desk_1 is currently
   // inactive. Its windows should be moved to desk_4 and added to the overview
-  // grid in the MRU order (win0, win2, and win1) at the end after desk_4's
-  // existing window (win3).
+  // grid in the MRU order (win0, and win1).
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
@@ -961,20 +955,13 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
 
   ASSERT_EQ(3u, desks_bar_view->mini_views().size());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  ASSERT_EQ(4u, overview_grid->window_list().size());
+  ASSERT_EQ(2u, overview_grid->window_list().size());
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
-  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win2.get()));
-  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win3.get()));
-  // Expected order of items: win3, win0, win2, win1.
-  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win3.get()),
-            overview_grid->window_list()[0].get());
   EXPECT_EQ(overview_grid->GetOverviewItemContaining(win0.get()),
-            overview_grid->window_list()[1].get());
-  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win2.get()),
-            overview_grid->window_list()[2].get());
+            overview_grid->window_list()[0].get());
   EXPECT_EQ(overview_grid->GetOverviewItemContaining(win1.get()),
-            overview_grid->window_list()[3].get());
+            overview_grid->window_list()[1].get());
 
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();
@@ -993,16 +980,6 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(1, desk_4_observer.notify_counts());
   desk_4->RemoveObserver(&desk_4_observer);
-
-  // Verify that the stacking order is correct (top-most comes last, and
-  // top-most is the same as MRU).
-  EXPECT_EQ(std::vector<aura::Window*>(
-                {win3.get(), win0.get(), win2.get(), win1.get()}),
-            mru_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
-  EXPECT_EQ(std::vector<aura::Window*>(
-                {win1.get(), win2.get(), win0.get(), win3.get()}),
-            desk_4->GetDeskContainerForRoot(Shell::GetPrimaryRootWindow())
-                ->children());
 }
 
 TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
@@ -1023,15 +1000,8 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
   auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
-  auto win3 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
   EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
-
-  // The MRU across all desks is now {win2, win3, win0, win1}.
-  auto* mru_tracker = Shell::Get()->mru_window_tracker();
-  EXPECT_EQ(std::vector<aura::Window*>(
-                {win2.get(), win3.get(), win0.get(), win1.get()}),
-            mru_tracker->BuildMruWindowList(DesksMruType::kAllDesks));
 
   // Enter overview mode, and remove desk_2 from its mini-view close button.
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -1039,7 +1009,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(2u, overview_grid->window_list().size());
+  EXPECT_EQ(1u, overview_grid->window_list().size());
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
@@ -1065,31 +1035,24 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   EXPECT_TRUE(DoesActiveDeskContainWindow(
       desks_bar_view->GetWidget()->GetNativeWindow()));
 
-  // desk_1 will become active, and windows from desk_2 will move to desk_1 such
-  // that they become last in MRU order, and therefore appended at the end of
-  // the overview grid.
+  // desk_1 will become active, and windows from desk_2 and desk_1 will merge
+  // and added in the overview grid in the order of MRU.
   ASSERT_EQ(1u, controller->desks().size());
   ASSERT_EQ(1u, desks_bar_view->mini_views().size());
   EXPECT_TRUE(desk_1->is_active());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(4u, overview_grid->window_list().size());
+  EXPECT_EQ(3u, overview_grid->window_list().size());
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win0.get()));
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win1.get()));
   EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win2.get()));
-  EXPECT_TRUE(overview_grid->GetOverviewItemContaining(win3.get()));
 
-  // The new MRU order is {win0, win1, win2, win3}.
-  EXPECT_EQ(std::vector<aura::Window*>(
-                {win0.get(), win1.get(), win2.get(), win3.get()}),
-            mru_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
-  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win0.get()),
-            overview_grid->window_list()[0].get());
-  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win1.get()),
-            overview_grid->window_list()[1].get());
+  // The MRU order is {win2, win0, win1}.
   EXPECT_EQ(overview_grid->GetOverviewItemContaining(win2.get()),
+            overview_grid->window_list()[0].get());
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win0.get()),
+            overview_grid->window_list()[1].get());
+  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win1.get()),
             overview_grid->window_list()[2].get());
-  EXPECT_EQ(overview_grid->GetOverviewItemContaining(win3.get()),
-            overview_grid->window_list()[3].get());
 
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();

@@ -98,13 +98,7 @@ class ASH_EXPORT Desk {
   // on this desk will be deactivated.
   void Deactivate(bool update_window_activation);
 
-  // In preparation for removing this desk, moves all the windows on this desk
-  // to |target_desk| such that they become last in MRU order across all desks,
-  // and they will be stacked at the bottom among the children of
-  // |target_desk|'s container.
-  // Note that from a UX stand point, removing a desk is viewed as the user is
-  // now done with this desk, and therefore its windows are demoted and
-  // deprioritized.
+  // Moves all the windows on this desk to |target_desk|.
   void MoveWindowsToDesk(Desk* target_desk);
 
   // Moves a single |window| from this desk to |target_desk|. |window| must

@@ -65,8 +65,7 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
   return isConnected() && GetDocument().IsActive();
 }
 
-void MediaControlTimelineElement::SetPosition(double current_time) {
-  setValue(String::Number(current_time));
+void MediaControlTimelineElement::UpdateAria() {
   String aria_label =
       GetLocale().QueryString(IsA<HTMLVideoElement>(MediaElement())
                                   ? IDS_AX_MEDIA_VIDEO_SLIDER_HELP
@@ -79,6 +78,15 @@ void MediaControlTimelineElement::SetPosition(double current_time) {
                AtomicString(GetLocale().QueryString(
                    IDS_AX_MEDIA_CURRENT_TIME_DISPLAY,
                    GetMediaControls().CurrentTimeDisplay().textContent(true))));
+}
+
+void MediaControlTimelineElement::SetPosition(double current_time,
+                                              bool suppress_aria) {
+  setValue(String::Number(current_time));
+
+  if (!suppress_aria)
+    UpdateAria();
+
   RenderBarSegments();
 }
 
@@ -113,14 +121,15 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
     metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
   }
 
-  if (event.type() == event_type_names::kKeydown) {
+  if (event.type() == event_type_names::kFocus)
+    UpdateAria();
+
+  if (event.type() == event_type_names::kKeydown)
     metrics_.StartKey();
-  }
 
   auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
-  if (event.type() == event_type_names::kKeyup && keyboard_event) {
+  if (event.type() == event_type_names::kKeyup && keyboard_event)
     metrics_.RecordEndKey(TrackWidth(), keyboard_event->keyCode());
-  }
 
   MediaControlInputElement::DefaultEventHandler(event);
 

@@ -875,8 +875,8 @@ void MediaControlsImpl::Reset() {
   OnControlsListUpdated();
 }
 
-void MediaControlsImpl::UpdateTimeIndicators() {
-  timeline_->SetPosition(MediaElement().currentTime());
+void MediaControlsImpl::UpdateTimeIndicators(bool suppress_aria) {
+  timeline_->SetPosition(MediaElement().currentTime(), suppress_aria);
   UpdateCurrentTimeDisplay();
 }
 
@@ -1743,7 +1743,7 @@ void MediaControlsImpl::OnFocusIn() {
 }
 
 void MediaControlsImpl::OnTimeUpdate() {
-  UpdateTimeIndicators();
+  UpdateTimeIndicators(true /* suppress_aria */);
 
   // 'timeupdate' might be called in a paused state. The controls should not
   // become transparent in that case.

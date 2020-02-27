@@ -280,7 +280,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ElementSizeChangedTimerFired(TimerBase*);
 
   // Update any visible indicators of the current time.
-  void UpdateTimeIndicators();
+  void UpdateTimeIndicators(bool suppress_aria = false);
 
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_effectiveWidth and m_effectiveHeight are

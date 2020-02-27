@@ -275,7 +275,7 @@ You need to trace every `Member<T>` and `WeakMember<T>` in your class. See [Trac
 Unlike 'Member<T>', 'UntracedMember<T>' will not keep an object alive. However, unlike 'WeakMember<T>', the reference will not be cleared (i.e. set to 'nullptr') if the referenced object dies.
 Furthermore, class fields of type 'UntracedMember<T>' should not be traced by the class' tracing method.
 
-Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom weak callbacks).
+Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom-weak-callbacks).
 
 ### Persistent, WeakPersistent, CrossThreadPersistent, CrossThreadWeakPersistent
 

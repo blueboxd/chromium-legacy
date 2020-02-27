@@ -11,8 +11,6 @@
 // true, otherwise, all tasks will be run and a complete list of errors will be
 // returned.
 struct InstallableParams {
-  InstallableParams();
-  InstallableParams(const InstallableParams&);
   // Check whether the current WebContents is eligible to be installed, i.e it:
   //  - is served over HTTPS
   //  - is a top-level frame
@@ -25,10 +23,6 @@ struct InstallableParams {
 
   // Whether to prefer an icon with purpose 'maskable' for the primary icon.
   bool prefer_maskable_icon = false;
-
-  // Check whether there is a fetchable, non-empty icon in the manifest
-  // conforming to the badge icon size parameters.
-  bool valid_badge_icon = false;
 
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the splash icon size parameters.

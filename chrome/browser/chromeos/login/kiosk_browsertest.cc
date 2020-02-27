@@ -1021,10 +1021,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
-  // Do not allow network configure UI to appear ensuring that we are at the
-  // splash screen.
-  ScopedCanConfigureNetwork can_configure_network(false, false);
+// TODO(https://crbug.com/964333): Flakily seg faults.
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
   OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);

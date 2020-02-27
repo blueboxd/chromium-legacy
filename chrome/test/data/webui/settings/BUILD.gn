@@ -40,11 +40,16 @@ js_modulizer("modulize") {
     "test_search_engines_browser_proxy.js",
     "test_util.js",
   ]
+  if (is_win) {
+    input_files += [ "chrome_cleanup_page_test.js" ]
+  }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
+                         "settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW",
+                         "settings.ChromeCleanupIdleReason|ChromeCleanupIdleReason",
                          "settings.FakeSettingsPrivate|FakeSettingsPrivate",
-                         "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
+                         "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "test_util.setupPopstateListener|setupPopstateListener",
                        ]

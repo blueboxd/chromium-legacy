@@ -359,7 +359,7 @@ std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
 void AboutSigninInternals::OnAccessTokenRequested(
     const CoreAccountId& account_id,
     const std::string& consumer_id,
-    const identity::ScopeSet& scopes) {
+    const signin::ScopeSet& scopes) {
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
   if (token) {
     *token = TokenInfo(consumer_id, scopes);
@@ -374,7 +374,7 @@ void AboutSigninInternals::OnAccessTokenRequested(
 void AboutSigninInternals::OnAccessTokenRequestCompleted(
     const CoreAccountId& account_id,
     const std::string& consumer_id,
-    const identity::ScopeSet& scopes,
+    const signin::ScopeSet& scopes,
     GoogleServiceAuthError error,
     base::Time expiration_time) {
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
@@ -428,7 +428,7 @@ void AboutSigninInternals::OnEndBatchOfRefreshTokenStateChanges() {
 
 void AboutSigninInternals::OnAccessTokenRemovedFromCache(
     const CoreAccountId& account_id,
-    const identity::ScopeSet& scopes) {
+    const signin::ScopeSet& scopes) {
   for (const std::unique_ptr<TokenInfo>& token :
        signin_status_.token_info_map[account_id]) {
     if (token->scopes == scopes)
@@ -490,7 +490,7 @@ void AboutSigninInternals::OnAccountsInCookieUpdated(
 }
 
 AboutSigninInternals::TokenInfo::TokenInfo(const std::string& consumer_id,
-                                           const identity::ScopeSet& scopes)
+                                           const signin::ScopeSet& scopes)
     : consumer_id(consumer_id),
       scopes(scopes),
       request_time(base::Time::Now()),
@@ -576,7 +576,7 @@ AboutSigninInternals::SigninStatus::~SigninStatus() {}
 AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
     const CoreAccountId& account_id,
     const std::string& consumer_id,
-    const identity::ScopeSet& scopes) {
+    const signin::ScopeSet& scopes) {
   for (const std::unique_ptr<TokenInfo>& token : token_info_map[account_id]) {
     if (token->consumer_id == consumer_id && token->scopes == scopes)
       return token.get();

@@ -270,6 +270,7 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.MEDIASTREAM_MIC:
                 return Arrays.copyOf(MICROPHONE_PERMISSIONS, MICROPHONE_PERMISSIONS.length);
             case ContentSettingsType.MEDIASTREAM_CAMERA:
+            case ContentSettingsType.AR:
                 return Arrays.copyOf(CAMERA_PERMISSIONS, CAMERA_PERMISSIONS.length);
             default:
                 return EMPTY_PERMISSIONS;

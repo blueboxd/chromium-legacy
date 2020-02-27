@@ -287,17 +287,16 @@ change list. These checks include:
   its unique id cannot be reused to keep the stats sound).
 
 ### Presubmit tests
-To perform tests prior to submit, one can use traffic_annotation_auditor binary.
-It runs over the whole repository and using a clang tool, checks if all above
-items are correct.
-Running the `traffic_annotation_auditor` requires having a COMPLETE compiled
-build directory and can be done with the following syntax.
+To perform tests prior to submit, one can use the `traffic_annotation_auditor`
+binary. It runs over the whole repository and using a python script, extracts
+all the annotations and then checks if all above items are correct. The latest
+executable for supported platforms can be found in
+`tools/traffic_annotation/bin/[platform]`.
+
+Running the `traffic_annotation_auditor` requires having a build directory and
+can be done with the following syntax:
 `tools/traffic_annotation/bin/[linux64/win32]/traffic_annotation_auditor
  --build-path=[out/Default]`
-The latest executable of `traffic_annotation_auditor` for supported platforms
-can be found in `tools/traffic_annotation/bin/[platform]`.
-As this test is slow, it is not a mandatory step of the presubmit checks on
-clients, and one can run it manually.
 
 ### Waterfall tests
 Two commit queue trybots test traffic annotations on changed files using the

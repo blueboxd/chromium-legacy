@@ -5,14 +5,21 @@
 #ifndef COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 #define COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "url/gurl.h"
 
 namespace paint_preview {
 
-// Manages paint preview files associated with a root directory (typically a
-// user profile).
+struct DirectoryKey {
+  const std::string ascii_dirname;
+};
+
+// Manages paint preview files associated with a root directory typically the
+// root directory is <profile_dir>/paint_previews/<feature>.
 class FileManager {
  public:
   // Create a file manager for |root_directory|. Top level items in
@@ -21,27 +28,50 @@ class FileManager {
   explicit FileManager(const base::FilePath& root_directory);
   ~FileManager();
 
-  // Get statistics about the time of creation and size of artifacts.
-  size_t GetSizeOfArtifactsFor(const GURL& url);
-  bool GetCreatedTime(const GURL& url, base::Time* created_time);
-  bool GetLastModifiedTime(const GURL& url, base::Time* last_modified_time);
+  FileManager(const FileManager&) = delete;
+  FileManager& operator=(const FileManager&) = delete;
 
-  // Creates or gets a subdirectory under |root_directory|/ for |url| and
+  // Creates a DirectoryKey from keying material.
+  // TODO(crbug/1056226): implement collision resolution. At present collisions
+  // result in overwriting data.
+  DirectoryKey CreateKey(const GURL& url) const;
+  DirectoryKey CreateKey(uint64_t tab_id) const;
+
+  // Get statistics about the time of creation and size of artifacts.
+  size_t GetSizeOfArtifacts(const DirectoryKey& key);
+  bool GetCreatedTime(const DirectoryKey& key, base::Time* created_time);
+  bool GetLastModifiedTime(const DirectoryKey& key,
+                           base::Time* last_modified_time);
+
+  // Returns true if the directory for |key| exists.
+  bool DirectoryExists(const DirectoryKey& key);
+
+  // Creates or gets a subdirectory under |root_directory| for |key| and
   // assigns it to |directory|. Returns true on success. If the directory was
-  // compressed then it is uncompressed automatically.
-  bool CreateOrGetDirectoryFor(const GURL& url, base::FilePath* directory);
+  // compressed then it will be uncompressed automatically.
+  bool CreateOrGetDirectory(const DirectoryKey& key, base::FilePath* directory);
 
   // Compresses the directory associated with |url|. Returns true on success or
   // if the directory was already compressed.
   // NOTE: an empty directory or a directory containing only empty
-  // files/directories will not compress.
-  bool CompressDirectoryFor(const GURL& url);
+  // files/directories will not be compressed.
+  bool CompressDirectory(const DirectoryKey& key);
 
-  // Deletes artifacts associated with |urls|.
-  void DeleteArtifactsFor(const std::vector<GURL>& urls);
+  // Deletes artifacts associated with |key| or |keys|.
+  void DeleteArtifacts(const DirectoryKey& key);
+  void DeleteArtifacts(const std::vector<DirectoryKey>& keys);
 
-  // Deletes all stored paint previews stored in the |profile_directory_|.
+  // Deletes all stored paint previews stored in the |root_directory_|.
   void DeleteAll();
+
+  // Serializes |proto| to the directory for |key|. Returns true on success.
+  bool SerializePaintPreviewProto(const DirectoryKey& key,
+                                  const PaintPreviewProto& proto);
+
+  // Deserializes PaintPreviewProto stored in |key|. Will return nullptr if not
+  // found or the proto cannot be parsed.
+  std::unique_ptr<PaintPreviewProto> DeserializePaintPreviewProto(
+      const DirectoryKey& key);
 
  private:
   enum StorageType {
@@ -50,12 +80,9 @@ class FileManager {
     kZip = 2,
   };
 
-  StorageType GetPathForUrl(const GURL& url, base::FilePath* path);
+  StorageType GetPathForKey(const DirectoryKey& key, base::FilePath* path);
 
   base::FilePath root_directory_;
-
-  FileManager(const FileManager&) = delete;
-  FileManager& operator=(const FileManager&) = delete;
 };
 
 }  // namespace paint_preview

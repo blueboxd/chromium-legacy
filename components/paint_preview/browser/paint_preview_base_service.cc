@@ -20,7 +20,6 @@
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
 #include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
-#include "components/paint_preview/common/file_utils.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
@@ -65,18 +64,14 @@ PaintPreviewBaseService::~PaintPreviewBaseService() {
 }
 
 void PaintPreviewBaseService::GetCapturedPaintPreviewProto(
-    const GURL& url,
-    OnReadProtoCallback onReadProtoCallback) {
-  std::move(onReadProtoCallback).Run(nullptr);
-}
-
-void PaintPreviewBaseService::GetCapturedPaintPreviewProtoFromFile(
-    const base::FilePath& file_path,
-    OnReadProtoCallback onReadProtoCallback) {
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ReadProtoFromFile, file_path),
-      base::BindOnce(std::move(onReadProtoCallback)));
+    const DirectoryKey& key,
+    OnReadProtoCallback on_read_proto_callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&FileManager::DeserializePaintPreviewProto,
+                     base::Unretained(GetFileManager()), key),
+      base::BindOnce(std::move(on_read_proto_callback)));
 }
 
 void PaintPreviewBaseService::CapturePaintPreview(

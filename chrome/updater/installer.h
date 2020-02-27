@@ -5,50 +5,51 @@
 #ifndef CHROME_UPDATER_INSTALLER_H_
 #define CHROME_UPDATER_INSTALLER_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/updater/persisted_data.h"
 #include "components/update_client/update_client.h"
 
 namespace updater {
 
+// Manages the install of one application. Some of the functions of this
+// class are blocking and can't be invoked on the main sequence.
+//
+// If the application installer completes with success, then the following
+// post conditions are true: |update_client| updates persisted data in prefs,
+// the CRX is installed in a versioned directory in apps/app_id/version,
+// the application is considered to be registered for updates, and the
+// application installed version matches the version recorded in prefs.
+//
+// If installing the CRX fails, or the installer fails, then prefs is not
+// going to be updated. There will be some files left on the file system, which
+// are going to be cleaned up next time the installer runs.
+//
+// Install directories not matching the |pv| version are lazy-deleted.
 class Installer final : public update_client::CrxInstaller {
  public:
-  struct InstallInfo {
-    InstallInfo();
-    ~InstallInfo();
-
-    base::FilePath install_dir;
-    base::Version version;
-    std::string fingerprint;
-    std::unique_ptr<base::DictionaryValue> manifest;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(InstallInfo);
-  };
-
-  explicit Installer(const std::string& app_id);
+  Installer(const std::string& app_id,
+            scoped_refptr<PersistedData> persisted_data);
+  Installer(const Installer&) = delete;
+  Installer& operator=(const Installer&) = delete;
 
   const std::string app_id() const { return app_id_; }
 
-  // Returns the app ids that are managed by the CRX installer.
-  static std::vector<std::string> FindAppIds();
-
-  // Finds the highest version install of the app, and updates the install
-  // info for this installer instance.
-  void FindInstallOfApp();
-
   // Returns a CrxComponent instance that describes the current install
-  // state of the app.
+  // state of the app. Updates the values of |pv_| and the |fingerprint_| with
+  // the persisted values in prefs.
+  //
+  // Callers should only invoke this function when handling a CrxDataCallback
+  // callback from update_client::Install or from update_client::Update. This
+  // ensure that prefs has been updated with the most recent values, including
+  // |pv| and |fingerprint|.
   update_client::CrxComponent MakeCrxComponent();
 
  private:
@@ -83,10 +84,20 @@ class Installer final : public update_client::CrxInstaller {
   int RunApplicationInstaller(const base::FilePath& app_installer,
                               const std::string& arguments);
 
-  const std::string app_id_;
-  std::unique_ptr<InstallInfo> install_info_;
+  // Deletes recursively the install paths not matching the |pv_| version.
+  void DeleteOlderInstallPaths();
 
-  DISALLOW_COPY_AND_ASSIGN(Installer);
+  // Returns an install directory matching the |pv_| version.
+  base::FilePath GetCurrentInstallDir() const;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  const std::string app_id_;
+  scoped_refptr<PersistedData> persisted_data_;
+
+  // These members are not updated when the installer succeeds.
+  base::Version pv_;
+  std::string fingerprint_;
 };
 
 }  // namespace updater

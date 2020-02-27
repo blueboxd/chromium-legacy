@@ -666,15 +666,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                           IsSameId(&content2, kForegroundType),
                           IsSameId(&container2, kForegroundType)));
 
-  auto* markers = GetSubsequenceMarkers(container1);
-  CHECK(markers);
-  EXPECT_EQ(0u, markers->start);
-  EXPECT_EQ(4u, markers->end);
-
-  markers = GetSubsequenceMarkers(container2);
-  CHECK(markers);
-  EXPECT_EQ(4u, markers->start);
-  EXPECT_EQ(8u, markers->end);
+  EXPECT_SUBSEQUENCE(container1, 0, 1);
+  EXPECT_NO_SUBSEQUENCE(content1);
+  EXPECT_SUBSEQUENCE(container2, 1, 2);
+  EXPECT_NO_SUBSEQUENCE(content2);
 
   EXPECT_THAT(
       GetPaintController().PaintChunks(),
@@ -685,7 +680,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   // than that of |container2|.
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     // When under-invalidation-checking is enabled,
-    // useCachedSubsequenceIfPossible is forced off, and the client is expected
+    // UseCachedSubsequenceIfPossible is forced off, and the client is expected
     // to create the same painting as in the previous paint.
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container2));
@@ -746,15 +741,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                           IsSameId(&content1, kForegroundType),
                           IsSameId(&container1, kForegroundType)));
 
-  markers = GetSubsequenceMarkers(container2);
-  CHECK(markers);
-  EXPECT_EQ(0u, markers->start);
-  EXPECT_EQ(4u, markers->end);
-
-  markers = GetSubsequenceMarkers(container1);
-  CHECK(markers);
-  EXPECT_EQ(4u, markers->start);
-  EXPECT_EQ(8u, markers->end);
+  EXPECT_SUBSEQUENCE(container1, 1, 2);
+  EXPECT_NO_SUBSEQUENCE(content1);
+  EXPECT_SUBSEQUENCE(container2, 0, 1);
+  EXPECT_NO_SUBSEQUENCE(content2);
 
   EXPECT_THAT(
       GetPaintController().PaintChunks(),
@@ -763,11 +753,14 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
-  FakeDisplayItemClient root("root", IntRect(0, 0, 300, 300));
   FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
   FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
   FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
+
+  PaintChunk::Id content1_id(content1, kBackgroundType);
+  PaintChunk::Id container2_id(container2, kBackgroundType);
+  PaintChunk::Id content2_id(content2, kBackgroundType);
 
   InitRootChunk();
 
@@ -792,17 +785,26 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
                           IsSameId(&container2, kForegroundType),
                           IsSameId(&content1, kForegroundType)));
 
-  auto* markers = GetSubsequenceMarkers(container2);
-  CHECK(markers);
-  EXPECT_EQ(1u, markers->start);
-  EXPECT_EQ(5u, markers->end);
+  EXPECT_NO_SUBSEQUENCE(content1);
+  EXPECT_SUBSEQUENCE(container2, 1, 2);
+  EXPECT_NO_SUBSEQUENCE(content2);
+
+  EXPECT_THAT(
+      GetPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1, DefaultRootChunkId(),
+                       DefaultPaintChunkProperties()),
+          IsPaintChunk(1, 5, PaintChunk::Id(container2, kBackgroundType),
+                       DefaultPaintChunkProperties()),
+          IsPaintChunk(5, 6, PaintChunk::Id(content1, kForegroundType),
+                       DefaultPaintChunkProperties())));
 
   // Simulate the situation when |container2| gets a z-index that is smaller
   // than that of |content1|.
   InitRootChunk();
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     // When under-invalidation-checking is enabled,
-    // useCachedSubsequenceIfPossible is forced off, and the client is expected
+    // UseCachedSubsequenceIfPossible is forced off, and the client is expected
     // to create the same painting as in the previous paint.
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container2));
@@ -846,10 +848,17 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
                           IsSameId(&content1, kBackgroundType),
                           IsSameId(&content1, kForegroundType)));
 
-  markers = GetSubsequenceMarkers(container2);
-  CHECK(markers);
-  EXPECT_EQ(0u, markers->start);
-  EXPECT_EQ(4u, markers->end);
+  EXPECT_NO_SUBSEQUENCE(content1);
+  EXPECT_SUBSEQUENCE(container2, 0, 1);
+  EXPECT_NO_SUBSEQUENCE(content2);
+
+  EXPECT_THAT(
+      GetPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 4, PaintChunk::Id(container2, kBackgroundType),
+                       DefaultPaintChunkProperties()),
+          IsPaintChunk(4, 6, PaintChunk::Id(content1, kBackgroundType),
+                       DefaultPaintChunkProperties())));
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceContainingFragments) {
@@ -1093,25 +1102,10 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                           IsSameId(&container2, kBackgroundType),
                           IsSameId(&content2, kBackgroundType)));
 
-  auto* markers = GetSubsequenceMarkers(container1);
-  CHECK(markers);
-  EXPECT_EQ(0u, markers->start);
-  EXPECT_EQ(4u, markers->end);
-
-  markers = GetSubsequenceMarkers(content1);
-  CHECK(markers);
-  EXPECT_EQ(1u, markers->start);
-  EXPECT_EQ(3u, markers->end);
-
-  markers = GetSubsequenceMarkers(container2);
-  CHECK(markers);
-  EXPECT_EQ(4u, markers->start);
-  EXPECT_EQ(6u, markers->end);
-
-  markers = GetSubsequenceMarkers(content2);
-  CHECK(markers);
-  EXPECT_EQ(5u, markers->start);
-  EXPECT_EQ(6u, markers->end);
+  EXPECT_SUBSEQUENCE(container1, 0, 3);
+  EXPECT_SUBSEQUENCE(content1, 1, 2);
+  EXPECT_SUBSEQUENCE(container2, 3, 5);
+  EXPECT_SUBSEQUENCE(content2, 4, 5);
 
   EXPECT_THAT(
       GetPaintController().PaintChunks(),
@@ -1151,7 +1145,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     // Use cached subsequence of content1.
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
       // When under-invalidation-checking is enabled,
-      // useCachedSubsequenceIfPossible is forced off, and the client is
+      // UseCachedSubsequenceIfPossible is forced off, and the client is
       // expected to create the same painting as in the previous paint.
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, content1));
@@ -1188,20 +1182,10 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                           IsSameId(&content1, kForegroundType),
                           IsSameId(&container1, kForegroundType)));
 
-  markers = GetSubsequenceMarkers(content2);
-  CHECK(markers);
-  EXPECT_EQ(0u, markers->start);
-  EXPECT_EQ(1u, markers->end);
-
-  markers = GetSubsequenceMarkers(container1);
-  CHECK(markers);
-  EXPECT_EQ(1u, markers->start);
-  EXPECT_EQ(4u, markers->end);
-
-  markers = GetSubsequenceMarkers(content1);
-  CHECK(markers);
-  EXPECT_EQ(1u, markers->start);
-  EXPECT_EQ(3u, markers->end);
+  EXPECT_NO_SUBSEQUENCE(container2);
+  EXPECT_SUBSEQUENCE(content2, 0, 1);
+  EXPECT_SUBSEQUENCE(container1, 1, 3);
+  EXPECT_SUBSEQUENCE(content1, 1, 2);
 
   EXPECT_THAT(GetPaintController().PaintChunks(),
               ElementsAre(IsPaintChunk(0, 1, content2_id, content2_properties),
@@ -1893,7 +1877,7 @@ TEST_F(PaintControllerUnderInvalidationTest, MoreDrawingInSubsequence) {
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence) {
   EXPECT_DEATH(TestLessDrawingInSubsequence(),
                "In cached subsequence for first.*"
-               "under-invalidation: new subsequence wrong length");
+               "under-invalidation: chunk changed");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {

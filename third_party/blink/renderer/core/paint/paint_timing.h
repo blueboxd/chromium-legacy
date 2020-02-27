@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_event.h"
@@ -31,8 +31,7 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =
-      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
-                                        base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(WebSwapResult, base::TimeTicks)>;
 
  public:
   static const char kSupplementName[];
@@ -99,11 +98,9 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   }
 
   void RegisterNotifySwapTime(PaintEvent, ReportTimeCallback);
-  void ReportSwapTime(PaintEvent,
-                      WebWidgetClient::SwapResult,
-                      base::TimeTicks timestamp);
+  void ReportSwapTime(PaintEvent, WebSwapResult, base::TimeTicks timestamp);
 
-  void ReportSwapResultHistogram(WebWidgetClient::SwapResult);
+  void ReportSwapResultHistogram(WebSwapResult);
 
   // The caller owns the |clock| which must outlive the PaintTiming.
   void SetTickClockForTesting(const base::TickClock* clock);

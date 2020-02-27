@@ -39,16 +39,6 @@ const wchar_t kIeSiteListValue[] = L"SiteList";
 
 const int kCurrentFileVersion = 1;
 
-// Returns "AppData\Local\Google\BrowserSwitcher".
-base::FilePath GetCacheDir() {
-  base::FilePath path;
-  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
-    return path;
-  path = path.AppendASCII("Google");
-  path = path.AppendASCII("BrowserSwitcher");
-  return path;
-}
-
 // Creates a RuleSet that is the concatenation of all 3 sources.
 RuleSet GetRules(const BrowserSwitcherPrefs& prefs,
                  const BrowserSwitcherSitelist* sitelist) {
@@ -94,12 +84,8 @@ std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs,
   return buffer.str();
 }
 
-void SaveDataToFile(const std::string& data, base::StringPiece file_name) {
-  base::FilePath dir = GetCacheDir();
-
-  if (dir.empty())
-    return;
-
+void SaveDataToFile(const std::string& data, base::FilePath path) {
+  base::FilePath dir = path.DirName();
   // Ensure the directory exists.
   bool success = base::CreateDirectory(dir);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkDirSuccess", success);
@@ -119,21 +105,12 @@ void SaveDataToFile(const std::string& data, base::StringPiece file_name) {
 
   base::WriteFile(tmp_path, data.c_str(), data.size());
 
-  base::FilePath dest_path = dir.AppendASCII(file_name);
-  success = base::Move(tmp_path, dest_path);
+  success = base::Move(tmp_path, path);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
 }
 
-// Delete the file at "AppData\Local\Google\BrowserSwitcher\<file_name>".
-void DoRemoveFileFromCacheDir(std::string file_name) {
-  base::FilePath dir = GetCacheDir();
-
-  if (dir.empty())
-    return;
-
-  // Ignore errors while deleting.
-  base::FilePath dest_path = dir.AppendASCII(file_name);
-  base::DeleteFile(dest_path, false);
+void RemoveFile(base::FilePath path) {
+  base::DeleteFile(path, false);
 }
 
 // URL to fetch the IEEM sitelist from. Only used for testing.
@@ -152,8 +129,11 @@ bool IsLBSExtensionEnabled(Profile* profile) {
 
 }  // namespace
 
-BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
+BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(
+    Profile* profile,
+    base::FilePath cache_dir_for_testing)
     : BrowserSwitcherService(profile),
+      cache_dir_for_testing_(std::move(cache_dir_for_testing)),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
@@ -194,6 +174,21 @@ void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
   if (!prefs().IsEnabled())
     return;
   SavePrefsToFile();
+}
+
+base::FilePath BrowserSwitcherServiceWin::GetCacheDir() {
+  if (!cache_dir_for_testing_.empty())
+    return cache_dir_for_testing_;
+#if defined(GOOGLE_CHROME_BUILD)
+  base::FilePath path;
+  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
+    return path;
+  path = path.AppendASCII("Google");
+  path = path.AppendASCII("BrowserSwitcher");
+  return path;
+#else
+  return base::FilePath();
+#endif
 }
 
 void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {
@@ -239,21 +234,32 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
 
 void BrowserSwitcherServiceWin::SavePrefsToFile() {
   DCHECK(prefs().IsEnabled());
+  base::FilePath path = GetCacheDir();
+  if (path.empty())
+    return;
+  path = path.AppendASCII("cache.dat");
   sequenced_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveDataToFile, SerializeCacheFile(prefs(), sitelist()),
-                     "cache.dat"));
+                     std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::DeletePrefsFile() {
+  base::FilePath path = GetCacheDir();
+  if (path.empty())
+    return;
+  path = path.AppendASCII("cache.dat");
   sequenced_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DoRemoveFileFromCacheDir, "cache.dat"));
+      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::DeleteSitelistCacheFile() {
+  base::FilePath path = GetCacheDir();
+  if (path.empty())
+    return;
+  path = path.AppendASCII("sitelistcache.dat");
   sequenced_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DoRemoveFileFromCacheDir, "sitelistcache.dat"));
+      FROM_HERE, base::BindOnce(&RemoveFile, std::move(path)));
 }
 
 void BrowserSwitcherServiceWin::UpdateAllCacheFiles() {

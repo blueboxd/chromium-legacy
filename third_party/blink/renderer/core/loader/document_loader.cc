@@ -822,9 +822,6 @@ void DocumentLoader::ReplaceWithEmptyDocument() {
 }
 
 DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
-    return DocumentPolicy::FeatureState{};
-
   // For URLs referring to local content to parent frame, they have no way to
   // specify the document policy they use. If the parent frame requires a
   // document policy on them, use the required policy as effective policy.
@@ -832,6 +829,8 @@ DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
       url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem"))
     return frame_policy_.required_document_policy;
 
+  // Assume Document policy feature is enabled so we can check the
+  // Required- headers. Will re-validate when we install the new Document.
   const DocumentPolicy::FeatureState header_policy =
       DocumentPolicyParser::Parse(
           response_.HttpHeaderField(http_names::kDocumentPolicy))
@@ -1479,6 +1478,10 @@ void DocumentLoader::InstallNewDocument(
   if (origin_policy_.has_value()) {
     MergeFeaturesFromOriginPolicy(feature_policy, origin_policy_.value());
   }
+
+  // Re-validate Document Policy feature before installing the new document.
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(owner_document))
+    document_policy_ = DocumentPolicy::FeatureState{};
 
   DocumentInit init =
       DocumentInit::Create()

@@ -15,6 +15,8 @@ extern const char kUpdaterAppId[];
 // Chrome's app ID.
 extern const char kChromeAppId[];
 
+extern const char kNullVersion[];
+
 // Command line switches.
 //
 

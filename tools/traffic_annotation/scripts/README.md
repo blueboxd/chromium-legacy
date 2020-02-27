@@ -8,7 +8,7 @@ are run in error resilient mode. Requires a compiled build directory to run.
 # traffic_annotation_auditor_tests.py
 Runs tests to ensure traffic_annotation_auditor is performing as expected. Tests
 include:
- - Checking if auditor and underlying clang tool run, and an expected minimum
+ - Checking if auditor and underlying extractor run, and an expected minimum
    number of outputs are returned.
  - Checking if enabling or disabling heuristics that make tests faster has any
    effect on the output.

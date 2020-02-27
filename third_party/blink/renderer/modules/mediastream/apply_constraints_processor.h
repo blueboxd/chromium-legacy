@@ -75,7 +75,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor final
   void ApplyConstraintsSucceeded();
   void ApplyConstraintsFailed(const char* failed_constraint_name);
   void CannotApplyConstraints(const String& message);
-  void CleanupRequest(base::OnceClosure web_request_callback);
+  void CleanupRequest(base::OnceClosure user_media_request_callback);
   blink::mojom::blink::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   // ApplyConstraints requests are processed sequentially. |current_request_|

@@ -336,8 +336,8 @@ class MultibufferDataSourceTest : public testing::Test {
 
   void ReadAt(int64_t position, int64_t howmuch = kDataSize) {
     data_source_->Read(position, howmuch, buffer_,
-                       base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
-                                      base::Unretained(this)));
+                       base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                  base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -888,8 +888,8 @@ TEST_F(MultibufferDataSourceTest, StopDuringRead) {
 
   uint8_t buffer[256];
   data_source_->Read(kDataSize, base::size(buffer), buffer,
-                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
-                                    base::Unretained(this)));
+                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                base::Unretained(this)));
 
   // The outstanding read should fail before the stop callback runs.
   {
@@ -1282,8 +1282,8 @@ TEST_F(MultibufferDataSourceTest,
   ReceiveData(kDataSize);
   EXPECT_EQ(data_source_->downloading(), false);
   data_source_->Read(kDataSize * 10, kDataSize, buffer_,
-                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
-                                    base::Unretained(this)));
+                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                base::Unretained(this)));
   data_source_->OnBufferingHaveEnough(false);
   EXPECT_TRUE(active_loader_allownull());
   EXPECT_CALL(*this, ReadCallback(-1));
@@ -1758,8 +1758,8 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
 
   EXPECT_CALL(*this, ReadCallback(1));
   data_source_->Read(kDataSize, 2, buffer_,
-                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
-                                    base::Unretained(this)));
+                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Make sure we're not downloading anymore.

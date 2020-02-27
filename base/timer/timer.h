@@ -230,7 +230,7 @@ class BASE_EXPORT OneShotTimer : public internal::TimerBase {
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call a task formed from
-  // |reviewer->*method|.
+  // |receiver->*method|.
   template <class Receiver>
   void Start(const Location& posted_from,
              TimeDelta delay,
@@ -276,7 +276,7 @@ class BASE_EXPORT RepeatingTimer : public internal::TimerBase {
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call a task formed from
-  // |reviewer->*method|.
+  // |receiver->*method|.
   template <class Receiver>
   void Start(const Location& posted_from,
              TimeDelta delay,
@@ -323,7 +323,7 @@ class BASE_EXPORT RetainingOneShotTimer : public internal::TimerBase {
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call a task formed from
-  // |reviewer->*method|.
+  // |receiver->*method|.
   template <class Receiver>
   void Start(const Location& posted_from,
              TimeDelta delay,

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace network {
@@ -97,7 +98,7 @@ class EndpointFetcher {
   int64_t timeout_ms_;
   const std::string post_data_;
   const net::NetworkTrafficAnnotationTag annotation_tag_;
-  identity::ScopeSet oauth_scopes_;
+  signin::ScopeSet oauth_scopes_;
 
   // Members set in constructor
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

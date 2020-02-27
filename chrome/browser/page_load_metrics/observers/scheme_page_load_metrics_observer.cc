@@ -174,16 +174,3 @@ void SchemePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
         timing.paint_timing->first_meaningful_paint.value());
   }
 }
-
-void SchemePageLoadMetricsObserver::OnPageInteractive(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (GetDelegate().GetUrl().scheme() == url::kHttpScheme) {
-    PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.Scheme.HTTP.Experimental.NavigationToInteractive",
-        timing.interactive_timing->interactive.value());
-  } else if (GetDelegate().GetUrl().scheme() == url::kHttpsScheme) {
-    PAGE_LOAD_HISTOGRAM(
-        "PageLoad.Clients.Scheme.HTTPS.Experimental.NavigationToInteractive",
-        timing.interactive_timing->interactive.value());
-  }
-}

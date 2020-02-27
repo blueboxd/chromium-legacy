@@ -257,6 +257,23 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   EXPECT_TRUE(ProgIdRegisteredForFileExtension(".doc", app_id(), profile()));
 }
 
+// Test that we don't use the gaia name in the file association app name, but
+// rather, just the local profile name.
+TEST_F(WebAppFileHandlerRegistrationWinTest,
+       RegisterFileHandlersForWebAppIn2ProfilesWithGaiaName) {
+  AddAndVerifyFileAssociations(profile(), kAppName, "");
+
+  Profile* profile2 =
+      testing_profile_manager()->CreateTestingProfile("Profile 2");
+  ProfileAttributesStorage& storage =
+      profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(
+      storage.GetProfileAttributesWithPath(profile2->GetPath(), &entry));
+  entry->SetGAIAName(base::ASCIIToUTF16("gaia user"));
+  AddAndVerifyFileAssociations(profile2, kAppName, " (Profile 2)");
+}
+
 // When an app is registered in two profiles, and then unregistered in one of
 // them, the remaining registration should no longer be profile-specific. It
 // should not have the profile name in app_launcher executable name, or the

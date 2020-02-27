@@ -82,8 +82,8 @@ class Annotation:
     self._parse_body(body)
 
 
-  def clang_tool_output_string(self):
-    """Returns a string formatted for clang-tool-style output."""
+  def extractor_output_string(self):
+    """Returns a string formatted for output."""
     return "\n".join(map(str, [
         "==== NEW ANNOTATION ====",
         self.file_path,
@@ -247,7 +247,7 @@ def main():
 
   # Print output.
   for annotation in annotation_definitions:
-    print(annotation.clang_tool_output_string())
+    print(annotation.extractor_output_string())
 
   # If all files were successfully checked for annotations but none of them had
   # any, print something so that the traffic_annotation_auditor knows there was

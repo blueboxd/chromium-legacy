@@ -1109,6 +1109,12 @@ void DownloadItemView::TransitionToDeepScanningDialog() {
 
   ShowDeepScanningDialog();
 
+  UpdateAccessibleAlert(
+      l10n_util::GetStringFUTF16(
+          IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT,
+          model_->GetFileNameToReportUser().LossyDisplayName()),
+      false);
+
   // We need to load the icon now that the download has the real path.
   LoadIcon();
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/content_browser_test.h"
@@ -200,4 +201,58 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
       web_contents()->GetController().GetLastCommittedEntry()->GetPageType(),
       PAGE_TYPE_NORMAL);
 }
+
+class CrossOriginPolicyHeadersObserver : public WebContentsObserver {
+ public:
+  explicit CrossOriginPolicyHeadersObserver(
+      WebContents* web_contents,
+      network::mojom::CrossOriginEmbedderPolicyValue expected_coep,
+      network::mojom::CrossOriginOpenerPolicy expected_coop)
+      : WebContentsObserver(web_contents),
+        expected_coep_(expected_coep),
+        expected_coop_(expected_coop) {}
+
+  ~CrossOriginPolicyHeadersObserver() override = default;
+
+  void DidRedirectNavigation(NavigationHandle* navigation_handle) override {
+    // Verify that the COOP/COEP headers were parsed.
+    NavigationRequest* navigation_request =
+        static_cast<NavigationRequest*>(navigation_handle);
+    CHECK(navigation_request->response()->cross_origin_embedder_policy.value ==
+          expected_coep_);
+    CHECK(navigation_request->response()->cross_origin_opener_policy ==
+          expected_coop_);
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    // Verify that the COOP/COEP headers were parsed.
+    NavigationRequest* navigation_request =
+        static_cast<NavigationRequest*>(navigation_handle);
+    CHECK(navigation_request->response()->cross_origin_embedder_policy.value ==
+          expected_coep_);
+    CHECK(navigation_request->response()->cross_origin_opener_policy ==
+          expected_coop_);
+  }
+
+ private:
+  network::mojom::CrossOriginEmbedderPolicyValue expected_coep_;
+  network::mojom::CrossOriginOpenerPolicy expected_coop_;
+};
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       RedirectsParseCoopAndCoepHeaders) {
+  GURL redirect_initial_page(embedded_test_server()->GetURL(
+      "a.com", "/cross-origin-opener-policy_redirect_initial.html"));
+  GURL redirect_final_page(embedded_test_server()->GetURL(
+      "a.com", "/cross-origin-opener-policy_redirect_final.html"));
+
+  CrossOriginPolicyHeadersObserver obs(
+      web_contents(),
+      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
+      network::mojom::CrossOriginOpenerPolicy::kSameOrigin);
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), redirect_initial_page, redirect_final_page));
+}
+
 }  // namespace content

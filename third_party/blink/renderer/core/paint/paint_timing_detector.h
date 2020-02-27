@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_visualizer.h"
@@ -86,7 +86,7 @@ class PaintTimingCallbackManagerImpl final
   void ReportPaintTime(
       std::unique_ptr<std::queue<
           PaintTimingCallbackManager::LocalThreadCallback>> frame_callbacks,
-      WebWidgetClient::SwapResult,
+      WebSwapResult,
       base::TimeTicks paint_time);
 
   void Trace(Visitor* visitor) override;

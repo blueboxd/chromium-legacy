@@ -108,6 +108,10 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   Persistent<FilterMap> filter_;
 };
 
+// Get the LayoutSVGResourceFilter from the 'filter' property iff the 'filter'
+// is a single url(...) reference.
+LayoutSVGResourceFilter* GetFilterResourceForSVG(const ComputedStyle&);
+
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, IsSVGResourceFilter());
 
 }  // namespace blink

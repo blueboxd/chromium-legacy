@@ -32,12 +32,12 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     private CompositorListener mCompositorListener;
     private long mNativePlayerCompositorDelegate;
 
-    PlayerCompositorDelegateImpl(PaintPreviewBaseService service, String url,
+    PlayerCompositorDelegateImpl(PaintPreviewBaseService service, String directoryKey,
             @Nonnull CompositorListener compositorListener) {
         mCompositorListener = compositorListener;
         if (service != null && service.getNativePaintPreviewBaseService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(
-                    this, service.getNativePaintPreviewBaseService(), url);
+                    this, service.getNativePaintPreviewBaseService(), directoryKey);
         }
         // TODO(crbug.com/1021590): Handle initialization errors when
         // mNativePlayerCompositorDelegate == 0.
@@ -103,7 +103,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @NativeMethods
     interface Natives {
         long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
-                String url);
+                String directoryKey);
         void destroy(long nativePlayerCompositorDelegateAndroid);
         void requestBitmap(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,

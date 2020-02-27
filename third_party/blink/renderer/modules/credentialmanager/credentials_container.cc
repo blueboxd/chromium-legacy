@@ -507,7 +507,7 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
   }
   RecordSmsSuccessTime(base::TimeTicks::Now() - start_time);
   RecordSmsOutcome(SMSReceiverOutcome::kSuccess, source_id, recorder);
-  resolver->Resolve(MakeGarbageCollected<OtpCredential>(otp));
+  resolver->Resolve(MakeGarbageCollected<OTPCredential>(otp));
 }
 
 }  // namespace

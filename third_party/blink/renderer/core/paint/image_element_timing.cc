@@ -239,7 +239,7 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
   }
 }
 
-void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
+void ImageElementTiming::ReportImagePaintSwapTime(WebSwapResult,
                                                   base::TimeTicks timestamp) {
   WindowPerformance* performance =
       DOMWindowPerformance::performance(*GetSupplementable());

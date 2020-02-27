@@ -37,7 +37,7 @@ class AnnotationInstance : public InstanceBase {
   AnnotationInstance(const AnnotationInstance& other);
 
   // Deserializes an instance from serialized lines of the text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.
@@ -142,7 +142,7 @@ class CallInstance : public InstanceBase {
   CallInstance(const CallInstance& other);
 
   // Deserializes an instance from serialized lines of text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.
@@ -172,7 +172,7 @@ class AssignmentInstance : public InstanceBase {
   AssignmentInstance(const AssignmentInstance& other);
 
   // Deserializes an instance from serialized lines of text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.

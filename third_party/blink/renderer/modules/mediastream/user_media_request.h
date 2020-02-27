@@ -139,6 +139,16 @@ class MODULES_EXPORT UserMediaRequest final
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
+  void set_request_id(int id) { request_id_ = id; }
+  int request_id() { return request_id_; }
+
+  void set_has_transient_user_activation(bool value) {
+    has_transient_user_activation_ = value;
+  }
+  bool has_transient_user_activation() const {
+    return has_transient_user_activation_;
+  }
+
   void Trace(Visitor*) override;
 
  private:
@@ -146,6 +156,8 @@ class MODULES_EXPORT UserMediaRequest final
   MediaConstraints audio_;
   MediaConstraints video_;
   bool should_disable_hardware_noise_suppression_;
+  bool has_transient_user_activation_ = false;
+  int request_id_ = -1;
 
   Member<UserMediaController> controller_;
 

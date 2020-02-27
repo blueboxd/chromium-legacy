@@ -876,7 +876,9 @@ static NSString* kHtmlWithPasswordForm =
      "<input id='un' type='text' name=\"u'\""
      "  onkeyup='window.onKeyUpCalled_=true'"
      "  onchange='window.onChangeCalled_=true'>"
-     "<input id='pw' type='password' name=\"p'\">"
+     "<input id='pw' type='password' name=\"p'\""
+     "  onkeyup='window.onKeyUpCalled_=true'"
+     "  onchange='window.onChangeCalled_=true'>"
      "</form>";
 
 static NSString* kHtmlWithNewPasswordForm =
@@ -1007,6 +1009,29 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @[@"user0 ••••••••", @"abc ••••••••"],
       @"ab[]=, onkeyup=false, onchange=false"
     },
+    {
+      "Should filter suggestions when typing into a username field",
+      @[(@"username_.value='ab';"
+         "username_.focus();"
+         // Keyup event is dispatched to simulate typing
+         "var ev = new KeyboardEvent('keyup', {bubbles:true});"
+         "username_.dispatchEvent(ev);"),
+        @""],
+      @[@"abc ••••••••"],
+      @"ab[]=, onkeyup=true, onchange=false"
+    },
+    {
+      "Should not show suggestions when typing into a password field",
+      @[(@"username_.value='abc';"
+         "password_.value='••';"
+         "password_.focus();"
+         // Keyup event is dispatched to simulate typing.
+         "var ev = new KeyboardEvent('keyup', {bubbles:true});"
+         "password_.dispatchEvent(ev);"),
+        @""],
+      @[],
+      @"abc[]=••, onkeyup=true, onchange=false"
+    },
   };
   // clang-format on
 
@@ -1028,7 +1053,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
     }
     // Wait until suggestions are received.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-      return [GetSuggestionValues() count] > 0;
+      return [GetSuggestionValues() count] == [data.expected_suggestions count];
     }));
 
     EXPECT_NSEQ(data.expected_suggestions, GetSuggestionValues());

@@ -1093,7 +1093,8 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
     last_ancestor = current;
     current->child_needs_compositing_inputs_update_ = true;
     if (Compositor() &&
-        current->GetLayoutObject().ShouldApplyStrictContainment())
+        (current != initial_layer &&
+         current->GetLayoutObject().ShouldApplyStrictContainment()))
       break;
   }
 
@@ -2606,13 +2607,9 @@ bool PaintLayer::HitTestClippedOutByClipPath(
     return !clip_path->GetPath(reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
-  SVGResource* resource =
-      To<ReferenceClipPathOperation>(*clip_path_operation).Resource();
-  LayoutSVGResourceContainer* container =
-      resource ? resource->ResourceContainer() : nullptr;
-  if (!container || container->ResourceType() != kClipperResourceType)
+  LayoutSVGResourceClipper* clipper = GetSVGResourceAsType(clip_path_operation);
+  if (!clipper)
     return false;
-  auto* clipper = ToLayoutSVGResourceClipper(container);
   // If the clipPath is using "userspace on use" units, then the origin of
   // the coordinate system is the top-left of the reference box, so adjust
   // the point accordingly.

@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @interface */
-  class ChromeCleanupProxy {
+  /* #export */ class ChromeCleanupProxy {
     /**
      * Registers the current ChromeCleanupHandler as an observer of
      * ChromeCleanerController events.
@@ -59,7 +63,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ChromeCleanupProxy}
    */
-  class ChromeCleanupProxyImpl {
+  /* #export */ class ChromeCleanupProxyImpl {
     /** @override */
     registerChromeCleanerObserver() {
       chrome.send('registerChromeCleanerObserver');

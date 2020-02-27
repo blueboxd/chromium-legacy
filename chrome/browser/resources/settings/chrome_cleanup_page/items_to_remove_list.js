@@ -12,13 +12,13 @@ cr.define('settings', function() {
    *   highlightSuffix: ?string,
    * }}
    */
-  let ChromeCleanupRemovalListItem;
+  /* #export */ let ChromeCleanupRemovalListItem;
 
   /**
    * The default number of items to show for files, registry keys and extensions
    * on the detailed view when user-initiated cleanups are enabled.
    */
-  const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
+  /* #export */ const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 
   /**
    * @fileoverview
@@ -109,9 +109,9 @@ cr.define('settings', function() {
      */
     updateVisibleState_(itemsToShow) {
       // Start expanded if there are less than
-      // |settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
+      // |CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW| items to show.
       this.expanded_ =
-          itemsToShow.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
+          itemsToShow.length <= CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW;
 
       if (this.expanded_) {
         this.initialItems_ = itemsToShow;
@@ -120,10 +120,10 @@ cr.define('settings', function() {
         return;
       }
 
-      this.initialItems_ = itemsToShow.slice(
-          0, settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
+      this.initialItems_ =
+          itemsToShow.slice(0, CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
       this.remainingItems_ =
-          itemsToShow.slice(settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
+          itemsToShow.slice(CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW - 1);
 
       const browserProxy = settings.ChromeCleanupProxyImpl.getInstance();
       browserProxy.getMoreItemsPluralString(this.remainingItems_.length)

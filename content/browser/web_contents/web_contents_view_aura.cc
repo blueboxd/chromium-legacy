@@ -1300,6 +1300,9 @@ void WebContentsViewAura::DragEnteredCallback(
 }
 
 void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return;
+
 #if defined(OS_WIN)
   async_drop_navigation_observer_.reset();
 #endif
@@ -1379,6 +1382,9 @@ void WebContentsViewAura::DragUpdatedCallback(
 }
 
 int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return ui::DragDropTypes::DRAG_NONE;
+
   std::unique_ptr<DropData> drop_data = std::make_unique<DropData>();
   // Calling this here as event.data might become invalid inside the callback.
   PrepareDropData(drop_data.get(), event.data());
@@ -1394,6 +1400,12 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::OnDragExited() {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return;
+  CompleteDragExit();
+}
+
+void WebContentsViewAura::CompleteDragExit() {
   drag_in_progress_ = false;
 
   if (current_rvh_for_drag_ !=
@@ -1478,7 +1490,7 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
     }
 
     // The drop not being continued requires this to cleanup the drag data.
-    OnDragExited();
+    CompleteDragExit();
 
     return;
   }
@@ -1522,6 +1534,9 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
 int WebContentsViewAura::OnPerformDrop(
     const ui::DropTargetEvent& event,
     std::unique_ptr<ui::OSExchangeData> data) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return ui::DragDropTypes::DRAG_NONE;
+
   web_contents_->GetInputEventRouter()
       ->GetRenderWidgetHostAtPointAsynchronously(
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),

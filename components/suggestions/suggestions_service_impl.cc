@@ -22,6 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -338,7 +339,7 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   if (token_fetcher_)
     return;
 
-  identity::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
+  signin::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
   token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "suggestions_service", identity_manager_, scopes,
       base::BindOnce(&SuggestionsServiceImpl::AccessTokenAvailable,

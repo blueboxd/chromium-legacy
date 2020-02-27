@@ -52,12 +52,12 @@ jlong JNI_PlayerCompositorDelegateImpl_Initialize(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
     jlong paint_preview_service,
-    const JavaParamRef<jstring>& j_string_url) {
+    const JavaParamRef<jstring>& j_directory_key) {
   PlayerCompositorDelegateAndroid* delegate =
       new PlayerCompositorDelegateAndroid(
           env, j_object,
           reinterpret_cast<PaintPreviewBaseService*>(paint_preview_service),
-          j_string_url);
+          j_directory_key);
   return reinterpret_cast<intptr_t>(delegate);
 }
 
@@ -65,10 +65,11 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
     PaintPreviewBaseService* paint_preview_service,
-    const JavaParamRef<jstring>& j_string_url)
+    const JavaParamRef<jstring>& j_directory_key)
     : PlayerCompositorDelegate(
           paint_preview_service,
-          GURL(base::android::ConvertJavaStringToUTF16(env, j_string_url))) {
+          DirectoryKey{
+              base::android::ConvertJavaStringToUTF8(env, j_directory_key)}) {
   java_ref_.Reset(env, j_object);
 }
 

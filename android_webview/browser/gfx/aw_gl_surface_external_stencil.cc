@@ -116,6 +116,8 @@ class AwGLSurfaceExternalStencil::FrameBuffer {
 
   void Clear() {
     glBindFramebufferEXT(GL_FRAMEBUFFER, frame_buffer_object_);
+    glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
   }
@@ -218,6 +220,9 @@ gfx::SwapResult AwGLSurfaceExternalStencil::SwapBuffers(
 
     // We draw only inside clip rect, no need to scissor.
     glDisable(GL_SCISSOR_TEST);
+
+    // Restore color mask in case.
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }

@@ -60,28 +60,6 @@ const base::FilePath kSafeListPath =
         .Append(FILE_PATH_LITERAL("auditor"))
         .Append(FILE_PATH_LITERAL("safe_list.txt"));
 
-const base::FilePath kClangToolSwitchesPath =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("auditor"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation_extractor_switches.txt"));
-
-// The folder that includes the latest Clang built-in library. Inside this
-// folder, there should be another folder with version number, like
-// '.../lib/clang/6.0.0', which would be passed to the clang tool.
-const base::FilePath kClangLibraryPath =
-    base::FilePath(FILE_PATH_LITERAL("third_party"))
-        .Append(FILE_PATH_LITERAL("llvm-build"))
-        .Append(FILE_PATH_LITERAL("Release+Asserts"))
-        .Append(FILE_PATH_LITERAL("lib"))
-        .Append(FILE_PATH_LITERAL("clang"));
-
-const base::FilePath kRunToolScript =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("clang"))
-        .Append(FILE_PATH_LITERAL("scripts"))
-        .Append(FILE_PATH_LITERAL("run_tool.py"));
-
 const base::FilePath kExtractorScript =
     base::FilePath(FILE_PATH_LITERAL("tools"))
         .Append(FILE_PATH_LITERAL("traffic_annotation"))
@@ -137,17 +115,14 @@ std::string MakeRelativePath(const base::FilePath& base_directory,
 TrafficAnnotationAuditor::TrafficAnnotationAuditor(
     const base::FilePath& source_path,
     const base::FilePath& build_path,
-    const base::FilePath& clang_tool_path,
     const std::vector<std::string>& path_filters)
     : source_path_(source_path),
       build_path_(build_path),
-      clang_tool_path_(clang_tool_path),
       path_filters_(path_filters),
       exporter_(source_path),
       safe_list_loaded_(false) {
   DCHECK(!source_path.empty());
   DCHECK(!build_path.empty());
-  DCHECK(!clang_tool_path.empty());
 
   // Get absolute source path.
   base::FilePath original_path;
@@ -157,16 +132,6 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
   base::SetCurrentDirectory(original_path);
   absolute_source_path_ = absolute_source_path_.NormalizePathSeparatorsTo('/');
   DCHECK(absolute_source_path_.IsAbsolute());
-
-  base::FilePath switches_file =
-      base::MakeAbsoluteFilePath(source_path_.Append(kClangToolSwitchesPath));
-  std::string file_content;
-  if (base::ReadFileToString(switches_file, &file_content)) {
-    clang_tool_switches_ = base::SplitString(
-        file_content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  } else {
-    LOG(ERROR) << "Could not read " << kClangToolSwitchesPath;
-  }
 }
 
 TrafficAnnotationAuditor::~TrafficAnnotationAuditor() = default;
@@ -178,32 +143,22 @@ int TrafficAnnotationAuditor::ComputeHashValue(const std::string& unique_id) {
                             : -1;
 }
 
-base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
-  return base::FileEnumerator(source_path_.Append(kClangLibraryPath), false,
-                              base::FileEnumerator::DIRECTORIES)
-      .Next();
-}
-
 bool TrafficAnnotationAuditor::RunExtractor(
-    ExtractorBackend backend,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
     const base::FilePath& errors_file,
     int* exit_code) {
-  DCHECK(backend == ExtractorBackend::CLANG_TOOL ||
-         backend == ExtractorBackend::PYTHON_SCRIPT);
-
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
   // Get list of files/folders to process.
   std::vector<std::string> file_paths;
-  GenerateFilesListForClangTool(backend, filter_files_based_on_heuristics,
+  GenerateFilesListForExtractor(filter_files_based_on_heuristics,
                                 use_compile_commands, &file_paths);
   if (file_paths.empty())
     return true;
 
-  // Create a file to pass options to the clang tool running script.
+  // Create a file to pass options to the extractor script.
   base::FilePath options_filepath;
   if (!base::CreateTemporaryFile(&options_filepath)) {
     LOG(ERROR) << "Could not create temporary options file.";
@@ -215,23 +170,17 @@ bool TrafficAnnotationAuditor::RunExtractor(
     return false;
   }
 
-  // Write some options to the file, which depends on the backend used.
-  if (backend == ExtractorBackend::CLANG_TOOL)
-    WriteClangToolOptions(options_file, use_compile_commands);
-  else if (backend == ExtractorBackend::PYTHON_SCRIPT)
-    WritePythonScriptOptions(options_file);
+  // Write some options to the file for the python extractor.
+  WritePythonScriptOptions(options_file);
 
-  // Write the file paths regardless of backend.
+  // Write the file paths.
   for (const std::string& file_path : file_paths)
     fprintf(options_file, "%s ", file_path.c_str());
 
   base::CloseFile(options_file);
 
-  const base::FilePath& script_path =
-      (backend == ExtractorBackend::CLANG_TOOL ? kRunToolScript
-                                               : kExtractorScript);
   base::CommandLine cmdline(
-      base::MakeAbsoluteFilePath(source_path_.Append(script_path)));
+      base::MakeAbsoluteFilePath(source_path_.Append(kExtractorScript)));
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
 #endif
@@ -250,51 +199,35 @@ bool TrafficAnnotationAuditor::RunExtractor(
   // not perform the task.
   if (extractor_raw_output_.empty()) {
     result = false;
-  } else if (backend == ExtractorBackend::CLANG_TOOL && !result) {
-    // If clang tool had errors but also returned results, the errors can be
-    // ignored as we do not separate platform specific files here and processing
-    // them fails. This is a post-build test and if there exists any actual
-    // compile error, it should be noted when the code is built.
-    printf("WARNING: Ignoring clang tool's returned errors.\n");
-    result = true;
   }
 
   if (!result) {
-    if (backend == ExtractorBackend::CLANG_TOOL && use_compile_commands &&
-        !extractor_raw_output_.empty()) {
-      printf(
-          "\nWARNING: Ignoring clang tool error as it is called using "
-          "compile_commands.json which will result in processing some "
-          "library files that clang cannot process.\n");
-      result = true;
-    } else {
-      std::string tool_errors;
-      std::string options_file_text;
+    std::string tool_errors;
+    std::string options_file_text;
 
-      base::GetAppOutputAndError(cmdline, &tool_errors);
+    base::GetAppOutputAndError(cmdline, &tool_errors);
 
-      if (!base::ReadFileToString(options_filepath, &options_file_text))
-        options_file_text = "Could not read options file.";
+    if (!base::ReadFileToString(options_filepath, &options_file_text))
+      options_file_text = "Could not read options file.";
 
-      std::string error_message = base::StringPrintf(
-          "Calling clang tool returned false from %s\nCommandline: %s\n\n"
-          "Returned output: %s\n\nPartial options file: %s\n",
-          source_path_.MaybeAsASCII().c_str(),
+    std::string error_message = base::StringPrintf(
+        "Calling extractor returned false from %s\nCommandline: %s\n\n"
+        "Returned output: %s\n\nPartial options file: %s\n",
+        source_path_.MaybeAsASCII().c_str(),
 #if defined(OS_WIN)
-          base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
+        base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
 #else
-          cmdline.GetCommandLineString().c_str(),
+        cmdline.GetCommandLineString().c_str(),
 #endif
-          tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
+        tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
 
-      if (errors_file.empty()) {
-        LOG(ERROR) << error_message;
-      } else {
-        if (base::WriteFile(errors_file, error_message.c_str(),
-                            error_message.length()) == -1) {
-          LOG(ERROR) << "Writing error message to file failed:\n"
-                     << error_message;
-        }
+    if (errors_file.empty()) {
+      LOG(ERROR) << error_message;
+    } else {
+      if (base::WriteFile(errors_file, error_message.c_str(),
+                          error_message.length()) == -1) {
+        LOG(ERROR) << "Writing error message to file failed:\n"
+                   << error_message;
       }
     }
   }
@@ -305,58 +238,16 @@ bool TrafficAnnotationAuditor::RunExtractor(
   return result;
 }
 
-void TrafficAnnotationAuditor::WriteClangToolOptions(
-    FILE* options_file,
-    bool use_compile_commands) {
-  // As the checked out clang tool may be in a directory different from the
-  // default one (third_party/llvm-build/Release+Asserts/bin), its path and
-  // clang's library folder should be passed to the run_tool.py script.
-  fprintf(
-      options_file,
-      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
-      "--tool-path=%s "
-      "--tool-arg=--extra-arg=-resource-dir=%s ",
-      build_path_.MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
-
-  for (const std::string& item : clang_tool_switches_)
-    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
-
-  if (use_compile_commands)
-    fprintf(options_file, "--all ");
-}
-
 void TrafficAnnotationAuditor::WritePythonScriptOptions(FILE* options_file) {
   fprintf(options_file, "--generate-compdb --build-path=%s ",
           build_path_.MaybeAsASCII().c_str());
 }
 
-void TrafficAnnotationAuditor::GenerateFilesListForClangTool(
-    ExtractorBackend backend,
+void TrafficAnnotationAuditor::GenerateFilesListForExtractor(
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
     std::vector<std::string>* file_paths) {
   TrafficAnnotationFileFilter filter;
-
-  // When using the Clang tool backend and |use_compile_commands| is requested
-  // or |filter_files_based_on_heuristics| is false, we pass all given file
-  // paths to the running script and the files in the safe list will be later
-  // removed from the results. The Python tool requires a good list of file
-  // paths and cannot implement the same logic.
-  if (backend == ExtractorBackend::CLANG_TOOL &&
-      (!filter_files_based_on_heuristics || use_compile_commands)) {
-    if (path_filters_.empty()) {
-      // If no path filter is specified, return current location. The clang tool
-      // will be run from the repository 'src' folder and hence this will point
-      // to repository root.
-      file_paths->push_back("./");
-    } else {
-      *file_paths = path_filters_;
-    }
-    return;
-  }
-
   // If no path filter is provided, get all relevant files, except the safe
   // listed ones.
   if (path_filters_.empty()) {
@@ -425,7 +316,7 @@ bool TrafficAnnotationAuditor::IsSafeListed(
   return false;
 }
 
-bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
+bool TrafficAnnotationAuditor::ParseExtractorRawOutput() {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
   // Remove possible carriage return characters before splitting lines.
@@ -434,7 +325,7 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
   std::vector<std::string> lines = base::SplitString(
       temp_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (unsigned int current = 0; current < lines.size(); current++) {
-    // All blocks reported by clang tool start with '====', so we can ignore
+    // All blocks reported by extractor start with '====', so we can ignore
     // all lines that do not start with a '='.
     if (lines[current].empty() || lines[current][0] != '=')
       continue;

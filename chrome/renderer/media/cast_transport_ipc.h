@@ -22,12 +22,17 @@
 // renderer less direct control over the UDP sockets.
 class CastTransportIPC : public media::cast::CastTransport {
  public:
+  // Runs when a raw event completes.
+  using BulkRawEventsCallback = base::RepeatingCallback<void(
+      std::unique_ptr<std::vector<media::cast::FrameEvent>>,
+      std::unique_ptr<std::vector<media::cast::PacketEvent>>)>;
+
   CastTransportIPC(const net::IPEndPoint& local_end_point,
                    const net::IPEndPoint& remote_end_point,
                    std::unique_ptr<base::DictionaryValue> options,
                    const media::cast::PacketReceiverCallback& packet_callback,
                    const media::cast::CastTransportStatusCallback& status_cb,
-                   const media::cast::BulkRawEventsCallback& raw_events_cb);
+                   BulkRawEventsCallback raw_events_cb);
 
   ~CastTransportIPC() override;
 
@@ -75,7 +80,7 @@ class CastTransportIPC : public media::cast::CastTransport {
   int32_t channel_id_;
   media::cast::PacketReceiverCallback packet_callback_;
   media::cast::CastTransportStatusCallback status_callback_;
-  media::cast::BulkRawEventsCallback raw_events_callback_;
+  const BulkRawEventsCallback raw_events_callback_;
   using ClientMap =
       std::map<uint32_t, std::unique_ptr<media::cast::RtcpObserver>>;
   ClientMap clients_;

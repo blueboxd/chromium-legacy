@@ -74,7 +74,7 @@ class MultibufferDataSource::ReadOperation {
   ReadOperation(int64_t position,
                 int size,
                 uint8_t* data,
-                DataSource::ReadCB callback);
+                const DataSource::ReadCB& callback);
   ~ReadOperation();
 
   // Runs |callback_| with the given |result|, deleting the operation
@@ -94,14 +94,12 @@ class MultibufferDataSource::ReadOperation {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReadOperation);
 };
 
-MultibufferDataSource::ReadOperation::ReadOperation(int64_t position,
-                                                    int size,
-                                                    uint8_t* data,
-                                                    DataSource::ReadCB callback)
-    : position_(position),
-      size_(size),
-      data_(data),
-      callback_(std::move(callback)) {
+MultibufferDataSource::ReadOperation::ReadOperation(
+    int64_t position,
+    int size,
+    uint8_t* data,
+    const DataSource::ReadCB& callback)
+    : position_(position), size_(size), data_(data), callback_(callback) {
   DCHECK(!callback_.is_null());
 }
 
@@ -185,9 +183,10 @@ void MultibufferDataSource::CreateResourceLoader_Locked(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
-  reader_ = std::make_unique<MultiBufferReader>(
+  reader_.reset(new MultiBufferReader(
       url_data_->multibuffer(), first_byte_position, last_byte_position,
-      base::BindRepeating(&MultibufferDataSource::ProgressCallback, weak_ptr_));
+      base::BindRepeating(&MultibufferDataSource::ProgressCallback,
+                          weak_ptr_)));
   UpdateBufferSizes();
 }
 
@@ -391,7 +390,7 @@ GURL MultibufferDataSource::GetUrlAfterRedirects() const {
 void MultibufferDataSource::Read(int64_t position,
                                  int size,
                                  uint8_t* data,
-                                 DataSource::ReadCB read_cb) {
+                                 const DataSource::ReadCB& read_cb) {
   DVLOG(1) << "Read: " << position << " offset, " << size << " bytes";
   // Reading is not allowed until after initialization.
   DCHECK(!init_cb_);
@@ -402,7 +401,7 @@ void MultibufferDataSource::Read(int64_t position,
     DCHECK(!read_op_);
 
     if (stop_signal_received_) {
-      std::move(read_cb).Run(kReadError);
+      read_cb.Run(kReadError);
       return;
     }
 
@@ -422,12 +421,11 @@ void MultibufferDataSource::Read(int64_t position,
               kSeekDelay);
         }
 
-        std::move(read_cb).Run(bytes_read);
+        read_cb.Run(bytes_read);
         return;
       }
     }
-    read_op_ = std::make_unique<ReadOperation>(position, size, data,
-                                               std::move(read_cb));
+    read_op_.reset(new ReadOperation(position, size, data, read_cb));
   }
 
   render_task_runner_->PostTask(FROM_HERE,

@@ -8,11 +8,8 @@
 
     // The fetch below will fail eventually, but the request will reach the
     // browser.
-    frame.contentWindow.fetch('subresources/xhr_target.txt').then(() => {
-      domAutomationController.send('success');
-    }, () => {
-      domAutomationController.send('failure');
-    });
+    frame.contentWindow.fetch('subresources/xhr_target.txt')
+      .catch((error) => {});
 </script>
 
 </body>

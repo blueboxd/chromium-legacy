@@ -406,7 +406,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void InvokeEphemeronCallbacks(MarkingVisitor*);
 
-  void FlushV8References();
+  bool FlushV8References(base::TimeTicks);
 
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;

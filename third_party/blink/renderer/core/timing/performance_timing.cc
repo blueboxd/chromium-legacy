@@ -402,33 +402,6 @@ uint64_t PerformanceTiming::LargestTextPaintSize() const {
   return paint_timing_detector->LargestTextPaintSize();
 }
 
-uint64_t PerformanceTiming::PageInteractive() const {
-  InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(
-      interactive_detector->GetInteractiveTime());
-}
-
-uint64_t PerformanceTiming::PageInteractiveDetection() const {
-  InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(
-      interactive_detector->GetInteractiveDetectionTime());
-}
-
-uint64_t PerformanceTiming::FirstInputInvalidatingInteractive() const {
-  InteractiveDetector* interactive_detector = GetInteractiveDetector();
-  if (!interactive_detector)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(
-      interactive_detector->GetFirstInvalidatingInputTime());
-}
-
 uint64_t PerformanceTiming::FirstInputDelay() const {
   const InteractiveDetector* interactive_detector = GetInteractiveDetector();
   if (!interactive_detector)

@@ -947,9 +947,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
   selector.selectors.emplace_back("#iframeExternal");
   selector.selectors.emplace_back("#button");
   selector.must_be_visible = false;
-  FindElementAndCheck(selector, 1, false);
+  FindElementAndCheck(selector, 0, false);
   selector.must_be_visible = true;
-  FindElementAndCheck(selector, 1, false);
+  FindElementAndCheck(selector, 0, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {

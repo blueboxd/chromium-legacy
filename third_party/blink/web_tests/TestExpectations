@@ -2043,7 +2043,6 @@ crbug.com/1053725 [ Mac ] http/tests/devtools/inspect-element.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/syntax-highlight-javascript.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/tabbed-editors-history.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/text-source-map.js [ Skip ]
-crbug.com/1053725 [ Mac ] http/tests/devtools/user-metrics-perf.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/animation/animation-empty-web-animations.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/animation/animation-group-matching.js [ Skip ]
 crbug.com/1053725 [ Mac ] http/tests/devtools/animation/animation-timeline.js [ Skip ]
@@ -6647,8 +6646,6 @@ crbug.com/1044534 [ Release ] http/tests/devtools/editor/text-editor-line-breaks
 crbug.com/1044538 [ Release ] http/tests/devtools/coverage/gutter-js.js [ Pass Timeout ]
 crbug.com/1044544 [ Release ] http/tests/devtools/network/network-disable-cache-preloads-twice.js [ Pass Timeout ]
 crbug.com/1044545 [ Release ] http/tests/devtools/service-workers/service-workers-bypass-for-network-cors.js [ Pass Timeout ]
-# crbug.com/1044546 [ Release Win ] http/tests/devtools/user-metrics.js [ Pass Timeout ]
-# crbug.com/1044546 [ Release Mac ] http/tests/devtools/user-metrics.js [ Pass Timeout ]
 crbug.com/1044561 [ Release ] http/tests/devtools/elements/styles/show-all-properties.js [ Pass Timeout ]
 crbug.com/1044562 [ Release Win ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
 crbug.com/1044562 [ Release Mac ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
@@ -6858,7 +6855,6 @@ crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
 
 # DevTools roll
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
-crbug.com/1052111 http/tests/devtools/user-metrics.js [ Skip ]
 
 # Sheriff 2020-02-18
 crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Timeout Pass ]

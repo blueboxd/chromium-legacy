@@ -1971,10 +1971,14 @@ template("ios_xcuitest_test") {
          "xcode_test_application_name must be defined for $target_name")
 
   _xcuitest_target = target_name
+  if (defined(invoker.output_name)) {
+    _xcuitest_target = invoker.output_name
+  }
+
   _xcuitest_runner_target = _xcuitest_target + "_runner"
   _xcuitest_module_target = _xcuitest_target + "_module"
 
-  group(_xcuitest_target) {
+  group(target_name) {
     testonly = true
 
     deps = [ ":$_xcuitest_runner_target" ]

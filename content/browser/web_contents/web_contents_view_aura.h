@@ -233,6 +233,9 @@ class CONTENT_EXPORT WebContentsViewAura
                            base::WeakPtr<RenderWidgetHostViewBase> target,
                            base::Optional<gfx::PointF> transformed_pt);
 
+  // Completes a drag exit operation by communicating with the renderer process.
+  void CompleteDragExit();
+
   // Called from PerformDropCallback() to finish processing the drop.
   void FinishOnPerformDropCallback(
       OnPerformDropContext context,

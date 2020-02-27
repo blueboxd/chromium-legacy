@@ -603,6 +603,7 @@
     },
     {
       name: "DocumentPolicy",
+      origin_trial_feature_name: "DocumentPolicy",
       status: "experimental",
     },
     {
@@ -616,10 +617,6 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
-    },
-    {
-      name: "EmbeddedVTTStylesheets",
-      status: "experimental",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",

@@ -6818,6 +6818,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.NavigationToInteractive">
+    <obsolete>
+      Removed 2/2020. Do not use Time to Interactive as a RUM metric.
+    </obsolete>
     <summary>
       Measures Time to Interactive, a metric based on main thread and network
       heuristics to approximate the point in time when the page feels

@@ -2932,6 +2932,11 @@ const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
 // TODO(937746): Remove this after M84.
 const char kWebComponentsV0Enabled[] = "web_components_v0_enabled";
 
+// This pref allows the FormControlsRefresh feature to be disabled temporarily
+// from M81 through M84.
+// TODO(1034611): Remove this after M84.
+const char kUseLegacyFormControls[] = "use_legacy_form_controls";
+
 #if defined(OS_ANDROID)
 // Last time the known interception disclosure message was dismissed. Used to
 // ensure a cooldown period passes before the disclosure message is displayed

@@ -124,15 +124,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
-  // The first time the page is considered 'interactive'. This is determined
-  // using heuristics based on main thread and network activity.
-  uint64_t PageInteractive() const;
-  // The time of when we detect the page is interactive. There is a delay
-  // between when the page was interactive and when we were able to detect it.
-  uint64_t PageInteractiveDetection() const;
-  // The time of when a significant input event happened that may cause
-  // observers to discard the value of Time to Interactive.
-  uint64_t FirstInputInvalidatingInteractive() const;
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancellable touchstart, or
   // pointer down followed by a pointer up.

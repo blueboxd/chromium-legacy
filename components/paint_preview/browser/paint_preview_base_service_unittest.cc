@@ -160,8 +160,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
   auto* service = GetService();
   EXPECT_FALSE(service->IsOffTheRecord());
   base::FilePath path;
-  ASSERT_TRUE(service->GetFileManager()->CreateOrGetDirectoryFor(
-      web_contents()->GetLastCommittedURL(), &path));
+  auto* manager = service->GetFileManager();
+  ASSERT_TRUE(manager->CreateOrGetDirectory(
+      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
 
   base::RunLoop loop;
   service->CapturePaintPreview(
@@ -212,8 +213,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
   auto* service = GetService();
   EXPECT_FALSE(service->IsOffTheRecord());
   base::FilePath path;
-  ASSERT_TRUE(service->GetFileManager()->CreateOrGetDirectoryFor(
-      web_contents()->GetLastCommittedURL(), &path));
+  auto* manager = service->GetFileManager();
+  ASSERT_TRUE(manager->CreateOrGetDirectory(
+      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
 
   base::RunLoop loop;
   service->CapturePaintPreview(
@@ -246,8 +248,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
   auto* service = GetServiceWithRejectionPolicy();
   EXPECT_FALSE(service->IsOffTheRecord());
   base::FilePath path;
-  ASSERT_TRUE(service->GetFileManager()->CreateOrGetDirectoryFor(
-      web_contents()->GetLastCommittedURL(), &path));
+  auto* manager = service->GetFileManager();
+  ASSERT_TRUE(manager->CreateOrGetDirectory(
+      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
 
   base::RunLoop loop;
   service->CapturePaintPreview(

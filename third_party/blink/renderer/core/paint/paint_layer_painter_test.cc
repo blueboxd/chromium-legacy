@@ -493,7 +493,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                     IsSameId(content1, kBackgroundType),
                     IsSameId(content2, kBackgroundType)));
     // |target| still created subsequence (repainted).
-    EXPECT_SUBSEQUENCE(*target_layer, 2, 4);
+    EXPECT_SUBSEQUENCE(*target_layer, 2, 3);
+    EXPECT_EQ(2u, RootPaintController().PaintChunks()[2].size());
   } else {
     EXPECT_EQ(CullRect(IntRect(0, 0, 800, 7600)),
               target_layer->PreviousCullRect());
@@ -503,7 +504,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                             IsSameId(content1, kBackgroundType),
                             IsSameId(content2, kBackgroundType)));
     // |target| still created subsequence (repainted).
-    EXPECT_SUBSEQUENCE(*target_layer, 1, 3);
+    EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
+    EXPECT_EQ(2u, RootPaintController().PaintChunks()[1].size());
   }
 }
 

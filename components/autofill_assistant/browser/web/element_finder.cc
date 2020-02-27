@@ -136,6 +136,8 @@ void ElementFinder::Start(Callback callback) {
     return;
   }
 
+  element_result_->container_frame_selector_index = 0;
+  element_result_->container_frame_host = web_contents_->GetMainFrame();
   devtools_client_->GetRuntime()->Evaluate(
       std::string(kGetDocumentElement), /* node_frame_id= */ std::string(),
       base::BindOnce(&ElementFinder::OnGetDocumentElement,
@@ -166,12 +168,6 @@ void ElementFinder::OnGetDocumentElement(
     return;
   }
 
-  element_result_->container_frame_selector_index = index;
-  if (element_result_->container_frame_host == nullptr) {
-    // Don't overwrite results from previous OOPIF passes.
-    element_result_->container_frame_host = web_contents_->GetMainFrame();
-  }
-  element_result_->object_id = std::string();
   RecursiveFindElement(object_id, index);
 }
 
@@ -402,7 +398,7 @@ void ElementFinder::OnDescribeNode(
     return;
   }
 
-  RecursiveFindElement(object_id, ++index);
+  RecursiveFindElement(object_id, index + 1);
 }
 
 void ElementFinder::OnResolveNode(

@@ -24,7 +24,7 @@ DisplayItemList::ItemsInPaintChunk(const PaintChunk& paint_chunk) const {
 
 #if DCHECK_IS_ON()
 
-std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
+std::unique_ptr<JSONArray> DisplayItemList::DisplayItemsAsJSON(
     wtf_size_t begin_index,
     wtf_size_t end_index,
     JsonFlags flags) const {

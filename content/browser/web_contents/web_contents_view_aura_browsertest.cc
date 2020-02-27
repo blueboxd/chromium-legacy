@@ -77,11 +77,14 @@ class TestWebContentsViewDelegate : public WebContentsViewDelegate {
 
   void OnPerformDrop(const DropData& drop_data,
                      DropCompletionCallback callback) override {
-    std::move(callback).Run(result_);
+    callback_ = std::move(callback);
   }
+
+  void FinishScan() { std::move(callback_).Run(result_); }
 
  private:
   DropCompletionResult result_;
+  DropCompletionCallback callback_;
 };
 
 }  // namespace
@@ -637,8 +640,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK) {
 
   // The view takes ownership of the delegate.  The delegate simulates that
   // the scans passed.
-  view->SetDelegateForTesting(new TestWebContentsViewDelegate(
-      WebContentsViewDelegate::DropCompletionResult::kContinue));
+  auto* delegate = new TestWebContentsViewDelegate(
+      WebContentsViewDelegate::DropCompletionResult::kContinue);
+  view->SetDelegateForTesting(delegate);
 
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
@@ -653,6 +657,25 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK) {
   view->OnDragEntered(event);
   EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
   view->OnPerformDrop(event, std::move(data));
+
+  // The user should be able to drag other content over Chrome while the scan is
+  // occurring without affecting it.
+  contents->SetIgnoreInputEvents(true);
+
+  // The user can drag something in and then drag it away.
+  auto new_data = std::make_unique<ui::OSExchangeData>();
+  ui::DropTargetEvent new_event(*new_data.get(), point, point,
+                                ui::DragDropTypes::DRAG_COPY);
+  view->OnDragEntered(new_event);
+  view->OnDragExited();
+  EXPECT_FALSE(drag_dest_delegate_.GetOnDragLeaveCalled());
+
+  // The user can drag something in and drop it.
+  view->OnDragEntered(new_event);
+  view->OnPerformDrop(new_event, std::move(new_data));
+  EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
+
+  delegate->FinishScan();
   run_loop.Run();
 
   EXPECT_TRUE(drag_dest_delegate_.GetOnDropCalled());
@@ -671,8 +694,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad) {
 
   // The view takes ownership of the delegate.  The delegate simulates that
   // the scans failed.
-  view->SetDelegateForTesting(new TestWebContentsViewDelegate(
-      WebContentsViewDelegate::DropCompletionResult::kAbort));
+  auto* delegate = new TestWebContentsViewDelegate(
+      WebContentsViewDelegate::DropCompletionResult::kAbort);
+  view->SetDelegateForTesting(delegate);
 
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
@@ -687,6 +711,25 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad) {
   view->OnDragEntered(event);
   EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
   view->OnPerformDrop(event, std::move(data));
+
+  // The user should be able to drag other content over Chrome while the scan is
+  // occurring without affecting it.
+  contents->SetIgnoreInputEvents(true);
+
+  // The user can drag something in and then drag it away.
+  auto new_data = std::make_unique<ui::OSExchangeData>();
+  ui::DropTargetEvent new_event(*new_data.get(), point, point,
+                                ui::DragDropTypes::DRAG_COPY);
+  view->OnDragEntered(new_event);
+  view->OnDragExited();
+  EXPECT_FALSE(drag_dest_delegate_.GetOnDragLeaveCalled());
+
+  // The user can drag something in and drop it.
+  view->OnDragEntered(new_event);
+  view->OnPerformDrop(new_event, std::move(new_data));
+  EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
+
+  delegate->FinishScan();
   run_loop.Run();
 
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());

@@ -14,14 +14,20 @@ namespace blink {
 // OtpCredentials represents credentials for when the otp is requested
 // through the credential manager. It stores the one-time-passcode (otp) that
 // is retrieved from SMS by the browser.
-class MODULES_EXPORT OtpCredential final : public Credential {
+class MODULES_EXPORT OTPCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit OtpCredential(const String& id);
+  explicit OTPCredential(const String& code);
 
   // Credential:
-  bool IsOtpCredential() const override;
+  bool IsOTPCredential() const override;
+
+  // OTPCredential.idl
+  const String& code() const { return code_; }
+
+ private:
+  String code_;
 };
 
 }  // namespace blink

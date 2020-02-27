@@ -14,12 +14,6 @@
 #include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/traffic_annotation.pb.h"
 
-enum class ExtractorBackend {
-  CLANG_TOOL,
-  PYTHON_SCRIPT,
-  INVALID,
-};
-
 // Holds an item of safe list rules for auditor.
 struct AuditorException {
   enum class ExceptionType {
@@ -56,34 +50,30 @@ class TrafficAnnotationAuditor {
   // Creates an auditor object, storing the following paths:
   //   |source_path|: Path to the src directory.
   //   |build_path|: Path to a compiled build directory.
-  //   |clang_tool_path|: Path to the 'traffic_annotation_extractor' clang tool.
   //   |path_filters|: Filters to limit where we're scanning the source.
   TrafficAnnotationAuditor(const base::FilePath& source_path,
                            const base::FilePath& build_path,
-                           const base::FilePath& clang_tool_path,
                            const std::vector<std::string>& path_filters);
   ~TrafficAnnotationAuditor();
 
-  // Runs traffic_annotation_extractor clang tool (or extractor.py script) and
-  // puts its output in |extractor_raw_output_|. If
+  // Runs extractor.py and puts its output in |extractor_raw_output_|. If
   // |filter_files_based_on_heuristics| flag is set, the list of files will be
   // received from repository and heuristically filtered to only process the
   // relevant files. If |use_compile_commands| flag is set, the list of files is
   // extracted from compile_commands.json instead of git and will not be
-  // filtered.  If clang tool returns errors, the tool is run again to record
-  // errors.  Errors are written to |errors_file| if it is not empty, otherwise
+  // filtered.  If the extractor returns errors, the tool is run again to record
+  // errors. Errors are written to |errors_file| if it is not empty, otherwise
   // LOG(ERROR).
-  bool RunExtractor(ExtractorBackend backend,
-                    bool filter_files_based_on_heuristics,
+  bool RunExtractor(bool filter_files_based_on_heuristics,
                     bool use_compile_commands,
                     const base::FilePath& errors_file,
                     int* exit_code);
 
-  // Parses the output of clang tool (|extractor_raw_output_|) and populates
+  // Parses the output of extractor.py (|extractor_raw_output_|) and populates
   // |extracted_annotations_|, |extracted_calls_|, and |errors_|.
   // Errors include not finding the file, incorrect content, or missing or not
   // provided annotations.
-  bool ParseClangToolRawOutput();
+  bool ParseExtractorRawOutput();
 
   // Computes the hash value of a traffic annotation unique id.
   static int ComputeHashValue(const std::string& unique_id);
@@ -163,20 +153,14 @@ class TrafficAnnotationAuditor {
     gn_file_for_test_ = file_path;
   }
 
-  // Returns the path to clang internal libraries.
-  base::FilePath GetClangLibraryPath();
-
   void ClearPathFilters() { path_filters_.clear(); }
 
  private:
   const base::FilePath source_path_;
   const base::FilePath build_path_;
-  const base::FilePath clang_tool_path_;
   std::vector<std::string> path_filters_;
 
   base::FilePath absolute_source_path_;
-
-  std::vector<std::string> clang_tool_switches_;
 
   TrafficAnnotationExporter exporter_;
 
@@ -199,16 +183,13 @@ class TrafficAnnotationAuditor {
   //  3- Path matches an item in |path_filters_|.
   void AddMissingAnnotations();
 
-  // Generates files list to Run clang tool on. Please refer to RunExtractor
+  // Generates files list to run extractor on. Please refer to RunExtractor
   // function's comment.
-  void GenerateFilesListForClangTool(
-      ExtractorBackend backend,
-      bool filter_files_based_on_heuristics,
-      bool use_compile_commands,
-      std::vector<std::string>* file_paths);
+  void GenerateFilesListForExtractor(bool filter_files_based_on_heuristics,
+                                     bool use_compile_commands,
+                                     std::vector<std::string>* file_paths);
 
   // Write flags to the options file, for RunExtractor.
-  void WriteClangToolOptions(FILE* options_file, bool use_compile_commands);
   void WritePythonScriptOptions(FILE* options_file);
 
   base::FilePath gn_file_for_test_;

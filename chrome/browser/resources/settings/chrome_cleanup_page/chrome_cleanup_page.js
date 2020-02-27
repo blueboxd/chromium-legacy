@@ -8,7 +8,7 @@ cr.define('settings', function() {
    * Must be kept in sync with ChromeCleanerController::IdleReason.
    * @enum {string}
    */
-  const ChromeCleanupIdleReason = {
+  /* #export */ const ChromeCleanupIdleReason = {
     INITIAL: 'initial',
     REPORTER_FOUND_NOTHING: 'reporter_found_nothing',
     REPORTER_FAILED: 'reporter_failed',

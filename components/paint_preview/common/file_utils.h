@@ -13,6 +13,10 @@ namespace paint_preview {
 
 class PaintPreviewProto;
 
+// Writes |proto| to |file_path|. Returns false on failure.
+bool WriteProtoToFile(const base::FilePath& file_path,
+                      const PaintPreviewProto& proto);
+
 // Reads a PaintPreviewProto from |file_path|. Returns nullptr in case of
 // failure.
 std::unique_ptr<PaintPreviewProto> ReadProtoFromFile(

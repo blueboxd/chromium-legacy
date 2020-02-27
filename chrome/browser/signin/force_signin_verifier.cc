@@ -13,6 +13,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/gaia_constants.h"
 
@@ -122,7 +123,7 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
     return;
   }
 
-  identity::ScopeSet oauth2_scopes;
+  signin::ScopeSet oauth2_scopes;
   oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   // It is safe to use Unretained(this) here given that the callback
   // will not be invoked if this object is deleted.

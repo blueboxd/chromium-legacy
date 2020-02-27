@@ -90,7 +90,7 @@ class ElementData : public GarbageCollected<ElementData> {
 
   // Keep the type in a bitfield instead of using virtual destructors to avoid
   // adding a vtable.
-  unsigned is_unique_ : 1;
+  const unsigned is_unique_ : 1;
   unsigned array_size_ : 28;
   mutable unsigned presentation_attribute_style_is_dirty_ : 1;
   mutable unsigned style_attribute_is_dirty_ : 1;

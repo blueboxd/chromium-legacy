@@ -38,6 +38,7 @@
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -100,7 +101,7 @@ class CustomFakeOAuth2AccessTokenManager : public FakeOAuth2AccessTokenManager {
   // OAuth2AccessTokenManager:
   void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
-                                 const identity::ScopeSet& scopes,
+                                 const ScopeSet& scopes,
                                  const std::string& access_token) override {
     if (on_access_token_invalidated_callback_) {
       EXPECT_EQ(expected_account_id_to_invalidate_, account_id);
@@ -177,22 +178,18 @@ class TestIdentityManagerDiagnosticsObserver
   const std::string& token_requestor_consumer_id() {
     return token_requestor_consumer_id_;
   }
-  const identity::ScopeSet& token_requestor_scopes() {
-    return token_requestor_scopes_;
-  }
+  const ScopeSet& token_requestor_scopes() { return token_requestor_scopes_; }
   const CoreAccountId& token_remover_account_id() {
     return token_remover_account_id_;
   }
-  const identity::ScopeSet& token_remover_scopes() {
-    return token_remover_scopes_;
-  }
+  const ScopeSet& token_remover_scopes() { return token_remover_scopes_; }
   const CoreAccountId& on_access_token_request_completed_account_id() {
     return access_token_request_completed_account_id_;
   }
   const std::string& on_access_token_request_completed_consumer_id() {
     return access_token_request_completed_consumer_id_;
   }
-  const identity::ScopeSet& on_access_token_request_completed_scopes() {
+  const ScopeSet& on_access_token_request_completed_scopes() {
     return access_token_request_completed_scopes_;
   }
   const GoogleServiceAuthError& on_access_token_request_completed_error() {
@@ -203,7 +200,7 @@ class TestIdentityManagerDiagnosticsObserver
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
-                              const identity::ScopeSet& scopes) override {
+                              const ScopeSet& scopes) override {
     token_requestor_account_id_ = account_id;
     token_requestor_consumer_id_ = consumer_id;
     token_requestor_scopes_ = scopes;
@@ -212,16 +209,15 @@ class TestIdentityManagerDiagnosticsObserver
       std::move(on_access_token_requested_callback_).Run();
   }
 
-  void OnAccessTokenRemovedFromCache(
-      const CoreAccountId& account_id,
-      const identity::ScopeSet& scopes) override {
+  void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
+                                     const ScopeSet& scopes) override {
     token_remover_account_id_ = account_id;
     token_remover_scopes_ = scopes;
   }
 
   void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                      const std::string& consumer_id,
-                                     const identity::ScopeSet& scopes,
+                                     const ScopeSet& scopes,
                                      GoogleServiceAuthError error,
                                      base::Time expiration_time) override {
     access_token_request_completed_account_id_ = account_id;
@@ -239,11 +235,11 @@ class TestIdentityManagerDiagnosticsObserver
   CoreAccountId token_requestor_account_id_;
   std::string token_requestor_consumer_id_;
   CoreAccountId token_remover_account_id_;
-  identity::ScopeSet token_requestor_scopes_;
-  identity::ScopeSet token_remover_scopes_;
+  ScopeSet token_requestor_scopes_;
+  ScopeSet token_remover_scopes_;
   CoreAccountId access_token_request_completed_account_id_;
   std::string access_token_request_completed_consumer_id_;
-  identity::ScopeSet access_token_request_completed_scopes_;
+  ScopeSet access_token_request_completed_scopes_;
   GoogleServiceAuthError access_token_request_completed_error_;
 };
 

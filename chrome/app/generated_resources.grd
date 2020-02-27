@@ -1985,6 +1985,20 @@ are declared in tools/grit/grit_rule.gni.
           </message>
         </else>
       </if>
+      <if expr="is_macosx">
+        <then>
+          <message name="IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
+            Advanced Protection recommends sending <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> to Google to check for malware.
+          </message>
+        </then>
+        <else>
+          <message name="IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT"
+                   desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
+            Advanced Protection recommends sending <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> to Google to check for malware. Press Shift+F6 to cycle to the downloads bar area.
+          </message>
+        </else>
+      </if>
 
       <!-- Download Notification Labels -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD"

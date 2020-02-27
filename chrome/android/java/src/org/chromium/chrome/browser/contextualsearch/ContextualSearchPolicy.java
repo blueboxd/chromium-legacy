@@ -114,6 +114,8 @@ class ContextualSearchPolicy {
      * @return Whether a Tap gesture is currently supported as a trigger for the feature.
      */
     boolean isTapSupported() {
+        if (isTapDisabledDueToLongpress()) return false;
+
         return (!isUserUndecided()
                        || ContextualSearchFieldTrial.getSwitch(
                                ContextualSearchSwitch
@@ -255,6 +257,15 @@ class ContextualSearchPolicy {
         int selectionType = mSelectionController.getSelectionType();
         return (mSelectionController.getSelectedText() != null
                 && (selectionType == SelectionType.LONG_PRESS || !shouldPreviousGestureResolve()));
+    }
+
+    /** @return whether Tap is disabled due to the longpress experiment. */
+    private boolean isTapDisabledDueToLongpress() {
+        return canResolveLongpress()
+                && !ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP.equals(
+                        ChromeFeatureList.getFieldTrialParamByFeature(
+                                ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
+                                ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
     }
 
     /**

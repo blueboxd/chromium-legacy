@@ -22,6 +22,7 @@
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -147,7 +148,7 @@ void PermissionRequestCreatorApiary::CreateRequest(
 }
 
 void PermissionRequestCreatorApiary::StartFetching(Request* request) {
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GetApiScope());
   // It is safe to use Unretained(this) here given that the callback
   // will not be invoked if this object is deleted. Likewise, |request|
@@ -257,7 +258,7 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
   if (response_code == net::HTTP_UNAUTHORIZED &&
       !request->access_token_expired) {
     request->access_token_expired = true;
-    identity::ScopeSet scopes;
+    signin::ScopeSet scopes;
     scopes.insert(GetApiScope());
     // "Unconsented" because this class doesn't care about browser sync consent.
     identity_manager_->RemoveAccessTokenFromCache(

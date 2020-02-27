@@ -20,6 +20,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
@@ -151,7 +152,7 @@ void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
 }
 
 void NetworkFetch::StartAccessTokenFetch() {
-  identity::ScopeSet scopes{kAuthenticationScope};
+  signin::ScopeSet scopes{kAuthenticationScope};
   // It's safe to pass base::Unretained(this) since deleting the token fetcher
   // will prevent the callback from being completed.
   token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
@@ -310,7 +311,7 @@ void NetworkFetch::OnSimpleLoaderComplete(
     status_code = simple_loader_->ResponseInfo()->headers->response_code();
 
     if (status_code == net::HTTP_UNAUTHORIZED) {
-      identity::ScopeSet scopes{kAuthenticationScope};
+      signin::ScopeSet scopes{kAuthenticationScope};
       CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
       if (!account_id.empty()) {
         identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,

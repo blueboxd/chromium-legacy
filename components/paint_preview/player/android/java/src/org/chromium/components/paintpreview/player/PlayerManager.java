@@ -29,9 +29,10 @@ public class PlayerManager {
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
 
-    public PlayerManager(Context context, PaintPreviewBaseService service, String url) {
+    public PlayerManager(Context context, PaintPreviewBaseService service, String directoryKey) {
         mContext = context;
-        mDelegate = new PlayerCompositorDelegateImpl(service, url, this::onCompositorReady);
+        mDelegate =
+                new PlayerCompositorDelegateImpl(service, directoryKey, this::onCompositorReady);
         mHostView = new FrameLayout(mContext);
     }
 

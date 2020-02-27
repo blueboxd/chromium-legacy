@@ -8,6 +8,8 @@ settings_namespace_rewrites = [
   "cr_slider.SliderTick|SliderTick",
   "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
   "settings.AppearanceBrowserProxy|AppearanceBrowserProxy",
+  "settings.ChromeCleanupProxy|ChromeCleanupProxy",
+  "settings.ChromeCleanupRemovalListItem|ChromeCleanupRemovalListItem",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
   "settings.DownloadsBrowserProxy|DownloadsBrowserProxy",
   "settings.EDIT_STARTUP_URL_EVENT|EDIT_STARTUP_URL_EVENT",

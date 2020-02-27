@@ -15,15 +15,23 @@ source_set("user_signin") {
     "user_signin_view_controller.mm",
   ]
   deps = [
+    "//components/consent_auditor",
+    "//components/sync/base",
+    "//components/unified_consent",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication/signin:signin_protected",
     "//ios/chrome/browser/ui/authentication/unified_consent",
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/unified_consent",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
+    "//ios/public/provider/chrome/browser/signin",
     "//ui/base",
   ]
   public_deps =

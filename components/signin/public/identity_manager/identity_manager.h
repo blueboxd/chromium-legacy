@@ -20,9 +20,9 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_mutator.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "services/identity/public/cpp/scope_set.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -186,7 +186,7 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -196,7 +196,7 @@ class IdentityManager : public KeyedService,
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -208,7 +208,7 @@ class IdentityManager : public KeyedService,
       const std::string& client_id,
       const std::string& client_secret,
       const std::string& oauth_consumer_name,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -217,7 +217,7 @@ class IdentityManager : public KeyedService,
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
   void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
-                                  const identity::ScopeSet& scopes,
+                                  const ScopeSet& scopes,
                                   const std::string& access_token);
 
   // Provides the information of all accounts that have refresh tokens.
@@ -332,20 +332,19 @@ class IdentityManager : public KeyedService,
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
                                         const std::string& consumer_id,
-                                        const identity::ScopeSet& scopes) {}
+                                        const ScopeSet& scopes) {}
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
     virtual void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                                const std::string& consumer_id,
-                                               const identity::ScopeSet& scopes,
+                                               const ScopeSet& scopes,
                                                GoogleServiceAuthError error,
                                                base::Time expiration_time) {}
 
     // Called when an access token was removed.
-    virtual void OnAccessTokenRemovedFromCache(
-        const CoreAccountId& account_id,
-        const identity::ScopeSet& scopes) {}
+    virtual void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
+                                               const ScopeSet& scopes) {}
 
     // Called when a new refresh token is available. Contains diagnostic
     // information about the source of the operation.
@@ -629,14 +628,14 @@ class IdentityManager : public KeyedService,
   // OAuth2AccessTokenManager::DiagnosticsObserver
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
-                              const identity::ScopeSet& scopes) override;
+                              const ScopeSet& scopes) override;
   void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
-                                  const identity::ScopeSet& scopes,
+                                  const ScopeSet& scopes,
                                   GoogleServiceAuthError error,
                                   base::Time expiration_time) override;
   void OnAccessTokenRemoved(const CoreAccountId& account_id,
-                            const identity::ScopeSet& scopes) override;
+                            const ScopeSet& scopes) override;
 
   // ProfileOAuth2TokenService callbacks:
   void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,

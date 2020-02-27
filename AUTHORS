@@ -7,7 +7,10 @@
 #   Organization <fnmatch pattern>
 #
 # See python fnmatch module documentation for more information.
+#
+# Please keep the list sorted.
 
+# BEGIN individuals section.
 Aaron Boushley <boushley@gmail.com>
 Aaron Jacobs <samusaaron3@gmail.com>
 Aaron Leventhal <aaronlevbugs@gmail.com>
@@ -435,6 +438,8 @@ Jiajie Hu <jiajie.hu@intel.com>
 Jianjun Zhu <jianjun.zhu@intel.com>
 Jianneng Zhong <muzuiget@gmail.com>
 Jiawei Shao <jiawei.shao@intel.com>
+Jiaxun Wei <leuisken@gmail.com>
+Jiaxun Yang <jiaxun.yang@flygoat.com>
 Jie Chen <jie.a.chen@intel.com>
 Jihan Chao <jihan@bluejeans.com>
 Jihoon Chung <j.c@navercorp.com>
@@ -496,6 +501,7 @@ Junghyuk Yoo <wjdgurdl272@gmail.com>
 JungJik Lee <jungjik.lee@samsung.com>
 Jungkee Song <jungkee.song@samsung.com>
 Junmin Zhu <junmin.zhu@intel.com>
+Junsong Li <ljs.darkfish@gmail.com>
 Justin Okamoto <justmoto@amazon.com>
 Justin Ribeiro <justin@justinribeiro.com>
 Jüri Valdmann <juri.valdmann@qt.io>
@@ -765,6 +771,7 @@ Rafael Antognolli <rafael.antognolli@intel.com>
 Raghavendra Ghatage <r.ghatage@samsung.com>
 Raghu Ram Nagaraj <r.nagaraj@samsung.com>
 Rahul Gupta <rahul.g@samsung.com>
+Rajesh Mahindra <rmahindra@uber.com>
 Rajneesh Rana <rajneesh.r@samsung.com>
 Raman Tenneti <raman.tenneti@gmail.com>
 Ramkumar Gokarnesan <ramkumar.gokarnesan@gmail.com>
@@ -977,6 +984,7 @@ Viatcheslav Ostapenko <sl.ostapenko@samsung.com>
 Victor Costan <costan@gmail.com>
 Viet-Trung Luu <viettrungluu@gmail.com>
 Vinay Anantharaman <vinaya@adobe.com>
+Vinoth Chandar <vinoth@uber.com>
 Vipul Bhasin <vipul.bhasin@gmail.com>
 Visa Putkinen <v.putkinen@partner.samsung.com>
 Vishal Bhatnagar <vishal.b@samsung.com>
@@ -986,6 +994,7 @@ Volker Sorge <volker.sorge@gmail.com>
 Waihung Fu <fufranci@amazon.com>
 Wanming Lin <wanming.lin@intel.com>
 Wei Li <wei.c.li@intel.com>
+Wenxiang Qian <leonwxqian@gmail.com>
 WenSheng He <wensheng.he@samsung.com>
 Wesley Lancel <wesleylancel@gmail.com>
 Wei Wang <wei4.wang@intel.com>
@@ -1038,6 +1047,7 @@ YoungKi Hong <simon.hong81@gmail.com>
 Youngmin Yoo <youngmin.yoo@samsung.com>
 Youngsoo Choi <kenshin.choi@samsung.com>
 Youngsun Suh <zard17@gmail.com>
+Yuan-Pin Yu <yjames@uber.com>
 Yuhong Sha <yuhong.sha@samsung.com>
 Yuki Tsuchiya <Yuki.Tsuchiya@sony.com>
 Yumikiyo Osanai <yumios.art@gmail.com>
@@ -1054,6 +1064,7 @@ Zeqin Chen <talonchen@tencent.com>
 Zhaoze Zhou <zhaoze.zhou@partner.samsung.com>
 Zheda Chen <zheda.chen@intel.com>
 Zheng Chuang <zhengchuangscu@gmail.com>
+Zheng Xu <zxu@kobo.com>
 Zhengkun Li <zhengkli@amazon.com>
 Zhenyu Liang <zhenyu.liang@intel.com>
 Zhenyu Shan <zhenyu.shan@intel.com>
@@ -1064,12 +1075,9 @@ Zoltan Herczeg <zherczeg.u-szeged@partner.samsung.com>
 Zoltan Kuscsik <zoltan.kuscsik@linaro.org>
 Zsolt Borbely <zsborbely.u-szeged@partner.samsung.com>
 方觉 (Fang Jue) <fangjue23303@gmail.com>
-Rajesh Mahindra <rmahindra@uber.com>
-Yuan-Pin Yu <yjames@uber.com>
-Vinoth Chandar <vinoth@uber.com>
-Zheng Xu <zxu@kobo.com>
-Junsong Li <ljs.darkfish@gmail.com>
+# END individuals section.
 
+# BEGIN organizations section.
 ACCESS CO., LTD. <*@access-company.com>
 Akamai Inc. <*@akamai.com>
 ARM Holdings <*@arm.com>
@@ -1099,6 +1107,7 @@ LG Electronics, Inc. <*@lge.com>
 Loongson Technology Corporation Limited. <*@loongson.cn>
 Macadamian <*@macadamian.com>
 Mail.ru Group <*@corp.mail.ru>
+Make Positive Provar Limited <*@provartesting.com>
 Mediatek <*@mediatek.com>
 Microsoft <*@microsoft.com>
 MIPS Technologies, Inc. <*@mips.com>
@@ -1124,7 +1133,4 @@ Venture 3 Systems LLC <*@venture3systems.com>
 Vewd Software AS <*@vewd.com>
 Vivaldi Technologies AS <*@vivaldi.com>
 Yandex LLC <*@yandex-team.ru>
-Make Positive Provar Limited <*@provartesting.com>
-Jiaxun Wei <leuisken@gmail.com>
-Jiaxun Yang <jiaxun.yang@flygoat.com>
-Wenxiang Qian <leonwxqian@gmail.com>
+# END organizations section.

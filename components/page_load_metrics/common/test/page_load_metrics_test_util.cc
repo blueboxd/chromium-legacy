@@ -10,16 +10,6 @@ using page_load_metrics::OptionalMin;
 
 void PopulateRequiredTimingFields(
     page_load_metrics::mojom::PageLoadTiming* inout_timing) {
-  if (inout_timing->interactive_timing->interactive_detection &&
-      !inout_timing->interactive_timing->interactive) {
-    inout_timing->interactive_timing->interactive =
-        inout_timing->interactive_timing->interactive_detection;
-  }
-  if (inout_timing->interactive_timing->interactive &&
-      !inout_timing->paint_timing->first_meaningful_paint) {
-    inout_timing->paint_timing->first_meaningful_paint =
-        inout_timing->interactive_timing->interactive;
-  }
   if (inout_timing->paint_timing->first_meaningful_paint &&
       !inout_timing->paint_timing->first_contentful_paint) {
     inout_timing->paint_timing->first_contentful_paint =

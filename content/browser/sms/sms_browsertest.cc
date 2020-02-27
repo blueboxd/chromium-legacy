@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   std::string script = R"(
     (async () => {
       let cred = await navigator.credentials.get({otp: {transport: ["sms"]}});
-      return cred.id;
+      return cred.code;
     }) ();
   )";
 
@@ -194,8 +194,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
           return name;
         });
       let secondRequest = navigator.credentials.get({otp: {transport: ["sms"]}})
-        .then(({id}) => {
-          return id;
+        .then(({code}) => {
+          return code;
         });
       return Promise.all([firstRequest, secondRequest]);
     }) ();
@@ -255,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
   // Make 1 request on tab2 to verify requests on tab1 have no affect on tab2.
   EXPECT_TRUE(ExecJs(tab2, R"(
         var request = navigator.credentials.get({otp: {transport: ["sms"]}})
-          .then(({id}) => {
-            return id;
+          .then(({code}) => {
+            return code;
           });
      )"));
 
@@ -265,8 +265,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
   EXPECT_TRUE(ExecJs(tab1, R"(
         var secondRequest = navigator.credentials
           .get({otp: {transport: ["sms"]}})
-          .then(({id}) => {
-            return id;
+          .then(({code}) => {
+            return code;
           });
      )"));
 
@@ -417,8 +417,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
 
   std::string script = R"(
     var otp = navigator.credentials.get({otp: {transport: ["sms"]}})
-      .then(({id}) => {
-        return id;
+      .then(({code}) => {
+        return code;
       });
   )";
 
@@ -498,8 +498,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
 
   std::string script = R"(
     var otp = navigator.credentials.get({otp: {transport: ["sms"]}})
-      .then(({id}) => {
-        return id;
+      .then(({code}) => {
+        return code;
       });
   )";
 

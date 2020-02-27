@@ -6,12 +6,19 @@
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
 #import "base/metrics/user_metrics.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/consent_auditor_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -69,7 +76,15 @@ using signin_metrics::PromoAction;
 
   self.mediator = [[UserSigninMediator alloc]
       initWithAuthenticationService:AuthenticationServiceFactory::
-                                        GetForBrowserState(self.browserState)];
+                                        GetForBrowserState(self.browserState)
+                    identityManager:IdentityManagerFactory::GetForBrowserState(
+                                        self.browserState)
+                     consentAuditor:ConsentAuditorFactory::GetForBrowserState(
+                                        self.browserState)
+              unifiedConsentService:UnifiedConsentServiceFactory::
+                                        GetForBrowserState(self.browserState)
+                   syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
+                                        self.browserState)];
   self.mediator.delegate = self;
 
   self.unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc]
@@ -92,9 +107,35 @@ using signin_metrics::PromoAction;
                                       completion:nil];
 }
 
-- (void)stop {
-  [super stop];
-  self.unifiedConsentCoordinator = nil;
+- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+                 completion:(ProceduralBlock)completion {
+  [self.mediator cancelAndDismissAuthenticationFlow];
+
+  ProceduralBlock runCompletionCallback = ^{
+    [self
+        runCompletionCallbackWithSigninResult:SigninCoordinatorResultInterrupted
+                                     identity:self.unifiedConsentCoordinator
+                                                  .selectedIdentity];
+    if (completion) {
+      completion();
+    }
+  };
+  switch (action) {
+    case SigninCoordinatorInterruptActionNoDismiss: {
+      runCompletionCallback();
+      break;
+    }
+    case SigninCoordinatorInterruptActionDismissWithAnimation: {
+      [self.viewController dismissViewControllerAnimated:YES
+                                              completion:runCompletionCallback];
+      break;
+    }
+    case SigninCoordinatorInterruptActionDismissWithoutAnimation: {
+      [self.viewController dismissViewControllerAnimated:NO
+                                              completion:runCompletionCallback];
+      break;
+    }
+  }
 }
 
 #pragma mark - UnifiedConsentCoordinatorDelegate
@@ -154,7 +195,48 @@ using signin_metrics::PromoAction;
   [self.mediator cancelSignin];
 }
 
+- (void)userSigninViewControllerDidTapOnSignin {
+  DCHECK(self.unifiedConsentCoordinator.selectedIdentity);
+  // TODO(crbug.com/971989): Pass ShouldClearDataOption from main controller.
+  AuthenticationFlow* authenticationFlow = [[AuthenticationFlow alloc]
+               initWithBrowser:self.browser
+                      identity:self.unifiedConsentCoordinator.selectedIdentity
+               shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
+              postSignInAction:POST_SIGNIN_ACTION_NONE
+      presentingViewController:self.viewController];
+  authenticationFlow.dispatcher = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), BrowsingDataCommands);
+
+  [self.mediator
+      authenticateWithIdentity:self.unifiedConsentCoordinator.selectedIdentity
+            authenticationFlow:authenticationFlow];
+}
+
 #pragma mark - UserSigninMediatorDelegate
+
+- (void)userSigninMediatorDidTapResetSettingLink {
+  [self.unifiedConsentCoordinator resetSettingLinkTapped];
+}
+
+- (BOOL)userSigninMediatorGetSettingsLinkWasTapped {
+  return self.unifiedConsentCoordinator.settingsLinkWasTapped;
+}
+
+- (int)userSigninMediatorGetConsentConfirmationId {
+  if (self.userSigninMediatorGetSettingsLinkWasTapped) {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
+    return self.unifiedConsentCoordinator.openSettingsStringId;
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
+    return self.viewController.acceptSigninButtonStringId;
+  }
+}
+
+- (const std::vector<int>&)userSigninMediatorGetConsentStringIds {
+  return self.unifiedConsentCoordinator.consentStringIds;
+}
 
 - (void)userSigninMediatorSigninFinishedWithResult:
     (SigninCoordinatorResult)signinResult {
@@ -171,12 +253,15 @@ using signin_metrics::PromoAction;
   [self.viewController dismissViewControllerAnimated:YES completion:completion];
 
   self.unifiedConsentCoordinator.delegate = nil;
+  [self.unifiedConsentCoordinator stop];
   self.unifiedConsentCoordinator = nil;
 }
 
 - (void)userSigninMediatorNeedPrimaryButtonUpdate {
   [self.viewController updatePrimaryButtonStyle];
 }
+
+#pragma mark - Private
 
 - (void)recordSigninMetricsWithResult:(SigninCoordinatorResult)signinResult {
   switch (signinResult) {

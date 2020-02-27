@@ -36,6 +36,7 @@
 #include "base/stl_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/transform_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"

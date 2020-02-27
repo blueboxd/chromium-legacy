@@ -111,10 +111,13 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
 }
 
 void ElementData::Trace(Visitor* visitor) {
-  if (auto* unique_element_data = DynamicTo<UniqueElementData>(this))
-    unique_element_data->TraceAfterDispatch(visitor);
-  else
+  if (is_unique_) {
+    DCHECK(DynamicTo<UniqueElementData>(this));
+    To<UniqueElementData>(this)->TraceAfterDispatch(visitor);
+  } else {
+    DCHECK(DynamicTo<ShareableElementData>(this));
     To<ShareableElementData>(this)->TraceAfterDispatch(visitor);
+  }
 }
 
 void ElementData::TraceAfterDispatch(blink::Visitor* visitor) {

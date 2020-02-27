@@ -62,6 +62,7 @@ enum PageLoadTimingStatus {
   INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
+  // Deprecated but not removing because it would affect histogram enumeration.
   INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE,
 
   // We received a first input delay without a first input timestamp.

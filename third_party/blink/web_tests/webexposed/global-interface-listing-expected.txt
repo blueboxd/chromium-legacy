@@ -5581,6 +5581,10 @@ interface Notification : EventTarget
     setter onclose
     setter onerror
     setter onshow
+interface OTPCredential : Credential
+    attribute @@toStringTag
+    getter code
+    method constructor
 interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer
@@ -5718,9 +5722,6 @@ interface OscillatorNode : AudioScheduledSourceNode
     method constructor
     method setPeriodicWave
     setter type
-interface OtpCredential : Credential
-    attribute @@toStringTag
-    method constructor
 interface OverconstrainedError
     attribute @@toStringTag
     getter constraint

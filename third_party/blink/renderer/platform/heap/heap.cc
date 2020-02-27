@@ -360,6 +360,10 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           break;
       }
 
+      finished = FlushV8References(deadline);
+      if (!finished)
+        break;
+
       finished = DrainWorklistWithDeadline(
           deadline, marking_worklist_.get(),
           [visitor](const MarkingItem& item) {
@@ -390,8 +394,6 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread));
-
-  FlushV8References();
 
   return finished;
 }
@@ -609,26 +611,26 @@ bool ThreadHeap::AdvanceConcurrentSweep(base::JobDelegate* job) {
 
 // TODO(omerkatz): Temporary solution until concurrent marking is ready. see
 // https://crrev.com/c/1730054 for details. Eventually this will be removed.
-void ThreadHeap::FlushV8References() {
+bool ThreadHeap::FlushV8References(base::TimeTicks deadline) {
   if (!thread_state_->IsUnifiedGCMarkingInProgress())
-    return;
+    return true;
 
   DCHECK(base::FeatureList::IsEnabled(
              blink::features::kBlinkHeapConcurrentMarking) ||
          v8_references_worklist_->IsGlobalEmpty());
 
-  V8ReferencesWorklist::View v8_references(v8_references_worklist_.get(),
-                                           WorklistTaskId::MutatorThread);
-  V8Reference reference;
   v8::EmbedderHeapTracer* controller =
       reinterpret_cast<v8::EmbedderHeapTracer*>(
           thread_state_->unified_heap_controller());
-  while (v8_references.Pop(&reference)) {
-    if (reference->Get().IsEmpty())
-      continue;
-    controller->RegisterEmbedderReference(
-        reference->template Cast<v8::Data>().Get());
-  }
+  return DrainWorklistWithDeadline(
+      deadline, v8_references_worklist_.get(),
+      [controller](const V8Reference& reference) {
+        if (!reference->Get().IsEmpty()) {
+          controller->RegisterEmbedderReference(
+              reference->template Cast<v8::Data>().Get());
+        }
+      },
+      WorklistTaskId::MutatorThread);
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

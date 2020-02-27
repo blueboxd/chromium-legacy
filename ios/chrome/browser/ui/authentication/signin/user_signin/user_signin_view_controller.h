@@ -23,6 +23,9 @@
 // Performs operations to skip sign-in or undo existing sign-in.
 - (void)userSigninViewControllerDidTapOnSkipSignin;
 
+// Performs operations to skip sign-in or undo existing sign-in.
+- (void)userSigninViewControllerDidTapOnSignin;
+
 @end
 
 // View controller used to show sign-in UI.
@@ -33,6 +36,8 @@
 
 // View controller that handles the user consent before the user signs in.
 @property(nonatomic, weak) UIViewController* unifiedConsentViewController;
+
+@property(nonatomic, assign, readonly) int acceptSigninButtonStringId;
 
 // Informs the view controller that the unified consent has reached the bottom
 // of the screen.

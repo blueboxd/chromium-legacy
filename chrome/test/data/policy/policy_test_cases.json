@@ -3414,6 +3414,12 @@
     "policy_pref_mapping_tests": { "web_components_v0_enabled": {} }
   },
 
+  "UseLegacyFormControls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "UseLegacyFormControls": true },
+    "policy_pref_mapping_tests": { "use_legacy_form_controls": {} }
+  },
+
   "GloballyScopeHTTPAuthCacheEnabled": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "GloballyScopeHTTPAuthCacheEnabled": true },

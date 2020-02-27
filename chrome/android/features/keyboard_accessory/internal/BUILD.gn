@@ -21,6 +21,7 @@ android_library("internal_java") {
     "//chrome/browser/util:java",
     "//components/autofill/android:autofill_java",
     "//components/browser_ui/widget/android:java",
+    "//components/embedder_support/android:util_java",
     "//components/feature_engagement/public:public_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",

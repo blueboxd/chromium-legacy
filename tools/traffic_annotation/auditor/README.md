@@ -1,5 +1,5 @@
 # Network Traffic Annotation Auditor
-This binary runs the clang tool for extraction of Network Traffic Annotations
+This binary runs extractor.py for extraction of Network Traffic Annotations
 from chromium source code, collects and summarizes its outputs, and performs
 tests and maintenance.
 Please see `docs/network_traffic_annotations.md` for an introduction to network
@@ -16,7 +16,7 @@ Run `traffic_annotation_auditor --help` for options.
 Example:
   `traffic_annotation_auditor --build-path=out/Debug`
 
-The binaries of this file and the clang tool are checked out into
+The binary for this file is checked out into
 `tools/traffic_annotation/bin/[platform]`. This is only done for Linux and
 Windows platforms now and will be extended to other platforms later.
 

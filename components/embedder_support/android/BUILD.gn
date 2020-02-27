@@ -16,6 +16,32 @@ android_library("application_java") {
 android_library("util_java") {
   sources = [
     "java/src/org/chromium/components/embedder_support/util/UrlConstants.java",
+    "java/src/org/chromium/components/embedder_support/util/UrlUtilities.java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  deps = [
+    "//base:base_java",
+    "//base:jni_java",
+    "//content/public/android:content_java",
+    "//url:gurl_java",
+  ]
+}
+
+static_library("util") {
+  sources = [ "util/url_utilities.cc" ]
+
+  deps = [
+    ":util_jni_headers",
+    "//base",
+    "//components/google/core/common",
+    "//net",
+    "//url",
+  ]
+}
+
+generate_jni("util_jni_headers") {
+  sources = [
+    "java/src/org/chromium/components/embedder_support/util/UrlUtilities.java",
   ]
 }
 

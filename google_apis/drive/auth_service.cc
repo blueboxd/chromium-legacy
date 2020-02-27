@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "google_apis/drive/auth_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -69,7 +70,7 @@ AuthRequest::AuthRequest(
 
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       account_id, "auth_service", url_loader_factory,
-      identity::ScopeSet(scopes.begin(), scopes.end()),
+      signin::ScopeSet(scopes.begin(), scopes.end()),
       base::BindOnce(&AuthRequest::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
       signin::AccessTokenFetcher::Mode::kImmediate);

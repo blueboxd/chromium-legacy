@@ -36,6 +36,7 @@ class ProfileMenuView : public ProfileMenuViewBase {
 
   // ProfileMenuViewBase:
   void BuildMenu() override;
+  gfx::ImageSkia GetSyncIcon() const override;
 
  private:
   friend class ProfileMenuViewExtensionsTest;
@@ -69,7 +70,6 @@ class ProfileMenuView : public ProfileMenuViewBase {
   // Helper methods for building the menu.
   void BuildIdentity();
   void BuildGuestIdentity();
-  gfx::ImageSkia GetSyncIcon();
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildFeatureButtons();

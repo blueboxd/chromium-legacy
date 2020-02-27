@@ -22,6 +22,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/protocol/history_status.pb.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -177,7 +178,7 @@ class RequestImpl : public WebHistoryService::Request {
 
   // Tells the request to do its thang.
   void Start() override {
-    identity::ScopeSet oauth_scopes;
+    signin::ScopeSet oauth_scopes;
     oauth_scopes.insert(kHistoryOAuthScope);
 
     access_token_fetcher_ =
@@ -205,7 +206,7 @@ class RequestImpl : public WebHistoryService::Request {
     // If the response code indicates that the token might not be valid,
     // invalidate the token and try again.
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
-      identity::ScopeSet oauth_scopes;
+      signin::ScopeSet oauth_scopes;
       oauth_scopes.insert(kHistoryOAuthScope);
       identity_manager_->RemoveAccessTokenFromCache(
           identity_manager_->GetPrimaryAccountId(), oauth_scopes,

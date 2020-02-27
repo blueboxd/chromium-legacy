@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 
 class Profile;
 
@@ -38,7 +39,7 @@ class ArcAuthContext : public signin::IdentityManager::Observer {
   // called with results if the returned request is not deleted.
   std::unique_ptr<signin::AccessTokenFetcher> CreateAccessTokenFetcher(
       const std::string& consumer_name,
-      const identity::ScopeSet& scopes,
+      const signin::ScopeSet& scopes,
       signin::AccessTokenFetcher::TokenCallback callback);
 
   // signin::IdentityManager::Observer:

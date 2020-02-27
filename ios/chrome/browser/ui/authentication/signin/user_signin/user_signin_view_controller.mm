@@ -161,6 +161,10 @@ enum AuthenticationButtonType {
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON);
 }
 
+- (int)acceptSigninButtonStringId {
+  return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
+}
+
 - (const AuthenticationViewConstants&)authenticationViewConstants {
   BOOL isRegularSizeClass = IsRegularXRegularSizeClass(self.traitCollection);
   return isRegularSizeClass ? kRegularConstants : kCompactConstants;
@@ -272,8 +276,7 @@ enum AuthenticationButtonType {
       break;
     }
     case AuthenticationButtonTypeConfirmation: {
-      // TODO(crbug.com/971989): Populate action.
-      NOTIMPLEMENTED();
+      [self.delegate userSigninViewControllerDidTapOnSignin];
       break;
     }
   }

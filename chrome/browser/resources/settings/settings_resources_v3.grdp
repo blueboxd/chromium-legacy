@@ -33,6 +33,21 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/home_url_input.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <if expr="is_win">
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_page.m.js"
+             use_base_dir="false"
+             type="BINDATA"
+             preprocess="true" />
+    <include name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/chrome_cleanup_page/items_to_remove_list.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/controlled_button.m.js"
            use_base_dir="false"

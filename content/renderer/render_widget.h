@@ -440,7 +440,7 @@ class CONTENT_EXPORT RenderWidget
   void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
-  void NotifySwapTime(ReportTimeCallback callback) override;
+  void NotifySwapTime(blink::WebReportTimeCallback callback) override;
   void SetEventListenerProperties(
       cc::EventListenerClass event_class,
       cc::EventListenerProperties properties) override;
@@ -470,8 +470,8 @@ class CONTENT_EXPORT RenderWidget
   // production code uses |NotifySwapTime()| above which calls this one passing
   // a null callback as |swap_time_callback|.
   void NotifySwapAndPresentationTime(
-      ReportTimeCallback swap_time_callback,
-      ReportTimeCallback presentation_time_callback);
+      blink::WebReportTimeCallback swap_time_callback,
+      blink::WebReportTimeCallback presentation_time_callback);
 
   // Override point to obtain that the current input method state and caret
   // position.

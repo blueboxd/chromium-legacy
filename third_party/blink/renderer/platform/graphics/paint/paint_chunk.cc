@@ -24,6 +24,14 @@ struct SameSizeAsPaintChunk {
 static_assert(sizeof(PaintChunk) == sizeof(SameSizeAsPaintChunk),
               "PaintChunk should stay small");
 
+bool PaintChunk::EqualsForUnderInvalidationChecking(
+    const PaintChunk& other) const {
+  return size() == other.size() && id == other.id &&
+         properties == other.properties && bounds == other.bounds &&
+         drawable_bounds == other.drawable_bounds &&
+         outset_for_raster_effects == other.outset_for_raster_effects;
+}
+
 size_t PaintChunk::MemoryUsageInBytes() const {
   size_t total_size = sizeof(*this);
   if (hit_test_data) {

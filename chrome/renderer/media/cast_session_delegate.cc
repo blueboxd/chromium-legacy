@@ -74,14 +74,15 @@ void CastSessionDelegateBase::StartUDP(
 
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportIPC, and they both share the same thread.
-  cast_transport_.reset(new CastTransportIPC(
+  cast_transport_ = std::make_unique<CastTransportIPC>(
       local_endpoint, remote_endpoint, std::move(options),
       base::Bind(&CastSessionDelegateBase::ReceivePacket,
                  base::Unretained(this)),
       base::Bind(&CastSessionDelegateBase::StatusNotificationCB,
                  base::Unretained(this), error_callback),
-      base::Bind(&media::cast::LogEventDispatcher::DispatchBatchOfEvents,
-                 base::Unretained(cast_environment_->logger()))));
+      base::BindRepeating(
+          &media::cast::LogEventDispatcher::DispatchBatchOfEvents,
+          base::Unretained(cast_environment_->logger())));
 }
 
 void CastSessionDelegateBase::StatusNotificationCB(
@@ -182,8 +183,8 @@ void CastSessionDelegate::StartUDP(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint, remote_endpoint,
                                     std::move(options), error_callback);
-  event_subscribers_.reset(
-      new media::cast::RawEventSubscriberBundle(cast_environment_));
+  event_subscribers_ = std::make_unique<media::cast::RawEventSubscriberBundle>(
+      cast_environment_);
 
   cast_sender_ = CastSender::Create(cast_environment_, cast_transport_.get());
 }

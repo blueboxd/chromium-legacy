@@ -21,14 +21,15 @@ class Rect;
 }  // namespace gfx
 
 class SkBitmap;
-class GURL;
 
 namespace paint_preview {
+
+struct DirectoryKey;
 
 class PlayerCompositorDelegate {
  public:
   PlayerCompositorDelegate(PaintPreviewBaseService* paint_preview_service,
-                           const GURL& url);
+                           const DirectoryKey& key);
 
   virtual void OnCompositorReady(
       mojom::PaintPreviewCompositor::Status status,
@@ -52,7 +53,7 @@ class PlayerCompositorDelegate {
  private:
   void OnCompositorServiceDisconnected();
 
-  void OnCompositorClientCreated(const GURL& url);
+  void OnCompositorClientCreated(const DirectoryKey& key);
   void OnCompositorClientDisconnected();
 
   void OnProtoAvailable(std::unique_ptr<PaintPreviewProto> proto);

@@ -106,10 +106,6 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   return params;
 }
 
-int DialogDelegate::GetDialogButtons() const {
-  return params_.buttons;
-}
-
 int DialogDelegate::GetDefaultDialogButton() const {
   if (GetParams().default_button.has_value())
     return *GetParams().default_button;

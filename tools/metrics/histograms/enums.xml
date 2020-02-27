@@ -19697,6 +19697,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="680" label="RequiredClientCertificateForUser"/>
   <int value="681" label="RequiredClientCertificateForDevice"/>
   <int value="682" label="ReportDeviceMemoryInfo"/>
+  <int value="683" label="UseLegacyFormControls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

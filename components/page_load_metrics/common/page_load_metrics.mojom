@@ -86,26 +86,6 @@ struct ParseTiming {
 };
 
 struct InteractiveTiming {
-  // The first time the page is considered 'interactive'. This is determined
-  // using heuristics based on main thread and network activity. Time delta is
-  // relative to navigation_start.
-  mojo_base.mojom.TimeDelta? interactive;
-
-  // The time of when we detect the page is interactive. There is a delay
-  // between when the page was interactive and when we were able to detect it.
-  // Time delta is relative to navigation_start.
-  // This is a page load metrics internal value and not generally intended for
-  // consumption by observers.
-  mojo_base.mojom.TimeDelta? interactive_detection;
-
-
-  // The time of when a significant input event happened that may cause
-  // observers to discard the value of Time to Interactive. Time delta is
-  // relative to navigation start.
-  // This is a page load metrics internal value and not generally intended for
-  // consumption by observers.
-  mojo_base.mojom.TimeDelta? first_invalidating_input;
-
   // Queueing Time of the first click, tap, key press, cancellable touchstart,
   // or pointer down followed by a pointer up.
   mojo_base.mojom.TimeDelta? first_input_delay;

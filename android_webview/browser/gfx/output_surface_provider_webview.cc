@@ -56,7 +56,12 @@ OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
 
   InitializeContext();
 }
-OutputSurfaceProviderWebview::~OutputSurfaceProviderWebview() = default;
+OutputSurfaceProviderWebview::~OutputSurfaceProviderWebview() {
+  // We must to destroy |gl_surface_| before |shared_context_state_|, so we will
+  // still have context. NOTE: |shared_context_state_| holds ref to surface, but
+  // it loses it before context.
+  gl_surface_.reset();
+}
 
 void OutputSurfaceProviderWebview::InitializeContext() {
   DCHECK(!gl_surface_) << "InitializeContext() called twice";

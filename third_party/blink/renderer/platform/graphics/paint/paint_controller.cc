@@ -109,7 +109,13 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  if (current_paint_artifact_->GetDisplayItemList()[markers->start]
+  wtf_size_t start_item_index =
+      current_paint_artifact_->PaintChunks()[markers->start_chunk_index]
+          .begin_index;
+  wtf_size_t end_item_index =
+      current_paint_artifact_->PaintChunks()[markers->end_chunk_index - 1]
+          .end_index;
+  if (current_paint_artifact_->GetDisplayItemList()[start_item_index]
           .IsTombstone()) {
     // The subsequence has already been copied, indicating that the same client
     // created multiple subsequences. If DCHECK_IS_ON(), then we should have
@@ -121,23 +127,23 @@ bool PaintController::UseCachedSubsequenceIfPossible(
 
   EnsureNewDisplayItemListInitialCapacity();
 
-  if (next_item_to_match_ == markers->start) {
+  if (next_item_to_match_ == start_item_index) {
     // We are matching new and cached display items sequentially. Skip the
     // subsequence for later sequential matching of individual display items.
-    next_item_to_match_ = markers->end;
+    next_item_to_match_ = end_item_index;
     // Items before |next_item_to_match_| have been copied so we don't need to
     // index them.
     if (next_item_to_match_ > next_item_to_index_)
       next_item_to_index_ = next_item_to_match_;
   }
 
-  num_cached_new_items_ += markers->end - markers->start;
+  num_cached_new_items_ += end_item_index - start_item_index;
   ++num_cached_new_subsequences_;
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     DCHECK(!IsCheckingUnderInvalidation());
-    under_invalidation_checking_begin_ = markers->start;
-    under_invalidation_checking_end_ = markers->end;
+    under_invalidation_checking_begin_ = start_item_index;
+    under_invalidation_checking_end_ = end_item_index;
     under_invalidation_message_prefix_ =
         "(In cached subsequence for " + client.DebugName() + ")";
     // Return false to let the painter actually paint. We will check if the new
@@ -145,9 +151,9 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  auto start = BeginSubsequence();
-  CopyCachedSubsequence(markers->start, markers->end);
-  EndSubsequence(client, start);
+  auto new_start_chunk_index = BeginSubsequence();
+  CopyCachedSubsequence(markers->start_chunk_index, markers->end_chunk_index);
+  EndSubsequence(client, new_start_chunk_index);
   return true;
 }
 
@@ -162,30 +168,47 @@ PaintController::SubsequenceMarkers* PaintController::GetSubsequenceMarkers(
 wtf_size_t PaintController::BeginSubsequence() {
   // Force new paint chunk which is required for subsequence caching.
   new_paint_chunks_.ForceNewChunk();
-  return new_display_item_list_.size();
+  return new_paint_chunks_.size();
 }
 
 void PaintController::EndSubsequence(const DisplayItemClient& client,
-                                     wtf_size_t start) {
-  auto end = new_display_item_list_.size();
+                                     wtf_size_t start_chunk_index) {
+  auto end_chunk_index = new_paint_chunks_.size();
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       IsCheckingUnderInvalidation()) {
     SubsequenceMarkers* markers = GetSubsequenceMarkers(client);
-    if (!markers && start != end) {
-      ShowSequenceUnderInvalidationError(
-          "under-invalidation : unexpected subsequence", client, start, end);
-      CHECK(false);
-    }
-    if (markers && markers->end - markers->start != end - start) {
-      ShowSequenceUnderInvalidationError(
-          "under-invalidation: new subsequence wrong length", client, start,
-          end);
-      CHECK(false);
+    if (!markers) {
+      if (start_chunk_index != end_chunk_index) {
+        ShowSequenceUnderInvalidationError(
+            "under-invalidation : unexpected subsequence", client);
+        CHECK(false);
+      }
+    } else {
+      if (markers->end_chunk_index - markers->start_chunk_index !=
+          end_chunk_index - start_chunk_index) {
+        ShowSequenceUnderInvalidationError(
+            "under-invalidation: new subsequence wrong length", client);
+        CHECK(false);
+      }
+      auto old_chunk_index = markers->start_chunk_index;
+      for (auto new_chunk_index = start_chunk_index;
+           new_chunk_index < end_chunk_index;
+           ++new_chunk_index, ++old_chunk_index) {
+        const auto& old_chunk =
+            current_paint_artifact_->PaintChunks()[old_chunk_index];
+        const auto& new_chunk =
+            new_paint_chunks_.PaintChunks()[new_chunk_index];
+        if (!old_chunk.EqualsForUnderInvalidationChecking(new_chunk)) {
+          ShowSequenceUnderInvalidationError(
+              "under-invalidation: chunk changed", client);
+          CHECK(false) << "Changed chunk: " << new_chunk;
+        }
+      }
     }
   }
 
-  if (start == end) {
+  if (start_chunk_index == end_chunk_index) {
     // Omit the empty subsequence. The forcing-new-chunk flag set by
     // BeginSubsequence() still applies, but this not a big deal because empty
     // subsequences are not common. Also we should not clear the flag because
@@ -199,7 +222,8 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   DCHECK(!new_cached_subsequences_.Contains(&client))
       << "Multiple subsequences for client: " << client.DebugName();
 
-  new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
+  new_cached_subsequences_.insert(
+      &client, SubsequenceMarkers{start_chunk_index, end_chunk_index});
 }
 
 void PaintController::DidAppendItem(DisplayItem& display_item) {
@@ -259,9 +283,9 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(
 
 void PaintController::DidAppendChunk() {
 #if DCHECK_IS_ON()
-  if (CurrentPaintChunk().is_cacheable) {
-    AddToIndicesByClientMap(CurrentPaintChunk().id.client,
-                            new_paint_chunks_.LastChunkIndex(),
+  if (new_paint_chunks_.LastChunk().is_cacheable) {
+    AddToIndicesByClientMap(new_paint_chunks_.LastChunk().id.client,
+                            new_paint_chunks_.size() - 1,
                             new_paint_chunk_indices_by_client_);
   }
 #endif
@@ -434,61 +458,46 @@ wtf_size_t PaintController::FindOutOfOrderCachedItemForward(
 // When paintUnderInvaldiationCheckingEnabled() we'll not actually
 // copy the subsequence, but mark the begin and end of the subsequence for
 // under-invalidation checking.
-void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
-                                            wtf_size_t end_index) {
+void PaintController::CopyCachedSubsequence(wtf_size_t start_chunk_index,
+                                            wtf_size_t end_chunk_index) {
   DCHECK(!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
 
-  const DisplayItem* cached_item =
-      &current_paint_artifact_->GetDisplayItemList()[begin_index];
-
-  auto* cached_chunk =
-      current_paint_artifact_->FindChunkByDisplayItemIndex(begin_index);
-  DCHECK(cached_chunk != current_paint_artifact_->PaintChunks().end());
-  DCHECK_EQ(begin_index, cached_chunk->begin_index);
   auto properties_before_subsequence =
       new_paint_chunks_.CurrentPaintChunkProperties();
 
-  for (auto current_index = begin_index; current_index < end_index;
-       ++current_index) {
-    cached_item = &current_paint_artifact_->GetDisplayItemList()[current_index];
-    SECURITY_CHECK(!cached_item->IsTombstone());
+  for (auto chunk_index = start_chunk_index; chunk_index < end_chunk_index;
+       ++chunk_index) {
+    auto& cached_chunk = current_paint_artifact_->PaintChunks()[chunk_index];
+    auto cached_item_index = cached_chunk.begin_index;
+    for (auto& cached_item :
+         current_paint_artifact_->GetDisplayItemList().ItemsInPaintChunk(
+             cached_chunk)) {
+      SECURITY_CHECK(!cached_item.IsTombstone());
 #if DCHECK_IS_ON()
-    DCHECK(cached_item->Client().IsAlive());
+      DCHECK(cached_item.Client().IsAlive());
+      // Visual rect change should not happen in a cached subsequence.
+      // However, because of different method of pixel snapping in different
+      // paths, there are false positives. Just log an error.
+      if (cached_item.VisualRect() != cached_item.Client().VisualRect()) {
+        DLOG(ERROR) << "Visual rect changed in a cached subsequence: "
+                    << cached_item.Client().DebugName()
+                    << " old=" << cached_item.VisualRect()
+                    << " new=" << cached_item.Client().VisualRect();
+      }
 #endif
-
-    if (current_index == cached_chunk->end_index) {
-      AppendChunkByMoving(std::move(*cached_chunk));
-      ++cached_chunk;
-      DCHECK(cached_chunk != current_paint_artifact_->PaintChunks().end());
+      auto& item = MoveItemFromCurrentListToNewList(cached_item_index++);
+      item.SetMovedFromCachedSubsequence(true);
+      DidAppendItem(item);
     }
 
-#if DCHECK_IS_ON()
-    // Visual rect change should not happen in a cached subsequence.
-    // However, because of different method of pixel snapping in different
-    // paths, there are false positives. Just log an error.
-    if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
-      DLOG(ERROR) << "Visual rect changed in a cached subsequence: "
-                  << cached_item->Client().DebugName()
-                  << " old=" << cached_item->VisualRect()
-                  << " new=" << cached_item->Client().VisualRect();
-    }
-#endif
-
-    auto& item = MoveItemFromCurrentListToNewList(current_index);
-    item.SetMovedFromCachedSubsequence(true);
-    DidAppendItem(item);
+    DCHECK_EQ(cached_item_index, cached_chunk.end_index);
+    AppendChunkByMoving(std::move(cached_chunk));
   }
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    under_invalidation_checking_end_ = end_index;
-    DCHECK(IsCheckingUnderInvalidation());
-  } else {
-    // Restore properties and force new chunk for any trailing display items
-    // after the cached subsequence without new properties.
-    AppendChunkByMoving(std::move(*cached_chunk));
-    new_paint_chunks_.ForceNewChunk();
-    UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
-  }
+  // Restore properties and force new chunk for any trailing display items
+  // after the cached subsequence without new properties.
+  new_paint_chunks_.ForceNewChunk();
+  UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
 }
 
 void PaintController::ResetCurrentListIndices() {
@@ -689,9 +698,7 @@ void PaintController::ShowUnderInvalidationError(
 
 void PaintController::ShowSequenceUnderInvalidationError(
     const char* reason,
-    const DisplayItemClient& client,
-    int start,
-    int end) {
+    const DisplayItemClient& client) {
   LOG(ERROR) << under_invalidation_message_prefix_ << " " << reason;
   LOG(ERROR) << "Subsequence client: " << client.DebugName();
 #if DCHECK_IS_ON()
@@ -783,7 +790,7 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
   if (it != new_paint_chunk_indices_by_client_.end()) {
     const auto& indices = it->value;
     for (auto index : indices) {
-      const auto& chunk = new_paint_chunks_.PaintChunkAt(index);
+      const auto& chunk = new_paint_chunks_.PaintChunks()[index];
       if (chunk.id == id) {
         ShowDebugData();
         NOTREACHED() << "New paint chunk id " << id

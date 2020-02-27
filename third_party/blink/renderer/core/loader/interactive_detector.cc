@@ -16,6 +16,19 @@
 
 namespace blink {
 
+namespace {
+
+// Used to generate a unique id when emitting the "Long Input Delay" trace
+// event.
+int g_num_long_input_events = 0;
+
+// The threshold to emit the "Long Input Delay" trace event is the 99th
+// percentile of the histogram on Windows Stable as of Feb 25, 2020.
+constexpr base::TimeDelta kInputDelayTraceEventThreshold =
+    base::TimeDelta::FromMilliseconds(250);
+
+}  // namespace
+
 // Required length of main thread and network quiet window for determining
 // Time to Interactive.
 constexpr auto kTimeToInteractiveWindow = base::TimeDelta::FromSeconds(5);
@@ -243,6 +256,17 @@ void InteractiveDetector::HandleForInputDelay(
   if (page_event_times_.first_input_delay.is_zero()) {
     page_event_times_.first_input_delay = delay;
     page_event_times_.first_input_timestamp = event_timestamp;
+  }
+
+  // Emit a trace event to highlight long input delays.
+  if (delay > kInputDelayTraceEventThreshold) {
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "latency", "Long Input Delay", TRACE_ID_LOCAL(g_num_long_input_events),
+        event_timestamp);
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+        "latency", "Long Input Delay", TRACE_ID_LOCAL(g_num_long_input_events),
+        event_timestamp + delay);
+    g_num_long_input_events++;
   }
 
   // Record input delay UKM.

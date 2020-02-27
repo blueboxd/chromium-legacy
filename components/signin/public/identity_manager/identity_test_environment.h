@@ -14,6 +14,7 @@
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 
 class FakeProfileOAuth2TokenService;
 class IdentityTestEnvironmentProfileAdaptor;
@@ -220,7 +221,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const std::string& token,
       const base::Time& expiration,
       const std::string& id_token,
-      const identity::ScopeSet& scopes);
+      const ScopeSet& scopes);
 
   // Issues |error| in response to any access token request that either has (a)
   // already occurred and has not been matched by a previous call to this or
@@ -330,7 +331,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
-                              const identity::ScopeSet& scopes) override;
+                              const ScopeSet& scopes) override;
 
   // Handles the notification that an access token request was received for
   // |account_id|. Invokes |on_access_token_request_callback_| if the latter

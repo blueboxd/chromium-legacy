@@ -84,7 +84,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   const int vert_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_CONTROL_LIST_VERTICAL);
+                               DISTANCE_CONTROL_LIST_VERTICAL) /
+                           2;
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
   SetInkDropMode(InkDropMode::ON);

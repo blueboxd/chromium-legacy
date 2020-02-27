@@ -54,15 +54,12 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
       platform,
       version,
       wpr_tools_path,
-      xcode_build_version,
       out_dir,
       env_vars=None,
-      mac_toolchain='',
       retries=None,
       shards=None,
       test_args=None,
       test_cases=None,
-      xcode_path='',
       xctest=False,
   ):
     """Initializes a new instance of this class.
@@ -76,16 +73,13 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
       version: Version of iOS the platform should be running. Supported values
         can be found by running "xcrun simctl list". e.g. "9.3", "8.2", "7.1".
       wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
-      xcode_build_version: Xcode build version to install before running tests.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
-      mac_toolchain: Command to run `mac_toolchain` tool.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
-      xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
     Raises:
@@ -97,16 +91,13 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
         app_path,
         platform,
         version,
-        xcode_build_version,
         out_dir,
         env_vars=env_vars,
-        mac_toolchain=mac_toolchain,
         retries=retries,
         shards=shards,
         test_args=test_args,
         test_cases=test_cases,
         wpr_tools_path=wpr_tools_path,
-        xcode_path=xcode_path,
         xctest=xctest,
     )
     self.host_app_path = None

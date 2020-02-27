@@ -55,17 +55,6 @@ struct InstallableData {
   // primary_icon was requested.
   const bool has_maskable_primary_icon;
 
-  // The URL of the chosen badge icon.
-  const GURL& badge_icon_url;
-
-  // nullptr if the most appropriate badge icon couldn't be determined or
-  // downloaded. The underlying badge icon is owned by the InstallableManager;
-  // clients must copy the bitmap if they want to to use it. Since the badge
-  // icon is optional, no error code is set if it cannot be fetched, and clients
-  // specifying |valid_badge_icon| must check that the bitmap exists before
-  // using it.
-  const SkBitmap* badge_icon;
-
   // The URL of the chosen splash icon.
   const GURL& splash_icon_url;
 

@@ -47,8 +47,8 @@ void UpdateAPICount(UserMediaRequest::MediaType media_type) {
 
 }  // namespace
 
-UserMediaClient::Request::Request(UserMediaRequestInfo* request)
-    : user_media_request_(request) {
+UserMediaClient::Request::Request(UserMediaRequest* user_media_request)
+    : user_media_request_(user_media_request) {
   DCHECK(user_media_request_);
   DCHECK(!apply_constraints_request_);
   DCHECK(web_track_to_stop_.IsNull());
@@ -71,7 +71,7 @@ UserMediaClient::Request::Request(
 
 UserMediaClient::Request::~Request() = default;
 
-UserMediaRequestInfo* UserMediaClient::Request::MoveUserMediaRequest() {
+UserMediaRequest* UserMediaClient::Request::MoveUserMediaRequest() {
   auto user_media_request = user_media_request_;
   user_media_request_ = nullptr;
   return user_media_request;
@@ -129,29 +129,30 @@ UserMediaClient::~UserMediaClient() {
   DCHECK(!is_processing_request_);
 }
 
-void UserMediaClient::RequestUserMedia(UserMediaRequest* web_request) {
+void UserMediaClient::RequestUserMedia(UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(web_request);
-  DCHECK(web_request->Audio() || web_request->Video());
+  DCHECK(user_media_request);
+  DCHECK(user_media_request->Audio() || user_media_request->Video());
   // ownerDocument may be null if we are in a test.
   // In that case, it's OK to not check frame().
 
-  DCHECK(!web_request->OwnerDocument() ||
-         frame_ == web_request->OwnerDocument()->GetFrame());
+  DCHECK(!user_media_request->OwnerDocument() ||
+         frame_ == user_media_request->OwnerDocument()->GetFrame());
 
   // Save histogram data so we can see how much GetUserMedia is used.
-  UpdateAPICount(web_request->MediaRequestType());
+  UpdateAPICount(user_media_request->MediaRequestType());
 
   // TODO(crbug.com/787254): Communicate directly with the
   // PeerConnectionTrackerHost mojo object once it is available from Blink.
-  PeerConnectionTracker::GetInstance()->TrackGetUserMedia(web_request);
+  PeerConnectionTracker::GetInstance()->TrackGetUserMedia(user_media_request);
 
   int request_id = g_next_request_id++;
   blink::WebRtcLogMessage(base::StringPrintf(
       "UMCI::RequestUserMedia. request_id=%d, audio constraints=%s, "
       "video constraints=%s",
-      request_id, web_request->AudioConstraints().ToString().Utf8().c_str(),
-      web_request->VideoConstraints().ToString().Utf8().c_str()));
+      request_id,
+      user_media_request->AudioConstraints().ToString().Utf8().c_str(),
+      user_media_request->VideoConstraints().ToString().Utf8().c_str()));
 
   // The value returned by HasTransientUserActivation() is used by the browser
   // to make decisions about the permissions UI. Its value can be lost while
@@ -160,24 +161,27 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* web_request) {
   // TODO(mustaq): The description above seems specific to pre-UAv2 stack-based
   // tokens.  Perhaps we don't need to preserve this bit?
   bool has_transient_user_activation = false;
-  if (web_request->OwnerDocument() &&
-      web_request->OwnerDocument()->GetFrame()) {
-    has_transient_user_activation = web_request->OwnerDocument()
+  if (user_media_request->OwnerDocument() &&
+      user_media_request->OwnerDocument()->GetFrame()) {
+    has_transient_user_activation = user_media_request->OwnerDocument()
                                         ->GetFrame()
                                         ->Frame::HasTransientUserActivation();
   }
-  auto* request_info = MakeGarbageCollected<UserMediaRequestInfo>(
-      request_id, web_request, has_transient_user_activation);
-  pending_request_infos_.push_back(MakeGarbageCollected<Request>(request_info));
+  user_media_request->set_request_id(request_id);
+  user_media_request->set_has_transient_user_activation(
+      has_transient_user_activation);
+  pending_request_infos_.push_back(
+      MakeGarbageCollected<Request>(user_media_request));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
 
 void UserMediaClient::ApplyConstraints(
-    blink::ApplyConstraintsRequest* web_request) {
+    blink::ApplyConstraintsRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  pending_request_infos_.push_back(MakeGarbageCollected<Request>(web_request));
+  pending_request_infos_.push_back(
+      MakeGarbageCollected<Request>(user_media_request));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
@@ -236,25 +240,27 @@ void UserMediaClient::CurrentRequestCompleted() {
   }
 }
 
-void UserMediaClient::CancelUserMediaRequest(UserMediaRequest* web_request) {
+void UserMediaClient::CancelUserMediaRequest(
+    UserMediaRequest* user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
     // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
-    UserMediaRequestInfo* request = user_media_processor_->CurrentRequest();
-    if (request && request->web_request == web_request) {
-      blink::WebRtcLogMessage(base::StringPrintf(
-          "UMCI::CancelUserMediaRequest. request_id=%d", request->request_id));
+    UserMediaRequest* request = user_media_processor_->CurrentRequest();
+    if (request == user_media_request) {
+      blink::WebRtcLogMessage(
+          base::StringPrintf("UMCI::CancelUserMediaRequest. request_id=%d",
+                             request->request_id()));
     }
   }
 
   bool did_remove_request = false;
-  if (user_media_processor_->DeleteWebRequest(web_request)) {
+  if (user_media_processor_->DeleteUserMediaRequest(user_media_request)) {
     did_remove_request = true;
   } else {
     for (auto it = pending_request_infos_.begin();
          it != pending_request_infos_.end(); ++it) {
       if ((*it)->IsUserMedia() &&
-          (*it)->user_media_request()->web_request == web_request) {
+          (*it)->user_media_request() == user_media_request) {
         pending_request_infos_.erase(it);
         did_remove_request = true;
         break;

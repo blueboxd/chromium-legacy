@@ -1028,6 +1028,8 @@ extern const char kExternalProtocolDialogShowAlwaysOpenCheckbox[];
 
 extern const char kWebComponentsV0Enabled[];
 
+extern const char kUseLegacyFormControls[];
+
 #if defined(OS_ANDROID)
 extern const char kKnownInterceptionDisclosureInfobarLastShown[];
 #endif

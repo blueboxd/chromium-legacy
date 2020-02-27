@@ -30,6 +30,10 @@ extern const int kContextualCardsTranslationsIntegration;
 // Support of unlimited cards with diagnostics enabled, for development.
 extern const int kContextualCardsDiagnosticIntegration;
 
+// Longpress resolve variations:
+extern const char kLongpressResolveParamName[];
+extern const char kLongpressResolvePreserveTap[];
+
 }  // namespace contextual_search
 
 #endif  // COMPONENTS_CONTEXTUAL_SEARCH_CORE_BROWSER_PUBLIC_H_

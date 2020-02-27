@@ -139,6 +139,7 @@ source_set("install_app") {
     "//base:i18n",
     "//chrome/updater:base",
     "//chrome/updater:lib",
+    "//chrome/updater:version_header",
     "//chrome/updater/win/ui",
     "//components/prefs",
     "//components/update_client",

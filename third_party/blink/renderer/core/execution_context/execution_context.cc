@@ -461,6 +461,10 @@ bool ExecutionContext::IsFeatureEnabled(
 
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature) const {
+  // The default value for any feature should be true unless restricted by
+  // document policy
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
+    return true;
   PolicyValue threshold_value = PolicyValue::CreateMaxPolicyValue(
       GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type());
   return IsFeatureEnabled(feature, threshold_value);
@@ -469,6 +473,10 @@ bool ExecutionContext::IsFeatureEnabled(
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature,
     PolicyValue threshold_value) const {
+  // The default value for any feature should be true unless restricted by
+  // document policy
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
+    return true;
   return GetSecurityContext().IsFeatureEnabled(feature, threshold_value);
 }
 

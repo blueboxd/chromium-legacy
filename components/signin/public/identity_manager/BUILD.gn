@@ -33,6 +33,7 @@ source_set("identity_manager") {
     "primary_account_access_token_fetcher.cc",
     "primary_account_access_token_fetcher.h",
     "primary_account_mutator.h",
+    "scope_set.h",
     "set_accounts_in_cookie_result.h",
     "ubertoken_fetcher.cc",
     "ubertoken_fetcher.h",

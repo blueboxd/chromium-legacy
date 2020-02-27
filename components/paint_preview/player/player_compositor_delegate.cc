@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
-#include "url/gurl.h"
 
 namespace paint_preview {
 namespace {
@@ -100,7 +99,7 @@ PrepareCompositeRequest(const paint_preview::PaintPreviewProto& proto) {
 
 PlayerCompositorDelegate::PlayerCompositorDelegate(
     PaintPreviewBaseService* paint_preview_service,
-    const GURL& url)
+    const DirectoryKey& key)
     : paint_preview_service_(paint_preview_service) {
   paint_preview_compositor_service_ =
       paint_preview_service_->StartCompositorService(base::BindOnce(
@@ -110,8 +109,7 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
   paint_preview_compositor_client_ =
       paint_preview_compositor_service_->CreateCompositor(
           base::BindOnce(&PlayerCompositorDelegate::OnCompositorClientCreated,
-                         weak_factory_.GetWeakPtr(), url));
-
+                         weak_factory_.GetWeakPtr(), key));
   paint_preview_compositor_client_->SetDisconnectHandler(
       base::BindOnce(&PlayerCompositorDelegate::OnCompositorClientDisconnected,
                      weak_factory_.GetWeakPtr()));
@@ -121,10 +119,10 @@ void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
   // TODO(crbug.com/1039699): Handle compositor service disconnect event.
 }
 
-void PlayerCompositorDelegate::OnCompositorClientCreated(const GURL& url) {
-  paint_preview_compositor_client_->SetRootFrameUrl(url);
+void PlayerCompositorDelegate::OnCompositorClientCreated(
+    const DirectoryKey& key) {
   paint_preview_service_->GetCapturedPaintPreviewProto(
-      url, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
+      key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -134,6 +132,8 @@ void PlayerCompositorDelegate::OnProtoAvailable(
     // TODO(crbug.com/1021590): Handle initialization errors.
     return;
   }
+  paint_preview_compositor_client_->SetRootFrameUrl(
+      GURL(proto->metadata().url()));
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,

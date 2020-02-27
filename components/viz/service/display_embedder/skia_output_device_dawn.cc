@@ -87,8 +87,9 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
   DCHECK(backend_target.isValid());
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_provider_->GetGrContext(), backend_target,
-      !capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                            : kBottomLeft_GrSurfaceOrigin,
+      capabilities_.output_surface_origin == SurfaceOrigin::kTopLeft
+          ? kTopLeft_GrSurfaceOrigin
+          : kBottomLeft_GrSurfaceOrigin,
       kSurfaceColorType, sk_color_space_, /*surfaceProps=*/nullptr);
   return sk_surface_.get();
 }

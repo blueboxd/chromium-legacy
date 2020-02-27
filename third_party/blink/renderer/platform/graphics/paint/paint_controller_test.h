@@ -143,6 +143,20 @@ const DisplayItem::Type kDocumentBackgroundType =
 const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;
 const DisplayItem::Type kClipType = DisplayItem::kClipPaintPhaseFirst;
 
+#define EXPECT_SUBSEQUENCE(client, expected_start_chunk_index,     \
+                           expected_end_chunk_index)               \
+  do {                                                             \
+    auto* subsequence = GetSubsequenceMarkers(client);             \
+    ASSERT_NE(nullptr, subsequence);                               \
+    EXPECT_EQ(static_cast<wtf_size_t>(expected_start_chunk_index), \
+              subsequence->start_chunk_index);                     \
+    EXPECT_EQ(static_cast<wtf_size_t>(expected_end_chunk_index),   \
+              subsequence->end_chunk_index);                       \
+  } while (false)
+
+#define EXPECT_NO_SUBSEQUENCE(client) \
+  EXPECT_EQ(nullptr, GetSubsequenceMarkers(client))
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CONTROLLER_TEST_H_

@@ -5,6 +5,9 @@
 #ifndef CHROME_UPDATER_UPDATE_SERVICE_IN_PROCESS_H_
 #define CHROME_UPDATER_UPDATE_SERVICE_IN_PROCESS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -21,6 +24,7 @@ class UpdateClient;
 }  // namespace update_client
 
 namespace updater {
+class PersistedData;
 struct RegistrationRequest;
 struct RegistrationResponse;
 
@@ -50,6 +54,7 @@ class UpdateServiceInProcess : public UpdateService {
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<update_client::Configurator> config_;
+  scoped_refptr<PersistedData> persisted_data_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<update_client::UpdateClient> update_client_;
 };

@@ -83,8 +83,6 @@ class PLATFORM_EXPORT PaintController {
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return new_paint_chunks_.CurrentPaintChunkProperties();
   }
-  PaintChunk& CurrentPaintChunk() { return new_paint_chunks_.LastChunk(); }
-
 
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
@@ -118,10 +116,11 @@ class PLATFORM_EXPORT PaintController {
   // true. Otherwise returns false.
   bool UseCachedSubsequenceIfPossible(const DisplayItemClient&);
 
+  // Returns the index of the paint chunk that is forced for the subsequence.
   wtf_size_t BeginSubsequence();
   // The |start| parameter should be the return value of the corresponding
   // BeginSubsequence().
-  void EndSubsequence(const DisplayItemClient&, wtf_size_t start);
+  void EndSubsequence(const DisplayItemClient&, wtf_size_t start_chunk_index);
 
   void BeginSkippingCache() {
     if (usage_ == kTransient)
@@ -282,7 +281,8 @@ class PLATFORM_EXPORT PaintController {
 
   wtf_size_t FindCachedItem(const DisplayItem::Id&);
   wtf_size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
-  void CopyCachedSubsequence(wtf_size_t begin_index, wtf_size_t end_index);
+  void CopyCachedSubsequence(wtf_size_t start_chunk_index,
+                             wtf_size_t end_chunk_index);
   void AppendChunkByMoving(PaintChunk&&);
 
   // Resets the indices (e.g. next_item_to_match_) of
@@ -298,9 +298,7 @@ class PLATFORM_EXPORT PaintController {
                                   const DisplayItem* old_item) const;
 
   void ShowSequenceUnderInvalidationError(const char* reason,
-                                          const DisplayItemClient&,
-                                          int start,
-                                          int end);
+                                          const DisplayItemClient&);
 
   void CheckUnderInvalidation();
   bool IsCheckingUnderInvalidation() const {
@@ -309,13 +307,10 @@ class PLATFORM_EXPORT PaintController {
   }
 
   struct SubsequenceMarkers {
-    SubsequenceMarkers() : start(0), end(0) {}
-    SubsequenceMarkers(wtf_size_t start_arg, wtf_size_t end_arg)
-        : start(start_arg), end(end_arg) {}
-    // The start and end (not included) index within current_paint_artifact_
-    // of this subsequence.
-    wtf_size_t start;
-    wtf_size_t end;
+    // The start and end (not included) index of paint chunks in this
+    // subsequence.
+    wtf_size_t start_chunk_index = 0;
+    wtf_size_t end_chunk_index = 0;
   };
 
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);

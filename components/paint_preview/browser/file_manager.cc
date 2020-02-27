@@ -7,34 +7,40 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/paint_preview/common/file_utils.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace paint_preview {
 
 namespace {
 
+constexpr char kProtoName[] = "proto.pb";
 constexpr char kZipExt[] = ".zip";
-
-std::string HashToHex(const GURL& url) {
-  uint32_t hash = base::PersistentHash(url.spec());
-  return base::HexEncode(&hash, sizeof(uint32_t));
-}
 
 }  // namespace
 
 FileManager::FileManager(const base::FilePath& root_directory)
     : root_directory_(root_directory) {}
+
 FileManager::~FileManager() = default;
 
-size_t FileManager::GetSizeOfArtifactsFor(const GURL& url) {
+DirectoryKey FileManager::CreateKey(const GURL& url) const {
+  uint32_t hash = base::PersistentHash(url.spec());
+  return DirectoryKey{base::HexEncode(&hash, sizeof(uint32_t))};
+}
+
+DirectoryKey FileManager::CreateKey(uint64_t tab_id) const {
+  return DirectoryKey{base::NumberToString(tab_id)};
+}
+
+size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) {
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kDirectory: {
       return base::ComputeDirectorySize(
-          root_directory_.AppendASCII(HashToHex(url)));
+          root_directory_.AppendASCII(key.ascii_dirname));
     }
     case kZip: {
       int64_t file_size = 0;
@@ -48,9 +54,10 @@ size_t FileManager::GetSizeOfArtifactsFor(const GURL& url) {
   }
 }
 
-bool FileManager::GetCreatedTime(const GURL& url, base::Time* created_time) {
+bool FileManager::GetCreatedTime(const DirectoryKey& key,
+                                 base::Time* created_time) {
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   if (storage_type == FileManager::StorageType::kNone)
     return false;
   base::File::Info info;
@@ -60,10 +67,10 @@ bool FileManager::GetCreatedTime(const GURL& url, base::Time* created_time) {
   return true;
 }
 
-bool FileManager::GetLastModifiedTime(const GURL& url,
+bool FileManager::GetLastModifiedTime(const DirectoryKey& key,
                                       base::Time* last_modified_time) {
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   if (storage_type == FileManager::StorageType::kNone)
     return false;
   base::File::Info info;
@@ -73,13 +80,18 @@ bool FileManager::GetLastModifiedTime(const GURL& url,
   return true;
 }
 
-bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
-                                          base::FilePath* directory) {
+bool FileManager::DirectoryExists(const DirectoryKey& key) {
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  return GetPathForKey(key, &path) != StorageType::kNone;
+}
+
+bool FileManager::CreateOrGetDirectory(const DirectoryKey& key,
+                                       base::FilePath* directory) {
+  base::FilePath path;
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kNone: {
-      base::FilePath new_path = root_directory_.AppendASCII(HashToHex(url));
+      base::FilePath new_path = root_directory_.AppendASCII(key.ascii_dirname);
       base::File::Error error = base::File::FILE_OK;
       if (base::CreateDirectoryAndGetError(new_path, &error)) {
         *directory = new_path;
@@ -94,7 +106,7 @@ bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
       return true;
     }
     case kZip: {
-      base::FilePath dst_path = root_directory_.AppendASCII(HashToHex(url));
+      base::FilePath dst_path = root_directory_.AppendASCII(key.ascii_dirname);
       base::File::Error error = base::File::FILE_OK;
       if (!base::CreateDirectoryAndGetError(dst_path, &error)) {
         DVLOG(1) << "ERROR: failed to create directory: " << path
@@ -114,9 +126,9 @@ bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
   }
 }
 
-bool FileManager::CompressDirectoryFor(const GURL& url) {
+bool FileManager::CompressDirectory(const DirectoryKey& key) {
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kDirectory: {
       // If there are no files in the directory, zip will succeed, but unzip
@@ -137,23 +149,43 @@ bool FileManager::CompressDirectoryFor(const GURL& url) {
   }
 }
 
-void FileManager::DeleteArtifactsFor(const std::vector<GURL>& urls) {
-  for (const auto& url : urls) {
-    base::FilePath path;
-    StorageType storage_type = GetPathForUrl(url, &path);
-    if (storage_type == FileManager::StorageType::kNone)
-      continue;
-    base::DeleteFileRecursively(path);
-  }
+void FileManager::DeleteArtifacts(const DirectoryKey& key) {
+  base::FilePath path;
+  StorageType storage_type = GetPathForKey(key, &path);
+  if (storage_type == FileManager::StorageType::kNone)
+    return;
+  base::DeleteFileRecursively(path);
+}
+
+void FileManager::DeleteArtifacts(const std::vector<DirectoryKey>& keys) {
+  for (const auto& key : keys)
+    DeleteArtifacts(key);
 }
 
 void FileManager::DeleteAll() {
   base::DeleteFileRecursively(root_directory_);
 }
 
-FileManager::StorageType FileManager::GetPathForUrl(const GURL& url,
+bool FileManager::SerializePaintPreviewProto(const DirectoryKey& key,
+                                             const PaintPreviewProto& proto) {
+  base::FilePath path;
+  if (!CreateOrGetDirectory(key, &path))
+    return false;
+  return WriteProtoToFile(path.AppendASCII(kProtoName), proto);
+}
+
+std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(
+    const DirectoryKey& key) {
+  base::FilePath path;
+  if (!CreateOrGetDirectory(key, &path))
+    return nullptr;
+  return ReadProtoFromFile(path.AppendASCII(kProtoName));
+}
+
+FileManager::StorageType FileManager::GetPathForKey(const DirectoryKey& key,
                                                     base::FilePath* path) {
-  base::FilePath directory_path = root_directory_.AppendASCII(HashToHex(url));
+  base::FilePath directory_path =
+      root_directory_.AppendASCII(key.ascii_dirname);
   if (base::PathExists(directory_path)) {
     *path = directory_path;
     return kDirectory;

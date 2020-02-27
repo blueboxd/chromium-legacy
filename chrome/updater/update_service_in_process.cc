@@ -4,6 +4,10 @@
 
 #include "chrome/updater/update_service_in_process.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -14,6 +18,7 @@
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/installer.h"
+#include "chrome/updater/persisted_data.h"
 #include "chrome/updater/registration_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/crx_update_item.h"
@@ -25,6 +30,8 @@ namespace updater {
 UpdateServiceInProcess::UpdateServiceInProcess(
     scoped_refptr<update_client::Configurator> config)
     : config_(config),
+      persisted_data_(
+          base::MakeRefCounted<PersistedData>(config_->GetPrefService())),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       update_client_(update_client::UpdateClientFactory(config)) {}
 
@@ -43,32 +50,23 @@ void UpdateServiceInProcess::UpdateAll(
     base::OnceCallback<void(update_client::Error)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto app_ids = Installer::FindAppIds();
-
-  // Include the app id for the updater if it is not found. This could happen
-  // before the first update for the updater has been handled. This is a
-  // temporary workaround until the source of truth for the registered
-  // version is resolved.
-  if (!base::Contains(app_ids, kUpdaterAppId))
-    app_ids.push_back(kUpdaterAppId);
-
-  std::vector<base::Optional<update_client::CrxComponent>> components;
-  for (const auto& app_id : app_ids) {
-    auto installer = base::MakeRefCounted<Installer>(app_id);
-    installer->FindInstallOfApp();
-    components.push_back(installer->MakeCrxComponent());
-  }
+  const auto app_ids = persisted_data_->GetAppIds();
+  DCHECK(base::Contains(app_ids, kUpdaterAppId));
 
   update_client_->Update(
       app_ids,
       base::BindOnce(
-          [](const std::vector<base::Optional<update_client::CrxComponent>>&
-                 components,
+          [](scoped_refptr<PersistedData> persisted_data,
              const std::vector<std::string>& ids) {
-            DCHECK_EQ(components.size(), ids.size());
+            std::vector<base::Optional<update_client::CrxComponent>> components;
+            for (const auto& id : ids) {
+              components.push_back(
+                  base::MakeRefCounted<Installer>(id, persisted_data)
+                      ->MakeCrxComponent());
+            }
             return components;
           },
-          components),
+          persisted_data_),
       false, std::move(callback));
 }
 

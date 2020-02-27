@@ -938,6 +938,11 @@ const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 // TODO(937746): Remove this after M84.
 const char kWebComponentsV0Enabled[] = "web-components-v0-enabled";
 
+// This switch allows the FormControlsRefresh feature to be disabled temporarily
+// from M81 through M84.
+// TODO(1034611): Remove this after M84.
+const char kUseLegacyFormControls[] = "use-legacy-form-controls";
+
 #if defined(OS_ANDROID)
 // Disable Media Session API
 const char kDisableMediaSessionAPI[] = "disable-media-session-api";

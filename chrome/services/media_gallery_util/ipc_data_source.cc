@@ -31,13 +31,13 @@ void IPCDataSource::Abort() {
 void IPCDataSource::Read(int64_t position,
                          int size,
                          uint8_t* destination,
-                         DataSource::ReadCB callback) {
+                         const DataSource::ReadCB& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
 
   utility_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&IPCDataSource::ReadMediaData, base::Unretained(this),
-                     destination, std::move(callback), position, size));
+                     destination, callback, position, size));
 }
 
 bool IPCDataSource::GetSize(int64_t* size_out) {
@@ -56,7 +56,7 @@ void IPCDataSource::SetBitrate(int bitrate) {
 }
 
 void IPCDataSource::ReadMediaData(uint8_t* destination,
-                                  DataSource::ReadCB callback,
+                                  const DataSource::ReadCB& callback,
                                   int64_t position,
                                   int size) {
   DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
@@ -72,14 +72,14 @@ void IPCDataSource::ReadMediaData(uint8_t* destination,
   media_data_source_->Read(
       position, clamped_size,
       base::BindOnce(&IPCDataSource::ReadDone, base::Unretained(this),
-                     destination, std::move(callback)));
+                     destination, callback));
 }
 
 void IPCDataSource::ReadDone(uint8_t* destination,
-                             DataSource::ReadCB callback,
+                             const DataSource::ReadCB& callback,
                              const std::vector<uint8_t>& data) {
   DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
 
   std::copy(data.begin(), data.end(), destination);
-  std::move(callback).Run(data.size());
+  callback.Run(data.size());
 }

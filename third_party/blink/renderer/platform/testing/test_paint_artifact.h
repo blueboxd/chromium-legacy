@@ -141,7 +141,7 @@ class TestPaintArtifact {
   DummyRectClient& Client(wtf_size_t) const;
 
  private:
-  void FinishLastChunk();
+  void DidAddDisplayItem();
 
   Vector<std::unique_ptr<DummyRectClient>> dummy_clients_;
 

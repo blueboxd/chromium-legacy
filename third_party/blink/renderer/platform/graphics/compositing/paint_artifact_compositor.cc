@@ -296,7 +296,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
       paint_artifact->GetPaintChunkSubset(pending_layer.paint_chunk_indices);
   DCHECK(paint_chunks.size());
   const PaintChunk& first_paint_chunk = paint_chunks[0];
-  DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
   if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
@@ -844,11 +843,14 @@ void PaintArtifactCompositor::LayerizeGroup(
     const auto& chunk_effect = chunk_it->properties.Effect().Unalias();
     if (&chunk_effect == &unaliased_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
-      const auto& first_display_item =
-          paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
-      bool requires_own_layer = first_display_item.IsForeignLayer() ||
-                                IsCompositedScrollHitTest(first_display_item) ||
-                                IsCompositedScrollbar(first_display_item);
+      bool requires_own_layer = false;
+      if (chunk_it->size()) {
+        const auto& first_display_item =
+            paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
+        requires_own_layer = first_display_item.IsForeignLayer() ||
+                             IsCompositedScrollHitTest(first_display_item) ||
+                             IsCompositedScrollbar(first_display_item);
+      }
       DCHECK(!requires_own_layer || chunk_it->size() == 1u);
 
       pending_layers_.emplace_back(

@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -77,8 +77,7 @@ class CORE_EXPORT ImageElementTiming final
       const IntRect* image_border);
 
   // Callback for the swap promise. Reports paint timestamps.
-  void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
-                                base::TimeTicks timestamp);
+  void ReportImagePaintSwapTime(WebSwapResult, base::TimeTicks timestamp);
 
   // Class containing information about image element timing.
   class ElementTimingInfo final : public GarbageCollected<ElementTimingInfo> {

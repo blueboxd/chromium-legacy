@@ -144,17 +144,6 @@ const DisplayItem::Type kScrollingContentsBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(
         PaintPhase::kDescendantBlockBackgroundsOnly);
 
-#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end)        \
-  do {                                                                  \
-    auto* subsequence = GetSubsequenceMarkers(client);                  \
-    ASSERT_NE(nullptr, subsequence);                                    \
-    EXPECT_EQ(static_cast<size_t>(expected_start), subsequence->start); \
-    EXPECT_EQ(static_cast<size_t>(expected_end), subsequence->end);     \
-  } while (false)
-
-#define EXPECT_NO_SUBSEQUENCE(client) \
-  EXPECT_EQ(nullptr, GetSubsequenceMarkers(client)
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_CONTROLLER_PAINT_TEST_H_

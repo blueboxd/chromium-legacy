@@ -65,12 +65,13 @@ GURL IssuerDotComKeyCommitmentPath() {
       .Resolve(kTrustTokenKeyCommitmentWellKnownPath);
 }
 
-class Waiter {
+class CommitmentWaiter {
  public:
   base::OnceCallback<void(TrustTokenKeyCommitmentController::Status,
                           std::unique_ptr<TrustTokenKeyCommitmentResult>)>
   Callback() {
-    return base::BindOnce(&Waiter::OnComplete, base::Unretained(this));
+    return base::BindOnce(&CommitmentWaiter::OnComplete,
+                          base::Unretained(this));
   }
 
   std::pair<TrustTokenKeyCommitmentController::Status,
@@ -95,6 +96,7 @@ class Waiter {
   std::unique_ptr<TrustTokenKeyCommitmentResult> result_;
   base::RunLoop run_loop_;
 };
+
 }  // namespace
 
 // Use a fixture just to reduce the amount of boilerplate it takes to create an
@@ -188,7 +190,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, NetworkError) {
 
   TrustTokenKeyCommitmentController::Status result_status;
   std::unique_ptr<TrustTokenKeyCommitmentResult> result;
-  Waiter waiter;
+  CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
 
@@ -213,7 +215,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, NetworkSuccessParseFailure) {
 
   TrustTokenKeyCommitmentController::Status result_status;
   std::unique_ptr<TrustTokenKeyCommitmentResult> result;
-  Waiter waiter;
+  CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
 
@@ -245,7 +247,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, Redirect) {
 
   TrustTokenKeyCommitmentController::Status result_status;
   std::unique_ptr<TrustTokenKeyCommitmentResult> result;
-  Waiter waiter;
+  CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
 
@@ -268,7 +270,7 @@ TEST_F(TrustTokenKeyCommitmentControllerTest, Success) {
 
   TrustTokenKeyCommitmentController::Status result_status;
   std::unique_ptr<TrustTokenKeyCommitmentResult> result;
-  Waiter waiter;
+  CommitmentWaiter waiter;
 
   auto url_request = MakeURLRequest("https://issuer.com/");
 

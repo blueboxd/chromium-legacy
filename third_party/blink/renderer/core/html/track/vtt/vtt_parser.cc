@@ -285,10 +285,8 @@ VTTParser::ParseState VTTParser::CollectWebVTTBlock(const String& line) {
     if (line.StartsWith("STYLE") && StringView(line, kStyleIdentifierLength)
                                         .IsAllSpecialCharacters<IsASpace>()) {
       contains_style_block_ = true;
-      if (RuntimeEnabledFeatures::EmbeddedVTTStylesheetsEnabled()) {
-        current_content_.Clear();
-        return kStyle;
-      }
+      current_content_.Clear();
+      return kStyle;
     }
   }
 

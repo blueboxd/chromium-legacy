@@ -242,6 +242,9 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
+  if (is_win) {
+    data += [ "$root_gen_dir/chrome/test/data/webui/settings/chrome_cleanup_page_test.m.js" ]
+  }
   if (is_chromeos) {
     data += [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js" ]
   }

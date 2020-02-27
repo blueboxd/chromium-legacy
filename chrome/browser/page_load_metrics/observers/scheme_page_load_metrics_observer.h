@@ -29,8 +29,6 @@ class SchemePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnPageInteractive(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   // The ui transition for the committed navigation.

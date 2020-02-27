@@ -92,43 +92,42 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // This method is called once to add all menu items.
   virtual void BuildMenu() = 0;
 
+  // Override to supply a sync icon for the profile menu.
+  virtual gfx::ImageSkia GetSyncIcon() const;
+
   // API to build the profile menu.
   void SetHeading(const base::string16& heading,
                   const base::string16& tooltip_text,
                   base::RepeatingClosure action);
   void SetIdentityInfo(const gfx::ImageSkia& image,
-                       const gfx::ImageSkia& badge,
                        const base::string16& title,
                        const base::string16& subtitle = base::string16());
-  void SetSyncInfo(const gfx::ImageSkia& icon,
-                   const base::string16& description,
+  void SetSyncInfo(const base::string16& description,
                    const base::string16& clickable_text,
                    SyncInfoContainerBackgroundState background_state,
-                   base::RepeatingClosure action);
-  void AddShortcutFeatureButton(const gfx::ImageSkia& icon,
+                   base::RepeatingClosure action,
+                   bool show_badge = true);
+  void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
-  void AddFeatureButton(const gfx::ImageSkia& icon,
-                        const base::string16& text,
-                        base::RepeatingClosure action);
+  void AddFeatureButton(const base::string16& text,
+                        base::RepeatingClosure action,
+                        const gfx::VectorIcon& icon = gfx::kNoneIcon,
+                        float icon_to_image_ratio = 1.0f);
   void SetProfileManagementHeading(const base::string16& heading);
   void AddSelectableProfile(const gfx::ImageSkia& image,
                             const base::string16& name,
                             bool is_guest,
                             base::RepeatingClosure action);
-  void AddProfileManagementShortcutFeatureButton(const gfx::ImageSkia& icon,
+  void AddProfileManagementShortcutFeatureButton(const gfx::VectorIcon& icon,
                                                  const base::string16& text,
                                                  base::RepeatingClosure action);
-  void AddProfileManagementFeatureButton(const gfx::ImageSkia& icon,
+  void AddProfileManagementFeatureButton(const gfx::VectorIcon& icon,
                                          const base::string16& text,
                                          base::RepeatingClosure action);
-  // 0 < |icon_to_image_ratio| <= 1 is the size ratio of |icon| in the returned
-  // image. E.g. a value of 0.8 means that |icon| only takes up 80% of the
-  // returned image, with the rest being padding around it.
-  gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
-                              float icon_to_image_ratio = 1.0f);
+
   gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
-                                     SkColor color);
+                                     SkColor color) const;
   // Should be called inside each button/link action.
   void RecordClick(ActionableItem item);
 

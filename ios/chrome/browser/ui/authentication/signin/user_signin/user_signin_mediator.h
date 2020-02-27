@@ -11,9 +11,36 @@
 
 @class AuthenticationFlow;
 class AuthenticationService;
+@class ChromeIdentity;
+class SyncSetupService;
 
-// Delegate that handles interactions with unified consent coordinator.
+namespace consent_auditor {
+class ConsentAuditor;
+}
+
+namespace signin {
+class IdentityManager;
+}
+
+namespace unified_consent {
+class UnifiedConsentService;
+}
+
+// Delegate that handles interactions with unified consent screen.
 @protocol UserSigninMediatorDelegate
+
+// Sends a signal that the |settingsLinkWasTapped| parameter needs to be reset.
+- (void)userSigninMediatorDidTapResetSettingLink;
+
+// Returns the state of the |settingsLinkWasTapped| parameter in
+// UnifiedConsentCoordinator.
+- (BOOL)userSigninMediatorGetSettingsLinkWasTapped;
+
+// Gets the consent confirmation ID from UnifiedConsentCoordinator.
+- (int)userSigninMediatorGetConsentConfirmationId;
+
+// Get the consent string IDs from UnifiedConsentCoordinator.
+- (const std::vector<int>&)userSigninMediatorGetConsentStringIds;
 
 // Updates sign-in state for the UserSigninCoordinator following sign-in
 // finishing its workflow.
@@ -29,17 +56,30 @@ class AuthenticationService;
 @interface UserSigninMediator : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithAuthenticationService:
-    (AuthenticationService*)authenticationService NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithAuthenticationService:(AuthenticationService*)authenticationService
+                  identityManager:(signin::IdentityManager*)identityManager
+                   consentAuditor:
+                       (consent_auditor::ConsentAuditor*)consentAuditor
+            unifiedConsentService:
+                (unified_consent::UnifiedConsentService*)unifiedConsentService
+                 syncSetupService:(SyncSetupService*)syncSetupService
+    NS_DESIGNATED_INITIALIZER;
 
 // The delegate.
 @property(nonatomic, weak) id<UserSigninMediatorDelegate> delegate;
 
-// Property denoting whether the authentication operation is complete.
-@property(nonatomic, assign) BOOL isAuthenticationCompleted;
+// Enters the authentication state following identity selection. If there is an
+// error transitions to the identity selection state, otherwise enters the final
+// authentication completed state.
+- (void)authenticateWithIdentity:(ChromeIdentity*)identity
+              authenticationFlow:(AuthenticationFlow*)authenticationFlow;
 
 // Reverts the sign-in operation.
 - (void)cancelSignin;
+
+// Cancels and dismisses the authentication flow if sign-in is in progress.
+- (void)cancelAndDismissAuthenticationFlow;
 
 @end
 

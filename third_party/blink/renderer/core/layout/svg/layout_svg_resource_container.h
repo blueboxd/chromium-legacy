@@ -21,6 +21,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_CONTAINER_H_
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_hidden_container.h"
+#include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 
 namespace blink {
@@ -105,6 +107,29 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
   DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, \
                     resource->ResourceType() == typeName,           \
                     resource.ResourceType() == typeName)
+
+template <typename ContainerType>
+inline bool IsResourceOfType(LayoutSVGResourceContainer* container) {
+  return container->ResourceType() == ContainerType::kResourceType;
+}
+
+template <typename ContainerType>
+inline ContainerType* GetSVGResourceAsType(SVGResource* resource) {
+  if (!resource)
+    return nullptr;
+  if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
+    if (IsResourceOfType<ContainerType>(container))
+      return static_cast<ContainerType*>(container);
+  }
+  return nullptr;
+}
+
+template <typename ContainerType>
+inline ContainerType* GetSVGResourceAsType(StyleSVGResource* style_resource) {
+  if (!style_resource)
+    return nullptr;
+  return GetSVGResourceAsType<ContainerType>(style_resource->Resource());
+}
 
 }  // namespace blink
 

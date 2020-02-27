@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -1342,7 +1343,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 
   DCHECK(account_info_getter_);
 
-  identity::ScopeSet payments_scopes;
+  signin::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
   CoreAccountId account_id =
       account_info_getter_->GetAccountInfoForPaymentsServer().account_id;

@@ -340,12 +340,12 @@ void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
 }
 
 void ApplyConstraintsProcessor::CleanupRequest(
-    base::OnceClosure web_request_callback) {
+    base::OnceClosure user_media_request_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_);
   DCHECK(request_completed_cb_);
   std::move(request_completed_cb_).Run();
-  std::move(web_request_callback).Run();
+  std::move(user_media_request_callback).Run();
   current_request_ = nullptr;
   video_source_ = nullptr;
 }

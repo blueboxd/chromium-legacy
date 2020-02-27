@@ -91,9 +91,9 @@ class PLATFORM_EXPORT DisplayItemList
   };
   typedef unsigned JsonFlags;
 
-  std::unique_ptr<JSONArray> SubsequenceAsJSON(wtf_size_t begin_index,
-                                               wtf_size_t end_index,
-                                               JsonFlags) const;
+  std::unique_ptr<JSONArray> DisplayItemsAsJSON(wtf_size_t begin_index,
+                                                wtf_size_t end_index,
+                                                JsonFlags) const;
   void AppendSubsequenceAsJSON(wtf_size_t begin_index,
                                wtf_size_t end_index,
                                JsonFlags,

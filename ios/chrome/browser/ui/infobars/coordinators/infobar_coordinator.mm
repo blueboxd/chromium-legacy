@@ -143,8 +143,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
                    weakSelf.infobarBannerState =
                        InfobarBannerPresentationState::Presented;
                    [weakSelf.badgeDelegate
-                       infobarBannerWasPresented:self.infobarType
-                                     forWebState:self.webState];
+                       infobarBannerWasPresented:weakSelf.infobarType
+                                     forWebState:weakSelf.webState];
                    [weakSelf infobarBannerWasPresented];
                    if (completion)
                      completion();

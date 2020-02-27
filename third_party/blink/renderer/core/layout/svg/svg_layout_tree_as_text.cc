@@ -740,7 +740,7 @@ void WriteResources(WTF::TextStream& ts,
     WriteStandardPrefix(ts, *clipper, 0);
     ts << " " << clipper->ResourceBoundingBox(reference_box) << "\n";
   }
-  if (LayoutSVGResourceFilter* filter = resources->Filter()) {
+  if (LayoutSVGResourceFilter* filter = GetFilterResourceForSVG(style)) {
     DCHECK(style.HasFilter());
     DCHECK_EQ(style.Filter().size(), 1u);
     const FilterOperation& filter_operation = *style.Filter().at(0);

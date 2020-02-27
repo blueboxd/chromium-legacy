@@ -36,8 +36,6 @@ class SchemePageLoadMetricsObserverTest
         base::TimeDelta::FromMilliseconds(600);
     timing->document_timing->load_event_start =
         base::TimeDelta::FromMilliseconds(1000);
-    timing->interactive_timing->interactive =
-        base::TimeDelta::FromMilliseconds(1200);
     PopulateRequiredTimingFields(timing);
   }
 
@@ -164,12 +162,12 @@ class SchemePageLoadMetricsObserverTest
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPNavigation) {
   SimulateNavigation(url::kHttpScheme);
-  CheckHistograms(6, url::kHttpScheme);
+  CheckHistograms(5, url::kHttpScheme);
 }
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPSNavigation) {
   SimulateNavigation(url::kHttpsScheme);
-  CheckHistograms(6, url::kHttpsScheme);
+  CheckHistograms(5, url::kHttpsScheme);
 }
 
 // Make sure no metrics are recorded for an unobserved scheme.
@@ -180,10 +178,10 @@ TEST_F(SchemePageLoadMetricsObserverTest, AboutNavigation) {
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPForwardBackNavigation) {
   SimulateNavigation(url::kHttpScheme, ui::PAGE_TRANSITION_FORWARD_BACK);
-  CheckHistograms(6, url::kHttpScheme, false /* new_navigation */);
+  CheckHistograms(5, url::kHttpScheme, false /* new_navigation */);
 }
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPSReloadNavigation) {
   SimulateNavigation(url::kHttpsScheme, ui::PAGE_TRANSITION_RELOAD);
-  CheckHistograms(6, url::kHttpsScheme, false /* new_navigation */);
+  CheckHistograms(5, url::kHttpsScheme, false /* new_navigation */);
 }

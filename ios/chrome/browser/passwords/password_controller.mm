@@ -424,7 +424,17 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                                                    fieldType:fieldType];
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
+  bool isPasswordField = [fieldType isEqual:@"password"];
   for (FormSuggestion* rawSuggestion in rawSuggestions) {
+    // 1) If this is a focus event or the field is empty show all suggestions.
+    // Otherwise:
+    // 2) If this is a username field then show only credentials with matching
+    // prefixes. 3) If this is a password field then show suggestions only if
+    // the field is empty.
+    if (![type isEqual:@"focus"] && typedValue.length > 0 &&
+        (isPasswordField || ![rawSuggestion.value hasPrefix:typedValue])) {
+      continue;
+    }
     [suggestions
         addObject:[FormSuggestion
                       suggestionWithValue:

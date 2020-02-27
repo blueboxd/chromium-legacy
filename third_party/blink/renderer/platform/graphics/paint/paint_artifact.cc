@@ -44,15 +44,12 @@ static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
 
 void ComputeChunkDerivedData(const DisplayItemList& display_items,
                              PaintChunk& chunk) {
+  if (!chunk.size())
+    return;
+
   SkRegion known_to_be_opaque_region;
   auto items = display_items.ItemsInPaintChunk(chunk);
   for (const DisplayItem& item : items) {
-    chunk.bounds.Unite(item.VisualRect());
-    if (item.DrawsContent())
-      chunk.drawable_bounds.Unite(item.VisualRect());
-    chunk.outset_for_raster_effects = std::max(chunk.outset_for_raster_effects,
-                                               item.OutsetForRasterEffects());
-
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         item.IsDrawing()) {
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
@@ -110,15 +107,9 @@ PaintArtifact::PaintArtifact(DisplayItemList display_items,
   for (auto& chunk : chunks_) {
     if (chunk.is_moved_from_cached_subsequence) {
 #if DCHECK_IS_ON()
-      auto old_bounds = chunk.bounds;
-      auto old_drawable_bounds = chunk.drawable_bounds;
-      auto old_outset_for_raster_effects = chunk.outset_for_raster_effects;
       auto old_hit_test_data = std::move(chunk.hit_test_data);
       auto old_known_to_be_opaque = chunk.known_to_be_opaque;
       ComputeChunkDerivedData(display_item_list_, chunk);
-      DCHECK_EQ(old_bounds, chunk.bounds);
-      DCHECK_EQ(old_drawable_bounds, chunk.drawable_bounds);
-      DCHECK_EQ(old_outset_for_raster_effects, chunk.outset_for_raster_effects);
       DCHECK((!old_hit_test_data && !chunk.hit_test_data) ||
              (old_hit_test_data && chunk.hit_test_data &&
               *old_hit_test_data == *chunk.hit_test_data));

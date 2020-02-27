@@ -3230,13 +3230,13 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf
-            .Build(sdk_is_less_than = Build.VERSION_CODES.M,
-                    message = "Flaky < M, https://crbug.com/1048827")
-            @Feature({"ContextualSearch"})
-            @Features.EnableFeatures("ContextualSearchLongpressResolve")
-            public void
-            testLongpressExtendinSelectionExactResolve() throws TimeoutException {
+    @Feature({"ContextualSearch"})
+    // clang-format off
+    @Features.EnableFeatures("ContextualSearchLongpressResolve")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+        message = "Flaky < M, https://crbug.com/1048827")
+    public void testLongpressExtendinSelectionExactResolve() throws TimeoutException {
+        // clang-format on
         // First test regular long-press.  It should not require an exact resolve.
         longPressNode("search");
         fakeAResponse();
@@ -3252,5 +3252,19 @@ public class ContextualSearchManagerTest {
         fakeAResponse();
         assertSearchTermRequested();
         assertExactResolve(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @CommandLineFlags.Add({"enable-features=ContextualSearchLongpressResolve<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/FakeGroup",
+            "force-fieldtrial-params=FakeStudyName.FakeGroup:longpress_resolve_variation/"
+                    + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP})
+    public void
+    testTapNotIgnoredWithLongpressResolveEnabledAndVariationPreserveTap() throws TimeoutException {
+        clickWordNode("states");
+        Assert.assertEquals("States", getSelectedText());
+        waitForPanelToPeek();
     }
 }

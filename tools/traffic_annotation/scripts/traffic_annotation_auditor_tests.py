@@ -58,18 +58,15 @@ class TrafficAnnotationTestsChecker():
       [
           "--test-only",
           "--error-resilient",
-          "--extractor-backend=python_script",
       ],
       # Failing on any runtime error.
       [
           "--test-only",
-          "--extractor-backend=python_script",
       ],
       # No heuristic filtering.
       [
           "--test-only",
           "--no-filtering",
-          "--extractor-backend=python_script",
       ],
     ]
 

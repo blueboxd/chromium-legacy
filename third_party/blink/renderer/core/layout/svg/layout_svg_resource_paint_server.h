@@ -114,6 +114,12 @@ class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
                                                      LayoutSVGResourceMode);
 };
 
+template <>
+inline bool IsResourceOfType<LayoutSVGResourcePaintServer>(
+    LayoutSVGResourceContainer* container) {
+  return container->IsSVGPaintServer();
+}
+
 }  // namespace blink
 
 #endif

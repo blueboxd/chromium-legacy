@@ -21,8 +21,9 @@ void UserGesturesNativeHandler::AddRoutes() {
                           base::Unretained(this)));
   RouteHandlerFunction(
       "RunWithUserGesture", "test",
-      base::BindRepeating(&UserGesturesNativeHandler::RunWithUserGesture,
-                          base::Unretained(this)));
+      base::BindRepeating(
+          &UserGesturesNativeHandler::RunWithUserActivationForTest,
+          base::Unretained(this)));
 }
 
 void UserGesturesNativeHandler::IsProcessingUserGesture(
@@ -33,7 +34,7 @@ void UserGesturesNativeHandler::IsProcessingUserGesture(
           context()->v8_context())));
 }
 
-void UserGesturesNativeHandler::RunWithUserGesture(
+void UserGesturesNativeHandler::RunWithUserActivationForTest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(lazyboy): This won't work for Service Workers. Address this once we're
   // certain that we need this for workers.

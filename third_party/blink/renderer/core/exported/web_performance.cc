@@ -191,19 +191,6 @@ uint64_t WebPerformance::LargestTextPaintSize() const {
   return private_->timing()->LargestTextPaintSize();
 }
 
-double WebPerformance::PageInteractive() const {
-  return MillisecondsToSeconds(private_->timing()->PageInteractive());
-}
-
-double WebPerformance::PageInteractiveDetection() const {
-  return MillisecondsToSeconds(private_->timing()->PageInteractiveDetection());
-}
-
-double WebPerformance::FirstInputInvalidatingInteractive() const {
-  return MillisecondsToSeconds(
-      private_->timing()->FirstInputInvalidatingInteractive());
-}
-
 double WebPerformance::FirstInputDelay() const {
   return MillisecondsToSeconds(private_->timing()->FirstInputDelay());
 }

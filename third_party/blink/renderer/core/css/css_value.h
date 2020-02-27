@@ -294,7 +294,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   unsigned allows_negative_percentage_reference_ : 1;
 
  private:
-  unsigned class_type_ : kClassTypeBits;  // ClassType
+  const unsigned class_type_ : kClassTypeBits;  // ClassType
 };
 
 template <typename CSSValueType, wtf_size_t inlineCapacity>

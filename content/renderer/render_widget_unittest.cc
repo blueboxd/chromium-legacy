@@ -576,8 +576,7 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     widget()->NotifySwapAndPresentationTime(
         base::BindOnce(
             [](base::OnceClosure swap_quit_closure, base::TimeTicks* swap_time,
-               blink::WebWidgetClient::SwapResult result,
-               base::TimeTicks timestamp) {
+               blink::WebSwapResult result, base::TimeTicks timestamp) {
               DCHECK(!timestamp.is_null());
               *swap_time = timestamp;
               std::move(swap_quit_closure).Run();
@@ -585,8 +584,7 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
             swap_run_loop.QuitClosure(), &swap_time),
         base::BindOnce(
             [](base::OnceClosure presentation_quit_closure,
-               blink::WebWidgetClient::SwapResult result,
-               base::TimeTicks timestamp) {
+               blink::WebSwapResult result, base::TimeTicks timestamp) {
               DCHECK(!timestamp.is_null());
               std::move(presentation_quit_closure).Run();
             },

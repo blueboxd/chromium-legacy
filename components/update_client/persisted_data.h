@@ -103,7 +103,8 @@ class PersistedData {
   int GetDaysSinceLastRollCall(const std::string& id) const;
   int GetDaysSinceLastActive(const std::string& id) const;
 
-  // These functions access |pv| data for the specified |id|.
+  // These functions access |pv| data for the specified |id|. Returns an empty
+  // version, if the version is not found.
   base::Version GetProductVersion(const std::string& id) const;
   void SetProductVersion(const std::string& id, const base::Version& pv);
 

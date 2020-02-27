@@ -89,10 +89,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   virtual void OnDialogInitialized() {}
 
   // Returns a mask specifying which of the available DialogButtons are visible
-  // for the dialog. Note: Dialogs with just an OK button are frowned upon.
-  // DEPRECATED: Prefer to use set_buttons() below; this method is being
-  // removed. See https://crbug.com/1011446.
-  virtual int GetDialogButtons() const;
+  // for the dialog.
+  // TODO(https://crbug.com/1011446): Rename this to buttons().
+  int GetDialogButtons() const { return params_.buttons; }
 
   // Returns the default dialog button. This should not be a mask as only
   // one button should ever be the default button.  Return

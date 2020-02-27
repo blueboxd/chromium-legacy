@@ -159,7 +159,7 @@ class CORE_EXPORT CSSPropertyValueSet
   }
 
   unsigned css_parser_mode_ : 3;
-  mutable unsigned is_mutable_ : 1;
+  const unsigned is_mutable_ : 1;
   unsigned array_size_ : 28;
 
   friend class PropertySetCSSStyleDeclaration;

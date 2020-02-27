@@ -18,6 +18,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
@@ -126,7 +127,7 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
 
   // Create and fetch an OAuth2 token.
   std::string scope = "https://www.googleapis.com/auth/cloud_search.query";
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(scope);
   token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "document_suggestions_service", identity_manager_, scopes,

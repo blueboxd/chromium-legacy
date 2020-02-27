@@ -21,7 +21,7 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "services/identity/public/cpp/scope_set.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 
 namespace signin {
 struct AccountsInCookieJarInfo;
@@ -100,7 +100,7 @@ class AboutSigninInternals : public KeyedService,
  private:
   // Encapsulates diagnostic information about tokens for different services.
   struct TokenInfo {
-    TokenInfo(const std::string& consumer_id, const identity::ScopeSet& scopes);
+    TokenInfo(const std::string& consumer_id, const signin::ScopeSet& scopes);
     ~TokenInfo();
     std::unique_ptr<base::DictionaryValue> ToValue() const;
 
@@ -111,7 +111,7 @@ class AboutSigninInternals : public KeyedService,
     void Invalidate();
 
     std::string consumer_id;    // service that requested the token.
-    identity::ScopeSet scopes;  // Scoped that are requested.
+    signin::ScopeSet scopes;    // Scoped that are requested.
     base::Time request_time;
     base::Time receive_time;
     base::Time expiration_time;
@@ -154,7 +154,7 @@ class AboutSigninInternals : public KeyedService,
 
     TokenInfo* FindToken(const CoreAccountId& account_id,
                          const std::string& consumer_id,
-                         const identity::ScopeSet& scopes);
+                         const signin::ScopeSet& scopes);
 
     void AddRefreshTokenEvent(const RefreshTokenEvent& event);
 
@@ -185,14 +185,14 @@ class AboutSigninInternals : public KeyedService,
   // IdentityManager::DiagnosticsObserver implementations.
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
-                              const identity::ScopeSet& scopes) override;
+                              const signin::ScopeSet& scopes) override;
   void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                      const std::string& consumer_id,
-                                     const identity::ScopeSet& scopes,
+                                     const signin::ScopeSet& scopes,
                                      GoogleServiceAuthError error,
                                      base::Time expiration_time) override;
   void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
-                                     const identity::ScopeSet& scopes) override;
+                                     const signin::ScopeSet& scopes) override;
   void OnRefreshTokenUpdatedForAccountFromSource(
       const CoreAccountId& account_id,
       bool is_refresh_token_valid,

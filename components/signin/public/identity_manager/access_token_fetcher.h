@@ -14,9 +14,9 @@
 #include "base/scoped_observer.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "services/identity/public/cpp/scope_set.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -80,7 +80,7 @@ struct AccessTokenInfo;
 //     // wrapper API surfaces.
 //     MyClass::StartAccessTokenRequestForAccount(CoreAccountId account_id) {
 //       // Choose scopes to obtain for the access token.
-//       identity::ScopeSet scopes;
+//       ScopeSet scopes;
 //       scopes.insert(GaiaConstants::kMyFirstScope);
 //       scopes.insert(GaiaConstants::kMySecondScope);
 
@@ -165,7 +165,7 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
   AccessTokenFetcher(const CoreAccountId& account_id,
                      const std::string& oauth_consumer_name,
                      ProfileOAuth2TokenService* token_service,
-                     const identity::ScopeSet& scopes,
+                     const ScopeSet& scopes,
                      TokenCallback callback,
                      Mode mode);
 
@@ -179,7 +179,7 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
       const std::string& oauth_consumer_name,
       ProfileOAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       TokenCallback callback,
       Mode mode);
 
@@ -191,7 +191,7 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
                      const std::string client_secret,
                      const std::string& oauth_consumer_name,
                      ProfileOAuth2TokenService* token_service,
-                     const identity::ScopeSet& scopes,
+                     const ScopeSet& scopes,
                      TokenCallback callback,
                      Mode mode);
 
@@ -205,7 +205,7 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
       const std::string& oauth_consumer_name,
       ProfileOAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const identity::ScopeSet& scopes,
+      const ScopeSet& scopes,
       TokenCallback callback,
       Mode mode);
 
@@ -237,7 +237,7 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
   const std::string client_secret_;
   ProfileOAuth2TokenService* token_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  const identity::ScopeSet scopes_;
+  const ScopeSet scopes_;
   const Mode mode_;
 
   // NOTE: This callback should only be invoked from |RunCallbackAndMaybeDie|,

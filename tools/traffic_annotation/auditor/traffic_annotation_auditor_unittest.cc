@@ -43,10 +43,6 @@ const base::FilePath kTestsFolder =
         .Append(FILE_PATH_LITERAL("auditor"))
         .Append(FILE_PATH_LITERAL("tests"));
 
-const base::FilePath kClangToolPath =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation/bin"));
-
 const std::set<int> kDummyDeprecatedIDs = {100, 101, 102};
 }  // namespace
 
@@ -59,19 +55,6 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
     }
 
     tests_folder_ = source_path_.Append(kTestsFolder);
-
-#if defined(OS_WIN)
-    base::FilePath platform_name(FILE_PATH_LITERAL("win32"));
-#elif defined(OS_LINUX)
-    base::FilePath platform_name(FILE_PATH_LITERAL("linux64"));
-#elif defined(OS_MACOSX)
-    base::FilePath platform_name(FILE_PATH_LITERAL("mac"));
-#else
-    NOTREACHED() << "Unexpected platform.";
-#endif
-
-    base::FilePath clang_tool_path =
-        source_path_.Append(kClangToolPath).Append(platform_name);
     std::vector<std::string> path_filters;
 
     // As build path is not available and not used in tests, the default (empty)
@@ -80,7 +63,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
         source_path_,
         source_path_.Append(FILE_PATH_LITERAL("out"))
             .Append(FILE_PATH_LITERAL("Default")),
-        clang_tool_path, path_filters);
+        path_filters);
 
     id_checker_ = std::make_unique<TrafficAnnotationIDChecker>(
         TrafficAnnotationAuditor::GetReservedIDsSet(), kDummyDeprecatedIDs);
@@ -94,7 +77,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
 
  protected:
   // Deserializes an annotation or a call instance from a sample file similar to
-  // clang tool outputs.
+  // extractor outputs.
   AuditorResult::Type Deserialize(const std::string& file_name,
                                   InstanceBase* instance);
 

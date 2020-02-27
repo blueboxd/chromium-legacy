@@ -297,8 +297,7 @@
                    preprocess="true" />
         <structure name="IDR_SETTINGS_CHROME_CLEANUP_PAGE_JS"
                    file="chrome_cleanup_page/chrome_cleanup_page.js"
-                   type="chrome_html"
-                   preprocess="true" />
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CHROME_CLEANUP_ITEMS_TO_REMOVE_LIST_HTML"
                    file="chrome_cleanup_page/items_to_remove_list.html"
                    type="chrome_html"/>

@@ -26,6 +26,7 @@ import org.chromium.components.find_in_page.FindInPageBridge;
 import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
@@ -177,8 +178,10 @@ public final class TabImpl extends ITab.Stub {
     public void attachToBrowser(BrowserImpl browser) {
         mBrowser = browser;
         updateFromBrowser();
-        SelectionPopupController.fromWebContents(mWebContents)
-                .setActionModeCallback(new ActionModeCallback(mWebContents));
+        SelectionPopupController controller =
+                SelectionPopupController.fromWebContents(mWebContents);
+        controller.setActionModeCallback(new ActionModeCallback(mWebContents));
+        controller.setSelectionClient(SelectionClient.createSmartSelectionClient(mWebContents));
     }
 
     public void updateFromBrowser() {

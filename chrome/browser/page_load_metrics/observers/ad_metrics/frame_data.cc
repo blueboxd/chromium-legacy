@@ -281,17 +281,10 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
 
   builder.SetFrameDepth(frame_depth_);
 
-  if (timing_) {
-    if (!timing_->paint_timing.is_null() &&
-        timing_->paint_timing->first_contentful_paint) {
-      builder.SetTiming_FirstContentfulPaint(
-          timing_->paint_timing->first_contentful_paint->InMilliseconds());
-    }
-    if (!timing_->interactive_timing.is_null() &&
-        timing_->interactive_timing->interactive) {
-      builder.SetTiming_Interactive(
-          timing_->interactive_timing->interactive->InMilliseconds());
-    }
+  if (timing_ && !timing_->paint_timing.is_null() &&
+      timing_->paint_timing->first_contentful_paint) {
+    builder.SetTiming_FirstContentfulPaint(
+        timing_->paint_timing->first_contentful_paint->InMilliseconds());
   }
   builder.Record(ukm_recorder->Get());
 }

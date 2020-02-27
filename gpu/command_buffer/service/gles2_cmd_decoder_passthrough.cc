@@ -1323,6 +1323,10 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     group_ = nullptr;
   }
 
+  if (have_context) {
+    api()->glDebugMessageCallbackFn(nullptr, nullptr);
+  }
+
   if (context_.get()) {
     context_->ReleaseCurrent(nullptr);
     context_ = nullptr;

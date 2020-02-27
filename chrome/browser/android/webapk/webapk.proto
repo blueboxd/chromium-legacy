@@ -36,7 +36,6 @@ message WebApk {
     NONE = 1;
     OLD_SHELL_APK = 2;
     PRIMARY_ICON_HASH_DIFFERS = 3;
-    BADGE_ICON_HASH_DIFFERS = 4;
     SCOPE_DIFFERS = 5;
     START_URL_DIFFERS = 6;
     SHORT_NAME_DIFFERS = 7;
@@ -50,6 +49,8 @@ message WebApk {
     PRIMARY_ICON_MASKABLE_DIFFERS = 15;
     SHORTCUTS_DIFFER = 16;
     SPLASH_ICON_HASH_DIFFERS = 17;
+
+    reserved 4;
   }
 
   // Package name of the WebAPK.

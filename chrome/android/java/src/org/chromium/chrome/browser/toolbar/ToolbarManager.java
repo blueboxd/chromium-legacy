@@ -9,8 +9,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
@@ -26,7 +24,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -57,7 +54,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
@@ -95,6 +91,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.BottomTabSwitcherActionMenuCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.top.TabSwitcherActionMenuCoordinator;
@@ -161,12 +158,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     private static final int RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS = 30000;
 
-    /**
-     * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
-     * it's obvious to the user that something is attempting to load.
-     */
-    private static final float MINIMUM_LOAD_PROGRESS = 0.05f;
-
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
     private final ThemeColorProvider mTabThemeColorProvider;
@@ -205,13 +196,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final ActionBarDelegate mActionBarDelegate;
     private ActionModeController mActionModeController;
     private final ToolbarActionModeCallback mToolbarActionModeCallback;
-    private LoadProgressSimulator mLoadProgressSimulator;
     private final Callback<Boolean> mUrlFocusChangedCallback;
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
     private final ChromeFullscreenManager mFullscreenManager;
     private UrlFocusChangeListener mLocationBarFocusObserver;
     private ComponentCallbacks mComponentCallbacks;
+    private final LoadProgressCoordinator mProgressBarCoordinator;
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private int mFullscreenFocusToken = TokenHolder.INVALID_TOKEN;
@@ -374,6 +365,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mLocationBar.initializeControls(new WindowDelegate(mActivity.getWindow()),
                 mActivity.getWindowAndroid(), mActivity.getActivityTabProvider());
         mLocationBar.addUrlFocusChangeListener(mLocationBarFocusObserver);
+        mProgressBarCoordinator = new LoadProgressCoordinator(
+                mActivity.getActivityTabProvider(), mToolbar.getProgressBar());
 
         mToolbar.initialize(mLocationBarModel, this);
         mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
@@ -463,7 +456,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onCrash(Tab tab) {
                 updateTabLoadingState(false);
                 updateButtonStatus();
-                finishLoadProgress(false);
             }
 
             @Override
@@ -492,22 +484,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
                 updateTabLoadingState(true);
-
-                // If we made some progress, fast-forward to complete, otherwise just dismiss any
-                // MINIMUM_LOAD_PROGRESS that had been set.
-                if (tab.getProgress() > MINIMUM_LOAD_PROGRESS && tab.getProgress() < 1) {
-                    updateLoadProgress(1);
-                }
-                finishLoadProgress(true);
-            }
-
-            @Override
-            public void onLoadProgressChanged(Tab tab, float progress) {
-                if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
-                    return;
-                }
-
-                updateLoadProgress(progress);
             }
 
             @Override
@@ -523,9 +499,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 if (!didStartLoad) return;
                 mLocationBar.updateLoadingState(true);
-                if (didFinishLoad) {
-                    mLoadProgressSimulator.start();
-                }
             }
 
             @Override
@@ -578,22 +551,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                         && tab.getWebContents().getNavigationController().isInitialNavigation()) {
                     mLocationBar.setUrlToPageUrl();
                 }
-
-                if (navigation.isSameDocument()) return;
-                // This event is used as the primary trigger for the progress bar because it
-                // is the earliest indication that a load has started for a particular frame. In
-                // the case of the progress bar, it should only traverse the screen a single time
-                // per page load. So if this event states the main frame has started loading the
-                // progress bar is started.
-
-                if (NativePageFactory.isNativePageUrl(navigation.getUrl(), tab.isIncognito())) {
-                    finishLoadProgress(false);
-                    return;
-                }
-
-                mLoadProgressSimulator.cancel();
-                startLoadProgress();
-                updateLoadProgress(tab.getProgress());
             }
 
             @Override
@@ -623,7 +580,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
                     ntp.setUrlFocusAnimationsDisabled(false);
                     mToolbar.onTabOrModelChanged();
-                    if (mToolbar.getProgressBar() != null) mToolbar.getProgressBar().finish(false);
                 }
             }
 
@@ -755,8 +711,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 mToolbar.setContentAttached(layout.shouldDisplayContentOverlay());
             }
         };
-
-        mLoadProgressSimulator = new LoadProgressSimulator(this);
 
         mToolbar.setTabCountProvider(mTabCountProvider);
         mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
@@ -1856,28 +1810,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     private void updateCurrentTabDisplayStatus() {
-        Tab tab = mLocationBarModel.getTab();
         mLocationBar.setUrlToPageUrl();
-
         updateTabLoadingState(true);
-
-        if (tab == null) {
-            finishLoadProgress(false);
-            return;
-        }
-
-        mLoadProgressSimulator.cancel();
-
-        if (tab.isLoading()) {
-            if (NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
-                finishLoadProgress(false);
-            } else {
-                startLoadProgress();
-                updateLoadProgress(tab.getProgress());
-            }
-        } else {
-            finishLoadProgress(false);
-        }
     }
 
     private void updateTabLoadingState(boolean updateUrl) {
@@ -1885,34 +1819,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (updateUrl) updateButtonStatus();
     }
 
-    private void updateLoadProgress(float progress) {
-        // If it's a native page, progress bar is already hidden or being hidden, so don't update
-        // the value.
-        // TODO(kkimlabs): Investigate back/forward navigation with native page & web content and
-        //                 figure out the correct progress bar presentation.
-        Tab tab = mLocationBarModel.getTab();
-        if (tab == null
-                || NativePageFactory.isNativePageUrl(tab.getUrlString(), tab.isIncognito())) {
-            return;
-        }
-
-        progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
-        mToolbar.setLoadProgress(progress);
-        if (MathUtils.areFloatsEqual(progress, 1)) finishLoadProgress(true);
-    }
-
-    private void finishLoadProgress(boolean delayed) {
-        mLoadProgressSimulator.cancel();
-        mToolbar.finishLoadProgress(delayed);
-    }
-
-    /**
-     * Only start showing the progress bar if it is not already started.
-     */
-    private void startLoadProgress() {
-        if (mToolbar.isProgressStarted()) return;
-        mToolbar.startLoadProgress();
-    }
 
     /**
      * @param enabled Whether the progress bar is enabled.
@@ -1921,9 +1827,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mToolbar.setProgressBarEnabled(enabled);
     }
 
-    /**
-     * @param anchor The view to use as an anchor.
-     */
     public void setProgressBarAnchorView(@Nullable View anchor) {
         mToolbar.setProgressBarAnchorView(anchor);
     }
@@ -1962,53 +1865,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         layoutParams.topMargin = margin;
         mControlContainer.setLayoutParams(layoutParams);
-    }
-
-    private static class LoadProgressSimulator {
-        private static final int MSG_ID_UPDATE_PROGRESS = 1;
-
-        private static final float PROGRESS_INCREMENT = 0.1f;
-        private static final int PROGRESS_INCREMENT_DELAY_MS = 10;
-
-        private final ToolbarManager mToolbarManager;
-        private final Handler mHandler;
-
-        private float mProgress;
-
-        public LoadProgressSimulator(ToolbarManager toolbar) {
-            mToolbarManager = toolbar;
-            mHandler = new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(Message msg) {
-                    assert msg.what == MSG_ID_UPDATE_PROGRESS;
-                    mProgress = Math.min(1, mProgress += PROGRESS_INCREMENT);
-                    mToolbarManager.updateLoadProgress(mProgress);
-
-                    if (MathUtils.areFloatsEqual(mProgress, 1)) {
-                        mToolbarManager.mToolbar.finishLoadProgress(true);
-                        return;
-                    }
-                    sendEmptyMessageDelayed(MSG_ID_UPDATE_PROGRESS, PROGRESS_INCREMENT_DELAY_MS);
-                }
-            };
-        }
-
-        /**
-         * Start simulating load progress from a baseline of 0.
-         */
-        public void start() {
-            mProgress = 0;
-            mToolbarManager.mToolbar.startLoadProgress();
-            mToolbarManager.updateLoadProgress(mProgress);
-            mHandler.sendEmptyMessage(MSG_ID_UPDATE_PROGRESS);
-        }
-
-        /**
-         * Cancels simulating load progress.
-         */
-        public void cancel() {
-            mHandler.removeMessages(MSG_ID_UPDATE_PROGRESS);
-        }
     }
 
     /** Return the location bar model for testing purposes. */

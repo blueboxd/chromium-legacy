@@ -426,6 +426,12 @@ PanelSearchMenu = class extends PanelMenu {
   /** @override */
   activate(activateFirstItem) {
     PanelMenu.prototype.activate.call(this, false);
+    if (this.searchBar.value === '') {
+      this.clear();
+    }
+    if (this.items_.length > 0) {
+      this.activateItem(this.activeIndex_);
+    }
     this.searchBar.focus();
   }
 
@@ -451,6 +457,16 @@ PanelSearchMenu = class extends PanelMenu {
   }
 
   /** @override */
+  addMenuItem(
+      menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
+      opt_id) {
+    this.searchResultCounter_ += 1;
+    return PanelMenu.prototype.addMenuItem.call(
+        this, menuItemTitle, menuItemShortcut, menuItemBraille, gesture,
+        callback, 'result-number-' + this.searchResultCounter_.toString());
+  }
+
+  /** @override */
   advanceItemBy(delta) {
     this.activateItem(this.activeIndex_ + delta);
   }
@@ -464,6 +480,7 @@ PanelSearchMenu = class extends PanelMenu {
     while (this.menuElement.children.length !== 0) {
       this.menuElement.removeChild(this.menuElement.firstChild);
     }
+    this.searchBar.setAttribute('aria-activedescendant', '');
   }
 
   /**
@@ -472,11 +489,9 @@ PanelSearchMenu = class extends PanelMenu {
    * @return {!PanelMenuItem} The menu item that was just created.
    */
   copyAndAddMenuItem(item) {
-    this.searchResultCounter_ = this.searchResultCounter_ + 1;
     return this.addMenuItem(
         item.menuItemTitle, item.menuItemShortcut, item.menuItemBraille,
-        item.gesture, item.callback,
-        'result-number-' + this.searchResultCounter_.toString());
+        item.gesture, item.callback);
   }
 
   /** @override */

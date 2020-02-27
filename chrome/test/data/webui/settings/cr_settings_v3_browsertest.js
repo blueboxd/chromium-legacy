@@ -96,6 +96,22 @@ TEST_F('CrSettingsCheckboxV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+
+// eslint-disable-next-line no-var
+var CrSettingsChromeCleanupPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/chrome_cleanup_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsChromeCleanupPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+
 // eslint-disable-next-line no-var
 var CrSettingsDropdownMenuV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */

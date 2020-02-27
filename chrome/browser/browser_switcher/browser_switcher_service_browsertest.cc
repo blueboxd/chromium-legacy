@@ -107,8 +107,21 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
     BrowserSwitcherService::SetRefreshDelayForTesting(action_timeout() * 3 / 2);
 #if defined(OS_WIN)
     ASSERT_TRUE(fake_appdata_dir_.CreateUniqueTempDir());
-    base::PathService::Override(base::DIR_LOCAL_APP_DATA,
-                                fake_appdata_dir_.GetPath());
+#endif
+  }
+
+  void SetUpOnMainThread() override {
+#if defined(OS_WIN)
+    BrowserSwitcherServiceFactory::GetInstance()->SetTestingFactory(
+        browser()->profile(),
+        base::BindRepeating(
+            [](base::FilePath cache_dir, content::BrowserContext* context) {
+              auto* instance = new BrowserSwitcherServiceWin(
+                  Profile::FromBrowserContext(context), cache_dir);
+              instance->Init();
+              return std::unique_ptr<KeyedService>(instance);
+            },
+            cache_dir()));
 #endif
   }
 

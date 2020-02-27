@@ -13,8 +13,8 @@
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "google_apis/gaia/core_account_id.h"
-#include "services/identity/public/cpp/scope_set.h"
 
 class GoogleServiceAuthError;
 
@@ -69,7 +69,7 @@ struct AccessTokenInfo;
 //     // introducing wrapper API surfaces.
 //     MyClass::StartAccessTokenRequestForPrimaryAccount() {
 //       // Choose scopes to obtain for the access token.
-//       identity::ScopeSet scopes;
+//       ScopeSet scopes;
 //       scopes.insert(GaiaConstants::kMyFirstScope);
 //       scopes.insert(GaiaConstants::kMySecondScope);
 
@@ -155,7 +155,7 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   // account was tied to browser sync. See ./README.md.
   PrimaryAccountAccessTokenFetcher(const std::string& oauth_consumer_name,
                                    IdentityManager* identity_manager,
-                                   const identity::ScopeSet& scopes,
+                                   const ScopeSet& scopes,
                                    AccessTokenFetcher::TokenCallback callback,
                                    Mode mode,
                                    ConsentLevel consent = ConsentLevel::kSync);
@@ -194,7 +194,7 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
 
   std::string oauth_consumer_name_;
   IdentityManager* identity_manager_;
-  identity::ScopeSet scopes_;
+  ScopeSet scopes_;
 
   // Per the contract of this class, it is allowed for clients to delete this
   // object as part of the invocation of |callback_|. Hence, this object must

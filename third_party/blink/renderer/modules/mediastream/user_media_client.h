@@ -47,9 +47,9 @@ class MODULES_EXPORT UserMediaClient
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaClient();
 
-  void RequestUserMedia(UserMediaRequest* web_request);
-  void CancelUserMediaRequest(UserMediaRequest* web_request);
-  void ApplyConstraints(blink::ApplyConstraintsRequest* web_request);
+  void RequestUserMedia(UserMediaRequest* user_media_request);
+  void CancelUserMediaRequest(UserMediaRequest* user_media_request);
+  void ApplyConstraints(blink::ApplyConstraintsRequest* user_media_request);
   void StopTrack(const blink::WebMediaStreamTrack& web_track);
   void ContextDestroyed();
 
@@ -64,16 +64,14 @@ class MODULES_EXPORT UserMediaClient
  private:
   class Request final : public GarbageCollected<Request> {
    public:
-    explicit Request(UserMediaRequestInfo* request);
+    explicit Request(UserMediaRequest* request);
     explicit Request(blink::ApplyConstraintsRequest* request);
     explicit Request(const blink::WebMediaStreamTrack& request);
     ~Request();
 
-    UserMediaRequestInfo* MoveUserMediaRequest();
+    UserMediaRequest* MoveUserMediaRequest();
 
-    UserMediaRequestInfo* user_media_request() const {
-      return user_media_request_;
-    }
+    UserMediaRequest* user_media_request() const { return user_media_request_; }
     blink::ApplyConstraintsRequest* apply_constraints_request() const {
       return apply_constraints_request_;
     }
@@ -91,7 +89,7 @@ class MODULES_EXPORT UserMediaClient
     }
 
    private:
-    Member<UserMediaRequestInfo> user_media_request_;
+    Member<UserMediaRequest> user_media_request_;
     Member<blink::ApplyConstraintsRequest> apply_constraints_request_;
     blink::WebMediaStreamTrack web_track_to_stop_;
 

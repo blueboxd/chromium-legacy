@@ -49,6 +49,7 @@
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 
 class SkBitmap;
 
@@ -279,26 +280,10 @@ class WebWidgetClient {
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
 
-  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
-  // should be kept consistent with it. SwapResult additionally adds a success
-  // value (kDidSwap).
-  // These values are written to logs. New enum values can be added, but
-  // existing enums must never be renumbered, deleted or reused.
-  enum SwapResult {
-    kDidSwap = 0,
-    kDidNotSwapSwapFails = 1,
-    kDidNotSwapCommitFails = 2,
-    kDidNotSwapCommitNoUpdate = 3,
-    kDidNotSwapActivationFails = 4,
-    kSwapResultMax,
-  };
-  using ReportTimeCallback =
-      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
-
   // The |callback| will be fired when the corresponding renderer frame is
   // submitted (still called "swapped") to the display compositor (either with
   // DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(ReportTimeCallback callback) {}
+  virtual void NotifySwapTime(WebReportTimeCallback callback) {}
 
   // Set or get what event handlers exist in the document contained in the
   // WebWidget in order to inform the compositor thread if it is able to handle

@@ -13,6 +13,7 @@
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -80,7 +81,7 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
   // has its own privacy notice.
   if (identity_manager &&
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired)) {
-    identity::ScopeSet scopes;
+    signin::ScopeSet scopes;
     scopes.insert("https://www.googleapis.com/auth/supportcontent");
     token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
         "feedback_uploader_chrome", identity_manager, scopes,

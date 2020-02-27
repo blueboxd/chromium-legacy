@@ -1086,6 +1086,12 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
      base::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
      base::size(kExploreSitesDenseTitleRight), nullptr}};
+const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
+    contextual_search::kLongpressResolveParamName,
+    contextual_search::kLongpressResolvePreserveTap};
+const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
+    {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
+};
 
 #endif  // defined(OS_ANDROID)
 
@@ -1662,7 +1668,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLongpressResolve)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextualSearchLongpressResolve,
+         kLongpressResolveVariations,
+         "ContextualSearchLongpressResolve")},
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
@@ -2694,8 +2703,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsExperimentalFeatures)},
     {"enable-web-payments-minimal-ui",
      flag_descriptions::kWebPaymentsMinimalUIName,
-     flag_descriptions::kWebPaymentsMinimalUIDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsMinimalUI)},
+     flag_descriptions::kWebPaymentsMinimalUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebPaymentsMinimalUI)},
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},

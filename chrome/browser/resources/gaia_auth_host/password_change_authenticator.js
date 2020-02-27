@@ -56,7 +56,8 @@ cr.define('cr.samlPasswordChange', function() {
     if (url.host.match(/\.okta\.com$/)) {
       return PasswordChangePageProvider.OKTA;
     }
-    if (url.pathname.match('/password/chg/')) {
+    if (url.pathname.match('/password/chg/') ||
+        url.pathname.match('/pwdchange/')) {
       return PasswordChangePageProvider.PING;
     }
     return PasswordChangePageProvider.UNKNOWN;
@@ -105,8 +106,9 @@ cr.define('cr.samlPasswordChange', function() {
     if (pageProvider == PasswordChangePageProvider.PING) {
       // The returnurl is always preserved until password change succeeds - then
       // it is no longer needed.
-      return !!postUrl.searchParams.get('returnurl') &&
-          !redirectUrl.searchParams.get('returnurl');
+      return (!!postUrl.searchParams.get('returnurl') &&
+              !redirectUrl.searchParams.get('returnurl')) ||
+          redirectUrl.pathname.endsWith('Success');
     }
 
     // We can't currently detect success for Okta just by inspecting the

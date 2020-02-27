@@ -1242,8 +1242,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, DISABLED_AdPageLoadUKM) {
   timing.navigation_start = base::Time::Now();
   timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing.response_start = base::TimeDelta::FromSeconds(0);
-  timing.interactive_timing->interactive =
-      base::TimeDelta::FromMilliseconds(10);
   PopulateRequiredTimingFields(&timing);
   TimingUpdate(timing);
   ResourceDataUpdate(
@@ -1701,8 +1699,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(0);
-  subframe_timing.interactive_timing->interactive =
-      base::TimeDelta::FromMilliseconds(0);
   PopulateRequiredTimingFields(&subframe_timing);
   tester()->SimulateTimingUpdate(subframe_timing, ad_frame);
 
@@ -1711,8 +1707,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(5);
-  subframe_timing.interactive_timing->interactive =
-      base::TimeDelta::FromMilliseconds(20);
   PopulateRequiredTimingFields(&subframe_timing);
   tester()->SimulateTimingUpdate(subframe_timing, ad_frame);
 
@@ -1724,8 +1718,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(),
       ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 5);
-  test_ukm_recorder().ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kTiming_InteractiveName, 20);
 }
 
 // Tests that creative origin status is computed as intended, i.e. as the origin

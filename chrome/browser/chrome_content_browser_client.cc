@@ -2128,6 +2128,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kWebComponentsV0Enabled)) {
         command_line->AppendSwitch(switches::kWebComponentsV0Enabled);
       }
+      if (prefs->HasPrefPath(prefs::kUseLegacyFormControls) &&
+          prefs->GetBoolean(prefs::kUseLegacyFormControls)) {
+        command_line->AppendSwitch(switches::kUseLegacyFormControls);
+      }
 
       if (!profile->ShouldEnableOutOfBlinkCors()) {
         command_line->AppendSwitch(

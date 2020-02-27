@@ -86,7 +86,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "services/identity/public/cpp/scope_set.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #endif
 
 using content::RenderFrameHost;
@@ -487,7 +487,7 @@ class PrintPreviewHandler::AccessTokenService
   void RequestToken(base::OnceCallback<void(const std::string&)> callback) {
     // There can only be one pending request at a time. See
     // cloud_print_interface_js.js.
-    const identity::ScopeSet scopes{cloud_devices::kCloudPrintAuthScope};
+    const signin::ScopeSet scopes{cloud_devices::kCloudPrintAuthScope};
     DCHECK(!device_request_callback_);
 
     chromeos::DeviceOAuth2TokenService* token_service =

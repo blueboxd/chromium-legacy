@@ -288,6 +288,7 @@ ci.android_fyi_builder(
 
 ci.android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
+    goma_jobs=goma.jobs.J150,
 )
 
 

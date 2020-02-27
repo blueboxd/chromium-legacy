@@ -23,6 +23,12 @@ if (is_chromeos) {
   import("//build/config/chromeos/rules.gni")
 }
 
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+  import("//build/config/ios/ios_test_runner_wrapper.gni")
+  import("//build/config/ios/rules.gni")
+}
+
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
@@ -227,9 +233,6 @@ template("test") {
       output_name = _exec_target
     }
   } else if (is_ios) {
-    import("//build/config/ios/ios_sdk.gni")
-    import("//build/config/ios/rules.gni")
-
     declare_args() {
       # Keep the unittest-as-xctest functionality defaulted to off until the
       # bots are updated to handle it properly.
@@ -239,6 +242,31 @@ template("test") {
     }
 
     _test_target = target_name
+    _wrapper_output_name = "run_${target_name}"
+    ios_test_runner_wrapper(_wrapper_output_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "executable_args",
+                               "retries",
+                               "shards",
+                             ])
+
+      _root_build_dir = rebase_path("${root_build_dir}", root_build_dir)
+
+      if (!defined(executable_args)) {
+        executable_args = []
+      }
+      executable_args += [
+        "--app",
+        "@WrappedPath(${_root_build_dir}/${_test_target}.app)",
+      ]
+
+      wrapper_output_name = "${_wrapper_output_name}"
+    }
+
     _resources_bundle_data = target_name + "_resources_bundle_data"
 
     bundle_data(_resources_bundle_data) {
@@ -281,6 +309,13 @@ template("test") {
         bundle_deps = []
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
+
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+
+      # Include the generate_wrapper as part of data_deps
+      data_deps += [ ":${_wrapper_output_name}" ]
     }
   } else if (is_chromeos && cros_board != "") {
     # Building for a cros board (ie: not linux-chromeos).

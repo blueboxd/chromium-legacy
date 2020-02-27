@@ -358,7 +358,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   }
 }
 
-void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
+void WindowPerformance::ReportEventTimings(WebSwapResult result,
                                            base::TimeTicks timestamp) {
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   bool event_timing_enabled =

@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.util.UrlUtilitiesJni;
+import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 
 import java.net.MalformedURLException;
 import java.net.URL;

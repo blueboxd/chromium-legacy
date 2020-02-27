@@ -728,7 +728,11 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
 namespace {
 class RootViewTestDialogDelegate : public DialogDelegateView {
  public:
-  RootViewTestDialogDelegate() = default;
+  RootViewTestDialogDelegate() {
+    // Ensure that buttons don't influence the layout.
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  }
+  ~RootViewTestDialogDelegate() override = default;
 
   int layout_count() const { return layout_count_; }
 
@@ -737,9 +741,6 @@ class RootViewTestDialogDelegate : public DialogDelegateView {
   void Layout() override {
     EXPECT_EQ(size(), preferred_size_);
     ++layout_count_;
-  }
-  int GetDialogButtons() const override {
-    return ui::DIALOG_BUTTON_NONE;  // Ensure buttons do not influence size.
   }
 
  private:

@@ -5,7 +5,7 @@ package org.chromium.chrome.browser.webapps;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

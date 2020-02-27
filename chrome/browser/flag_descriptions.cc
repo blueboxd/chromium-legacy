@@ -2290,8 +2290,10 @@ const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
 const char kContextualSearchLongpressResolveDescription[] =
     "Enables communicating with Google servers when a long-press gesture is "
-    "recognized under some privacy-limited conditions.  The page context data "
-    " sent to Google is potentially privacy sensitive!";
+    "recognized under some privacy-limited conditions, including having Touch "
+    "to Search enabled in preferences. The page context data sent to Google is "
+    "potentially privacy sensitive!  This disables the tap gesture from "
+    "triggering Touch to Search unless that experiment arm is enabled.";
 
 const char kContextualSearchMlTapSuppressionName[] =
     "Contextual Search ML tap suppression";

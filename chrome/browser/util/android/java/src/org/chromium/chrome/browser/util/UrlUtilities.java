@@ -22,10 +22,12 @@ import java.util.HashSet;
  * Utilities for working with URIs (and URLs). These methods may be used in security-sensitive
  * contexts (after all, origins are the security boundary on the web), and so the correctness bar
  * must be high.
+ * @deprecated Use the version in //components/embedder_support instead.
  *
  * Use ShadowUrlUtilities to mock out native-dependent methods in tests.
  * TODO(pshmakov): we probably should just make those methods non-static.
  */
+@Deprecated
 public class UrlUtilities {
     private static final String TAG = "UrlUtilities";
 

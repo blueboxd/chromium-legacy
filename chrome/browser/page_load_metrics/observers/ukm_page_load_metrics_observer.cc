@@ -357,16 +357,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetPaintTiming_NavigationToLargestContentfulPaint(
         all_frames_largest_contentful_paint.Time().value().InMilliseconds());
   }
-  if (timing.interactive_timing->interactive) {
-    base::TimeDelta time_to_interactive =
-        timing.interactive_timing->interactive.value();
-    if (!timing.interactive_timing->first_invalidating_input ||
-        timing.interactive_timing->first_invalidating_input.value() >
-            time_to_interactive) {
-      builder.SetExperimental_NavigationToInteractive(
-          time_to_interactive.InMilliseconds());
-    }
-  }
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();

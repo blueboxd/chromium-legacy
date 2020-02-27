@@ -184,15 +184,6 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT;
   }
 
-  if (!EventsInOrder(timing.paint_timing->first_meaningful_paint,
-                     timing.interactive_timing->interactive)) {
-    LOG(ERROR) << "Invalid first_meaningful_paint "
-               << timing.paint_timing->first_meaningful_paint
-               << " for time_to_interactive "
-               << timing.interactive_timing->interactive;
-    return internal::INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE;
-  }
-
   if (timing.interactive_timing->first_input_delay.has_value() &&
       !timing.interactive_timing->first_input_timestamp.has_value()) {
     return internal::INVALID_NULL_FIRST_INPUT_TIMESTAMP;
@@ -353,16 +344,6 @@ class PageLoadTimingMerger {
       bool is_main_frame) {
     mojom::InteractiveTiming* target_interactive_timing =
         target_->interactive_timing.get();
-
-    if (is_main_frame) {
-      // TTI is only tracked in the main frame.
-      target_interactive_timing->interactive =
-          new_interactive_timing.interactive;
-      target_interactive_timing->first_invalidating_input =
-          new_interactive_timing.first_invalidating_input;
-      target_interactive_timing->interactive_detection =
-          new_interactive_timing.interactive_detection;
-    }
 
     target_interactive_timing->num_input_events +=
         new_interactive_timing.num_input_events;

@@ -27,6 +27,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/notification_details.h"
@@ -1017,7 +1018,7 @@ void ExtensionDownloader::CreateExtensionLoader() {
       // ExtensionLoader will be started once the token fetch is complete,
       // in either OnTokenFetchSuccess or OnTokenFetchFailure.
       DCHECK(identity_manager_);
-      identity::ScopeSet webstore_scopes;
+      signin::ScopeSet webstore_scopes;
       webstore_scopes.insert(kWebstoreOAuth2Scope);
       // It is safe to use Unretained(this) here given that the callback
       // will not be invoked if this object is deleted.
@@ -1231,7 +1232,7 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
       if (response_code == net::HTTP_UNAUTHORIZED &&
           fetch->oauth2_attempt_count <= kMaxOAuth2Attempts) {
         DCHECK(identity_manager_);
-        identity::ScopeSet webstore_scopes;
+        signin::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
         identity_manager_->RemoveAccessTokenFromCache(
             identity_manager_->GetPrimaryAccountId(), webstore_scopes,

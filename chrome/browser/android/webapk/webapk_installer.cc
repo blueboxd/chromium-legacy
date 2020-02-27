@@ -125,8 +125,6 @@ webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
       return webapk::WebApk::PRIMARY_ICON_HASH_DIFFERS;
     case WebApkUpdateReason::PRIMARY_ICON_MASKABLE_DIFFERS:
       return webapk::WebApk::PRIMARY_ICON_MASKABLE_DIFFERS;
-    case WebApkUpdateReason::BADGE_ICON_HASH_DIFFERS:
-      return webapk::WebApk::BADGE_ICON_HASH_DIFFERS;
     case WebApkUpdateReason::SPLASH_ICON_HASH_DIFFERS:
       return webapk::WebApk::SPLASH_ICON_HASH_DIFFERS;
     case WebApkUpdateReason::SCOPE_DIFFERS:

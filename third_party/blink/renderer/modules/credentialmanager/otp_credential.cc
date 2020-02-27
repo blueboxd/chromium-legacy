@@ -13,10 +13,10 @@ namespace {
 constexpr char kOtpCredentialType[] = "otp";
 }
 
-OtpCredential::OtpCredential(const String& id)
-    : Credential(id, kOtpCredentialType) {}
+OTPCredential::OTPCredential(const String& code)
+    : Credential(String(), kOtpCredentialType), code_(code) {}
 
-bool OtpCredential::IsOtpCredential() const {
+bool OTPCredential::IsOTPCredential() const {
   return true;
 }
 

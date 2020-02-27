@@ -47,10 +47,6 @@ struct RtcpTimeData;
 using CastTransportStatusCallback =
     base::Callback<void(CastTransportStatus status)>;
 
-using BulkRawEventsCallback =
-    base::Callback<void(std::unique_ptr<std::vector<FrameEvent>>,
-                        std::unique_ptr<std::vector<PacketEvent>>)>;
-
 // Interface to handle received RTCP messages on RTP sender.
 class RtcpObserver {
  public:

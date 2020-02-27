@@ -57,9 +57,9 @@ class MockIdentityDiagnosticsObserver
   MOCK_METHOD3(OnAccessTokenRequested,
                void(const CoreAccountId&,
                     const std::string&,
-                    const identity::ScopeSet&));
+                    const signin::ScopeSet&));
   MOCK_METHOD2(OnAccessTokenRemovedFromCache,
-               void(const CoreAccountId&, const identity::ScopeSet&));
+               void(const CoreAccountId&, const signin::ScopeSet&));
 };
 
 std::string IndexToName(size_t index) {

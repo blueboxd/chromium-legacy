@@ -37,9 +37,7 @@ struct PLATFORM_EXPORT PaintChunk {
         id(id),
         properties(props),
         is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()) {
-    DCHECK_GT(end_index, begin_index);
-  }
+        client_is_just_created(id.client.IsJustCreated()) {}
 
   // Move a paint chunk from a cached subsequence.
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
@@ -62,7 +60,7 @@ struct PLATFORM_EXPORT PaintChunk {
   }
 
   wtf_size_t size() const {
-    DCHECK_GT(end_index, begin_index);
+    DCHECK_GE(end_index, begin_index);
     return end_index - begin_index;
   }
 
@@ -85,6 +83,8 @@ struct PLATFORM_EXPORT PaintChunk {
     return !client_is_just_created;
   }
 
+  bool EqualsForUnderInvalidationChecking(const PaintChunk& other) const;
+
   size_t MemoryUsageInBytes() const;
 
   String ToString() const;
@@ -104,9 +104,12 @@ struct PLATFORM_EXPORT PaintChunk {
   // The paint properties which apply to this chunk.
   RefCountedPropertyTreeState properties;
 
-  // The following fields are not initialized when the chunk is created because
-  // they depend on the display items in this chunk. They are updated by the
-  // constructor of PaintArtifact.
+  // The following fields are not initialized when the chunk is created by
+  // PaintChunker because they depend on the display items in this chunk.
+  // They are updated when a display item is added into the chunk, or by the
+  // constructor of PaintArtifact, or when a paint chunk is moved from a cached
+  // subsequence.
+  // TODO(wangxianzhu): Reduce complexity of this.
 
   std::unique_ptr<HitTestData> hit_test_data;
 
@@ -134,27 +137,6 @@ struct PLATFORM_EXPORT PaintChunk {
   bool client_is_just_created;
   bool is_moved_from_cached_subsequence = false;
 };
-
-inline bool ChunkLessThanIndex(const PaintChunk& chunk, wtf_size_t index) {
-  return chunk.end_index <= index;
-}
-
-inline Vector<PaintChunk>::iterator FindChunkInVectorByDisplayItemIndex(
-    Vector<PaintChunk>& chunks,
-    wtf_size_t index) {
-  auto* chunk =
-      std::lower_bound(chunks.begin(), chunks.end(), index, ChunkLessThanIndex);
-  DCHECK(chunk == chunks.end() ||
-         (index >= chunk->begin_index && index < chunk->end_index));
-  return chunk;
-}
-
-inline Vector<PaintChunk>::const_iterator FindChunkInVectorByDisplayItemIndex(
-    const Vector<PaintChunk>& chunks,
-    wtf_size_t index) {
-  return FindChunkInVectorByDisplayItemIndex(
-      const_cast<Vector<PaintChunk>&>(chunks), index);
-}
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);
 

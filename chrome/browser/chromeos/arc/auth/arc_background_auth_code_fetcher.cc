@@ -15,6 +15,7 @@
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_constants.h"
@@ -76,7 +77,7 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(bool success) {
     return;
   }
 
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
   access_token_fetcher_ = context_.CreateAccessTokenFetcher(
       kConsumerName, scopes,

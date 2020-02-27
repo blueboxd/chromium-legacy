@@ -75,20 +75,13 @@ class PaintPreviewBaseService : public KeyedService {
   // Returns whether the created service is off the record.
   bool IsOffTheRecord() const { return is_off_the_record_; }
 
-  // Acquires the PaintPreviewProto that is associated with |url| and sends it
-  // to |onReadProtoCallback|. Default implementation immediately sends nullptr
-  // to |onReadProtoCallback|. Implementers of this class should override this
-  // function. GetCapturedPaintPreviewProtoFromFile can be used if the proto is
-  // saved on disk.
+  // Acquires the PaintPreviewProto that is associated with |key| and sends it
+  // to |on_read_proto_callback|. The default implementation attempts to invoke
+  // GetFileManager()->DeserializePaintPreviewProto(). Derived classes may
+  // override this function; for example, the proto is cached in memory.
   virtual void GetCapturedPaintPreviewProto(
-      const GURL& url,
-      OnReadProtoCallback onReadProtoCallback);
-
-  // Asynchronously deserializes PaintPreviewProto from |file_path| and sends it
-  // to |onReadProtoCallback|.
-  void GetCapturedPaintPreviewProtoFromFile(
-      const base::FilePath& file_path,
-      OnReadProtoCallback onReadProtoCallback);
+      const DirectoryKey& key,
+      OnReadProtoCallback on_read_proto_callback);
 
   // The following methods both capture a Paint Preview; however, their behavior
   // and intended use is different. The first method is intended for capturing
@@ -98,7 +91,7 @@ class PaintPreviewBaseService : public KeyedService {
   // individual subframes and should be used for only a few use cases.
   //
   // NOTE: |root_dir| in the following methods should be created using
-  // GetFileManager()->CreateOrGetDirectoryFor(<GURL>). However, to provide
+  // GetFileManager()->CreateOrGetDirectoryFor(). However, to provide
   // flexibility in managing the lifetime of created objects and ease cleanup
   // if a capture fails the service implementation is responsible for
   // implementing this management and tracking the directories in existence.

@@ -61,8 +61,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void SimulateSwapPromise(base::TimeTicks timestamp) {
-    performance_->ReportEventTimings(WebWidgetClient::SwapResult::kDidSwap,
-                                     timestamp);
+    performance_->ReportEventTimings(WebSwapResult::kDidSwap, timestamp);
   }
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }

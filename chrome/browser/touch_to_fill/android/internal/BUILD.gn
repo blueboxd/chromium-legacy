@@ -16,6 +16,7 @@ android_library("java") {
     "//chrome/browser/flags:java",
     "//chrome/browser/touch_to_fill/android:public_java",
     "//chrome/browser/util:java",
+    "//components/embedder_support/android:util_java",
     "//components/url_formatter/android:url_formatter_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//ui/android:ui_java",

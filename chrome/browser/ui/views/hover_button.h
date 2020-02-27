@@ -55,7 +55,7 @@ class HoverButton : public views::LabelButton {
   HoverButton(views::ButtonListener* button_listener,
               std::unique_ptr<views::View> icon_view,
               const base::string16& title,
-              const base::string16& subtitle,
+              const base::string16& subtitle = base::string16(),
               std::unique_ptr<views::View> secondary_view = nullptr,
               bool resize_row_for_secondary_view = true,
               bool secondary_view_can_process_events = false);

@@ -166,6 +166,7 @@ try_.chromium_android_builder(
 
 try_.chromium_android_builder(
     name = 'android-pie-x86-fyi-rel',
+    goma_jobs=goma.jobs.J150,
 )
 
 try_.chromium_android_builder(

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -238,7 +239,7 @@ void SyncAuthManager::InvalidateAccessToken() {
 
   identity_manager_->RemoveAccessTokenFromCache(
       sync_account_.account_info.account_id,
-      identity::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope}, access_token_);
+      signin::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope}, access_token_);
 
   access_token_.clear();
   credentials_changed_callback_.Run();

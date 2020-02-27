@@ -115,37 +115,6 @@ static HashSet<AtomicString>& FillAndStrokeTags() {
   return tag_list;
 }
 
-namespace {
-
-template <typename ContainerType>
-bool IsResourceOfType(LayoutSVGResourceContainer* container) {
-  return container->ResourceType() == ContainerType::kResourceType;
-}
-
-template <>
-bool IsResourceOfType<LayoutSVGResourcePaintServer>(
-    LayoutSVGResourceContainer* container) {
-  return container->IsSVGPaintServer();
-}
-
-template <typename ContainerType>
-ContainerType* CastResource(SVGResource* resource) {
-  if (!resource)
-    return nullptr;
-  if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
-    if (IsResourceOfType<ContainerType>(container))
-      return static_cast<ContainerType*>(container);
-  }
-  return nullptr;
-}
-
-template <typename ContainerType>
-ContainerType* CastResource(StyleSVGResource& style_resource) {
-  return CastResource<ContainerType>(style_resource.Resource());
-}
-
-}  // namespace
-
 bool SVGResources::HasResourceData() const {
   return clipper_filter_masker_data_ || marker_data_ || fill_stroke_data_ ||
          linked_resource_;
@@ -176,59 +145,51 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
   std::unique_ptr<SVGResources> resources;
   if (ClipperFilterMaskerTags().Contains(tag_name)) {
     if (computed_style.ClipPath() && !object.IsSVGRoot()) {
-      ClipPathOperation* clip_path_operation = computed_style.ClipPath();
-      if (clip_path_operation->GetType() == ClipPathOperation::REFERENCE) {
-        const ReferenceClipPathOperation& clip_path_reference =
-            To<ReferenceClipPathOperation>(*clip_path_operation);
-        EnsureResources(resources).SetClipper(
-            CastResource<LayoutSVGResourceClipper>(
-                clip_path_reference.Resource()));
+      if (LayoutSVGResourceClipper* clipper =
+              GetSVGResourceAsType(computed_style.ClipPath())) {
+        EnsureResources(resources).SetClipper(clipper);
       }
     }
 
     if (computed_style.HasFilter() && !object.IsSVGRoot()) {
-      const FilterOperations& filter_operations = computed_style.Filter();
-      if (filter_operations.size() == 1) {
-        const FilterOperation& filter_operation = *filter_operations.at(0);
-        if (const auto* reference_filter_operation =
-                DynamicTo<ReferenceFilterOperation>(filter_operation)) {
-          EnsureResources(resources).SetFilter(
-              CastResource<LayoutSVGResourceFilter>(
-                  reference_filter_operation->Resource()));
-        }
+      if (LayoutSVGResourceFilter* filter =
+              GetFilterResourceForSVG(computed_style)) {
+        EnsureResources(resources).SetFilter(filter);
       }
     }
 
-    if (StyleSVGResource* masker_resource = style.MaskerResource()) {
-      EnsureResources(resources).SetMasker(
-          CastResource<LayoutSVGResourceMasker>(*masker_resource));
+    if (auto* masker = GetSVGResourceAsType<LayoutSVGResourceMasker>(
+            style.MaskerResource())) {
+      EnsureResources(resources).SetMasker(masker);
     }
   }
 
   if (style.HasMarkers() && SupportsMarkers(element)) {
-    if (StyleSVGResource* marker_start_resource = style.MarkerStartResource()) {
-      EnsureResources(resources).SetMarkerStart(
-          CastResource<LayoutSVGResourceMarker>(*marker_start_resource));
+    if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+            style.MarkerStartResource())) {
+      EnsureResources(resources).SetMarkerStart(marker);
     }
-    if (StyleSVGResource* marker_mid_resource = style.MarkerMidResource()) {
-      EnsureResources(resources).SetMarkerMid(
-          CastResource<LayoutSVGResourceMarker>(*marker_mid_resource));
+    if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+            style.MarkerMidResource())) {
+      EnsureResources(resources).SetMarkerMid(marker);
     }
-    if (StyleSVGResource* marker_end_resource = style.MarkerEndResource()) {
-      EnsureResources(resources).SetMarkerEnd(
-          CastResource<LayoutSVGResourceMarker>(*marker_end_resource));
+    if (auto* marker = GetSVGResourceAsType<LayoutSVGResourceMarker>(
+            style.MarkerEndResource())) {
+      EnsureResources(resources).SetMarkerEnd(marker);
     }
   }
 
   if (FillAndStrokeTags().Contains(tag_name)) {
-    if (StyleSVGResource* fill_resource = style.FillPaint().Resource()) {
-      EnsureResources(resources).SetFill(
-          CastResource<LayoutSVGResourcePaintServer>(*fill_resource));
+    if (auto* paint_resource =
+            GetSVGResourceAsType<LayoutSVGResourcePaintServer>(
+                style.FillPaint().Resource())) {
+      EnsureResources(resources).SetFill(paint_resource);
     }
 
-    if (StyleSVGResource* stroke_resource = style.StrokePaint().Resource()) {
-      EnsureResources(resources).SetStroke(
-          CastResource<LayoutSVGResourcePaintServer>(*stroke_resource));
+    if (auto* paint_resource =
+            GetSVGResourceAsType<LayoutSVGResourcePaintServer>(
+                style.StrokePaint().Resource())) {
+      EnsureResources(resources).SetStroke(paint_resource);
     }
   }
 

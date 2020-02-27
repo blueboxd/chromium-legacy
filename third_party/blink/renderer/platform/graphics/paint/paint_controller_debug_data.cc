@@ -20,32 +20,25 @@ class PaintController::DisplayItemListAsJSON {
                         DisplayItemList::JsonFlags);
 
   String ToString() {
-    return SubsequenceAsJSONArrayRecursive(0, list_.size())
-        ->ToPrettyJSONString();
+    return ChunksAsJSONArrayRecursive(0, chunks_.size())->ToPrettyJSONString();
   }
 
  private:
   std::unique_ptr<JSONObject> SubsequenceAsJSONObjectRecursive();
-  std::unique_ptr<JSONArray> SubsequenceAsJSONArrayRecursive(wtf_size_t,
-                                                             wtf_size_t);
-  void AppendSubsequenceAsJSON(wtf_size_t, wtf_size_t, JSONArray&);
+  std::unique_ptr<JSONArray> ChunksAsJSONArrayRecursive(wtf_size_t, wtf_size_t);
+  void AppendChunksAsJSON(wtf_size_t, wtf_size_t, JSONArray&);
   String ClientName(const DisplayItemClient&) const;
 
   struct SubsequenceInfo {
-    SubsequenceInfo(const DisplayItemClient* client,
-                    wtf_size_t start,
-                    wtf_size_t end)
-        : client(client), start(start), end(end) {}
     const DisplayItemClient* client;
-    wtf_size_t start;
-    wtf_size_t end;
+    wtf_size_t start_chunk_index;
+    wtf_size_t end_chunk_index;
   };
 
   const DisplayItemList& list_;
   Vector<SubsequenceInfo> subsequences_;
   Vector<SubsequenceInfo>::const_iterator current_subsequence_;
   const Vector<PaintChunk>& chunks_;
-  Vector<PaintChunk>::const_iterator current_chunk_;
   DisplayItemList::JsonFlags flags_;
 };
 
@@ -56,15 +49,16 @@ PaintController::DisplayItemListAsJSON::DisplayItemListAsJSON(
     DisplayItemList::JsonFlags flags)
     : list_(list),
       chunks_(chunks),
-      current_chunk_(chunks.begin()),
       flags_(flags) {
   for (const auto& item : subsequence_map) {
-    subsequences_.push_back(
-        SubsequenceInfo(item.key, item.value.start, item.value.end));
+    subsequences_.push_back(SubsequenceInfo{
+        item.key, item.value.start_chunk_index, item.value.end_chunk_index});
   }
   std::sort(subsequences_.begin(), subsequences_.end(),
             [](const SubsequenceInfo& a, const SubsequenceInfo& b) {
-              return a.start == b.start ? a.end > b.end : a.start < b.start;
+              return a.start_chunk_index == b.start_chunk_index
+                         ? a.end_chunk_index > b.end_chunk_index
+                         : a.start_chunk_index < b.start_chunk_index;
             });
 
   current_subsequence_ = subsequences_.begin();
@@ -80,56 +74,45 @@ PaintController::DisplayItemListAsJSON::SubsequenceAsJSONObjectRecursive() {
   json_object->SetString("subsequence",
                          String::Format("client: %p ", subsequence.client) +
                              ClientName(*subsequence.client));
-  json_object->SetArray("chunks", SubsequenceAsJSONArrayRecursive(
-                                      subsequence.start, subsequence.end));
+  json_object->SetArray(
+      "chunks", ChunksAsJSONArrayRecursive(subsequence.start_chunk_index,
+                                           subsequence.end_chunk_index));
 
   return json_object;
 }
 
 std::unique_ptr<JSONArray>
-PaintController::DisplayItemListAsJSON::SubsequenceAsJSONArrayRecursive(
-    wtf_size_t start_item,
-    wtf_size_t end_item) {
+PaintController::DisplayItemListAsJSON::ChunksAsJSONArrayRecursive(
+    wtf_size_t start_chunk_index,
+    wtf_size_t end_chunk_index) {
   auto array = std::make_unique<JSONArray>();
-  auto item_index = start_item;
+  auto chunk_index = start_chunk_index;
 
   while (current_subsequence_ != subsequences_.end() &&
-         current_subsequence_->start < end_item) {
+         current_subsequence_->start_chunk_index < end_chunk_index) {
     const auto& subsequence = *current_subsequence_;
-    DCHECK(subsequence.start >= item_index);
-    DCHECK(subsequence.end <= end_item);
+    DCHECK_GE(subsequence.start_chunk_index, chunk_index);
+    DCHECK_LE(subsequence.end_chunk_index, end_chunk_index);
 
-    if (item_index < subsequence.start)
-      AppendSubsequenceAsJSON(item_index, subsequence.start, *array);
+    if (chunk_index < subsequence.start_chunk_index)
+      AppendChunksAsJSON(chunk_index, subsequence.start_chunk_index, *array);
     array->PushObject(SubsequenceAsJSONObjectRecursive());
-    item_index = subsequence.end;
+    chunk_index = subsequence.end_chunk_index;
   }
 
-  if (item_index < end_item)
-    AppendSubsequenceAsJSON(item_index, end_item, *array);
+  if (chunk_index < end_chunk_index)
+    AppendChunksAsJSON(chunk_index, end_chunk_index, *array);
 
   return array;
 }
 
-void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
-    wtf_size_t start_item,
-    wtf_size_t end_item,
+void PaintController::DisplayItemListAsJSON::AppendChunksAsJSON(
+    wtf_size_t start_chunk_index,
+    wtf_size_t end_chunk_index,
     JSONArray& json_array) {
-  DCHECK(end_item > start_item);
-  if (current_chunk_ == chunks_.end()) {
-    // We are in the middle of painting with incomplete chunks.
-    auto json_object = std::make_unique<JSONObject>();
-    json_object->SetString("chunk", "incomplete");
-    json_object->SetArray(
-        "displayItems", list_.SubsequenceAsJSON(start_item, end_item, flags_));
-    json_array.PushObject(std::move(json_object));
-    return;
-  }
-
-  DCHECK(current_chunk_->begin_index == start_item);
-  while (current_chunk_ != chunks_.end() &&
-         current_chunk_->end_index <= end_item) {
-    const auto& chunk = *current_chunk_;
+  DCHECK_GT(end_chunk_index, start_chunk_index);
+  for (auto i = start_chunk_index; i < end_chunk_index; ++i) {
+    const auto& chunk = chunks_[i];
     auto json_object = std::make_unique<JSONObject>();
 
     json_object->SetString(
@@ -140,10 +123,9 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
 
     json_object->SetArray(
         "displayItems",
-        list_.SubsequenceAsJSON(chunk.begin_index, chunk.end_index, flags_));
+        list_.DisplayItemsAsJSON(chunk.begin_index, chunk.end_index, flags_));
 
     json_array.PushObject(std::move(json_object));
-    ++current_chunk_;
   }
 }
 

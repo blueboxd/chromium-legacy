@@ -46,23 +46,17 @@ class PLATFORM_EXPORT PaintChunker final {
 
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
 
-  PaintChunk& PaintChunkAt(wtf_size_t i) { return chunks_[i]; }
-  wtf_size_t LastChunkIndex() const {
-    return chunks_.IsEmpty() ? kNotFound : chunks_.size() - 1;
-  }
+  wtf_size_t size() const { return chunks_.size(); }
   PaintChunk& LastChunk() { return chunks_.back(); }
-
-  PaintChunk& FindChunkByDisplayItemIndex(wtf_size_t index) {
-    auto* chunk = FindChunkInVectorByDisplayItemIndex(chunks_, index);
-    DCHECK(chunk != chunks_.end());
-    return *chunk;
-  }
 
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
+  void CreateNewChunk();
+  void AddItemToCurrentChunk(const DisplayItem&);
+
   wtf_size_t ChunkIndex(const PaintChunk& chunk) const {
     auto index = static_cast<wtf_size_t>(&chunk - &chunks_.front());
     DCHECK_LT(index, chunks_.size());

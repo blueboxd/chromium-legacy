@@ -122,6 +122,26 @@ void PopulateResourceResponse(net::URLRequest* request,
       response->ssl_info = request->ssl_info();
   }
 
+  // TODO(ahemery): Cross origin isolation headers should only be parsed for
+  // secure contexts. Check here using IsUrlPotentiallyTrustworthy() once the
+  // tests are updated to use HTTPS.
+  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {
+    // Parse the Cross-Origin-Embedder-Policy and
+    // Cross-Origin-Embedder-Policy-Report-Only headers.
+    response->cross_origin_embedder_policy =
+        URLLoader::ParseCrossOriginEmbedderPolicyValue(
+            request->response_headers());
+
+    // Parse the Cross-Origin-Opener-Policy header.
+    std::string raw_coop_string;
+    if (request->response_headers() &&
+        request->response_headers()->GetNormalizedHeader(
+            kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
+      response->cross_origin_opener_policy =
+          ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
+    }
+  }
+
   response->request_start = request->creation_time();
   response->response_start = base::TimeTicks::Now();
   response->encoded_data_length = request->GetTotalReceivedBytes();
@@ -1151,22 +1171,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     AddContentSecurityPolicyFromHeaders(*url_request_->response_headers(),
                                         url_request_->url(),
                                         &(response_->content_security_policy));
-  }
-
-  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation)) {
-    // Parse the Cross-Origin-Embedder-Policy and
-    // Cross-Origin-Embedder-Policy-Report-Only headers.
-    response_->cross_origin_embedder_policy =
-        ParseCrossOriginEmbedderPolicyValue(url_request_->response_headers());
-
-    // Parse the Cross-Origin-Opener-Policy header.
-    std::string raw_coop_string;
-    if (url_request_->response_headers() &&
-        url_request_->response_headers()->GetNormalizedHeader(
-            kCrossOriginOpenerPolicyHeader, &raw_coop_string)) {
-      response_->cross_origin_opener_policy =
-          ParseCrossOriginOpenerPolicyHeader(raw_coop_string);
-    }
   }
 
   // If necessary, retrieve the associated origin policy, before sending the

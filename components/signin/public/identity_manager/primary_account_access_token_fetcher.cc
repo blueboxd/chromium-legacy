@@ -17,7 +17,7 @@ namespace signin {
 PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     const std::string& oauth_consumer_name,
     IdentityManager* identity_manager,
-    const identity::ScopeSet& scopes,
+    const ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     Mode mode,
     ConsentLevel consent)

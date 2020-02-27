@@ -25,6 +25,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -90,7 +91,7 @@ void AddSupervisionHandler::GetInstalledArcApps(
 }
 
 void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope);
   scopes.insert(GaiaConstants::kPeopleApiReadOnlyOAuth2Scope);
   scopes.insert(GaiaConstants::kAccountsReauthOAuth2Scope);

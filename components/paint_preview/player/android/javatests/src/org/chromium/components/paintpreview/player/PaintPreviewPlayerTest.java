@@ -29,7 +29,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     // TODO(crbug.com/1049303) Change to test data directory when test Proto and SKP files are
     //  added.
     private static final String TEST_DATA_DIR = Environment.getExternalStorageDirectory().getPath();
-    private static final String TEST_URL = "https://www.google.com";
+    private static final String TEST_DIRECTORY_KEY = "test_key";
 
     @Rule
     public PaintPreviewTestRule mPaintPreviewTestRule = new PaintPreviewTestRule();
@@ -44,7 +44,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     public void smokeTest() {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             TestImplementerService service = new TestImplementerService(TEST_DATA_DIR);
-            mPlayerManager = new PlayerManager(getActivity(), service, TEST_URL);
+            mPlayerManager = new PlayerManager(getActivity(), service, TEST_DIRECTORY_KEY);
         });
         CriteriaHelper.pollUiThread(() -> mPlayerManager != null,
                 "PlayerManager took too long to initialize.", TIMEOUT_MS,

@@ -236,6 +236,12 @@ group("closure_compile_module") {
       "system_page:closure_compile_module",
     ]
   }
+
+  if (is_win) {
+    deps += [
+      "chrome_cleanup_page:closure_compile_module",
+    ]
+  }
 }
 
 js_type_check("closure_compile_local_module") {
@@ -377,7 +383,6 @@ group("polymer3_elements") {
     "autofill_page:polymer3_elements",
     "basic_page:polymer3_elements",
     "change_password_page:polymer3_elements",
-    "chrome_cleanup_page:polymer3_elements",
     "clear_browsing_data_dialog:polymer3_elements",
     "controls:polymer3_elements",
     "downloads_page:polymer3_elements",
@@ -411,6 +416,12 @@ group("polymer3_elements") {
     public_deps += [
       "default_browser_page:polymer3_elements",
       "system_page:polymer3_elements",
+    ]
+  }
+
+  if (is_win) {
+    public_deps += [
+      "chrome_cleanup_page:polymer3_elements",
     ]
   }
 }

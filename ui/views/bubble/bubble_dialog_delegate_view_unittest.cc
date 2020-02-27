@@ -68,13 +68,11 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     return should_show_close_button_;
   }
 
-  int GetDialogButtons() const override { return buttons_; }
-
   void set_title_view(View* title_view) { title_view_.reset(title_view); }
   void show_close_button() { should_show_close_button_ = true; }
   void hide_buttons() {
     should_show_close_button_ = false;
-    buttons_ = ui::DIALOG_BUTTON_NONE;
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   }
   void set_should_show_window_title(bool should_show_window_title) {
     should_show_window_title_ = should_show_window_title;
@@ -87,7 +85,6 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  private:
   View* view_ = new View;
   std::unique_ptr<View> title_view_;
-  int buttons_ = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   bool should_show_close_button_ = false;
   bool should_show_window_title_ = true;
 

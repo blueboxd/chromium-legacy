@@ -226,7 +226,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
   }
 }
 
-- (void)testCopyPaste {
+// Test is flaky: crbug.com/1056700.
+- (void)DISABLED_testCopyPaste {
   [self openPage1];
 
   // Long pressing should allow copying.

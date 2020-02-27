@@ -326,8 +326,6 @@ class PageLoadMetricsObserver {
   virtual void OnFirstMeaningfulPaintInMainFrameDocument(
       const mojom::PageLoadTiming& timing) {}
 
-  virtual void OnPageInteractive(const mojom::PageLoadTiming& timing) {}
-
   virtual void OnFirstInputInPage(const mojom::PageLoadTiming& timing) {}
 
   // Invoked when there is an update to the loading behavior_flags in the given

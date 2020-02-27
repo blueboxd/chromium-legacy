@@ -112,7 +112,7 @@ base::string16 GetAppNameExtensionForProfile(
   bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
   if (has_entry) {
     app_name_extension.append(STRING16_LITERAL(" ("));
-    app_name_extension.append(entry->GetName());
+    app_name_extension.append(entry->GetLocalProfileName());
     app_name_extension.append(STRING16_LITERAL(")"));
   }
   return app_name_extension;

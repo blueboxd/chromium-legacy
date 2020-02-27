@@ -23,12 +23,12 @@ MemoryDataSource::~MemoryDataSource() = default;
 void MemoryDataSource::Read(int64_t position,
                             int size,
                             uint8_t* data,
-                            DataSource::ReadCB read_cb) {
+                            const DataSource::ReadCB& read_cb) {
   DCHECK(read_cb);
 
   if (is_stopped_ || size < 0 || position < 0 ||
       static_cast<size_t>(position) > size_) {
-    std::move(read_cb).Run(kReadError);
+    read_cb.Run(kReadError);
     return;
   }
 
@@ -41,7 +41,7 @@ void MemoryDataSource::Read(int64_t position,
     memcpy(data, data_ + position, clamped_size);
   }
 
-  std::move(read_cb).Run(clamped_size);
+  read_cb.Run(clamped_size);
 }
 
 void MemoryDataSource::Stop() {

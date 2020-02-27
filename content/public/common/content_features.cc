@@ -778,6 +778,10 @@ const base::Feature kExperimentalProductivityFeatures{
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Minimal user interface experience for payments on the web.
+const base::Feature kWebPaymentsMinimalUI{"WebPaymentsMinimalUI",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",

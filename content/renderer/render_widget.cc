@@ -3284,7 +3284,7 @@ void RenderWidget::RequestDecode(const cc::PaintImage& image,
 // Enables measuring and reporting both presentation times and swap times in
 // swap promises.
 class ReportTimeSwapPromise : public cc::SwapPromise {
-  using ReportTimeCallback = blink::WebWidgetClient::ReportTimeCallback;
+  using ReportTimeCallback = blink::WebReportTimeCallback;
 
  public:
   ReportTimeSwapPromise(ReportTimeCallback swap_time_callback,
@@ -3319,19 +3319,19 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
   cc::SwapPromise::DidNotSwapAction DidNotSwap(
       DidNotSwapReason reason) override {
-    blink::WebWidgetClient::SwapResult result;
+    blink::WebSwapResult result;
     switch (reason) {
       case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
-        result = blink::WebWidgetClient::SwapResult::kDidNotSwapSwapFails;
+        result = blink::WebSwapResult::kDidNotSwapSwapFails;
         break;
       case cc::SwapPromise::DidNotSwapReason::COMMIT_FAILS:
-        result = blink::WebWidgetClient::SwapResult::kDidNotSwapCommitFails;
+        result = blink::WebSwapResult::kDidNotSwapCommitFails;
         break;
       case cc::SwapPromise::DidNotSwapReason::COMMIT_NO_UPDATE:
-        result = blink::WebWidgetClient::SwapResult::kDidNotSwapCommitNoUpdate;
+        result = blink::WebSwapResult::kDidNotSwapCommitNoUpdate;
         break;
       case cc::SwapPromise::DidNotSwapReason::ACTIVATION_FAILS:
-        result = blink::WebWidgetClient::SwapResult::kDidNotSwapActivationFails;
+        result = blink::WebSwapResult::kDidNotSwapActivationFails;
         break;
     }
     // During a failed swap, return the current time regardless of whether we're
@@ -3339,8 +3339,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](blink::WebWidgetClient::SwapResult result,
-               base::TimeTicks swap_time, ReportTimeCallback swap_time_callback,
+            [](blink::WebSwapResult result, base::TimeTicks swap_time,
+               ReportTimeCallback swap_time_callback,
                ReportTimeCallback presentation_time_callback) {
               ReportTime(std::move(swap_time_callback), result, swap_time);
               ReportTime(std::move(presentation_time_callback), result,
@@ -3367,13 +3367,13 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
           frame_token,
           base::BindOnce(&RunCallbackAfterPresentation,
                          std::move(presentation_time_callback), swap_time));
-      ReportTime(std::move(swap_time_callback),
-                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+      ReportTime(std::move(swap_time_callback), blink::WebSwapResult::kDidSwap,
+                 swap_time);
     } else {
-      ReportTime(std::move(swap_time_callback),
-                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+      ReportTime(std::move(swap_time_callback), blink::WebSwapResult::kDidSwap,
+                 swap_time);
       ReportTime(std::move(presentation_time_callback),
-                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+                 blink::WebSwapResult::kDidSwap, swap_time);
     }
   }
 
@@ -3393,12 +3393,12 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
           presentation_time - swap_time);
     }
     ReportTime(std::move(presentation_time_callback),
-               blink::WebWidgetClient::SwapResult::kDidSwap,
+               blink::WebSwapResult::kDidSwap,
                presentation_time_is_valid ? presentation_time : swap_time);
   }
 
   static void ReportTime(ReportTimeCallback callback,
-                         blink::WebWidgetClient::SwapResult result,
+                         blink::WebSwapResult result,
                          base::TimeTicks time) {
     if (callback)
       std::move(callback).Run(result, time);
@@ -3415,7 +3415,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
 
-void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
+void RenderWidget::NotifySwapTime(blink::WebReportTimeCallback callback) {
   NotifySwapAndPresentationTime(base::NullCallback(), std::move(callback));
 }
 
@@ -3465,8 +3465,8 @@ viz::FrameSinkId RenderWidget::GetFrameSinkId() {
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(
-    ReportTimeCallback swap_time_callback,
-    ReportTimeCallback presentation_time_callback) {
+    blink::WebReportTimeCallback swap_time_callback,
+    blink::WebReportTimeCallback presentation_time_callback) {
   layer_tree_host_->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(swap_time_callback), std::move(presentation_time_callback),
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),

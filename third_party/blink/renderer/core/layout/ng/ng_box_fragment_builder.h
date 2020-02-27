@@ -282,6 +282,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     items_builder_ = builder;
   }
 
+  // Returns offset for given child. DCHECK if child not found.
+  // Warning: Do not call unless necessary.
+  LogicalOffset GetChildOffset(const LayoutObject* child) const;
+
   // Inline containing block geometry is defined by two rectangles, generated
   // by fragments of the LayoutInline.
   struct InlineContainingBlockGeometry {

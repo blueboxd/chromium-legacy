@@ -88,7 +88,7 @@ void BiquadFilterHandler::Process(uint32_t frames_to_process) {
       PostCrossThreadTask(
           *task_runner_, FROM_HERE,
           CrossThreadBindOnce(&BiquadFilterHandler::NotifyBadState,
-                              WrapRefCounted(this)));
+                              AsWeakPtr()));
     }
   }
 }

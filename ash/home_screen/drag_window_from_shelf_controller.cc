@@ -151,7 +151,7 @@ DragWindowFromShelfController::DragWindowFromShelfController(
     const gfx::PointF& location_in_screen,
     HotseatState hotseat_state)
     : window_(window), hotseat_state_(hotseat_state) {
-  DCHECK_NE(hotseat_state, HotseatState::kShown);
+  DCHECK_NE(hotseat_state, HotseatState::kShownHomeLauncher);
   window_->AddObserver(this);
   OnDragStarted(location_in_screen);
 

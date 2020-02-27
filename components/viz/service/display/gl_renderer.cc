@@ -90,7 +90,19 @@ namespace {
 Float4 UVTransform(const TextureDrawQuad* quad) {
   gfx::PointF uv0 = quad->uv_top_left;
   gfx::PointF uv1 = quad->uv_bottom_right;
-  Float4 xform = {{uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y()}};
+  gfx::PointF translation(
+      quad->visible_rect.origin().x() - quad->rect.origin().x(),
+      quad->visible_rect.origin().y() - quad->rect.origin().y());
+  DCHECK(quad->rect.right() && quad->rect.bottom());
+  translation.Scale(1.f / quad->rect.right(), 1.f / quad->rect.bottom());
+
+  gfx::PointF scale(
+      static_cast<float>(quad->visible_rect.width()) / quad->rect.width(),
+      static_cast<float>(quad->visible_rect.height()) / quad->rect.height());
+
+  Float4 xform = {{translation.x() + uv0.x(), translation.y() + uv0.y(),
+                   (uv1.x() - uv0.x()) * scale.x(),
+                   (uv1.y() - uv0.y()) * scale.y()}};
   if (quad->y_flipped) {
     xform.data[1] = 1.0f - xform.data[1];
     xform.data[3] = -xform.data[3];
@@ -2726,7 +2738,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
-                    gfx::RectF(quad->rect));
+                    gfx::RectF(quad->visible_rect));
   quad_rect_matrix = current_frame()->projection_matrix * quad_rect_matrix;
 
   Float16 m;
@@ -2734,6 +2746,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   draw_cache_.matrix_data.push_back(m);
 
   if (clip_region) {
+    DCHECK_EQ(quad->rect, quad->visible_rect);
     gfx::QuadF scaled_region;
     if (!GetScaledRegion(quad->rect, clip_region, &scaled_region)) {
       scaled_region = SharedGeometryQuad().BoundingBox();

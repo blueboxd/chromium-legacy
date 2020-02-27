@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<a id="a-code" href="www.igalia.com" title="oops">
+  <code>code</code>
+</div>
+
+<a id="a-dfn" href="www.igalia.com" title="oops">
+  <dfn>definition</dfn>
+</div>
+
+<a id="a-p" href="www.igalia.com" title="oops">
+  <p>paragraph</p>
+</div>
+
+<a id="a-time" href="www.igalia.com" title="oops">
+  <time datetime="2016-04-12T11:27:16+02:00">12/04/2016</time>
+</div>
+
+<a id="a-norecursion" href="www.igalia.com" title="yay">
+  <table role="table"><tr><td>cell</td></tr></table>
+</div>
+
+<script>
+test(function(t) {
+  const snippets = [
+    [ 'a-code', 'code' ],
+    [ 'a-dfn', 'definition' ],
+    [ 'a-p', 'paragraph' ],
+    [ 'a-time', '12/04/2016' ],
+  ];
+  for (let [ id, expectedName ] of snippets) {
+    let a = accessibilityController.accessibleElementById(id);
+    assert_equals(a.name, expectedName, `Name from ${id} subtree`);
+  }
+
+  // Example when recursion is not allowed for name computation.
+  let a = accessibilityController.accessibleElementById('a-norecursion');
+  assert_equals(a.name, 'yay', `No name from a-norecursion subtree`);
+}, 'Names from subtree');
+</script>

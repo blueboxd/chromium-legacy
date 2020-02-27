@@ -2317,7 +2317,7 @@ class CORE_EXPORT Document : public ContainerNode,
   std::unique_ptr<DocumentResourceCoordinator> resource_coordinator_;
 
   // Used for document.cookie. May be null.
-  std::unique_ptr<CookieJar> cookie_jar_;
+  Member<CookieJar> cookie_jar_;
 
   // A dummy scheduler to return when the document is detached.
   // All operations on it result in no-op, but due to this it's safe to

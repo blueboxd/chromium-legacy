@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Set up global state
+PASS fetch() to 'CORP: cross-origin' response should succeed.
+FAIL fetch() to no CORP response should not succeed. assert_equals: expected "TypeError: Failed to fetch" but got "opaque"
+PASS Clean up global state
+Harness: the test ran to completion.
+

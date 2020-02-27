@@ -167,6 +167,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     mojom::ScriptType script_type,
     network::mojom::CredentialsMode credentials_mode,
     const WebString& name,
+    WebSecurityOrigin constructor_origin,
     const WebString& user_agent,
     const WebString& content_security_policy,
     network::mojom::ContentSecurityPolicyType policy_type,
@@ -178,20 +179,18 @@ void WebSharedWorkerImpl::StartWorkerContext(
     mojo::ScopedMessagePipeHandle browser_interface_broker,
     bool pause_worker_context_on_start) {
   DCHECK(IsMainThread());
+  CHECK(constructor_origin.Get()->CanAccessSharedWorkers());
 
   // Creates 'outside settings' used in the "Processing model" algorithm in the
   // HTML spec:
   // https://html.spec.whatwg.org/C/#worker-processing-model
-  scoped_refptr<const SecurityOrigin> starter_origin =
-      SecurityOrigin::Create(script_request_url);
-
   auto* outside_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           /*global_object_url=*/script_request_url,
-          /*base_url=*/script_request_url, starter_origin,
+          /*base_url=*/script_request_url, constructor_origin,
           outside_fetch_client_settings_object.referrer_policy,
           outside_fetch_client_settings_object.outgoing_referrer.GetString(),
-          CalculateHttpsState(starter_origin.get()),
+          CalculateHttpsState(constructor_origin.Get()),
           AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
           creation_address_space,
           outside_fetch_client_settings_object.insecure_requests_policy ==
@@ -204,10 +203,10 @@ void WebSharedWorkerImpl::StartWorkerContext(
       client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
 
-  bool starter_secure_context =
-      starter_origin->IsPotentiallyTrustworthy() ||
+  bool constructor_secure_context =
+      constructor_origin.IsPotentiallyTrustworthy() ||
       SchemeRegistry::SchemeShouldBypassSecureContextCheck(
-          starter_origin->Protocol());
+          constructor_origin.Protocol());
 
   auto worker_settings = std::make_unique<WorkerSettings>(
       false /* disable_reading_from_canvas */,
@@ -221,6 +220,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   outside_csp_headers.ReserveInitialCapacity(1);
   outside_csp_headers.UncheckedAppend(
       CSPHeaderAndType(content_security_policy, policy_type));
+
   // Some params (e.g. address space) passed to GlobalScopeCreationParams are
   // dummy values. They will be updated after worker script fetch on the worker
   // thread.
@@ -229,7 +229,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       OffMainThreadWorkerScriptFetchOption::kEnabled, name, user_agent,
       std::move(web_worker_fetch_context), outside_csp_headers,
       outside_settings_object->GetReferrerPolicy(),
-      outside_settings_object->GetSecurityOrigin(), starter_secure_context,
+      outside_settings_object->GetSecurityOrigin(), constructor_secure_context,
       outside_settings_object->GetHttpsState(),
       MakeGarbageCollected<WorkerClients>(),
       std::make_unique<SharedWorkerContentSettingsProxy>(

@@ -8,16 +8,17 @@
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 class Document;
 
-class CookieJar {
+class CookieJar : public GarbageCollected<CookieJar> {
  public:
   explicit CookieJar(blink::Document* document);
-  ~CookieJar();
+  virtual ~CookieJar();
+  void Trace(Visitor* visitor);
 
   void SetCookie(const String& value);
   String Cookies();
@@ -27,7 +28,7 @@ class CookieJar {
   void RequestRestrictedCookieManagerIfNeeded();
 
   mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend_;
-  WeakPersistent<blink::Document> document_;  // Document owns |this|.
+  Member<blink::Document> document_;
 };
 
 }  // namespace blink

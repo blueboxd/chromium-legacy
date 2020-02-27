@@ -76,7 +76,8 @@ class HotseatWidgetAnimationMetricsReporter
   // ui::AnimationMetricsReporter:
   void Report(int value) override {
     switch (target_state_) {
-      case HotseatState::kShown:
+      case HotseatState::kShownClamshell:
+      case HotseatState::kShownHomeLauncher:
         UMA_HISTOGRAM_PERCENTAGE(
             "Ash.HotseatWidgetAnimation.AnimationSmoothness."
             "TransitionToShownHotseat",

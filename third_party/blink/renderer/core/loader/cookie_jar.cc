@@ -14,6 +14,10 @@ CookieJar::CookieJar(blink::Document* document) : document_(document) {}
 
 CookieJar::~CookieJar() = default;
 
+void CookieJar::Trace(Visitor* visitor) {
+  visitor->Trace(document_);
+}
+
 void CookieJar::SetCookie(const String& value) {
   KURL cookie_url = document_->CookieURL();
   if (cookie_url.IsEmpty())

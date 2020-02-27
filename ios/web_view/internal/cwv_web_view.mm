@@ -743,12 +743,21 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   // |web::EnsureWebViewCreatedWithConfiguration()|, as this is the requirement
   // of |web::EnsureWebViewCreatedWithConfiguration()|
 
-  // Creates a WKWebView immediately to assure the class property
-  // |chromeLongPressAndForceTouchHandlingEnabled| is consumed when a
-  // CWVWebView is initializing instead of some time later. Then
-  // "longPressActionsEnabled" will be set in WKWebViewConfigurationProvider.
-  WKWebView* webView = web::EnsureWebViewCreatedWithConfiguration(
-      _webState.get(), wkConfiguration);
+  WKWebView* webView = nil;
+  if (wkConfiguration) {
+    // When |wkConfiguration| is nil, |self| could be a newly opened web view
+    // e.g., triggered by JavaScript "window.open()" function. In that case, if
+    // |self| is not created by the WKWebViewConfiguration provided by WebKit's
+    // delegate method
+    // (https://cs.chromium.org/chromium/src/ios/web/web_state/ui/crw_wk_ui_handler.mm?q=crw_wk_ui_handler&sq=package:chromium&dr=C&l=61)
+    // then calling |web::EnsureWebViewCreatedWithConfiguration()| here would
+    // result in a crash (https://crbug.com/1054276). Now, we lazily create the
+    // WKWebView inside |_webState| when |wkConfiguration| is not nil, and the
+    // correct WKWebViewConfiguration will be passed inside //ios/web.
+    webView = web::EnsureWebViewCreatedWithConfiguration(_webState.get(),
+                                                         wkConfiguration);
+  }
+
   if (createdWebView) {
     // If the created webView is needed, returns it by the out variable way.
     *createdWebView = webView;

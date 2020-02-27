@@ -1926,7 +1926,7 @@ cr.define('device_page_tests', function() {
 
       test('apps extensions size', async function() {
         assertEquals(
-            'Apps and Extensions', getStorageItemLabelFromId('appsSize'));
+            'Apps and extensions', getStorageItemLabelFromId('appsSize'));
         assertEquals('Calculating…', getStorageItemSubLabelFromId('appsSize'));
 
         // Send apps size callback.

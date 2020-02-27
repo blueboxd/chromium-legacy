@@ -1067,6 +1067,74 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
+TYPED_TEST(RendererPixelTest, TextureDrawQuadVisibleRectInsetTopLeft) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* texture_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+
+  CreateTestTwoColoredTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(0, 120, 255, 255),  // Texel color 1.
+      SkColorSetARGB(204, 120, 0, 255),  // Texel color 2.
+      SK_ColorGREEN,                     // Background color.
+      true,                              // Premultiplied alpha.
+      false,                             // flipped_texture_quad.
+      false,                             // Half and half.
+      texture_quad_state, this->resource_provider_.get(),
+      this->child_resource_provider_.get(), this->shared_bitmap_manager_.get(),
+      this->child_context_provider_, pass.get());
+  pass->quad_list.front()->visible_rect.Inset(30, 50, 0, 0);
+  SharedQuadState* color_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("inset_top_left.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, TextureDrawQuadVisibleRectInsetBottomRight) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* texture_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+
+  CreateTestTwoColoredTextureDrawQuad(
+      this->use_gpu(), gfx::Rect(this->device_viewport_size_),
+      SkColorSetARGB(0, 120, 255, 255),  // Texel color 1.
+      SkColorSetARGB(204, 120, 0, 255),  // Texel color 2.
+      SK_ColorGREEN,                     // Background color.
+      true,                              // Premultiplied alpha.
+      false,                             // flipped_texture_quad.
+      false,                             // Half and half.
+      texture_quad_state, this->resource_provider_.get(),
+      this->child_resource_provider_.get(), this->shared_bitmap_manager_.get(),
+      this->child_context_provider_, pass.get());
+  pass->quad_list.front()->visible_rect.Inset(0, 0, 40, 60);
+  SharedQuadState* color_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(color_quad_state, rect, rect, SK_ColorWHITE, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("inset_bottom_right.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
 TYPED_TEST(GPURendererPixelTest, SolidColorBlend) {
   gfx::Rect rect(this->device_viewport_size_);
 

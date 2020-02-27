@@ -121,8 +121,9 @@ CWV_EXPORT
 @property(nonatomic, readonly, nonnull) CWVBackForwardList* backForwardList;
 
 // Enables Chrome's custom logic to handle long press and force touch. Defaults
-// to YES. This CLASS PROPERTY setting will only be applied to all CWVWebView
-// instances INITIALIZED AFTERWARD.
+// to YES. To use the system context menu this must be set to NO.
+// This class property setting should only be changed BEFORE any
+// CWVWebViewConfiguration instance is initialized.
 @property(nonatomic, class) BOOL chromeLongPressAndForceTouchHandlingEnabled;
 
 // The User Agent product string used to build the full User Agent.

@@ -41,6 +41,7 @@
 #include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace blink {
 
@@ -64,6 +65,7 @@ class BLINK_EXPORT WebSharedWorker {
       mojom::ScriptType script_type,
       network::mojom::CredentialsMode,
       const WebString& name,
+      WebSecurityOrigin constructor_origin,
       const WebString& user_agent,
       const WebString& content_security_policy,
       network::mojom::ContentSecurityPolicyType,

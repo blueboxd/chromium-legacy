@@ -438,10 +438,10 @@ void ShelfWidget::DelegateView::OnHotseatTransitionAnimationWillStart(
     HotseatState from_state,
     HotseatState to_state) {
   ShowAnimatingBackground(true);
-  // If animating from a kShown hotseat, the animating background will
-  // animate from the hotseat background into the in-app shelf, so hide the
+  // If animating from a kShownHomeLauncher hotseat, the animating background
+  // will animate from the hotseat background into the in-app shelf, so hide the
   // real shelf background until the animation is complete.
-  if (from_state == HotseatState::kShown)
+  if (from_state == HotseatState::kShownHomeLauncher)
     HideOpaqueBackground();
 }
 

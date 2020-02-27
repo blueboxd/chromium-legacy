@@ -2306,10 +2306,11 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
   EXPECT_EQ(ash::HotseatState::kExtended,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 
-  // Click on the home button. Expects that the hotseat is shown in kShown state
+  // Click on the home button. Expects that the hotseat is shown in
+  // kShownHomeLauncher state
   event_generator.MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
   event_generator.ClickLeftButton();
-  EXPECT_EQ(ash::HotseatState::kShown,
+  EXPECT_EQ(ash::HotseatState::kShownHomeLauncher,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 

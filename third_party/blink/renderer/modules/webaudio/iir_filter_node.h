@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIR_FILTER_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIR_FILTER_NODE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -18,7 +19,8 @@ class BaseAudioContext;
 class ExceptionState;
 class IIRFilterOptions;
 
-class IIRFilterHandler : public AudioBasicProcessorHandler {
+class IIRFilterHandler : public AudioBasicProcessorHandler,
+                         public base::SupportsWeakPtr<IIRFilterHandler> {
  public:
   static scoped_refptr<IIRFilterHandler> Create(
       AudioNode&,

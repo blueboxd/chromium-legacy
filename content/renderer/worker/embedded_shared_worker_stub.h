@@ -56,6 +56,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
  public:
   EmbeddedSharedWorkerStub(
       blink::mojom::SharedWorkerInfoPtr info,
+      const url::Origin& constructor_origin,
       const std::string& user_agent,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,

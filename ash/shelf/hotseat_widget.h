@@ -144,7 +144,7 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   base::Optional<LayoutInputs> layout_inputs_;
 
   gfx::Rect target_bounds_;
-  HotseatState state_ = HotseatState::kShown;
+  HotseatState state_ = HotseatState::kShownClamshell;
 
   Shelf* shelf_ = nullptr;
 

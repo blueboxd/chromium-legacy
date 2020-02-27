@@ -25,9 +25,18 @@ enum class ShelfAlignment {
 enum class HotseatState {
   // Hotseat is shown off screen.
   kHidden,
-  // Hotseat is shown within the shelf. This will always be the case
-  // in clamshell mode.
-  kShown,
+
+  // Hotseat is shown within the shelf in clamshell mode.
+  kShownClamshell,
+
+  // Hotseat is shown in the tablet mode home launcher's shelf.
+  // Compared to kShownClamshell state, in this state, the shelf background is
+  // not visible behind the hotseat (shelf itself is transparent on the home
+  // screen). The hotseat also differs in size, and its bounds are moved
+  // slightly up to leave more space between the hotseat background and the
+  // bottom of the screen.
+  kShownHomeLauncher,
+
   // Hotseat is shown above the shelf.
   kExtended,
 };

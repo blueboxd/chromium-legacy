@@ -2716,7 +2716,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverview) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   watcher.WaitUntilStateChanged();
-  watcher.CheckEqual({HotseatState::kShown});
+  watcher.CheckEqual({HotseatState::kShownHomeLauncher});
 
   histogram_tester.ExpectBucketCount(
       kHotseatGestureHistogramName,
@@ -2778,7 +2778,8 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   watcher.WaitUntilStateChanged();
-  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+  watcher.CheckEqual(
+      {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
 
   histogram_tester.ExpectBucketCount(
       kHotseatGestureHistogramName,
@@ -2824,7 +2825,8 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   watcher.WaitUntilStateChanged();
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
 
   histogram_tester.ExpectBucketCount(
       kHotseatGestureHistogramName,
@@ -3615,7 +3617,8 @@ TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
     EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
     SwipeUpOnShelf();
   } else {
-    EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+    EXPECT_EQ(HotseatState::kShownClamshell,
+              GetShelfLayoutManager()->hotseat_state());
   }
 
   TriggerDimShelf();

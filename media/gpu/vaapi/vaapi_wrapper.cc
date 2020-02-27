@@ -19,6 +19,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
@@ -142,7 +143,70 @@ namespace media {
 
 namespace {
 
-// Maximum framerate of encoded profile. This value is an arbitary limit
+bool GetNV12VisibleWidthBytes(int visible_width,
+                              uint32_t plane,
+                              size_t* bytes) {
+  if (plane == 0) {
+    *bytes = base::checked_cast<size_t>(visible_width);
+    return true;
+  }
+
+  *bytes = base::checked_cast<size_t>(visible_width);
+  return visible_width % 2 == 0 ||
+         base::CheckAdd<int>(visible_width, 1).AssignIfValid(bytes);
+}
+
+// Fill 0 on VAImage's non visible area.
+bool ClearNV12Padding(const VAImage& image,
+                      const gfx::Size& visible_size,
+                      uint8_t* data) {
+  DCHECK_EQ(2u, image.num_planes);
+  DCHECK_EQ(image.format.fourcc, VA_FOURCC_NV12);
+
+  size_t visible_width_bytes[2] = {};
+  if (!GetNV12VisibleWidthBytes(visible_size.width(), 0u,
+                                &visible_width_bytes[0]) ||
+      !GetNV12VisibleWidthBytes(visible_size.width(), 1u,
+                                &visible_width_bytes[1])) {
+    return false;
+  }
+
+  for (uint32_t plane = 0; plane < image.num_planes; plane++) {
+    size_t row_bytes = base::strict_cast<size_t>(image.pitches[plane]);
+    if (row_bytes == visible_width_bytes[plane])
+      continue;
+
+    CHECK_GT(row_bytes, visible_width_bytes[plane]);
+    int visible_height = visible_size.height();
+    if (plane == 1 && !(base::CheckAdd<int>(visible_size.height(), 1) / 2)
+                           .AssignIfValid(&visible_height)) {
+      return false;
+    }
+
+    const size_t padding_bytes = row_bytes - visible_width_bytes[plane];
+    uint8_t* plane_data = data + image.offsets[plane];
+    for (int row = 0; row < visible_height; row++, plane_data += row_bytes)
+      memset(plane_data + visible_width_bytes[plane], 0, padding_bytes);
+
+    CHECK_GE(base::strict_cast<int>(image.height), visible_height);
+    size_t image_height = base::strict_cast<size_t>(image.height);
+    if (plane == 1 && !(base::CheckAdd<size_t>(image.height, 1) / 2)
+                           .AssignIfValid(&image_height)) {
+      return false;
+    }
+
+    base::CheckedNumeric<size_t> remaining_area(image_height);
+    remaining_area -= base::checked_cast<size_t>(visible_height);
+    remaining_area *= row_bytes;
+    if (!remaining_area.IsValid())
+      return false;
+    memset(plane_data, 0, remaining_area.ValueOrDie());
+  }
+
+  return true;
+}
+
+// Maximum framerate of encoded profile. This value is an arbitrary limit
 // and not taken from HW documentation.
 constexpr int kMaxEncoderFramerate = 30;
 
@@ -1746,12 +1810,20 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
 }
 
 bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
-                                             VASurfaceID va_surface_id) {
+                                             VASurfaceID va_surface_id,
+                                             const gfx::Size& va_surface_size) {
   TRACE_EVENT0("media,gpu", "VaapiWrapper::UploadVideoFrameToSurface");
   base::AutoLock auto_lock(*va_lock_);
   TRACE_EVENT0("media,gpu", "VaapiWrapper::UploadVideoFrameToSurfaceLocked");
 
-  const gfx::Size size = frame.coded_size();
+  if (frame.visible_rect().origin() != gfx::Point(0, 0)) {
+    LOG(ERROR) << "The origin of the frame's visible rectangle is not (0, 0), "
+               << "frame.visible_rect().origin()="
+               << frame.visible_rect().origin().ToString();
+    return false;
+  }
+
+  const gfx::Size visible_size = frame.visible_rect().size();
   bool va_create_put_fallback = false;
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
@@ -1763,8 +1835,8 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
                                              .bits_per_pixel = 12};
     VAImageFormat image_format = kImageFormatNV12;
 
-    va_res = vaCreateImage(va_display_, &image_format, size.width(),
-                           size.height(), &image);
+    va_res = vaCreateImage(va_display_, &image_format, va_surface_size.width(),
+                           va_surface_size.height(), &image);
     VA_SUCCESS_OR_RETURN(va_res, "vaCreateImage", false);
   }
   base::ScopedClosureRunner vaimage_deleter(
@@ -1775,7 +1847,13 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
     return false;
   }
 
-  if (gfx::Rect(image.width, image.height) < gfx::Rect(size)) {
+  if (image.width % 2 != 0 || image.height % 2 != 0) {
+    LOG(ERROR) << "Buffer's width and height are not even, "
+               << "width=" << image.width << ", height=" << image.height;
+    return false;
+  }
+
+  if (!gfx::Rect(image.width, image.height).Contains(gfx::Rect(visible_size))) {
     LOG(ERROR) << "Buffer too small to fit the frame.";
     return false;
   }
@@ -1784,6 +1862,11 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
   if (!mapping.IsValid())
     return false;
   uint8_t* image_ptr = static_cast<uint8_t*>(mapping.data());
+
+  if (!ClearNV12Padding(image, visible_size, image_ptr)) {
+    LOG(ERROR) << "Failed to clear non visible area of VAImage";
+    return false;
+  }
 
   int ret = 0;
   {
@@ -1795,19 +1878,32 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
             frame.data(VideoFrame::kUPlane), frame.stride(VideoFrame::kUPlane),
             frame.data(VideoFrame::kVPlane), frame.stride(VideoFrame::kVPlane),
             image_ptr + image.offsets[0], image.pitches[0],
-            image_ptr + image.offsets[1], image.pitches[1], image.width,
-            image.height);
+            image_ptr + image.offsets[1], image.pitches[1],
+            visible_size.width(), visible_size.height());
         break;
-      case PIXEL_FORMAT_NV12:
+      case PIXEL_FORMAT_NV12: {
+        int uv_width = visible_size.width();
+        if (visible_size.width() % 2 != 0 &&
+            !base::CheckAdd<int>(visible_size.width(), 1)
+                 .AssignIfValid(&uv_width)) {
+          return false;
+        }
+
+        int uv_height = 0;
+        if (!(base::CheckAdd<int>(visible_size.height(), 1) / 2)
+                 .AssignIfValid(&uv_height)) {
+          return false;
+        }
+
         libyuv::CopyPlane(frame.data(VideoFrame::kYPlane),
                           frame.stride(VideoFrame::kYPlane),
                           image_ptr + image.offsets[0], image.pitches[0],
-                          image.width, image.height);
+                          visible_size.width(), visible_size.height());
         libyuv::CopyPlane(frame.data(VideoFrame::kUVPlane),
                           frame.stride(VideoFrame::kUVPlane),
                           image_ptr + image.offsets[1], image.pitches[1],
-                          image.width, image.height / 2);
-        break;
+                          uv_width, uv_height);
+      } break;
       default:
         LOG(ERROR) << "Unsupported pixel format: " << frame.format();
         return false;
@@ -1815,8 +1911,8 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
   }
   if (va_create_put_fallback) {
     va_res = vaPutImage(va_display_, va_surface_id, image.image_id, 0, 0,
-                        size.width(), size.height(), 0, 0, size.width(),
-                        size.height());
+                        visible_size.width(), visible_size.height(), 0, 0,
+                        visible_size.width(), visible_size.height());
     VA_SUCCESS_OR_RETURN(va_res, "vaPutImage", false);
   }
   return ret == 0;

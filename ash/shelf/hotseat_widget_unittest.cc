@@ -298,7 +298,7 @@ TEST_P(HotseatWidgetTest, LongPressHomeWithAppWindow) {
 }
 
 // Tests that closing a window which was opened prior to entering tablet mode
-// results in a kShown hotseat.
+// results in a kShownHomeLauncher hotseat.
 TEST_P(HotseatWidgetTest, ClosingLastWindowInTabletMode) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   std::unique_ptr<aura::Window> window =
@@ -308,20 +308,23 @@ TEST_P(HotseatWidgetTest, ClosingLastWindowInTabletMode) {
   TabletModeControllerTestApi().EnterTabletMode();
 
   // Close the window, the AppListView should be shown, and the hotseat should
-  // be kShown.
+  // be kShownHomeLauncher.
   window->Hide();
 
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the hotseat is kShown when entering tablet mode with no windows.
+// Tests that the hotseat is kShownHomeLauncher when entering tablet mode with
+// no windows.
 TEST_P(HotseatWidgetTest, GoingToTabletModeNoWindows) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
 
   GetAppListTestHelper()->CheckVisibility(true);
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
 }
 
 // Tests that the hotseat is kHidden when entering tablet mode with a window.
@@ -385,7 +388,7 @@ TEST_P(HotseatWidgetTest, InAppShelfShowingContextMenu) {
 }
 
 // Tests that a window that is created after going to tablet mode, then closed,
-// results in a kShown hotseat.
+// results in a kShownHomeLauncher hotseat.
 TEST_P(HotseatWidgetTest, CloseLastWindowOpenedInTabletMode) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
@@ -398,11 +401,12 @@ TEST_P(HotseatWidgetTest, CloseLastWindowOpenedInTabletMode) {
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(false);
 
-  // Hide the window, the hotseat should be kShown, and the home launcher should
-  // be visible.
+  // Hide the window, the hotseat should be kShownHomeLauncher, and the home
+  // launcher should be visible.
   window->Hide();
 
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
@@ -867,30 +871,31 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   wm::ActivateWindow(window.get());
   SwipeUpOnShelf();
 
-  // Press the home button, the hotseat should transition directly to kShown.
+  // Press the home button, the hotseat should transition directly to
+  // kShownHomeLauncher.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     ShowShelfAndGoHome();
-    watcher.CheckEqual({HotseatState::kShown});
+    watcher.CheckEqual({HotseatState::kShownHomeLauncher});
   }
   // Go to in-app.
   window->Show();
   wm::ActivateWindow(window.get());
 
   // Extend the hotseat, then Swipe up to go home, the hotseat should transition
-  // directly to kShown.
+  // directly to kShownHomeLauncher.
   SwipeUpOnShelf();
   {
     ui::ScopedAnimationDurationScaleMode regular_animations(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     FlingUpOnShelf();
-    watcher.CheckEqual({HotseatState::kShown});
+    watcher.CheckEqual({HotseatState::kShownHomeLauncher});
 
     // Wait for the window animation to complete, and verify the hotseat state
-    // remained kShown.
+    // remained kShownHomeLauncher.
     ShellTestApi().WaitForWindowFinishAnimating(window.get());
-    watcher.CheckEqual({HotseatState::kShown});
+    watcher.CheckEqual({HotseatState::kShownHomeLauncher});
   }
 
   // Nothing left to test for autohidden shelf.
@@ -901,17 +906,18 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  // Press the home button, the hotseat should transition directly to kShown.
+  // Press the home button, the hotseat should transition directly to
+  // kShownHomeLauncher.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     ShowShelfAndGoHome();
-    watcher.CheckEqual({HotseatState::kShown});
+    watcher.CheckEqual({HotseatState::kShownHomeLauncher});
   }
 }
 
 // Tests that transitioning from overview to home while a transition from home
-// to overview is still in progress ends up with hotseat in kShown state (and in
-// app shelf not visible).
+// to overview is still in progress ends up with hotseat in kShownHomeLauncher
+// state (and in app shelf not visible).
 TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
   TabletModeControllerTestApi().EnterTabletMode();
@@ -937,7 +943,8 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
 
-  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+  watcher.CheckEqual(
+      {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
 }
 
 TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {
@@ -1016,7 +1023,7 @@ TEST_P(HotseatWidgetTest, ShowShelfAndGoHomeDuringInAppToOverviewTransition) {
   // Hotseat should be extended as overview is starting.
   watcher.CheckEqual({HotseatState::kExtended});
 
-  // Go home - expect transition to home (with hotseat in kShown
+  // Go home - expect transition to home (with hotseat in kShownHomeLauncher
   // state, and in app shelf hidden).
   ShowShelfAndGoHome();
 
@@ -1024,7 +1031,8 @@ TEST_P(HotseatWidgetTest, ShowShelfAndGoHomeDuringInAppToOverviewTransition) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
 
-  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+  watcher.CheckEqual(
+      {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
 }
 
 // Tests that in-app -> overview results in only one state change with an
@@ -1272,7 +1280,8 @@ TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
   // Tests that on clicking, we exit overview and all windows are minimized.
   GetEventGenerator()->set_current_screen_location(far_left_point);
   GetEventGenerator()->ClickLeftButton();
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
@@ -1806,7 +1815,8 @@ TEST_P(HotseatWidgetTest, FlingUpHotseatWithLongFling) {
                                              scroll_steps);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kShownHomeLauncher,
+            GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(true);
   histogram_tester.ExpectBucketCount(
       kHotseatGestureHistogramName,

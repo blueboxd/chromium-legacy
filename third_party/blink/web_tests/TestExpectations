@@ -3128,6 +3128,18 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]

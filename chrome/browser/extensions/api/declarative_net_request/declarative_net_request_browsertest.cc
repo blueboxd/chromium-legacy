@@ -3880,9 +3880,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowAllRequests) {
 
 // Ensure allowAllRequests rules work correctly for srcdoc frames. Regression
 // test for crbug.com/1050536.
-// TODO(crbug.com/1056031): Re-enabled this test.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       DISABLED_AllowAllRequests_SrcDoc) {
+                       AllowAllRequests_SrcDoc) {
   TestRule block_rule = CreateGenericRule();
   block_rule.id = kMinValidID;
   block_rule.priority = kMinValidPriority;
@@ -3900,8 +3899,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRules({block_rule, allow_srcdoc_rule}));
 
+  content::DOMMessageQueue message_queue(web_contents());
   GURL page_url = embedded_test_server()->GetURL("/srcdoc.html");
   ui_test_utils::NavigateToURL(browser(), page_url);
+
+  // Wait for the fetch to complete.
+  std::string message;
+  ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"failure\"", message) << message;
 
   const std::set<GURL> requests_seen = GetAndResetRequestsToServer();
   EXPECT_TRUE(base::Contains(requests_seen, page_url));

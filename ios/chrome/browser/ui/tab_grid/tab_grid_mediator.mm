@@ -166,9 +166,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   _scopedWebStateListObserver->RemoveAll();
   _scopedWebStateObserver->RemoveAll();
   _browser = browser;
-  [self.snapshotCache addObserver:self];
   _webStateList = browser ? browser->GetWebStateList() : nullptr;
   _browserState = browser ? browser->GetBrowserState() : nullptr;
+  [self.snapshotCache addObserver:self];
 
   if (_webStateList) {
     _scopedWebStateListObserver->Add(_webStateList);

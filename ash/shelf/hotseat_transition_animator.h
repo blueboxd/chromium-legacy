@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -19,8 +18,7 @@ class ShelfWidget;
 // Makes it appear that the background of the shelf and hotseat animate to/from
 // one another.
 class ASH_EXPORT HotseatTransitionAnimator
-    : public TabletModeObserver,
-      public ui::ImplicitAnimationObserver {
+    : public ui::ImplicitAnimationObserver {
  public:
   class TestObserver {
    public:
@@ -50,12 +48,6 @@ class ASH_EXPORT HotseatTransitionAnimator
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
-  // TabletModeObserver:
-  void OnTabletModeStarting() override;
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
-  void OnTabletModeEnded() override;
-
   // Enables or enables animations. Disabling the animations will stop in-flight
   // animations.
   void SetAnimationsEnabledInSessionState(bool enabled);
@@ -77,10 +69,6 @@ class ASH_EXPORT HotseatTransitionAnimator
 
   // The widget which owns the HotseatWidget. Owned by Shelf.
   ShelfWidget* const shelf_widget_;
-
-  // Used to avoid animating the HotseatState change during the tablet mode
-  // transition.
-  bool tablet_mode_transitioning_ = false;
 
   // Whether hotseat animations should be animated for the current session
   // state.

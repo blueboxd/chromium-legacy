@@ -401,20 +401,19 @@ void HotseatWidget::SetTranslucentBackground(
 int HotseatWidget::CalculateHotseatYInScreen(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
-  const bool is_hotseat_enabled = Shell::Get()->IsInTabletMode() &&
-                                  chromeos::switches::ShouldShowShelfHotseat();
   int hotseat_distance_from_bottom_of_display;
   const int hotseat_size = ShelfConfig::Get()->hotseat_size();
   switch (hotseat_target_state) {
-    case HotseatState::kShown: {
-      // When the hotseat state is HotseatState::kShown in tablet mode, the
-      // home launcher is showing. Elevate the hotseat a few px to match the
-      // navigation and status area.
-      const bool use_padding = is_hotseat_enabled;
+    case HotseatState::kShownClamshell:
+      hotseat_distance_from_bottom_of_display = hotseat_size;
+      break;
+    case HotseatState::kShownHomeLauncher:
+      // When the hotseat state is HotseatState::kShownHomeLauncher, the home
+      // launcher is showing in tablet mode. Elevate the hotseat a few px to
+      // match the navigation and status area.
       hotseat_distance_from_bottom_of_display =
-          hotseat_size +
-          (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
-    } break;
+          hotseat_size + ShelfConfig::Get()->hotseat_bottom_padding();
+      break;
     case HotseatState::kHidden:
       // Show the hotseat offscreen.
       hotseat_distance_from_bottom_of_display = 0;
@@ -461,7 +460,8 @@ void HotseatWidget::CalculateTargetBounds() {
         base::i18n::IsRTL()
             ? nav_bounds.x() - horizontal_edge_spacing - hotseat_width
             : nav_bounds.right() + horizontal_edge_spacing;
-    if (hotseat_target_state != HotseatState::kShown) {
+    if (hotseat_target_state != HotseatState::kShownHomeLauncher &&
+        hotseat_target_state != HotseatState::kShownClamshell) {
       // Give the hotseat more space if it is shown outside of the shelf.
       hotseat_width = shelf_bounds.width();
       hotseat_x = shelf_bounds.x();

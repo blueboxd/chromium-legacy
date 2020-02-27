@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
@@ -57,12 +58,15 @@ static ui::mojom::TextInputType ToTextInputType(const AtomicString& source) {
 ExternalDateTimeChooser::~ExternalDateTimeChooser() = default;
 
 void ExternalDateTimeChooser::Trace(Visitor* visitor) {
+  visitor->Trace(date_time_chooser_);
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);
 }
 
 ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
-    : client_(client) {
+    : date_time_chooser_(
+          client->OwnerElement().GetDocument().ToExecutionContext()),
+      client_(client) {
   DCHECK(!RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   DCHECK(client);
 }
@@ -101,12 +105,15 @@ bool ExternalDateTimeChooser::IsShowingDateTimeChooserUI() const {
 
 mojom::blink::DateTimeChooser& ExternalDateTimeChooser::GetDateTimeChooser(
     LocalFrame* frame) {
-  if (!date_time_chooser_) {
+  if (!date_time_chooser_.is_bound()) {
     frame->GetBrowserInterfaceBroker().GetInterface(
-        date_time_chooser_.BindNewPipeAndPassReceiver());
+        date_time_chooser_.BindNewPipeAndPassReceiver(
+            // Per the spec, this is a user interaction.
+            // https://html.spec.whatwg.org/multipage/input.html#common-input-element-events
+            frame->GetTaskRunner(TaskType::kUserInteraction)));
   }
 
-  DCHECK(date_time_chooser_);
+  DCHECK(date_time_chooser_.is_bound());
   return *date_time_chooser_.get();
 }
 

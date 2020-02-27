@@ -326,7 +326,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   }
 
   if (!vaapi_wrapper_->UploadVideoFrameToSurface(*request->video_frame,
-                                                 va_surface_id_)) {
+                                                 va_surface_id_, input_size_)) {
     VLOGF(1) << "Failed to upload video frame to VA surface";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;

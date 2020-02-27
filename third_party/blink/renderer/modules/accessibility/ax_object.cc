@@ -3502,7 +3502,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kBlockquote:
     case ax::mojom::Role::kCaret:
-    case ax::mojom::Role::kCode:
     case ax::mojom::Role::kClient:
     case ax::mojom::Role::kColorWell:
     case ax::mojom::Role::kColumn:
@@ -3512,7 +3511,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-    case ax::mojom::Role::kDefinition:
     case ax::mojom::Role::kDesktop:
     case ax::mojom::Role::kDialog:
     case ax::mojom::Role::kDirectory:
@@ -3604,7 +3602,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
     case ax::mojom::Role::kTitleBar:
-    case ax::mojom::Role::kTime:
     case ax::mojom::Role::kTimer:
     case ax::mojom::Role::kToolbar:
     case ax::mojom::Role::kTree:
@@ -3621,8 +3618,10 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kAbbr:
     case ax::mojom::Role::kCanvas:
     case ax::mojom::Role::kCaption:
+    case ax::mojom::Role::kCode:
     case ax::mojom::Role::kContentDeletion:
     case ax::mojom::Role::kContentInsertion:
+    case ax::mojom::Role::kDefinition:
     case ax::mojom::Role::kDescriptionListDetail:
     case ax::mojom::Role::kDescriptionList:
     case ax::mojom::Role::kDescriptionListTerm:
@@ -3658,6 +3657,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kSection:
     case ax::mojom::Role::kStrong:
+    case ax::mojom::Role::kTime:
       result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
       break;
 

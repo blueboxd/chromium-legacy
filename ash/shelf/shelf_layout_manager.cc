@@ -1265,7 +1265,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     ShelfVisibilityState visibility_state,
     ShelfAutoHideState auto_hide_state) {
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
-    return HotseatState::kShown;
+    return HotseatState::kShownClamshell;
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   // If the app list controller is null, we are probably in the middle of
@@ -1281,7 +1281,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
   // Only force to show if there is not a pending drag operation.
   if (shelf_widget_->is_hotseat_forced_to_show() && drag_status_ == kDragNone)
-    return app_list_visible ? HotseatState::kShown : HotseatState::kExtended;
+    return app_list_visible ? HotseatState::kShownHomeLauncher
+                            : HotseatState::kExtended;
 
   bool in_split_view = false;
   if (in_overview) {
@@ -1295,12 +1296,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     case kDragHomeToOverviewInProgress: {
       switch (app_list_controller->home_launcher_transition_state()) {
         case AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown:
-          return HotseatState::kShown;
+          return HotseatState::kShownHomeLauncher;
         case AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden:
           return in_overview ? HotseatState::kExtended : HotseatState::kHidden;
         case AppListControllerImpl::HomeLauncherTransitionState::kFinished:
           if (app_list_visible)
-            return HotseatState::kShown;
+            return HotseatState::kShownHomeLauncher;
 
           // Show the hotseat if the shelf view's context menu is showing.
           if (shelf_->hotseat_widget()->IsShowingShelfMenu())
@@ -1352,7 +1353,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         return hotseat_state();
 
       if (app_list_visible)
-        return HotseatState::kShown;
+        return HotseatState::kShownHomeLauncher;
 
       if (in_overview && !in_split_view)
         return HotseatState::kExtended;
@@ -1404,14 +1405,14 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
                      AppListControllerImpl::HomeLauncherTransitionState::
                          kMostlyHidden
                  ? HotseatState::kHidden
-                 : HotseatState::kShown;
+                 : HotseatState::kShownHomeLauncher;
     default:
       // Do not change the hotseat state until the drag is complete or
       // canceled.
       return hotseat_state();
   }
   NOTREACHED();
-  return HotseatState::kShown;
+  return HotseatState::kShownHomeLauncher;
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
@@ -1963,7 +1964,7 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
     return false;
 
   const bool up_on_shown_hotseat =
-      hotseat_state() == HotseatState::kShown && scroll_y < 0;
+      hotseat_state() == HotseatState::kShownHomeLauncher && scroll_y < 0;
   if (IsHotseatEnabled() && up_on_shown_hotseat) {
     return GetHomeLauncherGestureHandlerModeForDrag() ==
            HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
@@ -1971,7 +1972,7 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
 
   if (IsHotseatEnabled()) {
     if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-        hotseat_state() != HotseatState::kShown) {
+        hotseat_state() != HotseatState::kShownHomeLauncher) {
       // If hotseat is hidden or extended (in-app or in-overview), do not let
       // HomeLauncherGestureHandler to handle the events.
       return false;
@@ -2241,8 +2242,10 @@ void ShelfLayoutManager::MaybeSetupHotseatDrag(
     return;
 
   // Do not allow Hotseat dragging when the hotseat is shown within the shelf.
-  if (hotseat_state() == HotseatState::kShown)
+  if (hotseat_state() == HotseatState::kShownHomeLauncher ||
+      hotseat_state() == HotseatState::kShownClamshell) {
     return;
+  }
 
   if (hotseat_is_in_drag_)
     return;
@@ -2549,8 +2552,8 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return false;
   }
 
-  // Do not drag on kShown hotseat (it should be in home screen).
-  if (hotseat_state() == HotseatState::kShown)
+  // Do not drag on home screen.
+  if (hotseat_state() == HotseatState::kShownHomeLauncher)
     return false;
 
   // If hotseat is hidden when drag starts, do not start drag window if hotseat

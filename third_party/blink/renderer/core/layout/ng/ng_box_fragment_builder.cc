@@ -304,6 +304,33 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
       NGLayoutResult::NGBoxFragmentBuilderPassKey(), status, this));
 }
 
+LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
+    const LayoutObject* object) const {
+  for (const auto& child : children_) {
+    if (child.fragment->GetLayoutObject() == object)
+      return child.offset;
+
+    // TODO(layout-dev): ikilpatrick thinks we may need to traverse
+    // further than the initial line-box children for a nested inline
+    // container. We could not come up with a testcase, it would be
+    // something with split inlines, and nested oof/fixed descendants maybe.
+    if (child.fragment->IsLineBox()) {
+      const auto& line_box_fragment =
+          To<NGPhysicalLineBoxFragment>(*child.fragment);
+      for (const auto& line_box_child : line_box_fragment.Children()) {
+        if (line_box_child->GetLayoutObject() == object) {
+          return child.offset + line_box_child.Offset().ConvertToLogical(
+                                    GetWritingMode(), Direction(),
+                                    line_box_fragment.Size(),
+                                    line_box_child->Size());
+        }
+      }
+    }
+  }
+  NOTREACHED();
+  return LogicalOffset();
+}
+
 void NGBoxFragmentBuilder::ComputeInlineContainerGeometryFromFragmentTree(
     InlineContainingBlockMap* inline_containing_block_map) {
   if (inline_containing_block_map->IsEmpty())

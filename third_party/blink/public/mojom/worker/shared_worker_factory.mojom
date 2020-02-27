@@ -16,6 +16,7 @@ import "third_party/blink/public/mojom/worker/shared_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_info.mojom";
 import "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
+import "url/mojom/origin.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose shared-worker-specific interfaces between renderer and
@@ -23,7 +24,8 @@ import "third_party/blink/public/mojom/worker/worker_main_script_load_params.moj
 const string kNavigation_SharedWorkerSpec = "navigation:shared_worker";
 
 // This interface is used to instantiate a shared worker. It is exported from a
-// child process where the shared worker should run.
+// renderer process where the shared worker should run. The method on this
+// interface is called by the browser process.
 interface SharedWorkerFactory {
   // Create a new shared worker. The |host| interface receives events from the
   // shared worker.
@@ -32,6 +34,13 @@ interface SharedWorkerFactory {
   // |browser_interface_broker| instead of receiving plumbing it here.
   CreateSharedWorker(
       SharedWorkerInfo info,
+
+      // The origin of the page where `new SharedWorker()` is called.
+      // This origin must be able to access shared workers.
+      // (see blink::SecurityOrigin::CanAccessSharedWorkers())
+      // https://html.spec.whatwg.org/C/#concept-sharedworkerglobalscope-constructor-origin
+      url.mojom.Origin constructor_origin,
+
       string user_agent,
       bool pause_on_start,
       mojo_base.mojom.UnguessableToken devtools_worker_token,

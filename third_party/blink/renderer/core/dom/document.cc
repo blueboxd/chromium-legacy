@@ -774,7 +774,7 @@ Document::Document(const DocumentInit& initializer,
                             : nullptr;
     if (registry && registration_context_)
       registry->Entangle(registration_context_);
-    cookie_jar_ = std::make_unique<CookieJar>(this);
+    cookie_jar_ = MakeGarbageCollected<CookieJar>(this);
   } else if (imports_controller_ &&
              !base::FeatureList::IsEnabled(
                  features::kHtmlImportsRequestInitiatorLock)) {
@@ -8225,6 +8225,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
+  visitor->Trace(cookie_jar_);
   visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_activation_observer_);

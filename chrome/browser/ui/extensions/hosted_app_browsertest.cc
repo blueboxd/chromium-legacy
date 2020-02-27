@@ -108,8 +108,21 @@ constexpr const char kExampleURL[] = "https://www.example.com/empty.html";
 
 enum class AppType {
   HOSTED_APP,    // Using HostedAppBrowserController
-  BOOKMARK_APP,  // Using WebAppBrowserController
+  BOOKMARK_APP,  // Using WebAppBrowserController, BookmarkAppRegistrar
+  WEB_APP,       // Using WebAppBrowserController, WebAppRegistrar
 };
+
+std::string AppTypeParamToString(
+    const ::testing::TestParamInfo<AppType>& app_type) {
+  switch (app_type.param) {
+    case AppType::HOSTED_APP:
+      return "HostedApp";
+    case AppType::BOOKMARK_APP:
+      return "BookmarkApp";
+    case AppType::WEB_APP:
+      return "WebApp";
+  }
+}
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
   blink::mojom::RendererPreferences* prefs =
@@ -148,24 +161,29 @@ bool TryToLoadImage(const content::ToRenderFrameHost& adapter,
 }  // namespace
 
 // Parameters are {app_type, desktop_pwa_flag}. |app_type| controls whether it
-// is a Hosted or Bookmark app.
-class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
-                                public ::testing::WithParamInterface<AppType> {
+// is a Hosted or Bookmark or Web app.
+class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
+                           public ::testing::WithParamInterface<AppType> {
  public:
-  HostedOrBookmarkAppTest()
+  HostedOrWebAppTest()
       : app_browser_(nullptr),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     if (GetParam() == AppType::HOSTED_APP) {
       scoped_feature_list_.InitWithFeatures(
           {}, {features::kDesktopPWAsUnifiedUiController,
                predictors::kSpeculativePreconnectFeature});
-    } else {
+    } else if (GetParam() == AppType::BOOKMARK_APP) {
       scoped_feature_list_.InitWithFeatures(
           {features::kDesktopPWAsUnifiedUiController},
+          {features::kDesktopPWAsWithoutExtensions,
+           predictors::kSpeculativePreconnectFeature});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsWithoutExtensions},
           {predictors::kSpeculativePreconnectFeature});
     }
   }
-  ~HostedOrBookmarkAppTest() override = default;
+  ~HostedOrWebAppTest() override = default;
 
   void SetUp() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
@@ -311,11 +329,11 @@ class HostedOrBookmarkAppTest : public extensions::ExtensionBrowserTest,
   // used by the NetworkService.
   content::ContentMockCertVerifier cert_verifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostedOrBookmarkAppTest);
+  DISALLOW_COPY_AND_ASSIGN(HostedOrWebAppTest);
 };
 
 // Tests that "Open link in new tab" opens a link in a foreground tab.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, OpenLinkInNewTab) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, OpenLinkInNewTab) {
   SetupAppWithURL(GURL(kExampleURL));
 
   const GURL url("http://www.foo.com/");
@@ -340,7 +358,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, OpenLinkInNewTab) {
 }
 
 // Tests that Ctrl + Clicking a link opens a foreground tab.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, CtrlClickLink) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, CtrlClickLink) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set up an app which covers app.com URLs.
@@ -375,8 +393,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, CtrlClickLink) {
 
 // Tests that the WebContents of an app window launched using OpenApplication
 // has the correct prefs.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
-                       WebContentsPrefsOpenApplication) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, WebContentsPrefsOpenApplication) {
   SetupAppWithURL(GURL(kExampleURL));
   CheckWebContentsHasAppPrefs(
       app_browser_->tab_strip_model()->GetActiveWebContents());
@@ -384,7 +401,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 
 // Tests that the WebContents of an app window launched using
 // web_app::ReparentWebContentsIntoAppBrowser has the correct prefs.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        WebContentsPrefsReparentWebContents) {
   SetupAppWithURL(GURL(kExampleURL));
 
@@ -402,7 +419,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 
 // Tests that the WebContents of a regular browser window launched using
 // OpenInChrome has the correct prefs.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, WebContentsPrefsOpenInChrome) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, WebContentsPrefsOpenInChrome) {
   SetupAppWithURL(GURL(kExampleURL));
 
   content::WebContents* app_contents =
@@ -417,7 +434,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, WebContentsPrefsOpenInChrome) {
 }
 
 // Check that the toolbar is shown correctly.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, ShouldShowCustomTabBar) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, ShouldShowCustomTabBar) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -437,7 +454,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, ShouldShowCustomTabBar) {
       app_browser_, https_server()->GetURL("foo.com", "/simple.html"), true);
 }
 
-using HostedAppTest = HostedOrBookmarkAppTest;
+using HostedAppTest = HostedOrWebAppTest;
 
 // Tests that hosted apps are not web apps.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, NotWebApp) {
@@ -449,10 +466,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, NotWebApp) {
   EXPECT_FALSE(app->from_bookmark());
 }
 
-class HostedAppTestWithAutoupgradesDisabled : public HostedOrBookmarkAppTest {
+class HostedAppTestWithAutoupgradesDisabled : public HostedOrWebAppTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedOrBookmarkAppTest::SetUpCommandLine(command_line);
+    HostedOrWebAppTest::SetUpCommandLine(command_line);
     feature_list.InitAndDisableFeature(
         blink::features::kMixedContentAutoupgrade);
   }
@@ -499,7 +516,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
   EXPECT_TRUE(app_browser_->app_controller()->ShouldShowCustomTabBar());
 }
 
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        ShouldShowCustomTabBarForHTTPAppSameOrigin) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -520,7 +537,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 #define MAYBE_ShouldShowCustomTabBarForHTTPAppHTTPSUrl \
   ShouldShowCustomTabBarForHTTPAppHTTPSUrl
 #endif
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        MAYBE_ShouldShowCustomTabBarForHTTPAppHTTPSUrl) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -540,7 +557,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
   NavigateAndCheckForToolbar(app_browser_, app_url, expected_visibility);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        ShouldShowCustomTabBarForHTTPSAppSameOrigin) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -553,7 +570,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 
 // Check that the toolbar is shown correctly for HTTPS apps when they
 // navigate to a HTTP page on the same origin.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        ShouldShowCustomTabBarForHTTPSAppHTTPUrl) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -571,7 +588,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 
 // Check that the toolbar is shown correctly for apps that specify start
 // URLs without the 'www.' prefix.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest,
                        ShouldShowCustomTabBarForAppWithoutWWW) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -599,7 +616,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest,
 
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a platform app.  https://crbug.com/721949.
-IN_PROC_BROWSER_TEST_P(HostedOrBookmarkAppTest, SubframeRedirectsToHostedApp) {
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, SubframeRedirectsToHostedApp) {
   // This test only applies to hosted apps.
   if (app_type() != AppType::HOSTED_APP)
     return;
@@ -683,13 +700,13 @@ constexpr const char kHostedAppProcessModelManifest[] =
 // - |cross_site| - cross.domain.com/title1.htm
 //                  Cross-site from all the other frames.
 
-class HostedAppProcessModelTest : public HostedOrBookmarkAppTest {
+class HostedAppProcessModelTest : public HostedOrWebAppTest {
  public:
-  HostedAppProcessModelTest() {}
-  ~HostedAppProcessModelTest() override {}
+  HostedAppProcessModelTest() = default;
+  ~HostedAppProcessModelTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedOrBookmarkAppTest::SetUpCommandLine(command_line);
+    HostedOrWebAppTest::SetUpCommandLine(command_line);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     std::string origin1 =
         embedded_test_server()->GetURL("isolated.site.com", "/").spec();
@@ -701,7 +718,7 @@ class HostedAppProcessModelTest : public HostedOrBookmarkAppTest {
   }
 
   void SetUpOnMainThread() override {
-    HostedOrBookmarkAppTest::SetUpOnMainThread();
+    HostedOrWebAppTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Some tests make requests to URLs that purposefully end with a double
@@ -1238,11 +1255,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
 // the other: https://isolated.com and https://very.isolated.com.
 class HostedAppIsolatedOriginTest : public HostedAppProcessModelTest {
  public:
-  HostedAppIsolatedOriginTest() {}
-  ~HostedAppIsolatedOriginTest() override {}
+  HostedAppIsolatedOriginTest() = default;
+  ~HostedAppIsolatedOriginTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedOrBookmarkAppTest::SetUpCommandLine(command_line);
+    HostedOrWebAppTest::SetUpCommandLine(command_line);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     GURL isolated_url = embedded_test_server()->GetURL("isolated.com", "/");
     GURL very_isolated_url =
@@ -1396,11 +1413,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
 
 class HostedAppSitePerProcessTest : public HostedAppProcessModelTest {
  public:
-  HostedAppSitePerProcessTest() {}
-  ~HostedAppSitePerProcessTest() override {}
+  HostedAppSitePerProcessTest() = default;
+  ~HostedAppSitePerProcessTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedOrBookmarkAppTest::SetUpCommandLine(command_line);
+    HostedOrWebAppTest::SetUpCommandLine(command_line);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     content::IsolateAllSitesForTesting(command_line);
   }
@@ -1770,9 +1787,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         HostedOrBookmarkAppTest,
+                         HostedOrWebAppTest,
                          ::testing::Values(AppType::HOSTED_APP,
-                                           AppType::BOOKMARK_APP));
+                                           AppType::BOOKMARK_APP,
+                                           AppType::WEB_APP),
+                         AppTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(All,
                          HostedAppTest,

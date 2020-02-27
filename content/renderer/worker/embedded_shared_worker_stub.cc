@@ -29,6 +29,7 @@ namespace content {
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::SharedWorkerInfoPtr info,
+    const url::Origin& constructor_origin,
     const std::string& user_agent,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
@@ -103,6 +104,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   impl_->StartWorkerContext(
       url_, info->options->type, info->options->credentials,
       blink::WebString::FromUTF8(info->options->name),
+      blink::WebSecurityOrigin(constructor_origin),
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,

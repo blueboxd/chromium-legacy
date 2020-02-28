@@ -41,10 +41,15 @@ namespace ash {
 //   |P Q R S|  | T U V |  |W X Y Z|
 //    -------    -------    -------
 //    _______    _______    _______
-//   |  BACK |  |   0   |  |  <-   |
+//   |  <-   |  |   0   |  |  ->   |
 //   |       |  |   +   |  |       |
 //    -------    -------    -------
+//    _______
+//   |  BACK |
+//   |       |
+//    -------
 //
+// The <- represents the delete button while -> represents the submit button.
 // The "BACK" button is hidden by default.
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
@@ -69,6 +74,7 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
 
     views::View* GetButton(int number) const;
     views::View* GetBackspaceButton() const;
+    views::View* GetSubmitButton() const;
     views::View* GetBackButton() const;
 
     // Sets the timers that are used for backspace auto-submit. |delay_timer| is
@@ -83,6 +89,7 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
 
   using OnPinKey = base::RepeatingCallback<void(int value)>;
   using OnPinBackspace = base::RepeatingClosure;
+  using OnPinSubmit = base::RepeatingClosure;
   using OnPinBack = base::RepeatingClosure;
 
   // Creates PIN view with the specified |keyboard_style|.
@@ -90,11 +97,14 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // non-null.
   // |on_backspace| is called when the user wants to erase the most recently
   // tapped key; must be non-null.
+  // |on_submit| is called when the user wants to submit the PIN / password;
+  // must be non-null.
   // |on_back| is called when the user taps the back button; must be non-null
   // if the back button is shown.
   LoginPinView(Style keyboard_style,
                const OnPinKey& on_key,
                const OnPinBackspace& on_backspace,
+               const OnPinSubmit& on_submit,
                const OnPinBack& on_back);
   ~LoginPinView() override;
 
@@ -109,11 +119,19 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
  private:
   class BackButton;
   class BackspacePinButton;
+  class SubmitPinButton;
+
+  // Builds and returns a new view which contains a row of the PIN keyboard.
+  NonAccessibleView* BuildAndAddRow();
+
+  bool is_back_button_visible_ = false;
 
   BackButton* back_button_;
   BackspacePinButton* backspace_;
+  SubmitPinButton* submit_button_;
   OnPinKey on_key_;
   OnPinBackspace on_backspace_;
+  OnPinSubmit on_submit_;
   OnPinBack on_back_;
 
   std::vector<NonAccessibleView*> rows;

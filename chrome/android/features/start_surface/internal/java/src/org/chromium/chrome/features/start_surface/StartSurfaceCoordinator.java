@@ -232,10 +232,12 @@ public class StartSurfaceCoordinator implements StartSurface {
                 TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                         propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false);
 
-        // Intentionally do not call mSecondaryTasksSurface.initialize since the secondary tasks
-        // surface will never show MV tiles.
-        // TODO(crbug.com/1041047): Remove constructing of the MV tilles from the
+        // Call mSecondaryTasksSurface.initialize because some components needed to wait until
+        // after native is initialized. However, the secondary tasks surface will never show MV
+        // tiles.
+        // TODO(crbug.com/1041047): Remove constructing of the MV tiles from the
         // TasksSurfaceCoordinator.
+        mSecondaryTasksSurface.initialize();
 
         mSecondaryTasksSurface.getView().setId(R.id.secondary_tasks_surface_view);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =

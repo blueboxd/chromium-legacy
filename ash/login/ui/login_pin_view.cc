@@ -65,6 +65,7 @@ constexpr int kRepeatingBackspaceDelayMs = 150;
 // Button sizes.
 constexpr int kButtonHeightDp = 56;
 constexpr int kButtonWidthDp = 72;
+constexpr gfx::Size kButtonSize = gfx::Size(kButtonWidthDp, kButtonHeightDp);
 
 base::string16 GetButtonLabelForNumber(int value) {
   DCHECK(value >= 0 && value < int{base::size(kPinLabels)});
@@ -382,6 +383,41 @@ class LoginPinView::BackButton : public BasePinButton {
   DISALLOW_COPY_AND_ASSIGN(BackButton);
 };
 
+// A PIN button to press to submit the PIN / password.
+class LoginPinView::SubmitPinButton : public BasePinButton {
+ public:
+  SubmitPinButton(const gfx::Size& size, const base::RepeatingClosure& on_press)
+      : BasePinButton(size,
+                      l10n_util::GetStringUTF16(
+                          IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME),
+                      on_press),
+        image_(new views::ImageView()) {
+    image_->SetImage(gfx::CreateVectorIcon(
+        kLockScreenArrowIcon, login_constants::kButtonEnabledColor));
+    AddChildView(image_);
+    SetEnabled(false);
+  }
+
+  SubmitPinButton(const SubmitPinButton&) = delete;
+  SubmitPinButton& operator=(const SubmitPinButton&) = delete;
+  ~SubmitPinButton() override = default;
+
+  void OnEnabledChanged() {
+    SkColor color = login_constants::kButtonEnabledColor;
+    if (!GetEnabled())
+      color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
+
+    image_->SetImage(gfx::CreateVectorIcon(kLockScreenArrowIcon, color));
+  }
+
+ private:
+  views::ImageView* image_ = nullptr;
+  views::PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&LoginPinView::SubmitPinButton::OnEnabledChanged,
+                              base::Unretained(this)));
+};
+
 // static
 gfx::Size LoginPinView::TestApi::GetButtonSize(Style style) {
   return gfx::Size(kButtonWidthDp, kButtonHeightDp);
@@ -399,6 +435,10 @@ views::View* LoginPinView::TestApi::GetBackspaceButton() const {
   return view_->backspace_;
 }
 
+views::View* LoginPinView::TestApi::GetSubmitButton() const {
+  return view_->submit_button_;
+}
+
 views::View* LoginPinView::TestApi::GetBackButton() const {
   return view_->back_button_;
 }
@@ -413,10 +453,15 @@ void LoginPinView::TestApi::SetBackspaceTimers(
 LoginPinView::LoginPinView(Style keyboard_style,
                            const OnPinKey& on_key,
                            const OnPinBackspace& on_backspace,
+                           const OnPinSubmit& on_submit,
                            const OnPinBack& on_back)
     : NonAccessibleView(kLoginPinViewClassName),
+      back_button_(new BackButton(kButtonSize, on_back)),
+      backspace_(new BackspacePinButton(kButtonSize, on_backspace)),
+      submit_button_(new SubmitPinButton(kButtonSize, on_submit)),
       on_key_(on_key),
       on_backspace_(on_backspace),
+      on_submit_(on_submit),
       on_back_(on_back) {
   DCHECK(on_key_);
   DCHECK(on_backspace_);
@@ -424,60 +469,40 @@ LoginPinView::LoginPinView(Style keyboard_style,
   // Layer rendering.
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
-  // Builds and returns a new view which contains a row of the PIN keyboard.
-  auto build_and_add_row = [this]() {
-    auto* row = new NonAccessibleView();
-    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal));
-    AddChildView(row);
-    rows.push_back(row);
-    return row;
-  };
-
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
   bool show_letters = keyboard_style == Style::kAlphanumeric;
-  const gfx::Size button_size = gfx::Size(kButtonWidthDp, kButtonHeightDp);
 
   auto add_digit_button = [&](View* row, int value) {
     row->AddChildView(
-        new DigitPinButton(value, show_letters, button_size, on_key_));
+        new DigitPinButton(value, show_letters, kButtonSize, on_key_));
   };
 
-  // Wrap the back button view with a container having the fill layout, so that
-  // it consumes the same amount of space even when the button is hidden.
-  auto back_button_container = std::make_unique<NonAccessibleView>();
-  back_button_container->SetLayoutManager(
-      std::make_unique<views::FillLayout>());
-  back_button_ = back_button_container->AddChildView(
-      std::make_unique<BackButton>(button_size, on_back_));
-  back_button_->SetVisible(false);
-
   // 1-2-3
-  auto* row = build_and_add_row();
+  auto* row = BuildAndAddRow();
   add_digit_button(row, 1);
   add_digit_button(row, 2);
   add_digit_button(row, 3);
 
   // 4-5-6
-  row = build_and_add_row();
+  row = BuildAndAddRow();
   add_digit_button(row, 4);
   add_digit_button(row, 5);
   add_digit_button(row, 6);
 
   // 7-8-9
-  row = build_and_add_row();
+  row = BuildAndAddRow();
   add_digit_button(row, 7);
   add_digit_button(row, 8);
   add_digit_button(row, 9);
 
-  // back-0-backspace
-  row = build_and_add_row();
-  row->AddChildView(std::move(back_button_container));
-  add_digit_button(row, 0);
-  backspace_ = new BackspacePinButton(button_size, on_backspace_);
+  // backspace-0-submit
+  row = BuildAndAddRow();
   row->AddChildView(backspace_);
+  add_digit_button(row, 0);
+  if (!on_submit_.is_null())
+    row->AddChildView(submit_button_);
 }
 
 LoginPinView::~LoginPinView() = default;
@@ -492,16 +517,46 @@ void LoginPinView::NotifyAccessibilityLocationChanged() {
 }
 
 void LoginPinView::SetBackButtonVisible(bool visible) {
-  back_button_->SetVisible(visible);
+  // We don't want the back button to consume any space in the view when it is
+  // not visible. Therefore, we add / remove a row especially for it when we
+  // need to make it visible.
+  if (is_back_button_visible_ == visible)
+    return;
+  is_back_button_visible_ = visible;
+  if (visible)
+    BuildAndAddRow()->AddChildView(back_button_);
+  else
+    rows.pop_back();
+  Layout();
 }
 
 void LoginPinView::OnPasswordTextChanged(bool is_empty) {
-  // Disabling the backspace button will make it lose focus. The previous
-  // focusable view is a button in PIN keyboard, which is slightly more expected
-  // than the user menu.
-  if (is_empty && backspace_->HasFocus())
-    backspace_->GetPreviousFocusableView()->RequestFocus();
+  // Disabling the backspace button or the submit button will make it lose
+  // focus. The previous focusable view is a button in PIN keyboard, which is
+  // slightly more expected than the user menu.
+  if (is_empty) {
+    View* with_focus = nullptr;
+    if (backspace_->HasFocus())
+      with_focus = backspace_;
+    else if (submit_button_->HasFocus())
+      with_focus = submit_button_;
+    if (with_focus) {
+      View* previous = with_focus->GetPreviousFocusableView();
+      if (previous)
+        previous->RequestFocus();
+    }
+  }
   backspace_->SetEnabled(!is_empty);
+  submit_button_->SetEnabled(!is_empty);
+}
+
+NonAccessibleView* LoginPinView::BuildAndAddRow() {
+  auto* row = new NonAccessibleView();
+  row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  AddChildView(row);
+  rows.push_back(row);
+  return row;
 }
 
 }  // namespace ash

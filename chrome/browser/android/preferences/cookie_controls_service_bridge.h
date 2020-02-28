@@ -12,10 +12,8 @@
 // in the Incognito NTP Java UI.
 class CookieControlsServiceBridge : public CookieControlsService::Observer {
  public:
-  CookieControlsServiceBridge(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jprofile);
+  CookieControlsServiceBridge(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   ~CookieControlsServiceBridge() override;
 
@@ -23,6 +21,8 @@ class CookieControlsServiceBridge : public CookieControlsService::Observer {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void HandleCookieControlsToggleChanged(JNIEnv* env, jboolean checked);
+
+  void UpdateServiceIfNecessary(JNIEnv* env);
 
   // CookieControlsService::Observer
   void OnThirdPartyCookieBlockingPrefChanged() override;
@@ -32,6 +32,8 @@ class CookieControlsServiceBridge : public CookieControlsService::Observer {
   // Updates cookie controls UI when third-party cookie blocking setting has
   // changed.
   void SendCookieControlsUIChanges();
+  // Starts a service to observe the current profile.
+  void UpdateServiceIfNecessary();
 
   CookieControlsService* service_;
   base::android::ScopedJavaGlobalRef<jobject> jobject_;

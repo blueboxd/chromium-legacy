@@ -98,6 +98,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                         UpdateResponseDataList updates) override;
 
   // ModelTypeControllerDelegate implementation.
+  // |start_callback| will never be called synchronously.
   void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override;
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
@@ -238,6 +239,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   ////////////////
 
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
+  // |start_callback_| will never be called synchronously.
   StartCallback start_callback_;
 
   // The request context passed in as part of OnSyncStarting().

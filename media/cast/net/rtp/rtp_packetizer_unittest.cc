@@ -81,8 +81,7 @@ class TestRtpPacketTransport : public PacketTransport {
 
   int64_t GetBytesSent() final { return 0; }
 
-  void StartReceiving(
-      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+  void StartReceiving(PacketReceiverCallbackWithStatus packet_receiver) final {}
 
   void StopReceiving() final {}
 

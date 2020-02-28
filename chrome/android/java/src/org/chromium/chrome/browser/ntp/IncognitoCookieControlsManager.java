@@ -1,0 +1,99 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.ntp;
+
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+
+import org.chromium.base.ObserverList;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge;
+import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge.CookieControlsServiceObserver;
+
+/**
+ * A manager for cookie controls related behaviour on the incognito description view.
+ * This class communicates with a native CookieControlsService and provides
+ * updates to its listening observers. In addition, it is expected that this
+ * class will be registered as an OnCheckedChangeListener for a corresponding
+ * cookie controls view.
+ */
+public class IncognitoCookieControlsManager
+        implements CookieControlsServiceObserver, OnCheckedChangeListener {
+    /**
+     * Interface for a class that wants to receive updates from this manager.
+     */
+    public interface Observer {
+        /**
+         * Notifies that this manager has received an update.
+         * @param checked A boolean indicating whether the toggle indicating third-party cookies are
+         *         currently being blocked should be checked or not.
+         * @param enforced A boolean indicating if third-party cookies being blocked is currently
+         *         enforced by policy/cookie settings or not.
+         */
+        void onUpdate(boolean checked, boolean enforced);
+    }
+
+    private CookieControlsServiceBridge mServiceBridge;
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private boolean mIsInitialized;
+    private boolean mShowCard;
+
+    /**
+     * Initializes the IncognitoCookieControlsManager explicitly.
+     */
+    public void initialize() {
+        if (mIsInitialized) return;
+
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)) {
+            mServiceBridge = new CookieControlsServiceBridge(this);
+            mShowCard = true;
+        }
+        mIsInitialized = true;
+    }
+
+    /**
+     * @param observer An observer to be notified of changes.
+     */
+    public void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * @param observer The observer to remove.
+     */
+    public void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
+    }
+
+    /**
+     * @return a boolean indicating if the card should be visible or not.
+     */
+    public boolean shouldShowCookieControlsCard() {
+        return mShowCard;
+    }
+
+    /**
+     * Tells the bridge to update itself if necessary.
+     */
+    public void updateIfNecessary() {
+        if (mShowCard) mServiceBridge.updateServiceIfNecessary();
+    }
+
+    @Override
+    public void sendCookieControlsUIChanges(boolean checked, boolean enforced) {
+        for (Observer obs : mObservers) {
+            obs.onUpdate(checked, enforced);
+        }
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (mShowCard && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
+            mServiceBridge.handleCookieControlsToggleChanged(isChecked);
+        }
+    }
+}

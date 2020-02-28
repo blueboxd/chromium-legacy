@@ -206,7 +206,15 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
       std::make_unique<ModelTypeProcessorProxy>(
           weak_ptr_factory_for_worker_.GetWeakPtr(),
           base::SequencedTaskRunnerHandle::Get());
-  std::move(start_callback_).Run(std::move(activation_response));
+
+  // Defer invoking of |start_callback_| to avoid synchronous call from the
+  // |bridge_|. It might cause a situation when inside the ModelReadyToSync()
+  // another methods of the bridge eventually were called. This behavior would
+  // be complicated and be unexpected in some bridges.
+  // See crbug.com/1055584 for more details.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(start_callback_),
+                                std::move(activation_response)));
 }
 
 bool ClientTagBasedModelTypeProcessor::IsConnected() const {

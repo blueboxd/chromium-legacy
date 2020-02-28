@@ -16,8 +16,8 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
 import org.chromium.chrome.browser.permissions.PermissionSettingsBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -35,8 +35,7 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
 
     IPHBubbleDelegateImpl(Context context, Tab tab) {
         mContext = context;
-        Profile profile = Profile.getLastUsedProfile();
-        mTracker = TrackerFactory.getTrackerForProfile(profile);
+        mTracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
         mTab = tab;
     }
 
@@ -65,8 +64,8 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
         switch (infoBarId) {
             case InfoBarIdentifier.DOWNLOAD_PROGRESS_INFOBAR_ANDROID:
                 DownloadInfoBarController controller =
-                        DownloadManagerService.getDownloadManagerService()
-                        .getInfoBarController(Profile.getLastUsedProfile().isOffTheRecord());
+                        DownloadManagerService.getDownloadManagerService().getInfoBarController(
+                                mTab.isIncognito());
                 return controller != null ? controller.getTrackerParameters() : null;
             case InfoBarIdentifier.GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID:
                 if (PermissionSettingsBridge.shouldShowNotificationsPromo(mTab.getWebContents())) {

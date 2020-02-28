@@ -18,11 +18,11 @@ CastTransportIPC::CastTransportIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     std::unique_ptr<base::DictionaryValue> options,
-    const media::cast::PacketReceiverCallback& packet_callback,
+    media::cast::PacketReceiverCallback packet_callback,
     media::cast::CastTransportStatusCallback status_callback,
     BulkRawEventsCallback raw_events_cb)
     : channel_id_(-1),
-      packet_callback_(packet_callback),
+      packet_callback_(std::move(packet_callback)),
       status_callback_(std::move(status_callback)),
       raw_events_callback_(std::move(raw_events_cb)) {
   if (CastIPCDispatcher::Get()) {

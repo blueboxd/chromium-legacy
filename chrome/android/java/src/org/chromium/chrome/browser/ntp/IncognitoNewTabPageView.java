@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.FrameLayout;
 
@@ -37,18 +36,14 @@ public class IncognitoNewTabPageView extends FrameLayout {
         void loadIncognitoLearnMore();
 
         /**
-         * Enables/disables cookie controls mode as set from incognito NTP. By default
-         * nothing happens.
-         * @param enable A boolean specifying the state of third party cookie blocking in
-         *         incognito. True will enable third-party cookie blocking in incognito and false
-         *         will disable this feature.
+         * Initializes the cookie controls manager for interaction with the cookie controls toggle.
          * */
-        void setThirdPartyCookieBlocking(boolean enable);
+        void initCookieControlsManager();
 
         /**
-         * Returns whether third-party cookies are currently being blocked.
+         * Cleans up the manager after it is finished being used.
          * */
-        boolean shouldBlockThirdPartyCookies();
+        void destroy();
 
         /**
          * Called when the NTP has completely finished loading (all views will be inflated
@@ -84,13 +79,6 @@ public class IncognitoNewTabPageView extends FrameLayout {
                 mManager.loadIncognitoLearnMore();
             }
         });
-        mDescriptionView.setCookieControlsToggleOnCheckedChangeListener(
-                new OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        mManager.setThirdPartyCookieBlocking(isChecked);
-                    }
-                });
     }
 
     @Override
@@ -109,7 +97,7 @@ public class IncognitoNewTabPageView extends FrameLayout {
      */
     void initialize(IncognitoNewTabPageManager manager) {
         mManager = manager;
-        mDescriptionView.setCookieControlsToggle(mManager.shouldBlockThirdPartyCookies());
+        mManager.initCookieControlsManager();
     }
 
     /** @return The IncognitoNewTabPageManager associated with this IncognitoNewTabPageView. */
@@ -138,5 +126,29 @@ public class IncognitoNewTabPageView extends FrameLayout {
         mSnapshotWidth = getWidth();
         mSnapshotHeight = getHeight();
         mSnapshotScrollY = mScrollView.getScrollY();
+    }
+
+    /**
+     * Set the visibility of the cookie controls card on the incognito description.
+     * @param isVisible Whether it's visible or not.
+     */
+    void setIncognitoCookieControlsCardVisibility(boolean isVisible) {
+        mDescriptionView.showCookieControlsCard(isVisible);
+    }
+
+    /**
+     * Set the toggle on the cookie controls card.
+     * @param isChecked Whether it's checked or not.
+     */
+    void setIncognitoCookieControlsToggleChecked(boolean isChecked) {
+        mDescriptionView.setCookieControlsToggle(isChecked);
+    }
+
+    /**
+     * Set the incognito cookie controls toggle checked change listener.
+     * @param listener The given checked change listener.
+     */
+    void setIncognitoCookieControlsToggleCheckedListener(OnCheckedChangeListener listener) {
+        mDescriptionView.setCookieControlsToggleOnCheckedChangeListener(listener);
     }
 }

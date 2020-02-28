@@ -103,6 +103,19 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     EXPECT_FALSE(data_callback_);
   }
 
+  void OnSyncStarting(
+      const syncer::DataTypeActivationRequest& request) override {
+    FakeModelTypeSyncBridge::OnSyncStarting(request);
+    sync_started_ = true;
+  }
+
+  void ApplyStopSyncChanges(std::unique_ptr<MetadataChangeList>
+                                delete_metadata_change_list) override {
+    sync_started_ = false;
+    FakeModelTypeSyncBridge::ApplyStopSyncChanges(
+        std::move(delete_metadata_change_list));
+  }
+
   std::string GetStorageKey(const EntityData& entity_data) override {
     get_storage_key_call_count_++;
     return FakeModelTypeSyncBridge::GetStorageKey(entity_data);
@@ -130,6 +143,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   int apply_call_count() const { return apply_call_count_; }
   int get_storage_key_call_count() const { return get_storage_key_call_count_; }
   int commit_failures_count() const { return commit_failures_count_; }
+
+  bool sync_started() const { return sync_started_; }
 
   // FakeModelTypeSyncBridge overrides.
 
@@ -193,6 +208,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   const ModelType model_type_;
   bool supports_incremental_updates_;
+  bool sync_started_ = false;
 
   // The number of times MergeSyncData has been called.
   int merge_call_count_ = 0;
@@ -251,6 +267,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void ModelReadyToSync() {
     type_processor()->ModelReadyToSync(db()->CreateMetadataBatch());
+    WaitForStartCallbackIfNeeded();
   }
 
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }
@@ -267,10 +284,16 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     request.authenticated_account_id = CoreAccountId(authenticated_account_id);
     request.sync_mode = sync_mode;
     request.configuration_start_time = base::Time::Now();
+
+    // |run_loop_| may exist here if OnSyncStarting is called without resetting
+    // state. But it is safe to remove it.
+    ASSERT_TRUE(!run_loop_ || !run_loop_->running());
+    run_loop_ = std::make_unique<base::RunLoop>();
     type_processor()->OnSyncStarting(
         request,
         base::BindOnce(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
                        base::Unretained(this)));
+    WaitForStartCallbackIfNeeded();
   }
 
   void DisconnectSync() {
@@ -314,6 +337,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
                             IsCommitOnly(), GetModelType(),
                             SupportsIncrementalUpdates());
     worker_ = nullptr;
+    run_loop_.reset();
     CheckPostConditions();
   }
 
@@ -384,14 +408,29 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     // side-stepping that completely and connecting directly to the real
     // processor, since these tests are single-threaded and don't need proxies.
     type_processor()->ConnectSync(std::move(worker));
+    ASSERT_TRUE(run_loop_);
+    run_loop_->Quit();
   }
 
   void ErrorReceived(const ModelError& error) {
     EXPECT_TRUE(expect_error_);
     expect_error_ = false;
+    // Do not expect for a start callback anymore.
+    if (run_loop_) {
+      run_loop_->Quit();
+    }
   }
 
   sync_pb::ModelTypeState model_type_state() { return model_type_state_; }
+
+  void WaitForStartCallbackIfNeeded() {
+    if (!type_processor()->IsModelReadyToSyncForTest() ||
+        !bridge()->sync_started()) {
+      return;
+    }
+    ASSERT_TRUE(run_loop_);
+    run_loop_->Run();
+  }
 
  private:
   std::unique_ptr<TestModelTypeSyncBridge> bridge_;
@@ -400,6 +439,9 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   // This sets SequencedTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
   base::test::SingleThreadTaskEnvironment task_environment_;
+
+  // This run loop is used to wait for OnReadyToConnect is called.
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // The current mock queue, which is owned by |type_processor()|.
   MockModelTypeWorker* worker_;

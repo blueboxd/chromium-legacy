@@ -40,7 +40,7 @@
 
               mediaSource.removeSourceBuffer(sourceBuffer);
 
-              assert_throws("NotFoundError",
+              assert_throws_dom("NotFoundError",
                   function() { mediaSource.removeSourceBuffer(sourceBuffer); },
                   "removeSourceBuffer() threw an exception when a SourceBuffer that was already removed.");
 

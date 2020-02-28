@@ -101,9 +101,9 @@ int64_t UdpSocketClient::GetBytesSent() {
 }
 
 void UdpSocketClient::StartReceiving(
-    const media::cast::PacketReceiverCallbackWithStatus& packet_receiver) {
+    media::cast::PacketReceiverCallbackWithStatus packet_receiver) {
   DVLOG(1) << __func__;
-  packet_receiver_callback_ = packet_receiver;
+  packet_receiver_callback_ = std::move(packet_receiver);
   network_context_->CreateUDPSocket(udp_socket_.BindNewPipeAndPassReceiver(),
                                     receiver_.BindNewPipeAndPassRemote());
   network::mojom::UDPSocketOptionsPtr options;

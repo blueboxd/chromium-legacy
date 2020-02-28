@@ -178,6 +178,9 @@ void DropCompletionCallback(
 }
 
 - (NSDragOperation)draggingEntered:(const DraggingInfo*)info {
+  if (_webContents->ShouldIgnoreInputEvents())
+    return NSDragOperationNone;
+
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
   _currentRVH = _webContents->GetRenderViewHost();
@@ -239,6 +242,12 @@ void DropCompletionCallback(
 }
 
 - (void)draggingExited {
+  if (_webContents->ShouldIgnoreInputEvents())
+    return;
+
+  if (!_dropDataFiltered || !_dropDataUnfiltered)
+    return;
+
   DCHECK(_currentRVH);
   if (_currentRVH != _webContents->GetRenderViewHost())
     return;
@@ -261,6 +270,12 @@ void DropCompletionCallback(
 }
 
 - (NSDragOperation)draggingUpdated:(const DraggingInfo*)info {
+  if (_webContents->ShouldIgnoreInputEvents())
+    return NSDragOperationNone;
+
+  if (!_dropDataFiltered || !_dropDataUnfiltered)
+    return NSDragOperationNone;
+
   if (_canceled) {
     // TODO(ekaramad,paulmeyer): We probably shouldn't be checking for
     // |canceled_| twice in this method.
@@ -320,6 +335,9 @@ void DropCompletionCallback(
 - (BOOL)performDragOperation:(const DraggingInfo*)info
     withWebContentsViewDelegate:
         (content::WebContentsViewDelegate*)webContentsViewDelegate {
+  if (_webContents->ShouldIgnoreInputEvents())
+    return NO;
+
   gfx::PointF transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
       [self GetRenderWidgetHostAtPoint:info->location_in_view

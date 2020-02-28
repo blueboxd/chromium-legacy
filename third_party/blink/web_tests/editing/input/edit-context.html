@@ -444,10 +444,10 @@ test(function() {
   assert_not_equals(editContext, null);
   editContext.text = "foo";
   assert_equals(editContext.text, "foo");
-  assert_throws("IndexSizeError", function() { editContext.updateSelection(10, 0); });
+  assert_throws_dom("IndexSizeError", function() { editContext.updateSelection(10, 0); });
   assert_equals(editContext.selectionStart, 0);
   assert_equals(editContext.selectionEnd, 0);
-  assert_throws("IndexSizeError", function() { editContext.updateText(10, 1, "h"); });
+  assert_throws_dom("IndexSizeError", function() { editContext.updateText(10, 1, "h"); });
   assert_equals(editContext.text, "foo");
 }, 'Testing EditContext update text and selection with invalid values');
 

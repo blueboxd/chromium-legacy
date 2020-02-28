@@ -37,8 +37,7 @@ class LoopBackTransport : public PacketTransport {
 
   int64_t GetBytesSent() final;
 
-  void StartReceiving(
-      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+  void StartReceiving(PacketReceiverCallbackWithStatus packet_receiver) final {}
 
   void StopReceiving() final {}
 

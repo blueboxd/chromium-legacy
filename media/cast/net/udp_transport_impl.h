@@ -52,8 +52,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
   bool SendPacket(PacketRef packet, const base::RepeatingClosure& cb) final;
   int64_t GetBytesSent() final;
   // Start receiving packets. Packets are submitted to |packet_receiver|.
-  void StartReceiving(
-      const PacketReceiverCallbackWithStatus& packet_receiver) final;
+  void StartReceiving(PacketReceiverCallbackWithStatus packet_receiver) final;
   void StopReceiving() final;
 
   // UdpTransport implementations.

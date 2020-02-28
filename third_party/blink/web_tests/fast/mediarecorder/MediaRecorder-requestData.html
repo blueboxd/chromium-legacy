@@ -40,9 +40,10 @@ const makeEmptyDataTest = function(value, expected) {
 
       var recorder = new MediaRecorder(stream);
 
-      assert_throws("InvalidStateError", function() { recorder.requestData(); },
-                    "recorder throws InvalidStateError if requestData() " +
-                    "while state is not 'recording'");
+      assert_throws_dom("InvalidStateError",
+                        function() { recorder.requestData(); },
+                        "recorder throws InvalidStateError if requestData() " +
+                        "while state is not 'recording'");
 
       recorder.ondataavailable = recorderOnDataAvailable;
       recorder.onstop = recorderOnStop;

@@ -72,7 +72,7 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   bool IsImage() const override;
   const StyleImage* GetImage() const { return image_.Get(); }
-  const LayoutListItem* ListItem() const { return list_item_; }
+  const LayoutListItem* ListItem() const;
   LayoutSize ImageBulletSize() const;
 
   const char* GetName() const override { return "LayoutListMarker"; }
@@ -120,7 +120,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
 
   String text_;
   Persistent<StyleImage> image_;
-  LayoutListItem* list_item_;
   LayoutUnit line_offset_;
 };
 

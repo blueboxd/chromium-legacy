@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Security-Policy" content="require-sri-for script; script-src 'self' 'unsafe-inline'">
 <script>
 	test(function () {
-    	assert_throws("SecurityError",
+    	assert_throws_dom("SecurityError",
     		function() {
     			new SharedWorker("http://127.0.0.1:8000/security/contentSecurityPolicy/require-sri-for/sri-sharedworker.js");
     		},

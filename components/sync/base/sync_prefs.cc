@@ -298,6 +298,7 @@ void SyncPrefs::RegisterProfilePrefs(
                                std::string());
 
   // Internal or bookkeeping prefs.
+  registry->RegisterStringPref(prefs::kSyncGaiaId, std::string());
   registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
   registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
   registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
@@ -366,6 +367,7 @@ void SyncPrefs::ClearLocalSyncTransportData() {
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
+  pref_service_->ClearPref(prefs::kSyncGaiaId);
   pref_service_->ClearPref(prefs::kSyncCacheGuid);
   pref_service_->ClearPref(prefs::kSyncBirthday);
   pref_service_->ClearPref(prefs::kSyncBagOfChips);
@@ -626,6 +628,15 @@ void SyncPrefs::RegisterTypeSelectedPref(
   const char* pref_name = GetPrefNameForType(type);
   DCHECK(pref_name);
   registry->RegisterBooleanPref(pref_name, false);
+}
+
+void SyncPrefs::SetGaiaId(const std::string& gaia_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetString(prefs::kSyncGaiaId, gaia_id);
+}
+
+std::string SyncPrefs::GetGaiaId() const {
+  return pref_service_->GetString(prefs::kSyncGaiaId);
 }
 
 void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {

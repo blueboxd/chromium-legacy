@@ -91,7 +91,8 @@
 // Opens the identity chooser dialog with an animation from |point|.
 - (void)showIdentityChooserDialogWithPoint:(CGPoint)point {
   self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
-      initWithBaseViewController:self.unifiedConsentViewController];
+      initWithBaseViewController:self.unifiedConsentViewController
+                         browser:self.browser];
   self.identityChooserCoordinator.delegate = self;
   self.identityChooserCoordinator.origin = point;
   [self.identityChooserCoordinator start];

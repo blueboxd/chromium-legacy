@@ -11,12 +11,14 @@ import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.Token;
 import androidx.browser.trusted.TrustedWebActivityService;
@@ -234,33 +236,35 @@ public class TrustedWebActivityClient {
         // Trusted Web Activities only work with https so we can shortcut here.
         if (!UrlConstants.HTTPS_SCHEME.equals(origin.uri().getScheme())) return null;
 
-        Set<Token> verifiedPackages = mDelegatesManager.getAllDelegateApps(origin);
-        if (verifiedPackages == null || verifiedPackages.size() == 0) return null;
+        ComponentName componentName = searchVerifiedApps(appContext.getPackageManager(),
+                mDelegatesManager.getAllDelegateApps(origin), resolveInfosForUrl);
 
-        String twaPackageName = null;
-        String twaActivityName = null;
-        for (ResolveInfo info : resolveInfosForUrl) {
-            if (info.activityInfo == null) continue;
-
-            Token token =
-                    Token.create(info.activityInfo.packageName, appContext.getPackageManager());
-            if (token == null) continue;
-
-            if (verifiedPackages.contains(token)) {
-                twaPackageName = info.activityInfo.packageName;
-                twaActivityName = info.activityInfo.name;
-                break;
-            }
-        }
-
-        if (twaPackageName == null) return null;
+        if (componentName == null) return null;
 
         Intent intent = new Intent();
         intent.setData(Uri.parse(url));
         intent.setAction(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.setComponent(new ComponentName(twaPackageName, twaActivityName));
+        intent.setComponent(componentName);
         return intent;
+    }
+
+    @Nullable
+    private static ComponentName searchVerifiedApps(@NonNull PackageManager pm,
+            @Nullable Set<Token> verifiedPackages, @NonNull List<ResolveInfo> resolveInfosForUrl) {
+        if (verifiedPackages == null || verifiedPackages.isEmpty()) return null;
+
+        for (ResolveInfo info : resolveInfosForUrl) {
+            if (info.activityInfo == null) continue;
+
+            for (Token v : verifiedPackages) {
+                if (!v.matches(info.activityInfo.packageName, pm)) continue;
+
+                return new ComponentName(info.activityInfo.packageName, info.activityInfo.name);
+            }
+        }
+
+        return null;
     }
 }

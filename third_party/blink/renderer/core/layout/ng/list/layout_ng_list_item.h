@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_ITEM_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 
@@ -23,9 +22,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
 
   LayoutObject* Marker() const {
     Element* list_item = To<Element>(GetNode());
-    if (PseudoElement* marker = list_item->GetPseudoElement(kPseudoIdMarker))
-      return marker->GetLayoutObject();
-    return nullptr;
+    return list_item->PseudoElementLayoutObject(kPseudoIdMarker);
   }
 
   void UpdateMarkerTextIfNeeded();

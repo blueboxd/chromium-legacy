@@ -79,7 +79,7 @@ test(() => {
       seq[i] = num;
       var matrix2d = new DOMMatrixReadOnly(seq, 6);
       assert_true(matrix2d.is2D);
-      assert_throws("InvalidStateError", () => { matrix2d.toString() });
+      assert_throws_dom("InvalidStateError", () => { matrix2d.toString() });
     }
   }, `DOMMatrixReadOnly toString() - 2D matrix with ${num}`);
 
@@ -89,7 +89,7 @@ test(() => {
       seq[i] = num;
       var matrix3d = new DOMMatrixReadOnly(seq, 12);
       assert_false(matrix3d.is2D);
-      assert_throws("InvalidStateError", () => { matrix3d.toString() });
+      assert_throws_dom("InvalidStateError", () => { matrix3d.toString() });
     }
   }, `DOMMatrixReadOnly toString() - 3D matrix with ${num}`);
 });

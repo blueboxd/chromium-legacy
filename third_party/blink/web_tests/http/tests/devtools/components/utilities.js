@@ -214,24 +214,6 @@
       next();
     },
 
-    function stringTrimURLTest(next) {
-      var baseURLDomain = 'www.chromium.org';
-      var testArray = [
-        'http://www.chromium.org/foo/bar',
-        '/foo/bar',
-        'https://www.CHromium.ORG/BAZ/zoo',
-        '/BAZ/zoo',
-        'https://example.com/foo[]',
-        'example.com/foo[]',
-      ];
-      for (var i = 0; i < testArray.length; i += 2) {
-        var url = testArray[i];
-        var expected = testArray[i + 1];
-        TestRunner.assertEquals(expected, url.trimURL(baseURLDomain), url);
-      }
-      next();
-    },
-
     function trimMiddle(next) {
       var testArray = [
         '', '!', '\uD83D\uDE48A\uD83D\uDE48L\uD83D\uDE48I\uD83D\uDE48N\uD83D\uDE48A\uD83D\uDE48\uD83D\uDE48', 'test'

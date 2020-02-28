@@ -19,8 +19,7 @@ Polymer({
   },
 
   /**
-   * @type {PasswordManagerProxy}
-   * @private
+   * @private {PasswordManagerProxy}
    */
   passwordManager_: null,
 
@@ -43,10 +42,18 @@ Polymer({
     this.passwordManager_.startBulkPasswordCheck();
   },
 
+  /**
+   * @return {string}
+   * @private
+   */
   getLeakedPasswordsCount_() {
     return this.i18n('checkPasswordLeakCount', this.passwordLeakCount_);
   },
 
+  /**
+   * @return {string}
+   * @private
+   */
   getLastCompletedCheck_() {
     // TODO(https://crbug.com/1047726): use lastCompletedCheck_ to return proper
     // passed time from the last password check.

@@ -611,17 +611,6 @@ void HTMLSelectElement::ListBoxOnChange() {
   }
 }
 
-void HTMLSelectElement::DispatchInputAndChangeEventForMenuList() {
-  DCHECK(UsesMenuList());
-
-  HTMLOptionElement* selected_option = SelectedOption();
-  if (last_on_change_option_.Get() != selected_option) {
-    last_on_change_option_ = selected_option;
-    DispatchInputEvent();
-    DispatchChangeEvent();
-  }
-}
-
 void HTMLSelectElement::ScrollToSelection() {
   if (!IsFinishedParsingChildren())
     return;
@@ -1043,8 +1032,7 @@ void HTMLSelectElement::DispatchBlurEvent(
   // We only need to fire change events here for menu lists, because we fire
   // change events for list boxes whenever the selection change is actually
   // made.  This matches other browsers' behavior.
-  if (UsesMenuList())
-    DispatchInputAndChangeEventForMenuList();
+  select_type_->DispatchEventsIfSelectedOptionChanged();
   last_on_change_selection_.clear();
   if (PopupIsVisible())
     HidePopup();

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.settings.website;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Communicates between CookieControlsService (C++ backend) and observers in the Incognito NTP Java
@@ -34,12 +33,11 @@ public class CookieControlsServiceBridge {
     /**
      * Initializes a CookieControlsServiceBridge instance.
      * @param observer An observer to call with updates from the cookie controls service.
-     * @param profile The Profile instance to observe.
      */
-    public CookieControlsServiceBridge(CookieControlsServiceObserver observer, Profile profile) {
+    public CookieControlsServiceBridge(CookieControlsServiceObserver observer) {
         mObserver = observer;
-        mNativeCookieControlsServiceBridge = CookieControlsServiceBridgeJni.get().init(
-                CookieControlsServiceBridge.this, profile);
+        mNativeCookieControlsServiceBridge =
+                CookieControlsServiceBridgeJni.get().init(CookieControlsServiceBridge.this);
     }
 
     /**
@@ -63,6 +61,14 @@ public class CookieControlsServiceBridge {
                 mNativeCookieControlsServiceBridge, enable);
     }
 
+    /**
+     * Starts a service to observe current profile.
+     */
+    public void updateServiceIfNecessary() {
+        CookieControlsServiceBridgeJni.get().updateServiceIfNecessary(
+                mNativeCookieControlsServiceBridge);
+    }
+
     @CalledByNative
     private void sendCookieControlsUIChanges(boolean checked, boolean enforced) {
         mObserver.sendCookieControlsUIChanges(checked, enforced);
@@ -70,9 +76,10 @@ public class CookieControlsServiceBridge {
 
     @NativeMethods
     interface Natives {
-        long init(CookieControlsServiceBridge caller, Profile profile);
+        long init(CookieControlsServiceBridge caller);
         void destroy(long nativeCookieControlsServiceBridge, CookieControlsServiceBridge caller);
         void handleCookieControlsToggleChanged(
                 long nativeCookieControlsServiceBridge, boolean enable);
+        void updateServiceIfNecessary(long nativeCookieControlsServiceBridge);
     }
 }

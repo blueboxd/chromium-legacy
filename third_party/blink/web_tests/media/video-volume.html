@@ -13,8 +13,8 @@ async_test(function(t) {
     assert_equals(video.volume, Number.MIN_VALUE);
     video.volume = 0;
     assert_equals(video.volume, 0);
-    assert_throws("IndexSizeError", function() { video.volume = 1.5; });
-    assert_throws("IndexSizeError", function() { video.volume = -0.5; });
+    assert_throws_dom("IndexSizeError", function() { video.volume = 1.5; });
+    assert_throws_dom("IndexSizeError", function() { video.volume = -0.5; });
     assert_throws(new TypeError, function() { video.volume = -Infinity; });
     assert_throws(new TypeError, function() { video.volume = Infinity; });
     assert_throws(new TypeError, function() { video.volume = NaN; });
@@ -23,8 +23,8 @@ async_test(function(t) {
         assert_equals(video.volume, 0);
         video.volume = 0.5;
         assert_equals(video.volume, 0.5);
-        assert_throws("IndexSizeError", function() { video.volume = 1.5; });
-        assert_throws("IndexSizeError", function() { video.volume = -0.5; });
+        assert_throws_dom("IndexSizeError", function() { video.volume = 1.5; });
+        assert_throws_dom("IndexSizeError", function() { video.volume = -0.5; });
     });
 
     video.src = "content/test.ogv";

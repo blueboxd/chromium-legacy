@@ -26,7 +26,6 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChromeBulletSpan;
@@ -121,7 +120,6 @@ public class IncognitoDescriptionView extends LinearLayout {
         adjustIcon();
         adjustLayout();
         adjustLearnMore();
-        adjustCookieControlsCard();
     }
 
     /**
@@ -291,14 +289,11 @@ public class IncognitoDescriptionView extends LinearLayout {
         mSubtitle.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    /** Adjust the Cookie Controls Card. */
-    private void adjustCookieControlsCard() {
-        if (!ChromeFeatureList.isInitialized()
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)) {
-            mCookieControlsCard.setVisibility(View.GONE);
-            return;
-        }
-
-        mCookieControlsCard.setVisibility(View.VISIBLE);
+    /**
+     * Adjust the Cookie Controls Card.
+     * @param showCard A boolean indicating if the card should be visible or not.
+     */
+    public void showCookieControlsCard(boolean showCard) {
+        mCookieControlsCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
     }
 }

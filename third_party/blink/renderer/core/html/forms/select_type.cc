@@ -68,6 +68,8 @@ class MenuListSelectType final : public SelectType {
   void DidSelectOption(HTMLOptionElement* element,
                        HTMLSelectElement::SelectOptionFlags flags,
                        bool should_update_popup) override;
+  void DispatchEventsIfSelectedOptionChanged() override;
+
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
   const ComputedStyle* OptionStyle() const override {
@@ -171,7 +173,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     if (!LayoutTheme::GetTheme().PopsMenuByReturnKey() && key_code == '\r') {
       if (HTMLFormElement* form = select_->Form())
         form->SubmitImplicitly(event, false);
-      select_->DispatchInputAndChangeEventForMenuList();
+      DispatchEventsIfSelectedOptionChanged();
       return true;
     }
     return false;
@@ -281,6 +283,15 @@ void MenuListSelectType::DidSelectOption(
       // DidUpdateActiveOption() is O(N) because of HTMLOptionElement::index().
       DidUpdateActiveOption(element);
     }
+  }
+}
+
+void MenuListSelectType::DispatchEventsIfSelectedOptionChanged() {
+  HTMLOptionElement* selected_option = select_->SelectedOption();
+  if (select_->last_on_change_option_.Get() != selected_option) {
+    select_->last_on_change_option_ = selected_option;
+    select_->DispatchInputEvent();
+    select_->DispatchChangeEvent();
   }
 }
 
@@ -711,6 +722,8 @@ void SelectType::DidSelectOption(HTMLOptionElement*,
   select_->ScrollToSelection();
   select_->SetNeedsValidityCheck();
 }
+
+void SelectType::DispatchEventsIfSelectedOptionChanged() {}
 
 void SelectType::UpdateTextStyle() {}
 

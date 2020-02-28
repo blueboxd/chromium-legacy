@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -36,6 +37,9 @@ class TasksView extends CoordinatorLayoutForPointer {
     private TextView mSearchBoxText;
     private IncognitoDescriptionView mIncognitoDescriptionView;
     private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
+    private boolean mIncognitoCookieControlsCardIsVisible;
+    private boolean mIncognitoCookieControlsToggleIsChecked;
+    private OnCheckedChangeListener mIncognitoCookieControlsToggleCheckedListener;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
@@ -164,6 +168,13 @@ class TasksView extends CoordinatorLayoutForPointer {
             setIncognitoDescriptionLearnMoreClickListener(mIncognitoDescriptionLearnMoreListener);
             mIncognitoDescriptionLearnMoreListener = null;
         }
+        setIncognitoCookieControlsCardVisibility(mIncognitoCookieControlsCardIsVisible);
+        setIncognitoCookieControlsToggleChecked(mIncognitoCookieControlsToggleIsChecked);
+        if (mIncognitoCookieControlsToggleCheckedListener != null) {
+            setIncognitoCookieControlsToggleCheckedListener(
+                    mIncognitoCookieControlsToggleCheckedListener);
+            mIncognitoCookieControlsToggleCheckedListener = null;
+        }
     }
 
     /**
@@ -184,5 +195,38 @@ class TasksView extends CoordinatorLayoutForPointer {
             return;
         }
         mIncognitoDescriptionView.findViewById(R.id.learn_more).setOnClickListener(listener);
+    }
+
+    /**
+     * Set the visibility of the cookie controls card on the incognito description.
+     * @param isVisible Whether it's visible or not.
+     */
+    void setIncognitoCookieControlsCardVisibility(boolean isVisible) {
+        mIncognitoCookieControlsCardIsVisible = isVisible;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.showCookieControlsCard(isVisible);
+        }
+    }
+
+    /**
+     * Set the toggle on the cookie controls card.
+     * @param isChecked Whether it's checked or not.
+     */
+    void setIncognitoCookieControlsToggleChecked(boolean isChecked) {
+        mIncognitoCookieControlsToggleIsChecked = isChecked;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.setCookieControlsToggle(isChecked);
+        }
+    }
+
+    /**
+     * Set the incognito cookie controls toggle checked change listener.
+     * @param listener The given checked change listener.
+     */
+    void setIncognitoCookieControlsToggleCheckedListener(OnCheckedChangeListener listener) {
+        mIncognitoCookieControlsToggleCheckedListener = listener;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.setCookieControlsToggleOnCheckedChangeListener(listener);
+        }
     }
 }

@@ -54,7 +54,13 @@ source_set("feature_flags") {
 }
 
 if (is_android) {
-  java_cpp_enum("infobar_enums_java") {
+  java_cpp_enum("infobar_generated_enums") {
     sources = [ "infobar_delegate.h" ]
+  }
+
+  android_library("infobar_enums_java") {
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+
+    srcjar_deps = [ ":infobar_generated_enums" ]
   }
 }

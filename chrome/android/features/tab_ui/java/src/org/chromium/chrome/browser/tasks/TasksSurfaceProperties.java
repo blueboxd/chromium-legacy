@@ -8,7 +8,9 @@ import static org.chromium.chrome.browser.tasks.MostVisitedListProperties.IS_VIS
 
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -31,6 +33,18 @@ public class TasksSurfaceProperties {
             .WritableBooleanPropertyKey IS_VOICE_RECOGNITION_BUTTON_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel
+            .WritableBooleanPropertyKey INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel
+            .WritableBooleanPropertyKey INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableObjectPropertyKey<OnCheckedChangeListener>
+            INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<OnCheckedChangeListener>();
+    public static final PropertyModel.WritableObjectPropertyKey<IncognitoCookieControlsManager>
+            INCOGNITO_COOKIE_CONTROLS_MANAGER =
+            new PropertyModel.WritableObjectPropertyKey<IncognitoCookieControlsManager>();
+    public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> INCOGNITO_LEARN_MORE_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
     public static final PropertyModel
@@ -49,6 +63,8 @@ public class TasksSurfaceProperties {
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_FAKE_SEARCH_BOX_VISIBLE,
             IS_INCOGNITO, IS_INCOGNITO_DESCRIPTION_INITIALIZED, IS_INCOGNITO_DESCRIPTION_VISIBLE,
             IS_TAB_CAROUSEL_VISIBLE, IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+            INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY, INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED,
+            INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER, INCOGNITO_COOKIE_CONTROLS_MANAGER,
             INCOGNITO_LEARN_MORE_CLICK_LISTENER, FAKE_SEARCH_BOX_CLICK_LISTENER,
             FAKE_SEARCH_BOX_TEXT_WATCHER, MORE_TABS_CLICK_LISTENER, MV_TILES_VISIBLE,
             VOICE_SEARCH_BUTTON_CLICK_LISTENER};

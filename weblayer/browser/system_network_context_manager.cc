@@ -5,6 +5,7 @@
 #include "weblayer/browser/system_network_context_manager.h"
 
 #include "build/build_config.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -20,6 +21,7 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams(
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
   network_context_params->user_agent = user_agent;
+  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
   return network_context_params;
 }
 

@@ -75,7 +75,7 @@ UdpTransportImpl::UdpTransportImpl(
 UdpTransportImpl::~UdpTransportImpl() = default;
 
 void UdpTransportImpl::StartReceiving(
-    const PacketReceiverCallbackWithStatus& packet_receiver) {
+    PacketReceiverCallbackWithStatus packet_receiver) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
 
   if (!udp_socket_) {
@@ -83,7 +83,7 @@ void UdpTransportImpl::StartReceiving(
     return;
   }
 
-  packet_receiver_ = packet_receiver;
+  packet_receiver_ = std::move(packet_receiver);
   udp_socket_->SetMulticastLoopbackMode(true);
   if (!IsEmpty(local_addr_)) {
     if (udp_socket_->Open(local_addr_.GetFamily()) < 0 ||

@@ -36,8 +36,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   bool SendPacket(media::cast::PacketRef packet,
                   const base::RepeatingClosure& cb) override;
   int64_t GetBytesSent() override;
-  void StartReceiving(const media::cast::PacketReceiverCallbackWithStatus&
-                          packet_receiver) override;
+  void StartReceiving(
+      media::cast::PacketReceiverCallbackWithStatus packet_receiver) override;
   void StopReceiving() override;
 
   // network::mojom::UDPSocketListener implementation.

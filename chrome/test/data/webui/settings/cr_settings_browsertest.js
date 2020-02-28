@@ -357,10 +357,10 @@ CrSettingsPasswordsCheckTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'password_check_test.js',
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
     'test_password_manager_proxy.js',
+    'password_check_test.js',
   ]),
 };
 

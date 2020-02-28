@@ -15,6 +15,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/variations/variations_client.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
@@ -221,6 +223,40 @@ void BrowserContextImpl::RegisterPrefs(
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
+}
+
+class BrowserContextImpl::WebLayerVariationsClient
+    : public variations::VariationsClient {
+ public:
+  explicit WebLayerVariationsClient(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
+
+  ~WebLayerVariationsClient() override = default;
+
+  bool IsIncognito() const override {
+    return browser_context_->IsOffTheRecord();
+  }
+
+  std::string GetVariationsHeader() const override {
+    return variations::VariationsHttpHeaderProvider::GetInstance()
+        ->GetClientDataHeader(IsSignedIn());
+  }
+
+ private:
+  bool IsSignedIn() const {
+    // TODO(weblayer-dev): Update when signin is supported.
+    return false;
+  }
+
+  content::BrowserContext* browser_context_;
+};
+
+variations::VariationsClient* BrowserContextImpl::GetVariationsClient() {
+  if (!weblayer_variations_client_) {
+    weblayer_variations_client_ =
+        std::make_unique<WebLayerVariationsClient>(this);
+  }
+  return weblayer_variations_client_.get();
 }
 
 }  // namespace weblayer

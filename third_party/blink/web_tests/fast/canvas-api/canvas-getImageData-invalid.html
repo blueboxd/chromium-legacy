@@ -5,10 +5,10 @@
 test(function(t) {
     ctx = document.createElement('canvas').getContext('2d');
 
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       ctx.getImageData(10, 10, 0, 10);
     });
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       ctx.getImageData(10, 10, 10, 0);
     });
 }, "Test the handling of invalid arguments in canvas getImageData().");

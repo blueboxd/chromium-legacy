@@ -641,6 +641,22 @@
             ]
         }
     ],
+    "AutofillAssistantDirectActionsLaunch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "//1": "This launch is gated external to Chrome.",
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillAssistantDirectActions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillCompany": [
         {
             "platforms": [

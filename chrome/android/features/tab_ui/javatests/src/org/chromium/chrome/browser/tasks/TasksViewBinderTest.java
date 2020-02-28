@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
@@ -36,7 +37,10 @@ import android.view.View;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -57,10 +61,13 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
     private View.OnClickListener mViewOnClickListener = (v) -> {
         mViewClicked.set(true);
     };
+    @Mock
+    private IncognitoCookieControlsManager mCookieControlsManager;
 
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
+        MockitoAnnotations.initMocks(this);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTasksView = (TasksView) getActivity().getLayoutInflater().inflate(
@@ -214,6 +221,7 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
         assertFalse(isViewVisible(R.id.incognito_description_layout_stub));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTasksViewPropertyModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mCookieControlsManager);
             mTasksViewPropertyModel.set(IS_INCOGNITO_DESCRIPTION_INITIALIZED, true);
             mTasksViewPropertyModel.set(IS_INCOGNITO_DESCRIPTION_VISIBLE, true);
         });

@@ -30,19 +30,19 @@ function draw() {
     });
 
     // broken images should throw InvalidStateError
-    assert_throws("INVALID_STATE_ERR", function() {
+    assert_throws_dom("INVALID_STATE_ERR", function() {
       ctx.drawImage(invalidImage, 0, 0);
     });
-    assert_throws("INVALID_STATE_ERR", function() {
+    assert_throws_dom("INVALID_STATE_ERR", function() {
       ctx.drawImage(invalidImage, 0, 0, 20, 20);
     });
-    assert_throws("INVALID_STATE_ERR", function() {
+    assert_throws_dom("INVALID_STATE_ERR", function() {
       ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20);
     });
-    assert_throws("INVALID_STATE_ERR", function() {
+    assert_throws_dom("INVALID_STATE_ERR", function() {
       ctx.drawImage(invalidImage, 0, 0, 0, 20);
     });
-    assert_throws("INVALID_STATE_ERR", function() {
+    assert_throws_dom("INVALID_STATE_ERR", function() {
       ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20);
     });
 }

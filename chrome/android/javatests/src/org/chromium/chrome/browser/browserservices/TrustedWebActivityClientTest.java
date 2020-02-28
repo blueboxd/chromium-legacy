@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,8 +37,8 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
+import java.util.Collections;
 import java.util.concurrent.TimeoutException;
-
 
 /**
  * Tests the TrustedWebActivityClient.
@@ -197,5 +199,41 @@ public class TrustedWebActivityClientTest {
 
         Assert.assertEquals(mResponseHandler.mNotificationTag, NOTIFICATION_TAG);
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);
+    }
+
+    /**
+     * Tests {@link TrustedWebActivityClient#createLaunchIntentForTwa}.
+     */
+    @Test
+    @SmallTest
+    public void createLaunchIntent() {
+        Context context = InstrumentationRegistry.getContext();
+        String targetPackageName = mTargetContext.getPackageName();
+
+        // This should return null because there are no ResolveInfos.
+        Assert.assertNull(TrustedWebActivityClient.createLaunchIntentForTwa(
+                context, SCOPE.toString(), Collections.emptyList()));
+
+        ResolveInfo resolveInfo = new ResolveInfo();
+
+        // This should return null because there are no ResolveInfos with ActivityInfos.
+        Assert.assertNull(TrustedWebActivityClient.createLaunchIntentForTwa(
+                context, SCOPE.toString(), Collections.singletonList(resolveInfo)));
+
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = targetPackageName;
+        activityInfo.name = "ActivityWithDeepLink";
+
+        resolveInfo.activityInfo = activityInfo;
+
+        // This should return null because the given ResolveInfo is not for a verified app.
+        Assert.assertNull(TrustedWebActivityClient.createLaunchIntentForTwa(
+                context, SCOPE.toString(), Collections.singletonList(resolveInfo)));
+
+        ChromeApplication.getComponent().resolveTwaPermissionManager()
+                .addDelegateApp(Origin.create(SCOPE), targetPackageName);
+
+        Assert.assertNotNull(TrustedWebActivityClient.createLaunchIntentForTwa(
+                context, SCOPE.toString(), Collections.singletonList(resolveInfo)));
     }
 }

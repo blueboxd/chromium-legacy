@@ -6,13 +6,7 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
-    "android/java/src/org/chromium/chrome/browser/xsurface/HybridListRenderer.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManager.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManagerObserver.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceActionsHandler.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceDependencyProvider.java",
-    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceRenderer.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceAdapter.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceAdapterFactory.java",
   ]
-  deps =
-      [ "//third_party/android_deps:androidx_recyclerview_recyclerview_java" ]
 }

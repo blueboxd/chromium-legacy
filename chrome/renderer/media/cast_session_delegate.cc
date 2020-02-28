@@ -76,8 +76,8 @@ void CastSessionDelegateBase::StartUDP(
   // destruction of CastTransportIPC, and they both share the same thread.
   cast_transport_ = std::make_unique<CastTransportIPC>(
       local_endpoint, remote_endpoint, std::move(options),
-      base::Bind(&CastSessionDelegateBase::ReceivePacket,
-                 base::Unretained(this)),
+      base::BindRepeating(&CastSessionDelegateBase::ReceivePacket,
+                          base::Unretained(this)),
       base::BindRepeating(&CastSessionDelegateBase::StatusNotificationCB,
                           base::Unretained(this), error_callback),
       base::BindRepeating(

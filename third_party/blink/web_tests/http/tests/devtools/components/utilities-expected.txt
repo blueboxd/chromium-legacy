@@ -18,8 +18,6 @@ Sorted in natural order: [1, 2, 2, 2, 5, 10, 11, 5555, 555555, a1, a007, a07, a7
 
 Running: stringHashTest
 
-Running: stringTrimURLTest
-
 Running: trimMiddle
 
 !

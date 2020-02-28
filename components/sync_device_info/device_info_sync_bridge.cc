@@ -552,6 +552,10 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
     return;
   }
 
+  // If OnSyncStarting() was already called then cache GUID must be the same.
+  // Otherwise IsTrackingMetadata would return false due to cache GUID mismatch.
+  DCHECK(local_cache_guid_.empty() ||
+         local_cache_guid_ == local_cache_guid_in_metadata);
   // If sync already enabled (usual case without data corruption), we can
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;

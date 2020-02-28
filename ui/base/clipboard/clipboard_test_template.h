@@ -466,7 +466,7 @@ TYPED_TEST(ClipboardTest, Bitmap_RGBA_Opaque) {
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType),
       &kRGBAOpaque, &kN32Opaque);
 }
-TYPED_TEST(ClipboardTest, Bitmap_BGRA_Premul) {
+TYPED_TEST(ClipboardTest, DISABLED_Bitmap_BGRA_Premul) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kPremul_SkAlphaType),
@@ -478,7 +478,7 @@ TYPED_TEST(ClipboardTest, Bitmap_BGRA_Unpremul) {
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType),
       &kBGRAUnpremul, &kN32);
 }
-TYPED_TEST(ClipboardTest, Bitmap_BGRA_Opaque) {
+TYPED_TEST(ClipboardTest, DISABLED_Bitmap_BGRA_Opaque) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kOpaque_SkAlphaType),

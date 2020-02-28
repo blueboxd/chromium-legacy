@@ -59,7 +59,7 @@ test(() => {
 }, "Test that a PresentationRequest cannot be constructed with a custom scheme and an invalid URL");
 
 test(() => {
-  assert_throws("NotSupportedError", () => new PresentationRequest([unknownUrl]));
+  assert_throws_dom("NotSupportedError", () => new PresentationRequest([unknownUrl]));
 }, "Test that a PresentationRequest cannot be constructed with only unknown schemes");
 
 </script>

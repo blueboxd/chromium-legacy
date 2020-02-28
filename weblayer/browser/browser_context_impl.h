@@ -37,6 +37,7 @@ class BrowserContextImpl : public content::BrowserContext {
 #endif  // !defined(OS_ANDROID)
   base::FilePath GetPath() override;
   bool IsOffTheRecord() override;
+  variations::VariationsClient* GetVariationsClient() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
 
   content::ResourceContext* GetResourceContext() override;
@@ -60,6 +61,8 @@ class BrowserContextImpl : public content::BrowserContext {
   ProfileImpl* profile_impl() const { return profile_impl_; }
 
  private:
+  class WebLayerVariationsClient;
+
   // Creates a simple in-memory pref service.
   // TODO(timvolodine): Investigate whether WebLayer needs persistent pref
   // service.
@@ -83,6 +86,7 @@ class BrowserContextImpl : public content::BrowserContext {
   std::unique_ptr<PrefService> user_pref_service_;
   std::unique_ptr<content::PermissionControllerDelegate>
       permission_controller_delegate_;
+  std::unique_ptr<WebLayerVariationsClient> weblayer_variations_client_;
 };
 }  // namespace weblayer
 

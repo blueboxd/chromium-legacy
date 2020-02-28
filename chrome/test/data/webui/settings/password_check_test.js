@@ -9,7 +9,7 @@ cr.define('settings_passwords_check', function() {
     // Create a passwords-section to use for testing.
     const passwordsSection =
         this.document.createElement('settings-password-check');
-    this.document.body.appendChild(passwordsSection);
+    document.body.appendChild(passwordsSection);
     Polymer.dom.flush();
     return passwordsSection;
   }

@@ -259,6 +259,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/startup_metric_utils/browser",
     "//components/user_prefs",
     "//components/variations",
+    "//components/variations/net",
     "//components/variations/service",
     "//components/version_info",
     "//components/web_cache/browser",

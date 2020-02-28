@@ -7,7 +7,7 @@
 #include <memory>
 #include "chrome/android/chrome_jni_headers/CookieControlsServiceBridge_jni.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 
@@ -15,18 +15,30 @@ using base::android::JavaParamRef;
 
 CookieControlsServiceBridge::CookieControlsServiceBridge(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& jprofile)
-    : jobject_(obj) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  service_ = CookieControlsServiceFactory::GetForProfile(profile);
-  service_->AddObserver(this);
+    const JavaParamRef<jobject>& obj)
+    : jobject_(obj) {}
+
+void CookieControlsServiceBridge::UpdateServiceIfNecessary() {
+  Profile* profile =
+      ProfileManager::GetLastUsedProfile()->GetOffTheRecordProfile();
+  CookieControlsService* new_service =
+      CookieControlsServiceFactory::GetForProfile(profile);
+  // Update the service only if it is for a new profile
+  if (new_service != service_) {
+    service_ = new_service;
+    service_->AddObserver(this);
+    SendCookieControlsUIChanges();
+  }
 }
 
 void CookieControlsServiceBridge::HandleCookieControlsToggleChanged(
     JNIEnv* env,
     jboolean checked) {
   service_->HandleCookieControlsToggleChanged(checked);
+}
+
+void CookieControlsServiceBridge::UpdateServiceIfNecessary(JNIEnv* env) {
+  UpdateServiceIfNecessary();
 }
 
 void CookieControlsServiceBridge::SendCookieControlsUIChanges() {
@@ -54,8 +66,6 @@ void CookieControlsServiceBridge::Destroy(JNIEnv* env,
 
 static jlong JNI_CookieControlsServiceBridge_Init(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& jprofile) {
-  return reinterpret_cast<intptr_t>(
-      new CookieControlsServiceBridge(env, obj, jprofile));
+    const JavaParamRef<jobject>& obj) {
+  return reinterpret_cast<intptr_t>(new CookieControlsServiceBridge(env, obj));
 }

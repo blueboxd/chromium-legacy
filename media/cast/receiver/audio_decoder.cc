@@ -35,8 +35,9 @@ class AudioDecoder::ImplBase
         codec_(codec),
         num_channels_(num_channels),
         operational_status_(STATUS_UNINITIALIZED) {
-    if (num_channels_ <= 0 || sampling_rate <= 0 || sampling_rate % 100 != 0)
+    if (num_channels_ <= 0 || sampling_rate <= 0 || sampling_rate % 100 != 0) {
       operational_status_ = STATUS_INVALID_CONFIGURATION;
+    }
   }
 
   OperationalStatus InitializationResult() const {
@@ -44,7 +45,7 @@ class AudioDecoder::ImplBase
   }
 
   void DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
-                   const DecodeFrameCallback& callback) {
+                   DecodeFrameCallback callback) {
     DCHECK_EQ(operational_status_, STATUS_INITIALIZED);
 
     bool is_continuous = true;
@@ -62,9 +63,10 @@ class AudioDecoder::ImplBase
                static_cast<int>(encoded_frame->data.size()));
     if (!decoded_audio) {
       VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN, FROM_HERE,
-          base::Bind(callback, base::Passed(&decoded_audio), false));
+      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(std::move(callback),
+                                    base::Passed(&decoded_audio), false));
       return;
     }
 
@@ -76,11 +78,10 @@ class AudioDecoder::ImplBase
     event->frame_id = encoded_frame->frame_id;
     cast_environment_->logger()->DispatchFrameEvent(std::move(event));
 
-    cast_environment_->PostTask(CastEnvironment::MAIN,
-                                FROM_HERE,
-                                base::Bind(callback,
-                                           base::Passed(&decoded_audio),
-                                           is_continuous));
+    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(std::move(callback),
+                                  base::Passed(&decoded_audio), is_continuous));
   }
 
  protected:
@@ -119,8 +120,9 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
         max_samples_per_frame_(kOpusMaxFrameDurationMillis * sampling_rate /
                                1000),
         buffer_(new float[max_samples_per_frame_ * num_channels]) {
-    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
+    if (ImplBase::operational_status_ != STATUS_UNINITIALIZED) {
       return;
+    }
     if (opus_decoder_init(opus_decoder_, sampling_rate, num_channels) !=
             OPUS_OK) {
       ImplBase::operational_status_ = STATUS_INVALID_CONFIGURATION;
@@ -133,10 +135,9 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
   ~OpusImpl() final = default;
 
   void RecoverBecauseFramesWereDropped() final {
-    // Passing NULL for the input data notifies the decoder of frame loss.
-    const opus_int32 result =
-        opus_decode_float(
-            opus_decoder_, NULL, 0, buffer_.get(), max_samples_per_frame_, 0);
+    // Passing nullptr for the input data notifies the decoder of frame loss.
+    const opus_int32 result = opus_decode_float(
+        opus_decoder_, nullptr, 0, buffer_.get(), max_samples_per_frame_, 0);
     DCHECK_GE(result, 0);
   }
 
@@ -241,19 +242,17 @@ OperationalStatus AudioDecoder::InitializationResult() const {
 }
 
 void AudioDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
-                               const DecodeFrameCallback& callback) {
+                               DecodeFrameCallback callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
   if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {
-    callback.Run(base::WrapUnique<AudioBus>(NULL), false);
+    std::move(callback).Run(base::WrapUnique<AudioBus>(nullptr), false);
     return;
   }
-  cast_environment_->PostTask(CastEnvironment::AUDIO,
-                              FROM_HERE,
-                              base::Bind(&AudioDecoder::ImplBase::DecodeFrame,
-                                         impl_,
-                                         base::Passed(&encoded_frame),
-                                         callback));
+  cast_environment_->GetTaskRunner(CastEnvironment::AUDIO)
+      ->PostTask(FROM_HERE, base::BindOnce(&AudioDecoder::ImplBase::DecodeFrame,
+                                           impl_, base::Passed(&encoded_frame),
+                                           std::move(callback)));
 }
 
 }  // namespace cast

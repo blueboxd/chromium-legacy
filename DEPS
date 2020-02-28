@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8c6e40d2264e70a29df3b79e411212804b96a29d',
+  'angle_revision': '1e1d74467e0df0596f1e8ed81b5553ed5cb9ebd6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -523,7 +523,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e96b7efd28d7284eb090dab1408e0083dc06353e',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e9334fc7e5645d7353f7faeedbaa26c7d3265161',
       'condition': 'checkout_ios',
   },
 
@@ -935,7 +935,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '8e8c13b9e821f4590761487c4e0b96f432eaf051',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f13d38f3cd3cb39f27b6bdb1bfb7d897631e7396',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '82da15f4f07ebf8eb27bdd102b5dd5a7f4a70c84',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1230,7 +1230,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '66759fd962320e7d6399c4e43e39856c4eca8ce2',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'e43a2a568976b495cbbb8d4ec8f89cc1563c5518',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1431,7 +1431,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '63288e382aebd34b668ae3522ed44df59432c797',
+    Var('webrtc_git') + '/src.git' + '@' + '0fb07f8c90ae99f70990c105655830975c077ba6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1506,7 +1506,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4135db4c51d3eb6630a2adba02fe4a3c04fa1f99',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c1503990b2d3893119d622538a05504a9560eb4e',
     'condition': 'checkout_src_internal',
   },
 

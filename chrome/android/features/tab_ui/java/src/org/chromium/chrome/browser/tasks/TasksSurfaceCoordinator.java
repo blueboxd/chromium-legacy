@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -49,10 +50,12 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity.getString(R.string.help_context_incognito_learn_more),
                     Profile.getLastUsedRegularProfile().getOffTheRecordProfile(), null);
         };
-        // TODO(crbug.com/1040091): Add parameter for CookieSettingsBridge to control the cookie
-        // controls toggle on the IncognitoNTP.
-        mMediator = new TasksSurfaceMediator(
-                propertyModel, fakeboxDelegate, incognitoLearnMoreClickListener, isTabCarousel);
+
+        IncognitoCookieControlsManager incognitoCookieControlsManager =
+                new IncognitoCookieControlsManager();
+
+        mMediator = new TasksSurfaceMediator(propertyModel, fakeboxDelegate,
+                incognitoLearnMoreClickListener, incognitoCookieControlsManager, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);
@@ -62,6 +65,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public void initialize() {
         mMostVisitedList.initialize();
+        mMediator.initialize();
     }
 
     @Override

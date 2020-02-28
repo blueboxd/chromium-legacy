@@ -521,6 +521,7 @@
     },
     {
       name: "CSSSupportsSelector",
+      status: "stable",
     },
     {
       name: "CSSVariables2",

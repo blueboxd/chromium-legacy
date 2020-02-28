@@ -42,6 +42,7 @@ extern const char kSyncRequested[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
 
+extern const char kSyncGaiaId[];
 extern const char kSyncCacheGuid[];
 extern const char kSyncBirthday[];
 extern const char kSyncBagOfChips[];

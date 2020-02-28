@@ -152,6 +152,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForType(UserSelectableType type);
 
+  void SetGaiaId(const std::string& gaia_id);
+  std::string GetGaiaId() const;
   void SetCacheGuid(const std::string& cache_guid);
   std::string GetCacheGuid() const;
   void SetBirthday(const std::string& birthday);

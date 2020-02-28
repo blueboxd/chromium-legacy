@@ -34,6 +34,8 @@ class LoginPinViewTest : public LoginTestBase {
                                              base::Unretained(this)),
                          base::BindRepeating(&LoginPinViewTest::OnPinBackspace,
                                              base::Unretained(this)),
+                         base::BindRepeating(&LoginPinViewTest::OnPinSubmit,
+                                             base::Unretained(this)),
                          base::BindRepeating(&LoginPinViewTest::OnPinBack,
                                              base::Unretained(this)));
 
@@ -43,12 +45,15 @@ class LoginPinViewTest : public LoginTestBase {
   // Called when a password is submitted.
   void OnPinKey(int value) { value_ = value; }
   void OnPinBackspace() { ++backspace_; }
+  void OnPinSubmit() { ++submit_; }
   void OnPinBack() { ++back_; }
 
   LoginPinView* view_ = nullptr;  // Owned by test widget view hierarchy.
   base::Optional<int> value_;
   // Number of times the backspace event has been fired.
   int backspace_ = 0;
+  // Number of times the submit event has been fired.
+  int submit_ = 0;
   // Number of times the back event has been fired.
   int back_ = 0;
 
@@ -82,6 +87,14 @@ TEST_F(LoginPinViewTest, ButtonsFireEvents) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   EXPECT_EQ(1, backspace_);
 
+  // Verify backspace events are emitted.
+  EXPECT_EQ(0, submit_);
+  test_api.GetSubmitButton()->SetEnabled(true);
+  test_api.GetSubmitButton()->GetFocusManager()->SetFocusedView(
+      test_api.GetSubmitButton());
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  EXPECT_EQ(1, submit_);
+
   EXPECT_EQ(0, back_);
 }
 
@@ -108,6 +121,12 @@ TEST_F(LoginPinViewTest, AlphanumericKeyboardButtonSpacingAndSize) {
   DCHECK_EQ(test_api.GetBackspaceButton()->size().height(),
             expected_button_size.height());
 
+  // Validate submit button size.
+  DCHECK_EQ(test_api.GetSubmitButton()->size().width(),
+            expected_button_size.width());
+  DCHECK_EQ(test_api.GetSubmitButton()->size().height(),
+            expected_button_size.height());
+
   // Record all the x/y coordinates of the buttons.
   std::set<int> seen_x;
   std::set<int> seen_y;
@@ -118,6 +137,8 @@ TEST_F(LoginPinViewTest, AlphanumericKeyboardButtonSpacingAndSize) {
   }
   seen_x.insert(test_api.GetBackspaceButton()->GetBoundsInScreen().x());
   seen_y.insert(test_api.GetBackspaceButton()->GetBoundsInScreen().y());
+  seen_x.insert(test_api.GetSubmitButton()->GetBoundsInScreen().x());
+  seen_y.insert(test_api.GetSubmitButton()->GetBoundsInScreen().y());
 
   // Sort the coordinates so we can easily check the distance between them.
   std::vector<int> sorted_x(seen_x.begin(), seen_x.end());
@@ -158,6 +179,12 @@ TEST_F(LoginPinViewTest, NumericKeyboardButtonSpacingAndSize) {
   DCHECK_EQ(test_api.GetBackspaceButton()->size().height(),
             expected_button_size.height());
 
+  // Validate submit button size.
+  DCHECK_EQ(test_api.GetSubmitButton()->size().width(),
+            expected_button_size.width());
+  DCHECK_EQ(test_api.GetSubmitButton()->size().height(),
+            expected_button_size.height());
+
   // Record all the x/y coordinates of the buttons.
   std::set<int> seen_x;
   std::set<int> seen_y;
@@ -168,6 +195,8 @@ TEST_F(LoginPinViewTest, NumericKeyboardButtonSpacingAndSize) {
   }
   seen_x.insert(test_api.GetBackspaceButton()->GetBoundsInScreen().x());
   seen_y.insert(test_api.GetBackspaceButton()->GetBoundsInScreen().y());
+  seen_x.insert(test_api.GetSubmitButton()->GetBoundsInScreen().x());
+  seen_y.insert(test_api.GetSubmitButton()->GetBoundsInScreen().y());
 
   // Sort the coordinates so we can easily check the distance between them.
   std::vector<int> sorted_x(seen_x.begin(), seen_x.end());
@@ -225,14 +254,27 @@ TEST_F(LoginPinViewTest, BackspaceAutoSubmitsAndRepeats) {
   EXPECT_EQ(0, backspace_);
 }
 
+// Verifies that clicking on the submit button fires the corresponding event.
+TEST_F(LoginPinViewTest, SubmitButtonClick) {
+  CreateLoginPinViewWithStyle(LoginPinView::Style::kAlphanumeric);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  LoginPinView::TestApi test_api(view_);
+
+  test_api.GetSubmitButton()->SetEnabled(true);
+  generator->MoveMouseTo(
+      test_api.GetSubmitButton()->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(0, submit_);
+  generator->PressLeftButton();
+  EXPECT_EQ(1, submit_);
+}
+
 // Verifies that pressing Enter on the "back" button fires the corresponding
 // event.
 TEST_F(LoginPinViewTest, BackButtonEnter) {
   CreateLoginPinViewWithStyle(LoginPinView::Style::kAlphanumeric);
   ui::test::EventGenerator* generator = GetEventGenerator();
   LoginPinView::TestApi test_api(view_);
-
-  EXPECT_FALSE(test_api.GetBackButton()->GetVisible());
 
   view_->SetBackButtonVisible(true);
   test_api.GetBackButton()->GetFocusManager()->SetFocusedView(
@@ -247,8 +289,6 @@ TEST_F(LoginPinViewTest, BackButtonClick) {
   CreateLoginPinViewWithStyle(LoginPinView::Style::kAlphanumeric);
   ui::test::EventGenerator* generator = GetEventGenerator();
   LoginPinView::TestApi test_api(view_);
-
-  EXPECT_FALSE(test_api.GetBackButton()->GetVisible());
 
   view_->SetBackButtonVisible(true);
   generator->MoveMouseTo(

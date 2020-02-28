@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_ITEM_H_
 
-#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
@@ -43,12 +42,11 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   LayoutListMarker* Marker() const {
     Element* list_item = To<Element>(GetNode());
-    if (PseudoElement* marker = list_item->GetPseudoElement(kPseudoIdMarker)) {
-      if (LayoutObject* layout_object = marker->GetLayoutObject()) {
-        if (layout_object->IsListMarker())
-          return ToLayoutListMarker(layout_object);
-        NOTREACHED();
-      }
+    if (LayoutObject* marker =
+            list_item->PseudoElementLayoutObject(kPseudoIdMarker)) {
+      if (marker->IsListMarker())
+        return ToLayoutListMarker(marker);
+      NOTREACHED();
     }
     return nullptr;
   }

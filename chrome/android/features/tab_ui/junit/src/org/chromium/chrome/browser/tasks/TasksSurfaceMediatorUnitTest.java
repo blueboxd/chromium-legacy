@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
@@ -40,6 +41,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -58,6 +60,8 @@ public class TasksSurfaceMediatorUnitTest {
     private VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock
     private View.OnClickListener mLearnMoreOnClickListener;
+    @Mock
+    private IncognitoCookieControlsManager mCookieControlsManager;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mFakeboxClickListenerCaptor;
     @Captor
@@ -66,14 +70,16 @@ public class TasksSurfaceMediatorUnitTest {
     private ArgumentCaptor<View.OnClickListener> mVoiceSearchButtonClickListenerCaptor;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mLearnMoreOnClickListenerCaptor;
+    @Captor
+    private ArgumentCaptor<IncognitoCookieControlsManager> mCookieControlsManagerCaptor;
 
     @Before
     public void setUp() {
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
-        mMediator = new TasksSurfaceMediator(
-                mPropertyModel, mFakeboxDelegate, mLearnMoreOnClickListener, true);
+        mMediator = new TasksSurfaceMediator(mPropertyModel, mFakeboxDelegate,
+                mLearnMoreOnClickListener, mCookieControlsManager, true);
     }
 
     @After
@@ -94,6 +100,8 @@ public class TasksSurfaceMediatorUnitTest {
                         mVoiceSearchButtonClickListenerCaptor.capture());
         verify(mPropertyModel).set(eq(IS_FAKE_SEARCH_BOX_VISIBLE), eq(true));
         verify(mPropertyModel).set(eq(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), eq(false));
+        verify(mPropertyModel)
+                .set(eq(INCOGNITO_COOKIE_CONTROLS_MANAGER), mCookieControlsManagerCaptor.capture());
         verify(mPropertyModel)
                 .set(eq(INCOGNITO_LEARN_MORE_CLICK_LISTENER),
                         mLearnMoreOnClickListenerCaptor.capture());

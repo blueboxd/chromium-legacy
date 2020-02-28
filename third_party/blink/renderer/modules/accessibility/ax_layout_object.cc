@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
@@ -263,8 +262,10 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (IsDetached())
     return nullptr;
 
-  if (layout_object_->IsListMarker())
-    return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
+  if (layout_object_->IsListMarker()) {
+    // Return the originating list item node.
+    return layout_object_->GetNode()->parentNode();
+  }
 
   if (layout_object_->IsAnonymous()) {
     if (LayoutBlock* layout_block =

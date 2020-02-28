@@ -42,9 +42,7 @@ const int kCMarkerPaddingPx = 7;
 const int kCUAMarkerMarginEm = 1;
 
 LayoutListMarker::LayoutListMarker(Element* element) : LayoutBox(element) {
-  LayoutObject* list_item = element->parentNode()->GetLayoutObject();
-  DCHECK(list_item->IsListItem());
-  list_item_ = ToLayoutListItem(list_item);
+  DCHECK(ListItem());
   SetInline(true);
   SetIsAtomicInlineLevel(true);
 }
@@ -55,6 +53,13 @@ void LayoutListMarker::WillBeDestroyed() {
   if (image_)
     image_->RemoveClient(this);
   LayoutBox::WillBeDestroyed();
+}
+
+const LayoutListItem* LayoutListMarker::ListItem() const {
+  LayoutObject* list_item = GetNode()->parentNode()->GetLayoutObject();
+  DCHECK(list_item);
+  DCHECK(list_item->IsListItem());
+  return ToLayoutListItem(list_item);
 }
 
 LayoutSize LayoutListMarker::ImageBulletSize() const {
@@ -123,14 +128,15 @@ void LayoutListMarker::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   LayoutUnit block_offset = LogicalTop();
-  for (LayoutBox* o = ParentBox(); o && o != ListItem(); o = o->ParentBox()) {
+  const LayoutListItem* list_item = ListItem();
+  for (LayoutBox* o = ParentBox(); o && o != list_item; o = o->ParentBox()) {
     block_offset += o->LogicalTop();
   }
-  if (ListItem()->StyleRef().IsLeftToRightDirection()) {
-    line_offset_ = ListItem()->LogicalLeftOffsetForLine(
+  if (list_item->StyleRef().IsLeftToRightDirection()) {
+    line_offset_ = list_item->LogicalLeftOffsetForLine(
         block_offset, kDoNotIndentText, LayoutUnit());
   } else {
-    line_offset_ = ListItem()->LogicalRightOffsetForLine(
+    line_offset_ = list_item->LogicalRightOffsetForLine(
         block_offset, kDoNotIndentText, LayoutUnit());
   }
   if (IsImage()) {
@@ -188,7 +194,7 @@ void LayoutListMarker::UpdateContent() {
       break;
     case ListStyleCategory::kLanguage:
       text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
-                                        list_item_->Value());
+                                        ListItem()->Value());
       break;
     case ListStyleCategory::kStaticString:
       text_ = StyleRef().ListStyleStringValue();
@@ -200,7 +206,7 @@ String LayoutListMarker::TextAlternative() const {
   if (GetListStyleCategory() == ListStyleCategory::kStaticString)
     return text_;
   UChar suffix =
-      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value());
+      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value());
   // Return suffix after the marker text, even in RTL, reflecting speech order.
   return text_ + suffix + ' ';
 }
@@ -218,7 +224,7 @@ LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
   // TODO(wkorman): Look into constructing a text run for both text and suffix
   // and painting them together.
   UChar suffix[2] = {
-      list_marker_text::Suffix(StyleRef().ListStyleType(), list_item_->Value()),
+      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value()),
       ' '};
   TextRun run =
       ConstructTextRun(font, suffix, 2, StyleRef(), StyleRef().Direction());
@@ -343,7 +349,7 @@ LayoutUnit LayoutListMarker::LineHeight(
     LineDirectionMode direction,
     LinePositionMode line_position_mode) const {
   if (!IsImage())
-    return list_item_->LineHeight(first_line, direction,
+    return ListItem()->LineHeight(first_line, direction,
                                   kPositionOfInteriorLineBoxes);
   return LayoutBox::LineHeight(first_line, direction, line_position_mode);
 }
@@ -355,7 +361,7 @@ LayoutUnit LayoutListMarker::BaselinePosition(
     LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   if (!IsImage())
-    return list_item_->BaselinePosition(baseline_type, first_line, direction,
+    return ListItem()->BaselinePosition(baseline_type, first_line, direction,
                                         kPositionOfInteriorLineBoxes);
   return LayoutBox::BaselinePosition(baseline_type, first_line, direction,
                                      line_position_mode);
@@ -437,9 +443,10 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
 }
 
 bool LayoutListMarker::IsInside() const {
-  const ComputedStyle& parent_style = list_item_->StyleRef();
+  const LayoutListItem* list_item = ListItem();
+  const ComputedStyle& parent_style = list_item->StyleRef();
   return parent_style.ListStylePosition() == EListStylePosition::kInside ||
-         (IsA<HTMLLIElement>(list_item_->GetNode()) &&
+         (IsA<HTMLLIElement>(list_item->GetNode()) &&
           !parent_style.IsInsideListElement());
 }
 

@@ -10,13 +10,13 @@ test(function(t) {
 
     ctx.arc(10, 10, 5, 0, 1, false);
     ctx.arc(10, 10, 0, 0, 1, false);
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       ctx.arc(10, 10, -5, 0, 1, false);
     });
 
     ctx.arcTo(10, 10, 20, 20, 5);
     ctx.arcTo(10, 10, 20, 20, 0);
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       ctx.arcTo(10, 10, 20, 20, -5);
     });
 
@@ -24,13 +24,13 @@ test(function(t) {
 
     path.arc(10, 10, 5, 0, 1, false);
     path.arc(10, 10, 0, 0, 1, false);
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       path.arc(10, 10, -5, 0, 1, false);
     });
 
     path.arcTo(10, 10, 20, 20, 5);
     path.arcTo(10, 10, 20, 20, 0);
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws_dom("INDEX_SIZE_ERR", function() {
       path.arcTo(10, 10, 20, 20, -5);
     });
 }, 'Tests CanvasPath arc and arcTo with negative radii.');

@@ -25,7 +25,7 @@ async_test(function(t) {
 
   delete_then_open(t, dbname, function(t, db, request) {
     request.result.createObjectStore('store');
-    assert_throws("TransactionInactiveError", function() {
+    assert_throws_dom("TransactionInactiveError", function() {
       obs.observe(db, request.transaction, { operationTypes: ['put'] });
     });
     t.done();

@@ -34,7 +34,7 @@
 function assert_tainted(performCommands, description) {
   let ctx = document.createElement('canvas').getContext('2d');
   performCommands(ctx);
-  assert_throws("SecurityError", () => ctx.getImageData(0, 0, 1, 1), description);
+  assert_throws_dom("SecurityError", () => ctx.getImageData(0, 0, 1, 1), description);
 }
 
 // SVG reference filters taint the canvas according to

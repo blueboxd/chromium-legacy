@@ -6,6 +6,10 @@ package org.chromium.chrome.browser.tasks;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
@@ -20,6 +24,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,10 +35,13 @@ import org.chromium.ui.modelutil.PropertyModel;
 class TasksSurfaceMediator {
     @Nullable
     private final FakeboxDelegate mFakeboxDelegate;
+    private final IncognitoCookieControlsManager mIncognitoCookieControlsManager;
+    private final IncognitoCookieControlsManager.Observer mIncognitoCookieControlsObserver;
     private final PropertyModel mModel;
 
     TasksSurfaceMediator(PropertyModel model, FakeboxDelegate fakeboxDelegate,
-            View.OnClickListener incognitoLearnMoreClickListener, boolean isTabCarousel) {
+            View.OnClickListener incognitoLearnMoreClickListener,
+            IncognitoCookieControlsManager incognitoCookieControlsManager, boolean isTabCarousel) {
         mFakeboxDelegate = fakeboxDelegate;
         assert mFakeboxDelegate != null;
 
@@ -75,8 +83,33 @@ class TasksSurfaceMediator {
         });
         model.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, incognitoLearnMoreClickListener);
 
+        // Set Incognito Cookie Controls functionality
+        mIncognitoCookieControlsManager = incognitoCookieControlsManager;
+        mModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mIncognitoCookieControlsManager);
+        mIncognitoCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
+            @Override
+            public void onUpdate(boolean checked, boolean enforced) {
+                // TODO(crbug.com/1040091): use enforced to support the case where this toggle is
+                // managed by organization or the normal 3PC blocking setting and update the UI
+                // accordingly.
+                mModel.set(INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED, checked);
+            }
+        };
+        mIncognitoCookieControlsManager.addObserver(mIncognitoCookieControlsObserver);
+        mModel.set(
+                INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER, mIncognitoCookieControlsManager);
+
         // Set the initial state.
         mModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, true);
         mModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE, false);
+    }
+
+    /**
+     * Called to initialize this Mediator.
+     */
+    void initialize() {
+        mIncognitoCookieControlsManager.initialize();
+        mModel.set(INCOGNITO_COOKIE_CONTROLS_CARD_VISIBILITY,
+                mIncognitoCookieControlsManager.shouldShowCookieControlsCard());
     }
 }

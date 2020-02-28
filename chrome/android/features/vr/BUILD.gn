@@ -72,6 +72,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/embedder_support/android:content_view_java",
+    "//components/infobars/core:infobar_enums_java",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",
     "//device/vr:java",

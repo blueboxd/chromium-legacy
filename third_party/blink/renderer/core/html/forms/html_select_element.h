@@ -227,8 +227,6 @@ class CORE_EXPORT HTMLSelectElement final
 
   void DefaultEventHandler(Event&) override;
 
-  void DispatchInputAndChangeEventForMenuList();
-
   void SetRecalcListItems();
   void RecalcListItems() const;
   enum ResetReason { kResetReasonSelectedOptionRemoved, kResetReasonOthers };

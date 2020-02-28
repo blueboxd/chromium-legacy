@@ -18,13 +18,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
@@ -40,6 +37,8 @@ public class IncognitoNewTabPage
     private boolean mIsLoaded;
 
     private IncognitoNewTabPageManager mIncognitoNewTabPageManager;
+    private IncognitoCookieControlsManager mCookieControlsManager;
+    private IncognitoCookieControlsManager.Observer mCookieControlsObserver;
 
     private final int mIncognitoNTPBackgroundColor;
 
@@ -76,19 +75,31 @@ public class IncognitoNewTabPage
             }
 
             @Override
-            public void setThirdPartyCookieBlocking(boolean enable) {
-                @CookieControlsMode
-                int new_mode = enable ? CookieControlsMode.INCOGNITO_ONLY : CookieControlsMode.OFF;
-                PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, new_mode);
+            public void initCookieControlsManager() {
+                mCookieControlsManager = new IncognitoCookieControlsManager();
+                mCookieControlsManager.initialize();
+                mIncognitoNewTabPageView.setIncognitoCookieControlsCardVisibility(
+                        mCookieControlsManager.shouldShowCookieControlsCard());
+                mCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
+                    @Override
+                    public void onUpdate(boolean checked, boolean enforced) {
+                        // TODO(crbug.com/1040091): use enforced to support the case where this
+                        // toggle is managed by organization or the normal 3PC blocking setting and
+                        // update the UI accordingly.
+                        mIncognitoNewTabPageView.setIncognitoCookieControlsToggleChecked(checked);
+                    }
+                };
+                mCookieControlsManager.addObserver(mCookieControlsObserver);
+                mIncognitoNewTabPageView.setIncognitoCookieControlsToggleCheckedListener(
+                        mCookieControlsManager);
+                mCookieControlsManager.updateIfNecessary();
             }
 
             @Override
-            public boolean shouldBlockThirdPartyCookies() {
-                // TODO(eokoyomon): add methods to CookieControlsBridge to implement this in order
-                // to be consistent with desktop cookie settings.
-                return PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)
-                        || (PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE)
-                                != CookieControlsMode.OFF);
+            public void destroy() {
+                if (mCookieControlsManager != null) {
+                    mCookieControlsManager.removeObserver(mCookieControlsObserver);
+                }
             }
 
             @Override
@@ -131,6 +142,7 @@ public class IncognitoNewTabPage
     public void destroy() {
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
+        mIncognitoNewTabPageManager.destroy();
         super.destroy();
     }
 

@@ -22,6 +22,7 @@
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -323,6 +324,7 @@ ContentBrowserClientImpl::CreateNetworkContext(
         proxy_config,
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
+  variations::UpdateCorsExemptHeaderForVariations(context_params.get());
   content::GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
   return network_context;

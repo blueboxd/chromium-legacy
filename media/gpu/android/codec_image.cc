@@ -248,11 +248,18 @@ bool CodecImage::RenderToFrontBuffer() {
 }
 
 bool CodecImage::RenderToTextureOwnerBackBuffer(BlockingMode blocking_mode) {
-  DCHECK(codec_buffer_wait_coordinator_);
   DCHECK_NE(phase_, Phase::kInFrontBuffer);
   if (phase_ == Phase::kInBackBuffer)
     return true;
   if (phase_ == Phase::kInvalidated)
+    return false;
+
+  // Normally, we should have a wait coordinator if we're called.  However, if
+  // the renderer is torn down (either VideoFrameSubmitter or the whole process)
+  // before we get returns back from viz, then we can be notified that we're
+  // no longer in use (erroneously) when the VideoFrame is destroyed.  So, if
+  // we don't have a wait coordinator, then just fail.
+  if (!codec_buffer_wait_coordinator_)
     return false;
 
   // Wait for a previous frame available so we don't confuse it with the one
@@ -272,7 +279,13 @@ bool CodecImage::RenderToTextureOwnerBackBuffer(BlockingMode blocking_mode) {
 }
 
 bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
-  DCHECK(codec_buffer_wait_coordinator_);
+  // Normally, we should have a wait coordinator if we're called.  However, if
+  // the renderer is torn down (either VideoFrameSubmitter or the whole process)
+  // before we get returns back from viz, then we can be notified that we're
+  // no longer in use (erroneously) when the VideoFrame is destroyed.  So, if
+  // we don't have a wait coordinator, then just fail.
+  if (!codec_buffer_wait_coordinator_)
+    return false;
 
   if (phase_ == Phase::kInFrontBuffer) {
     EnsureBoundIfNeeded(bindings_mode);

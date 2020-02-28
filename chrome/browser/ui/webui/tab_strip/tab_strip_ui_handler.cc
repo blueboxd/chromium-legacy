@@ -623,6 +623,13 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
       new_group_id,
       base::Optional<tab_groups::TabGroupVisualData>{*group->visual_data()});
 
+  // The front-end needs to understand that the tab group ID has changed so
+  // that when the tabs are moved into the new group, the new group ID is
+  // updated with the correct value.
+  FireWebUIListener("tab-group-id-replaced",
+                    base::Value(group->id().ToString()),
+                    base::Value(new_group_id.ToString()));
+
   std::vector<int> source_tab_indices = group->ListTabs();
   int tab_count = source_tab_indices.size();
   for (int i = 0; i < tab_count; i++) {

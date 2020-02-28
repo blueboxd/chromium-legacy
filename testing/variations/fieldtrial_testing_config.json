@@ -6073,6 +6073,7 @@
                 {
                     "name": "VizForWebView",
                     "enable_features": [
+                        "EnableSharedImageForWebview",
                         "UseSkiaForGLReadback",
                         "UseSkiaRenderer",
                         "VizForWebView"

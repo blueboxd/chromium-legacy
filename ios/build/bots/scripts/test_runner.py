@@ -685,11 +685,12 @@ class TestRunner(object):
 
 
 class SimulatorTestRunner(TestRunner):
-  """Class for running tests on iOS Simulators."""
+  """Class for running tests on iossim."""
 
   def __init__(
       self,
       app_path,
+      iossim_path,
       platform,
       version,
       out_dir,
@@ -706,10 +707,11 @@ class SimulatorTestRunner(TestRunner):
 
     Args:
       app_path: Path to the compiled .app or .ipa to run.
+      iossim_path: Path to the compiled iossim binary to use.
       platform: Name of the platform to simulate. Supported values can be found
-        by running "xcrun simctl list". e.g. "iPhone 5s", "iPad Retina".
+        by running "iossim -l". e.g. "iPhone 5s", "iPad Retina".
       version: Version of iOS the platform should be running. Supported values
-        can be found by running "xcrun simctl list". e.g. "9.3", "8.2", "7.1".
+        can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
       retries: Number of times to retry failed test cases.
@@ -736,7 +738,13 @@ class SimulatorTestRunner(TestRunner):
         test_cases=test_cases,
         xctest=xctest,
     )
+
+    iossim_path = os.path.abspath(iossim_path)
+    if not os.path.exists(iossim_path):
+      raise SimulatorNotFoundError(iossim_path)
+
     self.homedir = ''
+    self.iossim_path = iossim_path
     self.platform = platform
     self.start_time = None
     self.version = version

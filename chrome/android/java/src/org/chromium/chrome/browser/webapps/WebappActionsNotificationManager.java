@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.Clipboard;
 
 import java.lang.ref.WeakReference;
@@ -177,7 +176,7 @@ class WebappActionsNotificationManager implements PauseResumeWithNativeObserver 
         } else if (ACTION_FOCUS.equals(intent.getAction())) {
             Tab tab = webappActivity.getActivityTab();
             if (tab != null) {
-                Clipboard.getInstance().copyUrlToClipboard(((TabImpl) tab).getOriginalUrl());
+                Clipboard.getInstance().copyUrlToClipboard(tab.getOriginalUrl());
             }
             RecordUserAction.record("Webapp.NotificationFocused");
             return true;

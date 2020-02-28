@@ -100,27 +100,18 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
       tag->fType = SkPDF::DocumentStructureType::kNonStruct;
   }
 
-  tag->fChildCount = ax_node->GetUnignoredChildCount();
-  // Allocated here, cleaned up in DestroyStructureElementNodeTree().
-  SkPDF::StructureElementNode* children =
-      new SkPDF::StructureElementNode[tag->fChildCount];
-  tag->fChildren = children;
-  for (size_t i = 0; i < tag->fChildCount; i++) {
+  size_t children_count = ax_node->GetUnignoredChildCount();
+  tag->fChildVector.resize(children_count);
+  for (size_t i = 0; i < children_count; i++) {
+    tag->fChildVector[i] = std::make_unique<SkPDF::StructureElementNode>();
     bool success = RecursiveBuildStructureTree(
-        ax_node->GetUnignoredChildAtIndex(i), &children[i]);
+        ax_node->GetUnignoredChildAtIndex(i), tag->fChildVector[i].get());
+
     if (success)
       valid = true;
   }
 
   return valid;
-}
-
-void DestroyStructureElementNodeTree(SkPDF::StructureElementNode* node) {
-  for (size_t i = 0; i < node->fChildCount; i++) {
-    DestroyStructureElementNodeTree(
-        const_cast<SkPDF::StructureElementNode*>(&node->fChildren[i]));
-  }
-  delete[] node->fChildren;
 }
 
 }  // namespace
@@ -146,9 +137,7 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
       metadata.fStructureElementTreeRoot = &tag_root;
   }
 
-  sk_sp<SkDocument> document = SkPDF::MakeDocument(stream, metadata);
-  DestroyStructureElementNodeTree(&tag_root);
-  return document;
+  return SkPDF::MakeDocument(stream, metadata);
 }
 
 sk_sp<SkData> SerializeOopPicture(SkPicture* pic, void* ctx) {

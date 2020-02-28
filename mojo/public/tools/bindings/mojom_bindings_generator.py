@@ -90,26 +90,32 @@ def MakeImportStackMessage(imported_filename_stack):
 
 
 class RelativePath(object):
-  """Represents a path relative to the source tree."""
-  def __init__(self, path, source_root):
+  """Represents a path relative to the source tree or generated output dir."""
+
+  def __init__(self, path, source_root, output_dir):
     self.path = path
-    self.source_root = source_root
+    if path.startswith(source_root):
+      self.root = source_root
+    elif path.startswith(output_dir):
+      self.root = output_dir
+    else:
+      raise Exception("Invalid input path %s" % path)
 
   def relative_path(self):
-    return os.path.relpath(os.path.abspath(self.path),
-                           os.path.abspath(self.source_root))
+    return os.path.relpath(
+        os.path.abspath(self.path), os.path.abspath(self.root))
 
 
-def FindImportFile(rel_dir, file_name, search_rel_dirs):
+def FindImportFile(args, rel_dir, file_name, search_rel_dirs):
   """Finds |file_name| in either |rel_dir| or |search_rel_dirs|. Returns a
   RelativePath with first file found, or an arbitrary non-existent file
   otherwise."""
   for rel_search_dir in [rel_dir] + search_rel_dirs:
     path = os.path.join(rel_search_dir.path, file_name)
     if os.path.isfile(path):
-      return RelativePath(path, rel_search_dir.source_root)
-  return RelativePath(os.path.join(rel_dir.path, file_name),
-                      rel_dir.source_root)
+      return RelativePath(path, rel_search_dir.root, args.output_dir)
+  return RelativePath(
+      os.path.join(rel_dir.path, file_name), rel_dir.root, args.output_dir)
 
 
 def ScrambleMethodOrdinals(interfaces, salt):
@@ -194,7 +200,7 @@ class MojomProcessor(object):
     imports = {}
     for parsed_imp in tree.import_list:
       rel_import_file = FindImportFile(
-          RelativePath(dirname, rel_filename.source_root),
+          args, RelativePath(dirname, rel_filename.root, args.output_dir),
           parsed_imp.import_filename, args.import_directories)
       imports[parsed_imp.import_filename] = self._GenerateModule(
           args, remaining_args, generator_modules, rel_import_file,
@@ -250,9 +256,11 @@ def _Generate(args, remaining_args):
   for idx, import_dir in enumerate(args.import_directories):
     tokens = import_dir.split(":")
     if len(tokens) >= 2:
-      args.import_directories[idx] = RelativePath(tokens[0], tokens[1])
+      args.import_directories[idx] = RelativePath(tokens[0], tokens[1],
+                                                  args.output_dir)
     else:
-      args.import_directories[idx] = RelativePath(tokens[0], args.depth)
+      args.import_directories[idx] = RelativePath(tokens[0], args.depth,
+                                                  args.output_dir)
   generator_modules = LoadGenerators(args.generators_string)
 
   fileutil.EnsureDirectoryExists(args.output_dir)
@@ -265,8 +273,9 @@ def _Generate(args, remaining_args):
       args.filename.extend(f.read().split())
 
   for filename in args.filename:
-    processor._GenerateModule(args, remaining_args, generator_modules,
-                              RelativePath(filename, args.depth), [])
+    processor._GenerateModule(
+        args, remaining_args, generator_modules,
+        RelativePath(filename, args.depth, args.output_dir), [])
 
   return 0
 
@@ -332,7 +341,7 @@ def _Parse(args, _):
       args.filename.extend(f.read().split())
 
   for filename in args.filename:
-    _ParseFile(args, RelativePath(filename, args.depth))
+    _ParseFile(args, RelativePath(filename, args.depth, args.output_dir))
   return 0
 
 
@@ -361,15 +370,15 @@ def GetSourcesList(target_prefix, sources_list, gen_dir):
   return sources_list
 
 def _VerifyImportDeps(args, __):
-  fileutil.EnsureDirectoryExists(args.gen_dir)
+  fileutil.EnsureDirectoryExists(args.output_dir)
 
   if args.filelist:
     with open(args.filelist) as f:
       args.filename.extend(f.read().split())
 
   for filename in args.filename:
-    rel_path = RelativePath(filename, args.depth)
-    tree = _UnpickleAST(_GetPicklePath(rel_path, args.gen_dir))
+    rel_path = RelativePath(filename, args.depth, args.output_dir)
+    tree = _UnpickleAST(_GetPicklePath(rel_path, args.output_dir))
 
     mojom_imports = set(
       parsed_imp.import_filename for parsed_imp in tree.import_list
@@ -378,12 +387,12 @@ def _VerifyImportDeps(args, __):
     sources = set()
 
     target_prefix = args.deps_file.split(".deps_sources_list")[0]
-    sources = GetSourcesList(target_prefix, sources, args.gen_dir)
+    sources = GetSourcesList(target_prefix, sources, args.output_dir)
 
     if (not sources.issuperset(mojom_imports)):
       target_name = target_prefix.rsplit("/", 1)[1]
       target_prefix_without_gen_dir = target_prefix.split(
-        args.gen_dir + "/", 1)[1]
+          args.output_dir + "/", 1)[1]
       full_target_name = "//" + target_prefix_without_gen_dir.rsplit(
         "/", 1)[0] + ":" + target_name
 
@@ -395,7 +404,7 @@ def _VerifyImportDeps(args, __):
 
     source_filename, _ = os.path.splitext(rel_path.relative_path())
     output_file = source_filename + '.v'
-    output_file_path = os.path.join(args.gen_dir, output_file)
+    output_file_path = os.path.join(args.output_dir, output_file)
     WriteFile("", output_file_path)
 
   return 0
@@ -405,6 +414,12 @@ def main():
       description="Generate bindings from mojom files.")
   parser.add_argument("--use_bundled_pylibs", action="store_true",
                       help="use Python modules bundled in the SDK")
+  parser.add_argument(
+      "-o",
+      "--output_dir",
+      dest="output_dir",
+      default=".",
+      help="output directory for generated files")
 
   subparsers = parser.add_subparsers()
 
@@ -413,12 +428,6 @@ def main():
                            " Pickle pruned AST into output_dir.")
   parse_parser.add_argument("filename", nargs="*", help="mojom input file")
   parse_parser.add_argument("--filelist", help="mojom input file list")
-  parse_parser.add_argument(
-      "-o",
-      "--output_dir",
-      dest="output_dir",
-      default=".",
-      help="output directory for generated files")
   parse_parser.add_argument(
       "-d", "--depth", dest="depth", default=".", help="depth from source root")
   parse_parser.add_argument(
@@ -438,9 +447,6 @@ def main():
   generate_parser.add_argument("--filelist", help="mojom input file list")
   generate_parser.add_argument("-d", "--depth", dest="depth", default=".",
                                help="depth from source root")
-  generate_parser.add_argument("-o", "--output_dir", dest="output_dir",
-                               default=".",
-                               help="output directory for generated files")
   generate_parser.add_argument("-g", "--generators",
                                dest="generators_string",
                                metavar="GENERATORS",
@@ -500,10 +506,13 @@ def main():
       help="If set, generated bindings will serialize lazily when possible.",
       action="store_true")
   generate_parser.add_argument(
-    "--extra_cpp_template_paths", dest="extra_cpp_template_paths", action="append", metavar="path_to_template",
-    default=[],
-    help="Provide a path to a new template (.tmpl) that is used to generate "
-         "additional C++ source/header files ")
+      "--extra_cpp_template_paths",
+      dest="extra_cpp_template_paths",
+      action="append",
+      metavar="path_to_template",
+      default=[],
+      help="Provide a path to a new template (.tmpl) that is used to generate "
+      "additional C++ source/header files ")
   generate_parser.add_argument(
       "--disallow_native_types",
       help="Disallows the [Native] attribute to be specified on structs or "
@@ -531,9 +540,6 @@ def main():
 
   precompile_parser = subparsers.add_parser("precompile",
       description="Precompile templates for the mojom bindings generator.")
-  precompile_parser.add_argument(
-      "-o", "--output_dir", dest="output_dir", default=".",
-      help="output directory for precompiled templates")
   precompile_parser.set_defaults(func=_Precompile)
 
   verify_parser = subparsers.add_parser("verify", description="Checks "
@@ -544,9 +550,6 @@ def main():
   verify_parser.add_argument("-f", "--file", dest="deps_file",
       help="file containing paths to the sources files for "
       "dependencies")
-  verify_parser.add_argument("-g", "--gen_dir",
-      dest="gen_dir",
-      help="directory with the syntax tree")
   verify_parser.add_argument(
       "-d", "--depth", dest="depth",
       help="depth from source root")

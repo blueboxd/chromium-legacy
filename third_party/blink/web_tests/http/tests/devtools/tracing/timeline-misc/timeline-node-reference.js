@@ -13,6 +13,7 @@
           overflow: hidden;
           width: 100px;
           height: 100px;
+          position: relative;
       }
       </style>
       <div id="boundary" class="relayout-boundary">

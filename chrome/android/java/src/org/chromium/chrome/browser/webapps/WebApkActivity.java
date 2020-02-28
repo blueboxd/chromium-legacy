@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.browser.trusted.sharing.ShareData;
+
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.content_public.browser.WebContents;
@@ -60,7 +62,7 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
-        WebApkInfo.ShareData shareData = webApkInfo.shareData();
+        ShareData shareData = webApkInfo.shareData();
         if (shareData == null) {
             return false;
         }

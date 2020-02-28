@@ -229,6 +229,8 @@ def _MakeOwners(document, path, emails_with_dom_elements):
   owner_elements = []
   # TODO(crbug.com/987709): An OWNERS file API would be ideal.
   emails_from_owners_file = _ExtractEmailAddressesFromOWNERS(path)
+  if not emails_from_owners_file:
+    raise Error('No emails could be derived from {}.'.format(path))
 
   # A list is used to respect the order of email addresses in the OWNERS file.
   deduped_emails_from_owners_file = []
@@ -332,7 +334,7 @@ def ExpandHistogramsOWNERS(histograms):
       owners_to_add = _MakeOwners(
         owner.ownerDocument, path, emails_with_dom_elements)
       if not owners_to_add:
-        raise Error('No emails could be derived from {}.'.format(path))
+        continue
 
       _UpdateHistogramOwners(histogram, owner, owners_to_add)
 

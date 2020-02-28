@@ -181,7 +181,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         }
 
         if (isOfflinePage()) {
-            String originalUrl = ((TabImpl) mTab).getOriginalUrl();
+            String originalUrl = mTab.getOriginalUrl();
             formattedUrl = UrlUtilities.stripScheme(
                     DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
 

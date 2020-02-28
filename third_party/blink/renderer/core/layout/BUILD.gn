@@ -145,8 +145,6 @@ blink_core_sources("layout") {
     "layout_list_marker.h",
     "layout_media.cc",
     "layout_media.h",
-    "layout_menu_list.cc",
-    "layout_menu_list.h",
     "layout_multi_column_flow_thread.cc",
     "layout_multi_column_flow_thread.h",
     "layout_multi_column_set.cc",

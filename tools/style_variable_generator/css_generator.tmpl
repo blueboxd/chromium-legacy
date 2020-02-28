@@ -1,0 +1,17 @@
+html {
+{%- for var_name, color in light_variables.colors.items() %}
+  {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
+  {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
+{%  endfor %}
+}
+
+{% if dark_variables.colors -%}
+@media (prefers-color-scheme: dark) {
+  html {
+{%- for var_name, color in dark_variables.colors.items() %}
+    {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
+    {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
+{%  endfor %}
+  }
+}
+{%- endif %}

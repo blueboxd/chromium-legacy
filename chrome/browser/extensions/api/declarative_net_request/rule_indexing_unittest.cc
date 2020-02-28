@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +40,20 @@ namespace {
 constexpr char kJSONRulesFilename[] = "rules_file.json";
 const base::FilePath::CharType kJSONRulesetFilepath[] =
     FILE_PATH_LITERAL("rules_file.json");
+
+std::string GetParseError(ParseResult result, int rule_id) {
+  ParseInfo info;
+  info.SetError(result, &rule_id);
+  return info.error();
+}
+
+InstallWarning GetLargeRegexWarning(int rule_id) {
+  return InstallWarning(
+      ErrorUtils::FormatErrorMessage(
+          kErrorRegexTooLarge, base::NumberToString(rule_id), kRegexFilterKey),
+      manifest_keys::kDeclarativeNetRequestKey,
+      manifest_keys::kDeclarativeRuleResourcesKey);
+}
 
 // Fixure testing that declarative rules corresponding to the Declarative Net
 // Request API are correctly indexed, for both packed and unpacked
@@ -185,8 +200,7 @@ TEST_P(RuleIndexingTest, DuplicateResourceTypes) {
   rule.condition->excluded_resource_types = std::vector<std::string>({"image"});
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, *rule.id)
-          .GetErrorDescription());
+      GetParseError(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
@@ -196,8 +210,8 @@ TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
   rule.action->redirect->url = std::string("https://google.com");
   rule.priority.reset();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_RULE_PRIORITY, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_EMPTY_RULE_PRIORITY, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
@@ -210,16 +224,16 @@ TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
   rule.priority = kMinValidPriority;
   AddRule(rule);
 
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_REDIRECT, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_INVALID_REDIRECT, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, InvalidRuleID) {
   TestRule rule = CreateGenericRule();
   rule.id = kMinValidID - 1;
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_INVALID_RULE_ID, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
@@ -230,8 +244,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
   rule.priority = kMinValidPriority - 1;
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_INVALID_RULE_PRIORITY, *rule.id)
-          .GetErrorDescription());
+      GetParseError(ParseResult::ERROR_INVALID_RULE_PRIORITY, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
@@ -242,16 +255,15 @@ TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
        "other"});
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, *rule.id)
-          .GetErrorDescription());
+      GetParseError(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, EmptyDomainsList) {
   TestRule rule = CreateGenericRule();
   rule.condition->domains = std::vector<std::string>();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_EMPTY_DOMAINS_LIST, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
@@ -259,16 +271,15 @@ TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
   rule.condition->resource_types = std::vector<std::string>();
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, *rule.id)
-          .GetErrorDescription());
+      GetParseError(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, EmptyURLFilter) {
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_EMPTY_URL_FILTER, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectURL) {
@@ -279,8 +290,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
   rule.priority = kMinValidPriority;
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, *rule.id)
-          .GetErrorDescription());
+      GetParseError(ParseResult::ERROR_INVALID_REDIRECT_URL, *rule.id));
 }
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
@@ -292,8 +302,7 @@ TEST_P(RuleIndexingTest, DuplicateIDS) {
   TestRule rule = CreateGenericRule();
   AddRule(rule);
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, *rule.id)
-                         .GetErrorDescription());
+  LoadAndExpectError(GetParseError(ParseResult::ERROR_DUPLICATE_IDS, *rule.id));
 }
 
 // Ensure that we limit the number of parse failure warnings shown.
@@ -491,6 +500,64 @@ TEST_P(RuleIndexingTest, RuleCountLimitExceeded) {
                              manifest_keys::kDeclarativeRuleResourcesKey),
               extension()->install_warnings()[0]);
   }
+}
+
+// Ensure that regex rules which exceed the per rule memory limit are ignored
+// and raise an install warning.
+TEST_P(RuleIndexingTest, LargeRegexIgnored) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter.reset();
+  int id = kMinValidID;
+
+  const int kNumSmallRegex = 5;
+  std::string small_regex = "http://(yahoo|google)\\.com";
+  for (int i = 0; i < kNumSmallRegex; i++, id++) {
+    rule.id = id;
+    rule.condition->regex_filter = small_regex;
+    AddRule(rule);
+  }
+
+  const int kNumLargeRegex = 2;
+  std::string large_regex = ".{512}x";
+  for (int i = 0; i < kNumLargeRegex; i++, id++) {
+    rule.id = id;
+    rule.condition->regex_filter = large_regex;
+    AddRule(rule);
+  }
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  LoadAndExpectSuccess(kNumSmallRegex);
+
+  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
+  // which causes it to lose the install warning. This should be fixed.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    InstallWarning warning_1 = GetLargeRegexWarning(kMinValidID + 5);
+    InstallWarning warning_2 = GetLargeRegexWarning(kMinValidID + 6);
+    EXPECT_THAT(
+        extension()->install_warnings(),
+        ::testing::UnorderedElementsAre(::testing::Eq(std::cref(warning_1)),
+                                        ::testing::Eq(std::cref(warning_2))));
+  }
+}
+
+// Test an extension with both an error and an install warning.
+TEST_P(RuleIndexingTest, WarningAndError) {
+  // Add a large regex rule which will exceed the per rule memory limit and
+  // cause an install warning.
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter.reset();
+  rule.id = kMinValidID;
+  rule.condition->regex_filter = ".{512}x";
+  AddRule(rule);
+
+  // Add a regex rule with a syntax error.
+  rule.condition->regex_filter = "abc(";
+  rule.id = kMinValidID + 1;
+  AddRule(rule);
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  LoadAndExpectError(
+      GetParseError(ParseResult::ERROR_INVALID_REGEX_FILTER, kMinValidID + 1));
 }
 
 TEST_P(RuleIndexingTest, InvalidJSONFile) {

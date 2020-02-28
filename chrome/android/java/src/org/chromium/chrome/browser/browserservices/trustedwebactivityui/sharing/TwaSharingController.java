@@ -118,20 +118,13 @@ public class TwaSharingController {
     }
 
     private boolean sendPost(ShareData shareData, WebApkInfo.ShareTarget target) {
-        WebApkInfo.ShareData webApkData = new WebApkInfo.ShareData();
-        if (shareData.uris != null) {
-            webApkData.files = new ArrayList<>(shareData.uris);
-        }
-        webApkData.subject = shareData.title;
-        webApkData.text = shareData.text;
-
         Tab tab = mTabProvider.getTab();
         if (tab == null) {
             assert false : "Null tab when sharing";
             return false;
         }
-        return mPostNavigator.navigateIfPostShareTarget(target.getAction(), target, webApkData,
-                tab.getWebContents());
+        return mPostNavigator.navigateIfPostShareTarget(
+                target.getAction(), target, shareData, tab.getWebContents());
     }
 
 

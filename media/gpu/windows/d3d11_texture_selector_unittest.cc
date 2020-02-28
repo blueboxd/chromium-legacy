@@ -49,8 +49,9 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
 TEST_F(D3D11TextureSelectorUnittest, NV12BindsToNV12) {
   auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_NV12);
 
-  // TODO(liberato): checl "binds", somehow.
+  // TODO(liberato): check "binds", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
 }
 
 TEST_F(D3D11TextureSelectorUnittest, P010CopiesToARGB) {
@@ -58,6 +59,9 @@ TEST_F(D3D11TextureSelectorUnittest, P010CopiesToARGB) {
 
   // TODO(liberato): check "copies", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
+  // Note that this might also produce 8 bit rgb, but for now always
+  // tries for fp16.
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R16G16B16A16_FLOAT);
 }
 
 }  // namespace media

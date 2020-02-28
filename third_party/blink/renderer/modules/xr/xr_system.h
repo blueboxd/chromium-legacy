@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SYSTEM_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -31,43 +31,43 @@ class ScriptPromiseResolver;
 class XRFrameProvider;
 class XRSessionInit;
 
-// Implementation of the XR interface according to
-// https://immersive-web.github.io/webxr/#xr-interface . This is created lazily
-// via the NavigatorXR class on first access to the navigator.xr attribute, and
-// disposed when the execution context is destroyed or on mojo communication
+// Implementation of the XRSystem interface according to
+// https://immersive-web.github.io/webxr/#xrsystem-interface . This is created
+// lazily via the NavigatorXR class on first access to the navigator.xr attrib,
+// and disposed when the execution context is destroyed or on mojo communication
 // errors with the browser/device process.
 //
-// When the XR object is used for promises, it uses query objects to store state
+// When the XRSystem is used for promises, it uses query objects to store state
 // including the associated ScriptPromiseResolver. These query objects are owned
-// by the XR object and remain alive until the promise is resolved or rejected.
+// by the XRSystem and remain alive until the promise is resolved or rejected.
 // (See comments below for PendingSupportsSessionQuery and
 // PendingRequestSessionQuery.) These query objects are destroyed and any
-// outstanding promises rejected when the XR object is disposed.
+// outstanding promises rejected when the XRSystem is disposed.
 //
-// The XR object owns mojo connections with the Browser process through
+// The XRSystem owns mojo connections with the Browser process through
 // VRService, used for capability queries and session lifetime
-// management. The XR object is also the receiver for the VRServiceClient.
+// management. The XRSystem is also the receiver for the VRServiceClient.
 //
-// The XR object owns mojo connections with the Device process (either a
+// The XRSystem owns mojo connections with the Device process (either a
 // separate utility process, or implemented as part of the Browser process,
 // depending on the runtime and options) through XRFrameProvider and
 // XREnvironmentIntegrationProvider. These are used to transport per-frame data
 // such as image data and input poses. These are lazily created when first
 // needed for a sensor-backed session (all except sensorless inline sessions),
-// and destroyed when the XR object is disposed.
+// and destroyed when the XRSystem is disposed.
 //
-// The XR object keeps weak references to XRSession objects after they were
+// The XRSystem keeps weak references to XRSession objects after they were
 // returned through a successful requestSession promise, but does not own them.
-class XR final : public EventTargetWithInlineData,
-                 public ExecutionContextLifecycleObserver,
-                 public device::mojom::blink::VRServiceClient,
-                 public FocusChangedObserver {
+class XRSystem final : public EventTargetWithInlineData,
+                       public ExecutionContextLifecycleObserver,
+                       public device::mojom::blink::VRServiceClient,
+                       public FocusChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XR);
+  USING_GARBAGE_COLLECTED_MIXIN(XRSystem);
 
  public:
   // TODO(crbug.com/976796): Fix lint errors.
-  XR(LocalFrame& frame, int64_t ukm_source_id);
+  XRSystem(LocalFrame& frame, int64_t ukm_source_id);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
@@ -144,10 +144,10 @@ class XR final : public EventTargetWithInlineData,
     bool invalid_features = false;
   };
 
-  // Encapsulates blink-side `XR::requestSession()` call. It is a wrapper around
-  // ScriptPromiseResolver that allows us to add additional logic as certain
-  // things related to promise's life cycle happen. Instances are owned
-  // by the XR object, see outstanding_request_queries_ below.
+  // Encapsulates blink-side `XRSystem::requestSession()` call. It is a wrapper
+  // around ScriptPromiseResolver that allows us to add additional logic as
+  // certain things related to promise's life cycle happen. Instances are owned
+  // by the XRSystem, see outstanding_request_queries_ below.
   class PendingRequestSessionQuery final
       : public GarbageCollected<PendingRequestSessionQuery> {
    public:
@@ -233,10 +233,10 @@ class XR final : public EventTargetWithInlineData,
   static device::mojom::blink::XRSessionOptionsPtr XRSessionOptionsFromQuery(
       const PendingRequestSessionQuery& query);
 
-  // Encapsulates blink-side `XR::isSessionSupported()` call.  It is a wrapper
-  // around ScriptPromiseResolver that allows us to add additional logic as
-  // certain things related to promise's life cycle happen. Instances are owned
-  // by the XR object, see outstanding_support_queries_ below.
+  // Encapsulates blink-side `XRSystem::isSessionSupported()` call. It is a
+  // wrapper around ScriptPromiseResolver that allows us to add additional logic
+  // as certain things related to promise's life cycle happen. Instances are
+  // owned by the XRSystem, see outstanding_support_queries_ below.
   class PendingSupportsSessionQuery final
       : public GarbageCollected<PendingSupportsSessionQuery> {
    public:
@@ -291,8 +291,8 @@ class XR final : public EventTargetWithInlineData,
   class OverlayFullscreenEventManager : public NativeEventListener {
    public:
     OverlayFullscreenEventManager(
-        XR* xr,
-        XR::PendingRequestSessionQuery*,
+        XRSystem* xr,
+        XRSystem::PendingRequestSessionQuery*,
         device::mojom::blink::RequestSessionResultPtr);
     ~OverlayFullscreenEventManager() override;
 
@@ -305,7 +305,7 @@ class XR final : public EventTargetWithInlineData,
     void Trace(Visitor*) override;
 
    private:
-    Member<XR> xr_;
+    Member<XRSystem> xr_;
     Member<PendingRequestSessionQuery> query_;
     device::mojom::blink::RequestSessionResultPtr result_;
     DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenEventManager);
@@ -315,7 +315,7 @@ class XR final : public EventTargetWithInlineData,
   // when ending an XR session.
   class OverlayFullscreenExitObserver : public NativeEventListener {
    public:
-    OverlayFullscreenExitObserver(XR* xr);
+    OverlayFullscreenExitObserver(XRSystem* xr);
     ~OverlayFullscreenExitObserver() override;
 
     // NativeEventListener
@@ -326,7 +326,7 @@ class XR final : public EventTargetWithInlineData,
     void Trace(Visitor*) override;
 
    private:
-    Member<XR> xr_;
+    Member<XRSystem> xr_;
     Member<Element> element_;
     base::OnceClosure on_exited_;
     DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenExitObserver);
@@ -444,4 +444,4 @@ class XR final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SYSTEM_H_

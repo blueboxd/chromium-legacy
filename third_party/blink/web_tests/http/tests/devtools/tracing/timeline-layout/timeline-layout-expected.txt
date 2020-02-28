@@ -21,7 +21,7 @@ Layout Properties:
     startTime : <number>
     type : "Layout"
 }
-Text details for Layout: timeline-layout.js:39
+Text details for Layout: timeline-layout.js:40
 Layout Properties:
 {
     data : {
@@ -43,5 +43,5 @@ Layout Properties:
     startTime : <number>
     type : "Layout"
 }
-Text details for Layout: timeline-layout.js:39
+Text details for Layout: timeline-layout.js:40
 

@@ -1341,8 +1341,6 @@ jumbo_static_library("ui") {
       "webui/settings/appearance_handler.h",
       "webui/settings/browser_lifetime_handler.cc",
       "webui/settings/browser_lifetime_handler.h",
-      "webui/settings/change_password_handler.cc",
-      "webui/settings/change_password_handler.h",
       "webui/settings/custom_home_pages_table_model.cc",
       "webui/settings/custom_home_pages_table_model.h",
       "webui/settings/downloads_handler.cc",

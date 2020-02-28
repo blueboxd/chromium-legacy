@@ -28,10 +28,10 @@
 namespace {
 
 std::unique_ptr<views::View> CreateExtraView(views::ButtonListener* listener) {
-  auto help_button = CreateVectorImageButton(listener);
+  auto help_button = CreateVectorImageButtonWithNativeTheme(
+      listener, vector_icons::kHelpOutlineIcon);
   help_button->SetFocusForPlatform();
   help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  SetImageFromVectorIcon(help_button.get(), vector_icons::kHelpOutlineIcon);
   return help_button;
 }
 

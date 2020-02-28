@@ -11,4 +11,3 @@ rootWebArea
 ++++++++++tabList horizontal hierarchicalLevel=3 setSize=1
 ++++++++++++tab name='Tab 1, level 3' setSize=1 posInSet=1 selected=false
 ++++++tab name='Tab 3, level 1' setSize=3 posInSet=3 selected=false
-<-- End-of-file -->

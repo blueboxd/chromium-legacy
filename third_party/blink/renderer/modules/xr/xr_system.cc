@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 
 #include <utility>
 
@@ -55,8 +55,8 @@ const char kSessionNotSupported[] =
 const char kNoDevicesMessage[] = "No XR hardware found.";
 
 const char kImmersiveArModeNotValid[] =
-    "Failed to execute '%s' on 'XR': The provided value 'immersive-ar' is not "
-    "a valid enum value of type XRSessionMode.";
+    "Failed to execute '%s' on 'XRSystem': The provided value 'immersive-ar' "
+    "is not a valid enum value of type XRSessionMode.";
 
 constexpr device::mojom::XRSessionFeature kDefaultImmersiveVrFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
@@ -203,7 +203,7 @@ const char* CheckImmersiveSessionRequestAllowed(LocalFrame* frame,
 // Ensure that the inline session request is allowed, if not
 // return which security error occurred.
 // https://immersive-web.github.io/webxr/#inline-session-request-is-allowed
-const char* XR::CheckInlineSessionRequestAllowed(
+const char* XRSystem::CheckInlineSessionRequestAllowed(
     LocalFrame* frame,
     const PendingRequestSessionQuery& query) {
   // Without user activation, we must reject the session if *any* features
@@ -232,7 +232,7 @@ const char* XR::CheckInlineSessionRequestAllowed(
   return nullptr;
 }
 
-XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
+XRSystem::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
     ScriptPromiseResolver* resolver,
     device::mojom::blink::XRSessionMode session_mode,
     bool throw_on_unsupported)
@@ -240,12 +240,13 @@ XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
       mode_(session_mode),
       throw_on_unsupported_(throw_on_unsupported) {}
 
-void XR::PendingSupportsSessionQuery::Trace(Visitor* visitor) {
+void XRSystem::PendingSupportsSessionQuery::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
 }
 
-void XR::PendingSupportsSessionQuery::Resolve(bool supported,
-                                              ExceptionState* exception_state) {
+void XRSystem::PendingSupportsSessionQuery::Resolve(
+    bool supported,
+    ExceptionState* exception_state) {
   if (throw_on_unsupported_) {
     if (supported) {
       resolver_->Resolve();
@@ -259,7 +260,7 @@ void XR::PendingSupportsSessionQuery::Resolve(bool supported,
   }
 }
 
-void XR::PendingSupportsSessionQuery::RejectWithDOMException(
+void XRSystem::PendingSupportsSessionQuery::RejectWithDOMException(
     DOMExceptionCode exception_code,
     const String& message,
     ExceptionState* exception_state) {
@@ -277,7 +278,7 @@ void XR::PendingSupportsSessionQuery::RejectWithDOMException(
   }
 }
 
-void XR::PendingSupportsSessionQuery::RejectWithSecurityError(
+void XRSystem::PendingSupportsSessionQuery::RejectWithSecurityError(
     const String& sanitized_message,
     ExceptionState* exception_state) {
   if (exception_state) {
@@ -292,7 +293,7 @@ void XR::PendingSupportsSessionQuery::RejectWithSecurityError(
   }
 }
 
-void XR::PendingSupportsSessionQuery::RejectWithTypeError(
+void XRSystem::PendingSupportsSessionQuery::RejectWithTypeError(
     const String& message,
     ExceptionState* exception_state) {
   if (exception_state) {
@@ -307,12 +308,12 @@ void XR::PendingSupportsSessionQuery::RejectWithTypeError(
   }
 }
 
-device::mojom::blink::XRSessionMode XR::PendingSupportsSessionQuery::mode()
-    const {
+device::mojom::blink::XRSessionMode
+XRSystem::PendingSupportsSessionQuery::mode() const {
   return mode_;
 }
 
-XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
+XRSystem::PendingRequestSessionQuery::PendingRequestSessionQuery(
     int64_t ukm_source_id,
     ScriptPromiseResolver* resolver,
     device::mojom::blink::XRSessionMode session_mode,
@@ -326,7 +327,7 @@ XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
   ParseSensorRequirement();
 }
 
-void XR::PendingRequestSessionQuery::Resolve(
+void XRSystem::PendingRequestSessionQuery::Resolve(
     XRSession* session,
     mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
         metrics_recorder) {
@@ -335,7 +336,7 @@ void XR::PendingRequestSessionQuery::Resolve(
                              std::move(metrics_recorder));
 }
 
-void XR::PendingRequestSessionQuery::RejectWithDOMException(
+void XRSystem::PendingRequestSessionQuery::RejectWithDOMException(
     DOMExceptionCode exception_code,
     const String& message,
     ExceptionState* exception_state) {
@@ -352,7 +353,7 @@ void XR::PendingRequestSessionQuery::RejectWithDOMException(
   ReportRequestSessionResult(SessionRequestStatus::kOtherError);
 }
 
-void XR::PendingRequestSessionQuery::RejectWithSecurityError(
+void XRSystem::PendingRequestSessionQuery::RejectWithSecurityError(
     const String& sanitized_message,
     ExceptionState* exception_state) {
   if (exception_state) {
@@ -366,7 +367,7 @@ void XR::PendingRequestSessionQuery::RejectWithSecurityError(
   ReportRequestSessionResult(SessionRequestStatus::kOtherError);
 }
 
-void XR::PendingRequestSessionQuery::RejectWithTypeError(
+void XRSystem::PendingRequestSessionQuery::RejectWithTypeError(
     const String& message,
     ExceptionState* exception_state) {
   if (exception_state) {
@@ -381,7 +382,7 @@ void XR::PendingRequestSessionQuery::RejectWithTypeError(
 }
 
 device::mojom::XRSessionFeatureRequestStatus
-XR::PendingRequestSessionQuery::GetFeatureRequestStatus(
+XRSystem::PendingRequestSessionQuery::GetFeatureRequestStatus(
     device::mojom::XRSessionFeature feature,
     const XRSession* session) const {
   using device::mojom::XRSessionFeatureRequestStatus;
@@ -403,7 +404,7 @@ XR::PendingRequestSessionQuery::GetFeatureRequestStatus(
   return XRSessionFeatureRequestStatus::kNotRequested;
 }
 
-void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
+void XRSystem::PendingRequestSessionQuery::ReportRequestSessionResult(
     SessionRequestStatus status,
     XRSession* session,
     mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
@@ -456,34 +457,34 @@ void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
   }
 }
 
-device::mojom::blink::XRSessionMode XR::PendingRequestSessionQuery::mode()
+device::mojom::blink::XRSessionMode XRSystem::PendingRequestSessionQuery::mode()
     const {
   return mode_;
 }
 
-const XRSessionFeatureSet& XR::PendingRequestSessionQuery::RequiredFeatures()
-    const {
+const XRSessionFeatureSet&
+XRSystem::PendingRequestSessionQuery::RequiredFeatures() const {
   return required_features_.valid_features;
 }
 
-const XRSessionFeatureSet& XR::PendingRequestSessionQuery::OptionalFeatures()
-    const {
+const XRSessionFeatureSet&
+XRSystem::PendingRequestSessionQuery::OptionalFeatures() const {
   return optional_features_.valid_features;
 }
 
-bool XR::PendingRequestSessionQuery::InvalidRequiredFeatures() const {
+bool XRSystem::PendingRequestSessionQuery::InvalidRequiredFeatures() const {
   return required_features_.invalid_features;
 }
 
-bool XR::PendingRequestSessionQuery::InvalidOptionalFeatures() const {
+bool XRSystem::PendingRequestSessionQuery::InvalidOptionalFeatures() const {
   return optional_features_.invalid_features;
 }
 
-ScriptState* XR::PendingRequestSessionQuery::GetScriptState() const {
+ScriptState* XRSystem::PendingRequestSessionQuery::GetScriptState() const {
   return resolver_->GetScriptState();
 }
 
-void XR::PendingRequestSessionQuery::ParseSensorRequirement() {
+void XRSystem::PendingRequestSessionQuery::ParseSensorRequirement() {
   // All modes other than inline require sensors.
   if (mode_ != device::mojom::blink::XRSessionMode::kInline) {
     sensor_requirement_ = SensorRequirement::kRequired;
@@ -510,22 +511,23 @@ void XR::PendingRequestSessionQuery::ParseSensorRequirement() {
   sensor_requirement_ = kNone;
 }
 
-void XR::PendingRequestSessionQuery::Trace(Visitor* visitor) {
+void XRSystem::PendingRequestSessionQuery::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   visitor->Trace(dom_overlay_element_);
 }
 
-XR::OverlayFullscreenEventManager::OverlayFullscreenEventManager(
-    XR* xr,
-    XR::PendingRequestSessionQuery* query,
+XRSystem::OverlayFullscreenEventManager::OverlayFullscreenEventManager(
+    XRSystem* xr,
+    XRSystem::PendingRequestSessionQuery* query,
     device::mojom::blink::RequestSessionResultPtr result)
     : xr_(xr), query_(query), result_(std::move(result)) {
   DVLOG(2) << __func__;
 }
 
-XR::OverlayFullscreenEventManager::~OverlayFullscreenEventManager() = default;
+XRSystem::OverlayFullscreenEventManager::~OverlayFullscreenEventManager() =
+    default;
 
-void XR::OverlayFullscreenEventManager::Invoke(
+void XRSystem::OverlayFullscreenEventManager::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   DVLOG(2) << __func__ << ": event type=" << event->type();
@@ -554,7 +556,7 @@ void XR::OverlayFullscreenEventManager::Invoke(
   }
 }
 
-void XR::OverlayFullscreenEventManager::RequestFullscreen() {
+void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
   Element* element = query_->DOMOverlayElement();
   DCHECK(element);
 
@@ -593,20 +595,22 @@ void XR::OverlayFullscreenEventManager::RequestFullscreen() {
                                 Fullscreen::RequestType::kUnprefixed);
 }
 
-void XR::OverlayFullscreenEventManager::Trace(Visitor* visitor) {
+void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(query_);
   EventListener::Trace(visitor);
 }
 
-XR::OverlayFullscreenExitObserver::OverlayFullscreenExitObserver(XR* xr)
+XRSystem::OverlayFullscreenExitObserver::OverlayFullscreenExitObserver(
+    XRSystem* xr)
     : xr_(xr) {
   DVLOG(2) << __func__;
 }
 
-XR::OverlayFullscreenExitObserver::~OverlayFullscreenExitObserver() = default;
+XRSystem::OverlayFullscreenExitObserver::~OverlayFullscreenExitObserver() =
+    default;
 
-void XR::OverlayFullscreenExitObserver::Invoke(
+void XRSystem::OverlayFullscreenExitObserver::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   DVLOG(2) << __func__ << ": event type=" << event->type();
@@ -620,7 +624,7 @@ void XR::OverlayFullscreenExitObserver::Invoke(
   }
 }
 
-void XR::OverlayFullscreenExitObserver::ExitFullscreen(
+void XRSystem::OverlayFullscreenExitObserver::ExitFullscreen(
     Element* element,
     base::OnceClosure on_exited) {
   DVLOG(2) << __func__;
@@ -640,13 +644,13 @@ void XR::OverlayFullscreenExitObserver::ExitFullscreen(
   Fullscreen::FullyExitFullscreen(element_->GetDocument(), kUaOriginated);
 }
 
-void XR::OverlayFullscreenExitObserver::Trace(Visitor* visitor) {
+void XRSystem::OverlayFullscreenExitObserver::Trace(Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(element_);
   EventListener::Trace(visitor);
 }
 
-device::mojom::blink::XRSessionOptionsPtr XR::XRSessionOptionsFromQuery(
+device::mojom::blink::XRSessionOptionsPtr XRSystem::XRSessionOptionsFromQuery(
     const PendingRequestSessionQuery& query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
@@ -658,7 +662,7 @@ device::mojom::blink::XRSessionOptionsPtr XR::XRSessionOptionsFromQuery(
   return session_options;
 }
 
-XR::XR(LocalFrame& frame, int64_t ukm_source_id)
+XRSystem::XRSystem(LocalFrame& frame, int64_t ukm_source_id)
     : ExecutionContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
@@ -672,11 +676,12 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
   frame.GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(
           frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  service_.set_disconnect_handler(WTF::Bind(
-      &XR::Dispose, WrapWeakPersistent(this), DisposeType::kDisconnected));
+  service_.set_disconnect_handler(WTF::Bind(&XRSystem::Dispose,
+                                            WrapWeakPersistent(this),
+                                            DisposeType::kDisconnected));
 }
 
-void XR::FocusedFrameChanged() {
+void XRSystem::FocusedFrameChanged() {
   // Tell all sessions that focus changed.
   for (const auto& session : sessions_) {
     session->OnFocusChanged();
@@ -686,19 +691,19 @@ void XR::FocusedFrameChanged() {
     frame_provider_->OnFocusChanged();
 }
 
-bool XR::IsFrameFocused() {
+bool XRSystem::IsFrameFocused() {
   return FocusChangedObserver::IsFrameFocused(GetFrame());
 }
 
-ExecutionContext* XR::GetExecutionContext() const {
+ExecutionContext* XRSystem::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-const AtomicString& XR::InterfaceName() const {
+const AtomicString& XRSystem::InterfaceName() const {
   return event_target_names::kXR;
 }
 
-XRFrameProvider* XR::frameProvider() {
+XRFrameProvider* XRSystem::frameProvider() {
   if (!frame_provider_) {
     frame_provider_ = MakeGarbageCollected<XRFrameProvider>(this);
   }
@@ -708,16 +713,16 @@ XRFrameProvider* XR::frameProvider() {
 
 const mojo::AssociatedRemote<
     device::mojom::blink::XREnvironmentIntegrationProvider>&
-XR::xrEnvironmentProviderRemote() {
+XRSystem::xrEnvironmentProviderRemote() {
   return environment_provider_;
 }
 
-void XR::AddEnvironmentProviderErrorHandler(
+void XRSystem::AddEnvironmentProviderErrorHandler(
     EnvironmentProviderErrorCallback callback) {
   environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
-void XR::ExitPresent(base::OnceClosure on_exited) {
+void XRSystem::ExitPresent(base::OnceClosure on_exited) {
   DVLOG(1) << __func__;
 
   // If the document was potentially being shown in a DOM overlay via
@@ -770,7 +775,7 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
   }
 }
 
-void XR::SetFramesThrottled(const XRSession* session, bool throttled) {
+void XRSystem::SetFramesThrottled(const XRSession* session, bool throttled) {
   // The service only cares if the immersive session is throttling frames.
   if (session->immersive()) {
     // If we have an immersive session, we should have a service.
@@ -779,22 +784,23 @@ void XR::SetFramesThrottled(const XRSession* session, bool throttled) {
   }
 }
 
-ScriptPromise XR::supportsSession(ScriptState* script_state,
-                                  const String& mode,
-                                  ExceptionState& exception_state) {
+ScriptPromise XRSystem::supportsSession(ScriptState* script_state,
+                                        const String& mode,
+                                        ExceptionState& exception_state) {
   return InternalIsSessionSupported(script_state, mode, exception_state, true);
 }
 
-ScriptPromise XR::isSessionSupported(ScriptState* script_state,
-                                     const String& mode,
-                                     ExceptionState& exception_state) {
+ScriptPromise XRSystem::isSessionSupported(ScriptState* script_state,
+                                           const String& mode,
+                                           ExceptionState& exception_state) {
   return InternalIsSessionSupported(script_state, mode, exception_state, false);
 }
 
-ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
-                                             const String& mode,
-                                             ExceptionState& exception_state,
-                                             bool throw_on_unsupported) {
+ScriptPromise XRSystem::InternalIsSessionSupported(
+    ScriptState* script_state,
+    const String& mode,
+    ExceptionState& exception_state,
+    bool throw_on_unsupported) {
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (!doc) {
@@ -849,16 +855,16 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
   outstanding_support_queries_.insert(query);
   service_->SupportsSession(
       std::move(session_options),
-      WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
+      WTF::Bind(&XRSystem::OnSupportsSessionReturned, WrapPersistent(this),
                 WrapPersistent(query)));
 
   return promise;
 }
 
-void XR::RequestImmersiveSession(LocalFrame* frame,
-                                 Document* doc,
-                                 PendingRequestSessionQuery* query,
-                                 ExceptionState* exception_state) {
+void XRSystem::RequestImmersiveSession(LocalFrame* frame,
+                                       Document* doc,
+                                       PendingRequestSessionQuery* query,
+                                       ExceptionState* exception_state) {
   DVLOG(2) << __func__;
   // Log an immersive session request if we haven't already
   if (!did_log_request_immersive_session_) {
@@ -914,16 +920,16 @@ void XR::RequestImmersiveSession(LocalFrame* frame,
   // browser side to send an event indicating success or failure.
   auto callback =
       query->DOMOverlayElement()
-          ? WTF::Bind(&XR::OnRequestSessionSetupForDomOverlay,
+          ? WTF::Bind(&XRSystem::OnRequestSessionSetupForDomOverlay,
                       WrapWeakPersistent(this), WrapPersistent(query))
-          : WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
-                      WrapPersistent(query));
+          : WTF::Bind(&XRSystem::OnRequestSessionReturned,
+                      WrapWeakPersistent(this), WrapPersistent(query));
   service_->RequestSession(std::move(session_options), std::move(callback));
 }
 
-void XR::RequestInlineSession(LocalFrame* frame,
-                              PendingRequestSessionQuery* query,
-                              ExceptionState* exception_state) {
+void XRSystem::RequestInlineSession(LocalFrame* frame,
+                                    PendingRequestSessionQuery* query,
+                                    ExceptionState* exception_state) {
   DVLOG(2) << __func__;
   // Make sure the inline session request was allowed
   auto* inline_session_request_error =
@@ -965,11 +971,11 @@ void XR::RequestInlineSession(LocalFrame* frame,
   auto session_options = XRSessionOptionsFromQuery(*query);
   service_->RequestSession(
       std::move(session_options),
-      WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
+      WTF::Bind(&XRSystem::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(query)));
 }
 
-XR::RequestedXRSessionFeatureSet XR::ParseRequestedFeatures(
+XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
     Document* doc,
     const HeapVector<ScriptValue>& features,
     const device::mojom::blink::XRSessionMode& session_mode,
@@ -1021,10 +1027,10 @@ XR::RequestedXRSessionFeatureSet XR::ParseRequestedFeatures(
   return result;
 }
 
-ScriptPromise XR::requestSession(ScriptState* script_state,
-                                 const String& mode,
-                                 XRSessionInit* session_init,
-                                 ExceptionState& exception_state) {
+ScriptPromise XRSystem::requestSession(ScriptState* script_state,
+                                       const String& mode,
+                                       XRSessionInit* session_init,
+                                       ExceptionState& exception_state) {
   DVLOG(2) << __func__;
   // TODO(https://crbug.com/968622): Make sure we don't forget to call
   // metrics-related methods when the promise gets resolved/rejected.
@@ -1126,7 +1132,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 // This will be called when the XR hardware or capabilities have potentially
 // changed. For example, if a new physical device was connected to the system,
 // it might be able to support immersive sessions, where it couldn't before.
-void XR::OnDeviceChanged() {
+void XRSystem::OnDeviceChanged() {
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (doc &&
@@ -1135,8 +1141,8 @@ void XR::OnDeviceChanged() {
   }
 }
 
-void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
-                                   bool supports_session) {
+void XRSystem::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
+                                         bool supports_session) {
   // The session query has returned and we're about to resolve or reject the
   // promise, so remove it from our outstanding list.
   DCHECK(outstanding_support_queries_.Contains(query));
@@ -1144,7 +1150,7 @@ void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
   query->Resolve(supports_session);
 }
 
-void XR::OnRequestSessionSetupForDomOverlay(
+void XRSystem::OnRequestSessionSetupForDomOverlay(
     PendingRequestSessionQuery* query,
     device::mojom::blink::RequestSessionResultPtr result) {
   DCHECK(query->DOMOverlayElement());
@@ -1161,7 +1167,7 @@ void XR::OnRequestSessionSetupForDomOverlay(
   }
 }
 
-void XR::OnRequestSessionReturned(
+void XRSystem::OnRequestSessionReturned(
     PendingRequestSessionQuery* query,
     device::mojom::blink::RequestSessionResultPtr result) {
   // The session query has returned and we're about to resolve or reject the
@@ -1237,8 +1243,9 @@ void XR::OnRequestSessionReturned(
               environment_provider_.BindNewEndpointAndPassReceiver(
                   GetExecutionContext()->GetTaskRunner(
                       TaskType::kMiscPlatformAPI)));
-      environment_provider_.set_disconnect_handler(WTF::Bind(
-          &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
+      environment_provider_.set_disconnect_handler(
+          WTF::Bind(&XRSystem::OnEnvironmentProviderDisconnect,
+                    WrapWeakPersistent(this)));
 
       session->OnEnvironmentProviderCreated();
 
@@ -1279,7 +1286,7 @@ void XR::OnRequestSessionReturned(
   query->Resolve(session, std::move(metrics_recorder));
 }
 
-void XR::ReportImmersiveSupported(bool supported) {
+void XRSystem::ReportImmersiveSupported(bool supported) {
   Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
   if (doc && !did_log_supports_immersive_ && supported) {
     ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
@@ -1289,8 +1296,9 @@ void XR::ReportImmersiveSupported(bool supported) {
   }
 }
 
-void XR::AddedEventListener(const AtomicString& event_type,
-                            RegisteredEventListener& registered_listener) {
+void XRSystem::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
 
@@ -1308,12 +1316,12 @@ void XR::AddedEventListener(const AtomicString& event_type,
   }
 }
 
-void XR::ContextDestroyed() {
+void XRSystem::ContextDestroyed() {
   Dispose(DisposeType::kContextDestroyed);
 }
 
 // A session is always created and returned.
-XRSession* XR::CreateSession(
+XRSession* XRSystem::CreateSession(
     device::mojom::blink::XRSessionMode mode,
     XRSession::EnvironmentBlendMode blend_mode,
     mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
@@ -1331,7 +1339,7 @@ XRSession* XR::CreateSession(
   return session;
 }
 
-XRSession* XR::CreateSensorlessInlineSession() {
+XRSession* XRSystem::CreateSensorlessInlineSession() {
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   return CreateSession(device::mojom::blink::XRSessionMode::kInline, blend_mode,
@@ -1342,7 +1350,7 @@ XRSession* XR::CreateSensorlessInlineSession() {
                        true /* sensorless_session */);
 }
 
-void XR::Dispose(DisposeType dispose_type) {
+void XRSystem::Dispose(DisposeType dispose_type) {
   switch (dispose_type) {
     case DisposeType::kContextDestroyed:
       is_context_destroyed_ = true;
@@ -1380,7 +1388,7 @@ void XR::Dispose(DisposeType dispose_type) {
   DCHECK(outstanding_support_queries_.IsEmpty());
 }
 
-void XR::OnEnvironmentProviderDisconnect() {
+void XRSystem::OnEnvironmentProviderDisconnect() {
   for (auto& callback : environment_provider_error_callbacks_) {
     std::move(callback).Run();
   }
@@ -1389,7 +1397,7 @@ void XR::OnEnvironmentProviderDisconnect() {
   environment_provider_.reset();
 }
 
-void XR::Trace(Visitor* visitor) {
+void XRSystem::Trace(Visitor* visitor) {
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
   visitor->Trace(outstanding_support_queries_);

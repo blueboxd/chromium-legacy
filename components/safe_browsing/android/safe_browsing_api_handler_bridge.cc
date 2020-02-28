@@ -106,11 +106,6 @@ static PendingCallbacksMap* GetPendingCallbacksMapOnIOThread() {
 
 }  // namespace
 
-// Java->Native call, to check whether the feature to use local blacklists is
-// enabled.
-jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(JNIEnv* env) {
-  return base::FeatureList::IsEnabled(kUseLocalBlacklistsV2);
-}
 
 // Respond to the URL reputation request by looking up the callback information
 // stored in |pending_callbacks|.

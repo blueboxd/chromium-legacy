@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 
+import androidx.browser.trusted.sharing.ShareData;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -18,6 +20,7 @@ import org.chromium.net.MimeTypeFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Computes data for Post Share Target.
@@ -142,7 +145,7 @@ public class WebApkShareTargetUtil {
 
     protected static void addFilesToMultipartPostData(PostData postData,
             String fallbackNameForPlainTextFile, String[] shareTargetParamsFileNames,
-            String[][] shareTargetParamsFileAccepts, ArrayList<Uri> shareFiles) {
+            String[][] shareTargetParamsFileAccepts, List<Uri> shareFiles) {
         if (shareFiles == null) {
             return;
         }
@@ -195,7 +198,7 @@ public class WebApkShareTargetUtil {
     }
 
     protected static PostData computePostData(
-            WebApkInfo.ShareTarget shareTarget, WebApkInfo.ShareData shareData) {
+            WebApkInfo.ShareTarget shareTarget, ShareData shareData) {
         if (shareTarget == null || !shareTarget.isShareMethodPost() || shareData == null) {
             return null;
         }
@@ -203,8 +206,8 @@ public class WebApkShareTargetUtil {
         PostData postData = new PostData(shareTarget.isShareEncTypeMultipart());
 
         if (!TextUtils.isEmpty(shareTarget.getParamTitle())
-                && !TextUtils.isEmpty(shareData.subject)) {
-            postData.addPlainText(shareTarget.getParamTitle(), shareData.subject);
+                && !TextUtils.isEmpty(shareData.title)) {
+            postData.addPlainText(shareTarget.getParamTitle(), shareData.title);
         }
 
         if (!TextUtils.isEmpty(shareTarget.getParamText()) && !TextUtils.isEmpty(shareData.text)) {
@@ -230,7 +233,7 @@ public class WebApkShareTargetUtil {
         // web page expects a single value (not an array) in the "param text" field.
         addFilesToMultipartPostData(postData,
                 enableAddingFileAsFakePlainText ? shareTarget.getParamText() : null,
-                shareTarget.getFileNames(), shareTarget.getFileAccepts(), shareData.files);
+                shareTarget.getFileNames(), shareTarget.getFileAccepts(), shareData.uris);
 
         return postData;
     }

@@ -16,10 +16,11 @@
 namespace media {
 
 TextureSelector::TextureSelector(VideoPixelFormat pixfmt,
+                                 DXGI_FORMAT output_dxgifmt,
                                  bool supports_swap_chain)
     : pixel_format_(pixfmt),
-      supports_swap_chain_(supports_swap_chain) {
-}
+      output_dxgifmt_(output_dxgifmt),
+      supports_swap_chain_(supports_swap_chain) {}
 
 bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
                       const gpu::GpuDriverBugWorkarounds& workarounds) {
@@ -55,12 +56,11 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
       break;
     case DXGI_FORMAT_P010:
       MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder producing FP16";
-      // Note: this combination isn't actually supported, since we don't support
-      // pbuffer textures right now.
       output_pixel_format = PIXEL_FORMAT_ARGB;
       output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-      // B8G8R8A8 is also an okay choice, if we don't have fp16 support.
-      needs_texture_copy = true;
+      // DXGI_FORMAT_B8G8R8A8_UNORM is also an okay choice, if we don't want to
+      // use fp16.
+      // TODO(liberato): Pick this better.
       break;
     default:
       // TODO(tmathmeyer) support other profiles in the future.
@@ -68,6 +68,10 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
           << "D3D11VideoDecoder does not support " << decoder_output_format;
       return nullptr;
   }
+
+  // If we're trying to produce an output texture that's different from what
+  // the decoder is providing, then we need to copy it.
+  needs_texture_copy = (decoder_output_format != output_dxgi_format);
 
   // Force texture copy on if requested for debugging.
   if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
@@ -79,10 +83,9 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
         output_pixel_format, decoder_output_format, output_dxgi_format,
         supports_nv12_decode_swap_chain);  // TODO(tmathmeyer) false always?
   } else {
-    // We don't support anything except NV12 for binding right now.  With
-    // pbuffer textures, we could support rgb8 and / or fp16.
-    DCHECK_EQ(output_pixel_format, PIXEL_FORMAT_NV12);
+    MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is binding textures";
     return std::make_unique<TextureSelector>(output_pixel_format,
+                                             output_dxgi_format,
                                              supports_nv12_decode_swap_chain);
   }
 }
@@ -93,7 +96,7 @@ std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
     ComD3D11DeviceContext device_context,
     gfx::Size size) {
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
-  return std::make_unique<DefaultTexture2DWrapper>(size);
+  return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat());
 }
 
 std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
@@ -125,7 +128,7 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     return nullptr;
 
   return std::make_unique<CopyingTexture2DWrapper>(
-      size, std::make_unique<DefaultTexture2DWrapper>(size),
+      size, std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat()),
       std::make_unique<VideoProcessorProxy>(video_device, device_context),
       out_texture);
 }

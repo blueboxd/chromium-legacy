@@ -260,6 +260,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
   def __init__(self,
                app_path,
                host_app_path,
+               iossim_path,
                version,
                platform,
                out_dir,
@@ -274,6 +275,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     Args:
       app_path: (str) A path to egtests_app.
       host_app_path: (str) A path to the host app for EG2.
+      iossim_path: Path to the compiled iossim binary to use.
+                   Not used, but is required by the base class.
       version: (str) iOS version to run simulator on.
       platform: (str) Name of device.
       out_dir: (str) A directory to emit test data into.
@@ -294,6 +297,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """
     super(SimulatorParallelTestRunner, self).__init__(
         app_path,
+        iossim_path,
         platform,
         version,
         out_dir,

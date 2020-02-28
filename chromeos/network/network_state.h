@@ -60,6 +60,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
                        const base::Value& value) override;
   bool InitialPropertiesReceived(const base::Value& properties) override;
   void GetStateProperties(base::Value* dictionary) const override;
+  bool IsActive() const override;
 
   // Called when the IPConfig properties may have changed. |properties| is
   // expected to be of type DICTIONARY.
@@ -179,9 +180,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   bool IsConnectedState() const;
   bool IsConnectingState() const;
   bool IsConnectingOrConnected() const;
-
-  // Similar to IsConnectingOrConnected but also checks activation state.
-  bool IsActive() const;
 
   // Returns true if |connection_state_| is online.
   bool IsOnline() const;

@@ -7,10 +7,13 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/captive_portal/core/buildflags.h"
@@ -28,6 +31,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/window_container_type.mojom.h"
@@ -41,6 +45,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/feature_list_creator.h"
@@ -142,6 +147,26 @@ void HandleSSLErrorWrapper(
       captive_portal_service,
       std::make_unique<weblayer::WebLayerSecurityBlockingPageFactory>());
 }
+
+#if defined(OS_ANDROID)
+// Returns true if |scheme| identifies one that is handled/known by WebLayer.
+bool IsHandledScheme(base::StringPiece scheme) {
+  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+  static const base::NoDestructor<base::flat_set<base::StringPiece>>
+      kKnownSchemes(base::flat_set<base::StringPiece>({
+        content::kChromeDevToolsScheme, content::kChromeUIScheme,
+            content::kChromeUIUntrustedScheme, url::kAboutScheme,
+            url::kBlobScheme, url::kDataScheme, url::kFileScheme,
+            url::kFileSystemScheme, url::kHttpScheme, url::kHttpsScheme,
+            url::kJavaScriptScheme,
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+            url::kWsScheme, url::kWssScheme,
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+            url::kContentScheme,
+      }));
+  return kKnownSchemes->contains(scheme);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -551,6 +576,9 @@ bool ContentBrowserClientImpl::ShouldOverrideUrlLoading(
   content::WebContents* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents == nullptr)
+    return true;
+
+  if (gurl.is_valid() && IsHandledScheme(gurl.scheme()))
     return true;
 
   JNIEnv* env = base::android::AttachCurrentThread();

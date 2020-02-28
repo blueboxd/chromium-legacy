@@ -8979,14 +8979,6 @@ interface XPathResult
     method constructor
     method iterateNext
     method snapshotItem
-interface XR : EventTarget
-    attribute @@toStringTag
-    getter ondevicechange
-    method constructor
-    method isSessionSupported
-    method requestSession
-    method supportsSession
-    setter ondevicechange
 interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter boundsGeometry
@@ -9111,6 +9103,14 @@ interface XRSessionEvent : Event
 interface XRSpace : EventTarget
     attribute @@toStringTag
     method constructor
+interface XRSystem : EventTarget
+    attribute @@toStringTag
+    getter ondevicechange
+    method constructor
+    method isSessionSupported
+    method requestSession
+    method supportsSession
+    setter ondevicechange
 interface XRTransientInputHitTestResult
     attribute @@toStringTag
     getter inputSource

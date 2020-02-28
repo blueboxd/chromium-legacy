@@ -6,7 +6,7 @@ B
 C
 layer at (0,0) size 39x18
   LayoutNGBlockFlow (positioned) {DIV} at (8,50) size 39x18
-    LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
+    LayoutFlexibleBox {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
     LayoutText {#text} at (0,0) size 0x0
 layer at (8,0) size 8x18
   LayoutBlockFlow {DIV} at (8,0) size 8x18

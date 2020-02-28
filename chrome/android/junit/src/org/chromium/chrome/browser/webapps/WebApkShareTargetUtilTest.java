@@ -508,13 +508,6 @@ public class WebApkShareTargetUtilTest {
 
     private WebApkShareTargetUtil.PostData computePostData(
             WebApkInfo.ShareTarget shareTarget, ShareData shareData) {
-        WebApkInfo.ShareData webApkShareData = new WebApkInfo.ShareData();
-        webApkShareData.subject = shareData.title;
-        webApkShareData.text = shareData.text;
-        if (shareData.uris != null) {
-            webApkShareData.files = new ArrayList(shareData.uris);
-        }
-
-        return WebApkShareTargetUtil.computePostData(shareTarget, webApkShareData);
+        return WebApkShareTargetUtil.computePostData(shareTarget, shareData);
     }
 }

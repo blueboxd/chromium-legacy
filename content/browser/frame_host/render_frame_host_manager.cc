@@ -243,6 +243,24 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
   return true;
 }
 
+bool IsSiteInstanceCompatibleWithErrorIsolation(SiteInstance* site_instance,
+                                                bool is_main_frame,
+                                                bool is_failure) {
+  // With no error isolation all SiteInstances are compatible with any
+  // |is_failure|.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(is_main_frame))
+    return true;
+
+  // When error page isolation is enabled, don't reuse |site_instance| if it's
+  // an error page SiteInstance, but the navigation is not a failure.
+  // Similarly, don't reuse |site_instance| if it's not an error page
+  // SiteInstance but the navigation will fail and actually need an error page
+  // SiteInstance.
+  bool is_site_instance_for_failures =
+      site_instance->GetSiteURL() == GURL(kUnreachableWebDataURL);
+  return is_site_instance_for_failures == is_failure;
+}
+
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
@@ -1541,18 +1559,11 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // If the entry has an instance already we should usually use it, unless it is
   // no longer suitable.
   if (dest_instance) {
-    // When error page isolation is enabled, don't reuse |dest_instance| if it's
-    // an error page SiteInstance, but the navigation will no longer fail.
-    // Similarly, don't reuse |dest_instance| if it's not an error page
-    // SiteInstance but the navigation will fail and actually need an error page
-    // SiteInstance.
     // Note: The later call to IsSuitableForURL does not have context about
-    // error page navigaions, so we cannot rely on it to return correct value
+    // error page navigations, so we cannot rely on it to return correct value
     // when error pages are involved.
-    if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-            frame_tree_node_->IsMainFrame()) ||
-        ((dest_instance->GetSiteURL() == GURL(kUnreachableWebDataURL)) ==
-         is_failure)) {
+    if (IsSiteInstanceCompatibleWithErrorIsolation(
+            dest_instance, frame_tree_node_->IsMainFrame(), is_failure)) {
       // TODO(nasko,creis): The check whether data: or about: URLs are allowed
       // to commit in the current process should be in IsSuitableForURL.
       // However, making this change has further implications and needs more
@@ -1712,16 +1723,23 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // about:blank pages because the content is then controlled and/or scriptable
   // by the source SiteInstance.
   //
-  // One exception to this is when these URLs are
-  // reached via a server redirect.  Normally, redirects to data: or about:
-  // URLs are disallowed as net::ERR_UNSAFE_REDIRECT, but extensions can still
-  // redirect arbitary requests to those URLs using webRequest or
-  // declarativeWebRequest API (for an example, see
-  // ExtensionWebRequestApiTest.WebRequestDeclarative1).  For these cases, the
-  // content isn't controlled by the source SiteInstance, so we don't use the
-  // |source_instance| if there was a server redirect.
-  if (source_instance && IsDataOrAbout(dest_url) && !was_server_redirect)
+  // One exception to this is when these URLs are reached via a server redirect.
+  // Normally, redirects to data: or about: URLs are disallowed as
+  // net::ERR_UNSAFE_REDIRECT, but extensions can still redirect arbitrary
+  // requests to those URLs using webRequest or declarativeWebRequest API (for
+  // an example, see NavigationInitiatedByCrossSiteSubframeRedirectedTo... test
+  // cases in the ChromeNavigationBrowserTest test suite.  For such data: URL
+  // redirects, the content is controlled by the extension (rather than by the
+  // |source_instance|), so we don't use the |source_instance| for data: URLs if
+  // there was a server redirect.
+  bool can_use_source_instance_for_dest_url =
+      IsDataOrAbout(dest_url) &&
+      (!was_server_redirect || !dest_url.SchemeIs(url::kDataScheme));
+  if (can_use_source_instance_for_dest_url && source_instance &&
+      IsSiteInstanceCompatibleWithErrorIsolation(
+          source_instance, frame_tree_node_->IsMainFrame(), is_failure)) {
     return SiteInstanceDescriptor(source_instance);
+  }
 
   // Use the current SiteInstance for same site navigations.
   if (IsCurrentlySameSite(render_frame_host_.get(), dest_url))

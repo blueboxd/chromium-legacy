@@ -18,7 +18,9 @@
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
+#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
@@ -935,6 +937,29 @@ TEST_P(HardwareDisplayPlaneManagerTest,
   EXPECT_TRUE(fake_drm_->InitializeStateWithResult(
       crtc_properties_, connector_properties_, plane_properties_,
       property_names_, use_atomic_));
+}
+
+// Verifies that formats with 2 bits of alpha decay to opaques for AddFB2().
+TEST_P(HardwareDisplayPlaneManagerTest, ForceOpaqueFormatsForAddFramebuffer) {
+  InitializeDrmState(/*crtc_count=*/3, /*planes_per_crtc=*/1);
+
+  struct {
+    uint32_t input_fourcc;  // FourCC presented to AddFramebuffer.
+    uint32_t used_fourcc;   // FourCC expected to be used in AddFramebuffer.
+  } kFourCCFormats[] = {
+      {DRM_FORMAT_ABGR2101010, DRM_FORMAT_XBGR2101010},
+      // TODO(mcasas): use AR30 when the CLs in crrev.com/c/2068722 have landed.
+      {DRM_FORMAT_XRGB2101010, DRM_FORMAT_XRGB2101010},
+  };
+
+  for (const auto& format_pair : kFourCCFormats) {
+    scoped_refptr<ui::DrmFramebuffer> drm_fb =
+        CreateBufferWithFormat(kDefaultBufferSize, format_pair.input_fourcc);
+
+    EXPECT_EQ(drm_fb->framebuffer_pixel_format(), format_pair.used_fourcc);
+    EXPECT_EQ(drm_fb->opaque_framebuffer_pixel_format(),
+              format_pair.used_fourcc);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -171,6 +171,8 @@ class MEDIA_GPU_EXPORT CodecImage
   ~CodecImage() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CodecImageTest, RenderAfterUnusedDoesntCrash);
+
   // The lifecycle phases of an image.
   // The only possible transitions are from left to right. Both
   // kInFrontBuffer and kInvalidated are terminal.

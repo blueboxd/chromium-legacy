@@ -686,25 +686,26 @@ void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
   const bool is_selected =
       node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 
-  bool multiselect = false;
-  auto* selection_container = node->PlatformGetSelectionContainer();
-  if (selection_container &&
-      selection_container->HasState(ax::mojom::State::kMultiselectable))
-    multiselect = true;
-
-  if (multiselect) {
+  // Nodes that have selection container may support multiselect, for such nodes
+  // we add them to |selection_events_|, which FinalizeAccessibilityEvents
+  // handles selection item events firing.
+  // For nodes that do not have selection container, only single select is
+  // supported, selection item events firing are handled here.
+  if (auto* selection_container = node->PlatformGetSelectionContainer()) {
     if (is_selected) {
-      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, node);
-      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-        selection_events_[selection_container].added.push_back(node);
+      selection_events_[selection_container].added.push_back(node);
+    } else {
+      selection_events_[selection_container].removed.push_back(node);
+    }
+  } else {
+    if (is_selected) {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
+      FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
     } else {
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
-      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-        selection_events_[selection_container].removed.push_back(node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
     }
-  } else if (is_selected) {
-    FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
-    FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
   }
 }
 
@@ -730,17 +731,20 @@ void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
 void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
   BrowserAccessibilityManager::FinalizeAccessibilityEvents();
 
+  // Finalize aria properties events.
   for (auto&& event_node : aria_properties_events_) {
     FireUiaPropertyChangedEvent(UIA_AriaPropertiesPropertyId, event_node);
   }
   aria_properties_events_.clear();
 
+  // Finalize text selection events.
   for (auto&& sel_event_node : text_selection_changed_events_) {
     FireUiaTextContainerEvent(UIA_Text_TextSelectionChangedEventId,
                               sel_event_node);
   }
   text_selection_changed_events_.clear();
 
+  // Finalize selection item events.
   for (auto&& selected : selection_events_) {
     auto* container = selected.first;
     auto&& changes = selected.second;
@@ -760,6 +764,7 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
 
     if (selected_count == 1) {
       // Fire 'ElementSelected' on the only selected child
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, first_selected_child);
       FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
                                 first_selected_child);
     } else {
@@ -771,10 +776,18 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
         FireUiaAccessibilityEvent(UIA_Selection_InvalidatedEventId, container);
       } else {
         for (auto* item : changes.added) {
-          FireUiaAccessibilityEvent(
-              UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+          if (container->HasState(ax::mojom::State::kMultiselectable)) {
+            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, item);
+            FireUiaAccessibilityEvent(
+                UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+          } else {
+            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, item);
+            FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
+                                      item);
+          }
         }
         for (auto* item : changes.removed) {
+          FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, item);
           FireUiaAccessibilityEvent(
               UIA_SelectionItem_ElementRemovedFromSelectionEventId, item);
         }

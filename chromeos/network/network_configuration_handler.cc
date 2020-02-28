@@ -247,7 +247,7 @@ void NetworkConfigurationHandler::GetShillProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG(USER) << "GetShillProperties: " << service_path;
+  NET_LOG(DEBUG) << "GetShillProperties: " << service_path;
 
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);

@@ -254,64 +254,67 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       FindRegistrationCallback callback,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
       std::unique_ptr<ResourceList> resources,
-      ServiceWorkerDatabase::Status database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status);
   void DidFindRegistrationForScope(
       FindRegistrationCallback callback,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
       std::unique_ptr<ResourceList> resources,
-      ServiceWorkerDatabase::Status database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status);
   void DidFindRegistrationForId(
       int64_t registration_id,
       FindRegistrationCallback callback,
       std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
       std::unique_ptr<ResourceList> resources,
-      ServiceWorkerDatabase::Status database_status);
+      storage::mojom::ServiceWorkerDatabaseStatus database_status);
 
   void DidGetRegistrationsForOrigin(
       GetRegistrationsCallback callback,
       const GURL& origin_filter,
-      ServiceWorkerDatabase::Status database_status,
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
       std::unique_ptr<RegistrationList> registration_data_list,
       std::unique_ptr<std::vector<ResourceList>> resources_list);
   void DidGetAllRegistrations(
       GetRegistrationsInfosCallback callback,
-      ServiceWorkerDatabase::Status database_status,
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
       std::unique_ptr<RegistrationList> registration_data_list);
 
   void DidStoreRegistration(
       const ServiceWorkerDatabase::RegistrationData& data,
       StatusCallback callback,
-      ServiceWorkerDatabase::Status database_status,
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
   void DidDeleteRegistration(
       int64_t registration_id,
       StatusCallback callback,
-      ServiceWorkerDatabase::Status database_status,
+      storage::mojom::ServiceWorkerDatabaseStatus database_status,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
 
-  void DidUpdateToActiveState(const GURL& origin,
-                              StatusCallback callback,
-                              ServiceWorkerDatabase::Status status);
-  void DidWriteUncommittedResourceIds(ServiceWorkerDatabase::Status status);
-  void DidDoomUncommittedResourceIds(const std::set<int64_t>& resource_ids,
-                                     ServiceWorkerDatabase::Status status);
+  void DidUpdateToActiveState(
+      const GURL& origin,
+      StatusCallback callback,
+      storage::mojom::ServiceWorkerDatabaseStatus status);
+  void DidWriteUncommittedResourceIds(
+      storage::mojom::ServiceWorkerDatabaseStatus status);
+  void DidDoomUncommittedResourceIds(
+      const std::set<int64_t>& resource_ids,
+      storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserData(GetUserDataCallback callback,
                       const std::vector<std::string>& data,
-                      ServiceWorkerDatabase::Status status);
+                      storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserKeysAndData(
       GetUserKeysAndDataCallback callback,
       const base::flat_map<std::string, std::string>& data_map,
-      ServiceWorkerDatabase::Status status);
+      storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidStoreUserData(StatusCallback callback,
-                        ServiceWorkerDatabase::Status status);
+                        storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidClearUserData(StatusCallback callback,
-                        ServiceWorkerDatabase::Status status);
+                        storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserDataForAllRegistrations(
       GetUserDataForAllRegistrationsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
-      ServiceWorkerDatabase::Status status);
+      storage::mojom::ServiceWorkerDatabaseStatus status);
 
   void DidGetNewRegistrationId(
       blink::mojom::ServiceWorkerRegistrationOptions options,

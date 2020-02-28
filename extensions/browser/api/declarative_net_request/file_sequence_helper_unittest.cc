@@ -272,13 +272,15 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     rule.priority.reset();
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
-    TestAddDynamicRules(
-        source.Clone(), std::move(api_rules),
-        ReadJSONRulesResult::Status::kSuccess,
-        UpdateDynamicRulesStatus::kErrorInvalidRules,
-        ParseInfo(ParseResult::ERROR_EMPTY_RULE_PRIORITY, kMinValidID + 1)
-            .GetErrorDescription(),
-        false /* expected_did_load_successfully */);
+
+    ParseInfo info;
+    int rule_id = kMinValidID + 1;
+    info.SetError(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
+    TestAddDynamicRules(source.Clone(), std::move(api_rules),
+                        ReadJSONRulesResult::Status::kSuccess,
+                        UpdateDynamicRulesStatus::kErrorInvalidRules,
+                        info.error(),
+                        false /* expected_did_load_successfully */);
   }
 
   // Write invalid JSON to the JSON rules file. The update should still succeed.

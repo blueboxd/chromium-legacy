@@ -13,7 +13,38 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 
+namespace {
+
+class ColorTrackingVectorImageButton : public views::ImageButton {
+ public:
+  ColorTrackingVectorImageButton(views::ButtonListener* listener,
+                                 const gfx::VectorIcon& icon)
+      : ImageButton(listener), icon_(icon) {}
+
+  // views::ImageButton:
+  void OnThemeChanged() override {
+    ImageButton::OnThemeChanged();
+    const SkColor color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    views::SetImageFromVectorIconWithColor(this, icon_, color);
+  }
+
+ private:
+  const gfx::VectorIcon& icon_;
+};
+
+}  // namespace
+
 namespace views {
+
+std::unique_ptr<ImageButton> CreateVectorImageButtonWithNativeTheme(
+    ButtonListener* listener,
+    const gfx::VectorIcon& icon) {
+  auto button =
+      std::make_unique<ColorTrackingVectorImageButton>(listener, icon);
+  ConfigureVectorImageButton(button.get());
+  return button;
+}
 
 std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
   auto button = std::make_unique<ImageButton>(listener);
@@ -35,13 +66,6 @@ void ConfigureVectorImageButton(ImageButton* button) {
   button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
   button->SetBorder(CreateEmptyBorder(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
-}
-
-void SetImageFromVectorIcon(ImageButton* button, const gfx::VectorIcon& icon) {
-  SetImageFromVectorIconWithColor(
-      button, icon,
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor));
 }
 
 void SetImageFromVectorIcon(ImageButton* button,

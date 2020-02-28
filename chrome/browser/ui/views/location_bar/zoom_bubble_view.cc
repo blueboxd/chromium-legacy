@@ -75,21 +75,18 @@ class ZoomButtonHighlightPathGenerator : public views::HighlightPathGenerator {
   }
 };
 
-class ZoomButton : public views::ImageButton {
- public:
-  explicit ZoomButton(views::ButtonListener* listener,
-                      const gfx::VectorIcon& icon,
-                      int tooltip_id)
-      : ImageButton(listener) {
-    views::ConfigureVectorImageButton(this);
-    views::SetImageFromVectorIcon(this, icon);
-    SetFocusForPlatform();
-    SetTooltipText(l10n_util::GetStringUTF16(tooltip_id));
-    views::HighlightPathGenerator::Install(
-        this, std::make_unique<ZoomButtonHighlightPathGenerator>());
-  }
-  ~ZoomButton() override = default;
-};
+std::unique_ptr<views::ImageButton> CreateZoomButton(
+    views::ButtonListener* listener,
+    const gfx::VectorIcon& icon,
+    int tooltip_id) {
+  auto zoom_button =
+      views::CreateVectorImageButtonWithNativeTheme(listener, icon);
+  zoom_button->SetFocusForPlatform();
+  zoom_button->SetTooltipText(l10n_util::GetStringUTF16(tooltip_id));
+  views::HighlightPathGenerator::Install(
+      zoom_button.get(), std::make_unique<ZoomButtonHighlightPathGenerator>());
+  return zoom_button;
+}
 
 class ZoomValue : public views::Label {
  public:
@@ -408,13 +405,13 @@ void ZoomBubbleView::Init() {
 
   // Add Zoom Out ("-") button.
   zoom_out_button_ = AddChildView(
-      std::make_unique<ZoomButton>(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2));
+      CreateZoomButton(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2));
   zoom_out_button_->SetProperty(views::kMarginsKey,
                                 gfx::Insets(vector_button_margin));
 
   // Add Zoom In ("+") button.
-  zoom_in_button_ = AddChildView(
-      std::make_unique<ZoomButton>(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2));
+  zoom_in_button_ =
+      AddChildView(CreateZoomButton(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2));
   zoom_in_button_->SetProperty(views::kMarginsKey,
                                gfx::Insets(vector_button_margin));
 

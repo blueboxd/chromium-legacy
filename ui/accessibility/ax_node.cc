@@ -734,6 +734,19 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
   }
 }
 
+base::Optional<int> AXNode::GetHierarchicalLevel() const {
+  int hierarchical_level =
+      GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+
+  // According to the WAI_ARIA spec, a defined hierarchical level value is
+  // greater than 0.
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-level
+  if (hierarchical_level > 0)
+    return base::Optional<int>(hierarchical_level);
+
+  return base::nullopt;
+}
+
 bool AXNode::IsOrderedSetItem() const {
   return ui::IsItemLike(data().role);
 }
@@ -806,7 +819,8 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
     case ax::mojom::Role::kList:
       return item_role == ax::mojom::Role::kListItem;
     case ax::mojom::Role::kGroup:
-      return item_role == ax::mojom::Role::kListItem ||
+      return item_role == ax::mojom::Role::kComment ||
+             item_role == ax::mojom::Role::kListItem ||
              item_role == ax::mojom::Role::kMenuItem ||
              item_role == ax::mojom::Role::kMenuItemRadio ||
              item_role == ax::mojom::Role::kTreeItem;

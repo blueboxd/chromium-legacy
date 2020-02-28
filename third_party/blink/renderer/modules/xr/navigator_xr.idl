@@ -7,5 +7,5 @@
     ImplementedAs=NavigatorXR
 ] partial interface Navigator {
     // Latest API
-    [SecureContext, RuntimeEnabled=WebXR, MeasureAs=NavigatorXR, SameObject] readonly attribute XR xr;
+    [SecureContext, RuntimeEnabled=WebXR, MeasureAs=NavigatorXR, SameObject] readonly attribute XRSystem xr;
 };

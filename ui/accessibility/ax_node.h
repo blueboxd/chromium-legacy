@@ -264,6 +264,9 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
+  // Return the hierarchical level if supported.
+  base::Optional<int> GetHierarchicalLevel() const;
+
   // PosInSet and SetSize public methods.
   bool IsOrderedSetItem() const;
   bool IsOrderedSet() const;

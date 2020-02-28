@@ -1807,6 +1807,10 @@
       status: "test",
     },
     {
+      name: "WebCryptoCurve25519",
+      status: "experimental",
+    },
+    {
       name: "WebGL2ComputeContext",
       status: "experimental",
     },

@@ -11157,14 +11157,6 @@ interface XPathResult
     method constructor
     method iterateNext
     method snapshotItem
-interface XR : EventTarget
-    attribute @@toStringTag
-    getter ondevicechange
-    method constructor
-    method isSessionSupported
-    method requestSession
-    method supportsSession
-    setter ondevicechange
 interface XRAnchor
     attribute @@toStringTag
     getter anchorSpace
@@ -11366,6 +11358,14 @@ interface XRSphericalHarmonics
     getter coefficients
     getter orientation
     method constructor
+interface XRSystem : EventTarget
+    attribute @@toStringTag
+    getter ondevicechange
+    method constructor
+    method isSessionSupported
+    method requestSession
+    method supportsSession
+    setter ondevicechange
 interface XRTransientInputHitTestResult
     attribute @@toStringTag
     getter inputSource

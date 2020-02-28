@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
+#include "chrome/browser/chromeos/smb_client/smb_persisted_share_registry.h"
 #include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
@@ -132,6 +133,7 @@ class SmbService : public KeyedService,
 
   // Callback passed to MountInternal().
   void MountInternalDone(MountResponse callback,
+                         const SmbShareInfo& info,
                          bool should_open_file_manager_after_mount,
                          SmbMountResult result,
                          const base::FilePath& mount_path);
@@ -180,6 +182,7 @@ class SmbService : public KeyedService,
 
   void OnHostsDiscovered(
       const std::vector<ProvidedFileSystemInfo>& file_systems,
+      const std::vector<SmbShareInfo>& saved_smbfs_shares,
       const std::vector<SmbUrl>& preconfigured_shares);
 
   // Closure for OnHostDiscovered(). |reply| is passed down to
@@ -198,6 +201,9 @@ class SmbService : public KeyedService,
   void OnRemountResponse(const std::string& file_system_id,
                          smbprovider::ErrorType error,
                          int32_t mount_id);
+
+  // Mounts a saved (smbfs) SMB share with details |info|.
+  void MountSavedSmbfsShare(const SmbShareInfo& info);
 
   // Mounts a preconfigured (by policy) SMB share with path |share_url|. The
   // share is mounted with empty credentials.
@@ -310,6 +316,7 @@ class SmbService : public KeyedService,
   // Note, mount ID for smbfs is a randomly generated string. For smbprovider
   // shares, it is an integer.
   std::unordered_map<std::string, std::unique_ptr<SmbFsShare>> smbfs_shares_;
+  SmbPersistedShareRegistry registry_;
 
   std::unique_ptr<SmbKerberosCredentialsUpdater> smb_credentials_updater_;
 

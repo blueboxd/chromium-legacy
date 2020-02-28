@@ -2254,8 +2254,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
 
 // Verify that the in-app shelf should be shown when the app icon receives
 // the accessibility focus.
-// https://crbug.com/1020806 flaky.
-IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
+IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   chromeos::SpeechMonitor speech_monitor;
 
@@ -2267,13 +2266,12 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
     EXPECT_TRUE(speech_monitor.SkipChromeVoxEnabledMessage());
 
     // Disable earcons (https://crbug.com/396507).
-    const std::string script(
-        "cvox.ChromeVox.earcons.playEarcon = function() {};");
+    const std::string script("ChromeVox.earcons.playEarcon = function() {};");
     extensions::ExtensionHost* host =
         extensions::ProcessManager::Get(browser()->profile())
             ->GetBackgroundHostForExtension(
                 extension_misc::kChromeVoxExtensionId);
-    CHECK(content::ExecuteScript(host->host_contents(), script));
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(), script));
   }
 
   ash::RootWindowController* controller =
@@ -2291,12 +2289,12 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
   ASSERT_EQ("Tool bar", speech_monitor.GetNextUtterance());
   ASSERT_EQ(", window", speech_monitor.GetNextUtterance());
 
-  // Verifies that before moving the focus to the app icon, hotseat is hidden.
-  ASSERT_EQ(ash::HotseatState::kHidden,
+  // Hotseat is expected to be extended if spoken feedback is enabled.
+  ASSERT_EQ(ash::HotseatState::kExtended,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 
   // Press the search + right. Expects that the browser icon receives the
-  // accessibility focus and the hotseat is shown in kExtended state.
+  // accessibility focus and the hotseat remains in kExtended state.
   event_generator.PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
   const int browser_index =
       ash::ShelfModel::Get()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
@@ -2307,9 +2305,11 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, DISABLED_EnableChromeVox) {
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 
   // Click on the home button. Expects that the hotseat is shown in
-  // kShownHomeLauncher state
+  // kShownHomeLauncher state. Note that the home button should be shown in
+  // tablet mode with spoken feedback enabled.
   event_generator.MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
   event_generator.ClickLeftButton();
+
   EXPECT_EQ(ash::HotseatState::kShownHomeLauncher,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }

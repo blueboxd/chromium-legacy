@@ -140,7 +140,7 @@ class CC_EXPORT LayerTreeSettings {
 
   // Determines whether mouse interactions on composited scrollbars are handled
   // on the compositor thread.
-  bool compositor_threaded_scrollbar_scrolling = false;
+  bool compositor_threaded_scrollbar_scrolling = true;
 
   // Determines whether animated scrolling is supported. If true, and the
   // incoming gesture scroll is of a type that would normally be animated (e.g.

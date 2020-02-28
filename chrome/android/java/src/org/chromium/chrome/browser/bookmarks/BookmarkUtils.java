@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
@@ -70,8 +69,8 @@ public class BookmarkUtils {
             return bookmarkId;
         }
 
-        BookmarkId bookmarkId = addBookmarkInternal(
-                activity, bookmarkModel, tab.getTitle(), ((TabImpl) tab).getOriginalUrl());
+        BookmarkId bookmarkId =
+                addBookmarkInternal(activity, bookmarkModel, tab.getTitle(), tab.getOriginalUrl());
 
         Snackbar snackbar = null;
         if (bookmarkId == null) {

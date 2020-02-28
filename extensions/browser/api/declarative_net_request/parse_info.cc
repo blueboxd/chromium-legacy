@@ -5,7 +5,6 @@
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/error_utils.h"
@@ -26,164 +25,174 @@ std::string JoinString(base::span<const char* const> parts) {
 
 }  // namespace
 
-ParseInfo::ParseInfo(ParseResult result) : result_(result) {}
-ParseInfo::ParseInfo(ParseResult result, int rule_id)
-    : result_(result), rule_id_(rule_id) {}
-ParseInfo::ParseInfo(const ParseInfo&) = default;
-ParseInfo& ParseInfo::operator=(const ParseInfo&) = default;
+ParseInfo::ParseInfo() = default;
+ParseInfo::ParseInfo(ParseInfo&&) = default;
+ParseInfo& ParseInfo::operator=(ParseInfo&&) = default;
+ParseInfo::~ParseInfo() = default;
 
-std::string ParseInfo::GetErrorDescription() const {
-  // Every error except ERROR_PERSISTING_RULESET requires |rule_id_|.
-  DCHECK_EQ(!rule_id_.has_value(),
-            result_ == ParseResult::ERROR_PERSISTING_RULESET);
+void ParseInfo::AddRegexLimitExceededRule(int rule_id) {
+  DCHECK(!has_error_);
+  regex_limit_exceeded_rules_.push_back(rule_id);
+}
 
-  std::string error;
-  switch (result_) {
+void ParseInfo::SetError(ParseResult error_reason, const int* rule_id) {
+  has_error_ = true;
+  error_reason_ = error_reason;
+
+  // Every error except ERROR_PERSISTING_RULESET requires |rule_id|.
+  DCHECK_EQ(!rule_id, error_reason == ParseResult::ERROR_PERSISTING_RULESET);
+
+  switch (error_reason) {
+    case ParseResult::NONE:
+      NOTREACHED();
+      break;
     case ParseResult::SUCCESS:
       NOTREACHED();
       break;
     case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
-      error = ErrorUtils::FormatErrorMessage(kErrorResourceTypeDuplicated,
-                                             base::NumberToString(*rule_id_));
+      error_ = ErrorUtils::FormatErrorMessage(kErrorResourceTypeDuplicated,
+                                              base::NumberToString(*rule_id));
       break;
     case ParseResult::ERROR_INVALID_RULE_ID:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRuleKey, base::NumberToString(*rule_id_), kIDKey,
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidRuleKey, base::NumberToString(*rule_id), kIDKey,
           base::NumberToString(kMinValidID));
       break;
     case ParseResult::ERROR_EMPTY_RULE_PRIORITY:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRulePriority,
-                                             base::NumberToString(*rule_id_));
+      error_ = ErrorUtils::FormatErrorMessage(kErrorEmptyRulePriority,
+                                              base::NumberToString(*rule_id));
       break;
     case ParseResult::ERROR_INVALID_RULE_PRIORITY:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRuleKey, base::NumberToString(*rule_id_), kPriorityKey,
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidRuleKey, base::NumberToString(*rule_id), kPriorityKey,
           base::NumberToString(kMinValidPriority));
       break;
     case ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES:
-      error = ErrorUtils::FormatErrorMessage(kErrorNoApplicableResourceTypes,
+      error_ = ErrorUtils::FormatErrorMessage(kErrorNoApplicableResourceTypes,
 
-                                             base::NumberToString(*rule_id_));
+                                              base::NumberToString(*rule_id));
       break;
     case ParseResult::ERROR_EMPTY_DOMAINS_LIST:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, base::NumberToString(*rule_id_), kDomainsKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyList, base::NumberToString(*rule_id), kDomainsKey);
       break;
     case ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, base::NumberToString(*rule_id_), kResourceTypesKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyList, base::NumberToString(*rule_id), kResourceTypesKey);
       break;
     case ParseResult::ERROR_EMPTY_URL_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyKey, base::NumberToString(*rule_id_), kUrlFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyKey, base::NumberToString(*rule_id), kUrlFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
-                                             base::NumberToString(*rule_id_),
-                                             kRedirectUrlPath);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
+                                              base::NumberToString(*rule_id),
+                                              kRedirectUrlPath);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
-      error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,
-                                             base::NumberToString(*rule_id_));
+      error_ = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,
+                                              base::NumberToString(*rule_id));
       break;
     case ParseResult::ERROR_PERSISTING_RULESET:
-      error = kErrorPersisting;
+      error_ = kErrorPersisting;
       break;
     case ParseResult::ERROR_NON_ASCII_URL_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, base::NumberToString(*rule_id_), kUrlFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, base::NumberToString(*rule_id), kUrlFilterKey);
       break;
     case ParseResult::ERROR_NON_ASCII_DOMAIN:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, base::NumberToString(*rule_id_), kDomainsKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, base::NumberToString(*rule_id), kDomainsKey);
       break;
     case ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, base::NumberToString(*rule_id_), kExcludedDomainsKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, base::NumberToString(*rule_id), kExcludedDomainsKey);
       break;
     case ParseResult::ERROR_INVALID_URL_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidKey, base::NumberToString(*rule_id_), kUrlFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id), kUrlFilterKey);
       break;
     case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
-                                             base::NumberToString(*rule_id_),
-                                             kRemoveHeadersListKey);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
+                                              base::NumberToString(*rule_id),
+                                              kRemoveHeadersListKey);
       break;
     case ParseResult::ERROR_INVALID_REDIRECT:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidKey, base::NumberToString(*rule_id_), kRedirectPath);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id), kRedirectPath);
       break;
     case ParseResult::ERROR_INVALID_EXTENSION_PATH:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
-                                             base::NumberToString(*rule_id_),
-                                             kExtensionPathPath);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id), kExtensionPathPath);
       break;
     case ParseResult::ERROR_INVALID_TRANSFORM_SCHEME:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidTransformScheme, base::NumberToString(*rule_id_),
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidTransformScheme, base::NumberToString(*rule_id),
           kTransformSchemePath,
           JoinString(base::span<const char* const>(kAllowedTransformSchemes)));
       break;
     case ParseResult::ERROR_INVALID_TRANSFORM_PORT:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
-                                             base::NumberToString(*rule_id_),
-                                             kTransformPortPath);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id), kTransformPortPath);
       break;
     case ParseResult::ERROR_INVALID_TRANSFORM_QUERY:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
-                                             base::NumberToString(*rule_id_),
-                                             kTransformQueryPath);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                              base::NumberToString(*rule_id),
+                                              kTransformQueryPath);
       break;
     case ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
-                                             base::NumberToString(*rule_id_),
-                                             kTransformFragmentPath);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                              base::NumberToString(*rule_id),
+                                              kTransformFragmentPath);
       break;
     case ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorQueryAndTransformBothSpecified, base::NumberToString(*rule_id_),
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorQueryAndTransformBothSpecified, base::NumberToString(*rule_id),
           kTransformQueryPath, kTransformQueryTransformPath);
       break;
     case ParseResult::ERROR_JAVASCRIPT_REDIRECT:
-      error = ErrorUtils::FormatErrorMessage(kErrorJavascriptRedirect,
-                                             base::NumberToString(*rule_id_),
-                                             kRedirectUrlPath);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorJavascriptRedirect,
+                                              base::NumberToString(*rule_id),
+                                              kRedirectUrlPath);
       break;
     case ParseResult::ERROR_EMPTY_REGEX_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyKey, base::NumberToString(*rule_id_), kRegexFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorEmptyKey, base::NumberToString(*rule_id), kRegexFilterKey);
       break;
     case ParseResult::ERROR_NON_ASCII_REGEX_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, base::NumberToString(*rule_id_), kRegexFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorNonAscii, base::NumberToString(*rule_id), kRegexFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REGEX_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidKey, base::NumberToString(*rule_id_), kRegexFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidKey, base::NumberToString(*rule_id), kRegexFilterKey);
+      break;
+    case ParseResult::ERROR_REGEX_TOO_LARGE:
+      // These rules are ignored while indexing and so SetError won't be called
+      // for them. See AddRegexLimitExceededRule().
+      NOTREACHED();
       break;
     case ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED:
-      error = ErrorUtils::FormatErrorMessage(kErrorMultipleFilters,
-                                             base::NumberToString(*rule_id_),
-                                             kUrlFilterKey, kRegexFilterKey);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorMultipleFilters,
+                                              base::NumberToString(*rule_id),
+                                              kUrlFilterKey, kRegexFilterKey);
       break;
     case ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorRegexSubstitutionWithoutFilter, base::NumberToString(*rule_id_),
+      error_ = ErrorUtils::FormatErrorMessage(
+          kErrorRegexSubstitutionWithoutFilter, base::NumberToString(*rule_id),
           kRegexSubstitutionKey, kRegexFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
-                                             base::NumberToString(*rule_id_),
-                                             kRegexSubstitutionPath);
+      error_ = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                              base::NumberToString(*rule_id),
+                                              kRegexSubstitutionPath);
       break;
     case ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE:
-      error = ErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           kErrorInvalidAllowAllRequestsResourceType,
-          base::NumberToString(*rule_id_));
+          base::NumberToString(*rule_id));
       break;
   }
-  return error;
 }
 
 }  // namespace declarative_net_request

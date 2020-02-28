@@ -7,8 +7,10 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/views_export.h"
 
@@ -36,10 +38,8 @@ class VIEWS_EXPORT LabelButtonLabel : public Label {
   void OnEnabledChanged();
   void SetColorForEnableState();
 
-  SkColor requested_disabled_color_ = SK_ColorRED;
-  SkColor requested_enabled_color_ = SK_ColorRED;
-  bool disabled_color_set_ = false;
-  bool enabled_color_set_ = false;
+  base::Optional<SkColor> requested_disabled_color_;
+  base::Optional<SkColor> requested_enabled_color_;
   PropertyChangedSubscription enabled_changed_subscription_ =
       AddEnabledChangedCallback(
           base::BindRepeating(&LabelButtonLabel::OnEnabledChanged,

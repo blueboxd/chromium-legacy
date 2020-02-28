@@ -48,7 +48,7 @@ ConfigurationPolicyProvider* BrowserPolicyConnectorIOS::GetPlatformProvider() {
 void BrowserPolicyConnectorIOS::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  InitInternal(local_state, nullptr);
+  InitInternal(local_state, /*device_management_service=*/nullptr);
 }
 
 bool BrowserPolicyConnectorIOS::IsEnterpriseManaged() const {

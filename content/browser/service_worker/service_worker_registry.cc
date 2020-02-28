@@ -22,13 +22,13 @@ namespace content {
 namespace {
 
 blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
-    ServiceWorkerDatabase::Status status) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
   switch (status) {
-    case ServiceWorkerDatabase::Status::kOk:
+    case storage::mojom::ServiceWorkerDatabaseStatus::kOk:
       return blink::ServiceWorkerStatusCode::kOk;
-    case ServiceWorkerDatabase::Status::kErrorNotFound:
+    case storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound:
       return blink::ServiceWorkerStatusCode::kErrorNotFound;
-    case ServiceWorkerDatabase::Status::kErrorDisabled:
+    case storage::mojom::ServiceWorkerDatabaseStatus::kErrorDisabled:
       return blink::ServiceWorkerStatusCode::kErrorAbort;
       NOTREACHED();
     default:
@@ -40,7 +40,7 @@ ServiceWorkerStorage::DatabaseStatusCallback CreateDatabaseStatusCallback(
     ServiceWorkerRegistry::StatusCallback callback) {
   return base::BindOnce(
       [](ServiceWorkerRegistry::StatusCallback callback,
-         ServiceWorkerDatabase::Status database_status) {
+         storage::mojom::ServiceWorkerDatabaseStatus database_status) {
         blink::ServiceWorkerStatusCode status =
             DatabaseStatusToStatusCode(database_status);
         std::move(callback).Run(status);
@@ -753,9 +753,10 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     FindRegistrationCallback callback,
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
-    ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::Status::kOk &&
-      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      database_status !=
+          storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -801,9 +802,10 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
     FindRegistrationCallback callback,
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
-    ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::Status::kOk &&
-      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      database_status !=
+          storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -825,9 +827,10 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
     FindRegistrationCallback callback,
     std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
     std::unique_ptr<ResourceList> resources,
-    ServiceWorkerDatabase::Status database_status) {
-  if (database_status != ServiceWorkerDatabase::Status::kOk &&
-      database_status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      database_status !=
+          storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
 
@@ -858,7 +861,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
 void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     GetRegistrationsCallback callback,
     const GURL& origin_filter,
-    ServiceWorkerDatabase::Status database_status,
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::unique_ptr<RegistrationList> registration_data_list,
     std::unique_ptr<std::vector<ResourceList>> resources_list) {
   DCHECK(origin_filter.is_valid());
@@ -901,7 +904,7 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
 
 void ServiceWorkerRegistry::DidGetAllRegistrations(
     GetRegistrationsInfosCallback callback,
-    ServiceWorkerDatabase::Status database_status,
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::unique_ptr<RegistrationList> registration_data_list) {
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
@@ -993,7 +996,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
 void ServiceWorkerRegistry::DidStoreRegistration(
     const ServiceWorkerDatabase::RegistrationData& data,
     StatusCallback callback,
-    ServiceWorkerDatabase::Status database_status,
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
   blink::ServiceWorkerStatusCode status =
@@ -1036,7 +1039,7 @@ void ServiceWorkerRegistry::DidStoreRegistration(
 void ServiceWorkerRegistry::DidDeleteRegistration(
     int64_t registration_id,
     StatusCallback callback,
-    ServiceWorkerDatabase::Status database_status,
+    storage::mojom::ServiceWorkerDatabaseStatus database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
   blink::ServiceWorkerStatusCode status =
@@ -1062,24 +1065,24 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
 void ServiceWorkerRegistry::DidUpdateToActiveState(
     const GURL& origin,
     StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk &&
-      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
 
 void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk)
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
 }
 
 void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
     const std::set<int64_t>& resource_ids,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
     ScheduleDeleteAndStartOver();
     return;
   }
@@ -1089,9 +1092,9 @@ void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
 void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
     const std::vector<std::string>& data,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk &&
-      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(data, DatabaseStatusToStatusCode(status));
@@ -1100,9 +1103,9 @@ void ServiceWorkerRegistry::DidGetUserData(
 void ServiceWorkerRegistry::DidGetUserKeysAndData(
     GetUserKeysAndDataCallback callback,
     const base::flat_map<std::string, std::string>& data_map,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk &&
-      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(data_map, DatabaseStatusToStatusCode(status));
@@ -1110,12 +1113,12 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
 
 void ServiceWorkerRegistry::DidStoreUserData(
     StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
   // |status| can be NOT_FOUND when the associated registration did not exist in
   // the database. In the case, we don't have to schedule the corruption
   // recovery.
-  if (status != ServiceWorkerDatabase::Status::kOk &&
-      status != ServiceWorkerDatabase::Status::kErrorNotFound) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
+      status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
@@ -1123,8 +1126,8 @@ void ServiceWorkerRegistry::DidStoreUserData(
 
 void ServiceWorkerRegistry::DidClearUserData(
     StatusCallback callback,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk)
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
@@ -1132,8 +1135,8 @@ void ServiceWorkerRegistry::DidClearUserData(
 void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     GetUserDataForAllRegistrationsCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
-    ServiceWorkerDatabase::Status status) {
-  if (status != ServiceWorkerDatabase::Status::kOk)
+    storage::mojom::ServiceWorkerDatabaseStatus status) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(user_data, DatabaseStatusToStatusCode(status));
 }

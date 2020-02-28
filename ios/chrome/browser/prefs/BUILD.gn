@@ -48,6 +48,8 @@ source_set("browser_prefs") {
     "//components/omnibox/browser",
     "//components/password_manager/core/browser",
     "//components/payments/core",
+    "//components/policy/core/browser",
+    "//components/policy/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/proxy_config",

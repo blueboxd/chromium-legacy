@@ -72,8 +72,12 @@
   --drag-image-padding: 25px;
   padding: var(--drag-image-padding);
   transform: translate(
-      calc(-1 * var(--drag-image-padding)),
+      calc(var(--drag-image-x-direction, -1) * var(--drag-image-padding)),
       calc(-1 * var(--drag-image-padding)));
+}
+
+:host-context([dir='rtl']):host([getting-drag-image_]) #dragImage {
+  --drag-image-x-direction: 1;
 }
 
 :host([getting-drag-image_]) #tabGroup {

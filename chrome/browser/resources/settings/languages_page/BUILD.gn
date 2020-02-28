@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
 
 js_library("edit_dictionary_page") {
   deps = [
+    ":languages_browser_proxy",
     "..:global_scroll_target_behavior",
     "..:route",
     "../prefs",

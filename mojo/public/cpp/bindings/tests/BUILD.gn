@@ -158,7 +158,12 @@ mojom("test_mojom") {
     "struct_headers_unittest.test-mojom",
   ]
 
-  public_deps = [ "//mojo/public/mojom/base" ]
+  public_deps = [
+    # NOTE: This is a kind of test in itself, to verify that mojom() rules can
+    # operate on generated mojom files and produce compilable outputs.
+    ":generated_test_mojom",
+    "//mojo/public/mojom/base",
+  ]
 
   support_lazy_serialization = true
 }
@@ -191,4 +196,16 @@ source_set("mojo_public_bindings_test_utils") {
   ]
 
   deps = [ "//mojo/public/c/system" ]
+}
+
+action("generate_test_mojom") {
+  script = "generate_test_mojom.py"
+  outputs = [ "$target_gen_dir/generated.test-mojom" ]
+  args = [ rebase_path("$target_gen_dir/generated.test-mojom") ]
+}
+
+mojom("generated_test_mojom") {
+  testonly = true
+  sources = [ "$target_gen_dir/generated.test-mojom" ]
+  parser_deps = [ ":generate_test_mojom" ]
 }

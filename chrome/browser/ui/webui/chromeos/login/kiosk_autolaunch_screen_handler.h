@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 

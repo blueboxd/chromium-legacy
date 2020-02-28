@@ -79,7 +79,7 @@ std::unique_ptr<views::Widget> CreateWidget() {
   params.name = "BackGestureContextualNudge";
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_AlwaysOnTopContainer);
+      kShellWindowId_OverlayContainer);
   widget->Init(std::move(params));
 
   // TODO(crbug.com/1009005): Get the bounds of the display that should show the

@@ -80,6 +80,10 @@ class RecurrenceRanker {
   // after a target or condition is deleted.
   void SaveToDisk();
 
+  // Returns true if the model has been loaded from disk and is ready to use.
+  // Train and rank do nothing when this is false.
+  bool is_initialized() { return load_from_disk_completed_; }
+
   // Return a pointer to the underlying storage of the FrecencyStore for targets
   // or conditions. These should not be used under normal use or ranking.
   // However, they are useful for custom cleanup logic.

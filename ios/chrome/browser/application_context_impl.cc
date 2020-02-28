@@ -132,6 +132,20 @@ void ApplicationContextImpl::PreCreateThreads() {
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // BrowserPolicyConnectorIOS is created very early because local_state()
+  // needs policy to be initialized with the managed preference values.
+  // However, policy fetches from the network and loading of disk caches
+  // requires that threads are running; this Init() call lets the connector
+  // resume its initialization now that the loops are spinning and the
+  // system request context is available for the fetchers.
+  BrowserPolicyConnectorIOS* browser_policy_connector =
+      GetBrowserPolicyConnector();
+  if (browser_policy_connector) {
+    DCHECK(IsEnterprisePolicyEnabled());
+    browser_policy_connector->Init(GetLocalState(),
+                                   GetSharedURLLoaderFactory());
+  }
 }
 
 void ApplicationContextImpl::StartTearDown() {

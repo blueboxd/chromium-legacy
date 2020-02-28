@@ -743,10 +743,15 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note
   // that ALLOW_OVERLAY is required for encrypted video path.
+  //
   // Since all of our picture buffers allow overlay, we just use the finch
   // feature.  However, we may choose to set ALLOW_OVERLAY to false even if
   // the finch flag is enabled.  We may not choose to set ALLOW_OVERLAY if the
   // flag is off, however.
+  //
+  // Also note that, since we end up binding textures with GLImageDXGI, it's
+  // probably okay just to allow overlay always, and let the swap chain
+  // presenter decide if it wants to.
   const bool allow_overlay =
       base::FeatureList::IsEnabled(kD3D11VideoDecoderAllowOverlay);
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,

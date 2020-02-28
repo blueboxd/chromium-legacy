@@ -18,9 +18,12 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/containers/flat_set.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -54,6 +57,13 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // Relevance threshold to use when Crostini has not yet been enabled. This value
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
+
+// Parameters for FuzzyTokenizedStringMatch.
+constexpr bool kUsePrefixOnly = false;
+constexpr bool kUseWeightedRatio = true;
+constexpr bool kUseEditDistance = false;
+constexpr double kRelevanceThreshold = 0.3;
+constexpr double kPartialMatchPenaltyRate = 0.9;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -96,6 +106,19 @@ float ReRange(const float score, const float min, const float max) {
     return min;
 
   return min + score * (max - min);
+}
+
+// Checks if current locale is non Latin locales.
+bool IsNonLatinLocale(const std::string& locale) {
+  // A set of of non Latin locales. This set is used to select appropriate
+  // algorithm for app search.
+  static const base::NoDestructor<base::flat_set<std::string>>
+      non_latin_locales({"am", "ar", "be", "bg",    "bn",    "el",   "fa",
+                         "gu", "hi", "hy", "iw",    "ja",    "ka",   "kk",
+                         "km", "kn", "ko", "ky",    "lo",    "mk",   "ml",
+                         "mn", "mr", "my", "pa",    "ru",    "sr",   "ta",
+                         "te", "th", "uk", "zh-CN", "zh-HK", "zh-TW"});
+  return base::Contains(*non_latin_locales, locale);
 }
 
 }  // namespace
@@ -147,7 +170,7 @@ class AppSearchProvider::App {
     return base::Time();
   }
 
-  bool MatchSearchableText(const TokenizedString& query) {
+  bool MatchSearchableText(const TokenizedString& query, bool use_exact_match) {
     if (searchable_text_.empty())
       return false;
     if (tokenized_indexed_searchable_text_.empty()) {
@@ -156,11 +179,23 @@ class AppSearchProvider::App {
             std::make_unique<TokenizedString>(curr_text));
       }
     }
-    TokenizedStringMatch match;
-    for (auto& curr_text : tokenized_indexed_searchable_text_) {
-      match.Calculate(query, *curr_text);
-      if (match.relevance() > relevance_threshold())
-        return true;
+    if (use_exact_match) {
+      TokenizedStringMatch match;
+      for (auto& curr_text : tokenized_indexed_searchable_text_) {
+        match.Calculate(query, *curr_text);
+        if (match.relevance() > relevance_threshold())
+          return true;
+      }
+    } else {
+      FuzzyTokenizedStringMatch match;
+      for (auto& curr_text : tokenized_indexed_searchable_text_) {
+        if (match.IsRelevant(query, *curr_text, kRelevanceThreshold,
+                             kUsePrefixOnly, kUseWeightedRatio,
+                             kUseEditDistance, kPartialMatchPenaltyRate) &&
+            match.relevance() >= relevance_threshold()) {
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -500,22 +535,27 @@ void AppSearchProvider::UpdateQueriedResults() {
   new_results.reserve(apps_size);
 
   const TokenizedString query_terms(query_);
+  const bool use_exact_match =
+      (!app_list_features::IsFuzzyAppSearchEnabled()) ||
+      (app_list_features::IsExactMatchForNonLatinLocaleEnabled() &&
+       IsNonLatinLocale(base::i18n::GetConfiguredLocale()));
+
   for (auto& app : apps_) {
     if (!app->searchable())
       continue;
 
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
-    if (!app_list_features::IsFuzzyAppSearchEnabled()) {
+    if (use_exact_match) {
       TokenizedStringMatch match;
       if (match.Calculate(query_terms, *indexed_name)) {
         // Exact matches should be shown even if the threshold isn't reached,
         // e.g. due to a localized name being particularly short.
         if (match.relevance() <= app->relevance_threshold() &&
             !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
-            !app->MatchSearchableText(query_terms)) {
+            !app->MatchSearchableText(query_terms, use_exact_match)) {
           continue;
         }
-      } else if (!app->MatchSearchableText(query_terms)) {
+      } else if (!app->MatchSearchableText(query_terms, use_exact_match)) {
         continue;
       }
       std::unique_ptr<AppResult> result =
@@ -524,28 +564,10 @@ void AppSearchProvider::UpdateQueriedResults() {
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
       FuzzyTokenizedStringMatch match;
-
-      // TODO(crbug.com/1018613): consolidate finch parameters.
-      const bool use_prefix_only = base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableFuzzyAppSearch, "use_prefix_only", false);
-      const bool use_weighted_ratio = base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableFuzzyAppSearch, "use_weighted_ratio", true);
-      const bool use_edit_distance = base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableFuzzyAppSearch, "use_edit_distance", false);
-
-      const double relevance_threshold =
-          base::GetFieldTrialParamByFeatureAsDouble(
-              app_list_features::kEnableFuzzyAppSearch, "relevance_threshold",
-              0.3);
-      const double partial_match_penalty_rate =
-          base::GetFieldTrialParamByFeatureAsDouble(
-              app_list_features::kEnableFuzzyAppSearch,
-              "partial_match_penalty_rate", 0.9);
-
-      if (match.IsRelevant(query_terms, *indexed_name, relevance_threshold,
-                           use_prefix_only, use_weighted_ratio,
-                           use_edit_distance, partial_match_penalty_rate) ||
-          app->MatchSearchableText(query_terms) ||
+      if (match.IsRelevant(query_terms, *indexed_name, kRelevanceThreshold,
+                           kUsePrefixOnly, kUseWeightedRatio, kUseEditDistance,
+                           kPartialMatchPenaltyRate) ||
+          app->MatchSearchableText(query_terms, use_exact_match) ||
           base::EqualsCaseInsensitiveASCII(query_, app->name())) {
         std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
             app->id(), list_controller_, false);

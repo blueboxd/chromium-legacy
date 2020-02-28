@@ -24,9 +24,8 @@ namespace {
 
 std::unique_ptr<views::ImageButton> CreateLearnMoreButton(
     views::ButtonListener* listener) {
-  auto learn_more_button = views::CreateVectorImageButton(listener);
-  views::SetImageFromVectorIcon(learn_more_button.get(),
-                                vector_icons::kHelpOutlineIcon);
+  auto learn_more_button = views::CreateVectorImageButtonWithNativeTheme(
+      listener, vector_icons::kHelpOutlineIcon);
   learn_more_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
   learn_more_button->SetFocusForPlatform();
@@ -120,18 +119,18 @@ bool EchoDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
-void EchoDialogView::ButtonPressed(views::Button* sender,
-                                   const ui::Event& event) {
-  DCHECK(sender == learn_more_button_);
-  listener_->OnMoreInfoLinkClicked();
-}
-
 gfx::Size EchoDialogView::CalculatePreferredSize() const {
   const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(
       default_width,
       GetLayoutManager()->GetPreferredHeightForWidth(this, default_width));
+}
+
+void EchoDialogView::ButtonPressed(views::Button* sender,
+                                   const ui::Event& event) {
+  DCHECK(sender == learn_more_button_);
+  listener_->OnMoreInfoLinkClicked();
 }
 
 void EchoDialogView::SetBorderAndLabel(std::unique_ptr<views::View> label,

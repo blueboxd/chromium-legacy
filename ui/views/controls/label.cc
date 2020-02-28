@@ -955,19 +955,7 @@ void Label::Init(const base::string16& text,
   full_text_->SetCursorEnabled(false);
   full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
-  elide_behavior_ = gfx::ELIDE_TAIL;
-  stored_selection_range_ = gfx::Range::InvalidRange();
-  enabled_color_set_ = background_color_set_ = false;
-  selection_text_color_set_ = selection_background_color_set_ = false;
-  subpixel_rendering_enabled_ = true;
-  auto_color_readability_enabled_ = true;
-  multi_line_ = false;
-  max_lines_ = 0;
   UpdateColorsFromTheme();
-  handles_tooltips_ = true;
-  collapse_when_hidden_ = false;
-  fixed_width_ = 0;
-  max_width_ = 0;
   SetText(text);
 
   // Only selectable labels will get requests to show the context menu, due to

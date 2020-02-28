@@ -29,7 +29,6 @@
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -82,6 +81,7 @@ class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContentsDelegate;
+class WebUI;
 struct CustomContextMenuContext;
 struct DropData;
 struct MHTMLGenerationParams;

@@ -26,6 +26,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) DeviceState : public ManagedState {
   // ManagedState overrides
   bool PropertyChanged(const std::string& key,
                        const base::Value& value) override;
+  bool IsActive() const override;
 
   void IPConfigPropertiesChanged(const std::string& ip_config_path,
                                  const base::Value& properties);

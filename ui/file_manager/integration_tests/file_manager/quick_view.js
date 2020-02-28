@@ -5,6 +5,23 @@
 
 (() => {
   /**
+   * The name of the UMA emitted to track how Quick View is opened.
+   * @const {string}
+   */
+  const QuickViewUmaWayToOpenHistogramName = 'FileBrowser.QuickView.WayToOpen';
+
+  /**
+   * The UMA's enumeration values (must be consistent with enums.xml,
+   * previously histograms.xml).
+   * @enum {number}
+   */
+  const QuickViewUmaWayToOpenHistogramValues = {
+    CONTEXT_MENU: 0,
+    SPACE_KEY: 1,
+    SELECTION_MENU: 2,
+  };
+
+  /**
    * Waits for Quick View dialog to be closed.
    *
    * @param {string} appId Files app windowId.
@@ -63,6 +80,41 @@
       return checkQuickViewElementsDisplayBlock(
           await remoteCall.callRemoteTestUtil(
               'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+  }
+
+  /**
+   * Opens the Quick View dialog by right clicking on the file |name| and
+   * using the "Get Info" command from the context menu.
+   *
+   * @param {string} appId Files app windowId.
+   * @param {string} name File name.
+   */
+  async function openQuickViewViaContextMenu(appId, name) {
+    // Right-click the file in the file-list.
+    const query = '#file-list [file-name="' + name + '"]';
+    await remoteCall.waitAndRightClick(appId, query);
+
+    // Wait because WebUI Menu ignores the following click if it happens in
+    // <200ms from the previous click.
+    await wait(300);
+
+    // Click the file-list context menu "Get info" command.
+    const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
+        ' [command="#get-info"]:not([hidden])';
+    await remoteCall.waitAndClickElement(appId, getInfoMenuItem);
+
+    // Check: the Quick View dialog should be shown.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const query = ['#quick-view', '#dialog[open]'];
+      const elements = await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [query, ['display']]);
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return true;
     });
   }
 
@@ -216,39 +268,14 @@
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
 
-    // Select hello.txt in the file list.
+    // Select the file in the file list.
     chrome.test.assertTrue(
         !!await remoteCall.callRemoteTestUtil(
             'selectFile', appId, [ENTRIES.hello.nameText]),
         'selectFile failed');
 
-    // Right-click the file in the file-list.
-    const query = '#file-list [file-name="hello.txt"]';
-    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-        'fakeMouseRightClick', appId, [query]));
-
-    // Wait because WebUI Menu ignores the following click if it happens in
-    // <200ms from the previous click.
-    await wait(300);
-
-    // Click the file-list context menu "Get info" command.
-    const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
-        ' [command="#get-info"]:not([hidden])';
-    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', appId, [getInfoMenuItem]));
-
-    // Check: the Quick View dialog should be shown.
-    const caller = getCaller();
-    await repeatUntil(async () => {
-      const query = ['#quick-view', '#dialog[open]'];
-      const elements = await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [query, ['display']]);
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return true;
-    });
+    // Check: clicking the context menu "Get Info" should open Quick View.
+    await openQuickViewViaContextMenu(appId, ENTRIES.hello.nameText);
   };
 
   /**
@@ -264,33 +291,8 @@
     const ctrlA = ['#file-list', 'a', true, false, false];
     await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
-    // Right-click the file in the file-list.
-    const query = '#file-list [file-name="hello.txt"]';
-    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-        'fakeMouseRightClick', appId, [query]));
-
-    // Wait because WebUI Menu ignores the following click if it happens in
-    // <200ms from the previous click.
-    await wait(300);
-
-    // Click the file-list context menu "Get info" command.
-    const getInfoMenuItem = '#file-context-menu:not([hidden]) ' +
-        ' [command="#get-info"]:not([hidden])';
-    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', appId, [getInfoMenuItem]));
-
-    // Check: the Quick View dialog should be shown.
-    const caller = getCaller();
-    await repeatUntil(async () => {
-      const query = ['#quick-view', '#dialog[open]'];
-      const elements = await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [query, ['display']]);
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return true;
-    });
+    // Check: clicking the context menu "Get Info" should open Quick View.
+    await openQuickViewViaContextMenu(appId, ENTRIES.hello.nameText);
   };
 
   /**
@@ -2451,5 +2453,267 @@
     // Check: the delete button should not be shown.
     const quickViewDeleteButton = ['#quick-view', '#delete-button[hidden]'];
     await remoteCall.waitForElement(appId, quickViewDeleteButton);
+  };
+
+  /**
+   * Tests that the correct WayToOpen UMA histogram is recorded when opening
+   * a single file via Quick View using "Get Info" from the context menu.
+   */
+  testcase.openQuickViewUmaViaContextMenu = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Record the UMA value's bucket count before we use the menu option.
+    const contextMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    // Open Quick View via the entry context menu.
+    await openQuickViewViaContextMenu(appId, ENTRIES.hello.nameText);
+
+    // Check: the context menu histogram should increment by 1.
+    const contextMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    chrome.test.assertEq(
+        contextMenuUMAValueAfterOpening, contextMenuUMAValueBeforeOpening + 1);
+    chrome.test.assertEq(
+        selectionMenuUMAValueAfterOpening, selectionMenuUMAValueBeforeOpening);
+  };
+
+  /**
+   * Tests that the correct WayToOpen UMA histogram is recorded when using
+   * Quick View in check-select mode using "Get Info" from the context
+   * menu.
+   */
+  testcase.openQuickViewUmaForCheckSelectViaContextMenu = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Record the UMA value's bucket count before we use the menu option.
+    const contextMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    // Ctrl+A to select all files in the file-list.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+    // Open Quick View using the context menu.
+    await openQuickViewViaContextMenu(appId, ENTRIES.hello.nameText);
+
+    // Check: the context menu histogram should increment by 1.
+    const contextMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    chrome.test.assertEq(
+        contextMenuUMAValueAfterOpening, contextMenuUMAValueBeforeOpening + 1);
+    chrome.test.assertEq(
+        selectionMenuUMAValueAfterOpening, selectionMenuUMAValueBeforeOpening);
+  };
+
+  /**
+   * Tests that the correct WayToOpen UMA histogram is recorded when using
+   * Quick View in check-select mode using "Get Info" from the Selection
+   * menu.
+   */
+  testcase.openQuickViewUmaViaSelectionMenu = async () => {
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Ctrl+A to select all files in the file-list.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+    // Wait until the selection menu is visible.
+    function checkElementsDisplayFlex(elements) {
+      chrome.test.assertTrue(Array.isArray(elements));
+      if (elements.length == 0 || elements[0].styles.display !== 'flex') {
+        return pending(caller, 'Waiting for Selection Menu to be visible.');
+      }
+    }
+
+    await repeatUntil(async () => {
+      const elements = ['#selection-menu-button'];
+      return checkElementsDisplayFlex(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+
+    // Record the UMA value's bucket count before we use the menu option.
+    const contextMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    // Click the Selection Menu button. Using fakeMouseClick causes
+    // the focus to switch from file-list such that crbug.com/1046997
+    // cannot be tested, use simulateUiClick() instead.
+    await remoteCall.simulateUiClick(
+        appId, '#selection-menu-button:not([hidden])');
+
+    // Wait because WebUI Menu ignores the following click if it happens in
+    // <200ms from the previous click.
+    await wait(300);
+
+    // Click the file-list context menu "Get info" command.
+    await remoteCall.simulateUiClick(
+        appId,
+        '#file-context-menu:not([hidden]) [command="#get-info"]:not([hidden])');
+
+    // Check: the Quick View dialog should be shown.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const query = ['#quick-view', '#dialog[open]'];
+      const elements = await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [query, ['display']]);
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return true;
+    });
+
+    // Check: the context menu histogram should increment by 1.
+    const contextMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    chrome.test.assertEq(
+        contextMenuUMAValueAfterOpening, contextMenuUMAValueBeforeOpening);
+    chrome.test.assertEq(
+        selectionMenuUMAValueAfterOpening,
+        selectionMenuUMAValueBeforeOpening + 1);
+  };
+
+  /**
+   * Tests that the correct WayToOpen UMA histogram is recorded when using
+   * Quick View in check-select mode using "Get Info" from the context
+   * menu opened via keyboard tabbing (not mouse).
+   */
+  testcase.openQuickViewUmaViaSelectionMenuKeyboard = async () => {
+    const caller = getCaller();
+
+    // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Ctrl+A to select all files in the file-list.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.fakeKeyDown(appId, ...ctrlA);
+
+    // Wait until the selection menu is visible.
+    function checkElementsDisplayFlex(elements) {
+      chrome.test.assertTrue(Array.isArray(elements));
+      if (elements.length == 0 || elements[0].styles.display !== 'flex') {
+        return pending(caller, 'Waiting for Selection Menu to be visible.');
+      }
+    }
+
+    await repeatUntil(async () => {
+      const elements = ['#selection-menu-button'];
+      return checkElementsDisplayFlex(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+
+    // Record the UMA value's bucket count before we use the menu option.
+    const contextMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueBeforeOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    // Tab to the Selection Menu button.
+    await repeatUntil(async () => {
+      const result = await sendTestMessage({name: 'dispatchTabKey'});
+      chrome.test.assertEq(
+          result, 'tabKeyDispatched', 'Tab key dispatch failure');
+
+      const element =
+          await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+
+      if (element && element.attributes['id'] === 'selection-menu-button') {
+        return true;
+      }
+      return pending(
+          caller, 'Waiting for selection-menu-button to become active');
+    });
+
+    // Key down to the "Get Info" command.
+    await repeatUntil(async () => {
+      const keyDown =
+          ['#selection-menu-button', 'ArrowDown', false, false, false];
+      chrome.test.assertTrue(
+          await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, keyDown));
+
+      const element =
+          await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+
+      if (element && element.attributes['command'] === '#get-info') {
+        return true;
+      }
+      return pending(caller, 'Waiting for get-info command to become active');
+    });
+
+    // Select the "Get Info" command using the Enter key.
+    const keyEnter = ['#selection-menu-button', 'Enter', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, keyEnter));
+
+    // Check: the Quick View dialog should be shown.
+    await repeatUntil(async () => {
+      const query = ['#quick-view', '#dialog[open]'];
+      const elements = await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [query, ['display']]);
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return true;
+    });
+
+    // Check: the context menu histogram should increment by 1.
+    const contextMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.CONTEXT_MENU);
+
+    const selectionMenuUMAValueAfterOpening = await getHistogramCount(
+        QuickViewUmaWayToOpenHistogramName,
+        QuickViewUmaWayToOpenHistogramValues.SELECTION_MENU);
+
+    chrome.test.assertEq(
+        contextMenuUMAValueAfterOpening, contextMenuUMAValueBeforeOpening);
+    chrome.test.assertEq(
+        selectionMenuUMAValueAfterOpening,
+        selectionMenuUMAValueBeforeOpening + 1);
   };
 })();

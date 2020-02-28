@@ -79,7 +79,7 @@ const base::Feature kUiCompositorScrollWithLayers = {
 // Enables compositor threaded scrollbar scrolling by mapping pointer events to
 // gesture events.
 const base::Feature kCompositorThreadedScrollbarScrolling = {
-    "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompositorThreadedScrollbarScrolling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of a touch fling curve that is based on the behavior of
 // native apps on Windows.

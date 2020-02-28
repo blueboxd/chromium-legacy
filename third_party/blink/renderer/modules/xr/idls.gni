@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 modules_idl_files = [
-  "xr.idl",
   "xr_anchor.idl",
   "xr_anchor_set.idl",
   "xr_bounded_reference_space.idl",
@@ -33,6 +32,7 @@ modules_idl_files = [
   "xr_session_event.idl",
   "xr_space.idl",
   "xr_spherical_harmonics.idl",
+  "xr_system.idl",
   "xr_transient_input_hit_test_result.idl",
   "xr_transient_input_hit_test_source.idl",
   "xr_view.idl",

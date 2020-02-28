@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareData;
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 
 import java.util.ArrayList;
@@ -74,13 +73,6 @@ public class WebApkExtras {
     public final boolean isSplashProvidedByWebApk;
 
     /**
-     * Shared information from the share intent.
-     * TODO(pkotwicz): Remove this property in favor of
-     * {@link BrowserServicesIntentDataProvider#shareData()}
-     */
-    public final ShareData shareData;
-
-    /**
      * The list of the WebAPK's shortcuts.
      */
     public final List<ShortcutItem> shortcutItems;
@@ -113,15 +105,15 @@ public class WebApkExtras {
                 false /* isSplashIconMaskable */, 0 /* shellApkVersion */, null /* manifestUrl */,
                 null /* manifestStartUrl */, WebApkDistributor.OTHER,
                 null /* iconUrlToMurmur2HashMap */, new ShareTarget(),
-                false /* isSplashProvidedByWebApk */, null /* shareData */,
-                new ArrayList<>() /* shortcutItems */, 0 /* webApkVersionCode */);
+                false /* isSplashProvidedByWebApk */, new ArrayList<>() /* shortcutItems */,
+                0 /* webApkVersionCode */);
     }
 
     public WebApkExtras(String webApkPackageName, WebappIcon badgeIcon, WebappIcon splashIcon,
             boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            boolean isSplashProvidedByWebApk, ShareData shareData, List<ShortcutItem> shortcutItems,
+            boolean isSplashProvidedByWebApk, List<ShortcutItem> shortcutItems,
             int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;
         this.badgeIcon = badgeIcon;
@@ -134,7 +126,6 @@ public class WebApkExtras {
         this.iconUrlToMurmur2HashMap = iconUrlToMurmur2HashMap;
         this.shareTarget = shareTarget;
         this.isSplashProvidedByWebApk = isSplashProvidedByWebApk;
-        this.shareData = shareData;
         this.shortcutItems = shortcutItems;
         this.webApkVersionCode = webApkVersionCode;
     }

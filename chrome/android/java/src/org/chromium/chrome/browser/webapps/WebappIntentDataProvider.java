@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -22,6 +23,7 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     private int mToolbarColor;
     private boolean mHasCustomToolbarColor;
     private Drawable mCloseButtonIcon;
+    private ShareData mShareData;
     private WebappExtras mWebappExtras;
     private WebApkExtras mWebApkExtras;
 
@@ -32,12 +34,13 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         return Color.WHITE;
     }
 
-    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor,
+    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor, ShareData shareData,
             WebappExtras webappExtras, WebApkExtras webApkExtras) {
         mToolbarColor = toolbarColor;
         mHasCustomToolbarColor = hasCustomToolbarColor;
         mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
                 ContextUtils.getApplicationContext(), R.drawable.btn_close);
+        mShareData = shareData;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
     }
@@ -70,6 +73,12 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Override
     public boolean isWebApkActivity() {
         return mWebApkExtras != null;
+    }
+
+    @Override
+    @Nullable
+    public ShareData getShareData() {
+        return mShareData;
     }
 
     @Override

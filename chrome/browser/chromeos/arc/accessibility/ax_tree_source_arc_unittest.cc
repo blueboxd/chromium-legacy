@@ -748,6 +748,59 @@ TEST_F(AXTreeSourceArcTest, StringPropertiesComputations) {
   ASSERT_EQ("tooltip text", prop);
 }
 
+TEST_F(AXTreeSourceArcTest, StateComputations) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  // Window.
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 1;
+
+  // Node.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 1;
+
+  // Node is checkable, but not checked.
+  SetProperty(node, AXBooleanProperty::CHECKABLE, true);
+  SetProperty(node, AXBooleanProperty::CHECKED, false);
+  CallNotifyAccessibilityEvent(event.get());
+
+  std::unique_ptr<ui::AXNodeData> data;
+  CallSerializeNode(node, &data);
+  EXPECT_EQ(ax::mojom::CheckedState::kFalse, data->GetCheckedState());
+
+  // Make the node checked.
+  SetProperty(node, AXBooleanProperty::CHECKED, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+  CallSerializeNode(node, &data);
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue, data->GetCheckedState());
+
+  // Make the node expandable (i.e. collapsed).
+  SetProperty(node, AXIntListProperty::STANDARD_ACTION_IDS,
+              std::vector<int>({static_cast<int>(AXActionType::EXPAND)}));
+
+  CallNotifyAccessibilityEvent(event.get());
+  CallSerializeNode(node, &data);
+  EXPECT_TRUE(data->HasState(ax::mojom::State::kCollapsed));
+  EXPECT_FALSE(data->HasState(ax::mojom::State::kExpanded));
+
+  // Make the node collapsible (i.e. expanded).
+  SetProperty(node, AXIntListProperty::STANDARD_ACTION_IDS,
+              std::vector<int>({static_cast<int>(AXActionType::COLLAPSE)}));
+
+  CallNotifyAccessibilityEvent(event.get());
+  CallSerializeNode(node, &data);
+  EXPECT_FALSE(data->HasState(ax::mojom::State::kCollapsed));
+  EXPECT_TRUE(data->HasState(ax::mojom::State::kExpanded));
+}
+
 TEST_F(AXTreeSourceArcTest, ComplexTreeStructure) {
   int tree_size = 4;
   int num_trees = 3;

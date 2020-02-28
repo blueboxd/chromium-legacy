@@ -80,23 +80,26 @@ for the study. The first experiment matching the active platform will be used.
 
 ### Experiments (Groups)
 Each *experiment* is a dictionary that must contain the `name` key, identifying
-the experiment group name. This name **must** match the FieldTrial experiment
-group name used in the Chromium client code.
+the experiment group name.
 
-> Note: Many newer studies do not use experiment names in the client code at
-> all, and rely on the [Feature List API][FeatureListAPI] instead. Nonetheless,
-> if a study has a server-side configuration, the experiment `name` specified
-> here must still match the name specified in the server-side configuration;
-> this is used to implement sanity-checks on the server.
+> Note: Studies should typically use the [Feature List API][FeatureListAPI]. For
+> such studies, the experiment `name` specified in the testing config is still
+> required (for legacy reasons), but it is ignored. However, the lists of
+> `enable_features`, `disable_features`, and `params` **must** match the server
+> config. This is enforced via server-side Tricorder checks.
+>
+> For old-school studies that do check the actual experiment group name in the
+> client code, the `name` **must** exactly match the client code and the server
+> config.
 
-The remaining keys, `params`, `enable_features`, and `disable_features` are
+The remaining keys -- `enable_features`, `disable_features`, and `params` -- are
 optional.
-
-`params` is a dictionary mapping parameter name to parameter.
 
 `enable_features` and `disable_features` indicate which features should be
 enabled and disabled, respectively, through the
 [Feature List API][FeatureListAPI].
+
+`params` is a dictionary mapping parameter name to parameter value.
 
 > Reminder: The variations framework does not actually fetch any field trial
 > definitions from the server for Chromium builds, so any feature enabling or

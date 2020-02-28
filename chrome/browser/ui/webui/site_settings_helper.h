@@ -16,12 +16,15 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/web_ui.h"
 #include "extensions/common/extension.h"
 
 class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
+
+namespace content {
+class WebUI;
+}
 
 namespace extensions {
 class ExtensionRegistry;

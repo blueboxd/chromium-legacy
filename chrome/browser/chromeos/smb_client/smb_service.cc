@@ -132,7 +132,8 @@ SmbService::SmbService(Profile* profile,
                        std::unique_ptr<base::TickClock> tick_clock)
     : provider_id_(ProviderId::CreateFromNativeId("smb")),
       profile_(profile),
-      tick_clock_(std::move(tick_clock)) {
+      tick_clock_(std::move(tick_clock)),
+      registry_(profile) {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   DCHECK(user);
@@ -178,13 +179,18 @@ void SmbService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNTLMShareAuthenticationEnabled, true);
   registry->RegisterListPref(prefs::kNetworkFileSharesPreconfiguredShares);
   registry->RegisterStringPref(prefs::kMostRecentlyUsedNetworkFileShareURL, "");
+  SmbPersistedShareRegistry::RegisterProfilePrefs(registry);
 }
 
 void SmbService::UnmountSmbFs(const base::FilePath& mount_path) {
   DCHECK(!mount_path.empty());
 
   for (auto it = smbfs_shares_.begin(); it != smbfs_shares_.end(); ++it) {
-    if (it->second->mount_path() == mount_path) {
+    SmbFsShare* share = it->second.get();
+    if (share->mount_path() == mount_path) {
+      // UnmountSmbFs() is called by an explicit unmount by the user. In this
+      // case, forget the share.
+      registry_.Delete(share->share_url());
       smbfs_shares_.erase(it);
       return;
     }
@@ -347,13 +353,14 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                 false /* skip_connect */,
                 base::BindOnce(&SmbService::MountInternalDone,
                                base::Unretained(this), std::move(callback),
-                               should_open_file_manager_after_mount));
+                               info, should_open_file_manager_after_mount));
 
   profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
                                   share_path.value());
 }
 
 void SmbService::MountInternalDone(MountResponse callback,
+                                   const SmbShareInfo& info,
                                    bool should_open_file_manager_after_mount,
                                    SmbMountResult result,
                                    const base::FilePath& mount_path) {
@@ -365,6 +372,10 @@ void SmbService::MountInternalDone(MountResponse callback,
   DCHECK(!mount_path.empty());
   if (should_open_file_manager_after_mount) {
     platform_util::ShowItemInFolder(profile_, mount_path);
+  }
+
+  if (IsSmbFsEnabled()) {
+    registry_.Save(info);
   }
 
   RecordMountCount();
@@ -535,24 +546,37 @@ SmbProviderClient* SmbService::GetSmbProviderClient() const {
 }
 
 void SmbService::RestoreMounts() {
-  std::vector<ProvidedFileSystemInfo> file_systems =
+  std::vector<ProvidedFileSystemInfo> provided_file_systems =
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
 
   std::vector<SmbUrl> preconfigured_shares =
       GetPreconfiguredSharePathsForPremount();
 
-  if (!file_systems.empty() || !preconfigured_shares.empty()) {
+  std::vector<SmbShareInfo> saved_smbfs_shares;
+  if (IsSmbFsEnabled()) {
+    // Restore smbfs shares.
+    // TODO(crbug.com/1055571): Migrate saved smbprovider shares to smbfs.
+    saved_smbfs_shares = registry_.GetAll();
+  }
+
+  if (!provided_file_systems.empty() || !saved_smbfs_shares.empty() ||
+      !preconfigured_shares.empty()) {
     share_finder_->DiscoverHostsInNetwork(base::BindOnce(
-        &SmbService::OnHostsDiscovered, AsWeakPtr(), std::move(file_systems),
+        &SmbService::OnHostsDiscovered, AsWeakPtr(),
+        std::move(provided_file_systems), std::move(saved_smbfs_shares),
         std::move(preconfigured_shares)));
   }
 }
 
 void SmbService::OnHostsDiscovered(
     const std::vector<ProvidedFileSystemInfo>& file_systems,
+    const std::vector<SmbShareInfo>& saved_smbfs_shares,
     const std::vector<SmbUrl>& preconfigured_shares) {
   for (const auto& file_system : file_systems) {
     Remount(file_system);
+  }
+  for (const auto& smbfs_share : saved_smbfs_shares) {
+    MountSavedSmbfsShare(smbfs_share);
   }
   for (const auto& url : preconfigured_shares) {
     MountPreconfiguredShare(url);
@@ -645,6 +669,17 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 
   DCHECK_GE(mount_id, 0);
   mount_id_map_[file_system_id] = mount_id;
+}
+
+void SmbService::MountSavedSmbfsShare(const SmbShareInfo& info) {
+  MountInternal(
+      {} /* fsp::MountOptions, ignored by smbfs */, info, "" /* password */,
+      false /* save_credentials */, true /* skip_connect */,
+      base::BindOnce(
+          [](SmbMountResult result, const base::FilePath& mount_path) {
+            LOG_IF(ERROR, result != SmbMountResult::kSuccess)
+                << "Error restoring saved share: " << static_cast<int>(result);
+          }));
 }
 
 void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {

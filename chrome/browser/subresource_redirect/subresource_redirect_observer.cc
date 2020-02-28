@@ -118,7 +118,9 @@ void SubresourceRedirectObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
     return;
   }
   auto* optimization_guide_decider = GetOptimizationGuideDeciderFromWebContents(

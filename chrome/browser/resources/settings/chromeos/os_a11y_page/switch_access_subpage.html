@@ -23,9 +23,8 @@
           $i18n{assignSelectSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignSelectSwitchLabel}"
-            pref="{{prefs.switch_access.select.setting}}"
-            menu-options="[[switchAssignOptions_]]"
-            on-settings-control-change="onSelectAssigned_">
+            pref="{{prefs.settings.a11y.switch_access.select.setting}}"
+            menu-options="[[switchAssignOptions_]]">
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
@@ -33,9 +32,8 @@
           $i18n{assignNextSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignNextSwitchLabel}"
-            pref="{{prefs.switch_access.next.setting}}"
-            menu-options="[[switchAssignOptions_]]"
-            on-settings-control-change="onNextAssigned_">
+            pref="{{prefs.settings.a11y.switch_access.next.setting}}"
+            menu-options="[[switchAssignOptions_]]">
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
@@ -43,26 +41,25 @@
           $i18n{assignPreviousSwitchLabel}
         </div>
         <settings-dropdown-menu label="$i18n{assignPreviousSwitchLabel}"
-            pref="{{prefs.switch_access.previous.setting}}"
-            menu-options="[[switchAssignOptions_]]"
-            on-settings-control-change="onPreviousAssigned_">
+            pref="{{prefs.settings.a11y.switch_access.previous.setting}}"
+            menu-options="[[switchAssignOptions_]]">
         </settings-dropdown-menu>
       </div>
     </div>
     <h2>$i18n{switchAccessAutoScanHeading}</h2>
     <div class="list-frame">
       <settings-toggle-button class="continuation list-item"
-          pref="{{prefs.switch_access.auto_scan.enabled}}"
+          pref="{{prefs.settings.a11y.switch_access.auto_scan.enabled}}"
           label="$i18n{switchAccessAutoScanLabel}">
       </settings-toggle-button>
       <div class="settings-box continuation list-item"
-          hidden$="[[!prefs.switch_access.auto_scan.enabled.value]]">
+          hidden$="[[!prefs.settings.a11y.switch_access.auto_scan.enabled.value]]">
         <div class="start sub-item settings-box-text" id="scanSpeed"
             aria-hidden="true">
           $i18n{switchAccessAutoScanSpeedLabel}
         </div>
         <settings-slider id="scanSpeedSlider"
-            pref="{{prefs.switch_access.auto_scan.speed_ms}}"
+            pref="{{prefs.settings.a11y.switch_access.auto_scan.speed_ms}}"
             ticks="[[autoScanSpeedRangeMs_]]"
             min="[[minScanSpeedMs_]]"
             max="[[maxScanSpeedMs_]]"
@@ -73,13 +70,13 @@
       </div>
       <div class="settings-box continuation list-item"
           hidden$="[[!showKeyboardScanSettings_(
-          prefs.switch_access.auto_scan.enabled.value)]]">
+          prefs.settings.a11y.switch_access.auto_scan.enabled.value)]]">
         <div class="start sub-item settings-box-text" id="keyboardScanSpeed"
             aria-hidden="true">
           $i18n{switchAccessAutoScanKeyboardSpeedLabel}
         </div>
         <settings-slider id="keyboardScanSpeedSlider"
-            pref="{{prefs.switch_access.auto_scan.keyboard.speed_ms}}"
+            pref="{{prefs.settings.a11y.switch_access.auto_scan.keyboard.speed_ms}}"
             ticks="[[autoScanSpeedRangeMs_]]"
             min="[[minScanSpeedMs_]]"
             max="[[maxScanSpeedMs_]]"

@@ -182,11 +182,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // so we can't use FeatureList::IsEnabled. This is necessary if someone
     // enabled feature through command line. Finch experiments will need to set
     // all flags in trial config.
-    if (features.IsEnabled(::features::kVizForWebView)) {
-      features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
-      features.EnableIfNotSet(::features::kUseSkiaForGLReadback);
-      features.EnableIfNotSet(::features::kUseSkiaRenderer);
-    } else {
+    if (!features.IsEnabled(::features::kVizForWebView)) {
       // Viz for WebView is required to support embedding CompositorFrameSinks
       // which is needed for UseSurfaceLayerForVideo feature.
       // https://crbug.com/853832

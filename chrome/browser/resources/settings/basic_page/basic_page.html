@@ -3,12 +3,10 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
 <link rel="import" href="../privacy_page/privacy_page.html">
 <link rel="import" href="../safety_check_page/safety_check_page.html">
 <link rel="import" href="../autofill_page/autofill_page.html">
-<link rel="import" href="../change_password_page/change_password_page.html">
 <link rel="import" href="../controls/settings_idle_load.html">
 <link rel="import" href="../on_startup_page/on_startup_page.html">
 <link rel="import" href="../people_page/people_page.html">
@@ -109,11 +107,6 @@
           </div>
         </template>
 </if>
-        <template is="dom-if" if="[[showChangePassword]]" restamp>
-          <settings-section section="changePassword">
-            <settings-change-password-page></settings-change-password-page>
-          </settings-section>
-        </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">

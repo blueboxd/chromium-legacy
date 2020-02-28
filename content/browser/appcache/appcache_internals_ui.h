@@ -120,9 +120,7 @@ class AppCacheInternalsUI : public WebUIController {
   void OnFileDetailsFailed(const ProxyResponseEnquiry& response_enquiry,
                            int data_length);
 
-  BrowserContext* browser_context() {
-    return web_ui()->GetWebContents()->GetBrowserContext();
-  }
+  BrowserContext* GetBrowserContext();
 
   Proxy* GetProxyForPartitionPath(const base::FilePath& path);
   std::list<scoped_refptr<Proxy>> appcache_proxies_;
@@ -132,4 +130,5 @@ class AppCacheInternalsUI : public WebUIController {
 };
 
 }  // namespace content
-#endif
+
+#endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_INTERNALS_UI_H_

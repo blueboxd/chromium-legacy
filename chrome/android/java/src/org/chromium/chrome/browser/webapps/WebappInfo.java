@@ -20,7 +20,7 @@ public class WebappInfo {
 
     protected static BrowserServicesIntentDataProvider createEmptyIntentDataProvider() {
         return new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                false /* hasCustomToolbarColor */, WebappExtras.createEmpty(),
+                false /* hasCustomToolbarColor */, null /* shareData */, WebappExtras.createEmpty(),
                 WebApkExtras.createEmpty());
     }
 

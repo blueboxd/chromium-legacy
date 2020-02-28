@@ -735,7 +735,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/firstrun/ToSAndUMAFirstRunFragment.java",
   "java/src/org/chromium/chrome/browser/flags/CachedFeatureFlags.java",
   "java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
-  "java/src/org/chromium/chrome/browser/flags/LegacyFeatureUtilities.java",
   "java/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegate.java",
   "java/src/org/chromium/chrome/browser/fullscreen/ChromeFullscreenManager.java",
   "java/src/org/chromium/chrome/browser/fullscreen/FullscreenHtmlApiHandler.java",

@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
+#include "chrome/browser/chromeos/smb_client/smb_persisted_share_registry.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -730,6 +731,16 @@ TEST_F(SmbServiceWithSmbfsTest, Mount) {
     }
   }
   EXPECT_TRUE(found);
+
+  // Check that the share was saved.
+  SmbPersistedShareRegistry registry(profile_);
+  base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
+  ASSERT_TRUE(info);
+  EXPECT_EQ(info->share_url().ToString(), kShareUrl);
+  EXPECT_EQ(info->display_name(), kDisplayName);
+  EXPECT_EQ(info->username(), kTestUser);
+  EXPECT_TRUE(info->workgroup().empty());
+  EXPECT_FALSE(info->use_kerberos());
 }
 
 TEST_F(SmbServiceWithSmbfsTest, Mount_ActiveDirectory) {
@@ -790,6 +801,17 @@ TEST_F(SmbServiceWithSmbfsTest, Mount_ActiveDirectory) {
         run_loop.Quit();
       }));
   run_loop.Run();
+
+  // Check that the share was saved.
+  SmbPersistedShareRegistry registry(ad_profile_);
+  base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
+  ASSERT_TRUE(info);
+  EXPECT_EQ(info->share_url().ToString(), kShareUrl);
+  EXPECT_EQ(info->display_name(), kDisplayName);
+  EXPECT_EQ(info->username(), kTestADUser);
+  // Workgroup/domain is converted to upper-case.
+  EXPECT_EQ(info->workgroup(), base::ToUpperASCII(kTestADDomain));
+  EXPECT_TRUE(info->use_kerberos());
 }
 
 TEST_F(SmbServiceWithSmbfsTest, PreconfiguredMount) {
@@ -841,6 +863,65 @@ TEST_F(SmbServiceWithSmbfsTest, PreconfiguredMount) {
       });
 
   run_loop.Run();
+}
+
+TEST_F(SmbServiceWithSmbfsTest, MountSaved) {
+  // Save share in profile.
+  {
+    SmbPersistedShareRegistry registry(profile_);
+    SmbShareInfo info(SmbUrl(kShareUrl), kDisplayName, kTestUser, kTestDomain,
+                      false /* use_kerberos */);
+    registry.Save(info);
+  }
+
+  CreateService(profile_);
+
+  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
+
+  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+  std::unique_ptr<MockSmbFsMounter> mock_mounter =
+      std::make_unique<MockSmbFsMounter>();
+  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+                                     const std::string& share_path,
+                                     const std::string& mount_dir_name,
+                                     const SmbFsShare::MountOptions& options,
+                                     smbfs::SmbFsHost::Delegate* delegate)
+                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
+        EXPECT_EQ(share_path, kShareUrl);
+        EXPECT_EQ(options.username, kTestUser);
+        EXPECT_EQ(options.workgroup, kTestDomain);
+        EXPECT_TRUE(options.password.empty());
+        EXPECT_EQ(options.allow_ntlm, true);
+        EXPECT_FALSE(options.kerberos_options);
+        smbfs_host_delegate = delegate;
+        return std::move(mock_mounter);
+      }));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*mock_mounter, Mount(_))
+      .WillOnce([this, &smbfs_host_delegate, &smbfs_remote,
+                 &smbfs_delegate_remote,
+                 &run_loop](smbfs::SmbFsMounter::DoneCallback callback) {
+        std::move(callback).Run(
+            smbfs::mojom::MountError::kOk,
+            std::make_unique<smbfs::SmbFsHost>(
+                MakeMountPoint(base::FilePath(kMountPath)), smbfs_host_delegate,
+                std::move(smbfs_remote),
+                smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
+        run_loop.Quit();
+      });
+
+  run_loop.Run();
+
+  // Unmounting should remove the saved share.
+  smb_service_->UnmountSmbFs(base::FilePath(kMountPath));
+  SmbPersistedShareRegistry registry(profile_);
+  base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
+  EXPECT_FALSE(info);
+  EXPECT_TRUE(registry.GetAll().empty());
 }
 
 }  // namespace smb_client

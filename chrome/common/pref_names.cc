@@ -970,6 +970,9 @@ const char kNetworkFileSharesPreconfiguredShares[] =
 const char kMostRecentlyUsedNetworkFileShareURL[] =
     "network_file_shares.most_recently_used_url";
 
+// List of network files shares added by the user.
+const char kNetworkFileSharesSavedShares[] = "network_file_shares.saved_shares";
+
 // A string pref storing the path of device wallpaper image file.
 const char kDeviceWallpaperImageFilePath[] =
     "policy.device_wallpaper_image_file_path";

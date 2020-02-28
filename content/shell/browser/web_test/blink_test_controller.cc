@@ -436,6 +436,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
   accumulated_web_test_runtime_flags_changes_.Clear();
+  blink_test_control_map_.clear();
   web_test_control_map_.clear();
 
   ShellBrowserContext* browser_context =
@@ -923,6 +924,7 @@ void BlinkTestController::RenderProcessHostDestroyed(
     RenderProcessHost* render_process_host) {
   render_process_host_observer_.Remove(render_process_host);
   all_observed_render_process_hosts_.erase(render_process_host);
+  web_test_control_map_.erase(render_process_host);
   main_window_render_process_hosts_.erase(render_process_host);
 }
 
@@ -1052,12 +1054,12 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     render_process_host_observer_.Add(process_host);
     all_observed_render_process_hosts_.insert(process_host);
 
-    if (!main_window) {
+    if (!main_window)
       GetBlinkTestControlRemote(frame)->SetupSecondaryRenderer();
-    }
 
-    process_host->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
-        accumulated_web_test_runtime_flags_changes_));
+    GetWebTestControlRemote(process_host)
+        ->ReplicateWebTestRuntimeFlagsChanges(
+            accumulated_web_test_runtime_flags_changes_.Clone());
   }
 }
 
@@ -1240,8 +1242,8 @@ void BlinkTestController::OnWebTestRuntimeFlagsChanged(
     if (process->GetID() == sender_process_host_id)
       continue;
 
-    process->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
-        changed_web_test_runtime_flags));
+    GetWebTestControlRemote(process)->ReplicateWebTestRuntimeFlagsChanges(
+        changed_web_test_runtime_flags.Clone());
   }
 }
 
@@ -1502,20 +1504,42 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
 mojo::AssociatedRemote<mojom::BlinkTestControl>&
 BlinkTestController::GetBlinkTestControlRemote(RenderFrameHost* frame) {
   GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
-  if (web_test_control_map_.find(key) == web_test_control_map_.end()) {
+  if (blink_test_control_map_.find(key) == blink_test_control_map_.end()) {
     mojo::AssociatedRemote<mojom::BlinkTestControl>& new_ptr =
-        web_test_control_map_[key];
+        blink_test_control_map_[key];
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
     new_ptr.set_disconnect_handler(
         base::BindOnce(&BlinkTestController::HandleBlinkTestControlError,
                        weak_factory_.GetWeakPtr(), key));
   }
-  DCHECK(web_test_control_map_[key].get());
-  return web_test_control_map_[key];
+  DCHECK(blink_test_control_map_[key].get());
+  return blink_test_control_map_[key];
+}
+
+mojo::AssociatedRemote<mojom::WebTestControl>&
+BlinkTestController::GetWebTestControlRemote(RenderProcessHost* process) {
+  if (web_test_control_map_.find(process) == web_test_control_map_.end()) {
+    IPC::ChannelProxy* channel = process->GetChannel();
+    // channel might be null in tests.
+    if (process->IsInitializedAndNotDead() && channel) {
+      mojo::AssociatedRemote<mojom::WebTestControl>& new_ptr =
+          web_test_control_map_[process];
+      channel->GetRemoteAssociatedInterface(&new_ptr);
+      new_ptr.set_disconnect_handler(
+          base::BindOnce(&BlinkTestController::HandleWebTestControlError,
+                         weak_factory_.GetWeakPtr(), process));
+    }
+  }
+  DCHECK(web_test_control_map_[process].get());
+  return web_test_control_map_[process];
 }
 
 void BlinkTestController::HandleBlinkTestControlError(
     const GlobalFrameRoutingId& key) {
+  blink_test_control_map_.erase(key);
+}
+
+void BlinkTestController::HandleWebTestControlError(RenderProcessHost* key) {
   web_test_control_map_.erase(key);
 }
 

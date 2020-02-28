@@ -112,6 +112,10 @@ base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
       return arc::mojom::AccessibilityActionType::SHOW_TOOLTIP;
     case ax::mojom::Action::kHideTooltip:
       return arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
+    case ax::mojom::Action::kCollapse:
+      return arc::mojom::AccessibilityActionType::COLLAPSE;
+    case ax::mojom::Action::kExpand:
+      return arc::mojom::AccessibilityActionType::EXPAND;
     default:
       return base::nullopt;
   }

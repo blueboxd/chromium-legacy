@@ -55,7 +55,9 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
 // instance for each concurrently outstanding texture.
 class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
  public:
-  DefaultTexture2DWrapper(const gfx::Size& size);
+  // While the specific texture instance can change on every call to
+  // ProcessTexture, the dxgi format must be the same for all of them.
+  DefaultTexture2DWrapper(const gfx::Size& size, DXGI_FORMAT dxgi_format);
   ~DefaultTexture2DWrapper() override;
 
   bool Init(GetCommandBufferHelperCB get_helper_cb) override;
@@ -96,6 +98,7 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   gfx::Size size_;
   std::unique_ptr<GpuResources> gpu_resources_;
   MailboxHolderArray mailbox_holders_;
+  DXGI_FORMAT dxgi_format_;
 };
 
 }  // namespace media

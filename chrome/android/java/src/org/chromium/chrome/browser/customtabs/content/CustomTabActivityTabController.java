@@ -319,7 +319,7 @@ public class CustomTabActivityTabController
             mReparentingTaskProvider.get(tab).finish(
                     ReparentingDelegateFactory.createReparentingTaskDelegate(
                             mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
-                            mActivity.getTabDelegateFactory()),
+                            mCustomTabDelegateFactory.get()),
                     (params == null ? null : params.getFinalizeCallback()));
         }
 

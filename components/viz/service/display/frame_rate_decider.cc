@@ -114,15 +114,19 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
   // ideal refresh rate.
   base::TimeDelta new_preferred_interval = UnspecifiedFrameInterval();
   if (min_frame_sink_interval != BeginFrameArgs::MinInterval()) {
+    constexpr float kMaxIntervalDelta = 0.05;
     for (auto supported_interval : supported_intervals_) {
-      // Pick the display interval which is closest to the preferred interval.
-      // TODO(khushalsagar): This should suffice for the current use-case (based
-      // on supported refresh rates we expect), but we should be picking a frame
-      // rate with the correct tradeoff between running the display at a lower
-      // interval to save power and getting an ideal cadence for the video's
-      // frame rate.
-      if ((min_frame_sink_interval - supported_interval).magnitude() <
-          (min_frame_sink_interval - new_preferred_interval).magnitude()) {
+      // We only use a supported interval if it is in perfect cadence with the
+      // desired interval.
+      float delta_int = 0;
+      float delta = std::modf(min_frame_sink_interval.InMicrosecondsF() /
+                                  supported_interval.InMicrosecondsF(),
+                              &delta_int);
+      bool in_perfect_cadence =
+          delta < kMaxIntervalDelta || delta > (1 - kMaxIntervalDelta);
+      if (in_perfect_cadence && supported_interval > new_preferred_interval) {
+        // Make sure that we select the largest one in the
+        // |supported_intervals_| that meets the requirements
         new_preferred_interval = supported_interval;
       }
     }

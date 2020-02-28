@@ -1670,7 +1670,9 @@ CrSettingsEditDictionaryPageTest.prototype = {
     '../fake_chrome_event.js',
     'fake_settings_private.js',
     '../test_browser_proxy.js',
+    'fake_input_method_private.js',
     'fake_language_settings_private.js',
+    'test_languages_browser_proxy.js',
     'edit_dictionary_page_test.js',
   ]),
 };
@@ -1701,7 +1703,7 @@ CrSettingsLanguagesTest.prototype = {
     '../test_browser_proxy.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
-    'chromeos/fake_input_method_private.js',
+    'fake_input_method_private.js',
     'test_languages_browser_proxy.js',
     'languages_tests.js',
   ]),
@@ -1730,7 +1732,7 @@ CrSettingsLanguagesPageTest.prototype = {
     '../test_browser_proxy.js',
     'fake_settings_private.js',
     'fake_language_settings_private.js',
-    'chromeos/fake_input_method_private.js',
+    'fake_input_method_private.js',
     'test_languages_browser_proxy.js',
     'languages_page_tests.js',
   ]),
@@ -1890,7 +1892,7 @@ CrSettingsMainPageTest.prototype = {
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
 // Times out on Linux CFI. See http://crbug.com/929288.
-GEN('#if !defined(NDEBUG) || defined(OS_LINUX)');
+GEN('#if !defined(NDEBUG) || (defined(OS_LINUX) && defined(IS_CFI))');
 GEN('#define MAYBE_MainPage DISABLED_MainPage');
 GEN('#else');
 GEN('#define MAYBE_MainPage MainPage');
@@ -2009,30 +2011,6 @@ CrSettingsExtensionControlledIndicatorTest.prototype = {
 };
 
 TEST_F('CrSettingsExtensionControlledIndicatorTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsChangePasswordPageTest() {}
-
-CrSettingsChangePasswordPageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://settings/change_password_page/change_password_page.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
-    'change_password_page_test.js',
-  ]),
-};
-
-TEST_F('CrSettingsChangePasswordPageTest', 'All', function() {
   mocha.run();
 });
 

@@ -663,9 +663,11 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
     }
 
     case ax::mojom::Action::kClearAccessibilityFocus:
+    case ax::mojom::Action::kCollapse:
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kDecrement:
     case ax::mojom::Action::kDoDefault:
+    case ax::mojom::Action::kExpand:
     case ax::mojom::Action::kGetImageData:
     case ax::mojom::Action::kHitTest:
     case ax::mojom::Action::kIncrement:

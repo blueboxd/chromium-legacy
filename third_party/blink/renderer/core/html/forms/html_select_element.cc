@@ -64,7 +64,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -110,7 +109,7 @@ HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
 bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
-  // Even if options/optgroups are not rendered as children of LayoutMenuList,
+  // Even if options/optgroups are not rendered as children of menulist SELECT,
   // we still need to add them to the flat tree through slotting since we need
   // their ComputedStyle for popup rendering.
   return node.HasTagName(html_names::kOptionTag) ||
@@ -364,7 +363,7 @@ LayoutObject* HTMLSelectElement::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy_layout) {
   if (UsesMenuList())
-    return new LayoutMenuList(this);
+    return LayoutObjectFactory::CreateFlexibleBox(*this, style, legacy_layout);
   return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy_layout);
 }
 
@@ -1449,7 +1448,7 @@ void HTMLSelectElement::Trace(Visitor* visitor) {
 
 void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   // Even if UsesMenuList(), the <slot> is necessary to have ComputedStyles
-  // for <option>s. LayoutMenuList::IsChildAllowed() rejects all of
+  // for <option>s. LayoutFlexibleBox::IsChildAllowed() rejects all of
   // LayoutObject children except for MenuListInnerElement's.
   root.AppendChild(
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));

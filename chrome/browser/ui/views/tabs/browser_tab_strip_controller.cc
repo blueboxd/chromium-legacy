@@ -306,34 +306,13 @@ bool BrowserTabStripController::BeforeCloseTab(int model_index,
   return result == Browser::WarnBeforeClosingResult::kOkToClose;
 }
 
-void BrowserTabStripController::CloseTab(int model_index,
-                                         CloseTabSource source) {
+void BrowserTabStripController::CloseTab(int model_index) {
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
   model_->CloseWebContentsAt(model_index,
                              TabStripModel::CLOSE_USER_GESTURE |
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-}
-
-void BrowserTabStripController::CloseAllTabsInGroup(
-    const tab_groups::TabGroupId& group) {
-  tabstrip_->UpdateHoverCard(nullptr);
-
-  std::vector<int> tabs = ListTabsInGroup(group);
-  for (int i = tabs.size() - 1; i >= 0; --i)
-    CloseTab(tabs[i], CLOSE_TAB_FROM_MOUSE);
-}
-
-void BrowserTabStripController::UngroupAllTabsInGroup(
-    const tab_groups::TabGroupId& group) {
-  model_->RemoveFromGroup(ListTabsInGroup(group));
-}
-
-void BrowserTabStripController::AddNewTabInGroup(
-    const tab_groups::TabGroupId& group) {
-  const std::vector<int> tabs = ListTabsInGroup(group);
-  model_->delegate()->AddTabAt(GURL(), tabs.back() + 1, true, group);
 }
 
 void BrowserTabStripController::AddTabToGroup(

@@ -80,8 +80,7 @@ std::unique_ptr<views::ImageButton> CreateDeleteButton(
     views::ButtonListener* listener,
     const base::string16& username) {
   std::unique_ptr<views::ImageButton> button(
-      views::CreateVectorImageButton(listener));
-  views::SetImageFromVectorIcon(button.get(), kTrashCanIcon);
+      views::CreateVectorImageButtonWithNativeTheme(listener, kTrashCanIcon));
   button->SetFocusForPlatform();
   button->SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_DELETE, username));

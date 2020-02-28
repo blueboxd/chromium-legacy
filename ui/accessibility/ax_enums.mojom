@@ -350,6 +350,9 @@ enum Action {
   // exposed to the open web. See kSetAccessibilityFocus, below.
   kClearAccessibilityFocus,
 
+  // Collapse the collapsible node.
+  kCollapse,
+
   kCustomAction,
 
   // Decrement a slider or range control by one step value.
@@ -357,6 +360,9 @@ enum Action {
 
   // Do the default action for an object, typically this means "click".
   kDoDefault,
+
+  // Expand the expandable node.
+  kExpand,
 
   kFocus,
 

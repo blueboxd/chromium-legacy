@@ -354,7 +354,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                     initForReal();
                     if (privateBrowsing) {
                         // Intentionally irreversibly disable the webview instance, so that private
-                        // user data cannot leak through misuse of a non-privateBrowing WebView
+                        // user data cannot leak through misuse of a non-private-browsing WebView
                         // instance. Can't just null out mAwContents as we never null-check it
                         // before use.
                         destroy();
@@ -671,7 +671,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void loadUrl(final String url, final Map<String, String> additionalHttpHeaders) {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            // Disallowed in WebView API for apps targetting a new SDK
+            // Disallowed in WebView API for apps targeting a new SDK
             assert mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2;
             mFactory.addTask(new Runnable() {
                 @Override
@@ -688,7 +688,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void loadUrl(final String url) {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            // Disallowed in WebView API for apps targetting a new SDK
+            // Disallowed in WebView API for apps targeting a new SDK
             assert mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2;
             mFactory.addTask(new Runnable() {
                 @Override
@@ -705,7 +705,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void postUrl(final String url, final byte[] postData) {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            // Disallowed in WebView API for apps targetting a new SDK
+            // Disallowed in WebView API for apps targeting a new SDK
             assert mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2;
             mFactory.addTask(new Runnable() {
                 @Override
@@ -724,7 +724,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void loadData(final String data, final String mimeType, final String encoding) {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            // Disallowed in WebView API for apps targetting a new SDK
+            // Disallowed in WebView API for apps targeting a new SDK
             assert mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2;
             mFactory.addTask(new Runnable() {
                 @Override
@@ -744,7 +744,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             final String encoding, final String historyUrl) {
         mFactory.startYourEngines(true);
         if (checkNeedsPost()) {
-            // Disallowed in WebView API for apps targetting a new SDK
+            // Disallowed in WebView API for apps targeting a new SDK
             assert mAppTargetSdkVersion < Build.VERSION_CODES.JELLY_BEAN_MR2;
             mFactory.addTask(new Runnable() {
                 @Override

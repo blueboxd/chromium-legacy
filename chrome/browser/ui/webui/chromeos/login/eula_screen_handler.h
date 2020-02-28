@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "components/login/secure_module_util_chromeos.h"
-#include "content/public/browser/web_ui.h"
 
 namespace base {
 class DictionaryValue;

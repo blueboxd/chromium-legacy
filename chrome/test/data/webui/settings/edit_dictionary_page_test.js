@@ -66,7 +66,9 @@ suite('settings-edit-dictionary-page', function() {
 
     languageSettingsPrivate = new settings.FakeLanguageSettingsPrivate();
     languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
-    settings.languageSettingsPrivateApiForTest = languageSettingsPrivate;
+    const browserProxy = new settings.TestLanguagesBrowserProxy();
+    settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy.setLanguageSettingsPrivate(languageSettingsPrivate);
 
     editDictPage = document.createElement('settings-edit-dictionary-page');
 

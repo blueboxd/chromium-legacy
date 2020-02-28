@@ -916,7 +916,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webusb/worker_navigator_usb.idl",
           "//third_party/blink/renderer/modules/xr/element_xr.idl",
           "//third_party/blink/renderer/modules/xr/navigator_xr.idl",
-          "//third_party/blink/renderer/modules/xr/xr.idl",
+          "//third_party/blink/renderer/modules/xr/xr_system.idl",
           "//third_party/blink/renderer/modules/xr/xr_anchor.idl",
           "//third_party/blink/renderer/modules/xr/xr_anchor_set.idl",
           "//third_party/blink/renderer/modules/xr/xr_bounded_reference_space.idl",

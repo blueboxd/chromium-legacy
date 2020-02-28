@@ -50,6 +50,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
       self,
       app_path,
       host_app_path,
+      iossim_path,
       replay_path,
       platform,
       version,
@@ -67,11 +68,12 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
     Args:
       app_path: Path to the compiled .app or .ipa to run.
       host_app_path: A path to the host app for EG2.
+      iossim_path: Path to the compiled iossim binary to use.
       replay_path: Path to the folder where WPR replay and recipe files live.
       platform: Name of the platform to simulate. Supported values can be found
-        by running "xcrun simctl list". e.g. "iPhone 5s", "iPad Retina".
+        by running "iossim -l". e.g. "iPhone 5s", "iPad Retina".
       version: Version of iOS the platform should be running. Supported values
-        can be found by running "xcrun simctl list". e.g. "9.3", "8.2", "7.1".
+        can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
       wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
@@ -89,6 +91,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
     """
     super(WprProxySimulatorTestRunner, self).__init__(
         app_path,
+        iossim_path,
         platform,
         version,
         out_dir,

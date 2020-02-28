@@ -1293,7 +1293,7 @@ This file contains the strings for ash.
         Resolution changed
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
-        <ph name="DISPLAY_NAME">$1<ex>Internal Display</ex></ph>: <ph name="RESOLUTION">$2<ex>2560x1600</ex></ph>
+        <ph name="DISPLAY_NAME">$1<ex>Built-in display</ex></ph>: <ph name="RESOLUTION">$2<ex>2560x1600</ex></ph>
       </message>
       <message name="IDS_ASH_RESOLUTION_CHANGE_DIALOG_TITLE" desc="The title used in the dialog to notify that the display resolution settings has changed and asks the user to confirm the new resolution.">
         Confirm Resolution

@@ -56,7 +56,7 @@ public final class SafeBrowsingApiBridge {
                         SafeBrowsingApiBridgeJni.get().onUrlCheckDone(
                                 callbackId, resultStatus, metadata, checkDelta);
                     }
-                }, SafeBrowsingApiBridgeJni.get().areLocalBlacklistsEnabled());
+                });
         return initSuccesssful ? handler : null;
     }
 
@@ -97,7 +97,6 @@ public final class SafeBrowsingApiBridge {
 
     @NativeMethods
     interface Natives {
-        boolean areLocalBlacklistsEnabled();
         void onUrlCheckDone(long callbackId, int resultStatus, String metadata, long checkDelta);
     }
 }

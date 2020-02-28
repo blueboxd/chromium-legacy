@@ -1147,9 +1147,7 @@ class FileTable extends cr.ui.Table {
     const oldThumbnails = box.querySelectorAll('.thumbnail');
 
     for (let i = 0; i < oldThumbnails.length; i++) {
-      if (box.contains(oldThumbnails[i])) {
-        box.removeChild(oldThumbnails[i]);
-      }
+      box.removeChild(oldThumbnails[i]);
     }
 
     box.appendChild(thumbnail);

@@ -54,6 +54,8 @@ const base::Feature kScalableAppList{"ScalableAppList",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableExactMatchForNonLatinLocale{
+    "EnableExactMatchForNonLatinLocale", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -131,6 +133,10 @@ bool IsScalableAppListEnabled() {
 
 bool IsFuzzyAppSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableFuzzyAppSearch);
+}
+
+bool IsExactMatchForNonLatinLocaleEnabled() {
+  return base::FeatureList::IsEnabled(kEnableExactMatchForNonLatinLocale);
 }
 
 bool IsAggregatedMlSearchRankingEnabled() {

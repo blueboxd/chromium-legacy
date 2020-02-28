@@ -225,6 +225,11 @@ void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
       constexpr float kMaxTimebaseDelta = 0.05;
       if (timebase_delta > display_frame_interval_ * kMaxTimebaseDelta)
         display_frame_timebase_ = timebase;
+    } else {
+      // |display_frame_timebase_| should be still updated as normal in
+      // preferred interval mode without a meaningful
+      // |preferred_frame_interval_|
+      display_frame_timebase_ = timebase;
     }
   } else {
     display_frame_timebase_ = timebase;

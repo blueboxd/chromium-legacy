@@ -1019,7 +1019,7 @@ need to be translated for each locale.-->
         Unknown Display
       </message>
       <message name="IDS_DISPLAY_NAME_INTERNAL" desc="The name used for internal displays, which is shown in the display settings.">
-        Internal Display
+        Built-in display
       </message>
 
       <!-- Crostini app context menu item names, dialog message and button strings -->

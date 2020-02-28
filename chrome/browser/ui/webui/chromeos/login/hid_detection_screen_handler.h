@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 

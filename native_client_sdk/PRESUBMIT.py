@@ -37,20 +37,3 @@ def CheckChangeOnUpload(input_api, output_api):
 
 def CheckChangeOnCommit(input_api, output_api):
   return CommonChecks(input_api, output_api)
-
-
-def GetPreferredTryMasters(project, change):
-  return {
-    'master.tryserver.chromium.linux': {
-      'linux_nacl_sdk': set(['defaulttests']),
-      'linux_nacl_sdk_build': set(['defaulttests']),
-    },
-    'master.tryserver.chromium.win': {
-      'win_nacl_sdk': set(['defaulttests']),
-      'win_nacl_sdk_build': set(['defaulttests']),
-    },
-    'master.tryserver.chromium.mac': {
-      'mac_nacl_sdk': set(['defaulttests']),
-      'mac_nacl_sdk_build': set(['defaulttests']),
-    }
-  }

@@ -237,6 +237,12 @@ re2::RE2::Options CreateRE2Options(bool is_case_sensitive,
   // Don't capture unless needed, for efficiency.
   options.set_never_capture(!require_capturing);
 
+  options.set_log_errors(false);
+
+  // Limit the maximum memory per regex to 2 Kb. This means given 1024 rules,
+  // the total usage would be 2 Mb.
+  options.set_max_mem(2 << 10);
+
   return options;
 }
 

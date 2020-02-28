@@ -130,8 +130,8 @@ TEST_F(BackGestureContextualNudgeControllerTest,
       user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  // If nudge() is true, it indicates that it's currently in animation.
   EXPECT_TRUE(nudge());
-  EXPECT_TRUE(nudge()->widget()->GetLayer()->GetAnimator()->is_animating());
 
   // At this moment, change window activation should cancel the previous nudge
   // showup animation on |window1|, and start show nudge on |window2|.
@@ -139,7 +139,6 @@ TEST_F(BackGestureContextualNudgeControllerTest,
   EXPECT_FALSE(nudge()->ShouldNudgeCountAsShown());
   EXPECT_TRUE(contextual_tooltip::ShouldShowNudge(
       user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
-  EXPECT_TRUE(nudge()->widget()->GetLayer()->GetAnimator()->is_animating());
 
   // Wait until nudge animation is finished.
   WaitNudgeAnimationDone();
@@ -160,7 +159,6 @@ TEST_F(BackGestureContextualNudgeControllerTest,
 
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   EXPECT_TRUE(nudge());
-  EXPECT_TRUE(nudge()->widget()->GetLayer()->GetAnimator()->is_animating());
 
   TabletModeControllerTestApi().LeaveTabletMode();
   WaitNudgeAnimationDone();

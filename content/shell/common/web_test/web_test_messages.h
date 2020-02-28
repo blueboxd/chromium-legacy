@@ -21,10 +21,4 @@ IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
 
-// Used send flag changes to renderers - either when
-// 1) broadcasting change happening in one renderer to all other renderers, or
-// 2) sending accumulated changes to a single new renderer.
-IPC_MESSAGE_CONTROL1(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
-                     base::DictionaryValue /* changed_web_test_runtime_flags */)
-
 #endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_MESSAGES_H_

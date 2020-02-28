@@ -72,6 +72,10 @@ bool IsVizHitTestingDebugEnabled() {
 }
 
 bool IsUsingSkiaForGLReadback() {
+  // Viz for webview requires Skia Readback.
+  if (IsUsingVizForWebView())
+    return true;
+
   return base::FeatureList::IsEnabled(kUseSkiaForGLReadback);
 }
 
@@ -83,6 +87,10 @@ bool IsUsingSkiaRenderer() {
       base::android::SDK_VERSION_KITKAT)
     return false;
 #endif
+
+  // Viz for webview requires SkiaRenderer.
+  if (IsUsingVizForWebView())
+    return true;
 
   return base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
          base::FeatureList::IsEnabled(kVulkan);
@@ -100,6 +108,10 @@ bool IsDynamicColorGamutEnabled() {
 #endif
 
 bool IsUsingVizForWebView() {
+  // Viz for WebView requires shared images to be enabled.
+  if (!base::FeatureList::IsEnabled(kEnableSharedImageForWebview))
+    return false;
+
   return base::FeatureList::IsEnabled(kVizForWebView);
 }
 

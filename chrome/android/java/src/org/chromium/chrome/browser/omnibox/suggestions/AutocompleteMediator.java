@@ -58,7 +58,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -73,21 +73,18 @@ import java.util.List;
 class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionHost,
                                       StartStopWithNativeObserver, SuggestionListObserver {
     /** A struct containing information about the suggestion and its view type. */
-    private static class SuggestionViewInfo {
+    private static class SuggestionViewInfo extends MVCListAdapter.ListItem {
         /** Processor managing the suggestion. */
         public final SuggestionProcessor processor;
 
         /** The suggestion this info represents. */
         public final OmniboxSuggestion suggestion;
 
-        /** The model the view uses to render the suggestion. */
-        public final PropertyModel model;
-
         public SuggestionViewInfo(SuggestionProcessor suggestionProcessor,
                 OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel) {
+            super(suggestionProcessor.getViewTypeId(), propertyModel);
             processor = suggestionProcessor;
             suggestion = omniboxSuggestion;
-            model = propertyModel;
         }
     }
 
@@ -105,7 +102,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private final AutocompleteDelegate mDelegate;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final PropertyModel mListPropertyModel;
-    private final List<SuggestionViewInfo> mCurrentModels;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
@@ -154,7 +150,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private boolean mShowCachedZeroSuggestResults;
     private boolean mShouldPreventOmniboxAutocomplete;
 
-    private boolean mPreventSuggestionListPropertyChanges;
     private long mLastActionUpTimestamp;
     private boolean mIgnoreOmniboxItemSelection = true;
     private boolean mUseDarkColors = true;
@@ -173,7 +168,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         mDelegate = delegate;
         mUrlBarEditingTextProvider = textProvider;
         mListPropertyModel = listPropertyModel;
-        mCurrentModels = new ArrayList<>();
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
 
@@ -222,13 +216,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         recordSuggestionsShown();
     }
 
-    /**
-     * Clear all suggestions and update counter of whether AiS Answer was presented (and if so - of
-     * what type). Does not notify any property observers of the change.
-     */
-    private void clearSuggestions() {
-        mCurrentModels.clear();
-        notifyPropertyModelsChanged();
+    private ModelList getSuggestionModelList() {
+        return mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
     }
 
     /**
@@ -305,7 +294,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      */
     private void recordSuggestionsShown() {
         int richEntitiesCount = 0;
-        for (SuggestionViewInfo info : mCurrentModels) {
+        ModelList currentModels = getSuggestionModelList();
+        for (int i = 0; i < currentModels.size(); i++) {
+            SuggestionViewInfo info = (SuggestionViewInfo) currentModels.get(i);
             info.processor.recordSuggestionPresented(info.suggestion, info.model);
 
             if (info.processor.getViewTypeId() == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
@@ -324,7 +315,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      * @return The number of current autocomplete suggestions.
      */
     public int getSuggestionCount() {
-        return mCurrentModels.size();
+        return getSuggestionModelList().size();
     }
 
     /**
@@ -336,17 +327,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      * @return The suggestion at the given index.
      */
     public OmniboxSuggestion getSuggestionAt(int index) {
-        return mCurrentModels.get(index).suggestion;
-    }
-
-    private void notifyPropertyModelsChanged() {
-        if (mPreventSuggestionListPropertyChanges) return;
-        ModelList suggestions = mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
-        suggestions.clear();
-        for (int i = 0; i < mCurrentModels.size(); i++) {
-            PropertyModel model = mCurrentModels.get(i).model;
-            suggestions.add(new ListItem(mCurrentModels.get(i).processor.getViewTypeId(), model));
-        }
+        return ((SuggestionViewInfo) getSuggestionModelList().get(index)).suggestion;
     }
 
     /**
@@ -393,8 +374,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     void setLayoutDirection(int layoutDirection) {
         if (mLayoutDirection == layoutDirection) return;
         mLayoutDirection = layoutDirection;
-        for (int i = 0; i < mCurrentModels.size(); i++) {
-            PropertyModel model = mCurrentModels.get(i).model;
+        ModelList currentModels = getSuggestionModelList();
+        for (int i = 0; i < currentModels.size(); i++) {
+            PropertyModel model = currentModels.get(i).model;
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
         }
     }
@@ -407,8 +389,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
         mUseDarkColors = useDarkColors;
         mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
-        for (int i = 0; i < mCurrentModels.size(); i++) {
-            PropertyModel model = mCurrentModels.get(i).model;
+        ModelList currentModels = getSuggestionModelList();
+        for (int i = 0; i < currentModels.size(); i++) {
+            PropertyModel model = currentModels.get(i).model;
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
         }
     }
@@ -620,7 +603,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         // In some situations this means the content of mCurrentModels may change meanwhile.
         int verifiedIndex = findSuggestionInModel(suggestion, position);
         if (verifiedIndex != SUGGESTION_NOT_FOUND) {
-            SuggestionViewInfo info = mCurrentModels.get(verifiedIndex);
+            SuggestionViewInfo info =
+                    (SuggestionViewInfo) getSuggestionModelList().get(verifiedIndex);
             info.processor.recordSuggestionUsed(info.suggestion, info.model);
         }
 
@@ -887,10 +871,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
-        if (mCurrentModels.size() == newSuggestions.size()) {
+        ModelList modelList = getSuggestionModelList();
+        if (modelList.size() == newSuggestions.size()) {
             boolean sameSuggestions = true;
-            for (int i = 0; i < mCurrentModels.size(); i++) {
-                if (!mCurrentModels.get(i).suggestion.equals(newSuggestions.get(i))) {
+            for (int i = 0; i < modelList.size(); i++) {
+                OmniboxSuggestion existingSuggestion =
+                        ((SuggestionViewInfo) modelList.get(i)).suggestion;
+                if (!existingSuggestion.equals(newSuggestions.get(i))) {
                     sameSuggestions = false;
                     break;
                 }
@@ -900,27 +887,21 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
 
         // Show the suggestion list.
         mTailSuggestionProcessor.reset();
-        // Ensure the list is fully replaced before broadcasting any change notifications.
-        mPreventSuggestionListPropertyChanges = true;
-        mCurrentModels.clear();
+        List<MVCListAdapter.ListItem> newSuggestionViewInfos =
+                new ArrayList<>(newSuggestions.size());
         for (int i = 0; i < newSuggestions.size(); i++) {
             OmniboxSuggestion suggestion = newSuggestions.get(i);
             SuggestionProcessor processor = getProcessorForSuggestion(suggestion, i == 0);
             PropertyModel model = processor.createModelForSuggestion(suggestion);
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
-
-            // Before populating the model, add it to the list of current models.  If the suggestion
-            // has an image and the image was already cached, it will be updated synchronously and
-            // the model will only have the image populated if it is tracked as a current model.
-            mCurrentModels.add(new SuggestionViewInfo(processor, suggestion, model));
-
             processor.populateModel(suggestion, model, i);
+            newSuggestionViewInfos.add(new SuggestionViewInfo(processor, suggestion, model));
         }
-        mPreventSuggestionListPropertyChanges = false;
-        notifyPropertyModelsChanged();
+        modelList.set(newSuggestionViewInfos);
 
-        if (mListPropertyModel.get(SuggestionListProperties.VISIBLE) && getSuggestionCount() == 0) {
+        if (mListPropertyModel.get(SuggestionListProperties.VISIBLE)
+                && newSuggestionViewInfos.size() == 0) {
             hideSuggestions();
         }
         mDelegate.onSuggestionsChanged(inlineAutocompleteText);
@@ -1085,7 +1066,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
 
         stopAutocomplete(true);
 
-        clearSuggestions();
+        getSuggestionModelList().clear();
         updateOmniboxSuggestionsVisibility();
     }
 

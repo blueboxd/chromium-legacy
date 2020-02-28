@@ -475,9 +475,9 @@ DeviceEventLogImpl::LogEntry::LogEntry(const char* filedesc,
     : file_line(file_line),
       log_type(log_type),
       log_level(log_level),
-      event(event),
       time(base::Time::Now()),
       count(1) {
+  base::TrimWhitespaceASCII(event, base::TRIM_ALL, &this->event);
   if (filedesc) {
     file = filedesc;
     size_t last_slash_pos = file.find_last_of("\\/");

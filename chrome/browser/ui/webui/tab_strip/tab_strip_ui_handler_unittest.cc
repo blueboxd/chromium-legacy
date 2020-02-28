@@ -354,6 +354,7 @@ TEST_F(TabStripUIHandlerTest, MoveGroupAcrossWindows) {
       new_browser.get()->tab_strip_model()->GetWebContentsAt(0);
   content::WebContents* moved_contents2 =
       new_browser.get()->tab_strip_model()->GetWebContentsAt(1);
+  web_ui()->ClearTrackedCalls();
 
   int new_index = -1;
   base::ListValue args;
@@ -383,6 +384,20 @@ TEST_F(TabStripUIHandlerTest, MoveGroupAcrossWindows) {
           ->visual_data();
   ASSERT_EQ(visual_data.title(), new_visual_data->title());
   ASSERT_EQ(visual_data.color(), new_visual_data->color());
+
+  // Test that a WebUI event for the ID change was sent first.
+  const content::TestWebUI::CallData& group_replaced_data =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", group_replaced_data.function_name());
+  std::string event_name;
+  ASSERT_TRUE(group_replaced_data.arg1()->GetAsString(&event_name));
+  EXPECT_EQ("tab-group-id-replaced", event_name);
+  std::string old_group_id_arg;
+  ASSERT_TRUE(group_replaced_data.arg2()->GetAsString(&old_group_id_arg));
+  EXPECT_EQ(group_id.ToString(), old_group_id_arg);
+  std::string new_group_id_arg;
+  ASSERT_TRUE(group_replaced_data.arg3()->GetAsString(&new_group_id_arg));
+  EXPECT_EQ(new_group_id.value().ToString(), new_group_id_arg);
 }
 
 TEST_F(TabStripUIHandlerTest, MoveGroupAcrossProfiles) {

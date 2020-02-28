@@ -24,6 +24,7 @@ class MediaLog;
 class MEDIA_GPU_EXPORT TextureSelector {
  public:
   TextureSelector(VideoPixelFormat pixfmt,
+                  DXGI_FORMAT output_dxgifmt,
                   bool supports_swap_chain);
   virtual ~TextureSelector() = default;
 
@@ -39,12 +40,14 @@ class MEDIA_GPU_EXPORT TextureSelector {
       ComD3D11DeviceContext,
       gfx::Size size);
 
-  VideoPixelFormat PixelFormat() { return pixel_format_; }
+  VideoPixelFormat PixelFormat() const { return pixel_format_; }
+  DXGI_FORMAT OutputDXGIFormat() const { return output_dxgifmt_; }
 
  private:
   friend class CopyTextureSelector;
 
   const VideoPixelFormat pixel_format_;
+  const DXGI_FORMAT output_dxgifmt_;
   const bool supports_swap_chain_;
 };
 
@@ -55,18 +58,13 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
                       DXGI_FORMAT input_dxgifmt,
                       DXGI_FORMAT output_dxgifmt,
                       bool supports_swap_chain)
-      : TextureSelector(pixfmt,
-                        supports_swap_chain),
-        output_dxgifmt_(output_dxgifmt) {}
+      : TextureSelector(pixfmt, output_dxgifmt, supports_swap_chain) {}
 
   std::unique_ptr<Texture2DWrapper> CreateTextureWrapper(
       ComD3D11Device device,
       ComD3D11VideoDevice video_device,
       ComD3D11DeviceContext,
       gfx::Size size) override;
-
- private:
-  DXGI_FORMAT output_dxgifmt_;
 };
 
 }  // namespace media

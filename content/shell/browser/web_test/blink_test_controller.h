@@ -34,6 +34,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/web_test/leak_detector.h"
 #include "content/shell/common/blink_test.mojom.h"
+#include "content/shell/common/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -240,15 +241,19 @@ class BlinkTestController : public WebContentsObserver,
   void OnTestFinished();
   void OnCaptureSessionHistory();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);
-  mojo::AssociatedRemote<mojom::BlinkTestControl>& GetBlinkTestControlRemote(
-      RenderFrameHost* frame);
-  void HandleBlinkTestControlError(const GlobalFrameRoutingId& key);
 
   void OnCleanupFinished();
   void OnCaptureDumpCompleted(mojom::BlinkTestDumpPtr dump);
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
   void EnqueueSurfaceCopyRequest();
+
+  mojo::AssociatedRemote<mojom::BlinkTestControl>& GetBlinkTestControlRemote(
+      RenderFrameHost* frame);
+  mojo::AssociatedRemote<mojom::WebTestControl>& GetWebTestControlRemote(
+      RenderProcessHost* process);
+  void HandleBlinkTestControlError(const GlobalFrameRoutingId& key);
+  void HandleWebTestControlError(RenderProcessHost* key);
 
   // CompositeAllFramesThen() first builds a frame tree based on
   // frame->GetParent(). Then, it builds a queue of frames in depth-first order,
@@ -342,6 +347,9 @@ class BlinkTestController : public WebContentsObserver,
   // Map from one frame to one mojo pipe.
   std::map<GlobalFrameRoutingId,
            mojo::AssociatedRemote<mojom::BlinkTestControl>>
+      blink_test_control_map_;
+
+  std::map<RenderProcessHost*, mojo::AssociatedRemote<mojom::WebTestControl>>
       web_test_control_map_;
 
   base::ScopedTempDir writable_directory_for_tests_;

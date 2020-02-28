@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="../../../resources/testharness.js"></script>
+  <script src="../../../resources/testharnessreport.js"></script>
+  <script src="../../../fast/forms/resources/common.js"></script>
+  <script src="../../../fast/forms/resources/picker-common.js"></script>
+  <script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+<body>
+
+<input type="date" id="date1" value="2000-01-02">
+
+<script>
+async_test((t) => {
+    var markDirtyCounter = 0;
+    var focusCounter = 0;
+    var date1 = document.getElementById('date1');
+    openPicker(date1, () => {
+        assert_equals(focusCounter, 2, "Expected 2 Focus events from opening popup.");
+        assert_equals(markDirtyCounter, 3, "Expected 3 MarkDirty events from opening popup.");
+        console.log('Press right arrow to adjust date');
+        eventSender.keyDown('ArrowRight');
+    });
+
+    accessibilityController.setNotificationListener(function(axnode, type) {
+        if (type == 'Focus') {
+            console.log('Received Focus event: ' + accessibilityController.focusedElement.name.replace(/,/g, ''));
+            focusCounter++;
+        } else if (type == 'MarkDirty') {
+            console.log('Received MarkDirty event');
+            if (++markDirtyCounter == 4) {
+                assert_equals(date1.value, "2000-01-03", "Expected arrow key to change date");
+                console.log('Open the month switcher menu.');
+                setTimeout(() => { clickMonthPopupButton(); }, 0);
+            } else if (markDirtyCounter == 6) {
+                console.log('Highlighting 2000-02 in the month popup');
+                setTimeout(function() { eventSender.keyDown('ArrowRight'); }, 0);
+            } else if (markDirtyCounter == 8) {
+                console.log('Pressing enter to submit month switcher menu selection');
+                setTimeout(function() { eventSender.keyDown('Enter'); }, 0);
+            }
+        }
+
+        if (focusCounter == 7 && markDirtyCounter == 10) {
+            assert_equals(date1.value, "2000-02-03", "Submitting month switcher should have udpated control value");
+            t.done();
+        }
+    });
+}, 'Tests that typing an arrow key and opening month switcher menu dispatches |Focus| and |MarkDirty| a11y events.');
+
+</script>
+</body>
+</html>

@@ -17,12 +17,16 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/color_picker_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -45,10 +49,10 @@
 // static
 views::Widget* TabGroupEditorBubbleView::Show(
     TabGroupHeader* anchor_view,
-    TabStripController* tab_strip_controller,
+    const Browser* browser,
     const tab_groups::TabGroupId& group) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(anchor_view, tab_strip_controller, group));
+      new TabGroupEditorBubbleView(anchor_view, browser, group));
   widget->Show();
   return widget;
 }
@@ -69,18 +73,22 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
 
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
-    TabStripController* tab_strip_controller,
+    const Browser* browser,
     const tab_groups::TabGroupId& group)
-    : tab_strip_controller_(tab_strip_controller),
+    : browser_(browser),
       group_(group),
       title_field_controller_(this),
-      button_listener_(tab_strip_controller, anchor_view, group) {
+      button_listener_(browser, anchor_view, group) {
   SetAnchorView(anchor_view);
   set_margins(gfx::Insets());
 
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
-  const base::string16 title = tab_strip_controller_->GetGroupTitle(group_);
+  const base::string16 title = browser_->tab_strip_model()
+                                   ->group_model()
+                                   ->GetTabGroup(group_)
+                                   ->visual_data()
+                                   ->title();
   title_at_opening_ = title;
   DialogDelegate::set_close_callback(base::BindOnce(
       &TabGroupEditorBubbleView::OnBubbleClose, base::Unretained(this)));
@@ -200,7 +208,11 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
   // Keep track of the current group's color, to be returned as the initial
   // selected value.
   const tab_groups::TabGroupColorId initial_color_id =
-      tab_strip_controller_->GetGroupColorId(group_);
+      browser_->tab_strip_model()
+          ->group_model()
+          ->GetTabGroup(group_)
+          ->visual_data()
+          ->color();
   SkColor initial_color;
 
   color_ids_.reserve(all_colors.size());
@@ -221,8 +233,11 @@ SkColor TabGroupEditorBubbleView::InitColorSet() {
 
 void TabGroupEditorBubbleView::UpdateGroup() {
   base::Optional<int> selected_element = color_selector_->GetSelectedElement();
+  TabGroup* tab_group =
+      browser_->tab_strip_model()->group_model()->GetTabGroup(group_);
+
   const tab_groups::TabGroupColorId current_color =
-      tab_strip_controller_->GetGroupColorId(group_);
+      tab_group->visual_data()->color();
   const tab_groups::TabGroupColorId updated_color =
       selected_element.has_value() ? color_ids_[selected_element.value()]
                                    : current_color;
@@ -234,7 +249,7 @@ void TabGroupEditorBubbleView::UpdateGroup() {
 
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
                                           updated_color);
-  tab_strip_controller_->SetVisualDataForGroup(group_, new_data);
+  tab_group->SetVisualData(new_data);
 }
 
 void TabGroupEditorBubbleView::OnBubbleClose() {
@@ -276,39 +291,44 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
 }
 
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
-    TabStripController* tab_strip_controller,
+    const Browser* browser,
     TabGroupHeader* anchor_view,
     tab_groups::TabGroupId group)
-    : tab_strip_controller_(tab_strip_controller),
-      anchor_view_(anchor_view),
-      group_(group) {}
+    : browser_(browser), anchor_view_(anchor_view), group_(group) {}
 
 void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
+  TabStripModel* model = browser_->tab_strip_model();
+  const std::vector<int> tabs_in_group =
+      model->group_model()->GetTabGroup(group_)->ListTabs();
   switch (sender->GetID()) {
     case TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_NewTabInGroup"));
-      tab_strip_controller_->AddNewTabInGroup(group_);
+      model->delegate()->AddTabAt(GURL(), tabs_in_group.back() + 1, true,
+                                  group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
       anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
-      tab_strip_controller_->UngroupAllTabsInGroup(group_);
+      model->RemoveFromGroup(tabs_in_group);
       break;
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_CloseGroup"));
-      tab_strip_controller_->CloseAllTabsInGroup(group_);
+      for (int i = tabs_in_group.size() - 1; i >= 0; --i) {
+        model->CloseWebContentsAt(
+            tabs_in_group[i], TabStripModel::CLOSE_USER_GESTURE |
+                                  TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      }
       break;
     case TAB_GROUP_HEADER_CXMENU_FEEDBACK: {
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_SendFeedback"));
-      const Browser* browser = tab_strip_controller_->GetBrowser();
       chrome::ShowFeedbackPage(
-          browser, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
+          browser_, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
           std::string() /* description_template */,
           std::string() /* description_placeholder_text */,
           std::string("DESKTOP_TAB_GROUPS") /* category_tag */,

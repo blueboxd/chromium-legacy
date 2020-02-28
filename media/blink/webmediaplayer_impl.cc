@@ -58,6 +58,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -569,15 +570,9 @@ void WebMediaPlayerImpl::EnteredFullscreen() {
   // info before returning.
   if (!decoder_requires_restart_for_overlay_)
     MaybeSendOverlayInfoToDecoder();
-
-  if (power_status_helper_)
-    power_status_helper_->SetIsFullscreen(true);
 }
 
 void WebMediaPlayerImpl::ExitedFullscreen() {
-  if (power_status_helper_)
-    power_status_helper_->SetIsFullscreen(false);
-
   overlay_info_.is_fullscreen = false;
 
   // If we're in overlay mode, then exit it unless we're supposed to allow
@@ -598,6 +593,14 @@ void WebMediaPlayerImpl::BecameDominantVisibleContent(bool is_dominant) {
 void WebMediaPlayerImpl::SetIsEffectivelyFullscreen(
     blink::WebFullscreenVideoStatus fullscreen_video_status) {
   delegate_->SetIsEffectivelyFullscreen(delegate_id_, fullscreen_video_status);
+
+  if (power_status_helper_) {
+    // We don't care about pip, so anything that's "not fullscreen" is good
+    // enough for us.
+    power_status_helper_->SetIsFullscreen(
+        fullscreen_video_status !=
+        blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
+  }
 }
 
 void WebMediaPlayerImpl::OnHasNativeControlsChanged(bool has_native_controls) {

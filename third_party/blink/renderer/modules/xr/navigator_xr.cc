@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -33,7 +33,7 @@ NavigatorXR& NavigatorXR::From(Navigator& navigator) {
   return *supplement;
 }
 
-XR* NavigatorXR::xr(Navigator& navigator) {
+XRSystem* NavigatorXR::xr(Navigator& navigator) {
   // Always return null when the navigator is detached.
   if (!navigator.GetFrame()) {
     return nullptr;
@@ -42,7 +42,7 @@ XR* NavigatorXR::xr(Navigator& navigator) {
   return NavigatorXR::From(navigator).xr();
 }
 
-XR* NavigatorXR::xr() {
+XRSystem* NavigatorXR::xr() {
   auto* document = GetDocument();
 
   // Always return null when the navigator is detached.
@@ -58,8 +58,8 @@ XR* NavigatorXR::xr() {
   }
 
   if (!xr_) {
-    xr_ = MakeGarbageCollected<XR>(*document->GetFrame(),
-                                   document->UkmSourceID());
+    xr_ = MakeGarbageCollected<XRSystem>(*document->GetFrame(),
+                                         document->UkmSourceID());
   }
 
   return xr_;

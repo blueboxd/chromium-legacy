@@ -120,6 +120,10 @@ bool DeviceState::PropertyChanged(const std::string& key,
   return false;
 }
 
+bool DeviceState::IsActive() const {
+  return true;
+}
+
 void DeviceState::IPConfigPropertiesChanged(const std::string& ip_config_path,
                                             const base::Value& properties) {
   NET_LOG(EVENT) << "IPConfig for: " << path()

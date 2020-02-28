@@ -422,4 +422,12 @@ TEST_F(CodecImageTest, GetCropRect) {
       codec_buffer_wait_coordinator_->texture_owner()->get_crop_rect_count, 1);
 }
 
+TEST_F(CodecImageTest, RenderAfterUnusedDoesntCrash) {
+  auto i = NewImage(kTextureOwner);
+  i->NotifyUnused();
+  EXPECT_FALSE(i->RenderToTextureOwnerBackBuffer());
+  EXPECT_FALSE(i->RenderToTextureOwnerFrontBuffer(
+      CodecImage::BindingsMode::kEnsureTexImageBound));
+}
+
 }  // namespace media

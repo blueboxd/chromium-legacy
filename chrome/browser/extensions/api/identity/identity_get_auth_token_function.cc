@@ -89,13 +89,12 @@ IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
                                   this);
 }
 
-bool IdentityGetAuthTokenFunction::RunAsync() {
+ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("identity", "IdentityGetAuthTokenFunction",
                                     this, "extension", extension()->id());
 
   if (GetProfile()->IsOffTheRecord()) {
-    error_ = identity_constants::kOffTheRecord;
-    return false;
+    return RespondNow(Error(identity_constants::kOffTheRecord));
   }
 
   std::unique_ptr<api::identity::GetAuthToken::Params> params(
@@ -114,8 +113,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   // Check that the necessary information is present in the manifest.
   oauth2_client_id_ = GetOAuth2ClientId();
   if (oauth2_client_id_.empty()) {
-    error_ = identity_constants::kInvalidClientId;
-    return false;
+    return RespondNow(Error(identity_constants::kInvalidClientId));
   }
 
   std::set<std::string> scopes(oauth2_info.scopes.begin(),
@@ -133,8 +131,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   }
 
   if (scopes.empty()) {
-    error_ = identity_constants::kInvalidScopes;
-    return false;
+    return RespondNow(Error(identity_constants::kInvalidScopes));
   }
 
   token_key_.scopes = scopes;
@@ -159,7 +156,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
                        weak_ptr_factory_.GetWeakPtr(), gaia_id));
   }
 
-  return true;
+  return RespondLater();
 }
 
 void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
@@ -282,25 +279,23 @@ void IdentityGetAuthTokenFunction::StartAsyncRun() {
               &IdentityGetAuthTokenFunction::OnIdentityAPIShutdown, this));
 }
 
-void IdentityGetAuthTokenFunction::CompleteAsyncRun(bool success) {
+void IdentityGetAuthTokenFunction::CompleteAsyncRun(ResponseValue response) {
   identity_api_shutdown_subscription_.reset();
 
-  SendResponse(success);
+  Respond(std::move(response));
   Release();  // Balanced in StartAsyncRun
 }
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
-  SetResult(std::make_unique<base::Value>(access_token));
-  CompleteAsyncRun(true);
+  CompleteAsyncRun(OneArgument(std::make_unique<base::Value>(access_token)));
 }
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
     const std::string& error) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("identity", "CompleteFunctionWithError",
                                       this, "error", error);
-  error_ = error;
-  CompleteAsyncRun(false);
+  CompleteAsyncRun(Error(error));
 }
 
 bool IdentityGetAuthTokenFunction::ShouldStartSigninFlow() {
@@ -938,6 +933,10 @@ bool IdentityGetAuthTokenFunction::IsPrimaryAccountOnly() const {
   return IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
       ->AreExtensionsRestrictedToPrimaryAccount();
+}
+
+Profile* IdentityGetAuthTokenFunction::GetProfile() const {
+  return Profile::FromBrowserContext(browser_context());
 }
 
 }  // namespace extensions

@@ -502,6 +502,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewDeleteEntireCheckSelection"),
         TestCase("openQuickViewClickDeleteButton"),
         TestCase("openQuickViewDeleteButtonNotShown"),
+        TestCase("openQuickViewUmaViaContextMenu"),
+        TestCase("openQuickViewUmaForCheckSelectViaContextMenu"),
+        TestCase("openQuickViewUmaViaSelectionMenu"),
+        TestCase("openQuickViewUmaViaSelectionMenuKeyboard"),
         TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

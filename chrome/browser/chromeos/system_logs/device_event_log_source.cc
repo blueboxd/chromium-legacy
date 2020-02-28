@@ -23,7 +23,7 @@ void DeviceEventLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK(!callback.is_null());
 
   auto response = std::make_unique<SystemLogsResponse>();
-  const int kMaxDeviceEventsForAboutSystem = 400;
+  const int kMaxDeviceEventsForAboutSystem = 4000;
   (*response)[kNetworkEventLogEntry] = device_event_log::GetAsString(
       device_event_log::OLDEST_FIRST, "unixtime,file,level", "network",
       device_event_log::kDefaultLogLevel, kMaxDeviceEventsForAboutSystem);

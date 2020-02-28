@@ -47,21 +47,21 @@ Polymer({
     },
   },
 
-  /** @type {LanguageSettingsPrivate} */
-  languageSettingsPrivate: null,
+  /** @private {LanguageSettingsPrivate} */
+  languageSettingsPrivate_: null,
 
   /** @override */
   ready() {
-    this.languageSettingsPrivate = settings.languageSettingsPrivateApiForTest ||
-        /** @type {!LanguageSettingsPrivate} */
-        (chrome.languageSettingsPrivate);
+    this.languageSettingsPrivate_ =
+        settings.LanguagesBrowserProxyImpl.getInstance()
+            .getLanguageSettingsPrivate();
 
-    this.languageSettingsPrivate.getSpellcheckWords(words => {
+    this.languageSettingsPrivate_.getSpellcheckWords(words => {
       this.hasWords_ = words.length > 0;
       this.words_ = words;
     });
 
-    this.languageSettingsPrivate.onCustomDictionaryChanged.addListener(
+    this.languageSettingsPrivate_.onCustomDictionaryChanged.addListener(
         this.onCustomDictionaryChanged_.bind(this));
 
     // Add a key handler for the new-word input.
@@ -77,7 +77,7 @@ Polymer({
     const word = this.getTrimmedNewWord_();
     this.newWordValue_ = '';
     if (word) {
-      this.languageSettingsPrivate.addSpellcheckWord(word);
+      this.languageSettingsPrivate_.addSpellcheckWord(word);
     }
   },
 
@@ -204,6 +204,6 @@ Polymer({
    * @param {!{model: !{item: string}}} e
    */
   onRemoveWordTap_(e) {
-    this.languageSettingsPrivate.removeSpellcheckWord(e.model.item);
+    this.languageSettingsPrivate_.removeSpellcheckWord(e.model.item);
   },
 });

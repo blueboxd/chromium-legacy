@@ -121,6 +121,8 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferWithModifiers(
   switch (format) {
     case DRM_FORMAT_XRGB8888:
     case DRM_FORMAT_ARGB8888:
+    case DRM_FORMAT_XRGB2101010:
+    case DRM_FORMAT_ABGR2101010:
       bytes_per_pixel = 4;
       break;
     case DRM_FORMAT_NV12:

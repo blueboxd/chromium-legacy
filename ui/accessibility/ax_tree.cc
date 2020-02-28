@@ -565,6 +565,84 @@ struct AXTreeUpdateState {
   const AXTree& tree;
 };
 
+struct AXTree::NodeSetSizePosInSetInfo {
+  NodeSetSizePosInSetInfo() = default;
+  ~NodeSetSizePosInSetInfo() = default;
+
+  int32_t pos_in_set = 0;
+  int32_t set_size = 0;
+  base::Optional<int> lowest_hierarchical_level;
+};
+
+struct AXTree::OrderedSetContent {
+  explicit OrderedSetContent(const AXNode* ordered_set = nullptr)
+      : ordered_set_(ordered_set) {}
+  ~OrderedSetContent() = default;
+
+  std::vector<const AXNode*> set_items_;
+
+  // Some ordered set items may not be associated with an ordered set.
+  const AXNode* ordered_set_;
+};
+
+struct AXTree::OrderedSetItemsMap {
+  OrderedSetItemsMap() = default;
+  ~OrderedSetItemsMap() = default;
+
+  // Check if a particular hierarchical level exists in this map.
+  bool HierarchicalLevelExists(base::Optional<int> level) {
+    if (items_map_.find(level) == items_map_.end())
+      return false;
+    return true;
+  }
+
+  // Add the OrderedSetContent to the corresponding hierarchical level in the
+  // map.
+  void Add(base::Optional<int> level,
+           const OrderedSetContent& ordered_set_content) {
+    if (!HierarchicalLevelExists(level))
+      items_map_[level] = std::vector<OrderedSetContent>();
+
+    items_map_[level].push_back(ordered_set_content);
+  }
+
+  // Add an ordered set item to the OrderedSetItemsMap given its hierarchical
+  // level. We always want to append the item to the last OrderedSetContent of
+  // that hierarchical level, due to the following:
+  //   - The last OrderedSetContent on any level of the items map is in progress
+  //     of being populated.
+  //   - All other OrderedSetContent other than the last one on a level
+  //     represents a complete ordered set and should not be modified.
+  void AddItemToBack(base::Optional<int> level, const AXNode* item) {
+    if (!HierarchicalLevelExists(level))
+      return;
+
+    std::vector<OrderedSetContent>& sets_list = items_map_[level];
+    if (!sets_list.empty()) {
+      OrderedSetContent& ordered_set_content = sets_list.back();
+      ordered_set_content.set_items_.push_back(item);
+    }
+  }
+
+  // Retrieve the first OrderedSetContent of the OrderedSetItemsMap.
+  OrderedSetContent* GetFirstOrderedSetContent() {
+    if (items_map_.empty())
+      return nullptr;
+
+    std::vector<OrderedSetContent>& sets_list = items_map_.begin()->second;
+    if (sets_list.empty())
+      return nullptr;
+
+    return &(sets_list.front());
+  }
+
+  // Clears all the content in the map.
+  void Clear() { items_map_.clear(); }
+
+  // Maps a hierarchical level to a list of OrderedSetContent.
+  std::map<base::Optional<int32_t>, std::vector<OrderedSetContent>> items_map_;
+};
+
 AXTree::AXTree() {
   AXNodeData root;
   root.id = AXNode::kInvalidAXID;
@@ -979,8 +1057,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
-  // Clear list_info_map_
-  ordered_set_info_map_.clear();
+  // Clears |node_set_size_pos_in_set_info_map_|
+  node_set_size_pos_in_set_info_map_.clear();
 
   std::vector<AXTreeObserver::Change> changes;
   changes.reserve(update.nodes.size());
@@ -1831,50 +1909,71 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
   return return_value;
 }
 
-void AXTree::PopulateOrderedSetItems(
+void AXTree::PopulateOrderedSetItemsMap(
     const AXNode& original_node,
     const AXNode* ordered_set,
-    std::vector<const AXNode*>& items_to_be_populated) const {
+    OrderedSetItemsMap& items_map_to_be_populated) const {
   // Ignored nodes are not a part of ordered sets.
   if (original_node.IsIgnored())
     return;
 
-  // Default hierarchical_level is 0, which represents that no hierarchical
-  // level was detected on |original_node|.
-  int original_node_min_level = original_node.GetIntAttribute(
-      ax::mojom::IntAttribute::kHierarchicalLevel);
+  // Not all ordered set containers support hierarchical level, but their set
+  // items may support hierarchical level. For example, container <tree> does
+  // not support level, but <treeitem> supports level. For ordered sets like
+  // this, the set container (e.g. <tree>) will take on the min of the levels
+  // of its direct children(e.g. <treeitem>), if the children's levels are
+  // defined.
+  base::Optional<int> ordered_set_min_level =
+      ordered_set->GetHierarchicalLevel();
 
-  // If we are calling this function on the ordered set container itself, that
-  // is |original_node| is ordered set, then set |original_node|'s hierarchical
-  // level to be the min level of |original_node|'s direct children, if the
-  // child's level is defined.
-  if (&original_node == ordered_set) {
-    for (AXNode::UnignoredChildIterator itr =
-             original_node.UnignoredChildrenBegin();
-         itr != original_node.UnignoredChildrenEnd(); ++itr) {
-      int32_t child_level =
-          itr->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-      if (child_level > 0)
-        original_node_min_level =
-            original_node_min_level > 0
-                ? std::min(child_level, original_node_min_level)
-                : child_level;
+  for (AXNode::UnignoredChildIterator child =
+           ordered_set->UnignoredChildrenBegin();
+       child != ordered_set->UnignoredChildrenEnd(); ++child) {
+    base::Optional<int> child_level = child->GetHierarchicalLevel();
+    if (child_level) {
+      ordered_set_min_level = ordered_set_min_level
+                                  ? std::min(child_level, ordered_set_min_level)
+                                  : child_level;
     }
   }
 
-  RecursivelyPopulateOrderedSetItems(original_node, ordered_set, ordered_set,
-                                     original_node_min_level,
-                                     items_to_be_populated);
+  RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, ordered_set,
+                                        ordered_set_min_level, base::nullopt,
+                                        items_map_to_be_populated);
+
+  // If after |RecursivelyPopulateOrderedSetItemsMap| call, the corresponding
+  // level (i.e. ordered_set_min_level) does not exist in
+  // |items_map_to_be_populated|, and |original_node| equals |ordered_set|, we
+  // know |original_node| is an empty ordered set and contains no set items.
+  // However, |original_node| may still have set size attribute, so we still
+  // want to add this empty set (i.e. original_node/ordered_set) to
+  // |items_map_to_be_populated|.
+  if (&original_node == ordered_set &&
+      !items_map_to_be_populated.HierarchicalLevelExists(ordered_set_min_level))
+    items_map_to_be_populated.Add(ordered_set_min_level,
+                                  OrderedSetContent(&original_node));
 }
 
-void AXTree::RecursivelyPopulateOrderedSetItems(
+void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     const AXNode& original_node,
     const AXNode* ordered_set,
     const AXNode* local_parent,
-    int32_t original_node_min_level,
-    std::vector<const AXNode*>& items_to_be_populated) const {
-  // Stop searching recursively on node |local_parent| if it turns out to be an
-  // ordered set whose role matches that of the top level ordered set.
+    base::Optional<int> ordered_set_min_level,
+    base::Optional<int> prev_level,
+    OrderedSetItemsMap& items_map_to_be_populated) const {
+  // For optimization purpose, we want to only populate set items that are
+  // direct descendants of |ordered_set|, since we will only be calculating
+  // PosInSet & SetSize of items of that level. So we skip items on deeper
+  // levels by stop searching recursively on node |local_parent| that turns out
+  // to be an ordered set whose role matches that of |ordered_set|. However,
+  // when we encounter a flattened structure such as the following:
+  // <div role="tree">
+  //   <div role="treeitem" aria-level="1"></div>
+  //   <div role="treeitem" aria-level="2"></div>
+  //   <div role="treeitem" aria-level="3"></div>
+  // </div>
+  // This optimization won't apply, we will end up populating items from all
+  // levels.
   if (ordered_set->data().role == local_parent->data().role &&
       ordered_set != local_parent)
     return;
@@ -1895,7 +1994,9 @@ void AXTree::RecursivelyPopulateOrderedSetItems(
       continue;
     }
 
-    // Add child to |items_to_be_populated| if role matches with the role of
+    base::Optional<int> curr_level = child->GetHierarchicalLevel();
+
+    // Add child to |items_map_to_be_populated| if role matches with the role of
     // |ordered_set|. If role of node is kRadioButton, don't add items of other
     // roles, even if item role matches the role of |ordered_set|.
     if (child->data().role == ax::mojom::Role::kComment ||
@@ -1903,56 +2004,66 @@ void AXTree::RecursivelyPopulateOrderedSetItems(
          child->data().role == ax::mojom::Role::kRadioButton) ||
         (original_node.data().role != ax::mojom::Role::kRadioButton &&
          child->SetRoleMatchesItemRole(ordered_set))) {
-      int child_level =
-          child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-
-      // If the hierarchical level of |child| and the level of |original_node|
-      // differ, we do not add child to |items_to_be_populated| and we do not
-      // recurse into |child| and populate its order set item descendants.
-      // Additionally, as an exception, we always add tab items to the set,
-      // because according to WAI-ARIA spec, tab does not support hierarchical
-      // level, while tab's set container tablist supports hierarchical level.
-      // Due to this, we always assume sibling tabs are always on the same
-      // level, and always add tab child item to |items_to_be_populated|.
+      // According to WAI-ARIA spec, some ordered set items do not support
+      // hierarchical level while its ordered set container does. For example,
+      // <tab> does not support level, while <tablist> supports level.
       // https://www.w3.org/WAI/PF/aria/roles#tab
       // https://www.w3.org/WAI/PF/aria/roles#tablist
-      if (child_level != original_node_min_level &&
-          child->data().role != ax::mojom::Role::kTab) {
-        if (child_level < original_node_min_level &&
-            original_node.GetUnignoredParent() == child->GetUnignoredParent()) {
-          // For a flattened structure, where |original_node| and |child| share
-          // the same parent, if a decrease in level occurs after
-          // |original_node| has been examined (i.e. |original_node|'s index
-          // comes before that of |child|), we stop adding to this set, and stop
-          // from populating |child|'s other siblings to |items_to_be_populated|
-          // as well.
-          if (original_node.GetUnignoredIndexInParent() <
-              child->GetUnignoredIndexInParent())
-            break;
+      // For this special case, when we add set items (e.g. tab) to
+      // |items_map_to_be_populated|, set item is placed at the same level as
+      // its container (e.g. tablist) in |items_map_to_be_populated|.
+      if (!curr_level && child->GetUnignoredParent() == ordered_set)
+        curr_level = ordered_set_min_level;
 
-          // For a flattened structure, where |original_node| and |child| share
-          // the same parent, if a decrease in level has been detected before
-          // |original_node| has been examined (i.e. |original_node|'s index
-          // comes after that of |child|), then everything previously added to
-          // items actually belongs to a different set. Clear the items set.
-          items_to_be_populated.clear();
-        }
-        continue;
+      // We only add child to |items_map_to_be_populated| if the child set item
+      // is at the same hierarchical level as |ordered_set|'s level.
+      if (!items_map_to_be_populated.HierarchicalLevelExists(curr_level)) {
+        const AXNode* child_ordered_set =
+            (child->SetRoleMatchesItemRole(ordered_set) &&
+             ordered_set_min_level == curr_level)
+                ? ordered_set
+                : nullptr;
+        items_map_to_be_populated.Add(curr_level,
+                                      OrderedSetContent(child_ordered_set));
       }
 
-      // We only add child to |items_to_be_populated| if the child set item is
-      // at the same hierarchical level as |original_node|'s level.
-      items_to_be_populated.push_back(child);
+      items_map_to_be_populated.AddItemToBack(curr_level, child);
     }
 
     // Recurse if there is a generic container, ignored, or unknown.
     if (child->IsIgnored() ||
         child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kUnknown) {
-      RecursivelyPopulateOrderedSetItems(original_node, ordered_set, child,
-                                         original_node_min_level,
-                                         items_to_be_populated);
+      RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
+                                            ordered_set_min_level, curr_level,
+                                            items_map_to_be_populated);
     }
+
+    // If |curr_level| goes up one level from |prev_level|, which indicates
+    // the ordered set of |prev_level| is closed, we add a new OrderedSetContent
+    // on the previous level of |items_map_to_be_populated| to signify this.
+    // Consider the example below:
+    // <div role="tree">
+    //   <div role="treeitem" aria-level="1"></div>
+    //   <!--- set1-level2 -->
+    //   <div role="treeitem" aria-level="2"></div>
+    //   <div role="treeitem" aria-level="2"></div>  <--|prev_level|
+    //   <div role="treeitem" aria-level="1" id="item2-level1">  <--|curr_level|
+    //   </div>
+    //   <!--- set2-level2 -->
+    //   <div role="treeitem" aria-level="2"></div>
+    //   <div role="treeitem" aria-level="2"></div>
+    // </div>
+    // |prev_level| is on the last item of "set1-level2" and |curr_level| is on
+    // "item2-level1". Since |curr_level| is up one level from |prev_level|, we
+    // already completed adding all items from "set1-level2" to
+    // |items_map_to_be_populated|. So we close up "set1-level2" by adding a new
+    // OrderedSetContent to level 2. When |curr_level| ends up on the items of
+    // "set2-level2" next, it has a fresh new set to be populated.
+    if (child->SetRoleMatchesItemRole(ordered_set) && curr_level < prev_level)
+      items_map_to_be_populated.Add(prev_level, OrderedSetContent());
+
+    prev_level = curr_level;
   }
 }
 
@@ -1962,143 +2073,162 @@ void AXTree::RecursivelyPopulateOrderedSetItems(
 void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
                                             const AXNode* ordered_set) {
   DCHECK(ordered_set);
-  std::vector<const AXNode*> items;
-  // Find all items within ordered_set and add to vector.
-  PopulateOrderedSetItems(node, ordered_set, items);
+
+  // Set items role::kComment and role::kRadioButton are special cases and do
+  // not necessarily need to be contained in an ordered set.
+  if (node.data().role != ax::mojom::Role::kComment &&
+      node.data().role != ax::mojom::Role::kRadioButton &&
+      !node.SetRoleMatchesItemRole(ordered_set) && !IsSetLike(node.data().role))
+    return;
+
+  OrderedSetItemsMap items_map_to_be_populated;
+
+  // Find all items within ordered_set and add to |items_map_to_be_populated|.
+  PopulateOrderedSetItemsMap(node, ordered_set, items_map_to_be_populated);
 
   // If ordered_set role is kPopUpButton and it wraps a kMenuListPopUp, then we
   // would like it to inherit the SetSize from the kMenuListPopUp it wraps. To
   // do this, we treat the kMenuListPopUp as the ordered_set and eventually
   // assign its SetSize value to the kPopUpButton.
-  if ((node.data().role == ax::mojom::Role::kPopUpButton) &&
-      (items.size() != 0)) {
+  if (node.data().role == ax::mojom::Role::kPopUpButton) {
     // kPopUpButtons are only allowed to contain one kMenuListPopUp.
     // The single element is guaranteed to be a kMenuListPopUp because that is
     // the only item role that matches the ordered set role of kPopUpButton.
     // Please see AXNode::SetRoleMatchesItemRole for more details.
-    DCHECK(items.size() == 1);
-    const AXNode* menu_list_popup = items[0];
-    items.clear();
-    PopulateOrderedSetItems(node, menu_list_popup, items);
-  }
-
-  // Keep track of the number of elements ordered_set has.
-  int32_t num_elements = 0;
-  // Necessary for calculating set_size.
-  int32_t largest_assigned_set_size = 0;
-
-  // Compute pos_in_set_values.
-  for (size_t i = 0; i < items.size(); ++i) {
-    const AXNode* item = items[i];
-    ordered_set_info_map_[item->id()] = OrderedSetInfo();
-    int32_t pos_in_set_value = 0;
-    int hierarchical_level =
-        item->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-
-    pos_in_set_value = num_elements + 1;
-
-    // Check if item has a valid kPosInSet assignment, which takes precedence
-    // over previous assignment. Invalid assignments are decreasing or
-    // duplicates, and should be ignored.
-    pos_in_set_value =
-        std::max(pos_in_set_value,
-                 item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-
-    // If level is specified, use author-provided value, if present.
-    if (hierarchical_level != 0 &&
-        item->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
-      pos_in_set_value =
-          item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
-    }
-
-    // Assign pos_in_set and update role counts.
-    ordered_set_info_map_[item->id()].pos_in_set = pos_in_set_value;
-    num_elements = pos_in_set_value;
-
-    // Check if kSetSize is assigned and update if it's the largest assigned
-    // kSetSize.
-    if (item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
-      largest_assigned_set_size =
-          std::max(largest_assigned_set_size,
-                   item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
-  }
-
-  // Compute set_size value.
-  // The SetSize of an ordered set (and all of its items) is the maximum of the
-  // following candidate values:
-  // 1. The number of elements in the ordered set.
-  // 2. The Largest assigned SetSize in the ordered set.
-  // 3. The SetSize assigned within the ordered set.
-
-  // Set to 0 if ordered_set has no kSetSize attribute.
-  int32_t ordered_set_candidate =
-      ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-
-  int32_t set_size_value = std::max(
-      std::max(num_elements, largest_assigned_set_size), ordered_set_candidate);
-
-  // Assign set_size to ordered_set.
-  // Must meet one of two conditions:
-  // 1. Node role matches ordered set role.
-  // 2. The node that calculations were called on is the ordered_set.
-  if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node) {
-    auto ordered_set_info_result =
-        ordered_set_info_map_.find(ordered_set->id());
-    int hierarchical_level =
-        node.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-    // If ordered_set is not in the cache, assign it a new set_size.
-    if (ordered_set_info_result == ordered_set_info_map_.end()) {
-      ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
-      ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
-      ordered_set_info_map_[ordered_set->id()].lowest_hierarchical_level =
-          hierarchical_level;
-    } else {
-      OrderedSetInfo ordered_set_info = ordered_set_info_result->second;
-      if (ordered_set_info.lowest_hierarchical_level > hierarchical_level) {
-        ordered_set_info.set_size = set_size_value;
-        ordered_set_info.lowest_hierarchical_level = hierarchical_level;
+    OrderedSetContent* set_content =
+        items_map_to_be_populated.GetFirstOrderedSetContent();
+    if (set_content && set_content->set_items_.size() == 1) {
+      const AXNode* menu_list_popup = set_content->set_items_.front();
+      if (menu_list_popup->data().role == ax::mojom::Role::kMenuListPopup) {
+        items_map_to_be_populated.Clear();
+        PopulateOrderedSetItemsMap(node, menu_list_popup,
+                                   items_map_to_be_populated);
+        set_content = items_map_to_be_populated.GetFirstOrderedSetContent();
+        // Replace |set_content|'s ordered set container with |node|
+        // (Role::kPopUpButton), which acts as the set container for nodes with
+        // Role::kMenuListOptions (children of |menu_list_popup|).
+        if (set_content)
+          set_content->ordered_set_ = &node;
       }
     }
   }
 
-  // Assign set_size to items.
-  for (size_t j = 0; j < items.size(); ++j) {
-    const AXNode* item = items[j];
-    int hierarchical_level =
-        item->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-    // If level is specified, use author-provided value, if present.
-    if (hierarchical_level != 0 &&
-        item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
-      ordered_set_info_map_[item->id()].set_size =
-          item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-    else
-      ordered_set_info_map_[item->id()].set_size = set_size_value;
+  // Iterate over all items from OrderedSetItemsMap to compute and cache each
+  // ordered set item's PosInSet and SetSize and corresponding ordered set
+  // container's SetSize.
+  for (auto element : items_map_to_be_populated.items_map_) {
+    for (const OrderedSetContent& ordered_set_content : element.second) {
+      ComputeSetSizePosInSetAndCacheHelper(ordered_set_content);
+    }
   }
 }
 
-// Returns the pos_in_set of item. Looks in ordered_set_info_map_ for cached
-// value. Calculates pos_in_set and set_size for item (and all other items in
-// the same ordered set) if no value is present in the cache.
-// This function is guaranteed to be only called on nodes that can hold
-// pos_in_set values, minimizing the size of the cache.
+void AXTree::ComputeSetSizePosInSetAndCacheHelper(
+    const OrderedSetContent& ordered_set_content) {
+  // Keep track of number of items in the set.
+  int32_t num_elements = 0;
+  // Keep track of largest ordered set item's |aria-setsize| attribute value.
+  int32_t max_item_set_size_from_attribute = 0;
+
+  for (const AXNode* item : ordered_set_content.set_items_) {
+    // |item|'s PosInSet value is the maximum of accumulated number of
+    // elements count and the value from its |aria-posinset| attribute.
+    int32_t pos_in_set_value =
+        std::max(num_elements + 1,
+                 item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+
+    // For |item| that has defined hierarchical level and |aria-posinset|
+    // attribute, the attribute value takes precedence.
+    // Note: According to WAI-ARIA spec, items that support
+    // |aria-posinset| do not necessarily support hierarchical level.
+    if (item->GetHierarchicalLevel() &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet))
+      pos_in_set_value =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+
+    num_elements = pos_in_set_value;
+
+    // Cache computed PosInSet value for |item|.
+    node_set_size_pos_in_set_info_map_[item->id()] = NodeSetSizePosInSetInfo();
+    node_set_size_pos_in_set_info_map_[item->id()].pos_in_set =
+        pos_in_set_value;
+
+    // Track the largest set size for this OrderedSetContent.
+    max_item_set_size_from_attribute =
+        std::max(max_item_set_size_from_attribute,
+                 item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  }  // End of iterating over each item in |ordered_set_content|.
+
+  // The SetSize of an ordered set (and all of its items) is the maximum of
+  // the following values:
+  // 1. The number of elements in the ordered set.
+  // 2. The largest item set size from |aria-setsize| attribute.
+  // 3. The ordered set container's |aria-setsize| attribute value.
+  int32_t set_size_value =
+      std::max(num_elements, max_item_set_size_from_attribute);
+
+  // Cache the hierarchical level and set size of |ordered_set_content|'s set
+  // container, if the container exists.
+  if (const AXNode* ordered_set = ordered_set_content.ordered_set_) {
+    set_size_value = std::max(
+        set_size_value,
+        ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+
+    // Cache |ordered_set|'s hierarchical level.
+    base::Optional<int> ordered_set_level = ordered_set->GetHierarchicalLevel();
+    if (node_set_size_pos_in_set_info_map_.find(ordered_set->id()) ==
+        node_set_size_pos_in_set_info_map_.end()) {
+      node_set_size_pos_in_set_info_map_[ordered_set->id()] =
+          NodeSetSizePosInSetInfo();
+      node_set_size_pos_in_set_info_map_[ordered_set->id()]
+          .lowest_hierarchical_level = ordered_set_level;
+    } else if (node_set_size_pos_in_set_info_map_[ordered_set->id()]
+                   .lowest_hierarchical_level > ordered_set_level) {
+      node_set_size_pos_in_set_info_map_[ordered_set->id()]
+          .lowest_hierarchical_level = ordered_set_level;
+    }
+    // Cache |ordered_set|'s set size.
+    node_set_size_pos_in_set_info_map_[ordered_set->id()].set_size =
+        set_size_value;
+  }
+
+  // Cache the set size of |ordered_set_content|'s set items.
+  for (const AXNode* item : ordered_set_content.set_items_) {
+    // If item's hierarchical level and |aria-setsize| attribute are specified,
+    // the item's |aria-setsize| value takes precedence.
+    if (item->GetHierarchicalLevel() &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+      node_set_size_pos_in_set_info_map_[item->id()].set_size =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+    else
+      node_set_size_pos_in_set_info_map_[item->id()].set_size = set_size_value;
+  }  // End of iterating over each item in |ordered_set_content|.
+}
+
+// Returns the pos_in_set of item. Looks in |node_set_size_pos_in_set_info_map_|
+// for cached value. Calculates pos_in_set and set_size for item (and all other
+// items in the same ordered set) if no value is present in the cache. This
+// function is guaranteed to be only called on nodes that can hold pos_in_set
+// values, minimizing the size of the cache.
 int32_t AXTree::GetPosInSet(const AXNode& node, const AXNode* ordered_set) {
   // If item's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
+      node_set_size_pos_in_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return ordered_set_info_map_[node.id()].pos_in_set;
+  return node_set_size_pos_in_set_info_map_[node.id()].pos_in_set;
 }
 
 // Returns the set_size of node. node could be an ordered set or an item.
-// Looks in ordered_set_info_map_ for cached value. Calculates pos_inset_set
-// and set_size for all nodes in same ordered set if no value is present in the
-// cache.
-// This function is guaranteed to be only called on nodes that can hold
-// set_size values, minimizing the size of the cache.
+// Looks in |node_set_size_pos_in_set_info_map_| for cached value. Calculates
+// pos_in_set and set_size for all nodes in same ordered set if no value is
+// present in the cache. This function is guaranteed to be only called on nodes
+// that can hold set_size values, minimizing the size of the cache.
 int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
   // If node's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
+      node_set_size_pos_in_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return ordered_set_info_map_[node.id()].set_size;
+  return node_set_size_pos_in_set_info_map_[node.id()].set_size;
 }
 
 AXTree::Selection AXTree::GetUnignoredSelection() const {

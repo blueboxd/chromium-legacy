@@ -13,9 +13,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * A class that handles navigations that should be transformed to intents. Logic taken primarly from
  * //android_webview's AwContentsClient.java:sendBrowsingIntent(), with some additional logic
@@ -25,25 +22,12 @@ import java.util.regex.Pattern;
 public class ExternalNavigationHandler {
     private static final String TAG = "ExternalNavHandler";
 
-    static final Pattern BROWSER_URI_SCHEMA =
-            Pattern.compile("(?i)" // switch on case insensitive matching
-                    + "(" // begin group for schema
-                    + "(?:http|https|file)://"
-                    + "|(?:inline|data|about|chrome|javascript):"
-                    + ")"
-                    + ".*");
-
     @CalledByNative
     private static boolean shouldOverrideUrlLoading(TabImpl tab, String url, boolean hasUserGesture,
             boolean isRedirect, boolean isMainFrame) {
-        // Check for regular URIs that WebLayer supports by itself.
         // TODO(blundell): Port over WebViewBrowserActivity's
         // isSpecializedHandlerAvailable() check that checks whether there's an app for handling
         // the scheme?
-        Matcher m = BROWSER_URI_SCHEMA.matcher(url);
-        if (m.matches()) {
-            return false;
-        }
 
         if (!hasUserGesture && !isRedirect) {
             Log.w(TAG, "Denied starting an intent without a user gesture, URI %s", url);

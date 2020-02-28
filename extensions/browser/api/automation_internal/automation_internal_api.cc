@@ -499,6 +499,12 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_HIDETOOLTIP:
       action->action = ax::mojom::Action::kHideTooltip;
       break;
+    case api::automation::ACTION_TYPE_COLLAPSE:
+      action->action = ax::mojom::Action::kCollapse;
+      break;
+    case api::automation::ACTION_TYPE_EXPAND:
+      action->action = ax::mojom::Action::kExpand;
+      break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
     case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
     case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:

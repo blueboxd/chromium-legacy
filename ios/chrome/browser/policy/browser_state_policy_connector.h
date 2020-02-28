@@ -13,6 +13,7 @@ class BrowserPolicyConnectorIOS;
 namespace policy {
 class ConfigurationPolicyProvider;
 class PolicyService;
+class SchemaRegistry;
 }  // namespace policy
 
 // BrowserStatePolicyConnector creates and manages the per-BrowserState policy
@@ -26,7 +27,8 @@ class BrowserStatePolicyConnector {
       delete;
 
   // Initializes this connector.
-  void Init(BrowserPolicyConnectorIOS* browser_policy_connector);
+  void Init(policy::SchemaRegistry* schema_registry,
+            BrowserPolicyConnectorIOS* browser_policy_connector);
 
   // Shuts this connector down in preparation for destruction.
   void Shutdown();
@@ -36,6 +38,9 @@ class BrowserStatePolicyConnector {
   policy::PolicyService* GetPolicyService() const {
     return policy_service_.get();
   }
+
+  // Returns the SchemaRegistry associated with this connector.
+  policy::SchemaRegistry* GetSchemaRegistry() const { return schema_registry_; }
 
  private:
   // |policy_providers_| contains a list of the policy providers available for
@@ -48,7 +53,11 @@ class BrowserStatePolicyConnector {
   // result is true, so take care if a provider overrides that.
   std::vector<policy::ConfigurationPolicyProvider*> policy_providers_;
 
+  // The PolicyService that manages policy for this connector's BrowserState.
   std::unique_ptr<policy::PolicyService> policy_service_;
+
+  // The SchemaRegistry associated with this connector's BrowserState.
+  policy::SchemaRegistry* schema_registry_;
 };
 
 #endif  // IOS_CHROME_BROWSER_POLICY_BROWSER_STATE_POLICY_CONNECTOR_H_

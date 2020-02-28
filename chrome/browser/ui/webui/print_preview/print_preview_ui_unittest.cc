@@ -22,6 +22,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "printing/print_job_constants.h"
 
 using content::WebContents;

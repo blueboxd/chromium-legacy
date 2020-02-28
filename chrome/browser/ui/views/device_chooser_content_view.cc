@@ -297,9 +297,8 @@ base::string16 DeviceChooserContentView::GetWindowTitle() const {
 
 std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
   const auto make_help_button = [this]() {
-    auto help_button = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(help_button.get(),
-                                  vector_icons::kHelpOutlineIcon);
+    auto help_button = views::CreateVectorImageButtonWithNativeTheme(
+        this, vector_icons::kHelpOutlineIcon);
     help_button->SetFocusForPlatform();
     help_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     help_button->set_tag(kHelpButtonTag);

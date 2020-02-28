@@ -1073,11 +1073,11 @@ var OSSettingsLanguagesPageTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'fake_input_method_private.js',
       BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
       BROWSER_SETTINGS_PATH + 'test_languages_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
       BROWSER_SETTINGS_PATH + '../test_util.js',
-      'fake_input_method_private.js',
       'os_languages_page_tests.js',
     ]);
   }

@@ -15,8 +15,11 @@
 #include "base/values.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+namespace content {
+class WebUI;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;

@@ -15,6 +15,15 @@ var createRuleWithID = function(id) {
   };
 };
 
+var createLargeRegexRuleWithID = function(id) {
+  return {
+    id: id,
+    priority: 1,
+    condition: {regexFilter: '.{512}x'},
+    action: {type: 'block'},
+  };
+};
+
 // Verifies the current set of rules. Ensures no error is signalled and proceeds
 // to the next test.
 var verifyCurrentRulesCallback = function() {
@@ -64,6 +73,16 @@ chrome.test.runTests([
     updateDynamicRules(
         [], currentRules,
         chrome.test.callbackFail('Rule with id 3 does not have a unique ID.'));
+  },
+
+  // Ensure we get an error on adding a rule which exceeds the regex memory
+  // limit.
+  function largeRegexError() {
+    updateDynamicRules(
+        [], [createLargeRegexRuleWithID(5)],
+        chrome.test.callbackFail(
+            'Rule with id 5 specified a more complex regex than allowed as ' +
+            'part of the "regexFilter" key.'));
   },
 
   // Ensure we can add up to |ruleLimit| no. of rules.

@@ -824,6 +824,8 @@ void RenderAccessibilityImpl::OnPerformAction(
       Scroll(target.get(), data.action);
       break;
     case ax::mojom::Action::kCustomAction:
+    case ax::mojom::Action::kCollapse:
+    case ax::mojom::Action::kExpand:
     case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kNone:
       NOTREACHED();

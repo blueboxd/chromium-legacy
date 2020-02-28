@@ -285,6 +285,9 @@ class TabListElement extends CustomElement {
           'tab-group-visuals-changed',
           (groupId, visualData) =>
               this.onTabGroupVisualsChanged_(groupId, visualData));
+      this.addWebUIListener_(
+          'tab-group-id-replaced',
+          (oldId, newId) => this.onTabGroupIdReplaced_(oldId, newId));
     });
   }
 
@@ -499,6 +502,18 @@ class TabListElement extends CustomElement {
       return;
     }
     this.placeTabGroupElement(tabGroupElement, index);
+  }
+
+  /**
+   * @param {string} oldId
+   * @param {string} newId
+   * @private
+   */
+  onTabGroupIdReplaced_(oldId, newId) {
+    const tabGroupElement = this.findTabGroupElement_(oldId);
+    if (tabGroupElement) {
+      tabGroupElement.dataset.groupId = newId;
+    }
   }
 
   /**

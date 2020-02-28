@@ -135,6 +135,9 @@ std::ostream& operator<<(std::ostream& output,
 
 std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
   switch (result) {
+    case ParseResult::NONE:
+      output << "NONE";
+      break;
     case ParseResult::SUCCESS:
       output << "SUCCESS";
       break;
@@ -218,6 +221,9 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
       break;
     case ParseResult::ERROR_INVALID_REGEX_FILTER:
       output << "ERROR_INVALID_REGEX_FILTER";
+      break;
+    case ParseResult::ERROR_REGEX_TOO_LARGE:
+      output << "ERROR_REGEX_TOO_LARGE";
       break;
     case ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED:
       output << "ERROR_MULTIPLE_FILTERS_SPECIFIED";

@@ -490,6 +490,9 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
         *parsed_rule.condition.regex_filter,
         CreateRE2Options(IsCaseSensitive(parsed_rule), require_capturing));
 
+    if (regex.error_code() == re2::RE2::ErrorPatternTooLarge)
+      return ParseResult::ERROR_REGEX_TOO_LARGE;
+
     if (!regex.ok())
       return ParseResult::ERROR_INVALID_REGEX_FILTER;
 

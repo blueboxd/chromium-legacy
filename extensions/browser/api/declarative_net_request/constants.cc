@@ -57,6 +57,12 @@ const char kErrorInvalidAllowAllRequestsResourceType[] =
     "Rule with id * is an \"allowAllRequests\" rule and must specify the "
     "\"resourceTypes\" key. It may only include the \"main_frame\" and "
     "\"sub_frame\" resource types.";
+const char kErrorRegexTooLarge[] =
+    "Rule with id * specified a more complex regex than allowed as part of the "
+    "\"*\" key.";
+const char kErrorRegexesTooLarge[] =
+    "Rules with ids [*] specified a more complex regex than allowed as part of "
+    "the \"*\" key.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =

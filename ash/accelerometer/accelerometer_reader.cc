@@ -189,10 +189,7 @@ class AccelerometerFileReader
   void StopListenToTabletModeController();
 
   // TabletModeObserver:
-  // OnTabletModeStarted() triggers accelerometer read.
-  // OnTabletModeEnding() disables accelerometer read.
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
+  void OnTabletPhysicalStateChanged() override;
 
  private:
   friend class base::RefCountedThreadSafe<AccelerometerFileReader>;
@@ -544,31 +541,30 @@ void AccelerometerFileReader::StopListenToTabletModeController() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
-void AccelerometerFileReader::OnTabletModeStarted() {
+void AccelerometerFileReader::OnTabletPhysicalStateChanged() {
   // When CrOS EC lid angle driver is not present, accelerometer read is always
   // ON and can't be tuned. Thus AccelerometerFileReader no longer listens to
   // tablet mode event.
+  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
   if (ec_lid_angle_driver_ == NOT_SUPPORTED) {
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+    tablet_mode_controller->RemoveObserver(this);
     return;
   }
 
-  task_runner_->PostNonNestableTask(
-      FROM_HERE, base::BindOnce(&AccelerometerFileReader::TriggerRead, this));
-}
-
-void AccelerometerFileReader::OnTabletModeEnding() {
-  if (ec_lid_angle_driver_ == NOT_SUPPORTED) {
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-    return;
-  }
+  // Auto rotation is turned on when the device is physically used as a tablet
+  // (i.e. flipped or detached), regardless of the UI state (i.e. whether tablet
+  // mode is turned on or off).
+  const bool is_auto_rotation_on =
+      tablet_mode_controller->is_in_tablet_physical_state();
 
   task_runner_->PostNonNestableTask(
       FROM_HERE,
-      base::BindOnce(&AccelerometerFileReader::CancelRead, this));
+      is_auto_rotation_on
+          ? base::BindOnce(&AccelerometerFileReader::TriggerRead, this)
+          : base::BindOnce(&AccelerometerFileReader::CancelRead, this));
 }
 
-AccelerometerFileReader::~AccelerometerFileReader() {}
+AccelerometerFileReader::~AccelerometerFileReader() = default;
 
 bool AccelerometerFileReader::InitializeAccelerometer(
     const base::FilePath& iio_path,

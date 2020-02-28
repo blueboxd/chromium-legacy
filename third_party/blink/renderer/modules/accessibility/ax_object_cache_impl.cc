@@ -151,7 +151,7 @@ AXObject* AXObjectCacheImpl::Root() {
 }
 
 void AXObjectCacheImpl::InitializePopup(Document* document) {
-  if (!document || documents_.Contains(document) || document->View())
+  if (!document || documents_.Contains(document) || !document->View())
     return;
 
   documents_.insert(document);
@@ -159,7 +159,7 @@ void AXObjectCacheImpl::InitializePopup(Document* document) {
 }
 
 void AXObjectCacheImpl::DisposePopup(Document* document) {
-  if (documents_.Contains(document) || document->View())
+  if (!documents_.Contains(document) || !document->View())
     return;
 
   document->View()->UnregisterFromLifecycleNotifications(this);

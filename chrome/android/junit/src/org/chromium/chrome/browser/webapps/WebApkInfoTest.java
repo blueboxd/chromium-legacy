@@ -13,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
 
+import androidx.browser.trusted.sharing.ShareData;
+
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -578,7 +580,7 @@ public class WebApkInfoTest {
     }
 
     /**
-     * Tests building {@link WebApkInfo.ShareData} when {@link Intent.EXTRA_STREAM} has a Uri value.
+     * Tests building {@link ShareData} when {@link Intent.EXTRA_STREAM} has a Uri value.
      */
     @Test
     public void testShareDataUriString() {
@@ -598,14 +600,14 @@ public class WebApkInfoTest {
         intent.putExtra(Intent.EXTRA_STREAM, sharedFileUri);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        WebApkInfo.ShareData shareData = info.shareData();
+        ShareData shareData = info.shareData();
         Assert.assertNotNull(shareData);
-        Assert.assertNotNull(shareData.files);
-        Assert.assertThat(shareData.files, Matchers.contains(sharedFileUri));
+        Assert.assertNotNull(shareData.uris);
+        Assert.assertThat(shareData.uris, Matchers.contains(sharedFileUri));
     }
 
     /**
-     * Tests building {@link WebApkInfo.ShareData} when {@link Intent.EXTRA_STREAM} has an ArrayList
+     * Tests building {@link ShareData} when {@link Intent.EXTRA_STREAM} has an ArrayList
      * value.
      */
     @Test
@@ -628,10 +630,10 @@ public class WebApkInfoTest {
         intent.putExtra(Intent.EXTRA_STREAM, uris);
 
         WebApkInfo info = WebApkInfo.create(intent);
-        WebApkInfo.ShareData shareData = info.shareData();
+        ShareData shareData = info.shareData();
         Assert.assertNotNull(shareData);
-        Assert.assertNotNull(shareData.files);
-        Assert.assertThat(shareData.files, Matchers.contains(sharedFileUri));
+        Assert.assertNotNull(shareData.uris);
+        Assert.assertThat(shareData.uris, Matchers.contains(sharedFileUri));
     }
 
     /**

@@ -471,6 +471,18 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsInIncognito) {
             kNotPresent);
 }
 
+// Tests that both installing a PWA and creating a shortcut app are disabled for
+// an error page.
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ShortcutMenuOptionsForErrorPage) {
+  ASSERT_TRUE(https_server()->Start());
+
+  EXPECT_FALSE(NavigateAndAwaitInstallabilityCheck(
+      browser(), https_server()->GetURL("/invalid_path.html")));
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kDisabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
+}
+
 // Tests that both installing a PWA and creating a shortcut app are available
 // for an installable PWA.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest,

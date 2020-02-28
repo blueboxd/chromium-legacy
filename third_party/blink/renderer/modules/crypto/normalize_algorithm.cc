@@ -75,10 +75,12 @@ const AlgorithmNameMapping kAlgorithmNameMappings[] = {
     {"SHA-1", 5, kWebCryptoAlgorithmIdSha1},
     {"ECDSA", 5, kWebCryptoAlgorithmIdEcdsa},
     {"PBKDF2", 6, kWebCryptoAlgorithmIdPbkdf2},
+    {"X25519", 6, kWebCryptoAlgorithmIdX25519},
     {"AES-KW", 6, kWebCryptoAlgorithmIdAesKw},
     {"SHA-512", 7, kWebCryptoAlgorithmIdSha512},
     {"SHA-384", 7, kWebCryptoAlgorithmIdSha384},
     {"SHA-256", 7, kWebCryptoAlgorithmIdSha256},
+    {"ED25519", 7, kWebCryptoAlgorithmIdEd25519},
     {"AES-CBC", 7, kWebCryptoAlgorithmIdAesCbc},
     {"AES-GCM", 7, kWebCryptoAlgorithmIdAesGcm},
     {"AES-CTR", 7, kWebCryptoAlgorithmIdAesCtr},
@@ -203,6 +205,14 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
     return false;
 
   id = it->algorithm_id;
+  // TODO(crbug.com/1032821): X25519 and Ed25519 are currently introduced behind
+  // a flag.
+  if (!RuntimeEnabledFeatures::WebCryptoCurve25519Enabled() &&
+      (id == kWebCryptoAlgorithmIdEd25519 ||
+       id == kWebCryptoAlgorithmIdX25519)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -839,15 +849,10 @@ bool ParseEcKeyImportParams(const Dictionary& raw,
   return true;
 }
 
-// Defined by the WebCrypto spec as:
-//
-//     dictionary EcdhKeyDeriveParams : Algorithm {
-//       required CryptoKey public;
-//     };
-bool ParseEcdhKeyDeriveParams(const Dictionary& raw,
-                              std::unique_ptr<WebCryptoAlgorithmParams>& params,
-                              const ErrorContext& context,
-                              AlgorithmError* error) {
+bool GetPeerPublicKey(const Dictionary& raw,
+                      const ErrorContext& context,
+                      AlgorithmError* error,
+                      WebCryptoKey* peer_public_key) {
   v8::Local<v8::Value> v8_value;
   if (!raw.Get("public", v8_value)) {
     SetTypeError(context.ToString("public", "Missing required property"),
@@ -862,7 +867,25 @@ bool ParseEcdhKeyDeriveParams(const Dictionary& raw,
     return false;
   }
 
-  params = std::make_unique<WebCryptoEcdhKeyDeriveParams>(crypto_key->Key());
+  *peer_public_key = crypto_key->Key();
+  return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//     dictionary EcdhKeyDeriveParams : Algorithm {
+//       required CryptoKey public;
+//     };
+bool ParseEcdhKeyDeriveParams(const Dictionary& raw,
+                              std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                              const ErrorContext& context,
+                              AlgorithmError* error) {
+  WebCryptoKey peer_public_key;
+  if (!GetPeerPublicKey(raw, context, error, &peer_public_key))
+    return false;
+
+  DCHECK(!peer_public_key.IsNull());
+  params = std::make_unique<WebCryptoEcdhKeyDeriveParams>(peer_public_key);
   return true;
 }
 
@@ -936,6 +959,47 @@ bool ParseHkdfParams(const Dictionary& raw,
   return true;
 }
 
+// TODO(crbug.com/1032821): The implementation of Curve25519 algorithms is
+// experimental. See also the status on
+// https://chromestatus.com/feature/4913922408710144.
+//
+// Ed25519Params in the prototype assumes the same structure as EcdsaParams:
+//
+//     dictionary Ed25519Params : Algorithm {
+//       required HashAlgorithmIdentifier hash;
+//     };
+bool ParseEd25519Params(const Dictionary& raw,
+                        std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                        const ErrorContext& context,
+                        AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!ParseHash(raw, hash, context, error))
+    return false;
+
+  params = std::make_unique<WebCryptoEd25519Params>(hash);
+  return true;
+}
+
+// TODO(crbug.com/1032821): X25519KeyDeriveParams in the prototype assumes the
+// same structure as EcdhKeyDeriveParams:
+//
+//     dictionary X25519KeyDeriveParams : Algorithm {
+//       required CryptoKey public;
+//     };
+bool ParseX25519KeyDeriveParams(
+    const Dictionary& raw,
+    std::unique_ptr<WebCryptoAlgorithmParams>& params,
+    const ErrorContext& context,
+    AlgorithmError* error) {
+  WebCryptoKey peer_public_key;
+  if (!GetPeerPublicKey(raw, context, error, &peer_public_key))
+    return false;
+
+  DCHECK(!peer_public_key.IsNull());
+  params = std::make_unique<WebCryptoX25519KeyDeriveParams>(peer_public_key);
+  return true;
+}
+
 bool ParseAlgorithmParams(const Dictionary& raw,
                           WebCryptoAlgorithmParamsType type,
                           std::unique_ptr<WebCryptoAlgorithmParams>& params,
@@ -995,6 +1059,12 @@ bool ParseAlgorithmParams(const Dictionary& raw,
     case kWebCryptoAlgorithmParamsTypePbkdf2Params:
       context.Add("Pbkdf2Params");
       return ParsePbkdf2Params(raw, params, context, error);
+    case kWebCryptoAlgorithmParamsTypeEd25519Params:
+      context.Add("Ed25519Params");
+      return ParseEd25519Params(raw, params, context, error);
+    case kWebCryptoAlgorithmParamsTypeX25519KeyDeriveParams:
+      context.Add("X25519KeyDeriveParams");
+      return ParseX25519KeyDeriveParams(raw, params, context, error);
   }
   NOTREACHED();
   return false;

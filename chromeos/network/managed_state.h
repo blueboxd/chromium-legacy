@@ -72,6 +72,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
   // properties are included.
   virtual void GetStateProperties(base::Value* dictionary) const;
 
+  // Returns true if a state is "Active". For networks that means connected,
+  // connecting, or activating. Devices are always "active".
+  virtual bool IsActive() const = 0;
+
   ManagedType managed_type() const { return managed_type_; }
   const std::string& path() const { return path_; }
   const std::string& name() const { return name_; }

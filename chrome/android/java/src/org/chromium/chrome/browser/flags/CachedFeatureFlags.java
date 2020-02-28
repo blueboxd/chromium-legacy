@@ -14,7 +14,6 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 
 import java.util.HashMap;
 import java.util.List;
@@ -304,13 +303,6 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * @return Whether immersive ui mode is enabled.
-     */
-    public static boolean isImmersiveUiModeEnabled() {
-        return isEnabled(ChromeFeatureList.IMMERSIVE_UI_MODE);
-    }
-
-    /**
      * Returns whether to use {@link Window#setFormat()} to undo opacity change caused by
      * {@link Activity#convertFromTranslucent()}.
      */
@@ -402,12 +394,6 @@ public class CachedFeatureFlags {
         Map<String, Boolean> swapped = sDefaults;
         sDefaults = testDefaults;
         return swapped;
-    }
-
-    @Deprecated
-    public static boolean isBottomToolbarEnabled() {
-        // TODO(crbug.com/1012975): Remove this when downstream calls BottomToolbarConfiguration.
-        return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 
     @NativeMethods

@@ -295,7 +295,7 @@ class ExpandOwnersTest(unittest.TestCase):
 <histograms>
 
 <histogram name="Caffeination" units="mg">
-  <owner>joe@chormium.org</owner>
+  <owner>joe@chromium.org</owner>
   <owner>src/medium/medium/roast/OWNERS</owner>
   <summary>I like coffee.</summary>
 </histogram>
@@ -320,7 +320,7 @@ class ExpandOwnersTest(unittest.TestCase):
 <histograms>
 
 <histogram name="Caffeination" units="mg">
-  <owner>joe@chormium.org</owner>
+  <owner>joe@chromium.org</owner>
   <owner>{}</owner>
   <summary>I like coffee.</summary>
 </histogram>
@@ -333,13 +333,42 @@ class ExpandOwnersTest(unittest.TestCase):
         r'No emails could be derived from .*empty_OWNERS\.'):
       expand_owners.ExpandHistogramsOWNERS(histograms_without_owners_from_file)
 
+    with self.assertRaisesRegexp(
+        expand_owners.Error,
+        r'The file at .*src/medium/medium/roast/OWNERS does not exist\.'):
+      expand_owners.ExpandHistogramsOWNERS(histograms_with_fake_file_path)
+
+  def testExpandOwnersWithSameOwners(self):
+    """Checks that no error is raised when all owners in a file are already in <owner> elements."""
+    absolute_path = _MakeOwnersFile('same_OWNERS', self.temp_dir)
+    src_relative_path = _GetSrcRelativePath(absolute_path)
+
+    with open(absolute_path, 'w') as owners_file:
+      owners_file.write(
+          'joe@chromium.org')  # Write to the file so that it exists.
+
+    histograms_string = xml.dom.minidom.parseString("""
+<histograms>
+
+<histogram name="Caffeination" units="mg">
+  <owner>joe@chromium.org</owner>
+  <owner>{}</owner>
+  <summary>I like coffee.</summary>
+</histogram>
+
+</histograms>
+""".format(src_relative_path))
+
+    self.assertEqual(
+        expand_owners.ExpandHistogramsOWNERS(histograms_string), [])
+
   def testExpandOwnersWithoutOWNERSPathPrefix(self):
     """Checks that an error is raised when the path is not well-formatted."""
     histograms_without_src_prefix = xml.dom.minidom.parseString("""
 <histograms>
 
 <histogram name="Caffeination" units="mg">
-  <owner>joe@chormium.org</owner>
+  <owner>joe@chromium.org</owner>
   <owner>latte/OWNERS</owner>
   <summary>I like coffee.</summary>
 </histogram>
@@ -358,7 +387,7 @@ class ExpandOwnersTest(unittest.TestCase):
 <histograms>
 
 <histogram name="Caffeination" units="mg">
-  <owner>joe@chormium.org</owner>
+  <owner>joe@chromium.org</owner>
   <owner>src/latte/file</owner>
   <summary>I like coffee.</summary>
 </histogram>

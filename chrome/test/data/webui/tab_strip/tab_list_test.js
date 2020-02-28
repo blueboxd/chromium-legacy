@@ -387,6 +387,16 @@ suite('TabList', () => {
     assertEquals(tabGroup.children[1].tab.id, originalTabInGroup.id);
   });
 
+  test('HandleReplacedGroupId', () => {
+    webUIListenerCallback(
+        'tab-group-state-changed', tabs[1].id, tabs[1].index, 'oldGroupId');
+    const group = getTabGroups()[0];
+    assertEquals('oldGroupId', group.dataset.groupId);
+
+    webUIListenerCallback('tab-group-id-replaced', 'oldGroupId', 'newGroupId');
+    assertEquals('newGroupId', group.dataset.groupId);
+  });
+
   test('removes a tab when tab is removed from current window', async () => {
     const tabToRemove = tabs[0];
     webUIListenerCallback('tab-removed', tabToRemove.id);

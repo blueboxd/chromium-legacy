@@ -197,6 +197,50 @@ TEST_F(FrameRateDeciderTest,
   EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
 }
 
+TEST_F(FrameRateDeciderTest, OptimalFrameSinkIntervelIsPicked) {
+  base::TimeDelta min_supported_interval = base::TimeDelta::FromSeconds(1);
+  const std::vector<base::TimeDelta> supported_intervals = {
+      min_supported_interval * 2, min_supported_interval};
+  frame_rate_decider_->SetSupportedFrameIntervals(supported_intervals);
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+
+  FrameSinkId frame_sink_id1(1u, 1u);
+  preferred_intervals_[frame_sink_id1] = min_supported_interval * 2.5;
+  auto* surface1 = CreateAndDrawSurface(frame_sink_id1);
+
+  FrameSinkId frame_sink_id2(1u, 2u);
+  preferred_intervals_[frame_sink_id2] = min_supported_interval * 2.03;
+  auto* surface2 = CreateAndDrawSurface(frame_sink_id2);
+
+  FrameSinkId frame_sink_id3(1u, 3u);
+  preferred_intervals_[frame_sink_id3] = min_supported_interval * 0.5;
+  auto* surface3 = CreateAndDrawSurface(frame_sink_id3);
+
+  UpdateFrame(surface1);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+  }
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+
+  UpdateFrame(surface2);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface2);
+  }
+  EXPECT_EQ(display_interval_, min_supported_interval * 2);
+
+  UpdateFrame(surface3);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface1);
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface2);
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface3);
+  }
+  EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
+}
+
 TEST_F(FrameRateDeciderTest, MinFrameSinkIntervalIsPicked) {
   base::TimeDelta min_supported_interval = base::TimeDelta::FromSeconds(1);
   const std::vector<base::TimeDelta> supported_intervals = {
@@ -206,11 +250,11 @@ TEST_F(FrameRateDeciderTest, MinFrameSinkIntervalIsPicked) {
   EXPECT_EQ(display_interval_, FrameRateDecider::UnspecifiedFrameInterval());
 
   FrameSinkId frame_sink_id1(1u, 1u);
-  preferred_intervals_[frame_sink_id1] = min_supported_interval * 2.75;
+  preferred_intervals_[frame_sink_id1] = min_supported_interval * 3;
   auto* surface1 = CreateAndDrawSurface(frame_sink_id1);
 
   FrameSinkId frame_sink_id2(1u, 2u);
-  preferred_intervals_[frame_sink_id2] = min_supported_interval * 2.2;
+  preferred_intervals_[frame_sink_id2] = min_supported_interval * 2;
   auto* surface2 = CreateAndDrawSurface(frame_sink_id2);
 
   UpdateFrame(surface1);

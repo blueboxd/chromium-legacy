@@ -13,10 +13,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_light_estimation_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
@@ -51,7 +51,7 @@ class XRFrameProviderRequestCallback
 
 }  // namespace
 
-XRFrameProvider::XRFrameProvider(XR* xr)
+XRFrameProvider::XRFrameProvider(XRSystem* xr)
     : xr_(xr), last_has_focus_(xr->IsFrameFocused()) {
   frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
 }

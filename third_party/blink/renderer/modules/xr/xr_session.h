@@ -36,7 +36,6 @@ class HTMLCanvasElement;
 class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
-class XR;
 class XRAnchor;
 class XRAnchorSet;
 class XRCanvasInputProvider;
@@ -47,6 +46,7 @@ class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
 class XRSpace;
+class XRSystem;
 class XRTransientInputHitTestOptionsInit;
 class XRTransientInputHitTestSource;
 class XRViewData;
@@ -96,7 +96,7 @@ class XRSession final
     HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
   };
 
-  XRSession(XR* xr,
+  XRSession(XRSystem* xr,
             mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
                 client_receiver,
             device::mojom::blink::XRSessionMode mode,
@@ -106,7 +106,7 @@ class XRSession final
             XRSessionFeatureSet enabled_features);
   ~XRSession() override = default;
 
-  XR* xr() const { return xr_; }
+  XRSystem* xr() const { return xr_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRDOMOverlayState* domOverlayState() const { return dom_overlay_state_; }
   const String visibilityState() const;
@@ -367,7 +367,7 @@ class XRSession final
 
   void HandleShutdown();
 
-  const Member<XR> xr_;
+  const Member<XRSystem> xr_;
   const device::mojom::blink::XRSessionMode mode_;
   const bool environment_integration_;
   String blend_mode_string_;

@@ -306,15 +306,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
                           dom_distiller::OfferReaderModeInSettings());
 }
 
-void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"changePasswordPageTitle", IDS_SETTINGS_CHANGE_PASSWORD_TITLE},
-      {"changePasswordPageDetails", IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS},
-      {"changePasswordPageButton", IDS_SETTINGS_CHANGE_PASSWORD_BUTTON},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-}
-
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
                                  Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -1913,7 +1904,6 @@ void AddBrowserLocalizedStrings(content::WebUIDataSource* html_source,
   AddIncompatibleApplicationsStrings(html_source);
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  AddChangePasswordStrings(html_source);
   AddClearBrowsingDataStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
   AddDownloadsStrings(html_source);

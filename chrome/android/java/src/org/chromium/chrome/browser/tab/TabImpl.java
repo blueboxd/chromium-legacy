@@ -368,6 +368,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mUrl != null ? mUrl : GURL.emptyGURL();
     }
 
+    @Override
+    public String getOriginalUrl() {
+        return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrlString());
+    }
+
     @CalledByNative
     @Override
     public String getTitle() {
@@ -722,13 +727,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     public int getRootId() {
         return mRootId;
-    }
-
-    /**
-     * @return Original url of the tab, which is the original url from DOMDistiller.
-     */
-    public String getOriginalUrl() {
-        return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrlString());
     }
 
     /**

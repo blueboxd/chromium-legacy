@@ -13,7 +13,7 @@
 namespace blink {
 
 class Document;
-class XR;
+class XRSystem;
 
 class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
                                          public Supplement<Navigator> {
@@ -27,15 +27,15 @@ class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
 
   explicit NavigatorXR(Navigator&);
 
-  static XR* xr(Navigator&);
-  XR* xr();
+  static XRSystem* xr(Navigator&);
+  XRSystem* xr();
 
   void Trace(Visitor*) override;
 
  private:
   Document* GetDocument();
 
-  Member<XR> xr_;
+  Member<XRSystem> xr_;
 
   // Gates metrics collection once per local DOM window frame.
   bool did_log_navigator_xr_ = false;

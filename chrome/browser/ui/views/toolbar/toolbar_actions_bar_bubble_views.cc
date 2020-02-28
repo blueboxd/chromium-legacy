@@ -102,11 +102,10 @@ ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   const base::string16& text = extra_view_info->text;
   if (!text.empty()) {
     if (extra_view_info->is_learn_more) {
-      auto image_button = views::CreateVectorImageButton(this);
+      auto image_button = views::CreateVectorImageButtonWithNativeTheme(
+          this, vector_icons::kHelpOutlineIcon);
       image_button->SetFocusForPlatform();
       image_button->SetTooltipText(text);
-      views::SetImageFromVectorIcon(image_button.get(),
-                                    vector_icons::kHelpOutlineIcon);
       learn_more_button_ = image_button.get();
       extra_view = std::move(image_button);
     } else {

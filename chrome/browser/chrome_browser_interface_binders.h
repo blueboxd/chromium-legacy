@@ -8,6 +8,7 @@
 #include "chrome/browser/bad_message.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 

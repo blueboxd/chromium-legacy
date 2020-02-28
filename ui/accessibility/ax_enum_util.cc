@@ -1129,12 +1129,16 @@ const char* ToString(ax::mojom::Action action) {
       return "blur";
     case ax::mojom::Action::kClearAccessibilityFocus:
       return "clearAccessibilityFocus";
+    case ax::mojom::Action::kCollapse:
+      return "collapse";
     case ax::mojom::Action::kCustomAction:
       return "customAction";
     case ax::mojom::Action::kDecrement:
       return "decrement";
     case ax::mojom::Action::kDoDefault:
       return "doDefault";
+    case ax::mojom::Action::kExpand:
+      return "expand";
     case ax::mojom::Action::kFocus:
       return "focus";
     case ax::mojom::Action::kGetImageData:
@@ -1201,12 +1205,16 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kBlur;
   if (0 == strcmp(action, "clearAccessibilityFocus"))
     return ax::mojom::Action::kClearAccessibilityFocus;
+  if (0 == strcmp(action, "collapse"))
+    return ax::mojom::Action::kCollapse;
   if (0 == strcmp(action, "customAction"))
     return ax::mojom::Action::kCustomAction;
   if (0 == strcmp(action, "decrement"))
     return ax::mojom::Action::kDecrement;
   if (0 == strcmp(action, "doDefault"))
     return ax::mojom::Action::kDoDefault;
+  if (0 == strcmp(action, "expand"))
+    return ax::mojom::Action::kExpand;
   if (0 == strcmp(action, "focus"))
     return ax::mojom::Action::kFocus;
   if (0 == strcmp(action, "getImageData"))

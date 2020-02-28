@@ -2513,6 +2513,8 @@ enum WebFeature {
   kXRSessionRequestHitTestSourceForTransientInput = 3167,
   kXRDOMOverlay = 3168,
   kCssStyleSheetReplaceWithImport = 3169,
+  kCryptoAlgorithmEd25519 = 3170,
+  kCryptoAlgorithmX25519 = 3171,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

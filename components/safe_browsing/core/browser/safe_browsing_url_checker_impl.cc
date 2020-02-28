@@ -306,7 +306,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                  &SafeBrowsingUrlCheckerImpl::OnTimeout);
 
     bool safe_synchronously;
-    if (CanPerformFullURLLookup(url)) {
+    bool can_perform_full_url_lookup = CanPerformFullURLLookup(url);
+    if (can_perform_full_url_lookup) {
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Checked",
                                 resource_type_);
       safe_synchronously = false;
@@ -364,10 +365,16 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
     // Only send out notification of starting a slow check if the database
     // manager actually supports fast checks (i.e., synchronous checks) but is
-    // not able to complete the check synchronously in this case.
+    // not able to complete the check synchronously in this case and we're doing
+    // hash-based checks.
     // Don't send out notification if the database manager doesn't support
-    // synchronous checks at all (e.g., on mobile).
-    if (!database_manager_->ChecksAreAlwaysAsync())
+    // synchronous checks at all (e.g., on mobile), or if performing a full URL
+    // check since we don't want to block resource fetch while we perform a full
+    // URL lookup. Note that we won't parse the response until the Safe Browsing
+    // check is complete and return SAFE, so there's no Safe Browsing bypass
+    // risk here.
+    if (!can_perform_full_url_lookup &&
+        !database_manager_->ChecksAreAlwaysAsync())
       urls_[next_index_].notifier.OnStartSlowCheck();
 
     break;

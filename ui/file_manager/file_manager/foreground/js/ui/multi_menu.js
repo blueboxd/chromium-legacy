@@ -489,6 +489,9 @@ cr.define('cr.ui', () => {
         return;
       }
 
+      // Track element for which menu was opened so that command events are
+      // dispatched to the correct element.
+      this.menu.contextElement = this;
       this.menu.show(opt_mousePos);
 
       this.setAttribute('menu-shown', '');

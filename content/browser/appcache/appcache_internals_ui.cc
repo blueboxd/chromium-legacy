@@ -368,10 +368,10 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
   source->AddResourcePath("appcache_internals.css", IDR_APPCACHE_INTERNALS_CSS);
   source->SetDefaultResource(IDR_APPCACHE_INTERNALS_HTML);
 
-  WebUIDataSource::Add(browser_context(), source);
+  WebUIDataSource::Add(GetBrowserContext(), source);
 
   BrowserContext::ForEachStoragePartition(
-      browser_context(),
+      GetBrowserContext(),
       base::BindRepeating(&AppCacheInternalsUI::CreateProxyForPartition,
                           AsWeakPtr()));
 }
@@ -434,7 +434,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     scoped_refptr<AppCacheInfoCollection> collection,
     const base::FilePath& partition_path) {
   std::string incognito_path_prefix;
-  if (browser_context()->IsOffTheRecord())
+  if (GetBrowserContext()->IsOffTheRecord())
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
@@ -512,6 +512,10 @@ void AppCacheInternalsUI::OnFileDetailsFailed(
       kFunctionOnFileDetailsFailed,
       *GetDictionaryValueForResponseEnquiry(response_enquiry),
       base::Value(net_result_code));
+}
+
+BrowserContext* AppCacheInternalsUI::GetBrowserContext() {
+  return web_ui()->GetWebContents()->GetBrowserContext();
 }
 
 AppCacheInternalsUI::Proxy* AppCacheInternalsUI::GetProxyForPartitionPath(

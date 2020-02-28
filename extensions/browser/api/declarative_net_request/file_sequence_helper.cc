@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +22,7 @@
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/error_utils.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace extensions {
@@ -204,16 +206,19 @@ bool GetNewDynamicRules(const RulesetSource& source,
 
 // Returns true on success and populates |ruleset_checksum|. Returns false on
 // failure and populates |error| and |status|.
-bool UpdateAndIndexDynamicRules(
-    const RulesetSource& source,
-    std::vector<int> rule_ids_to_remove,
-    std::vector<api::declarative_net_request::Rule> rules_to_add,
-    int* ruleset_checksum,
-    std::string* error,
-    UpdateDynamicRulesStatus* status) {
+bool UpdateAndIndexDynamicRules(const RulesetSource& source,
+                                std::vector<int> rule_ids_to_remove,
+                                std::vector<dnr_api::Rule> rules_to_add,
+                                int* ruleset_checksum,
+                                std::string* error,
+                                UpdateDynamicRulesStatus* status) {
   DCHECK(ruleset_checksum);
   DCHECK(error);
   DCHECK(status);
+
+  std::set<int> rule_ids_to_add;
+  for (const dnr_api::Rule& rule : rules_to_add)
+    rule_ids_to_add.insert(rule.id);
 
   std::vector<dnr_api::Rule> new_rules;
   if (!GetNewDynamicRules(source, std::move(rule_ids_to_remove),
@@ -243,11 +248,27 @@ bool UpdateAndIndexDynamicRules(
   // Index and persist the indexed ruleset.
   ParseInfo info = temporary_source->IndexAndPersistRules(std::move(new_rules),
                                                           ruleset_checksum);
-  if (info.result() != ParseResult::SUCCESS) {
-    *error = info.GetErrorDescription();
-    *status = info.result() == ParseResult::ERROR_PERSISTING_RULESET
+  if (info.has_error()) {
+    *error = info.error();
+    *status = info.error_reason() == ParseResult::ERROR_PERSISTING_RULESET
                   ? UpdateDynamicRulesStatus::kErrorWriteTemporaryIndexedRuleset
                   : UpdateDynamicRulesStatus::kErrorInvalidRules;
+    return false;
+  }
+
+  // Treat rules which exceed the regex memory limit as errors if these are new
+  // rules. Just surface an error for the first such rule.
+  for (int rule_id : info.regex_limit_exceeded_rules()) {
+    if (!base::Contains(rule_ids_to_add, rule_id)) {
+      // Any rule added earlier which is ignored now (say due to exceeding the
+      // regex memory limit), will be silently ignored.
+      // TODO(crbug.com/1050780): Notify the extension about the same.
+      continue;
+    }
+
+    *error = ErrorUtils::FormatErrorMessage(
+        kErrorRegexTooLarge, base::NumberToString(rule_id), kRegexFilterKey);
+    *status = UpdateDynamicRulesStatus::kErrorRegexTooLarge;
     return false;
   }
 

@@ -18,6 +18,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/web_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"

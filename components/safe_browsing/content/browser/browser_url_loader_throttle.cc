@@ -323,6 +323,9 @@ void BrowserURLLoaderThrottle::NotifySlowCheck() {
   // processing unsafe contents (e.g., writing unsafe contents into cache),
   // until we get the results. According to the results, we may resume reading
   // or cancel the resource load.
+  // For real time Safe Browsing checks, we continue reading the response body
+  // but, similar to hash-based checks, do not process it until we know it is
+  // SAFE.
   if (pending_slow_checks_ == 1)
     delegate_->PauseReadingBodyFromNet();
 }

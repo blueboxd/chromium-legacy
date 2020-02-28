@@ -33,7 +33,6 @@ Polymer({
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
     PrefsBehavior,
-    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -41,11 +40,6 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    showChangePassword: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -122,10 +116,6 @@ Polymer({
   /** @override */
   attached() {
     this.currentRoute_ = settings.Router.getInstance().getCurrentRoute();
-
-    this.addWebUIListener('change-password-visibility', visibility => {
-      this.showChangePassword = visibility;
-    });
   },
 
   /**

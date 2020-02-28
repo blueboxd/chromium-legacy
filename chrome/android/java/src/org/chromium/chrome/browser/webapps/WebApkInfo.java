@@ -5,17 +5,16 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +23,6 @@ import java.util.Map;
  * Stores info for WebAPK.
  */
 public class WebApkInfo extends WebappInfo {
-    /** A class that stores share information from share intent. */
-    public static class ShareData {
-        public String subject;
-        public String text;
-        public ArrayList<Uri> files;
-        public String shareActivityClassName;
-    }
-
     /**
      * Stores information about the WebAPK's share intent handlers.
      * TODO(crbug.com/912954): add share target V2 parameters once the server supports them.
@@ -265,7 +256,7 @@ public class WebApkInfo extends WebappInfo {
     }
 
     public ShareData shareData() {
-        return getWebApkExtras().shareData;
+        return mProvider.getShareData();
     }
 
     public List<ShortcutItem> shortcutItems() {

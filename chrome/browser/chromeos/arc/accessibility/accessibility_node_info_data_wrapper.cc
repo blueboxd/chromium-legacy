@@ -466,6 +466,14 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
         case AXActionType::SCROLL_FORWARD:
           out_data->AddAction(ax::mojom::Action::kScrollForward);
           break;
+        case AXActionType::EXPAND:
+          out_data->AddAction(ax::mojom::Action::kExpand);
+          out_data->AddState(ax::mojom::State::kCollapsed);
+          break;
+        case AXActionType::COLLAPSE:
+          out_data->AddAction(ax::mojom::Action::kCollapse);
+          out_data->AddState(ax::mojom::State::kExpanded);
+          break;
         default:
           // unmapped
           break;

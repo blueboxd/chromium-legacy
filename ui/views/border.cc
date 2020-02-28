@@ -168,7 +168,9 @@ class ExtraInsetsBorder : public Border {
 
 ExtraInsetsBorder::ExtraInsetsBorder(std::unique_ptr<Border> border,
                                      const gfx::Insets& insets)
-    : border_(std::move(border)), extra_insets_(insets) {}
+    : Border(border->color()),
+      border_(std::move(border)),
+      extra_insets_(insets) {}
 
 void ExtraInsetsBorder::Paint(const View& view, gfx::Canvas* canvas) {
   border_->Paint(view, canvas);

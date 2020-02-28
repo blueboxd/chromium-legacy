@@ -14,16 +14,16 @@
 
 namespace blink {
 
-class XR;
-class XRSession;
 class XRFrameTransport;
+class XRSession;
+class XRSystem;
 class XRWebGLLayer;
 
 // This class manages requesting and dispatching frame updates, which includes
 // pose information for a given XRDevice.
 class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
  public:
-  explicit XRFrameProvider(XR*);
+  explicit XRFrameProvider(XRSystem*);
 
   XRSession* immersive_session() const { return immersive_session_; }
 
@@ -72,7 +72,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double high_res_now_ms);
 
-  const Member<XR> xr_;
+  const Member<XRSystem> xr_;
 
   // Immersive session state
   Member<XRSession> immersive_session_;

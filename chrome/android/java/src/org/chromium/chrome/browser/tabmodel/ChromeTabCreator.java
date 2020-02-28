@@ -157,7 +157,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 ReparentingTask.from(tab).finish(
                         ReparentingDelegateFactory.createReparentingTaskDelegate(
                                 mActivity.getCompositorViewHolder(), mActivity.getWindowAndroid(),
-                                mActivity.getTabDelegateFactory()),
+                                createDefaultTabDelegateFactory()),
                         params.getFinalizeCallback());
             } else if (asyncParams != null && asyncParams.getWebContents() != null) {
                 openInForeground = true;

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -28,8 +29,18 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
       modifiers[i] = params.modifier;
   }
 
+  const auto fourcc_format = GetBufferFormatFromFourCCFormat(params.format);
+  const uint32_t opaque_format =
+      GetFourCCFormatForOpaqueFramebuffer(fourcc_format);
+  // Intel Display Controller won't support AR/B30 framebuffers, only XR/B30,
+  // but that doesn't matter because anyway those two bits of alpha are useless;
+  // use the opaque directly in this case.
+  const bool force_opaque = AlphaBitsForBufferFormat(fourcc_format) == 2;
+
+  const auto drm_format = force_opaque ? opaque_format : params.format;
+
   uint32_t framebuffer_id = 0;
-  if (!drm_device->AddFramebuffer2(params.width, params.height, params.format,
+  if (!drm_device->AddFramebuffer2(params.width, params.height, drm_format,
                                    params.handles, params.strides,
                                    params.offsets, modifiers, &framebuffer_id,
                                    params.flags)) {
@@ -37,10 +48,8 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
     return nullptr;
   }
 
-  uint32_t opaque_format = GetFourCCFormatForOpaqueFramebuffer(
-      GetBufferFormatFromFourCCFormat(params.format));
   uint32_t opaque_framebuffer_id = 0;
-  if (opaque_format != params.format &&
+  if (opaque_format != drm_format &&
       !drm_device->AddFramebuffer2(params.width, params.height, opaque_format,
                                    params.handles, params.strides,
                                    params.offsets, modifiers,
@@ -51,9 +60,9 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
   }
 
   return base::MakeRefCounted<DrmFramebuffer>(
-      std::move(drm_device), framebuffer_id, params.format,
-      opaque_framebuffer_id, opaque_format, params.modifier,
-      params.preferred_modifiers, gfx::Size(params.width, params.height));
+      std::move(drm_device), framebuffer_id, drm_format, opaque_framebuffer_id,
+      opaque_format, params.modifier, params.preferred_modifiers,
+      gfx::Size(params.width, params.height));
 }
 
 // static

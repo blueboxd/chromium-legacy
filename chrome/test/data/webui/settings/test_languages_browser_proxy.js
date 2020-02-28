@@ -30,6 +30,11 @@ cr.define('settings', function() {
     getInputMethodPrivate() {
       return this.inputMethodPrivate_;
     }
+
+    /** @param {!LanguageSettingsPrivate} languageSettingsPrivate */
+    setLanguageSettingsPrivate(languageSettingsPrivate) {
+      this.languageSettingsPrivate_ = languageSettingsPrivate;
+    }
   }
 
   if (cr.isChromeOS || cr.isWindows) {

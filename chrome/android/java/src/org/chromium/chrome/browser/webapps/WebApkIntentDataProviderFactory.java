@@ -18,6 +18,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.browser.trusted.sharing.ShareData;
+
 import org.xmlpull.v1.XmlPullParser;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -30,7 +32,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareData;
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
@@ -93,17 +94,17 @@ public class WebApkIntentDataProviderFactory {
 
         // Presence of {@link shareDataActivityClassName} indicates that this is a share.
         if (!TextUtils.isEmpty(shareDataActivityClassName)) {
-            shareData = new ShareData();
-            shareData.subject = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_SUBJECT);
-            shareData.text = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_TEXT);
-            shareData.files = IntentUtils.getParcelableArrayListExtra(intent, Intent.EXTRA_STREAM);
-            if (shareData.files == null) {
+            String subject = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_SUBJECT);
+            String text = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_TEXT);
+            List<Uri> files = IntentUtils.getParcelableArrayListExtra(intent, Intent.EXTRA_STREAM);
+            if (files == null) {
                 Uri file = IntentUtils.safeGetParcelableExtra(intent, Intent.EXTRA_STREAM);
                 if (file != null) {
-                    shareData.files = new ArrayList<>();
-                    shareData.files.add(file);
+                    files = new ArrayList<>();
+                    files.add(file);
                 }
             }
+            shareData = new ShareData(subject, text, files);
         }
 
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
@@ -415,14 +416,14 @@ public class WebApkIntentDataProviderFactory {
                 false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,
                 isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shareData,
-                shortcutItems, webApkVersionCode);
+                iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shortcutItems,
+                webApkVersionCode);
         boolean hasCustomToolbarColor = WebappIntentUtils.isLongColorValid(themeColor);
         int toolbarColor = hasCustomToolbarColor
                 ? (int) themeColor
                 : WebappIntentDataProvider.getDefaultToolbarColor();
         return new WebappIntentDataProvider(
-                toolbarColor, hasCustomToolbarColor, webappExtras, webApkExtras);
+                toolbarColor, hasCustomToolbarColor, shareData, webappExtras, webApkExtras);
     }
 
     private static int computeSource(Intent intent, ShareData shareData) {
@@ -438,7 +439,7 @@ public class WebApkIntentDataProviderFactory {
         }
 
         if (source == ShortcutSource.WEBAPK_SHARE_TARGET && shareData != null
-                && shareData.files != null && shareData.files.size() > 0) {
+                && shareData.uris != null && shareData.uris.size() > 0) {
             return ShortcutSource.WEBAPK_SHARE_TARGET_FILE;
         }
         return source;

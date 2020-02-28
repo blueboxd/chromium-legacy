@@ -101,7 +101,8 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
     DCHECK(connector);
     policy_schema_registry_ = BuildSchemaRegistryForBrowserState(
         this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
-    policy_connector_ = BuildBrowserStatePolicyConnector(connector);
+    policy_connector_ = BuildBrowserStatePolicyConnector(
+        policy_schema_registry_.get(), connector);
   }
 
   RegisterBrowserStatePrefs(pref_registry_.get());

@@ -16,6 +16,7 @@ namespace declarative_net_request {
 // The result of parsing JSON rules provided by an extension. Can correspond to
 // a single or multiple rules.
 enum class ParseResult {
+  NONE,
   SUCCESS,
   ERROR_RESOURCE_TYPE_DUPLICATED,
   ERROR_INVALID_RULE_ID,
@@ -47,6 +48,7 @@ enum class ParseResult {
   ERROR_EMPTY_REGEX_FILTER,
   ERROR_NON_ASCII_REGEX_FILTER,
   ERROR_INVALID_REGEX_FILTER,
+  ERROR_REGEX_TOO_LARGE,
   ERROR_MULTIPLE_FILTERS_SPECIFIED,
   ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER,
   ERROR_INVALID_REGEX_SUBSTITUTION,
@@ -71,10 +73,11 @@ enum class UpdateDynamicRulesStatus {
   kErrorCreateMatcher_FileReadError = 11,
   kErrorCreateMatcher_ChecksumMismatch = 12,
   kErrorCreateMatcher_VersionMismatch = 13,
+  kErrorRegexTooLarge = 14,
 
   // Magic constant used by histograms code. Should be equal to the largest enum
   // value.
-  kMaxValue = kErrorCreateMatcher_VersionMismatch,
+  kMaxValue = kErrorRegexTooLarge,
 };
 
 // Schemes which can be used as part of url transforms.
@@ -99,6 +102,8 @@ extern const char kErrorJavascriptRedirect[];
 extern const char kErrorMultipleFilters[];
 extern const char kErrorRegexSubstitutionWithoutFilter[];
 extern const char kErrorInvalidAllowAllRequestsResourceType[];
+extern const char kErrorRegexTooLarge[];
+extern const char kErrorRegexesTooLarge[];
 
 extern const char kErrorListNotPassed[];
 

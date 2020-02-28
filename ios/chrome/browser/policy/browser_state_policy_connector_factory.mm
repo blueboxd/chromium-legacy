@@ -13,11 +13,17 @@
 #endif
 
 std::unique_ptr<BrowserStatePolicyConnector> BuildBrowserStatePolicyConnector(
+    policy::SchemaRegistry* schema_registry,
     BrowserPolicyConnectorIOS* browser_policy_connector) {
   DCHECK(IsEnterprisePolicyEnabled());
 
   auto connector = std::make_unique<BrowserStatePolicyConnector>();
 
-  connector->Init(browser_policy_connector);
+  // Since extensions are not supported on iOS, the |schema_registry| here has
+  // the same registered components as the registry owned by
+  // |browser_policy_connector|, despite being a separate instance. The two
+  // levels of registry (owned by ApplicationContext vs owned by BrowserState)
+  // are maintained to keep a parallel structure with Desktop.
+  connector->Init(schema_registry, browser_policy_connector);
   return connector;
 }

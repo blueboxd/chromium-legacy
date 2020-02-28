@@ -2020,10 +2020,11 @@ void NetworkStateHandler::LogPropertyUpdated(const ManagedState* state,
           ? "Device"
           : state->path() == default_network_path_ ? "DefaultNetwork"
                                                    : "Network";
-  device_event_log::LogLevel log_level =
-      (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty)
-          ? device_event_log::LOG_LEVEL_ERROR
-          : device_event_log::LOG_LEVEL_EVENT;
+  device_event_log::LogLevel log_level = device_event_log::LOG_LEVEL_EVENT;
+  if (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty)
+    log_level = device_event_log::LOG_LEVEL_ERROR;
+  else if (key == shill::kSignalStrengthProperty && !state->IsActive())
+    log_level = device_event_log::LOG_LEVEL_DEBUG;
   DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, log_level)
       << type_str << "PropertyUpdated: " << state->path() << " ("
       << state->name() << ") " << key << " = " << value;

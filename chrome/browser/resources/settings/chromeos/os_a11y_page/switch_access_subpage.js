@@ -20,12 +20,51 @@ const SwitchAccessAssignmentValue = {
   ENTER: 2,
 };
 
+/**
+ * Available commands.
+ * @const
+ */
+const SWITCH_ACCESS_COMMANDS = ['next', 'previous', 'select'];
+
+/**
+ * The portion of the setting name common to all Switch Access preferences.
+ * @const
+ */
+const PREFIX = 'settings.a11y.switch_access.';
+
+/**
+ * The ending of the setting name for all key code preferences.
+ * @const
+ */
+const KEY_CODE_SUFFIX = '.key_codes';
+
+/**
+ * The ending of the setting name for all preferences referring to
+ * Switch Access command settings.
+ * @const
+ */
+const COMMAND_SUFFIX = '.setting';
+
 /** @type {!Array<number>} */
 const AUTO_SCAN_SPEED_RANGE_MS = [
   500,  600,  700,  800,  900,  1000, 1100, 1200, 1300, 1400, 1500, 1600,
   1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800,
   2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000
 ];
+
+/**
+ * This function extracts the segment of a preference key after the fixed prefix
+ * and returns it. In cases where the preference is Switch Access command
+ * setting preference, it corresponds to the command name.
+ *
+ * @param {!chrome.settingsPrivate.PrefObject} pref
+ * @return {string}
+ */
+function getCommandNameFromCommandPref(pref) {
+  const nameStartIndex = PREFIX.length;
+  const nameEndIndex = pref.key.indexOf('.', nameStartIndex);
+  return pref.key.substring(nameStartIndex, nameEndIndex);
+}
 
 /**
  * @param {!Array<number>} ticksInMs
@@ -118,12 +157,27 @@ Polymer({
     },
   },
 
+  /** @override */
+  created() {
+    chrome.settingsPrivate.onPrefsChanged.addListener((prefs) => {
+      for (const pref of prefs) {
+        if (!pref.key.includes(PREFIX) || !pref.key.includes(COMMAND_SUFFIX)) {
+          continue;
+        }
+        const commandName = getCommandNameFromCommandPref(pref);
+        if (SWITCH_ACCESS_COMMANDS.includes(commandName)) {
+          this.onSwitchAssigned_(pref);
+        }
+      }
+    });
+  },
+
   /**
    * @return {string}
    * @private
    */
   currentSpeed_() {
-    const speed = this.get('prefs.switch_access.auto_scan.speed_ms.value');
+    const speed = this.getPref(PREFIX + 'auto_scan.speed_ms').value;
     if (typeof speed != 'number') {
       return '';
     }
@@ -139,41 +193,46 @@ Polymer({
     const improvedTextInputEnabled = loadTimeData.getBoolean(
         'showExperimentalAccessibilitySwitchAccessImprovedTextInput');
     const autoScanEnabled = /** @type {boolean} */
-        (this.getPref('switch_access.auto_scan.enabled').value);
+        (this.getPref(PREFIX + 'auto_scan.enabled').value);
     return improvedTextInputEnabled && autoScanEnabled;
   },
 
-  /**
-   * @param {string} command
-   */
-  onSwitchAssigned_(command) {
-    const pref = 'prefs.switch_access.' + command;
-    const keyCodeSuffix = '.key_codes.value';
-    const settingSuffix = '.setting.value';
+  /** @param {!chrome.settingsPrivate.PrefObject} newPref */
+  onSwitchAssigned_(newPref) {
+    const command = getCommandNameFromCommandPref(newPref);
 
-    switch (this.get(pref + settingSuffix)) {
+    if (newPref.value !== SwitchAccessAssignmentValue.NONE) {
+      // When setting to a value, enforce that no other command can have that
+      // value.
+      for (const val of SWITCH_ACCESS_COMMANDS) {
+        if (val === command) {
+          continue;
+        }
+        if (this.getPref(PREFIX + val + COMMAND_SUFFIX).value ===
+            newPref.value) {
+          chrome.settingsPrivate.setPref(
+              PREFIX + val + COMMAND_SUFFIX, SwitchAccessAssignmentValue.NONE);
+        }
+      }
+    }
+
+    // Because of complexities with mapping a ListPref to a settings-dropdown,
+    // we instead store two distinct preferences (one for the dropdown selection
+    // and one with the key codes that Switch Access intercepts). The following
+    // code sets the key code preference based on the dropdown preference.
+    switch (newPref.value) {
       case SwitchAccessAssignmentValue.NONE:
-        this.set(pref + keyCodeSuffix, []);
+        chrome.settingsPrivate.setPref(PREFIX + command + KEY_CODE_SUFFIX, []);
         break;
       case SwitchAccessAssignmentValue.SPACE:
-        this.set(pref + keyCodeSuffix, [32]);
+        chrome.settingsPrivate.setPref(
+            PREFIX + command + KEY_CODE_SUFFIX, [32]);
         break;
       case SwitchAccessAssignmentValue.ENTER:
-        this.set(pref + keyCodeSuffix, [13]);
+        chrome.settingsPrivate.setPref(
+            PREFIX + command + KEY_CODE_SUFFIX, [13]);
         break;
     }
-  },
-
-  onNextAssigned_() {
-    this.onSwitchAssigned_('next');
-  },
-
-  onPreviousAssigned_() {
-    this.onSwitchAssigned_('previous');
-  },
-
-  onSelectAssigned_() {
-    this.onSwitchAssigned_('select');
   },
 
   /**

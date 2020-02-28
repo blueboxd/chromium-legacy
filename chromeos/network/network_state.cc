@@ -330,6 +330,11 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
   }
 }
 
+bool NetworkState::IsActive() const {
+  return IsConnectingOrConnected() ||
+         activation_state() == shill::kActivationStateActivating;
+}
+
 void NetworkState::IPConfigPropertiesChanged(const base::Value& properties) {
   if (properties.DictEmpty()) {
     ipv4_config_.reset();
@@ -474,11 +479,6 @@ bool NetworkState::IsConnectingOrConnected() const {
   return visible() &&
          (connect_requested_ || StateIsConnecting(connection_state_) ||
           StateIsConnected(connection_state_));
-}
-
-bool NetworkState::IsActive() const {
-  return IsConnectingOrConnected() ||
-         activation_state() == shill::kActivationStateActivating;
 }
 
 bool NetworkState::IsOnline() const {

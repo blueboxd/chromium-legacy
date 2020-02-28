@@ -218,6 +218,7 @@ void RegexRulesMatcher::InitializeMatcher() {
     // regular expression while indexing the ruleset. That said, there are cases
     // possible where this may happen, for example, the library's implementation
     // may change etc.
+    // TODO(crbug.com/1050780): Notify the extension about the same.
     if (error_code != re2::RE2::NoError)
       continue;
 

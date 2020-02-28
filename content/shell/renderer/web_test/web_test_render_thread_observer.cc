@@ -7,11 +7,11 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/test/web_test_support.h"
-#include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
 namespace content {
 
@@ -39,22 +39,32 @@ WebTestRenderThreadObserver::~WebTestRenderThreadObserver() {
   g_instance = nullptr;
 }
 
-bool WebTestRenderThreadObserver::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebTestRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
-                        OnReplicateWebTestRuntimeFlagsChanges)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
+void WebTestRenderThreadObserver::RegisterMojoInterfaces(
+    blink::AssociatedInterfaceRegistry* associated_interfaces) {
+  associated_interfaces->AddInterface(base::BindRepeating(
+      &WebTestRenderThreadObserver::OnWebTestControlAssociatedRequest,
+      base::Unretained(this)));
 }
 
-void WebTestRenderThreadObserver::OnReplicateWebTestRuntimeFlagsChanges(
-    const base::DictionaryValue& changed_web_test_runtime_flags) {
+void WebTestRenderThreadObserver::UnregisterMojoInterfaces(
+    blink::AssociatedInterfaceRegistry* associated_interfaces) {
+  associated_interfaces->RemoveInterface(mojom::WebTestControl::Name_);
+}
+
+void WebTestRenderThreadObserver::OnWebTestControlAssociatedRequest(
+    mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver) {
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
+}
+
+void WebTestRenderThreadObserver::ReplicateWebTestRuntimeFlagsChanges(
+    base::Value changed_layout_test_runtime_flags) {
+  base::DictionaryValue* changed_web_test_runtime_flags_dictionary = nullptr;
+  bool ok = changed_layout_test_runtime_flags.GetAsDictionary(
+      &changed_web_test_runtime_flags_dictionary);
+  DCHECK(ok);
   test_interfaces()->TestRunner()->ReplicateWebTestRuntimeFlagsChanges(
-      changed_web_test_runtime_flags);
+      *changed_web_test_runtime_flags_dictionary);
 }
 
 }  // namespace content

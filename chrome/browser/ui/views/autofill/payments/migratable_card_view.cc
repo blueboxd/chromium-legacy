@@ -177,9 +177,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
         views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_RED));
 
     auto delete_card_from_local_button =
-        views::CreateVectorImageButton(listener);
-    views::SetImageFromVectorIcon(delete_card_from_local_button.get(),
-                                  kTrashCanIcon);
+        views::CreateVectorImageButtonWithNativeTheme(listener, kTrashCanIcon);
     delete_card_from_local_button->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TRASH_CAN_BUTTON_TOOLTIP));
     delete_card_from_local_button_ =

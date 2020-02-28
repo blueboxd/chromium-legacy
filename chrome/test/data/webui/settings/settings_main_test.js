@@ -350,25 +350,6 @@ cr.define('settings_main_page', function() {
       return assertPageVisibility('block', 'block');
     });
 
-    test('verify showChangePassword value', function() {
-      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
-      Polymer.dom.flush();
-      const basicPage = settingsMain.$$('settings-basic-page');
-      assertTrue(!!basicPage);
-      assertFalse(basicPage.showChangePassword);
-      assertFalse(!!basicPage.$$('settings-change-password-page'));
-
-      cr.webUIListenerCallback('change-password-visibility', true);
-      Polymer.dom.flush();
-      assertTrue(basicPage.showChangePassword);
-      assertTrue(!!basicPage.$$('settings-change-password-page'));
-
-      cr.webUIListenerCallback('change-password-visibility', false);
-      Polymer.dom.flush();
-      assertFalse(basicPage.showChangePassword);
-      assertFalse(!!basicPage.$$('settings-change-password-page'));
-    });
-
     test('updates the title based on current route', function() {
       settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       assertEquals(document.title, loadTimeData.getString('settings'));

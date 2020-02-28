@@ -844,10 +844,6 @@ class CONTENT_EXPORT NavigationRequest
     return std::move(modified_request_headers_);
   }
 
-  // Helper functions to trace the start and end of |navigation_handle_|.
-  void TraceNavigationStart();
-  void TraceNavigationEnd();
-
   // Returns true if the contents of |common_params_| requires
   // |source_site_instance_| to be set. This is used to ensure that data:
   // URLs with valid initiator origins always have |source_site_instance_| set

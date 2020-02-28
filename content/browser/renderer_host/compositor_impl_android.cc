@@ -667,7 +667,7 @@ void CompositorImpl::DidLoseLayerTreeFrameSink() {
   client_->DidSwapFrame(0);
 }
 
-void CompositorImpl::DidCommit() {
+void CompositorImpl::DidCommit(base::TimeTicks) {
   root_window_->OnCompositingDidCommit();
 }
 

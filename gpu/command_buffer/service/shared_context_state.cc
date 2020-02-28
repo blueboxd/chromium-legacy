@@ -273,6 +273,10 @@ bool SharedContextState::InitializeGL(
   GLint max_vertex_attribs = 0;
   api->glGetIntegervFn(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
   if (max_vertex_attribs < kGLES2RequiredMinimumVertexAttribs) {
+    LOG(ERROR)
+        << "SharedContextState::InitializeGL failure max_vertex_attribs : "
+        << max_vertex_attribs << " is less that minimum required : "
+        << kGLES2RequiredMinimumVertexAttribs;
     feature_info_ = nullptr;
     return false;
   }
@@ -296,6 +300,8 @@ bool SharedContextState::InitializeGL(
     // inconsistent between various ContextStates on the same underlying real
     // GL context. Make sure to report the failure early, to not allow
     // virtualized context switches in that case.
+    LOG(ERROR) << "SharedContextState::InitializeGL failure driver error : "
+               << driver_status;
     feature_info_ = nullptr;
     context_state_ = nullptr;
     return false;
@@ -306,6 +312,8 @@ bool SharedContextState::InitializeGL(
         share_group_.get(), real_context_.get(),
         weak_ptr_factory_.GetWeakPtr());
     if (!virtual_context->Initialize(surface_.get(), gl::GLContextAttribs())) {
+      LOG(ERROR) << "SharedContextState::InitializeGL failure Initialize "
+                    "virtual context failed";
       feature_info_ = nullptr;
       context_state_ = nullptr;
       return false;

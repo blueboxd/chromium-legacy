@@ -144,7 +144,11 @@ class LayerTreeHostClient {
   virtual void DidInitializeLayerTreeFrameSink() = 0;
   virtual void DidFailToInitializeLayerTreeFrameSink() = 0;
   virtual void WillCommit() = 0;
-  virtual void DidCommit() = 0;
+  // Report that a commit to the impl thread has completed. The
+  // commit_start_time is the time that the impl thread began processing the
+  // commit, or base::TimeTicks() if the commit did not require action by the
+  // impl thread.
+  virtual void DidCommit(base::TimeTicks commit_start_time) = 0;
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidReceiveCompositorFrameAck() = 0;
   virtual void DidCompletePageScaleAnimation() = 0;

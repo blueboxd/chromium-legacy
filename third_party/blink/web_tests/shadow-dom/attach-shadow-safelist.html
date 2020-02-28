@@ -39,7 +39,7 @@ test(() => {
       return;
     }
     ['open', 'closed'].forEach((mode) => {
-      assert_throws({name: 'NotSupportedError'}, () => {
+      assert_throws_dom('NotSupportedError', () => {
         element.attachShadow({mode: mode});
       }), 'attachShadow should throw NotSupportdeError for ' + maybeTagName;
     });

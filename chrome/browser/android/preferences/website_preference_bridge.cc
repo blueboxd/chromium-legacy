@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/website_preference_bridge.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -1389,16 +1387,4 @@ static void JNI_WebsitePreferenceBridge_SetQuietNotificationsUiEnabled(
     QuietNotificationPermissionUiState::DisableQuietUiInPrefs(
         ProfileAndroid::FromProfileAndroid(jprofile));
   }
-}
-
-// static
-void WebsitePreferenceBridge::GetAndroidPermissionsForContentSetting(
-    ContentSettingsType content_settings_type,
-    std::vector<std::string>* out) {
-  JNIEnv* env = AttachCurrentThread();
-  base::android::AppendJavaStringArrayToStringVector(
-      env,
-      Java_WebsitePreferenceBridge_getAndroidPermissionsForContentSetting(
-          env, static_cast<int>(content_settings_type)),
-      out);
 }

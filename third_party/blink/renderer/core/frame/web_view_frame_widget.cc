@@ -80,8 +80,9 @@ void WebViewFrameWidget::BeginCommitCompositorFrame() {
   web_view_->BeginCommitCompositorFrame();
 }
 
-void WebViewFrameWidget::EndCommitCompositorFrame() {
-  web_view_->EndCommitCompositorFrame();
+void WebViewFrameWidget::EndCommitCompositorFrame(
+    base::TimeTicks commit_start_time) {
+  web_view_->EndCommitCompositorFrame(commit_start_time);
 }
 
 void WebViewFrameWidget::RecordStartOfFrameMetrics() {

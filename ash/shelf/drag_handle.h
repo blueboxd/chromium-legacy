@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/style/ash_color_provider.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"
@@ -19,12 +18,13 @@ namespace ash {
 class ASH_EXPORT DragHandle : public views::View,
                               public views::ViewTargeterDelegate {
  public:
-  DragHandle(AshColorProvider::RippleAttributes ripple_attributes,
-             int drag_handle_corner_radius);
+  explicit DragHandle(int drag_handle_corner_radius);
   DragHandle(const DragHandle&) = delete;
   ~DragHandle() override;
 
   DragHandle& operator=(const DragHandle&) = delete;
+
+  void SetColorAndOpacity(SkColor color, float opacity);
 
   // views::ViewTargeterDelegate:
   bool DoesIntersectRect(const views::View* target,

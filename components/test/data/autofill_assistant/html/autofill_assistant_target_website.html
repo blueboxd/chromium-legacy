@@ -135,10 +135,15 @@ found in the LICENSE file.
   </head>
 
   <body onload="moveTouchAreaTwoAndThree()">
-    <!-- Touch area can be accessed without needing scroll.-->
+    <!-- Touch areas can be accessed without needing scroll. -->
     <div>
       <p id="touch_area_one" ontouchend="removeTouchArea('touch_area_one')">
         Touchable Area One</p>
+      <br>
+    </div>
+    <div>
+      <p id="touch_area_four" ontouchend="removeTouchArea('touch_area_four')">
+        Touchable Area Four</p>
       <br>
     </div>
 
@@ -151,15 +156,27 @@ found in the LICENSE file.
       <p>Blank Section</p>
     </div>
 
+    <!-- Touch areas get moved in intervals. -->
     <div>
       <p id="touch_area_two" ontouchend="removeTouchArea('touch_area_two')">
         Touchable Area Two</p>
       <br>
     </div>
-
     <div>
       <p id="touch_area_three" ontouchend="removeTouchArea('touch_area_three')">
         Touchable Area Three</p>
+      <br>
+    </div>
+
+    <!-- Touch areas can only be accessed after scrolling. -->
+    <div>
+      <p id="touch_area_five" ontouchend="removeTouchArea('touch_area_five')">
+        Touchable Area Five</p>
+      <br>
+    </div>
+    <div>
+      <p id="touch_area_six" ontouchend="removeTouchArea('touch_area_six')">
+        Touchable Area Six</p>
       <br>
     </div>
 

@@ -341,6 +341,10 @@
   if (self.webContentAreaShowingOverlay)
     return NO;
 
+  if (!self.webState) {
+    return NO;
+  }
+
   const GURL& URL = self.webState->GetLastCommittedURL();
   return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
 }

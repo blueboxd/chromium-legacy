@@ -31,13 +31,13 @@ namespace {
 base::LazyInstance<V8Platform>::Leaky g_v8_platform = LAZY_INSTANCE_INITIALIZER;
 
 constexpr base::TaskTraits kLowPriorityTaskTraits = {
-    base::ThreadPool(), base::TaskPriority::BEST_EFFORT};
+    base::TaskPriority::BEST_EFFORT};
 
 constexpr base::TaskTraits kDefaultTaskTraits = {
-    base::ThreadPool(), base::TaskPriority::USER_VISIBLE};
+    base::TaskPriority::USER_VISIBLE};
 
 constexpr base::TaskTraits kBlockingTaskTraits = {
-    base::ThreadPool(), base::TaskPriority::USER_BLOCKING};
+    base::TaskPriority::USER_BLOCKING};
 
 void PrintStackTrace() {
   base::debug::StackTrace trace;
@@ -417,27 +417,28 @@ int V8Platform::NumberOfWorkerThreads() {
 }
 
 void V8Platform::CallOnWorkerThread(std::unique_ptr<v8::Task> task) {
-  base::PostTask(FROM_HERE, kDefaultTaskTraits,
-                 base::BindOnce(&v8::Task::Run, std::move(task)));
+  base::ThreadPool::PostTask(FROM_HERE, kDefaultTaskTraits,
+                             base::BindOnce(&v8::Task::Run, std::move(task)));
 }
 
 void V8Platform::CallBlockingTaskOnWorkerThread(
     std::unique_ptr<v8::Task> task) {
-  base::PostTask(FROM_HERE, kBlockingTaskTraits,
-                 base::BindOnce(&v8::Task::Run, std::move(task)));
+  base::ThreadPool::PostTask(FROM_HERE, kBlockingTaskTraits,
+                             base::BindOnce(&v8::Task::Run, std::move(task)));
 }
 
 void V8Platform::CallLowPriorityTaskOnWorkerThread(
     std::unique_ptr<v8::Task> task) {
-  base::PostTask(FROM_HERE, kLowPriorityTaskTraits,
-                 base::BindOnce(&v8::Task::Run, std::move(task)));
+  base::ThreadPool::PostTask(FROM_HERE, kLowPriorityTaskTraits,
+                             base::BindOnce(&v8::Task::Run, std::move(task)));
 }
 
 void V8Platform::CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task,
                                            double delay_in_seconds) {
-  base::PostDelayedTask(FROM_HERE, kDefaultTaskTraits,
-                        base::BindOnce(&v8::Task::Run, std::move(task)),
-                        base::TimeDelta::FromSecondsD(delay_in_seconds));
+  base::ThreadPool::PostDelayedTask(
+      FROM_HERE, kDefaultTaskTraits,
+      base::BindOnce(&v8::Task::Run, std::move(task)),
+      base::TimeDelta::FromSecondsD(delay_in_seconds));
 }
 
 bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {

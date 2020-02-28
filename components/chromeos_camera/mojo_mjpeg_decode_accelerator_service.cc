@@ -101,9 +101,9 @@ void MojoMjpegDecodeAcceleratorService::Initialize(
   // needs to be updated.
 
   std::unique_ptr<::chromeos_camera::MjpegDecodeAccelerator> accelerator;
-  for (const auto& create_jda_function : accelerator_factory_functions_) {
+  for (auto& create_jda_function : accelerator_factory_functions_) {
     std::unique_ptr<::chromeos_camera::MjpegDecodeAccelerator> tmp_accelerator =
-        create_jda_function.Run(base::ThreadTaskRunnerHandle::Get());
+        std::move(create_jda_function).Run(base::ThreadTaskRunnerHandle::Get());
     if (tmp_accelerator && tmp_accelerator->Initialize(this)) {
       accelerator = std::move(tmp_accelerator);
       break;

@@ -32,7 +32,7 @@ namespace chromeos_camera {
 class MjpegDecodeAccelerator {
  public:
   // Callback for JPEG decoder initialization.
-  typedef base::Callback<void(bool success)> InitCB;
+  typedef base::OnceCallback<void(bool success)> InitCB;
 
   static const int32_t kInvalidTaskId = -1;
 

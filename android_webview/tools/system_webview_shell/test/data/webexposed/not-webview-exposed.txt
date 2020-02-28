@@ -134,7 +134,7 @@ interface WebGL2ComputeRenderingContext
 # WebXR dependent interfaces are not supported on WebView crbug.com/1012899
 interface XRView
 interface XRViewport
-interface XR : EventTarget
+interface XRSystem : EventTarget
 interface XRFrame
 interface XRRigidTransform
 interface XRSpace : EventTarget

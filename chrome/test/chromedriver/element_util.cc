@@ -555,6 +555,9 @@ Status GetElementClickableLocation(
   if (status.IsError())
     return status;
 
+  if (rect.Width() == 0 || rect.Height() == 0)
+    return Status(kElementNotInteractable, "element has zero size");
+
   status = ScrollElementRegionIntoView(
       session, web_view, target_element_id, rect,
       true /* center */, element_id, location);

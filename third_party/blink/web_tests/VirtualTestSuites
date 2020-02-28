@@ -540,7 +540,7 @@
     "prefix": "dark-color-scheme",
     "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme"],
     "args": ["--force-dark-mode",
-             "--enable-blink-features=CSSColorScheme"]
+             "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering"]
   },
   {
     "prefix": "force-defer-script",

@@ -1,1 +1,5 @@
+file://ui/views/OWNERS
+
+per-file accessibility*=file://ui/views/accessibility/OWNERS
+
 # COMPONENT: UI>Accessibility

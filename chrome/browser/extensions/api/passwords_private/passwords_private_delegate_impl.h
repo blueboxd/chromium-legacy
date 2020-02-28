@@ -78,7 +78,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // KeyedService overrides:
   void Shutdown() override;
 
-  SortKeyIdGenerator& GetPasswordIdGeneratorForTesting();
+  IdGenerator<std::string>& GetPasswordIdGeneratorForTesting();
 
 #if defined(UNIT_TEST)
   // Use this in tests to mock the OS-level reauthentication.
@@ -139,8 +139,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // Generators that map between sort keys used by |password_manager_presenter_|
   // and ids used by the JavaScript front end.
-  SortKeyIdGenerator password_id_generator_;
-  SortKeyIdGenerator exception_id_generator_;
+  IdGenerator<std::string> password_id_generator_;
+  IdGenerator<std::string> exception_id_generator_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
   // whether this class has been initialized, meaning both have been called.

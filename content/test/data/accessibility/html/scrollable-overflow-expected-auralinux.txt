@@ -1,0 +1,32 @@
+[document web]
+++[paragraph]
+++++[static] name='no overflow'
+++[section]
+++++[paragraph]
+++++++[static] name='clipped'
+++[entry] selectable-text
+++[section]
+++++[paragraph]
+++++++[static] name='tiny'
+++[section]
+++++[paragraph]
+++++++[static] name='x=hidden'
+++[section] name='x=auto'
+++++[paragraph]
+++++++[static] name='x=auto'
+++[section] name='x=scroll'
+++++[paragraph]
+++++++[static] name='x=scroll'
+++[paragraph]
+++++[static] name='x=visible'
+++[section]
+++++[paragraph]
+++++++[static] name='y=hidden'
+++[section] name='y=auto'
+++++[paragraph]
+++++++[static] name='y=auto'
+++[section] name='y=scroll'
+++++[paragraph]
+++++++[static] name='y=scroll'
+++[paragraph]
+++++[static] name='y=visible'

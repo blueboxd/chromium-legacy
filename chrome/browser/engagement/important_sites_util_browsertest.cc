@@ -83,31 +83,15 @@ IN_PROC_BROWSER_TEST_F(ImportantSitesUtilBrowserTest,
               ::testing::ElementsAre(kNonDSEOrigin.host()));
 
   // Important site calculation in incognito mode used to crash in Android
-  // pre-O where notification channels are not yet used, see crbug.com/989890,
-  // and with that bug fixed, it is now just broken, see crbug.com/993021.
+  // pre-O where notification channels are not yet used, see crbug.com/989890.
   //
-  // In more detail, while the notification permission is not inherited when
-  // determining if the notification capability should be available to a
-  // website, it *is* inherited for the purposes of calculating whether the site
-  // is important.
-  //
-  // The unexpected consequence is, however, that because in incognito mode the
-  // notification permission is no longer technically auto-granted to the DSE
-  // origin, the importance calculating logic no longer blocklists it, which
-  // means that in incognito mode the DSE ends up being considered important.
-  // Because nothing useful in incognito mode is gated on the site being
-  // important, this really is just a nuisance that, however, led to a
-  // significant number of crashes.
-  //
-  // For now this test codifies the incorrect behavior just for the purposes of
-  // making sure we no longer crash.
+  // It also used to produce wrong results, since notification permission
+  // information got inherited incorrectly.
+  // See crbug.com/993021, crbug.com/1052406
   auto* incognito_profile = profile()->GetOffTheRecordProfile();
   ASSERT_TRUE(incognito_profile);
   ASSERT_TRUE(incognito_profile->IsOffTheRecord());
 
-  EXPECT_THAT(
-      GetImportantDomains(incognito_profile),
-      ::testing::UnorderedElementsAre(
-          ImportantSitesUtil::GetRegisterableDomainOrIP(kDSEOrigin.GetURL()),
-          kNonDSEOrigin.host()));
+  EXPECT_THAT(GetImportantDomains(profile()),
+              ::testing::ElementsAre(kNonDSEOrigin.host()));
 }

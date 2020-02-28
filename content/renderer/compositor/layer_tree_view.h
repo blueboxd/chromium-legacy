@@ -90,7 +90,7 @@ class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override;
-  void DidCommit() override;
+  void DidCommit(base::TimeTicks commit_start_time) override;
   void DidCommitAndDrawFrame() override;
   void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override;

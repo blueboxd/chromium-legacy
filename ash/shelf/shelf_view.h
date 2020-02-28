@@ -362,6 +362,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
  private:
   friend class ShelfViewTestAPI;
 
+  class FadeInAnimationDelegate;
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
 
@@ -495,6 +496,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   //    to overflow button.
   //  * In the overflow mode, returns only bubble's bounds.
   gfx::Rect GetBoundsForDragInsertInScreen();
+
+  // Invoked after the fading in animation for item addition is ended.
+  void OnFadeInAnimationEnded();
 
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();

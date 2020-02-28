@@ -355,7 +355,10 @@ class WebAXObject {
                                       WebVector<int>& ends) const;
 
   // Scrollable containers.
+  // Programmatically scrollable.
   BLINK_EXPORT bool IsScrollableContainer() const;
+  // Also scrollable by user.
+  BLINK_EXPORT bool IsUserScrollable() const;
   BLINK_EXPORT gfx::Point GetScrollOffset() const;
   BLINK_EXPORT gfx::Point MinimumScrollOffset() const;
   BLINK_EXPORT gfx::Point MaximumScrollOffset() const;

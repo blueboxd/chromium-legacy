@@ -114,8 +114,6 @@ class OutOfProcessInstance : public pp::Instance,
   void UpdateTickMarks(const std::vector<pp::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyPageBecameVisible(
-      const PDFEngine::PageFeatures* page_features) override;
   void GetDocumentPassword(
       pp::CompletionCallbackWithOutput<pp::Var> callback) override;
   void Beep() override;
@@ -420,12 +418,6 @@ class OutOfProcessInstance : public pp::Instance,
   // The blank space above the first page of the document reserved for the
   // toolbar.
   int top_toolbar_height_in_viewport_coords_;
-
-  // Whether each page had its features processed.
-  std::vector<bool> page_is_processed_;
-
-  // Annotation types that were already counted for this document.
-  std::set<int> annotation_types_counted_;
 
   bool edit_mode_ = false;
 

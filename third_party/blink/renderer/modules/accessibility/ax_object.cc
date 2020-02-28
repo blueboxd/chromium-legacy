@@ -2749,6 +2749,17 @@ bool AXObject::IsScrollableContainer() const {
   return !!GetScrollableAreaIfScrollable();
 }
 
+bool AXObject::IsUserScrollable() const {
+  if (!GetScrollableAreaIfScrollable() || !GetLayoutObject())
+    return false;
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return false;
+
+  return style->ScrollsOverflowY() || style->ScrollsOverflowX();
+}
+
 IntPoint AXObject::GetScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)

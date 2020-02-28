@@ -6,8 +6,10 @@
 #define COMPONENTS_PERMISSIONS_PERMISSION_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
@@ -55,6 +57,14 @@ class PermissionUtil {
   // to determine whether a specific ContentSettingsType is supported by the
   // PermissionManager.
   static bool IsPermission(ContentSettingsType type);
+
+#if defined(OS_ANDROID)
+  // Populate the list of corresponding Android permissions associated with the
+  // ContentSettingsType specified.
+  static void GetAndroidPermissionsForContentSetting(
+      ContentSettingsType content_type,
+      std::vector<std::string>* out);
+#endif
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUtil);

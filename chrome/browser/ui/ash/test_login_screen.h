@@ -44,6 +44,10 @@ class TestLoginScreen : public ash::LoginScreen {
       override;
   void RequestSecurityTokenPin(ash::SecurityTokenPinRequest request) override;
   void ClearSecurityTokenPinRequest() override;
+  bool SetLoginShelfGestureHandler(const base::string16& nudge_text,
+                                   const base::RepeatingClosure& fling_callback,
+                                   base::OnceClosure exit_callback) override;
+  void ClearLoginShelfGestureHandler() override;
 
  private:
   TestLoginScreenModel test_screen_model_;

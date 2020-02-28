@@ -166,12 +166,12 @@ void LogRecoveryTime(base::TimeDelta time) {
   }
   if ([[NSDate date] timeIntervalSinceDate:self.lastSeenMainThread] >
       self.delay) {
+    breakpad_helper::SetHangReport(true);
     [[BreakpadController sharedInstance]
         withBreakpadRef:^(BreakpadRef breakpadRef) {
           if (!breakpadRef) {
             return;
           }
-          breakpad_helper::SetHangReport(true);
           NSDictionary* breakpadReportInfo =
               BreakpadGenerateReport(breakpadRef, nil);
           if (!breakpadReportInfo) {
@@ -207,6 +207,7 @@ void LogRecoveryTime(base::TimeDelta time) {
               }
                  forKey:@(kNsUserDefaultKeyLastSessionInfo)];
           self.reportGenerated = YES;
+          breakpad_helper::SetHangReport(false);
         }];
     return;
   }

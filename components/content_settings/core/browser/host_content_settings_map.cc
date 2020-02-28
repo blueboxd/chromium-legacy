@@ -819,8 +819,21 @@ void HostContentSettingsMap::AddSettingsForOneType(
 
   while (rule_iterator->HasNext()) {
     content_settings::Rule rule = rule_iterator->Next();
+    base::Value value = std::move(rule.value);
+
+    // Normal rules applied to incognito profiles are subject to inheritance
+    // settings.
+    if (!incognito && is_off_the_record_) {
+      std::unique_ptr<base::Value> inherit_value =
+          ProcessIncognitoInheritanceBehavior(
+              content_type, base::Value::ToUniquePtrValue(std::move(value)));
+      if (inherit_value)
+        value = std::move(*inherit_value);
+      else
+        continue;
+    }
     settings->emplace_back(
-        rule.primary_pattern, rule.secondary_pattern, std::move(rule.value),
+        rule.primary_pattern, rule.secondary_pattern, std::move(value),
         kProviderNamesSourceMap[provider_type].provider_name, incognito);
   }
 }

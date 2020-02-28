@@ -77,6 +77,55 @@ ManagedDisplayInfo::ManagedDisplayModeList GetModeListWithAllRefreshRates(
   return display_mode_list;
 }
 
+// Constructs the raster DisplayColorSpaces out of |snapshot_color_space|,
+// including the HDR ones if present and |allow_high_bit_depth| is set.
+gfx::DisplayColorSpaces FillDisplayColorSpaces(
+    const gfx::ColorSpace& snapshot_color_space,
+    bool allow_high_bit_depth) {
+  // ChromeOS VMs (e.g. amd64-generic or betty) have INVALID Primaries; just
+  // pass the color space along.
+  if (!snapshot_color_space.IsValid()) {
+    return gfx::DisplayColorSpaces(snapshot_color_space,
+                                   DisplaySnapshot::PrimaryFormat());
+  }
+
+  constexpr auto kSDRTransferId = gfx::ColorSpace::TransferID::IEC61966_2_1;
+  const auto primary_id = snapshot_color_space.GetPrimaryID();
+
+  gfx::ColorSpace sdr_color_space;
+  if (primary_id == gfx::ColorSpace::PrimaryID::CUSTOM) {
+    skcms_Matrix3x3 primary_matrix{};
+    snapshot_color_space.GetPrimaryMatrix(&primary_matrix);
+    sdr_color_space =
+        gfx::ColorSpace::CreateCustom(primary_matrix, kSDRTransferId);
+  } else {
+    sdr_color_space = gfx::ColorSpace(primary_id, kSDRTransferId);
+  }
+  gfx::DisplayColorSpaces display_color_spaces(
+      sdr_color_space, DisplaySnapshot::PrimaryFormat());
+
+  if (allow_high_bit_depth) {
+    gfx::ColorSpace hdr_color_space;
+    if (primary_id == gfx::ColorSpace::PrimaryID::CUSTOM) {
+      skcms_Matrix3x3 primary_matrix{};
+      snapshot_color_space.GetPrimaryMatrix(&primary_matrix);
+      hdr_color_space = gfx::ColorSpace::CreatePiecewiseHDR(
+          primary_id, 0.99, 2.0, &primary_matrix);
+    } else {
+      hdr_color_space =
+          gfx::ColorSpace::CreatePiecewiseHDR(primary_id, 0.99, 2.0);
+    }
+
+    display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kHDR, false /* needs_alpha */, hdr_color_space,
+        gfx::BufferFormat::RGBA_1010102);
+    display_color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kHDR, true /* needs_alpha */, hdr_color_space,
+        gfx::BufferFormat::RGBA_1010102);
+  }
+  return display_color_spaces;
+}
+
 }  // namespace
 
 // static
@@ -336,21 +385,23 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   if (dpi)
     new_info.set_device_dpi(dpi);
 
+#if !defined(OS_CHROMEOS)
   // TODO(crbug.com/1012846): This should configure the HDR color spaces.
   gfx::DisplayColorSpaces display_color_spaces(
       snapshot->color_space(), DisplaySnapshot::PrimaryFormat());
   new_info.set_display_color_spaces(display_color_spaces);
   new_info.set_bits_per_channel(snapshot->bits_per_channel());
-
-  // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
-  // supported on ChromeOS.
-#if defined(OS_CHROMEOS)
+#else
+  // TODO(crbug.com/1012846): Remove kEnableUseHDRTransferFunction usage when
+  // HDR is fully supported on ChromeOS.
+  const bool allow_high_bit_depth =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUseHDRTransferFunction);
+  new_info.set_display_color_spaces(
+      FillDisplayColorSpaces(snapshot->color_space(), allow_high_bit_depth));
   constexpr int32_t kNormalBitDepth = 8;
-  if (new_info.bits_per_channel() > kNormalBitDepth &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUseHDRTransferFunction)) {
-    new_info.set_bits_per_channel(kNormalBitDepth);
-  }
+  new_info.set_bits_per_channel(
+      allow_high_bit_depth ? snapshot->bits_per_channel() : kNormalBitDepth);
 #endif
 
   new_info.set_refresh_rate(mode_info->refresh_rate());

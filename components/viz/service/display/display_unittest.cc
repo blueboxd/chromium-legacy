@@ -12,7 +12,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
-#include "cc/base/region.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -4207,6 +4206,61 @@ TEST_F(DisplayTest, DrawOcclusionSplit) {
                 quad_list.ElementAt(i + 1)->visible_rect);
     }
   }
+  TearDownDisplay();
+}
+
+// Test that the threshold we use to determine if it's worth splitting a quad or
+// not takes into account the device scale factor. In particular, this test
+// would not pass if we had a display scale factor equal to 1.f instead of 1.5f
+// since the number of saved fragments would only be 100x100 which is lower than
+// our threshold 128x128.
+TEST_F(DisplayTest, DrawOcclusionSplitDeviceScaleFactorFractional) {
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.5f);
+  display_->Resize(gfx::Size(1000, 1000));
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+
+  const bool is_clipped = false;
+  const bool are_contents_opaque = true;
+  const float opacity = 1.f;
+
+  // Occluder quad.
+  const gfx::Rect occluding_rect(10, 10, 100, 100);
+  SharedQuadState* shared_quad_state_occluding =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SolidColorDrawQuad* occluding_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  shared_quad_state_occluding->SetAll(
+      gfx::Transform(), occluding_rect, occluding_rect, gfx::RRectF(),
+      occluding_rect, is_clipped, are_contents_opaque, opacity,
+      SkBlendMode::kSrcOver, 0);
+  occluding_quad->SetNew(shared_quad_state_occluding, occluding_rect,
+                         occluding_rect, SK_ColorRED, false);
+  // Occluded quad.
+  const gfx::Rect occluded_rect = gfx::Rect(0, 0, 1000, 1000);
+  SharedQuadState* shared_quad_state_occluded =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  SolidColorDrawQuad* occluded_quad =
+      frame.render_pass_list.front()
+          ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  shared_quad_state_occluded->SetAll(
+      gfx::Transform(), occluded_rect, occluded_rect, gfx::RRectF(),
+      occluded_rect, is_clipped, are_contents_opaque, opacity,
+      SkBlendMode::kSrcOver, 0);
+  occluded_quad->SetNew(shared_quad_state_occluded, occluded_rect,
+                        occluded_rect, SK_ColorRED, false);
+
+  EXPECT_EQ(2u, frame.render_pass_list.front()->quad_list.size());
+  display_->RemoveOverdrawQuads(&frame);
+  EXPECT_EQ(5u, frame.render_pass_list.front()->quad_list.size());
+
   TearDownDisplay();
 }
 

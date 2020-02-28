@@ -82,7 +82,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   OnSynchronizeVisualProperties(visual_properties);
 
   // Clear the flag.
-  widget()->DidCommitCompositorFrame();
+  widget()->DidCommitCompositorFrame(base::TimeTicks());
   widget()->DidCommitAndDrawCompositorFrame();
 
   // Setting the same size again should not send the ack.

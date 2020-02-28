@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -34,11 +35,19 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   static constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
   static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
 
-  // Shows the editor for |group|. Returns an *unowned* pointer to the
-  // bubble's widget.
-  static views::Widget* Show(TabGroupHeader* anchor_view,
-                             const Browser* browser,
-                             const tab_groups::TabGroupId& group);
+  // Shows the editor for |group| using a TabGroupHeader anchor. Should be used
+  // in most cases to allow focus handling between the header and the bubble.
+  // Returns an *unowned* pointer to the bubble's widget.
+  static views::Widget* Show(const Browser* browser,
+                             const tab_groups::TabGroupId& group,
+                             TabGroupHeader* anchor_view);
+
+  // Shows the editor for |group| using a rect as an anchor. Should only be used
+  // if the TabGroupHeader is not available as an anchor, e.g. in WebUI. Returns
+  // an *unowned* pointer to the bubble's widget.
+  static views::Widget* ShowWithRect(const Browser* browser,
+                                     const tab_groups::TabGroupId& group,
+                                     gfx::Rect anchor_rect);
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -46,9 +55,10 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   views::View* GetInitiallyFocusedView() override;
 
  private:
-  TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
-                           const Browser* browser,
-                           const tab_groups::TabGroupId& group);
+  TabGroupEditorBubbleView(const Browser* browser,
+                           const tab_groups::TabGroupId& group,
+                           TabGroupHeader* anchor_view,
+                           base::Optional<gfx::Rect> anchor_rect);
   ~TabGroupEditorBubbleView() override;
 
   void UpdateGroup();
@@ -81,16 +91,16 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   class ButtonListener : public views::ButtonListener {
    public:
     explicit ButtonListener(const Browser* browser,
-                            TabGroupHeader* anchor_view,
-                            tab_groups::TabGroupId group);
+                            tab_groups::TabGroupId group,
+                            TabGroupHeader* anchor_view);
 
     // views::ButtonListener:
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
    private:
     const Browser* const browser_;
-    TabGroupHeader* anchor_view_;
     const tab_groups::TabGroupId group_;
+    TabGroupHeader* anchor_view_;
   };
 
   ButtonListener button_listener_;

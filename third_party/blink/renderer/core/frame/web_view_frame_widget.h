@@ -59,7 +59,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void BeginUpdateLayers() override;
   void EndUpdateLayers() override;
   void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame() override;
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(
       base::TimeTicks frame_begin_time,

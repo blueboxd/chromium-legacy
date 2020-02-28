@@ -84,6 +84,17 @@ public class ChildProcessConnection {
     }
 
     /**
+     * The string passed to bindToCaller to identify this class loader.
+     */
+    @VisibleForTesting
+    public static String getBindToCallerClazz() {
+        // TODO(crbug.com/1057102): Have embedder explicitly set separate different strings since
+        // this could still collide in theory.
+        ClassLoader cl = ChildProcessConnection.class.getClassLoader();
+        return cl.toString() + cl.hashCode();
+    }
+
+    /**
      * Delegate that ChildServiceConnection should call when the service connects/disconnects.
      * These callbacks are expected to happen on a background thread.
      */
@@ -529,7 +540,7 @@ public class ChildProcessConnection {
 
             if (mBindToCaller) {
                 try {
-                    if (!mService.bindToCaller()) {
+                    if (!mService.bindToCaller(getBindToCallerClazz())) {
                         if (mServiceCallback != null) {
                             mServiceCallback.onChildStartFailed(this);
                         }

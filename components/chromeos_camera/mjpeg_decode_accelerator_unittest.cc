@@ -567,8 +567,9 @@ void JpegClient::CreateJpegDecoder() {
     return;
   }
 
-  for (const auto& create_jda_func : jda_factories) {
-    decoder_ = create_jda_func.Run(base::ThreadTaskRunnerHandle::Get());
+  for (auto& create_jda_func : jda_factories) {
+    decoder_ =
+        std::move(create_jda_func).Run(base::ThreadTaskRunnerHandle::Get());
     if (decoder_)
       break;
   }

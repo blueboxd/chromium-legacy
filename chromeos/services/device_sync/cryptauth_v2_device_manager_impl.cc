@@ -85,10 +85,11 @@ CryptAuthV2DeviceManagerImpl::Factory::BuildInstance(
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
     CryptAuthScheduler* scheduler,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new CryptAuthV2DeviceManagerImpl(
       client_app_metadata_provider, device_registry, key_registry,
-      client_factory, gcm_manager, scheduler, std::move(timer)));
+      client_factory, gcm_manager, scheduler, pref_service, std::move(timer)));
 }
 
 CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
@@ -98,6 +99,7 @@ CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
     CryptAuthClientFactory* client_factory,
     CryptAuthGCMManager* gcm_manager,
     CryptAuthScheduler* scheduler,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer)
     : client_app_metadata_provider_(client_app_metadata_provider),
       device_registry_(device_registry),
@@ -105,6 +107,7 @@ CryptAuthV2DeviceManagerImpl::CryptAuthV2DeviceManagerImpl(
       client_factory_(client_factory),
       gcm_manager_(gcm_manager),
       scheduler_(scheduler),
+      pref_service_(pref_service),
       timer_(std::move(timer)) {
   gcm_manager_->AddObserver(this);
 }
@@ -244,7 +247,7 @@ void CryptAuthV2DeviceManagerImpl::AttemptDeviceSync() {
   DCHECK(client_app_metadata_);
 
   device_syncer_ = CryptAuthDeviceSyncerImpl::Factory::Get()->BuildInstance(
-      device_registry_, key_registry_, client_factory_);
+      device_registry_, key_registry_, client_factory_, pref_service_);
 
   SetState(State::kWaitingForDeviceSync);
 

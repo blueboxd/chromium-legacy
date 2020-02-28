@@ -65,7 +65,7 @@ const char kImageClipboardFormatSuffix[] = "'>";
 
 // User is waiting for the screenshot-taken notification, hence USER_VISIBLE.
 constexpr base::TaskTraits kBlockingTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 ChromeScreenshotGrabber* g_chrome_screenshot_grabber_instance = nullptr;
@@ -150,7 +150,7 @@ class ScreenshotGrabberNotificationDelegate
       case BUTTON_COPY_TO_CLIPBOARD: {
         // To avoid keeping the screenshot image in memory, re-read the
         // screenshot file and copy it to the clipboard.
-        base::PostTask(
+        base::ThreadPool::PostTask(
             FROM_HERE, kBlockingTaskTraits,
             base::BindOnce(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
         break;
@@ -486,7 +486,7 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreview(
     const base::FilePath& screenshot_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&ReadFileToString, screenshot_path),
       base::BindOnce(&ChromeScreenshotGrabber::DecodeScreenshotFileForPreview,

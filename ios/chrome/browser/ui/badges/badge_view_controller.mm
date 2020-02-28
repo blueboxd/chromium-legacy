@@ -176,6 +176,7 @@ const CGFloat kUpdateDisplayedBadgeAnimationDamping = 0.85;
                                   kFullScreenProgressThreshold,
                               0);
     self.fullScreenBadge.alpha = alphaValue;
+    self.displayedBadge.hidden = YES;
   } else {
     self.fullScreenBadge.fullScreenOn = NO;
     // Fade in/out the FullScreen badge with the FullScreen off configurations
@@ -184,6 +185,7 @@ const CGFloat kUpdateDisplayedBadgeAnimationDamping = 0.85;
     CGFloat alphaValue = fmax((progress - kFullScreenProgressThreshold) /
                                   (1 - kFullScreenProgressThreshold),
                               0);
+    self.displayedBadge.hidden = NO;
     self.displayedBadge.alpha = alphaValue;
     self.fullScreenBadge.alpha = alphaValue;
   }

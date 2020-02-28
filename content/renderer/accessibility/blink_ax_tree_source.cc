@@ -1161,7 +1161,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   }
 
   if (src.IsScrollableContainer()) {
-    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
+    // Only mark as scrollable if user has actual scrollbars to use.
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable,
+                          src.IsUserScrollable());
+    // Provide x,y scroll info if scrollable in any way (programmatically or via
+    // user).
     const gfx::Point& scroll_offset = src.GetScrollOffset();
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scroll_offset.x());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scroll_offset.y());

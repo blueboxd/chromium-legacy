@@ -72,8 +72,8 @@ class AutoThreadTest : public testing::Test {
   void SetUp() override {
     main_task_runner_ = new AutoThreadTaskRunner(
         task_environment_.GetMainThreadTaskRunner(),
-        base::Bind(&AutoThreadTest::QuitMainMessageLoop,
-                   base::Unretained(this)));
+        base::BindOnce(&AutoThreadTest::QuitMainMessageLoop,
+                       base::Unretained(this)));
   }
 
   void TearDown() override {

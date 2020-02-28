@@ -1,10 +1,15 @@
 <!--
 * Test scrollXMin -- the presence of this indicates something is scrollable.
 @BLINK-ALLOW:scrollXMin=*
+@BLINK-ALLOW:scrollable=true
+@UIA-WIN-ALLOW:*ScrollItemPatternAvailable*
+@UIA-WIN-ALLOW:*ScrollPatternAvailable*
+@UIA-WIN-ALLOW:*Scrollable*
 -->
 <html>
   <style>
   body { font-style: monospace; width: 999px;}
+  .clipped { width: 25px; height: 25px; overflow: hidden; }
   .x-overflow > div { width: 25px; height: 50px;}
   .x-overflow > div > p { margin: 0; }
   .y-overflow > div { height: 25px; }
@@ -12,8 +17,14 @@
   </style>
   <body>
     <div class="no-overflow">  <!-- Not scrollable -->
-      <p>no overflow
+      <p>no overflow <!-- Default is overflow: visible -->
     </div>
+
+    <div class="clipped">  <!-- Not scrollable -->
+      <p>clipped <!-- Default is overflow: visible -->
+    </div>
+
+    <textarea rows="1" cols="2">ab cd</textarea>  <!-- User scrollable -->
 
     <div class="not-enough-content-to-scroll">  <!-- Not scrollable -->
       <div style="overflow: scroll; width: 100px; height: 100px">
@@ -22,13 +33,13 @@
     </div>
 
     <div class="x-overflow">
-      <div style="overflow-x: hidden;">  <!-- Scrollable -->
+      <div style="overflow-x: hidden;">  <!-- Actually user scrollable, because overflow-x=hidden changes overflow-y to auto   -->
           <p>x=hidden
       </div>
-      <div style="overflow-x: auto;">  <!-- Scrollable -->
+      <div style="overflow-x: auto;">  <!-- User scrollable if overflow -->
           <p>x=auto
       </div>
-      <div style="overflow-x: scroll;">  <!-- Scrollable -->
+      <div style="overflow-x: scroll;">  <!-- User scrollable if overflow -->
           <p>x=scroll
       </div>
       <div style="overflow-x: visible;">  <!-- Not scrollable -->
@@ -37,13 +48,13 @@
     </div>
 
     <div class="y-overflow">
-      <div style="overflow-y: hidden;">  <!-- Scrollable -->
+      <div style="overflow-y: hidden;">  <!-- Actually user scrollable, because overflow-y=hidden changes overflow-x to auto   -->
           <p>y=hidden
       </div>
-      <div style="overflow-y: auto;">  <!-- Scrollable -->
+      <div style="overflow-y: auto;">  <!-- Use scrollable if overflow -->
           <p>y=auto
       </div>
-      <div style="overflow-y: scroll;">  <!-- Scrollable -->
+      <div style="overflow-y: scroll;">  <!-- Use scrollable if overflow  -->
           <p>y=scroll
       </div>
       <div style="overflow-y: visible;">  <!-- Not scrollable -->

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -117,22 +116,6 @@ class PDFEngine {
     FormType form_type = FormType::kNone;
   };
 
-  // Features in a page that are relevant to measure.
-  struct PageFeatures {
-    PageFeatures();
-    PageFeatures(const PageFeatures& other);
-    ~PageFeatures();
-
-    // Whether the instance has been initialized and filled.
-    bool IsInitialized() const;
-
-    // 0-based page index in the document. < 0 when uninitialized.
-    int index = -1;
-
-    // Set of annotation types found in page.
-    std::set<int> annotation_types;
-  };
-
   // The interface that's provided to the rendering engine.
   class Client {
    public:
@@ -190,10 +173,6 @@ class PDFEngine {
 
     // Updates the index of the currently selected search item.
     virtual void NotifySelectedFindResultChanged(int current_find_index) {}
-
-    // Notifies a page became visible.
-    virtual void NotifyPageBecameVisible(
-        const PDFEngine::PageFeatures* page_features) {}
 
     // Prompts the user for a password to open this document. The callback is
     // called when the password is retrieved.

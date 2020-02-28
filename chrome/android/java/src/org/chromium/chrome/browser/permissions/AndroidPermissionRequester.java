@@ -14,9 +14,9 @@ import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.permissions.PermissionUtil;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -49,8 +49,8 @@ public class AndroidPermissionRequester {
             WindowAndroid windowAndroid, int[] contentSettingsTypes) {
         SparseArray<String[]> permissionsToRequest = new SparseArray<>();
         for (int i = 0; i < contentSettingsTypes.length; i++) {
-            String[] permissions = WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(
-                    contentSettingsTypes[i]);
+            String[] permissions =
+                    PermissionUtil.getAndroidPermissionsForContentSetting(contentSettingsTypes[i]);
             if (permissions == null) continue;
             List<String> missingPermissions = new ArrayList<>();
             for (int j = 0; j < permissions.length; j++) {

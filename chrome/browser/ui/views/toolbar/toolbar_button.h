@@ -188,6 +188,8 @@ class ToolbarButton : public views::LabelButton,
     void AnimationProgressed(const gfx::Animation* animation) override;
 
    private:
+    friend test::ToolbarButtonTestApi;
+
     // Returns whether the animation is currently shown. Note that this returns
     // true even after calling Hide() until the fade-out animation finishes.
     bool IsShown() const;
@@ -269,7 +271,11 @@ class ToolbarButton : public views::LabelButton,
   // |this| to refresh UI).
   HighlightColorAnimation highlight_color_animation_;
 
+  // If either |last_border_color_| or |last_paint_insets_| have changed since
+  // the last update to |border_| it must be recalculated  to match current
+  // values.
   base::Optional<SkColor> last_border_color_;
+  gfx::Insets last_paint_insets_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};

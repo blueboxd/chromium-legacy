@@ -64,3 +64,12 @@ void TestLoginScreen::RequestSecurityTokenPin(
     ash::SecurityTokenPinRequest request) {}
 
 void TestLoginScreen::ClearSecurityTokenPinRequest() {}
+
+bool TestLoginScreen::SetLoginShelfGestureHandler(
+    const base::string16& nudge_text,
+    const base::RepeatingClosure& fling_callback,
+    base::OnceClosure exit_callback) {
+  return false;
+}
+
+void TestLoginScreen::ClearLoginShelfGestureHandler() {}

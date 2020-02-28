@@ -131,6 +131,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   enum MetricId {
     kCompositing,
     kCompositingCommit,
+    kImplCompositorCommit,
     kIntersectionObservation,
     kPaint,
     kPrePaint,
@@ -143,6 +144,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kAnimate,
     kUpdateLayers,
     kProxyCommit,
+    kWaitForCommit,
     kCount,
     kMainFrame
   };
@@ -167,6 +169,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
     static const Vector<MetricInitializationData>* data =
         new Vector<MetricInitializationData>{{"Compositing", true},
                                              {"CompositingCommit", true},
+                                             {"ImplCompositorCommit", true},
                                              {"IntersectionObservation", true},
                                              {"Paint", true},
                                              {"PrePaint", true},
@@ -178,7 +181,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
                                              {"HandleInputEvents", true},
                                              {"Animate", true},
                                              {"UpdateLayers", false},
-                                             {"ProxyCommit", true}};
+                                             {"ProxyCommit", true},
+                                             {"WaitForCommit", true}};
     return *data;
   }
 
@@ -241,6 +245,15 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void RecordSample(size_t metric_index,
                     base::TimeTicks start,
                     base::TimeTicks end);
+
+  // Record a sample for the impl-side compositor processing.
+  // - requested is the time the renderer proxy requests a commit
+  // - started is the time the impl thread begins processing the request
+  // - completed is the time the renderer proxy receives notification that the
+  //   commit is complete.
+  void RecordImplCompositorSample(base::TimeTicks requested,
+                                  base::TimeTicks started,
+                                  base::TimeTicks completed);
 
   // Mark the beginning of a main frame update.
   void BeginMainFrame();

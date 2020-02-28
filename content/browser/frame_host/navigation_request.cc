@@ -641,6 +641,27 @@ class ScopedNavigationRequestCrashKeys {
   base::debug::ScopedCrashKeyString url_;
 };
 
+// Start a new nested async event with the given name.
+void EnterChildTraceEvent(const char* name, NavigationRequest* request) {
+  // Tracing no longer outputs the end event name, so we can simply pass an
+  // empty string here.
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", name, request);
+}
+
+// Start a new nested async event with the given name and args.
+template <typename ArgType>
+void EnterChildTraceEvent(const char* name,
+                          NavigationRequest* request,
+                          const char* arg_name,
+                          ArgType arg_value) {
+  // Tracing no longer outputs the end event name, so we can simply pass an
+  // empty string here.
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", request);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("navigation", name, request, arg_name,
+                                    arg_value);
+}
+
 }  // namespace
 
 // static
@@ -910,10 +931,11 @@ NavigationRequest::NavigationRequest(
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
-  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
-                           "frame_tree_node",
-                           frame_tree_node_->frame_tree_node_id(), "url",
-                           common_params_->url.possibly_invalid_spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
+      "navigation", "NavigationRequest", this, "frame_tree_node",
+      frame_tree_node_->frame_tree_node_id(), "url",
+      common_params_->url.possibly_invalid_spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing", this);
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
 
@@ -1079,7 +1101,10 @@ NavigationRequest::NavigationRequest(
 }
 
 NavigationRequest::~NavigationRequest() {
-  TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
+  // Close the last child event. Tracing no longer outputs the end event name,
+  // so we can simply pass an empty string here.
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("navigation", "NavigationRequest", this);
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
@@ -1106,14 +1131,18 @@ NavigationRequest::~NavigationRequest() {
 
   if (IsNavigationStarted()) {
     GetDelegate()->DidFinishNavigation(this);
-    TraceNavigationEnd();
+    if (IsInMainFrame()) {
+      TRACE_EVENT_NESTABLE_ASYNC_END2(
+          "navigation", "Navigation StartToCommit",
+          TRACE_ID_WITH_SCOPE("StartToCommit", TRACE_ID_LOCAL(this)), "URL",
+          common_params_->url.spec(), "Net Error Code", net_error_);
+    }
   }
 }
 
 void NavigationRequest::BeginNavigation() {
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "BeginNavigation");
+  EnterChildTraceEvent("BeginNavigation", this);
   DCHECK(!loader_);
   DCHECK(!render_frame_host_);
   ScopedNavigationRequestCrashKeys crash_keys(this);
@@ -1221,8 +1250,7 @@ void NavigationRequest::BeginNavigation() {
 
     // There is no need to make a network request for this navigation, so commit
     // it immediately.
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                                 "ResponseStarted");
+    EnterChildTraceEvent("ResponseStarted", this);
 
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
@@ -1243,8 +1271,7 @@ void NavigationRequest::BeginNavigation() {
 }
 
 void NavigationRequest::SetWaitingForRendererResponse() {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "WaitingForRendererResponse");
+  EnterChildTraceEvent("WaitingForRendererResponse", this);
   DCHECK(state_ == NOT_STARTED);
   state_ = WAITING_FOR_RENDERER_RESPONSE;
 }
@@ -1318,7 +1345,20 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  TraceNavigationStart();
+  if (IsInMainFrame()) {
+    DCHECK(!common_params_->navigation_start.is_null());
+    DCHECK(!IsRendererDebugURL(common_params_->url));
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "navigation", "Navigation StartToCommit",
+        TRACE_ID_WITH_SCOPE("StartToCommit", TRACE_ID_LOCAL(this)),
+        common_params_->navigation_start, "Initial URL",
+        common_params_->url.spec());
+  }
+
+  if (IsSameDocument()) {
+    EnterChildTraceEvent("Same document", this);
+  }
+
   GetDelegate()->DidStartNavigation(this);
 
   // The previous call to DidStartNavigation could have cancelled this request
@@ -1342,7 +1382,12 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // |navigation_handle_proxy_|. See https://crbug.com/958396.
   if (IsNavigationStarted()) {
     GetDelegate()->DidFinishNavigation(this);
-    TraceNavigationEnd();
+    if (IsInMainFrame()) {
+      TRACE_EVENT_NESTABLE_ASYNC_END2(
+          "navigation", "Navigation StartToCommit",
+          TRACE_ID_WITH_SCOPE("StartToCommit", TRACE_ID_LOCAL(this)), "URL",
+          common_params_->url.spec(), "Net Error Code", net_error_);
+    }
   }
 
   // Reset the state of the NavigationRequest, and the navigation_handle_id.
@@ -1662,8 +1707,7 @@ void NavigationRequest::OnResponseStarted(
 
   DCHECK(IsNavigationStarted());
   DCHECK(response_head);
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "OnResponseStarted");
+  EnterChildTraceEvent("OnResponseStarted", this);
   state_ = WILL_PROCESS_RESPONSE;
   response_head_ = std::move(response_head);
   response_body_ = std::move(response_body);
@@ -1990,8 +2034,7 @@ void NavigationRequest::OnRequestFailedInternal(
 
   // TODO(https://crbug.com/757633): Check that ssl_info.has_value() if
   // net_error is a certificate error.
-  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
-                               "OnRequestFailed", "error", status.error_code);
+  EnterChildTraceEvent("OnRequestFailed", this, "error", status.error_code);
   state_ = WILL_FAIL_REQUEST;
   processing_navigation_throttle_ = false;
 
@@ -3123,8 +3166,7 @@ NavigatorDelegate* NavigationRequest::GetDelegate() const {
 
 void NavigationRequest::Resume(NavigationThrottle* resuming_throttle) {
   DCHECK(resuming_throttle);
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "Resume");
+  EnterChildTraceEvent("Resume", this);
   throttle_runner_->ResumeProcessingNavigationEvent(resuming_throttle);
   // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
   // by the previous call.
@@ -3171,8 +3213,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
          state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
 
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "CancelDeferredNavigation");
+  EnterChildTraceEvent("CancelDeferredNavigation", this);
   NavigationState old_state = state_;
   state_ = CANCELING;
   if (complete_callback_for_testing_ &&
@@ -3201,8 +3242,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
 }
 
 void NavigationRequest::WillStartRequest() {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "WillStartRequest");
+  EnterChildTraceEvent("WillStartRequest", this);
   DCHECK_EQ(state_, WILL_START_REQUEST);
 
   if (IsSelfReferentialURL()) {
@@ -3239,9 +3279,8 @@ void NavigationRequest::WillStartRequest() {
 void NavigationRequest::WillRedirectRequest(
     const GURL& new_referrer_url,
     RenderProcessHost* post_redirect_process) {
-  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
-                               "WillRedirectRequest", "url",
-                               common_params_->url.possibly_invalid_spec());
+  EnterChildTraceEvent("WillRedirectRequest", this, "url",
+                       common_params_->url.possibly_invalid_spec());
   UpdateStateFollowingRedirect(new_referrer_url);
   UpdateSiteURL(post_redirect_process);
 
@@ -3267,8 +3306,7 @@ void NavigationRequest::WillRedirectRequest(
 }
 
 void NavigationRequest::WillFailRequest() {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "WillFailRequest");
+  EnterChildTraceEvent("WillFailRequest", this);
 
   state_ = WILL_FAIL_REQUEST;
   processing_navigation_throttle_ = true;
@@ -3281,8 +3319,7 @@ void NavigationRequest::WillFailRequest() {
 }
 
 void NavigationRequest::WillProcessResponse() {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                               "WillProcessResponse");
+  EnterChildTraceEvent("WillProcessResponse", this);
   DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
   processing_navigation_throttle_ = true;
@@ -3341,12 +3378,10 @@ void NavigationRequest::DidCommitNavigation(
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
       net_error_ != net::OK) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation: error page");
+    EnterChildTraceEvent("DidCommitNavigation: error page", this);
     state_ = DID_COMMIT_ERROR_PAGE;
   } else {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation");
+    EnterChildTraceEvent("DidCommitNavigation", this);
     state_ = DID_COMMIT;
   }
 
@@ -3441,8 +3476,7 @@ bool NavigationRequest::NeedsUrlLoader() {
 }
 
 void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "ReadyToCommitNavigation");
+  EnterChildTraceEvent("ReadyToCommitNavigation", this);
 
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
@@ -3668,36 +3702,6 @@ bool NavigationRequest::WasResponseCached() {
 
 bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {
   return !commit_params_->prefetched_signed_exchanges.empty();
-}
-
-void NavigationRequest::TraceNavigationStart() {
-  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
-                           "frame_tree_node", GetFrameTreeNodeId(), "url",
-                           common_params_->url.possibly_invalid_spec());
-  DCHECK(!common_params_->navigation_start.is_null());
-  DCHECK(!IsRendererDebugURL(common_params_->url));
-
-  if (IsInMainFrame()) {
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "navigation", "Navigation StartToCommit", this,
-        common_params_->navigation_start, "Initial URL",
-        common_params_->url.spec());
-  }
-
-  if (IsSameDocument()) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
-                                 "Same document");
-  }
-}
-
-void NavigationRequest::TraceNavigationEnd() {
-  DCHECK(IsNavigationStarted());
-  if (IsInMainFrame()) {
-    TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
-                           "URL", common_params_->url.spec(), "Net Error Code",
-                           net_error_);
-  }
-  TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
 }
 
 int64_t NavigationRequest::GetNavigationId() {

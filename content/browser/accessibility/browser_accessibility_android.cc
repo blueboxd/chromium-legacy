@@ -327,7 +327,7 @@ bool BrowserAccessibilityAndroid::IsRangeType() const {
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
-  return HasIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kScrollable);
 }
 
 bool BrowserAccessibilityAndroid::IsSelected() const {

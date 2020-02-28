@@ -4,6 +4,9 @@
 
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 jumbo_static_library("common") {
   sources = [
@@ -74,4 +77,10 @@ component("features") {
   ]
 
   deps = [ "//base" ]
+}
+
+if (is_android) {
+  java_cpp_enum("content_settings_type_javagen") {
+    sources = [ "content_settings_types.h" ]
+  }
 }

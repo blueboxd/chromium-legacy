@@ -1,24 +1,34 @@
-rootWebArea scrollXMin=0
+rootWebArea scrollXMin=0 scrollable=true
 ++genericContainer ignored
 ++++genericContainer ignored
 ++++++paragraph
 ++++++++staticText name='no overflow'
 ++++++++++inlineTextBox name='no overflow'
+++++genericContainer scrollXMin=0
+++++++paragraph
+++++++++staticText name='clipped'
+++++++++++inlineTextBox name='clipped'
+++++textField multiline value='ab cd' scrollXMin=0 scrollable=true
+++++++genericContainer
+++++++++staticText name='ab cd'
+++++++++++inlineTextBox name='ab'
+++++++++++inlineTextBox name=' '
+++++++++++inlineTextBox name='cd'
 ++++genericContainer ignored
 ++++++genericContainer
 ++++++++paragraph
 ++++++++++staticText name='tiny'
 ++++++++++++inlineTextBox name='tiny'
 ++++genericContainer ignored
-++++++genericContainer scrollXMin=0
+++++++genericContainer scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='x=hidden'
 ++++++++++++inlineTextBox name='x=hidden'
-++++++genericContainer name='x=auto' scrollXMin=0
+++++++genericContainer name='x=auto' scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='x=auto'
 ++++++++++++inlineTextBox name='x=auto'
-++++++genericContainer name='x=scroll' scrollXMin=0
+++++++genericContainer name='x=scroll' scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='x=scroll'
 ++++++++++++inlineTextBox name='x=scroll'
@@ -27,15 +37,15 @@ rootWebArea scrollXMin=0
 ++++++++++staticText name='x=visible'
 ++++++++++++inlineTextBox name='x=visible'
 ++++genericContainer ignored
-++++++genericContainer scrollXMin=0
+++++++genericContainer scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='y=hidden'
 ++++++++++++inlineTextBox name='y=hidden'
-++++++genericContainer name='y=auto' scrollXMin=0
+++++++genericContainer name='y=auto' scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='y=auto'
 ++++++++++++inlineTextBox name='y=auto'
-++++++genericContainer name='y=scroll' scrollXMin=0
+++++++genericContainer name='y=scroll' scrollXMin=0 scrollable=true
 ++++++++paragraph
 ++++++++++staticText name='y=scroll'
 ++++++++++++inlineTextBox name='y=scroll'

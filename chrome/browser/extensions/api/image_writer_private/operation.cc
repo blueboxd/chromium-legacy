@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
@@ -42,7 +43,8 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0),
       download_folder_(download_folder),
-      task_runner_(base::CreateSequencedTaskRunner(blocking_task_traits())) {
+      task_runner_(
+          base::ThreadPool::CreateSequencedTaskRunner(blocking_task_traits())) {
 }
 
 Operation::~Operation() {

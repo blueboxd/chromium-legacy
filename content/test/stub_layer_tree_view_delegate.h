@@ -39,7 +39,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
   void WillCommitCompositorFrame() override {}
-  void DidCommitCompositorFrame() override {}
+  void DidCommitCompositorFrame(base::TimeTicks) override {}
   void DidCompletePageScaleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}

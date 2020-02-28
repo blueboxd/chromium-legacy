@@ -14,6 +14,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 
+class PrefService;
+
 namespace chromeos {
 
 namespace device_sync {
@@ -71,18 +73,22 @@ class FakeCryptAuthDeviceSyncerFactory
     return last_client_factory_;
   }
 
+  const PrefService* last_pref_service() const { return last_pref_service_; }
+
  private:
   // CryptAuthDeviceSyncerImpl::Factory:
   std::unique_ptr<CryptAuthDeviceSyncer> BuildInstance(
       CryptAuthDeviceRegistry* device_registry,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
+      PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer = nullptr) override;
 
   std::vector<FakeCryptAuthDeviceSyncer*> instances_;
   CryptAuthDeviceRegistry* last_device_registry_ = nullptr;
   CryptAuthKeyRegistry* last_key_registry_ = nullptr;
   CryptAuthClientFactory* last_client_factory_ = nullptr;
+  PrefService* last_pref_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthDeviceSyncerFactory);
 };

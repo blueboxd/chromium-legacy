@@ -38,23 +38,10 @@ typedef base::OnceCallback<void(const spellcheck::PerLanguageSuggestions&)>
     GetSuggestionsCallback;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-typedef base::OnceCallback<void(const std::vector<std::string>& /* results */)>
-    GetSupportedLanguagesCompleteCallback;
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
-
 // Get the languages supported by the platform spellchecker and store them in
 // |spellcheck_languages|. Note that they must be converted to
 // Chromium style codes (en-US not en_US). See spellchecker.cc for a full list.
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages);
-
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-// Retrieve language tags for installed Windows language packs that also have
-// spellchecking support.
-void GetSupportedWindowsPreferredLanguages(
-    PlatformSpellChecker* spell_checker_instance,
-    GetSupportedLanguagesCompleteCallback callback);
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 // Returns the language used for spellchecking on the platform.
 std::string GetSpellCheckerLanguage();

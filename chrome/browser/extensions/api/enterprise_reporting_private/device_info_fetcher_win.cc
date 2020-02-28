@@ -4,9 +4,16 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher_win.h"
 
+#include <Windows.h>
+
+#define SECURITY_WIN32 1
+#include <security.h>
+#include <wincred.h>
+
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "base/win/wmi.h"
 #include "net/base/network_interfaces.h"
@@ -105,9 +112,57 @@ base::Optional<bool> GetConsoleLockStatus() {
   return status;
 }
 
+// Returns the current OS user name if we can get it.
+base::Optional<base::string16> GetUserName() {
+  WCHAR username[CREDUI_MAX_USERNAME_LENGTH + 1];
+  DWORD username_length = sizeof(username);
+  if (::GetUserNameEx(NameUserPrincipal, username, &username_length))
+    return username;
+
+  if (::GetUserNameW(username, &username_length))
+    return username;
+
+  return base::Optional<base::string16>();
+}
+
+// Returns true if the current OS user has a non-blank password, false if
+// password is blank. Returns empty optional in case any system error.
+base::Optional<bool> IsUserPasswordValid() {
+  base::Optional<base::string16> username = GetUserName();
+  if (!username)
+    return base::Optional<bool>();
+
+  base::win::ScopedHandle::Handle handle;
+  if (::LogonUserW(username->c_str(), /* lpszDomain= */ nullptr,
+                   /* lpszPassword= */ L"",
+                   /* dwLogonType= */ LOGON32_LOGON_INTERACTIVE,
+                   /* dwLogonProvider= */ LOGON32_PROVIDER_DEFAULT, &handle)) {
+    // Login successfully, the password is blank.
+    return false;
+  }
+  DWORD error = ::GetLastError();
+  switch (error) {
+    // Windows doesn't allow blank password logon attempt. Because user with
+    // a valid password should return ERROR_LOGON_FAILURE regardless, we assume
+    // user doesn't have password in this case.
+    case ERROR_ACCOUNT_RESTRICTION:
+      return false;
+    // Logon failed, user must have a non-blank password.
+    case ERROR_LOGON_FAILURE:
+      return true;
+    default:
+      return base::Optional<bool>();
+  }
+}
+
 // Gets cumulative screen locking policy based on the screen saver and console
 // lock status.
 enterprise_reporting_private::SettingValue GetScreenlockSecured() {
+  base::Optional<bool> has_valid_password = IsUserPasswordValid();
+  // Skip the check in case of any unexpected error.
+  if (has_valid_password && !has_valid_password.value())
+    return enterprise_reporting_private::SETTING_VALUE_DISABLED;
+
   const base::Optional<bool> screen_lock_status = GetScreenLockStatus();
   if (screen_lock_status.value_or(false))
     return enterprise_reporting_private::SETTING_VALUE_ENABLED;

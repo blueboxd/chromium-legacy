@@ -40,11 +40,11 @@ void MojoMjpegDecodeAccelerator::InitializeAsync(Client* client,
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
   jpeg_decoder_.set_disconnect_handler(
-      base::Bind(&MojoMjpegDecodeAccelerator::OnLostConnectionToJpegDecoder,
-                 base::Unretained(this)));
+      base::BindOnce(&MojoMjpegDecodeAccelerator::OnLostConnectionToJpegDecoder,
+                     base::Unretained(this)));
   jpeg_decoder_->Initialize(
-      base::Bind(&MojoMjpegDecodeAccelerator::OnInitializeDone,
-                 base::Unretained(this), std::move(init_cb), client));
+      base::BindOnce(&MojoMjpegDecodeAccelerator::OnInitializeDone,
+                     base::Unretained(this), std::move(init_cb), client));
 }
 
 void MojoMjpegDecodeAccelerator::Decode(
@@ -72,8 +72,8 @@ void MojoMjpegDecodeAccelerator::Decode(
   jpeg_decoder_->Decode(std::move(bitstream_buffer), video_frame->coded_size(),
                         std::move(output_frame_handle),
                         base::checked_cast<uint32_t>(output_buffer_size),
-                        base::Bind(&MojoMjpegDecodeAccelerator::OnDecodeAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&MojoMjpegDecodeAccelerator::OnDecodeAck,
+                                       base::Unretained(this)));
 }
 
 void MojoMjpegDecodeAccelerator::Decode(

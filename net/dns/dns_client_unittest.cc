@@ -147,8 +147,9 @@ TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
   EXPECT_TRUE(
       client_->FallbackFromSecureTransactionPreferred(&resolve_context_));
 
-  resolve_context_.SetProbeSuccess(0u, true /* success */,
-                                   client_->GetCurrentSession());
+  resolve_context_.RecordServerSuccess(0u /* server_index */,
+                                       true /* is_doh_server */,
+                                       client_->GetCurrentSession());
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_FALSE(
       client_->FallbackFromSecureTransactionPreferred(&resolve_context_));
@@ -176,8 +177,9 @@ TEST_F(DnsClientTest, AllAllowed) {
   client_->SetInsecureEnabled(true);
   client_->SetSystemConfig(ValidConfigWithDoh());
   resolve_context_.InvalidateCaches(client_->GetCurrentSession());
-  resolve_context_.SetProbeSuccess(0u, true /* success */,
-                                   client_->GetCurrentSession());
+  resolve_context_.RecordServerSuccess(0u /* server_index */,
+                                       true /* is_doh_server */,
+                                       client_->GetCurrentSession());
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
   EXPECT_FALSE(

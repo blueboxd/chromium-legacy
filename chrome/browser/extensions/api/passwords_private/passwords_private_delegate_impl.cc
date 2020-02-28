@@ -155,7 +155,7 @@ void PasswordsPrivateDelegateImpl::ChangeSavedPassword(
     int id,
     base::string16 new_username,
     base::Optional<base::string16> new_password) {
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
+  const std::string* sort_key = password_id_generator_.TryGetKey(id);
   DCHECK(sort_key);
   password_manager_presenter_->ChangeSavedPassword(
       *sort_key, std::move(new_username), std::move(new_password));
@@ -168,7 +168,7 @@ void PasswordsPrivateDelegateImpl::RemoveSavedPassword(int id) {
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal(int id) {
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
+  const std::string* sort_key = password_id_generator_.TryGetKey(id);
   if (sort_key)
     password_manager_presenter_->RemoveSavedPassword(*sort_key);
 }
@@ -180,7 +180,7 @@ void PasswordsPrivateDelegateImpl::RemovePasswordException(int id) {
 }
 
 void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(int id) {
-  const std::string* sort_key = exception_id_generator_.TryGetSortKey(id);
+  const std::string* sort_key = exception_id_generator_.TryGetKey(id);
   if (sort_key)
     password_manager_presenter_->RemovePasswordException(*sort_key);
 }
@@ -218,7 +218,7 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
   }
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
+  const std::string* sort_key = password_id_generator_.TryGetKey(id);
   if (!sort_key) {
     std::move(callback).Run(base::nullopt);
     return;
@@ -424,7 +424,7 @@ void PasswordsPrivateDelegateImpl::Shutdown() {
   password_manager_presenter_.reset();
 }
 
-SortKeyIdGenerator&
+IdGenerator<std::string>&
 PasswordsPrivateDelegateImpl::GetPasswordIdGeneratorForTesting() {
   return password_id_generator_;
 }

@@ -305,6 +305,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     view->UpdateWebkitPreferences(prefs);
   }
 
+  void TestProfilesIndependent(Browser* browser_a, Browser* browser_b);
+
   const GURL& accept_ch_with_lifetime_http_local_url() const {
     return accept_ch_with_lifetime_http_local_url_;
   }
@@ -873,6 +875,44 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, third_party_client_hints_count_seen());
 }
 
+// Test that client hints are attached to subresources checks the right setting
+// for OTR profile.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+                       ClientHintsHttpsSubresourceOffTheRecord) {
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  base::HistogramTester histogram_tester;
+
+  // Add client hints for the embedded test server.
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+
+  // Main profile should get hints for both page and subresources.
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(
+      browser(), without_accept_ch_without_lifetime_img_localhost());
+  base::RunLoop().RunUntilIdle();
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // The user agent hint is attached to all three requests:
+  EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
+
+  // Ten other client hints are attached to the image request, and ten to the
+  // main frame request.
+  EXPECT_EQ(20u, count_client_hints_headers_seen());
+
+  // OTR profile should get neither.
+  Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ui_test_utils::NavigateToURL(
+      otr_browser, without_accept_ch_without_lifetime_img_localhost());
+}
+
 // Verify that we send only major version information in the `Sec-CH-UA` header
 // by default, and full version information after an opt-in.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
@@ -895,6 +935,50 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   ui_test_utils::NavigateToURL(browser(), gurl);
   EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version,
                              base::CompareCase::SENSITIVE));
+}
+
+void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
+                                                     Browser* browser_b) {
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
+
+  // Navigate |browser_a| to a page that opts-into the header: the value should
+  // end with the major version, and not contain the full version.
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser_a, gurl);
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+                             base::CompareCase::SENSITIVE));
+  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+
+  // Try again on |browser_a|, the header should have an effect there.
+  SetClientHintExpectationsOnMainFrame(true);
+  ui_test_utils::NavigateToURL(browser_a, gurl);
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.full_version,
+                             base::CompareCase::SENSITIVE));
+
+  // Navigate on |browser_b|. That should still only have the major
+  // version.
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser_b, gurl);
+  EXPECT_TRUE(base::EndsWith(main_frame_ua_observed(), ua.major_version,
+                             base::CompareCase::SENSITIVE));
+  EXPECT_EQ(std::string::npos, main_frame_ua_observed().find(ua.full_version));
+}
+
+// Check that client hints attached to navigation inside OTR profiles
+// use the right settings, regular -> OTR direction.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, OffTheRecordIndependent) {
+  TestProfilesIndependent(browser(),
+                          CreateIncognitoBrowser(browser()->profile()));
+}
+
+// Check that client hints attached to navigation inside OTR profiles
+// use the right settings, OTR -> regular direction.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, OffTheRecordIndependent2) {
+  TestProfilesIndependent(CreateIncognitoBrowser(browser()->profile()),
+                          browser());
 }
 
 // Test that client hints are attached to third party subresources if

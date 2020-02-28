@@ -73,10 +73,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called to update the tray button after the login status changes.
   virtual void UpdateAfterLoginStatusChange();
 
-  // Called whenever the bounds of the root window changes.
-  virtual void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds);
-
   // Called whenever the status area's collapse state changes.
   virtual void UpdateAfterStatusAreaCollapseChange();
 

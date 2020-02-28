@@ -52,10 +52,15 @@ class V4L2Webcam : public Webcam {
              bool tilt,
              bool zoom,
              const SetPTZCompleteCallback& callback) override;
+
   void SetHome(const SetPTZCompleteCallback& callback) override;
   void SetFocus(int value, const SetPTZCompleteCallback& callback) override;
   void SetAutofocusState(AutofocusState state,
                          const SetPTZCompleteCallback& callback) override;
+  void RestoreCameraPreset(int preset_number,
+                           const SetPTZCompleteCallback& callback) override;
+  void SetCameraPreset(int preset_number,
+                       const SetPTZCompleteCallback& callback) override;
 
   const std::string device_id_;
   base::ScopedFD fd_;

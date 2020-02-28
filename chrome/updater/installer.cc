@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
@@ -27,7 +28,7 @@ namespace {
 
 // This task joins a process, hence .WithBaseSyncPrimitives().
 static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
-    base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+    base::MayBlock(), base::WithBaseSyncPrimitives(),
     base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
@@ -195,7 +196,7 @@ void Installer::Install(const base::FilePath& unpack_path,
                         const std::string& public_key,
                         std::unique_ptr<InstallParams> install_params,
                         Callback callback) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE, kTaskTraitsBlockWithSyncPrimitives,
       base::BindOnce(&Installer::InstallWithSyncPrimitives, this, unpack_path,
                      public_key, std::move(install_params),

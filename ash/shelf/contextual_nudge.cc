@@ -38,13 +38,15 @@ views::BubbleBorder::Arrow GetArrowForPosition(
 
 ContextualNudge::ContextualNudge(views::View* anchor,
                                  aura::Window* parent_window,
+                                 Position position,
+                                 const gfx::Insets& margins,
                                  const base::string16& text,
-                                 Position position)
+                                 SkColor text_color)
     : views::BubbleDialogDelegateView(anchor,
                                       GetArrowForPosition(position),
                                       views::BubbleBorder::NO_ASSETS) {
   set_color(SK_ColorTRANSPARENT);
-  set_margins(gfx::Insets(0, 0));
+  set_margins(margins);
   set_close_on_deactivate(false);
   SetCanActivate(false);
   set_accept_events(false);
@@ -66,7 +68,7 @@ ContextualNudge::ContextualNudge(views::View* anchor,
   label_->SetPaintToLayer();
   label_->layer()->SetFillsBoundsOpaquely(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  label_->SetEnabledColor(SkColorSetA(gfx::kGoogleGrey200, 0xFF));
+  label_->SetEnabledColor(text_color);
   label_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   views::BubbleDialogDelegateView::CreateBubble(this);

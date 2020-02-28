@@ -9,10 +9,11 @@ import android.os.Bundle;
 import org.chromium.base.process_launcher.IParentProcess;
 
 interface IChildProcessService {
+  // |clazz| identifies the ClassLoader of the caller.
   // On the first call to this method, the service will record the calling PID
-  // and return true. Subsequent calls will only return true if the calling PID
-  // is the same as the recorded one.
-  boolean bindToCaller();
+  // and |clazz| and return true. Subsequent calls will only return true if the
+  // calling PID and |clazz| matches the recorded values.
+  boolean bindToCaller(in String clazz);
 
   // Sets up the initial IPC channel.
   oneway void setupConnection(in Bundle args, IParentProcess parentProcess,

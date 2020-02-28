@@ -207,14 +207,16 @@ bool SharedImageBackingEglImage::BeginRead(
 
 void SharedImageBackingEglImage::EndRead(
     const SharedImageRepresentation* reader) {
-  AutoLock auto_lock(this);
+  {
+    AutoLock auto_lock(this);
 
-  if (!active_readers_.contains(reader)) {
-    DLOG(ERROR) << "Attempt to end read to a SharedImageBacking without a "
-                   "successful begin read";
-    return;
+    if (!active_readers_.contains(reader)) {
+      DLOG(ERROR) << "Attempt to end read to a SharedImageBacking without a "
+                     "successful begin read";
+      return;
+    }
+    active_readers_.erase(reader);
   }
-  active_readers_.erase(reader);
 
   // For batch reads, we only need to create 1 fence after the last
   // EndRead() for the whole batch of reads. Hence we just register this backing
@@ -224,10 +226,11 @@ void SharedImageBackingEglImage::EndRead(
   // batch reads/regular reads, we create 1 fence per EndRead().
   if (batch_access_manager_->IsDoingBatchReads()) {
     batch_access_manager_->RegisterEglBackingForEndReadFence(this);
-  } else {
-    read_fences_[gl::g_current_gl_context] =
-        base::MakeRefCounted<gl::SharedGLFenceEGL>();
+    return;
   }
+  AutoLock auto_lock(this);
+  read_fences_[gl::g_current_gl_context] =
+      base::MakeRefCounted<gl::SharedGLFenceEGL>();
 }
 
 gles2::Texture* SharedImageBackingEglImage::GenEGLImageSibling() {

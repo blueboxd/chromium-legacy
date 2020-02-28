@@ -22346,6 +22346,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1446" label="AUTOTESTPRIVATE_GETSCROLLABLESHELFINFOFORSTATE"/>
   <int value="1447" label="ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEHOSTNAME"/>
   <int value="1448" label="AUTOFILLPRIVATE_GETUPIIDLIST"/>
+  <int value="1449" label="WEBCAMPRIVATE_RESTORE_CAMERA_PRESET"/>
+  <int value="1450" label="WEBCAMPRIVATE_SET_CAMERA_PRESET"/>
 </enum>
 
 <enum name="ExtensionIconState">

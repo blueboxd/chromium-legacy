@@ -440,6 +440,31 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
+TEST_P(PaintAndRasterInvalidationTest, FullInvalidationWithHTMLTransform) {
+  GetDocument().documentElement()->setAttribute(html_names::kStyleAttr,
+                                                "transform: scale(0.5)");
+  const DisplayItemClient* client =
+      &GetDocument()
+           .View()
+           ->GetLayoutView()
+           ->GetScrollableArea()
+           ->GetScrollingBackgroundDisplayItemClient();
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+  GetDocument().View()->Resize(WebSize(500, 500));
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{client, client->DebugName(),
+                                         IntRect(0, 0, 500, 500),
+                                         PaintInvalidationReason::kBackground},
+                  RasterInvalidationInfo{
+                      client, client->DebugName(), IntRect(0, 0, 500, 500),
+                      PaintInvalidationReason::kPaintProperty}));
+}
+
 TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   SetBodyInnerHTML(R"HTML(
     <style>

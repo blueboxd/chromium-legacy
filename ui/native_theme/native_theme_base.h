@@ -257,6 +257,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                                       ColorScheme color_scheme) const;
   SkColor GetHighContrastControlColor(ControlColorId color_id,
                                       ColorScheme color_scheme) const;
+  SkColor GetDarkModeControlColor(ControlColorId color_id) const;
   SkColor GetControlColor(ControlColorId color_id,
                           ColorScheme color_scheme) const;
   SkRect AlignSliderTrack(const gfx::Rect& slider_rect,

@@ -46,8 +46,10 @@ FakeCryptAuthMetadataSyncerFactory::~FakeCryptAuthMetadataSyncerFactory() =
 std::unique_ptr<CryptAuthMetadataSyncer>
 FakeCryptAuthMetadataSyncerFactory::BuildInstance(
     CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {
   last_client_factory_ = client_factory;
+  last_pref_service_ = pref_service;
 
   auto instance = std::make_unique<FakeCryptAuthMetadataSyncer>();
   instances_.push_back(instance.get());

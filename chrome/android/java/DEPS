@@ -38,6 +38,7 @@ include_rules = [
   "+components/omnibox/browser/android/java",
   "+components/paint_preview/browser/android/java/src/org/chromium/components/paintpreview",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
+  "+components/permissions/android/java/src/org/chromium/components/permissions",
   "+components/search_engines/android/java/src/org/chromium/components/search_engines",
   "+components/sync/android/java/src/org/chromium/components/sync",
 

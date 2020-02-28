@@ -93,19 +93,23 @@ CryptAuthDeviceSyncerImpl::Factory::BuildInstance(
     CryptAuthDeviceRegistry* device_registry,
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new CryptAuthDeviceSyncerImpl(
-      device_registry, key_registry, client_factory, std::move(timer)));
+      device_registry, key_registry, client_factory, pref_service,
+      std::move(timer)));
 }
 
 CryptAuthDeviceSyncerImpl::CryptAuthDeviceSyncerImpl(
     CryptAuthDeviceRegistry* device_registry,
     CryptAuthKeyRegistry* key_registry,
     CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer)
     : device_registry_(device_registry),
       key_registry_(key_registry),
       client_factory_(client_factory),
+      pref_service_(pref_service),
       timer_(std::move(timer)) {
   DCHECK(device_registry);
   DCHECK(key_registry);
@@ -250,7 +254,7 @@ void CryptAuthDeviceSyncerImpl::SyncMetadata() {
   SetState(State::kWaitingForMetadataSync);
 
   metadata_syncer_ = CryptAuthMetadataSyncerImpl::Factory::Get()->BuildInstance(
-      client_factory_);
+      client_factory_, pref_service_);
   metadata_syncer_->SyncMetadata(
       request_context_, local_better_together_device_metadata_,
       key_registry_->GetActiveKey(

@@ -280,12 +280,13 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   DCHECK(!blocked_main_commit().layer_tree_host);
   blocked_main_commit().layer_tree_host = layer_tree_host;
 
+  // Inform the layer tree host that the commit has started, so that metrics
+  // can determine how long we waited for thread synchronization.
+  layer_tree_host->SetImplCommitStartTime(base::TimeTicks::Now());
+
   // Extract metrics data from the layer tree host and send them to the
   // scheduler to pass them to the compositor_timing_history object.
-  std::unique_ptr<BeginMainFrameMetrics> main_frame_metrics =
-      layer_tree_host->begin_main_frame_metrics();
-
-  scheduler_->NotifyReadyToCommit(std::move(main_frame_metrics));
+  scheduler_->NotifyReadyToCommit(layer_tree_host->begin_main_frame_metrics());
 }
 
 void ProxyImpl::DidLoseLayerTreeFrameSinkOnImplThread() {

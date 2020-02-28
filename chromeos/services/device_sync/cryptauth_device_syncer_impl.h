@@ -29,6 +29,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 
+class PrefService;
+
 namespace cryptauthv2 {
 class ClientAppMetadata;
 class ClientMetadata;
@@ -65,6 +67,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
         CryptAuthDeviceRegistry* device_registry,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
+        PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
 
@@ -101,6 +104,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   CryptAuthDeviceSyncerImpl(CryptAuthDeviceRegistry* device_registry,
                             CryptAuthKeyRegistry* key_registry,
                             CryptAuthClientFactory* client_factory,
+                            PrefService* pref_service,
                             std::unique_ptr<base::OneShotTimer> timer);
 
   // CryptAuthDeviceSyncer:
@@ -197,6 +201,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   CryptAuthDeviceRegistry* device_registry_ = nullptr;
   CryptAuthKeyRegistry* key_registry_ = nullptr;
   CryptAuthClientFactory* client_factory_ = nullptr;
+  PrefService* pref_service_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceSyncerImpl);

@@ -719,7 +719,9 @@ enum BoolAttribute {
   // Set on a canvas element if it has fallback content.
   kCanvasHasFallback,
 
-  // Indicates this node is scrollable (Android only).
+  // Indicates this node is user-scrollable, e.g. overflow:scroll|auto, as
+  // opposed to only programmatically scrollable, like overflow:hidden, or
+  // not scrollable at all, e.g. overflow:visible.
   kScrollable,
 
   // A hint to clients that the node is clickable.

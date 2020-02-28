@@ -66,11 +66,6 @@ class WindowsSpellChecker : public PlatformSpellChecker {
   void IsLanguageSupported(const std::string& lang_tag,
                            base::OnceCallback<void(bool)> callback);
 
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void GetSupportedWindowsPreferredLanguages(
-      spellcheck_platform::GetSupportedLanguagesCompleteCallback callback);
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-
  private:
   // Private inner class that handles calls to the native Windows APIs. All
   // invocations of these methods must be posted to the same COM
@@ -152,13 +147,6 @@ class WindowsSpellChecker : public PlatformSpellChecker {
     void RecordSpellcheckLocalesStats(
         const std::vector<std::string> spellcheck_locales,
         SpellCheckHostMetrics* metrics);
-
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-    // Gets the user's preferred languages from the OS settings, filters out
-    // languages for which a native spell checker isn't available, and invokes
-    // the given callback with the results.
-    std::vector<std::string> GetSupportedWindowsPreferredLanguages();
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
 
     // Sorts the given locales into four buckets based on spell check support
     // (both native and Hunspell, Hunspell only, native only, none).

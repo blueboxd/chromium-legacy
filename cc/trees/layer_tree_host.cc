@@ -470,7 +470,8 @@ bool LayerTreeHost::IsUsingLayerLists() const {
 
 void LayerTreeHost::CommitComplete() {
   source_frame_number_++;
-  client_->DidCommit();
+  client_->DidCommit(impl_commit_start_time_);
+  impl_commit_start_time_ = base::TimeTicks();
   if (did_complete_scale_animation_) {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;

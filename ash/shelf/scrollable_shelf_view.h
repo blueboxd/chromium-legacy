@@ -186,11 +186,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                          int space_for_icons,
                                          bool use_target_bounds) const;
 
-  // Returns whether the app icon layout should be centering alignment.
-  // |use_target_bounds| indicates which view bounds are used for
-  // calculation: actual view bounds or target view bounds.
-  bool ShouldApplyDisplayCentering(bool use_target_bounds) const;
-
   Shelf* GetShelf();
   const Shelf* GetShelf() const;
 
@@ -261,13 +256,19 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool ShouldShowLeftArrow() const;
   bool ShouldShowRightArrow() const;
 
-  // Returns the padding inset. Different Padding strategies for three scenarios
-  // (1) display centering alignment
-  // (2) scrollable shelf centering alignment
-  // (3) overflow mode
-  // |use_target_bounds| indicates which view bounds are used for
-  // calculation: actual view bounds or target view bounds.
-  gfx::Insets CalculateEdgePadding(bool use_target_bounds) const;
+  // Returns the padding insets which guarantee the minimum gap between
+  // scrollable shelf and other components (like status area widget).
+  gfx::Insets CalculateBaseEdgePadding() const;
+
+  // Returns the extra padding inset which is influenced by the padding
+  // strategy. There are three strategies: (1) display centering alignment (2)
+  // scrollable shelf centering alignment (3) overflow mode
+  // |use_target_bounds| indicates which view bounds are used for calculation:
+  // actual view bounds or target view bounds.
+  gfx::Insets CalculateExtraEdgePadding(bool use_target_bounds) const;
+
+  // Returns the sum of the base padding and the extra padding.
+  gfx::Insets GetTotalEdgePadding() const;
 
   int GetStatusWidgetSizeOnPrimaryAxis(bool use_target_bounds) const;
 
@@ -441,15 +442,22 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // shelf under RTL.
   gfx::Rect available_space_;
 
-  // Paddings before and after shelf icons, including the app icon group margin.
-  gfx::Insets padding_insets_;
+  ShelfView* shelf_view_ = nullptr;
+
+  // Padding insets based on |base_padding_| and shelf alignment.
+  gfx::Insets base_padding_insets_;
+
+  // Extra insets decided by the current padding strategy.
+  gfx::Insets extra_padding_insets_;
+
+  // Minimum gap between scrollable shelf and other components (like status area
+  // widget) in DIPs.
+  const int base_padding_;
 
   // Visible space of |shelf_container_view| in ScrollableShelfView's local
   // coordinates. Different from |available_space_|, |visible_space_| only
   // contains app icons and is mirrored for horizontal shelf under RTL.
   gfx::Rect visible_space_;
-
-  ShelfView* shelf_view_ = nullptr;
 
   gfx::Vector2dF scroll_offset_;
 

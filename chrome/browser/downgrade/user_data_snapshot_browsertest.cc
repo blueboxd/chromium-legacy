@@ -24,18 +24,25 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace downgrade {
 
@@ -362,5 +369,46 @@ IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(HistorySnapshotTest, Test) {}
+
+class TabsSnapshotTest : public UserDataSnapshotBrowserTestBase {
+ protected:
+  void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    set_open_about_blank_on_browser_launch(IsInitialVersion());
+    UserDataSnapshotBrowserTestBase::SetUp();
+  }
+
+  void SimulateUserActions() override {
+    browser()->profile()->GetPrefs()->SetInteger(prefs::kRestoreOnStartup, 1);
+    browser()->tab_strip_model()->GetWebContentsAt(0)->OpenURL(
+        content::OpenURLParams(embedded_test_server()->GetURL("/title1.html"),
+                               content::Referrer(),
+                               WindowOpenDisposition::CURRENT_TAB,
+                               ui::PAGE_TRANSITION_TYPED, false));
+    browser()->tab_strip_model()->GetWebContentsAt(0)->OpenURL(
+        content::OpenURLParams(embedded_test_server()->GetURL("/title2.html"),
+                               content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_TYPED, false));
+  }
+
+  void ValidateUserActions() override {
+    EXPECT_EQ(
+        browser()->profile()->GetPrefs()->GetInteger(prefs::kRestoreOnStartup),
+        1);
+    auto* tab_strip = browser()->tab_strip_model();
+    ASSERT_EQ(tab_strip->count(), 2);
+    // embedded_test_server() might return a different hostname.
+    EXPECT_TRUE(base::EndsWith(tab_strip->GetWebContentsAt(0)->GetURL().spec(),
+                               "/title1.html", base::CompareCase::SENSITIVE));
+    EXPECT_TRUE(base::EndsWith(tab_strip->GetWebContentsAt(1)->GetURL().spec(),
+                               "/title2.html", base::CompareCase::SENSITIVE));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, Test) {}
 
 }  // namespace downgrade

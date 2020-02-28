@@ -12,6 +12,7 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -161,9 +162,12 @@ void HomeToOverviewNudgeController::ShowNudge() {
   // bounds directly - see UpdateNudgeAnchorBounds().
   nudge_ = new ContextualNudge(
       nullptr, hotseat_widget_->GetNativeWindow()->parent(),
+      ContextualNudge::Position::kBottom, gfx::Insets(kNudgeMargins),
       l10n_util::GetStringUTF16(IDS_ASH_HOME_TO_OVERVIEW_CONTEXTUAL_NUDGE),
-      ContextualNudge::Position::kBottom);
-  nudge_->set_margins(gfx::Insets(kNudgeMargins));
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextPrimary,
+          AshColorProvider::AshColorMode::kDark));
+
   UpdateNudgeAnchorBounds();
 
   widget_observer_.Add(nudge_->GetWidget());

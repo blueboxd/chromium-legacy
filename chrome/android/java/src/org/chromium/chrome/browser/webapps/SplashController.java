@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -269,13 +270,14 @@ public class SplashController
         // acceleration is disabled, swapping the pixel format causes the surface to get recreated.
         // A bug fix in Android N preserves the old surface till the new one is drawn.
         //
-        // Removing tranlucency is important for performance, otherwise the windows under Chrome
+        // Removing translucency is important for performance, otherwise the windows under Chrome
         // will continue being drawn (e.g. launcher with wallpaper). Without removing translucency,
         // we also see visual glitches in the following cases:
         // - closing activity (example: https://crbug.com/856544#c41)
         // - send activity to the background (example: https://crbug.com/856544#c30)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && CachedFeatureFlags.isSwapPixelFormatToFixConvertFromTranslucentEnabled()) {
+                && CachedFeatureFlags.isEnabled(
+                        ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT)) {
             return TranslucencyRemoval.ON_SPLASH_HIDDEN;
         }
         return TranslucencyRemoval.ON_SPLASH_SHOWN;

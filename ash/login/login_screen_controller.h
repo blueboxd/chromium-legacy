@@ -131,6 +131,10 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                               base::Time validation_time) override;
   void RequestSecurityTokenPin(SecurityTokenPinRequest request) override;
   void ClearSecurityTokenPinRequest() override;
+  bool SetLoginShelfGestureHandler(const base::string16& nudge_text,
+                                   const base::RepeatingClosure& fling_callback,
+                                   base::OnceClosure exit_callback) override;
+  void ClearLoginShelfGestureHandler() override;
 
   // KioskAppMenu:
   void SetKioskApps(

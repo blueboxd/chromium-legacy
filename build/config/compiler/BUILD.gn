@@ -1523,9 +1523,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/1028110): Evaluate and possible enable.
           "-Wno-deprecated-copy",
 
-          # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
-          "-Wno-range-loop-analysis",
-
           # TODO(https://crbug.com/1050281): Clean up, enable.
           "-Wno-non-c-typedef-for-linkage",
         ]

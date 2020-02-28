@@ -82,7 +82,7 @@ class AutoThread : base::PlatformThread::Delegate {
  private:
   AutoThread(const char* name, AutoThreadTaskRunner* joiner);
 
-  void QuitThread(const base::Closure& quit_when_idle_closure);
+  void QuitThread(base::OnceClosure quit_when_idle_closure);
   void JoinAndDeleteThread();
 
   // base::PlatformThread::Delegate methods:

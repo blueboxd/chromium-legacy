@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
@@ -455,14 +456,14 @@ AbortCallback SmbFileSystem::WriteFile(
 void SmbFileSystem::CreateTempFileManagerAndExecuteTask(SmbTask task) {
   // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
-  base::TaskTraits task_traits = {base::ThreadPool(), base::MayBlock(),
-                                  base::TaskPriority::USER_BLOCKING,
-                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+  constexpr base::TaskTraits kTaskTraits = {
+      base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
   auto init_task = base::BindOnce(&CreateTempFileManager);
   auto reply = base::BindOnce(&SmbFileSystem::InitTempFileManagerAndExecuteTask,
                               AsWeakPtr(), std::move(task));
-  base::PostTaskAndReplyWithResult(FROM_HERE, task_traits, std::move(init_task),
-                                   std::move(reply));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits, std::move(init_task), std::move(reply));
 }
 
 void SmbFileSystem::InitTempFileManagerAndExecuteTask(

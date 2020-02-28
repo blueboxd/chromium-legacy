@@ -17,6 +17,8 @@
 #include "chrome/updater/updater_version.h"
 #include "components/update_client/update_client_errors.h"
 
+using base::SysUTF8ToNSString;
+
 // Interface to communicate with the XPC Updater Service.
 @interface CRUUpdateServiceOutOfProcessImpl : NSObject <CRUUpdateChecking>
 
@@ -31,7 +33,7 @@
     std::string serviceName = MAC_BUNDLE_IDENTIFIER_STRING;
     serviceName.append(".UpdaterXPCService");
     _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithServiceName:base::SysUTF8ToNSString(serviceName)]);
+        initWithServiceName:SysUTF8ToNSString(serviceName)]);
     _xpcConnection.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(CRUUpdateChecking)];
 
@@ -83,8 +85,25 @@ void UpdateServiceOutOfProcess::RegisterApp(
     const RegistrationRequest& request,
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTREACHED();
-  // TODO(crbug.com/1055942): Implement.
+  __block base::OnceCallback<void(const RegistrationResponse&)> block_callback =
+      std::move(callback);
+
+  auto reply = ^(int error) {
+    RegistrationResponse response;
+    response.status_code = error;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(block_callback), response));
+  };
+
+  [_client.get()
+      registerForUpdatesWithAppId:SysUTF8ToNSString(request.app_id)
+                        brandCode:SysUTF8ToNSString(request.brand_code)
+                              tag:SysUTF8ToNSString(request.tag)
+                          version:SysUTF8ToNSString(request.version.GetString())
+             existenceCheckerPath:SysUTF8ToNSString(
+                                      request.existence_checker_path
+                                          .AsUTF8Unsafe())
+                            reply:reply];
 }
 
 void UpdateServiceOutOfProcess::UpdateAll(

@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,11 +49,22 @@
 
 // static
 views::Widget* TabGroupEditorBubbleView::Show(
-    TabGroupHeader* anchor_view,
     const Browser* browser,
-    const tab_groups::TabGroupId& group) {
+    const tab_groups::TabGroupId& group,
+    TabGroupHeader* anchor_view) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(anchor_view, browser, group));
+      new TabGroupEditorBubbleView(browser, group, anchor_view, base::nullopt));
+  widget->Show();
+  return widget;
+}
+
+// static
+views::Widget* TabGroupEditorBubbleView::ShowWithRect(
+    const Browser* browser,
+    const tab_groups::TabGroupId& group,
+    gfx::Rect anchor_rect) {
+  views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
+      new TabGroupEditorBubbleView(browser, group, nullptr, anchor_rect));
   widget->Show();
   return widget;
 }
@@ -72,14 +84,22 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
 }
 
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
-    TabGroupHeader* anchor_view,
     const Browser* browser,
-    const tab_groups::TabGroupId& group)
+    const tab_groups::TabGroupId& group,
+    TabGroupHeader* anchor_view,
+    base::Optional<gfx::Rect> anchor_rect)
     : browser_(browser),
       group_(group),
       title_field_controller_(this),
-      button_listener_(browser, anchor_view, group) {
-  SetAnchorView(anchor_view);
+      button_listener_(browser, group, anchor_view) {
+  // Either |anchor_view| or |anchor_rect| should be defined. |anchor_rect| is
+  // only used in situations were the available Views are different, e.g. WebUI.
+  DCHECK(anchor_view || anchor_rect.has_value());
+  if (anchor_view)
+    SetAnchorView(anchor_view);
+  else
+    SetAnchorRect(anchor_rect.value());
+
   set_margins(gfx::Insets());
 
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
@@ -292,9 +312,9 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
 
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(
     const Browser* browser,
-    TabGroupHeader* anchor_view,
-    tab_groups::TabGroupId group)
-    : browser_(browser), anchor_view_(anchor_view), group_(group) {}
+    tab_groups::TabGroupId group,
+    TabGroupHeader* anchor_view)
+    : browser_(browser), group_(group), anchor_view_(anchor_view) {}
 
 void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     views::Button* sender,
@@ -312,7 +332,8 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
       base::RecordAction(
           base::UserMetricsAction("TabGroups_TabGroupBubble_Ungroup"));
-      anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
+      if (anchor_view_)
+        anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
       model->RemoveFromGroup(tabs_in_group);
       break;
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:

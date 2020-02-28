@@ -22,6 +22,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 
+class PrefService;
+
 namespace chromeos {
 
 namespace device_sync {
@@ -55,6 +57,7 @@ class CryptAuthV2DeviceManagerImpl
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
+        PrefService* pref_service,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
 
@@ -72,6 +75,7 @@ class CryptAuthV2DeviceManagerImpl
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
+      PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer);
 
  private:
@@ -128,6 +132,7 @@ class CryptAuthV2DeviceManagerImpl
   CryptAuthClientFactory* client_factory_ = nullptr;
   CryptAuthGCMManager* gcm_manager_ = nullptr;
   CryptAuthScheduler* scheduler_ = nullptr;
+  PrefService* pref_service_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;
 
   // For weak pointers used in callbacks. These weak pointers are invalidated

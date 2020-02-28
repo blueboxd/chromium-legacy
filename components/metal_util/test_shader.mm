@@ -778,10 +778,9 @@ void TestShader(TestShaderCallback callback,
         if (delay.is_zero()) {
           std::move(closure).Run();
         } else {
-          base::PostDelayedTask(
-              FROM_HERE,
-              base::TaskTraits(base::ThreadPool(), base::TaskPriority::HIGHEST),
-              std::move(closure), delay);
+          base::ThreadPool::PostDelayedTask(FROM_HERE,
+                                            {base::TaskPriority::HIGHEST},
+                                            std::move(closure), delay);
         }
         return;
       }

@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,13 +68,8 @@ class HideNudgeObserver : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
-DragHandle::DragHandle(AshColorProvider::RippleAttributes ripple_attributes,
-                       int drag_handle_corner_radius) {
+DragHandle::DragHandle(int drag_handle_corner_radius) {
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  layer()->SetColor(ripple_attributes.base_color);
-  // TODO(manucornet): Figure out why we need a manual opacity adjustment
-  // to make this color look the same as the status area highlight.
-  layer()->SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
   layer()->SetRoundedCornerRadius(
       {drag_handle_corner_radius, drag_handle_corner_radius,
        drag_handle_corner_radius, drag_handle_corner_radius});
@@ -109,6 +105,11 @@ void DragHandle::ShowDragHandleNudge(base::TimeDelta nudge_duration) {
   }
 }
 
+void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
+  layer()->SetColor(color);
+  layer()->SetOpacity(opacity);
+}
+
 void DragHandle::HideDragHandleNudge() {
   if (!showing_nudge_)
     return;
@@ -128,10 +129,12 @@ void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
 
 void DragHandle::ShowDragHandleTooltip() {
   DCHECK(!drag_handle_nudge_);
-  drag_handle_nudge_ =
-      new ContextualNudge(this, nullptr /*parent_window*/,
-                          l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
-                          ContextualNudge::Position::kTop);
+  drag_handle_nudge_ = new ContextualNudge(
+      this, nullptr /*parent_window*/, ContextualNudge::Position::kTop,
+      gfx::Insets(), l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextPrimary,
+          AshColorProvider::AshColorMode::kDark));
   drag_handle_nudge_->GetWidget()->Show();
   drag_handle_nudge_->label()->layer()->SetOpacity(0.0f);
 

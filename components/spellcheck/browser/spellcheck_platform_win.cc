@@ -92,15 +92,6 @@ void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   // Not used in Windows
 }
 
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-void GetSupportedWindowsPreferredLanguages(
-    PlatformSpellChecker* spell_checker_instance,
-    GetSupportedLanguagesCompleteCallback callback) {
-  reinterpret_cast<WindowsSpellChecker*>(spell_checker_instance)
-      ->GetSupportedWindowsPreferredLanguages(std::move(callback));
-}
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
-
 int GetDocumentTag() {
   return 1;  // Not used in Windows
 }

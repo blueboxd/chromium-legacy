@@ -106,7 +106,7 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
        event.key_code() == ui::VKEY_RETURN) &&
       !editor_bubble_tracker_.is_open()) {
     editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-        this, tab_strip_->controller()->GetBrowser(), group().value()));
+        tab_strip_->controller()->GetBrowser(), group().value(), this));
     return true;
   }
 
@@ -155,7 +155,7 @@ bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
 void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
   if (!dragging()) {
     editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-        this, tab_strip_->controller()->GetBrowser(), group().value()));
+        tab_strip_->controller()->GetBrowser(), group().value(), this));
   }
   tab_strip_->EndDrag(END_DRAG_COMPLETE);
 }
@@ -175,7 +175,7 @@ void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP: {
       editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-          this, tab_strip_->controller()->GetBrowser(), group().value()));
+          tab_strip_->controller()->GetBrowser(), group().value(), this));
       break;
     }
 

@@ -206,7 +206,7 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
-        if (CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
+        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                 || CachedFeatureFlags.getValue(ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION)) {
             mRefectchedTabIds = new HashSet<>();
             mExpectedThumbnailAspectRatio =
@@ -558,7 +558,7 @@ public class TabContentManager {
             Matrix matrix = new Matrix();
             matrix.setScale(downsamplingScale, downsamplingScale);
             Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
+                    TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                             ? Math.min(bitmap.getHeight(),
                                     (int) (bitmap.getWidth() * 1.0 / mExpectedThumbnailAspectRatio))
                             : min(bitmap.getWidth(), bitmap.getHeight()),

@@ -8,6 +8,11 @@
 #include "build/build_config.h"
 #include "content/public/browser/permission_type.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_array.h"
+#include "components/permissions/android/jni/PermissionUtil_jni.h"
+#endif
+
 using content::PermissionType;
 
 namespace permissions {
@@ -197,5 +202,19 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
       return false;
   }
 }
+
+#if defined(OS_ANDROID)
+// static
+void PermissionUtil::GetAndroidPermissionsForContentSetting(
+    ContentSettingsType content_settings_type,
+    std::vector<std::string>* out) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::AppendJavaStringArrayToStringVector(
+      env,
+      Java_PermissionUtil_getAndroidPermissionsForContentSetting(
+          env, static_cast<int>(content_settings_type)),
+      out);
+}
+#endif
 
 }  // namespace permissions

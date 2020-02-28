@@ -87,7 +87,7 @@ TEST(TypeConversionsTest, ToAuthenticatorMakeCredentialResponse) {
        false},
   };
   size_t i = 0;
-  for (const auto test : test_cases) {
+  for (const auto& test : test_cases) {
     SCOPED_TRACE(::testing::Message() << "Test case " << i++);
     auto response =
         ToAuthenticatorMakeCredentialResponse(WEBAUTHN_CREDENTIAL_ATTESTATION{

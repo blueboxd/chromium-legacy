@@ -116,7 +116,6 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
     key_registry_ =
         CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(&pref_service_);
-
     CryptAuthDeviceRegistryImpl::RegisterPrefs(pref_service_.registry());
     device_registry_ =
         CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
@@ -141,7 +140,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
 
     syncer_ = CryptAuthDeviceSyncerImpl::Factory::Get()->BuildInstance(
         device_registry_.get(), key_registry_.get(), client_factory_.get(),
-        std::move(mock_timer));
+        &pref_service_, std::move(mock_timer));
 
     std::string local_user_public_key =
         GetLocalDeviceForTest().better_together_device_metadata->public_key();
@@ -206,6 +205,8 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
       const CryptAuthKey* expected_initial_group_key) {
     EXPECT_EQ(client_factory_.get(),
               fake_cryptauth_metadata_syncer_factory_->last_client_factory());
+    EXPECT_EQ(&pref_service_,
+              fake_cryptauth_metadata_syncer_factory_->last_pref_service());
     ASSERT_EQ(1u, fake_cryptauth_metadata_syncer_factory_->instances().size());
     ASSERT_TRUE(metadata_syncer()->request_context());
     ASSERT_TRUE(metadata_syncer()->local_device_metadata());

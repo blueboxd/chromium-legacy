@@ -374,12 +374,14 @@ class FakeCryptAuthV2DeviceManagerFactory
       FakeCryptAuthDeviceRegistryFactory* fake_device_registry_factory,
       FakeCryptAuthKeyRegistryFactory* fake_key_registry_factory,
       FakeCryptAuthGCMManagerFactory* fake_gcm_manager_factory,
-      FakeCryptAuthSchedulerFactory* fake_scheduler_factory)
+      FakeCryptAuthSchedulerFactory* fake_scheduler_factory,
+      TestingPrefServiceSimple* test_pref_service)
       : fake_client_app_metadata_provider_(fake_client_app_metadata_provider),
         fake_device_registry_factory_(fake_device_registry_factory),
         fake_key_registry_factory_(fake_key_registry_factory),
         fake_gcm_manager_factory_(fake_gcm_manager_factory),
-        fake_scheduler_factory_(fake_scheduler_factory) {}
+        fake_scheduler_factory_(fake_scheduler_factory),
+        test_pref_service_(test_pref_service) {}
 
   ~FakeCryptAuthV2DeviceManagerFactory() override = default;
 
@@ -394,6 +396,7 @@ class FakeCryptAuthV2DeviceManagerFactory
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
+      PrefService* pref_service,
       std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_TRUE(features::ShouldUseV2DeviceSync());
     EXPECT_EQ(fake_client_app_metadata_provider_, client_app_metadata_provider);
@@ -401,6 +404,7 @@ class FakeCryptAuthV2DeviceManagerFactory
     EXPECT_EQ(fake_key_registry_factory_->instance(), key_registry);
     EXPECT_EQ(fake_gcm_manager_factory_->instance(), gcm_manager);
     EXPECT_EQ(fake_scheduler_factory_->instance(), scheduler);
+    EXPECT_EQ(test_pref_service_, pref_service);
 
     // Only one instance is expected to be created per test.
     EXPECT_FALSE(instance_);
@@ -416,6 +420,7 @@ class FakeCryptAuthV2DeviceManagerFactory
   FakeCryptAuthKeyRegistryFactory* fake_key_registry_factory_ = nullptr;
   FakeCryptAuthGCMManagerFactory* fake_gcm_manager_factory_ = nullptr;
   FakeCryptAuthSchedulerFactory* fake_scheduler_factory_ = nullptr;
+  TestingPrefServiceSimple* test_pref_service_ = nullptr;
   FakeCryptAuthV2DeviceManager* instance_ = nullptr;
 };
 
@@ -811,7 +816,7 @@ class DeviceSyncServiceTest
             fake_cryptauth_device_registry_factory_.get(),
             fake_cryptauth_key_registry_factory_.get(),
             fake_cryptauth_gcm_manager_factory_.get(),
-            fake_cryptauth_scheduler_factory_.get());
+            fake_cryptauth_scheduler_factory_.get(), test_pref_service_.get());
     CryptAuthV2DeviceManagerImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_v2_device_manager_factory_.get());
 

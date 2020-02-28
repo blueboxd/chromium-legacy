@@ -352,7 +352,7 @@ std::vector<base::FilePath> SharedSampler::GetSupportedImageNames() {
 
 bool SharedSampler::IsSupportedImageName(
     base::FilePath::StringPieceType image_name) const {
-  for (const base::FilePath supported_name : supported_image_names_) {
+  for (const base::FilePath& supported_name : supported_image_names_) {
     if (base::FilePath::CompareEqualIgnoreCase(image_name,
                                                supported_name.value()))
       return true;

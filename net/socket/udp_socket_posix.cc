@@ -23,6 +23,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1328,10 +1329,8 @@ void UDPSocketPosix::FlushPending() {
 // some tests it seemed like following the advice just broke in other
 // ways.
 base::SequencedTaskRunner* UDPSocketPosix::GetTaskRunner() {
-  if (task_runner_ == nullptr) {
-    task_runner_ =
-        CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
-  }
+  if (task_runner_ == nullptr)
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
   return task_runner_.get();
 }
 

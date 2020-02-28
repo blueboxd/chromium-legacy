@@ -640,7 +640,8 @@ void MainController::LogsUploadComplete(const base::string16& tag,
   it->second = true;
 
   if (quit_when_logs_upload_complete_) {
-    for (const std::pair<base::string16, bool>& entry : logs_upload_complete_) {
+    for (const std::pair<const base::string16, bool>& entry :
+         logs_upload_complete_) {
       if (!entry.second) {
         LOG(INFO) << "Waiting for the upload of logs with tag \"" << entry.first
                   << "\" to complete before exiting";

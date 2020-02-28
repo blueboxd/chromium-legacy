@@ -72,12 +72,16 @@ const base::FeatureParam<ChildProcessImportance> kChildProcessImportanceParam{
 #endif
 
 bool IsServiceWorkerSupported() {
+  if (!DeviceHasEnoughMemoryForBackForwardCache())
+    return false;
   static constexpr base::FeatureParam<bool> service_worker_supported(
       &features::kBackForwardCache, "service_worker_supported", false);
   return service_worker_supported.Get();
 }
 
 bool IsGeolocationSupported() {
+  if (!DeviceHasEnoughMemoryForBackForwardCache())
+    return false;
   static constexpr base::FeatureParam<bool> geolocation_supported(
       &features::kBackForwardCache, "geolocation_supported",
 #if defined(OS_ANDROID)
@@ -95,6 +99,8 @@ bool IsGeolocationSupported() {
 // calls and force all pages to be cached. Should be used only for local testing
 // and debugging -- things will break when this param is used.
 bool ShouldIgnoreBlocklists() {
+  if (!DeviceHasEnoughMemoryForBackForwardCache())
+    return false;
   static constexpr base::FeatureParam<bool> should_ignore_blocklists(
       &features::kBackForwardCache, "should_ignore_blocklists", false);
   return should_ignore_blocklists.Get();

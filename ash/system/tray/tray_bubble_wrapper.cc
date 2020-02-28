@@ -29,8 +29,6 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
 
   tray->tray_event_filter()->AddBubble(this);
 
-  bubble_widget_->GetNativeWindow()->GetRootWindow()->AddObserver(this);
-
   if (!is_persistent_)
     Shell::Get()->activation_client()->AddObserver(this);
 }
@@ -47,7 +45,6 @@ TrayBubbleWrapper::~TrayBubbleWrapper() {
       for (auto* window : transient_manager->transient_children())
         transient_manager->RemoveTransientChild(window);
     }
-    bubble_widget_->GetNativeWindow()->GetRootWindow()->RemoveObserver(this);
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
   }
@@ -63,13 +60,6 @@ TrayBubbleView* TrayBubbleWrapper::GetBubbleView() const {
 
 views::Widget* TrayBubbleWrapper::GetBubbleWidget() const {
   return bubble_widget_;
-}
-
-void TrayBubbleWrapper::OnWidgetClosing(views::Widget* widget) {
-  CHECK_EQ(bubble_widget_, widget);
-  // Remove this from the observer list before the widget is closed and detached
-  // from the root window.
-  bubble_widget_->GetNativeWindow()->GetRootWindow()->RemoveObserver(this);
 }
 
 void TrayBubbleWrapper::OnWidgetDestroying(views::Widget* widget) {
@@ -90,13 +80,6 @@ void TrayBubbleWrapper::OnWidgetBoundsChanged(views::Widget* widget,
                                               const gfx::Rect& new_bounds) {
   DCHECK_EQ(bubble_widget_, widget);
   tray_->BubbleResized(bubble_view_);
-}
-
-void TrayBubbleWrapper::OnWindowBoundsChanged(aura::Window* window,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds,
-                                              ui::PropertyChangeReason reason) {
-  tray_->UpdateAfterRootWindowBoundsChange(old_bounds, new_bounds);
 }
 
 void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,

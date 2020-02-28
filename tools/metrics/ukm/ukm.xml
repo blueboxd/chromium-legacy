@@ -1659,6 +1659,12 @@ be describing additional metrics about the same event.
       microseconds.
     </summary>
   </metric>
+  <metric name="ImplCompositorCommit">
+    <summary>
+      The time spent committing layer tree impl data in the compositor thread,
+      between navigation and First Contentful Paint, in microseconds.
+    </summary>
+  </metric>
   <metric name="IntersectionObservation">
     <summary>
       The time spent computing intersection observer state, between navigation
@@ -1690,6 +1696,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
+    <obsolete>
+      Removed February 2020 in favor of separate metrics for the wait time and
+      the actual commit time.
+    </obsolete>
     <summary>
       The time spent committing main thread to impl layer tree information,
       between navigation and First Contentful Paint, in microseconds.
@@ -1721,6 +1731,12 @@ be describing additional metrics about the same event.
     <summary>
       The time spent in for LayerTreeHost::UpdateLayers, between navigation and
       First Contentful Paint, in microseconds.
+    </summary>
+  </metric>
+  <metric name="WaitForCommit">
+    <summary>
+      The time spent waiting for the compositor thread to begin processing a
+      commit, between navigation and First Contentful Paint, in microseconds.
     </summary>
   </metric>
 </event>
@@ -2086,6 +2102,26 @@ be describing additional metrics about the same event.
       updates. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="ImplCompositorCommit">
+    <summary>
+      The time spent committing layer tree impl data in the compositor thread,
+      in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ImplCompositorCommitPercentage">
+    <summary>
+      The percentage of the main frame time spent committing layer tree impl
+      data in the compositor thread. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="IntersectionObservation">
     <summary>
       The time taken to compute intersection observer state for the main frame
@@ -2358,6 +2394,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
+    <obsolete>
+      Removed February 2020 in favor of separate metrics for the wait time and
+      the actual commit time.
+    </obsolete>
     <summary>
       The time taken for the proxy to commit to the impl thread in microseconds
       during the sampled frame.
@@ -2372,6 +2412,10 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="ProxyCommitPercentage">
+    <obsolete>
+      Removed February 2020 in favor of separate metrics for the wait time and
+      the actual commit time.
+    </obsolete>
     <summary>
       The percentage of the main frame time used to commit to the impl thread.
       An int in the range [0,100].
@@ -2552,6 +2596,26 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used by LayerTreeHost::UpdateLayers.
       An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="WaitForCommit">
+    <summary>
+      The time spent waiting for the compositor thread to begin processing a
+      commit, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WaitForCommitPercentage">
+    <summary>
+      The percentage of the main frame time spent waiting for the compositor
+      thread to begin processing a commit. An int in the range [0,100].
     </summary>
   </metric>
 </event>

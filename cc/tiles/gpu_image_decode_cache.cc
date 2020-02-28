@@ -1186,7 +1186,8 @@ bool GpuImageDecodeCache::UseCacheForDrawImage(
 
 DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
-  TRACE_EVENT0("cc", "GpuImageDecodeCache::GetDecodedImageForDraw");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "GpuImageDecodeCache::GetDecodedImageForDraw");
 
   // We are being called during raster. The context lock must already be
   // acquired by the caller.
@@ -1253,7 +1254,8 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
 void GpuImageDecodeCache::DrawWithImageFinished(
     const DrawImage& draw_image,
     const DecodedDrawImage& decoded_draw_image) {
-  TRACE_EVENT0("cc", "GpuImageDecodeCache::DrawWithImageFinished");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "GpuImageDecodeCache::DrawWithImageFinished");
 
   // Release decoded_draw_image to ensure the referenced SkImage can be
   // cleaned up below.

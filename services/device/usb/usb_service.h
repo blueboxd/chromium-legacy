@@ -50,10 +50,10 @@ class UsbService {
     virtual void WillDestroyUsbService();
   };
 
-  // These task traits are to be used for posting blocking tasks to the task
-  // scheduler.
+  // These task traits are to be used for posting blocking tasks to the thread
+  // pool.
   static constexpr base::TaskTraits kBlockingTaskTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
   // Returns nullptr when initialization fails.

@@ -53,7 +53,6 @@ const char kPageCaptureNotAllowed[] =
 const char kUserDenied[] = "User denied request.";
 #endif
 constexpr base::TaskTraits kCreateTemporaryFileTaskTraits = {
-    base::ThreadPool(),
     // Requires IO.
     base::MayBlock(),
 
@@ -127,7 +126,7 @@ ExtensionFunction::ResponseAction PageCaptureSaveAsMHTMLFunction::Run() {
   if (!CanCaptureCurrentPage(&error)) {
     return RespondNow(Error(error));
   }
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE, kCreateTemporaryFileTaskTraits,
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile,
                      this));
@@ -188,7 +187,7 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceived(
 void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
     const PermissionIDSet& allowed_permissions) {
   if (allowed_permissions.ContainsID(APIPermission::kPageCapture)) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE, kCreateTemporaryFileTaskTraits,
         base::BindOnce(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile,
                        this));

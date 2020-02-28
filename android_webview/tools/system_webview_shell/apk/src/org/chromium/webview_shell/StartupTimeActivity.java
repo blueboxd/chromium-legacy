@@ -5,15 +5,19 @@
 package org.chromium.webview_shell;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Process;
-import android.os.SystemClock;
+import android.text.TextUtils;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.LinearLayout;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.Log;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
 
 /**
  * This activity is designed for startup time testing of the WebView.
@@ -24,11 +28,16 @@ public class StartupTimeActivity extends Activity {
     private static final long MIN_TIME_TO_RECORD_MS = 33;
     private static final long TIME_TO_FINISH_APP_MS = 5000;
 
-    private LinkedBlockingQueue<Long> mEventQueue = new LinkedBlockingQueue<>();
+    private static final String TARGET_KEY = "target";
+
+    private LinkedList<Long> mEventQueue = new LinkedList<>();
 
     private boolean mFinished;
     // Keep track of the time that the last task was run.
     private long mLastTaskTimeMs = -1;
+
+    private LinearLayout mLayout;
+    private WebView mWebView;
 
     private Handler mHandler;
 
@@ -42,11 +51,7 @@ public class StartupTimeActivity extends Activity {
                 // the time other UI tasks were run.
                 long gap = now - mLastTaskTimeMs;
                 if (gap > MIN_TIME_TO_RECORD_MS) {
-                    try {
-                        mEventQueue.put(gap);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    mEventQueue.add(gap);
                 }
             }
             mLastTaskTimeMs = now;
@@ -59,35 +64,79 @@ public class StartupTimeActivity extends Activity {
         @Override
         public void run() {
             mFinished = true;
-            StringBuilder sb = new StringBuilder();
-            while (true) {
-                Long gap = mEventQueue.poll();
-                if (gap == null) break;
-                sb.append(gap);
-                if (mEventQueue.peek() != null) sb.append(", ");
+            String res = TextUtils.join(", ", mEventQueue);
+            Log.i(TAG, "UI blocking times in startup (ms): " + res);
+            if (mWebView != null) {
+                // Remove webview from view hierarchy while preventing NPE.
+                mLayout.removeAllViews();
+                mWebView.destroy();
+                mWebView = null;
             }
-            Log.i(TAG, "UI blocking times in startup (ms): " + sb.toString());
             finish();
-            // Automatically clean up WebView to measure WebView startup cleanly
-            // next time.
-            Process.killProcess(Process.myPid());
         }
     };
+
+    @IntDef({Target.DO_NOTHING, Target.CREATE, Target.ADD_VIEW, Target.LOAD, Target.WORKAROUND})
+    @interface Target {
+        int DO_NOTHING = 0;
+        int CREATE = 1;
+        int ADD_VIEW = 2;
+        int LOAD = 3;
+        int WORKAROUND = 4;
+    }
+
+    private @Target int getTarget() {
+        Intent intent = getIntent();
+        if (intent == null) return Target.CREATE;
+        Bundle extras = intent.getExtras();
+        if (extras == null) return Target.CREATE;
+        return extras.getInt(TARGET_KEY, Target.CREATE);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        @Target
+        int target = getTarget();
         getWindow().setTitle(
                 getResources().getString(R.string.title_activity_startup_time));
+        mLayout = new LinearLayout(this);
+        setContentView(mLayout);
         mHandler = new Handler();
         mUiBlockingTaskTracker.run();
-        long t1 = SystemClock.elapsedRealtime();
-        WebView webView = new WebView(this);
-        setContentView(webView);
-        long t2 = SystemClock.elapsedRealtime();
+        switch (target) {
+            case Target.DO_NOTHING: {
+                break;
+            }
+            case Target.CREATE: {
+                mWebView = new WebView(this);
+                break;
+            }
+            case Target.ADD_VIEW: {
+                mWebView = new WebView(this);
+                mLayout.addView(mWebView);
+                break;
+            }
+            case Target.LOAD: {
+                mWebView = new WebView(this);
+                mLayout.addView(mWebView);
+                mWebView.loadUrl("about:blank");
+                break;
+            }
+            case Target.WORKAROUND: {
+                // This is a useful hack to run some of the startup tasks in a background
+                // thread to reduce the UI thread blocking time.
+                Thread t = new Thread(() -> {
+                    WebSettings.getDefaultUserAgent(this);
+                    // Note that there are some UI tasks caused by getDefaultUserAgent().
+                    // But this will ensure that new WebView() can be run after those UI tasks
+                    // are run first.
+                    mHandler.post(() -> { mWebView = new WebView(this); });
+                });
+                t.start();
+                break;
+            }
+        }
         mHandler.postDelayed(mFinishTask, TIME_TO_FINISH_APP_MS);
-        Log.i(TAG, "WebViewStartupTimeMillis=" + (t2 - t1));
     }
-
 }
-

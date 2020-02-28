@@ -276,10 +276,11 @@ def main():
       # positive.
       print('============ Re_run the failed tests ============')
       all_failed_stories = '('+'|'.join(result_recorder.failed_stories)+')'
-      # TODO(behdadb): Remove the extra chrome categories after investigation
-      # of flakes in representative perf tests (crbug.com/1055893).
+      # TODO(crbug.com/1055893): Remove the extra chrome categories after
+      # investigation of flakes in representative perf tests.
       re_run_args.extend(['--story-filter', all_failed_stories,
-        '--pageset-repeat=3', '--extra-chrome-categories=blink,gpu,v8,viz'])
+        '--pageset-repeat=3',
+        '--extra-chrome-categories=blink,blink_gc,gpu,v8,viz'])
 
       re_run_isolated_script_test_dir = os.path.join(out_dir_path,
         're_run_failures')

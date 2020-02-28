@@ -778,6 +778,36 @@ TEST_F(ScrollableShelfViewTest, VerifyScrollEvent) {
             scrollable_shelf_view_->layout_strategy_for_test());
 }
 
+// Verifies that right-click on the last shelf icon should open the icon's
+// context menu instead of the shelf's (https://crbug.com/1041702).
+TEST_F(ScrollableShelfViewTest, ClickAtLastIcon) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Taps at the right arrow. Hotseat layout should show the left arrow.
+  gfx::Rect right_arrow =
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen();
+  GetEventGenerator()->GestureTapAt(right_arrow.CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Right-click on the edge of the last icon.
+  const views::View* last_icon = shelf_view_->view_model()->view_at(
+      scrollable_shelf_view_->last_tappable_app_index());
+  gfx::Point click_point = last_icon->GetBoundsInScreen().right_center();
+  click_point.Offset(-1, 0);
+  GetEventGenerator()->MoveMouseTo(click_point);
+  GetEventGenerator()->ClickRightButton();
+
+  // Verifies that the context menu of |last_icon| should show.
+  EXPECT_TRUE(shelf_view_->IsShowingMenuForView(last_icon));
+
+  // Verfies that after left-click, the context menu should be closed.
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_FALSE(shelf_view_->IsShowingMenuForView(last_icon));
+}
+
 // Tests scrollable shelf's features under both LTR and RTL.
 class ScrollableShelfViewRTLTest : public ScrollableShelfViewTest,
                                    public testing::WithParamInterface<bool> {

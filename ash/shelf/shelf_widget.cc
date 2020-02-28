@@ -24,6 +24,7 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/login_shelf_gesture_controller.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -147,7 +148,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   void UpdateBackgroundBlur();
   void UpdateOpaqueBackground();
-  void UpdateDragHandle();
+  void UpdateDragHandle(bool update_color);
 
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
@@ -234,8 +235,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
       AshColorProvider::Get()->GetRippleAttributes(
           ShelfConfig::Get()->GetDefaultShelfColor());
 
-  drag_handle_ = AddChildView(
-      std::make_unique<DragHandle>(ripple_attributes, kDragHandleCornerRadius));
+  drag_handle_ =
+      AddChildView(std::make_unique<DragHandle>(kDragHandleCornerRadius));
 
   animating_drag_handle_.SetColor(ripple_attributes.base_color);
   animating_drag_handle_.SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
@@ -285,7 +286,7 @@ void ShelfWidget::DelegateView::HideOpaqueBackground() {
 void ShelfWidget::DelegateView::ShowOpaqueBackground() {
   hide_background_for_transitions_ = false;
   UpdateOpaqueBackground();
-  UpdateDragHandle();
+  UpdateDragHandle(false /*update_color*/);
   UpdateBackgroundBlur();
 }
 
@@ -375,12 +376,36 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
     });
   }
   opaque_background()->SetBounds(opaque_background_bounds);
-  UpdateDragHandle();
+
+  UpdateDragHandle(false /*update_color*/);
   UpdateBackgroundBlur();
   SchedulePaint();
 }
 
-void ShelfWidget::DelegateView::UpdateDragHandle() {
+void ShelfWidget::DelegateView::UpdateDragHandle(bool update_color) {
+  if (update_color) {
+    if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+      // For login shelf, let the drag handle match control buttons background.
+      drag_handle_->SetColorAndOpacity(
+          ShelfConfig::Get()->GetShelfControlButtonColor(), 1.0f);
+    } else {
+      const AshColorProvider::RippleAttributes ripple_attributes =
+          AshColorProvider::Get()->GetRippleAttributes(
+              ShelfConfig::Get()->GetDefaultShelfColor());
+      // TODO(manucornet): Figure out why we need a manual opacity adjustment
+      // to make this color look the same as the status area highlight.
+      drag_handle_->SetColorAndOpacity(
+          ripple_attributes.base_color,
+          ripple_attributes.inkdrop_opacity + 0.075);
+    }
+  }
+
+  if (shelf_widget_->login_shelf_view_->GetVisible()) {
+    drag_handle_->SetVisible(
+        shelf_widget_->login_shelf_gesture_controller_.get());
+    return;
+  }
+
   if (!Shell::Get()->IsInTabletMode() || !ShelfConfig::Get()->is_in_app() ||
       !chromeos::switches::ShouldShowShelfHotseat() ||
       hide_background_for_transitions_) {
@@ -424,8 +449,15 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
 void ShelfWidget::DelegateView::Layout() {
   login_shelf_view_->SetBoundsRect(GetLocalBounds());
 
+  // Center drag handle within the expected in-app shelf bounds - it's safe to
+  // assume bottom shelf, given that the drag handle is only shown within the
+  // bottom shelf (either in tablet mode, or on login/lock screen)
   gfx::Rect drag_handle_bounds = GetLocalBounds();
+  drag_handle_bounds.Inset(
+      0, drag_handle_bounds.height() - ShelfConfig::Get()->in_app_shelf_size(),
+      0, 0);
   drag_handle_bounds.ClampToCenteredSize(ShelfConfig::Get()->DragHandleSize());
+
   drag_handle_->SetBoundsRect(drag_handle_bounds);
 }
 
@@ -480,7 +512,17 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   aura::Window::ConvertRectToTarget(source, target->parent(),
                                     &login_view_button_bounds);
   *hit_test_rect_mouse = login_view_button_bounds;
-  *hit_test_rect_touch = login_view_button_bounds;
+
+  // If login shelf gesture detection is active, consume touch events on the
+  // whole shelf, so |login_shelf_gesture_controller_| can receive them.
+  if (login_shelf_gesture_controller_) {
+    gfx::Rect shelf_view_bounds = login_shelf_view_->GetLocalBounds();
+    aura::Window::ConvertRectToTarget(source, target->parent(),
+                                      &shelf_view_bounds);
+    *hit_test_rect_touch = shelf_view_bounds;
+  } else {
+    *hit_test_rect_touch = login_view_button_bounds;
+  }
   return true;
 }
 
@@ -490,6 +532,29 @@ void ShelfWidget::ForceToShowHotseat() {
 
   is_hotseat_forced_to_show_ = true;
   shelf_layout_manager_->UpdateVisibilityState();
+}
+
+bool ShelfWidget::SetLoginShelfSwipeHandler(
+    const base::string16& nudge_text,
+    const base::RepeatingClosure& fling_callback,
+    base::OnceClosure exit_callback) {
+  if (!login_shelf_view_->GetVisible())
+    return false;
+
+  if (!Shell::Get()->IsInTabletMode())
+    return false;
+
+  login_shelf_gesture_controller_ =
+      std::make_unique<LoginShelfGestureController>(
+          shelf_, delegate_view_->drag_handle(), nudge_text, fling_callback,
+          std::move(exit_callback));
+  delegate_view_->UpdateDragHandle(false /*update_color*/);
+  return true;
+}
+
+void ShelfWidget::ClearLoginShelfSwipeHandler() {
+  login_shelf_gesture_controller_.reset();
+  delegate_view_->UpdateDragHandle(false /*update_color*/);
 }
 
 ui::Layer* ShelfWidget::GetOpaqueBackground() {
@@ -629,9 +694,14 @@ void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
-  // Resets |is_hotseat_forced_to_show| when leaving the tablet mode.
-  if (!Shell::Get()->IsInTabletMode())
+  if (!Shell::Get()->IsInTabletMode()) {
+    // Resets |is_hotseat_forced_to_show| when leaving the tablet mode.
     is_hotseat_forced_to_show_ = false;
+
+    // Disable login shelf gesture controller, if one is set when leacing tablet
+    // mode.
+    login_shelf_gesture_controller_.reset();
+  }
 }
 
 void ShelfWidget::PostCreateShelf() {
@@ -877,10 +947,15 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     hotseat_transition_animator_->SetAnimationsEnabledInSessionState(
         show_hotseat);
     login_shelf_view()->SetVisible(!show_hotseat);
-    delegate_view_->UpdateDragHandle();
+
+    if (show_hotseat)
+      login_shelf_gesture_controller_.reset();
     ShowIfHidden();
   }
   shelf_layout_manager_->SetDimmed(false);
+  // Depending on session state change, the drag handle visibiliy and color
+  // might have to be changed.
+  delegate_view_->UpdateDragHandle(true /*update_color*/);
   login_shelf_view_->UpdateAfterSessionChange();
 }
 
@@ -901,6 +976,14 @@ void ShelfWidget::HideIfShown() {
 void ShelfWidget::ShowIfHidden() {
   if (!IsVisible())
     Show();
+}
+
+bool ShelfWidget::HandleLoginShelfGestureEvent(
+    const ui::GestureEvent& event_in_screen) {
+  if (!login_shelf_gesture_controller_)
+    return false;
+
+  return login_shelf_gesture_controller_->HandleGestureEvent(event_in_screen);
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -930,6 +1013,12 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   gfx::Point location_in_screen(event->location());
   ::wm::ConvertPointToScreen(GetNativeWindow(), &location_in_screen);
   event_in_screen.set_location(location_in_screen);
+
+  if (HandleLoginShelfGestureEvent(event_in_screen)) {
+    event->StopPropagation();
+    return;
+  }
+
   shelf_layout_manager()->ProcessGestureEventFromShelfWidget(&event_in_screen);
   if (!event->handled())
     views::Widget::OnGestureEvent(event);

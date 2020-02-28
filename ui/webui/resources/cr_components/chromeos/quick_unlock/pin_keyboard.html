@@ -148,8 +148,8 @@
         --cr-input-error-display: none;
         --cr-input-input: {
           font-size: 28px;
-          letter-spacing: 18px;
         };
+        --cr-input-letter-spacing: var(--cr-input-letter-spacing, 18px);
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
         background-color: white;
@@ -265,14 +265,6 @@
           </cr-button>
         </div>
         <div class="row bottom-row">
-          <div class="digit-button"></div>
-          <cr-button class="digit-button" on-tap="onNumberTap_" value="0"
-              id="digitButton0" disabled="[[disabled]]" circle-ripple
-              custom-tab-index="-1">
-            <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
-            <inner-text class="letter"
-                hidden="[[!enableLetters]]">+</inner-text>
-          </cr-button>
           <cr-icon-button id="backspaceButton"
               disabled$="[[!hasInput_(value)]]"
               iron-icon="pin-keyboard:backspace"
@@ -284,6 +276,14 @@
               title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
               custom-tab-index="-1">
           </cr-icon-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="0"
+              id="digitButton0" disabled="[[disabled]]" circle-ripple
+              custom-tab-index="-1">
+            <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">+</inner-text>
+          </cr-button>
+          <div class="digit-button"></div>
         </div>
       </div>
     </div>

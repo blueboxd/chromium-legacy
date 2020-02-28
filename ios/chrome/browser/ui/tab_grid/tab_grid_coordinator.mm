@@ -182,8 +182,7 @@
 
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
-  baseViewController.remoteTabsViewController.browserState =
-      regularBrowserState;
+  baseViewController.remoteTabsViewController.browser = self.regularBrowser;
   self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
   self.remoteTabsMediator.browserState = regularBrowserState;
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
@@ -201,8 +200,6 @@
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.restoredTabDisposition =
       WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  baseViewController.remoteTabsViewController.webStateList =
-      regularWebStateList;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
   if (!base::FeatureList::IsEnabled(kContainedBVC)) {

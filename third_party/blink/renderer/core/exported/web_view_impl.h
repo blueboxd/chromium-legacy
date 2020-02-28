@@ -453,7 +453,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void BeginUpdateLayers();
   void EndUpdateLayers();
   void BeginCommitCompositorFrame();
-  void EndCommitCompositorFrame();
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time);
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
                                cc::ActiveFrameSequenceTrackers trackers);

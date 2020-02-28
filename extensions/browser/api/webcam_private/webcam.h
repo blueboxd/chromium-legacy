@@ -67,6 +67,11 @@ class Webcam : public base::RefCounted<Webcam> {
 
   virtual void SetHome(const SetPTZCompleteCallback& callback) = 0;
 
+  virtual void RestoreCameraPreset(int preset_number,
+                                   const SetPTZCompleteCallback& callback) = 0;
+  virtual void SetCameraPreset(int preset_number,
+                               const SetPTZCompleteCallback& callback) = 0;
+
  protected:
   friend class base::RefCounted<Webcam>;
   virtual ~Webcam();

@@ -38,10 +38,10 @@ FileStreamForwarder::FileStreamForwarder(
       remaining_size_(size),
       fd_dest_(std::move(fd_dest)),
       callback_(std::move(callback)),
-      task_runner_(base::CreateSequencedTaskRunner(
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           // It's safe to shutdown without waiting for the
           // completion of tasks running with this task runner.
-          {base::ThreadPool(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+          {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       buf_(base::MakeRefCounted<net::IOBufferWithSize>(kBufSize)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -70,11 +70,11 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
   ~FakeUrlRequestFactory() override { EXPECT_TRUE(expected_requests_.empty()); }
 
   // Returns a respond closure. Run this closure to respond to the URL request.
-  base::Closure AddExpectedRequest(const std::string& exp_post,
-                                   const UrlRequest::Result& ret_result) {
+  base::OnceClosure AddExpectedRequest(const std::string& exp_post,
+                                       const UrlRequest::Result& ret_result) {
     FakeUrlRequest* fakeRequest = new FakeUrlRequest(exp_post, ret_result);
-    base::Closure closure =
-        base::Bind(&FakeUrlRequest::Respond, base::Unretained(fakeRequest));
+    base::OnceClosure closure =
+        base::BindOnce(&FakeUrlRequest::Respond, base::Unretained(fakeRequest));
     expected_requests_.push_back(std::unique_ptr<UrlRequest>(fakeRequest));
     return closure;
   }
@@ -148,7 +148,7 @@ TEST_F(TelemetryLogWriterTest, PostOneLogImmediately) {
   auto respond = request_factory_->AddExpectedRequest(
       "{\"event\":[{\"id\":0}]}", success_result_);
   LogFakeEvent();
-  respond.Run();
+  std::move(respond).Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneLogAndHaveTwoPendingLogs) {
@@ -160,8 +160,8 @@ TEST_F(TelemetryLogWriterTest, PostOneLogAndHaveTwoPendingLogs) {
       "{\"event\":[{\"id\":1},{\"id\":2}]}", success_result_);
   LogFakeEvent();
   LogFakeEvent();
-  respond1.Run();
-  respond2.Run();
+  std::move(respond1).Run();
+  std::move(respond2).Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostLogFailedAndRetry) {
@@ -179,11 +179,11 @@ TEST_F(TelemetryLogWriterTest, PostLogFailedAndRetry) {
 
   LogFakeEvent();
 
-  respond1.Run();
-  respond2.Run();
-  respond3.Run();
-  respond4.Run();
-  respond5.Run();
+  std::move(respond1).Run();
+  std::move(respond2).Run();
+  std::move(respond3).Run();
+  std::move(respond4).Run();
+  std::move(respond5).Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneLogFailedResendWithTwoPendingLogs) {
@@ -196,8 +196,8 @@ TEST_F(TelemetryLogWriterTest, PostOneLogFailedResendWithTwoPendingLogs) {
   LogFakeEvent();
   LogFakeEvent();
 
-  respond1.Run();
-  respond2.Run();
+  std::move(respond1).Run();
+  std::move(respond2).Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostThreeLogsFailedAndResendWithOnePending) {
@@ -212,15 +212,15 @@ TEST_F(TelemetryLogWriterTest, PostThreeLogsFailedAndResendWithOnePending) {
   LogFakeEvent();
   LogFakeEvent();
 
-  respond1.Run();
+  std::move(respond1).Run();
 
   auto respond3 = request_factory_->AddExpectedRequest(
       "{\"event\":[{\"id\":0},{\"id\":1},{\"id\":2},{\"id\":3}]}",
       success_result_);
   LogFakeEvent();
 
-  respond2.Run();
-  respond3.Run();
+  std::move(respond2).Run();
+  std::move(respond3).Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedCallClosureAndRetry) {
@@ -230,8 +230,8 @@ TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedCallClosureAndRetry) {
 
   auto respond2 = request_factory_->AddExpectedRequest(
       "{\"event\":[{\"id\":0}]}", success_result_);
-  respond1.Run();
-  respond2.Run();
+  std::move(respond1).Run();
+  std::move(respond2).Run();
 }
 
 }  // namespace remoting

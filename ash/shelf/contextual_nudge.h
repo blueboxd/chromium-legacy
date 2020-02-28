@@ -27,12 +27,16 @@ class ASH_EXPORT ContextualNudge : public views::BubbleDialogDelegateView {
   // |parent_window| - if set, the window that should parent the nudge native
   //     window. If not set, the shelf container in the anchor view's root
   //     window will be used.
-  // |text| - The nudge text.
   // |position| - The nudge position relative to the anchor rectangle.
+  // |margins| - The margins added to the nudge bubble.
+  // |text| - The nudge text.
+  // |text_color| - The nudge text label foreground color.
   ContextualNudge(views::View* anchor,
                   aura::Window* parent_window,
+                  Position position,
+                  const gfx::Insets& margins,
                   const base::string16& text,
-                  Position position);
+                  SkColor text_color);
   ~ContextualNudge() override;
 
   ContextualNudge(const ContextualNudge&) = delete;

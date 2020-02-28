@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 67 tests; 54 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 58 tests; 54 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS alignment-baseline presentation attribute supported on an irrelevant element
 PASS baseline-shift presentation attribute supported on an irrelevant element
 PASS clip-path presentation attribute supported on an irrelevant element
@@ -10,7 +10,6 @@ PASS color-interpolation presentation attribute supported on an irrelevant eleme
 PASS cursor presentation attribute supported on an irrelevant element
 PASS direction presentation attribute supported on an irrelevant element
 PASS display presentation attribute supported on an irrelevant element
-FAIL d presentation attribute supported on an irrelevant element assert_true: Presentation attribute d="M0,0 L1,1" should be supported on image element expected true got false
 PASS dominant-baseline presentation attribute supported on an irrelevant element
 PASS fill presentation attribute supported on an irrelevant element
 PASS fill-opacity presentation attribute supported on an irrelevant element
@@ -25,7 +24,6 @@ PASS font-stretch presentation attribute supported on an irrelevant element
 PASS font-style presentation attribute supported on an irrelevant element
 PASS font-variant presentation attribute supported on an irrelevant element
 PASS font-weight presentation attribute supported on an irrelevant element
-FAIL height presentation attribute supported on an irrelevant element assert_true: Presentation attribute height="1" should be supported on path element expected true got false
 FAIL image-rendering presentation attribute supported on an irrelevant element assert_true: Presentation attribute image-rendering="optimizeSpeed" should be supported on path element expected true got false
 PASS letter-spacing presentation attribute supported on an irrelevant element
 PASS lighting-color presentation attribute supported on an irrelevant element
@@ -38,9 +36,6 @@ PASS opacity presentation attribute supported on an irrelevant element
 PASS overflow presentation attribute supported on an irrelevant element
 PASS paint-order presentation attribute supported on an irrelevant element
 PASS pointer-events presentation attribute supported on an irrelevant element
-FAIL r presentation attribute supported on an irrelevant element assert_true: Presentation attribute r="1" should be supported on rect element expected true got false
-FAIL rx presentation attribute supported on an irrelevant element assert_true: Presentation attribute rx="1" should be supported on path element expected true got false
-FAIL ry presentation attribute supported on an irrelevant element assert_true: Presentation attribute ry="1" should be supported on path element expected true got false
 PASS shape-rendering presentation attribute supported on an irrelevant element
 PASS stop-color presentation attribute supported on an irrelevant element
 PASS stop-opacity presentation attribute supported on an irrelevant element
@@ -57,15 +52,11 @@ PASS text-decoration presentation attribute supported on an irrelevant element
 FAIL text-overflow presentation attribute supported on an irrelevant element assert_true: Presentation attribute text-overflow="ellipsis" should be supported on rect element expected true got false
 PASS text-rendering presentation attribute supported on an irrelevant element
 PASS transform-origin presentation attribute supported on an irrelevant element
-FAIL transform presentation attribute supported on an irrelevant element assert_true: Presentation attribute transform="scale(2)" should be supported on linearGradient element expected true got false
 PASS unicode-bidi presentation attribute supported on an irrelevant element
 PASS vector-effect presentation attribute supported on an irrelevant element
 PASS visibility presentation attribute supported on an irrelevant element
 FAIL white-space presentation attribute supported on an irrelevant element assert_true: Presentation attribute white-space="pre" should be supported on rect element expected true got false
-FAIL width presentation attribute supported on an irrelevant element assert_true: Presentation attribute width="1" should be supported on path element expected true got false
 PASS word-spacing presentation attribute supported on an irrelevant element
 PASS writing-mode presentation attribute supported on an irrelevant element
-FAIL x presentation attribute supported on an irrelevant element assert_true: Presentation attribute x="1" should be supported on path element expected true got false
-FAIL y presentation attribute supported on an irrelevant element assert_true: Presentation attribute y="1" should be supported on path element expected true got false
 Harness: the test ran to completion.
 

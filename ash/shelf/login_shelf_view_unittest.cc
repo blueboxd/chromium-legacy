@@ -30,6 +30,7 @@
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -631,6 +632,27 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+}
+
+TEST_F(LoginShelfViewTest, TapShutdownWithSwipeDetectionEnabledOnLogin) {
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  Shell::Get()->login_screen_controller()->SetLoginShelfGestureHandler(
+      base::ASCIIToUTF16("Test swipe"), base::DoNothing(), base::DoNothing());
+
+  Click(LoginShelfView::kShutdown);
+  EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
+}
+
+TEST_F(LoginShelfViewTest, TapShutdownWithSwipeDetectionEnabledInOobe) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  Shell::Get()->login_screen_controller()->SetLoginShelfGestureHandler(
+      base::ASCIIToUTF16("Test swipe"), base::DoNothing(), base::DoNothing());
+
+  Click(LoginShelfView::kShutdown);
+  EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
 }  // namespace

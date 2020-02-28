@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
@@ -23,6 +24,7 @@ import java.util.List;
 public class TabUiFeatureUtilities {
     private static Boolean sSearchTermChipEnabledForTesting;
     private static Boolean sTabManagementModuleSupportedForTesting;
+    private static Double sTabThumbnailAspectRatioForTesting;
 
     /**
      * Set whether the search term chip in Grid tab switcher is enabled for testing.
@@ -123,5 +125,25 @@ public class TabUiFeatureUtilities {
     public static boolean isTabGroupsAndroidContinuationEnabled() {
         return isTabGroupsAndroidEnabled()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+    }
+
+    /**
+     * @return Whether the thumbnail_aspect_ratio field trail is set.
+     */
+    public static boolean isTabThumbnailAspectRatioNotOne() {
+        double aspectRatio;
+        if (sTabThumbnailAspectRatioForTesting != null) {
+            aspectRatio = sTabThumbnailAspectRatioForTesting;
+        } else {
+            aspectRatio = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+        }
+
+        return Double.compare(1.0, aspectRatio) != 0;
+    }
+
+    @VisibleForTesting
+    public static void setTabThumbnailAspectRatioForTesting(Double value) {
+        sTabThumbnailAspectRatioForTesting = value;
     }
 }

@@ -1194,10 +1194,10 @@ void RenderWidget::WillCommitCompositorFrame() {
   GetWebWidget()->BeginCommitCompositorFrame();
 }
 
-void RenderWidget::DidCommitCompositorFrame() {
+void RenderWidget::DidCommitCompositorFrame(base::TimeTicks commit_start_time) {
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
-  GetWebWidget()->EndCommitCompositorFrame();
+  GetWebWidget()->EndCommitCompositorFrame(commit_start_time);
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {

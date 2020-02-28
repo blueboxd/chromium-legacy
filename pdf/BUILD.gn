@@ -67,7 +67,6 @@ if (enable_pdf) {
       "paint_manager.cc",
       "paint_manager.h",
       "pdf.cc",
-      "pdf_engine.cc",
       "pdf_engine.h",
       "pdf_ppapi.cc",
       "pdf_transform.cc",

@@ -243,7 +243,7 @@ TEST_F(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
   huge_referrer.append(INTERNET_MAX_URL_LENGTH * 2, 'a');
   unsafe_referrers.push_back(huge_referrer);
 
-  for (const auto referrer_url : unsafe_referrers) {
+  for (const auto& referrer_url : unsafe_referrers) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << referrer_url);
 
     ASSERT_TRUE(CreateFile(test_file));

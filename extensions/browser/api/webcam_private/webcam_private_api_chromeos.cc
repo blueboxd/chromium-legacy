@@ -536,6 +536,62 @@ void WebcamPrivateSetHomeFunction::OnSetHomeWebcam(bool success) {
   Respond(success ? NoArguments() : Error(kSetHomeWebcamError));
 }
 
+WebcamPrivateRestoreCameraPresetFunction::
+    WebcamPrivateRestoreCameraPresetFunction() {}
+
+WebcamPrivateRestoreCameraPresetFunction::
+    ~WebcamPrivateRestoreCameraPresetFunction() {}
+
+ExtensionFunction::ResponseAction
+WebcamPrivateRestoreCameraPresetFunction::Run() {
+  std::unique_ptr<webcam_private::RestoreCameraPreset::Params> params(
+      webcam_private::RestoreCameraPreset::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
+                       ->GetWebcam(extension_id(), params->webcam_id);
+  if (!webcam)
+    return RespondNow(Error(kUnknownWebcam));
+
+  webcam->RestoreCameraPreset(
+      params->preset_number,
+      base::Bind(&WebcamPrivateRestoreCameraPresetFunction::
+                     OnRestoreCameraPresetWebcam,
+                 this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void WebcamPrivateRestoreCameraPresetFunction::OnRestoreCameraPresetWebcam(
+    bool success) {
+  Respond(success ? NoArguments() : Error(kSetHomeWebcamError));
+}
+
+WebcamPrivateSetCameraPresetFunction::WebcamPrivateSetCameraPresetFunction() {}
+
+WebcamPrivateSetCameraPresetFunction::~WebcamPrivateSetCameraPresetFunction() {}
+
+ExtensionFunction::ResponseAction WebcamPrivateSetCameraPresetFunction::Run() {
+  std::unique_ptr<webcam_private::SetCameraPreset::Params> params(
+      webcam_private::SetCameraPreset::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Webcam* webcam = WebcamPrivateAPI::Get(browser_context())
+                       ->GetWebcam(extension_id(), params->webcam_id);
+  if (!webcam)
+    return RespondNow(Error(kUnknownWebcam));
+
+  webcam->SetCameraPreset(
+      params->preset_number,
+      base::Bind(&WebcamPrivateSetCameraPresetFunction::OnSetCameraPresetWebcam,
+                 this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void WebcamPrivateSetCameraPresetFunction::OnSetCameraPresetWebcam(
+    bool success) {
+  Respond(success ? NoArguments() : Error(kSetHomeWebcamError));
+}
+
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebcamPrivateAPI>>::
     DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
 

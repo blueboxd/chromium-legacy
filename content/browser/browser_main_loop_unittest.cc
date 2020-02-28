@@ -71,7 +71,7 @@ TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   browser_main_loop.CreateThreads();
   EXPECT_GE(base::ThreadPoolInstance::Get()
                 ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-                    {base::ThreadPool(), base::TaskPriority::USER_VISIBLE}),
+                    {base::TaskPriority::USER_VISIBLE}),
             base::SysInfo::NumberOfProcessors() - 1);
   browser_main_loop.ShutdownThreadsAndCleanUp();
   BrowserTaskExecutor::ResetForTesting();

@@ -70,6 +70,8 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     // Sets physical_size for high DPI display.
     Builder& SetHighDPI();
     Builder& SetPrivacyScreen(PrivacyScreenState state);
+    Builder& SetColorSpace(const gfx::ColorSpace& color_space);
+    Builder& SetBitsPerChannel(uint32_t bits_per_channel);
 
    private:
     // Returns a display mode with |size|. If there is no existing mode, insert
@@ -94,6 +96,8 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     DisplayModeList modes_;
     const DisplayMode* current_mode_ = nullptr;
     const DisplayMode* native_mode_ = nullptr;
+    gfx::ColorSpace color_space_;
+    uint32_t bits_per_channel_ = 8u;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -112,7 +116,9 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode,
                       int64_t product_code,
-                      const gfx::Size& maximum_cursor_size);
+                      const gfx::Size& maximum_cursor_size,
+                      const gfx::ColorSpace& color_space,
+                      uint32_t bits_per_channel);
   ~FakeDisplaySnapshot() override;
 
   // Creates a display snapshot from the provided |spec| string. Returns null if

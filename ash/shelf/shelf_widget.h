@@ -27,6 +27,7 @@ class ApplicationDragAndDropHost;
 class FocusCycler;
 class HotseatWidget;
 class LoginShelfView;
+class LoginShelfGestureController;
 class Shelf;
 class ShelfLayoutManager;
 class ShelfNavigationWidget;
@@ -143,6 +144,15 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   void ForceToShowHotseat();
   void ForceToHideHotseat();
 
+  // Creates a login shelf gesture controller (which enabled login shelf gesture
+  // detection). See ash/public/cpp/login_screen.h for more info.
+  bool SetLoginShelfSwipeHandler(const base::string16& nudge_text,
+                                 const base::RepeatingClosure& fling_callback,
+                                 base::OnceClosure exit_callback);
+
+  // Resets a previously create login shelf gesture controller, if any.
+  void ClearLoginShelfSwipeHandler();
+
   bool is_hotseat_forced_to_show() const { return is_hotseat_forced_to_show_; }
 
   // Gets the layer used to draw the shelf background.
@@ -177,6 +187,10 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
     return &background_animator_;
   }
 
+  LoginShelfGestureController* login_shelf_gesture_controller_for_testing() {
+    return login_shelf_gesture_controller_.get();
+  }
+
   HotseatTransitionAnimator* hotseat_transition_animator() {
     return hotseat_transition_animator_.get();
   }
@@ -193,6 +207,11 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
 
   // Shows shelf widget if IsVisible() returns false.
   void ShowIfHidden();
+
+  // Handles shelf widget gesture events for login shelf, if login shelf view is
+  // visible. Returns whether the gesture was handled (the gesture will not be
+  // handled if the login shelf view is hidden).
+  bool HandleLoginShelfGestureEvent(const ui::GestureEvent& event_in_screen);
 
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
@@ -218,6 +237,10 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
   LoginShelfView* login_shelf_view_;
+
+  // Used to handle gestures on login shelf - created only if
+  // SetLoginShelfSwipeHandler() gets called.
+  std::unique_ptr<LoginShelfGestureController> login_shelf_gesture_controller_;
 
   ScopedSessionObserver scoped_session_observer_;
 

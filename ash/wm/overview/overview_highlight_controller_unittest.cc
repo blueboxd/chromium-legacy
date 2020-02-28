@@ -365,8 +365,6 @@ class DesksOverviewHighlightControllerTest
   static void CheckDeskBarViewSize(const DesksBarView* view,
                                    const std::string& scope) {
     SCOPED_TRACE(scope);
-    // See kBarHeight in desks_bar_view.cc.
-    EXPECT_EQ(104, view->bounds().height());
     EXPECT_EQ(view->bounds().height(),
               view->GetWidget()->GetWindowBoundsInScreen().height());
   }

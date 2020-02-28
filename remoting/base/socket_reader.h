@@ -25,8 +25,9 @@ class SocketReader {
  public:
   // Callback that is called for each finished read. |data| may be set to NULL
   // in case of an error (result < 0).
-  typedef base::Callback<void(scoped_refptr<net::IOBuffer> data,
-                              int result)> ReadResultCallback;
+  typedef base::OnceCallback<void(scoped_refptr<net::IOBuffer> data,
+                                  int result)>
+      ReadResultCallback;
 
   SocketReader();
   ~SocketReader();

@@ -1576,6 +1576,9 @@ SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
     return GetHighContrastControlColor(color_id, color_scheme);
 #endif
 
+  if(color_scheme == ColorScheme::kDark)
+    return GetDarkModeControlColor(color_id);
+
   switch (color_id) {
     case kBorder:
       return SkColorSetRGB(0x76, 0x76, 0x76);
@@ -1620,6 +1623,41 @@ SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
     case kAutoCompleteBackground:
       return SkColorSetRGB(0xE8, 0xF0, 0xFE);
   }
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
+}
+
+SkColor NativeThemeBase::GetDarkModeControlColor(
+    ControlColorId color_id) const {
+    switch (color_id) {
+    case kAccent:
+    case kHoveredAccent:
+    case kPressedAccent:
+    case kDisabledAccent:
+    case kFill:
+    case kHoveredFill:
+    case kPressedFill:
+    case kDisabledFill:
+    case kLightenLayer:
+    case kProgressValue:
+    case kSlider:
+    case kHoveredSlider:
+    case kPressedSlider:
+    case kDisabledSlider:
+    case kAutoCompleteBackground:
+    case kBackground:
+      return SkColorSetRGB(0x3B, 0x3B, 0x3B);
+    case kDisabledBackground:
+      return SkColorSetARGB(0x4D ,0x3B, 0x3B, 0x3B);
+    case kBorder:
+      return SkColorSetRGB(0xC3, 0xC3, 0xC3);
+    case kHoveredBorder:
+      return SkColorSetRGB(0xEA, 0xEA, 0xEA);
+    case kPressedBorder:
+      return SkColorSetRGB(0xAC, 0xAC, 0xAC);
+    case kDisabledBorder:
+      return SkColorSetARGB(0x4D ,0xC3, 0xC3, 0xC3);
+    }
   NOTREACHED();
   return gfx::kPlaceholderColor;
 }

@@ -1556,12 +1556,15 @@ void WebViewImpl::BeginCommitCompositorFrame() {
   }
 }
 
-void WebViewImpl::EndCommitCompositorFrame() {
+void WebViewImpl::EndCommitCompositorFrame(base::TimeTicks commit_start_time) {
   // Some tests call this without ever beginning a frame.
   if (MainFrameImpl() && commit_compositor_frame_start_time_) {
-    MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), base::TimeTicks::Now());
+    MainFrameImpl()
+        ->GetFrame()
+        ->View()
+        ->EnsureUkmAggregator()
+        .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
+                                    commit_start_time, base::TimeTicks::Now());
   }
   commit_compositor_frame_start_time_.reset();
 }

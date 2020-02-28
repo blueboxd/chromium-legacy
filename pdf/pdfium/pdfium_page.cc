@@ -1255,27 +1255,6 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
                   new_size_y.ValueOrDie());
 }
 
-const PDFEngine::PageFeatures* PDFiumPage::GetPageFeatures() {
-  // If page_features_ is cached, return the cached features.
-  if (page_features_.IsInitialized())
-    return &page_features_;
-
-  FPDF_PAGE page = GetPage();
-  if (!page)
-    return nullptr;
-
-  // Initialize and cache page_features_.
-  page_features_.index = index_;
-  int annotation_count = FPDFPage_GetAnnotCount(page);
-  for (int i = 0; i < annotation_count; ++i) {
-    ScopedFPDFAnnotation annotation(FPDFPage_GetAnnot(page, i));
-    FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annotation.get());
-    page_features_.annotation_types.insert(subtype);
-  }
-
-  return &page_features_;
-}
-
 PDFiumPage::ScopedUnloadPreventer::ScopedUnloadPreventer(PDFiumPage* page)
     : page_(page) {
   page_->preventing_unload_count_++;

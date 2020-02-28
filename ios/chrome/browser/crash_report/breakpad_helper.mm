@@ -279,7 +279,7 @@ void SetMemoryWarningInProgress(bool value) {
 
 void SetHangReport(bool value) {
   if (value)
-    AddReportParameter(kHangReport, @"yes", true);
+    AddReportParameter(kHangReport, @"yes", false);
   else
     RemoveReportParameter(kHangReport);
 }

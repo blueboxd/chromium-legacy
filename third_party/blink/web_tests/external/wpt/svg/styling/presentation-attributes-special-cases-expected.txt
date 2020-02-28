@@ -15,7 +15,7 @@ PASS cx and cy presentation attributes not supported on other elements
 PASS x, y, width, and height presentation attributes not supported on other elements
 PASS r presentation attribute not supported on other elements
 PASS rx and ry presentation attributes not supported on other elements
-FAIL d presentation attribute not supported on other elements assert_true: Presentation attribute d="M0,0 L1,1" should be supported on g element expected true got false
+PASS d presentation attribute not supported on other elements
 FAIL fill presentation attribute not supported on animation elements assert_false: Presentation attribute fill="blue" should be supported on animate element expected false got true
 PASS transform presentation attribute supported on g
 PASS patternTransform presentation attribute supported on pattern

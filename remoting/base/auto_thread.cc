@@ -173,10 +173,10 @@ void AutoThread::SetComInitType(ComInitType com_init_type) {
 }
 #endif
 
-void AutoThread::QuitThread(const base::Closure& quit_when_idle_closure) {
+void AutoThread::QuitThread(base::OnceClosure quit_when_idle_closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  quit_when_idle_closure.Run();
+  std::move(quit_when_idle_closure).Run();
   was_quit_properly_ = true;
 
   if (joiner_.get()) {
@@ -206,8 +206,8 @@ void AutoThread::ThreadMain() {
   // no more references to it remain.
   startup_data_->task_runner = new AutoThreadTaskRunner(
       single_thread_task_executor.task_runner(),
-      base::Bind(&AutoThread::QuitThread, base::Unretained(this),
-                 run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(&AutoThread::QuitThread, base::Unretained(this),
+                     run_loop.QuitWhenIdleClosure()));
 
   startup_data_->event.Signal();
   // startup_data_ can't be touched anymore since the starting thread is now

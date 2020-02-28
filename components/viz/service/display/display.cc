@@ -170,7 +170,7 @@ bool CanSplitQuad(const DrawQuad::Material m,
                   const cc::Region& visible_region,
                   const int quad_split_limit,
                   const int minimum_fragments_reduced,
-                  const int device_scale_factor,
+                  const float device_scale_factor,
                   const bool enable_quad_splitting) {
   return enable_quad_splitting && !base::Contains(kNonSplittableMaterials, m) &&
          visible_region.GetRegionComplexity() < quad_split_limit &&

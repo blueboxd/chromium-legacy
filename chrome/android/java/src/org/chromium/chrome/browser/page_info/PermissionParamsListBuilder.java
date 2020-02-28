@@ -27,6 +27,7 @@ import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
+import org.chromium.components.permissions.PermissionUtil;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 
@@ -111,8 +112,8 @@ class PermissionParamsListBuilder {
             } else if (!hasAndroidPermission(permission.type)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                androidPermissions = WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(
-                        permission.type);
+                androidPermissions =
+                        PermissionUtil.getAndroidPermissionsForContentSetting(permission.type);
             }
 
             if (permissionParams.warningTextResource != 0) {
@@ -179,7 +180,7 @@ class PermissionParamsListBuilder {
 
     private boolean hasAndroidPermission(int contentSettingType) {
         String[] androidPermissions =
-                WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(contentSettingType);
+                PermissionUtil.getAndroidPermissionsForContentSetting(contentSettingType);
         if (androidPermissions == null) return true;
         for (int i = 0; i < androidPermissions.length; i++) {
             if (!mPermissionDelegate.hasPermission(androidPermissions[i])) {

@@ -195,33 +195,6 @@ class ShelfFocusSearch : public views::FocusSearch {
   DISALLOW_COPY_AND_ASSIGN(ShelfFocusSearch);
 };
 
-// AnimationDelegate used when inserting a new item. This steadily increases the
-// opacity of the layer as the animation progress.
-class FadeInAnimationDelegate : public gfx::AnimationDelegate {
- public:
-  explicit FadeInAnimationDelegate(views::View* view) : view_(view) {}
-  ~FadeInAnimationDelegate() override = default;
-
-  // AnimationDelegate overrides:
-  void AnimationProgressed(const Animation* animation) override {
-    view_->layer()->SetOpacity(animation->GetCurrentValue());
-    view_->layer()->ScheduleDraw();
-  }
-  void AnimationEnded(const Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
-  }
-  void AnimationCanceled(const Animation* animation) override {
-    view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
-  }
-
- private:
-  views::View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
-};
-
 // Returns the id of the display on which |view| is shown.
 int64_t GetDisplayIdForView(const View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
@@ -244,6 +217,36 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
 }
 
 }  // namespace
+
+// AnimationDelegate used when inserting a new item. This steadily increases the
+// opacity of the layer as the animation progress.
+class ShelfView::FadeInAnimationDelegate : public gfx::AnimationDelegate {
+ public:
+  explicit FadeInAnimationDelegate(ShelfView* host, views::View* view)
+      : shelf_view_(host), view_(view) {}
+  ~FadeInAnimationDelegate() override = default;
+
+  // AnimationDelegate overrides:
+  void AnimationProgressed(const Animation* animation) override {
+    view_->layer()->SetOpacity(animation->GetCurrentValue());
+    view_->layer()->ScheduleDraw();
+  }
+  void AnimationEnded(const Animation* animation) override {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+    shelf_view_->OnFadeInAnimationEnded();
+  }
+  void AnimationCanceled(const Animation* animation) override {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+  }
+
+ private:
+  ShelfView* shelf_view_ = nullptr;
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
+};
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
 // opacity of the layer as the animation progress.
@@ -1568,7 +1571,7 @@ void ShelfView::FadeIn(views::View* view) {
   AnimateToIdealBounds();
   bounds_animator_->SetAnimationDelegate(
       view, std::unique_ptr<gfx::AnimationDelegate>(
-                new FadeInAnimationDelegate(view)));
+                new FadeInAnimationDelegate(this, view)));
 }
 
 void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
@@ -2065,6 +2068,13 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       std::max(min_index, is_overflow_mode() ? first_visible_index_ : 0);
   max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
+}
+
+void ShelfView::OnFadeInAnimationEnded() {
+  // Call PreferredSizeChanged() to notify container to re-layout at the end
+  // of fade-in animation.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    PreferredSizeChanged();
 }
 
 void ShelfView::OnFadeOutAnimationEnded() {

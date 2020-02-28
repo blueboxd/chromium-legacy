@@ -326,13 +326,12 @@ TEST_F(BluetoothChooserContextTest, GrantPermissionInIncognito) {
         incognito_context->GetGrantedObjects(foo_origin_, foo_origin_);
     EXPECT_EQ(1u, origin_objects.size());
 
-    // GetAllGrantedObjects() on an incognito session also returns the
-    // permission objects granted in the non-incognito session.
+    // GetAllGrantedObjects() on an incognito session only returns objects
+    // relevant to it.
     std::vector<std::unique_ptr<ChooserContextBase::Object>>
         all_origin_objects = incognito_context->GetAllGrantedObjects();
-    ASSERT_EQ(2u, all_origin_objects.size());
-    EXPECT_TRUE(all_origin_objects[0]->incognito ^
-                all_origin_objects[1]->incognito);
+    ASSERT_EQ(1u, all_origin_objects.size());
+    EXPECT_TRUE(all_origin_objects[0]->incognito);
   }
 }
 

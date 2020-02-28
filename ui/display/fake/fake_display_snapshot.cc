@@ -163,7 +163,8 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
       id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
       has_overscan_, privacy_screen_state_, has_color_correction_matrix_,
       color_correction_in_linear_space_, name_, std::move(modes_),
-      current_mode_, native_mode_, product_code_, maximum_cursor_size_);
+      current_mode_, native_mode_, product_code_, maximum_cursor_size_,
+      color_space_, bits_per_channel_);
 }
 
 Builder& Builder::SetId(int64_t id) {
@@ -264,6 +265,16 @@ Builder& Builder::SetPrivacyScreen(PrivacyScreenState state) {
   return *this;
 }
 
+Builder& Builder::SetColorSpace(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
+  return *this;
+}
+
+Builder& Builder::SetBitsPerChannel(uint32_t bits_per_channel) {
+  bits_per_channel_ = bits_per_channel;
+  return *this;
+}
+
 const DisplayMode* Builder::AddOrFindDisplayMode(const gfx::Size& size) {
   for (auto& mode : modes_) {
     if (mode->size() == size)
@@ -305,7 +316,9 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(
     const DisplayMode* current_mode,
     const DisplayMode* native_mode,
     int64_t product_code,
-    const gfx::Size& maximum_cursor_size)
+    const gfx::Size& maximum_cursor_size,
+    const gfx::ColorSpace& color_space,
+    uint32_t bits_per_channel)
     : DisplaySnapshot(display_id,
                       origin,
                       physical_size,
@@ -315,8 +328,8 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(
                       privacy_screen_state,
                       has_color_correction_matrix,
                       color_correction_in_linear_space,
-                      gfx::ColorSpace(),
-                      8u /* bits_per_channel */,
+                      color_space,
+                      bits_per_channel,
                       display_name,
                       base::FilePath(),
                       std::move(modes),

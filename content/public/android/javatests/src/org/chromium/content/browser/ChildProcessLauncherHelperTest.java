@@ -191,8 +191,8 @@ public class ChildProcessLauncherHelperTest {
                 });
         Assert.assertTrue(ChildProcessLauncherTestUtils.getConnectionPid(retryConnection)
                 != helperConnectionPid);
-        Assert.assertTrue(
-                ChildProcessLauncherTestUtils.getConnectionService(retryConnection).bindToCaller());
+        Assert.assertTrue(ChildProcessLauncherTestUtils.getConnectionService(retryConnection)
+                                  .bindToCaller(ChildProcessConnection.getBindToCallerClazz()));
 
         // Unbind the service.
         replyHandler.mMessage = null;

@@ -258,6 +258,18 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
   for (auto const& resource : resources) {
     network_bytes_ += resource->delta_bytes;
 
+    if (blink::IsSupportedImageMimeType(resource->mime_type)) {
+      image_total_bytes_ += resource->delta_bytes;
+      if (!resource->is_main_frame_resource)
+        image_subframe_bytes_ += resource->delta_bytes;
+    } else if (media::IsSupportedMediaMimeType(resource->mime_type) ||
+               base::StartsWith(resource->mime_type, "audio/",
+                                base::CompareCase::SENSITIVE) ||
+               base::StartsWith(resource->mime_type, "video/",
+                                base::CompareCase::SENSITIVE)) {
+      media_bytes_ += resource->delta_bytes;
+    }
+
     // Only sum body lengths for completed resources.
     if (!resource->is_complete)
       continue;
@@ -265,12 +277,6 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
       js_decoded_bytes_ += resource->decoded_body_length;
       if (resource->decoded_body_length > js_max_decoded_bytes_)
         js_max_decoded_bytes_ = resource->decoded_body_length;
-    } else if (blink::IsSupportedImageMimeType(resource->mime_type)) {
-      image_total_bytes_ += resource->received_data_length;
-      if (!resource->is_main_frame_resource)
-        image_subframe_bytes_ += resource->received_data_length;
-    } else if (media::IsSupportedMediaMimeType(resource->mime_type)) {
-      media_bytes_ += resource->received_data_length;
     }
     if (resource->cache_type !=
         page_load_metrics::mojom::CacheType::kNotCached) {

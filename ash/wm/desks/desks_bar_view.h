@@ -30,10 +30,13 @@ class ASH_EXPORT DesksBarView : public views::View,
   ~DesksBarView() override;
 
   // Returns the height of the desk bar view which is based on the given |width|
-  // and |desks_bar_view|'s content.
+  // of the overview grid that exists on |root| (which is the same as the width
+  // of the bar) and |desks_bar_view|'s content (since they may not fit the
+  // given |width| forcing us to use the compact layout).
   // If |desks_bar_view| is nullptr, the height returned will be solely based on
   // the |width|.
-  static int GetBarHeightForWidth(const DesksBarView* desks_bar_view,
+  static int GetBarHeightForWidth(aura::Window* root,
+                                  const DesksBarView* desks_bar_view,
                                   int width);
 
   // Creates and returns the widget that contains the DeskBarView in overview

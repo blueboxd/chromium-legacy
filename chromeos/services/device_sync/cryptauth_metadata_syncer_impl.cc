@@ -17,13 +17,18 @@
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
+#include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
 namespace {
+
+const char kUnsetPrefValue[] = "[Unset pref value]";
 
 const cryptauthv2::KeyType kGroupKeyType = cryptauthv2::KeyType::P256;
 
@@ -137,19 +142,22 @@ CryptAuthMetadataSyncerImpl::Factory::~Factory() = default;
 std::unique_ptr<CryptAuthMetadataSyncer>
 CryptAuthMetadataSyncerImpl::Factory::BuildInstance(
     CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
     std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(
-      new CryptAuthMetadataSyncerImpl(client_factory, std::move(timer)));
+  return base::WrapUnique(new CryptAuthMetadataSyncerImpl(
+      client_factory, pref_service, std::move(timer)));
 }
 
-CryptAuthMetadataSyncerImpl::CryptAuthMetadataSyncerImpl(
-    CryptAuthClientFactory* client_factory,
-    std::unique_ptr<base::OneShotTimer> timer)
-    : client_factory_(client_factory), timer_(std::move(timer)) {
-  DCHECK(client_factory);
+// static
+void CryptAuthMetadataSyncerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(
+      prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata, kUnsetPrefValue);
+  registry->RegisterStringPref(
+      prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata,
+      kUnsetPrefValue);
+  registry->RegisterStringPref(prefs::kCryptAuthLastSyncedGroupPublicKey,
+                               kUnsetPrefValue);
 }
-
-CryptAuthMetadataSyncerImpl::~CryptAuthMetadataSyncerImpl() = default;
 
 // static
 base::Optional<base::TimeDelta> CryptAuthMetadataSyncerImpl::GetTimeoutForState(
@@ -190,6 +198,19 @@ CryptAuthMetadataSyncerImpl::ResultCodeErrorFromTimeoutDuringState(
       return base::nullopt;
   }
 }
+
+CryptAuthMetadataSyncerImpl::CryptAuthMetadataSyncerImpl(
+    CryptAuthClientFactory* client_factory,
+    PrefService* pref_service,
+    std::unique_ptr<base::OneShotTimer> timer)
+    : client_factory_(client_factory),
+      pref_service_(pref_service),
+      timer_(std::move(timer)) {
+  DCHECK(client_factory);
+  DCHECK(pref_service);
+}
+
+CryptAuthMetadataSyncerImpl::~CryptAuthMetadataSyncerImpl() = default;
 
 void CryptAuthMetadataSyncerImpl::OnAttemptStarted(
     const cryptauthv2::RequestContext& request_context,
@@ -340,8 +361,37 @@ void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
   }
 }
 
+bool CryptAuthMetadataSyncerImpl::
+    ShouldUseCachedEncryptedLocalDeviceMetadata() {
+  std::string last_synced_unencrypted_metadata = pref_service_->GetString(
+      prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata);
+  std::string last_synced_group_public_key =
+      pref_service_->GetString(prefs::kCryptAuthLastSyncedGroupPublicKey);
+
+  // Prefs should be all set or all unset.
+  DCHECK_EQ(last_synced_unencrypted_metadata == kUnsetPrefValue,
+            last_synced_group_public_key == kUnsetPrefValue);
+  DCHECK_EQ(last_synced_unencrypted_metadata == kUnsetPrefValue,
+            pref_service_->GetString(
+                prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata) ==
+                kUnsetPrefValue);
+
+  if (last_synced_unencrypted_metadata == kUnsetPrefValue)
+    return false;
+
+  return last_synced_unencrypted_metadata ==
+             local_device_metadata_.SerializeAsString() &&
+         last_synced_group_public_key == GetGroupKey()->public_key();
+}
+
 void CryptAuthMetadataSyncerImpl::EncryptLocalDeviceMetadata() {
   SetState(State::kWaitingForLocalDeviceMetadataEncryption);
+
+  if (ShouldUseCachedEncryptedLocalDeviceMetadata()) {
+    OnLocalDeviceMetadataEncrypted(pref_service_->GetString(
+        prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata));
+    return;
+  }
 
   encryptor_ = CryptAuthEciesEncryptorImpl::Factory::Get()->BuildInstance();
   encryptor_->Encrypt(
@@ -459,6 +509,19 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
                                     CryptAuthApiCallResult::kSuccess);
   else
     NOTREACHED();
+
+  // Cache encrypted and unencrypted local device metadata, along with the group
+  // public key used to encrypt the data, that was successfully sent in the
+  // SyncMetadata request. Note: the cached group public key might not match
+  // the key returned in the respone.
+  pref_service_->SetString(
+      prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata,
+      local_device_metadata_.SerializeAsString());
+  pref_service_->SetString(prefs::kCryptAuthLastSyncedGroupPublicKey,
+                           GetGroupKey()->public_key());
+  pref_service_->SetString(
+      prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata,
+      *encrypted_local_device_metadata_);
 
   sync_metadata_response_ = response;
 

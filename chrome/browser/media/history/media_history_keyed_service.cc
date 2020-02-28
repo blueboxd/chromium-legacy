@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,8 +26,8 @@ MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)
   if (history)
     history->AddObserver(this);
 
-  auto db_task_runner = base::CreateUpdateableSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  auto db_task_runner = base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   media_history_store_ =

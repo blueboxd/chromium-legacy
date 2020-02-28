@@ -74,6 +74,9 @@ void SetMemoryWarningInProgress(bool value);
 
 // Sets a key indicating that UI thread is frozen (if value is 'true'),
 // otherwise remove the key.
+// Setting the value is synchronous as it is expected to be set just before the
+// report generation.
+// Unsetting the value is asynchronous.
 void SetHangReport(bool value);
 
 // Sets a key indicating the current free memory amount in KB. 0 does not remove

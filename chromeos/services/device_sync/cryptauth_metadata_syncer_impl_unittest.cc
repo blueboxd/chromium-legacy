@@ -27,11 +27,13 @@
 #include "chromeos/services/device_sync/fake_ecies_encryption.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/network_request_error.h"
+#include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -91,6 +93,8 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
         fake_cryptauth_key_creator_factory_.get());
     CryptAuthEciesEncryptorImpl::Factory::SetFactoryForTesting(
         fake_cryptauth_ecies_encryptor_factory_.get());
+
+    CryptAuthMetadataSyncerImpl::RegisterPrefs(pref_service_.registry());
   }
 
   // testing::Test:
@@ -109,6 +113,20 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
         .WillByDefault(testing::Return(kAccessTokenUsed));
   }
 
+  void SetLocalDeviceMetadataPrefs(
+      const std::string& unencrypted_local_device_metadata,
+      const std::string& group_public_key) {
+    pref_service_.SetString(
+        prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata,
+        unencrypted_local_device_metadata);
+    pref_service_.SetString(prefs::kCryptAuthLastSyncedGroupPublicKey,
+                            group_public_key);
+    pref_service_.SetString(
+        prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata,
+        MakeFakeEncryptedString(unencrypted_local_device_metadata,
+                                group_public_key));
+  }
+
   void SyncMetadata(
       const base::Optional<std::string>& initial_group_public_key,
       const base::Optional<std::string>& initial_group_private_key) {
@@ -124,7 +142,7 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
 
     metadata_syncer_ =
         CryptAuthMetadataSyncerImpl::Factory::Get()->BuildInstance(
-            client_factory_.get(), std::move(mock_timer));
+            client_factory_.get(), &pref_service_, std::move(mock_timer));
 
     metadata_syncer_->SyncMetadata(
         GetRequestContext(),
@@ -361,11 +379,39 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
     if (is_first) {
       ASSERT_TRUE(first_sync_metadata_success_callback_);
       std::move(first_sync_metadata_success_callback_).Run(response);
-      return;
+    } else {
+      ASSERT_TRUE(second_sync_metadata_success_callback_);
+      std::move(second_sync_metadata_success_callback_).Run(response);
     }
 
-    ASSERT_TRUE(second_sync_metadata_success_callback_);
-    std::move(second_sync_metadata_success_callback_).Run(response);
+    // The local device metadata sent in the SyncMetadata request should be
+    // cached after a successful response.
+    const cryptauthv2::SyncMetadataRequest& request =
+        is_first ? *first_sync_metadata_request_
+                 : *second_sync_metadata_request_;
+    VerifyCachedLocalDeviceMetadata(
+        request.encrypted_metadata(),
+        DecryptFakeEncryptedString(
+            request.encrypted_metadata(),
+            GetPrivateKeyFromPublicKeyForTest(request.group_public_key())),
+        request.group_public_key());
+  }
+
+  // Verify cached local device metadata, recorded after a successful
+  // SyncMetadata response.
+  void VerifyCachedLocalDeviceMetadata(
+      const std::string& expected_encrypted_metadata,
+      const std::string& expected_unencrypted_metadata,
+      const std::string& expected_group_public_key) {
+    EXPECT_EQ(expected_encrypted_metadata,
+              pref_service_.GetString(
+                  prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata));
+    EXPECT_EQ(expected_unencrypted_metadata,
+              pref_service_.GetString(
+                  prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata));
+    EXPECT_EQ(
+        expected_group_public_key,
+        pref_service_.GetString(prefs::kCryptAuthLastSyncedGroupPublicKey));
   }
 
   void OnMetadataSyncComplete(
@@ -392,6 +438,8 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
   }
 
   size_t num_sync_metadata_calls_ = 0;
+
+  TestingPrefServiceSimple pref_service_;
 
   std::unique_ptr<MockCryptAuthClientFactory> client_factory_;
   base::MockOneShotTimer* timer_;
@@ -507,6 +555,109 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
   VerifyMetadataSyncResult(GetAllTestDeviceMetadataPackets(),
                            base::nullopt /* expected_new_group_key */,
                            group_private_key,
+                           cryptauthv2::GetClientDirectiveForTest(),
+                           CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+}
+
+TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
+       Success_InitialGroupKeyValid_UseCachedLocalDeviceMetadata) {
+  std::string group_public_key = kGroupPublicKey;
+  std::string group_private_key =
+      GetPrivateKeyFromPublicKeyForTest(group_public_key);
+
+  // Say the local device metadata was already encrypted with the with the
+  // current group key and the device metadata hasn't changed.
+  SetLocalDeviceMetadataPrefs(
+      GetLocalDeviceForTest()
+          .better_together_device_metadata->SerializeAsString(),
+      group_public_key);
+
+  SyncMetadata(group_public_key, group_private_key);
+
+  // The encryptor does not need to be run because we are using cached metadata.
+
+  VerifyFirstSyncMetadataRequest(group_public_key,
+                                 false /* expected_need_group_private_key */);
+
+  // The SyncMetadataResponse returns the same group public key sent in the
+  // request, indicating that the initial group public key is still valid.
+  SendFirstSyncMetadataResponse(GetAllTestDeviceMetadataPackets(),
+                                group_public_key,
+                                base::nullopt /* group_private_key */,
+                                cryptauthv2::GetClientDirectiveForTest());
+
+  VerifyMetadataSyncResult(GetAllTestDeviceMetadataPackets(),
+                           base::nullopt /* expected_new_group_key */,
+                           base::nullopt /* expected_group_private_key */,
+                           cryptauthv2::GetClientDirectiveForTest(),
+                           CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+}
+
+TEST_F(
+    DeviceSyncCryptAuthMetadataSyncerImplTest,
+    Success_InitialGroupKeyValid_DoNotUseCachedLocalDeviceMetadata_MetadataChanged) {
+  std::string group_public_key = kGroupPublicKey;
+  std::string group_private_key =
+      GetPrivateKeyFromPublicKeyForTest(group_public_key);
+
+  // Say the local device metadata was already encrypted with the current group
+  // key but the device metadata is stale.
+  SetLocalDeviceMetadataPrefs("old_metadata", group_public_key);
+
+  SyncMetadata(group_public_key, group_private_key);
+
+  // Re-encryption occurs because the cached local device metadata is stale.
+  RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
+
+  VerifyFirstSyncMetadataRequest(group_public_key,
+                                 false /* expected_need_group_private_key */);
+
+  // The SyncMetadataResponse returns the same group public key sent in the
+  // request, indicating that the initial group public key is still valid.
+  SendFirstSyncMetadataResponse(GetAllTestDeviceMetadataPackets(),
+                                group_public_key,
+                                base::nullopt /* group_private_key */,
+                                cryptauthv2::GetClientDirectiveForTest());
+
+  VerifyMetadataSyncResult(GetAllTestDeviceMetadataPackets(),
+                           base::nullopt /* expected_new_group_key */,
+                           base::nullopt /* expected_group_private_key */,
+                           cryptauthv2::GetClientDirectiveForTest(),
+                           CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+}
+
+TEST_F(
+    DeviceSyncCryptAuthMetadataSyncerImplTest,
+    Success_InitialGroupKeyValid_DoNotUseCachedLocalDeviceMetadata_GroupPublicKeyChanged) {
+  std::string group_public_key = kGroupPublicKey;
+  std::string group_private_key =
+      GetPrivateKeyFromPublicKeyForTest(group_public_key);
+
+  // Say the local device metadata was already encrypted with the current device
+  // metadata but a stale group public key.
+  SetLocalDeviceMetadataPrefs(
+      GetLocalDeviceForTest()
+          .better_together_device_metadata->SerializeAsString(),
+      "old_group_public_key");
+
+  SyncMetadata(group_public_key, group_private_key);
+
+  // Re-encryption occurs because the cached group public key is stale.
+  RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
+
+  VerifyFirstSyncMetadataRequest(group_public_key,
+                                 false /* expected_need_group_private_key */);
+
+  // The SyncMetadataResponse returns the same group public key sent in the
+  // request, indicating that the initial group public key is still valid.
+  SendFirstSyncMetadataResponse(GetAllTestDeviceMetadataPackets(),
+                                group_public_key,
+                                base::nullopt /* group_private_key */,
+                                cryptauthv2::GetClientDirectiveForTest());
+
+  VerifyMetadataSyncResult(GetAllTestDeviceMetadataPackets(),
+                           base::nullopt /* expected_new_group_key */,
+                           base::nullopt /* expected_group_private_key */,
                            cryptauthv2::GetClientDirectiveForTest(),
                            CryptAuthDeviceSyncResult::ResultCode::kSuccess);
 }

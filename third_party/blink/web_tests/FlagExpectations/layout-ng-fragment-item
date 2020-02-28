@@ -48,7 +48,6 @@ crbug.com/982194 external/wpt/css/css-writing-modes/inline-table-alignment-003.x
 crbug.com/982194 external/wpt/css/css-writing-modes/inline-table-alignment-005.xht [ Failure ]
 crbug.com/982194 external/wpt/css/cssom-view/offsetTopLeft-trailing-space-inline.html [ Pass ]
 crbug.com/982194 external/wpt/css/csui/text-overflow-002.html [ Failure ]
-crbug.com/982194 external/wpt/css/filter-effects/filtered-inline-applies-to-float.html [ Failure ]
 crbug.com/982194 external/wpt/css/filter-effects/filtered-inline-is-container.html [ Failure ]
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002-manual.html [ Pass ]
 crbug.com/982194 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/dependent-builtin.html [ Failure ]

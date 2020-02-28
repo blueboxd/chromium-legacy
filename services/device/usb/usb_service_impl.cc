@@ -22,7 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
@@ -232,7 +232,7 @@ void OnDeviceOpenedReadDescriptors(
 UsbServiceImpl::UsbServiceImpl()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   weak_self_ = weak_factory_.GetWeakPtr();
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&InitializeUsbContextBlocking),
       base::BindOnce(&UsbServiceImpl::OnUsbContext,
@@ -332,7 +332,7 @@ void UsbServiceImpl::RefreshDevices() {
     pending_path_enumerations_.pop();
   }
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&GetDeviceListBlocking, device_path, context_),
       base::BindOnce(&UsbServiceImpl::OnDeviceList,

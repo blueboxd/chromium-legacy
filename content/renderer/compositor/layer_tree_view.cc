@@ -272,10 +272,10 @@ void LayerTreeView::WillCommit() {
   delegate_->WillCommitCompositorFrame();
 }
 
-void LayerTreeView::DidCommit() {
+void LayerTreeView::DidCommit(base::TimeTicks commit_start_time) {
   if (!delegate_)
     return;
-  delegate_->DidCommitCompositorFrame();
+  delegate_->DidCommitCompositorFrame(commit_start_time);
   web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
 

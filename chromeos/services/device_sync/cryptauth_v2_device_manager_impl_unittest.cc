@@ -106,7 +106,7 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
         CryptAuthV2DeviceManagerImpl::Factory::Get()->BuildInstance(
             &fake_client_app_metadata_provider_, device_registry_.get(),
             key_registry_.get(), &mock_client_factory_, &fake_gcm_manager_,
-            &fake_scheduler_, std::move(mock_timer));
+            &fake_scheduler_, &test_pref_service_, std::move(mock_timer));
 
     device_manager_->AddObserver(this);
 

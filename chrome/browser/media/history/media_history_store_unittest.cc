@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
@@ -47,9 +48,8 @@ class MediaHistoryStoreUnitTest : public testing::Test {
 
     // Set up the media history store.
     scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner =
-        base::CreateUpdateableSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::WithBaseSyncPrimitives()});
+        base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+            {base::MayBlock(), base::WithBaseSyncPrimitives()});
     media_history_store_ = std::make_unique<MediaHistoryStore>(
         profile_builder.Build().get(), task_runner);
 

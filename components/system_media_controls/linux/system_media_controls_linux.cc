@@ -185,7 +185,7 @@ void SystemMediaControlsLinux::InitializeProperties() {
   set_player_property("CanPlay", DbusBoolean(false));
   set_player_property("CanPause", DbusBoolean(false));
   set_player_property("CanSeek", DbusBoolean(false));
-  set_player_property("CanControl", DbusBoolean(false));
+  set_player_property("CanControl", DbusBoolean(true));
 }
 
 void SystemMediaControlsLinux::InitializeDbusInterface() {

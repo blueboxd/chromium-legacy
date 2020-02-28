@@ -586,7 +586,9 @@ class DnsTransactionTestBase : public testing::Test {
   // accept GET or POST requests based on use_post. If a
   // ResponseModifierCallback is provided it will be called to construct the
   // HTTPResponse.
-  void ConfigureDohServers(bool use_post, size_t num_doh_servers = 1) {
+  void ConfigureDohServers(bool use_post,
+                           size_t num_doh_servers = 1,
+                           bool make_available = true) {
     GURL url(URLRequestMockDohJob::GetMockHttpsUrl("doh_test"));
     URLRequestFilter* filter = URLRequestFilter::GetInstance();
     filter->AddHostnameInterceptor(url.scheme(), url.host(),
@@ -600,8 +602,13 @@ class DnsTransactionTestBase : public testing::Test {
           DnsConfig::DnsOverHttpsServerConfig(server_template, use_post));
     }
     ConfigureFactory();
-    for (size_t i = 0; i < num_doh_servers; ++i) {
-      resolve_context_->SetProbeSuccess(i, true /* success */, session_.get());
+
+    if (make_available) {
+      for (size_t server_index = 0; server_index < num_doh_servers;
+           ++server_index) {
+        resolve_context_->RecordServerSuccess(
+            server_index, true /* is_doh_server */, session_.get());
+      }
     }
   }
 
@@ -1683,15 +1690,13 @@ TEST_F(DnsTransactionTest, HttpsPostLookupSyncThenSyncError) {
 }
 
 TEST_F(DnsTransactionTest, HttpsNotAvailable) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
+  ASSERT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             ERR_BLOCKED_BY_CLIENT, resolve_context_.get());
-  resolve_context_->SetProbeSuccess(0, false /* success */, session_.get());
-  EXPECT_EQ(resolve_context_->DohServerIndexToUse(
-                0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
-            base::nullopt);
-
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
@@ -1802,8 +1807,13 @@ TEST_F(DnsTransactionTest, HttpsPostFailTwice) {
 }
 
 TEST_F(DnsTransactionTest, HttpsNotAvailableThenHttpFallback) {
-  ConfigureDohServers(true /* use_post */, 2);
-  resolve_context_->SetProbeSuccess(0, false /* success */, session_.get());
+  ConfigureDohServers(true /* use_post */, 2 /* num_doh_servers */,
+                      false /* make_available */);
+
+  // Make just server 1 available.
+  resolve_context_->RecordServerSuccess(
+      1u /* server_index */, true /* is_doh_server*/, session_.get());
+
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(1u));
@@ -1827,11 +1837,16 @@ TEST_F(DnsTransactionTest, HttpsNotAvailableThenHttpFallback) {
               testing::Optional(1u));
 }
 
+// Fail first DoH server, then no fallbacks marked available in AUTOMATIC mode.
 TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
   config_.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
-  ConfigureDohServers(true /* use_post */, 3);
-  resolve_context_->SetProbeSuccess(1, false /* success */, session_.get());
-  resolve_context_->SetProbeSuccess(2, false /* success */, session_.get());
+  ConfigureDohServers(true /* use_post */, 3 /* num_doh_servers */,
+                      false /* make_available */);
+
+  // Make just server 0 available.
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server*/, session_.get());
+
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
@@ -1848,8 +1863,12 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             ERR_CONNECTION_REFUSED, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+
+  // Expect fallback not attempted because other servers not available in
+  // AUTOMATIC mode until they have recorded a success.
   size_t kOrder0[] = {1};
   CheckServerOrder(kOrder0, base::size(kOrder0));
+
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
@@ -1861,11 +1880,17 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
               testing::Optional(0u));
 }
 
+// Test a secure transaction failure in SECURE mode when other DoH servers are
+// only available for fallback because of
 TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
   config_.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
-  ConfigureDohServers(true /* use_post */, 3);
-  resolve_context_->SetProbeSuccess(1, false /* success */, session_.get());
-  resolve_context_->SetProbeSuccess(2, false /* success */, session_.get());
+  ConfigureDohServers(true /* use_post */, 3 /* num_doh_servers */,
+                      false /* make_available */);
+
+  // Make just server 0 available.
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server*/, session_.get());
+
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::SECURE, session_.get()),
               testing::Optional(0u));
@@ -1890,8 +1915,13 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             ERR_CONNECTION_REFUSED, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+
+  // Expect fallback to attempt all servers because SECURE mode does not require
+  // server availability.
   size_t kOrder0[] = {1, 2, 3};
   CheckServerOrder(kOrder0, base::size(kOrder0));
+
+  // Expect server 0 to become preferred due to least recent failure.
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::SECURE, session_.get()),
               testing::Optional(0u));
@@ -1903,7 +1933,7 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
               testing::Optional(0u));
 }
 
-TEST_F(DnsTransactionTest, UnavailableAfterMaxHttpsFailures) {
+TEST_F(DnsTransactionTest, MaxHttpsFailures_NonConsecutive) {
   config_.attempts = 1;
   ConfigureDohServers(false /* use_post */);
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
@@ -1923,7 +1953,7 @@ TEST_F(DnsTransactionTest, UnavailableAfterMaxHttpsFailures) {
                 testing::Optional(0u));
   }
 
-  // A success should not reset the failure counter for DoH.
+  // A success should reset the failure counter for DoH.
   AddQueryAndResponse(0, kT0HostName, kT0Qtype, kT0ResponseDatagram,
                       base::size(kT0ResponseDatagram), SYNCHRONOUS,
                       Transport::HTTPS, nullptr /* opt_rdata */,
@@ -1935,7 +1965,41 @@ TEST_F(DnsTransactionTest, UnavailableAfterMaxHttpsFailures) {
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(0u));
 
-  // One more failure should pass the threshold.
+  // One more failure should not pass the threshold because failures were reset.
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS,
+                           nullptr /* opt_rdata */,
+                           DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  TransactionHelper last_failure(kT0HostName, kT0Qtype, true /* secure */,
+                                 ERR_CONNECTION_REFUSED,
+                                 resolve_context_.get());
+  EXPECT_TRUE(last_failure.RunUntilDone(transaction_factory_.get()));
+  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
+                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
+              testing::Optional(0u));
+}
+
+TEST_F(DnsTransactionTest, MaxHttpsFailures_Consecutive) {
+  config_.attempts = 1;
+  ConfigureDohServers(false /* use_post */);
+  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
+                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
+              testing::Optional(0u));
+
+  for (size_t i = 0; i < ResolveContext::kAutomaticModeFailureLimit - 1; i++) {
+    AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                             SYNCHRONOUS, Transport::HTTPS,
+                             nullptr /* opt_rdata */,
+                             DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+    TransactionHelper failure(kT0HostName, kT0Qtype, true /* secure */,
+                              ERR_CONNECTION_REFUSED, resolve_context_.get());
+    EXPECT_TRUE(failure.RunUntilDone(transaction_factory_.get()));
+    EXPECT_THAT(resolve_context_->DohServerIndexToUse(
+                    0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
+                testing::Optional(0u));
+  }
+
+  // One more failure should not pass the threshold.
   AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -1947,6 +2011,54 @@ TEST_F(DnsTransactionTest, UnavailableAfterMaxHttpsFailures) {
   EXPECT_EQ(resolve_context_->DohServerIndexToUse(
                 0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
             base::nullopt);
+}
+
+// Test that a secure transaction started before a DoH server becomes
+// unavailable can complete and make the server available again.
+TEST_F(DnsTransactionTest, SuccessfulTransactionStartedBeforeUnavailable) {
+  ConfigureDohServers(false /* use_post */);
+  EXPECT_THAT(resolve_context_->DohServerIndexToUse(
+                  0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
+              testing::Optional(0u));
+
+  // Create a socket data to first return ERR_IO_PENDING. This will pause the
+  // response and not return the second response until
+  // SequencedSocketData::Resume() is called.
+  std::unique_ptr<DnsSocketData> data(new DnsSocketData(
+      0, kT0HostName, kT0Qtype, ASYNC, Transport::HTTPS,
+      nullptr /* opt_rdata */, DnsQuery::PaddingStrategy::BLOCK_LENGTH_128));
+  data->AddReadError(ERR_IO_PENDING, ASYNC);
+  data->AddResponseData(kT0ResponseDatagram, base::size(kT0ResponseDatagram),
+                        ASYNC);
+  SequencedSocketData* sequenced_socket_data = data->GetProvider();
+  AddSocketData(std::move(data));
+
+  TransactionHelper delayed_success(kT0HostName, kT0Qtype, true /* secure */,
+                                    kT0RecordCount, resolve_context_.get());
+  EXPECT_FALSE(delayed_success.Run(transaction_factory_.get()));
+
+  // Trigger DoH server unavailability with a bunch of failures.
+  for (size_t i = 0; i < ResolveContext::kAutomaticModeFailureLimit; i++) {
+    AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                             SYNCHRONOUS, Transport::HTTPS,
+                             nullptr /* opt_rdata */,
+                             DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+    TransactionHelper failure(kT0HostName, kT0Qtype, true /* secure */,
+                              ERR_CONNECTION_REFUSED, resolve_context_.get());
+    EXPECT_TRUE(failure.RunUntilDone(transaction_factory_.get()));
+  }
+  EXPECT_FALSE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
+
+  // Resume first query.
+  ASSERT_FALSE(delayed_success.has_completed());
+  sequenced_socket_data->Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delayed_success.has_completed());
+
+  // Expect DoH server is available again.
+  EXPECT_TRUE(resolve_context_->GetDohServerAvailability(
+      0u /* doh_server_index */, session_.get()));
 }
 
 void MakeResponseWithCookie(URLRequest* request, HttpResponseInfo* info) {
@@ -2385,7 +2497,8 @@ TEST_F(DnsTransactionTest, InvalidQuery) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -2423,7 +2536,8 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
                       base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
                       nullptr /* opt_rdata */,
@@ -2453,7 +2567,8 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
                       base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
                       nullptr /* opt_rdata */,
@@ -2501,7 +2616,8 @@ TEST_F(DnsTransactionTestWithMockTime, MultipleProbeRunners_SeparateContexts) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -2540,7 +2656,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -2581,7 +2698,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelOneOfMultipleProbeRunners) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,
@@ -2620,7 +2738,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelAllOfMultipleProbeRunners) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndResponse(4, kT4HostName, kT4Qtype, kT4ResponseDatagram,
                       base::size(kT4ResponseDatagram), SYNCHRONOUS,
                       Transport::HTTPS, nullptr /* opt_rdata */,
@@ -2646,7 +2765,8 @@ TEST_F(DnsTransactionTestWithMockTime, CancelDohProbe_AfterSuccess) {
 }
 
 TEST_F(DnsTransactionTestWithMockTime, DestroyFactoryAfterStartingDohProbe) {
-  ConfigureDohServers(true /* use_post */);
+  ConfigureDohServers(true /* use_post */, 1 /* num_doh_servers */,
+                      false /* make_available */);
   AddQueryAndErrorResponse(4, kT4HostName, kT4Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS,
                            nullptr /* opt_rdata */,

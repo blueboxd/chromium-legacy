@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -35,9 +35,9 @@ namespace {
 // We will abort fresh policy fetch after this time and use cached policy.
 const int kPolicyFetchTimeoutSecs = 10;
 
-// Traits for the tasks posted in pre-signin policy fetch. As this blocks
-// signin, the tasks have user-visible priority.
-constexpr base::TaskTraits kTaskTraits = {base::ThreadPool(), base::MayBlock(),
+// Traits for the tasks posted on base::ThreadPool in pre-signin policy fetch.
+// As this blocks signin, the tasks have user-visible priority.
+constexpr base::TaskTraits kTaskTraits = {base::MayBlock(),
                                           base::TaskPriority::USER_VISIBLE};
 }  // namespace
 
@@ -54,7 +54,7 @@ PreSigninPolicyFetcher::PreSigninPolicyFetcher(
       is_active_directory_managed_(is_active_directory_managed),
       account_id_(account_id),
       auth_key_(auth_key),
-      task_runner_(base::CreateSequencedTaskRunner(kTaskTraits)) {
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(kTaskTraits)) {
   DCHECK(account_id_.GetAccountType() != AccountType::ACTIVE_DIRECTORY ||
          is_active_directory_managed_);
 }

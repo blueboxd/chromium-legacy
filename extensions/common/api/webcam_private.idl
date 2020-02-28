@@ -74,5 +74,15 @@ namespace webcamPrivate {
     // invoked when the function responds.
     static void setHome(DOMString webcamId,
                         WebcamConfigurationCallback callback);
+
+    // Restore the camera's position to that of the specified preset. A callback
+    // is included here which is invoked when the function responds.
+    static void restoreCameraPreset(DOMString webcamId, double presetNumber,
+                                    WebcamConfigurationCallback callback);
+
+    // Set the current camera's position to be stored for the specified preset.
+    // A callback is included here which is invoked when the function responds.
+    static void setCameraPreset(DOMString webcamId, double presetNumber,
+                                WebcamConfigurationCallback callback);
   };
 };

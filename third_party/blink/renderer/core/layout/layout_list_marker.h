@@ -116,7 +116,6 @@ class CORE_EXPORT LayoutListMarker final : public LayoutBox {
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  bool AnonymousHasStylePropagationOverride() override { return true; }
 
   String text_;
   Persistent<StyleImage> image_;

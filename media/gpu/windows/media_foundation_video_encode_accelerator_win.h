@@ -65,8 +65,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Creates an hardware encoder backed IMFTransform instance on |encoder_|.
   bool CreateHardwareEncoderMFT();
 
-  // Initializes and allocates memory for input and output samples.
-  bool InitializeInputOutputSamples(VideoCodecProfile output_profile);
+  // Initializes and allocates memory for input and output parameters.
+  bool InitializeInputOutputParameters(VideoCodecProfile output_profile);
 
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();
@@ -82,19 +82,22 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Encoding tasks to be run on |encoder_thread_|.
   void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
+  // Processes the input video frame for the encoder.
+  void ProcessInput(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+
   // Checks for and copies encoded output on |encoder_thread_|.
   void ProcessOutput();
+
+  // Tries to deliver the input frame to the encoder.
+  bool TryToDeliverInputFrame(scoped_refptr<VideoFrame> frame,
+                              bool force_keyframe);
+
+  // Tries to return a bitstream buffer to the client.
+  void TryToReturnBitstreamBuffer();
 
   // Inserts the output buffers for reuse on |encoder_thread_|.
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
-
-  // Copies EncodeOutput into a BitstreamBuffer and returns it to the
-  // |main_client_|.
-  void ReturnBitstreamBuffer(
-      std::unique_ptr<EncodeOutput> encode_output,
-      std::unique_ptr<MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef>
-          buffer_ref);
 
   // Changes encode parameters on |encoder_thread_|.
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
@@ -119,14 +122,11 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   size_t bitstream_buffer_size_;
   uint32_t frame_rate_;
   uint32_t target_bitrate_;
-  size_t u_plane_offset_;
-  size_t v_plane_offset_;
-  size_t y_stride_;
-  size_t u_stride_;
-  size_t v_stride_;
 
+  Microsoft::WRL::ComPtr<IMFActivate> activate_;
   Microsoft::WRL::ComPtr<IMFTransform> encoder_;
   Microsoft::WRL::ComPtr<ICodecAPI> codec_api_;
+  Microsoft::WRL::ComPtr<IMFMediaEventGenerator> event_generator_;
 
   DWORD input_stream_id_;
   DWORD output_stream_id_;
@@ -134,8 +134,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   Microsoft::WRL::ComPtr<IMFMediaType> imf_input_media_type_;
   Microsoft::WRL::ComPtr<IMFMediaType> imf_output_media_type_;
 
+  bool input_required_;
   Microsoft::WRL::ComPtr<IMFSample> input_sample_;
-  Microsoft::WRL::ComPtr<IMFSample> output_sample_;
 
   // MediaFoundation session.
   MFSessionLifetime session_;
@@ -155,7 +155,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Declared last to ensure that all weak pointers are invalidated before
   // other destructors run.
   base::WeakPtrFactory<MediaFoundationVideoEncodeAccelerator>
-      encoder_task_weak_factory_{this};
+      encoder_task_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFoundationVideoEncodeAccelerator);
 };

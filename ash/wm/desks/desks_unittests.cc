@@ -222,6 +222,7 @@ bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
 
 // Verifies DesksBarView layout under different screen sizes
 void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
+                                  aura::Window* root_window,
                                   bool use_compact_layout) {
   DCHECK(desks_bar_view);
   const NewDeskButton* button = desks_bar_view->new_desk_button();
@@ -229,7 +230,7 @@ void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
 
   for (const auto& mini_view : desks_bar_view->mini_views()) {
     EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
-              DeskPreviewView::GetHeight(use_compact_layout));
+              DeskPreviewView::GetHeight(root_window, use_compact_layout));
     EXPECT_EQ(mini_view->IsDeskNameViewVisibleForTesting(),
               !use_compact_layout);
   }
@@ -434,21 +435,21 @@ TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  const OverviewGrid* overview_grid =
-      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const OverviewGrid* overview_grid = GetOverviewGridForRoot(root_window);
 
   EXPECT_FALSE(overview_grid->IsDesksBarViewActive());
   const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
   while (controller->CanCreateDesks()) {
     NewDesk();
-    DesksBarViewLayoutTestHelper(desks_bar_view,
+    DesksBarViewLayoutTestHelper(desks_bar_view, root_window,
                                  /*use_compact_layout=*/false);
   };
 
   UpdateDisplay("500x480");
   ASSERT_TRUE(overview_controller->InOverviewSession());
   while (controller->CanRemoveDesks()) {
-    DesksBarViewLayoutTestHelper(desks_bar_view,
+    DesksBarViewLayoutTestHelper(desks_bar_view, root_window,
                                  /*use_compact_layout=*/true);
     RemoveDesk(controller->desks().back().get());
   }
@@ -456,7 +457,7 @@ TEST_F(DesksTest, DesksBarViewScreenLayoutTest) {
   UpdateDisplay("1600x480");
   ASSERT_TRUE(overview_controller->InOverviewSession());
   while (controller->CanCreateDesks()) {
-    DesksBarViewLayoutTestHelper(desks_bar_view,
+    DesksBarViewLayoutTestHelper(desks_bar_view, root_window,
                                  /*use_compact_layout=*/false);
     NewDesk();
   }

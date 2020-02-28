@@ -910,7 +910,6 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
          i++) {
       // Clear the existing probe stats.
       probe_stats_list_[i] = std::make_unique<ProbeStats>();
-      context_->SetProbeSuccess(i, false /* success */, session_.get());
       ContinueProbe(i, probe_stats_list_[i]->weak_factory.GetWeakPtr(),
                     network_change,
                     base::TimeTicks::Now() /* sequence_start_time */);
@@ -988,8 +987,6 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         context_->RecordRtt(doh_server_index, true /* is_doh_server */,
                             base::TimeTicks::Now() - query_start_time, rv,
                             session_.get());
-        context_->SetProbeSuccess(doh_server_index, true /* success */,
-                                  session_.get());
         probe_stats_list_[doh_server_index] = nullptr;
         success = true;
       }

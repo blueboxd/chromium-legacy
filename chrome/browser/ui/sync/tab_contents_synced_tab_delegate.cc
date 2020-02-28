@@ -130,7 +130,11 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents_);
-  DCHECK(navigation_observer);
+
+  // TODO(1048643) The check on |navigation_observer| should be a DCHECK.
+  if (!navigation_observer)
+    return nullptr;
+
   return &navigation_observer->blocked_navigations();
 #else
   NOTREACHED();
@@ -144,9 +148,15 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
           GetWindowId()) == nullptr)
     return false;
 
-  // Is there a valid NavigationEntry?
-  if (ProfileIsSupervised() && !GetBlockedNavigations()->empty())
-    return true;
+  if (ProfileIsSupervised()) {
+    const auto* blocked_navigations = GetBlockedNavigations();
+
+    // TODO(1048643) If profile is supervised, |blocked_navigations| should not
+    // be nullptr. This is a work around to check if the crash reported in the
+    // bug was caused by the violation of the invariant.
+    if (blocked_navigations && !blocked_navigations->empty())
+      return true;
+  }
 
   if (IsInitialBlankNavigation())
     return false;  // This deliberately ignores a new pending entry.

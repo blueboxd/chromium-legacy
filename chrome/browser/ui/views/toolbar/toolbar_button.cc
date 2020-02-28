@@ -152,7 +152,8 @@ void ToolbarButton::UpdateColorsAndInsets() {
   base::Optional<SkColor> border_color =
       highlight_color_animation_.GetBorderColor();
   if (!border() || target_insets != border()->GetInsets() ||
-      last_border_color_ != border_color) {
+      last_border_color_ != border_color ||
+      last_paint_insets_ != paint_insets) {
     if (border_color) {
       int border_thickness_dp = GetText().empty()
                                     ? kBorderThicknessDpWithoutLabel
@@ -168,6 +169,7 @@ void ToolbarButton::UpdateColorsAndInsets() {
       SetBorder(views::CreateEmptyBorder(target_insets));
     }
     last_border_color_ = border_color;
+    last_paint_insets_ = paint_insets;
   }
 
   // Update spacing on the outer-side of the label to match the current

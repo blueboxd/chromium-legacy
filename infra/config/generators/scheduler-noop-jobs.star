@@ -42,6 +42,10 @@ _ANDROID_TEST_NOOP_JOBS = [scheduler_pb.Job(
     id = bucket + '-' + builder,
     schedule = 'triggered',
     acl_sets = [bucket],
+    acls = [scheduler_pb.Acl(
+        role = scheduler_pb.Acl.TRIGGERER,
+        granted_to = 'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
+    )],
     noop = scheduler_pb.NoopTask(),
 ) for builder in _ANDROID_NON_BRANCHED_TESTERS for bucket in (
     'ci-beta',

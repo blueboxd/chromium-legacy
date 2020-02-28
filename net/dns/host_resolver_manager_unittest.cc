@@ -5673,8 +5673,9 @@ TEST_F(HostResolverManagerDnsTest,
   // Mark a DoH server successful only for |resolve_context2|. Note that this
   // must come after the resolver's configuration is set because this relies on
   // the specific configuration containing a DoH server.
-  resolve_context2.SetProbeSuccess(0u, true /* success */,
-                                   dns_client_->GetCurrentSession());
+  resolve_context2.RecordServerSuccess(0u /* server_index */,
+                                       true /* is_doh_server */,
+                                       dns_client_->GetCurrentSession());
 
   // No available DoH servers for |resolve_context1|, so expect a non-secure
   // request. Non-secure requests for "secure" will fail with
@@ -7557,7 +7558,8 @@ TEST_F(HostResolverManagerDnsTest,
   ChangeDnsConfig(CreateValidDnsConfig());
 
   DnsSession* session_before = dns_client_->GetCurrentSession();
-  resolve_context_->SetProbeSuccess(0u, true, session_before);
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server */, session_before);
   ASSERT_TRUE(resolve_context_->GetDohServerAvailability(0u, session_before));
 
   // Flush data by triggering a DnsConfigOverrides change.
@@ -7571,7 +7573,8 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(resolve_context_->GetDohServerAvailability(0u, session_after));
 
   // Confirm new session is in use.
-  resolve_context_->SetProbeSuccess(0u, true, session_after);
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server */, session_after);
   EXPECT_TRUE(resolve_context_->GetDohServerAvailability(0u, session_after));
 }
 
@@ -7699,7 +7702,8 @@ TEST_F(HostResolverManagerDnsTest,
   ChangeDnsConfig(original_config);
 
   DnsSession* session_before = dns_client_->GetCurrentSession();
-  resolve_context_->SetProbeSuccess(0u, true, session_before);
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server */, session_before);
   ASSERT_TRUE(resolve_context_->GetDohServerAvailability(0u, session_before));
 
   // Flush data by triggering a config change.
@@ -7713,7 +7717,8 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(resolve_context_->GetDohServerAvailability(0u, session_after));
 
   // Confirm new session is in use.
-  resolve_context_->SetProbeSuccess(0u, true, session_after);
+  resolve_context_->RecordServerSuccess(
+      0u /* server_index */, true /* is_doh_server */, session_after);
   EXPECT_TRUE(resolve_context_->GetDohServerAvailability(0u, session_after));
 }
 

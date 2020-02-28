@@ -14,6 +14,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
+#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -34,9 +35,17 @@ namespace ash {
 
 namespace {
 
-constexpr int kBarHeight = 104;
 constexpr int kBarHeightInCompactLayout = 64;
 constexpr int kUseCompactLayoutWidthThreshold = 600;
+
+// In the non-compact layout, this is the height allocated for elements other
+// than the desk preview (e.g. the DeskNameView, and the vertical paddings).
+constexpr int kNonPreviewAllocatedHeight = 55;
+
+// The local Y coordinate of the mini views in both non-compact and compact
+// layouts respectively.
+constexpr int kMiniViewsY = 16;
+constexpr int kMiniViewsYCompact = 8;
 
 // New desk button layout constants.
 constexpr int kButtonRightMargin = 36;
@@ -142,14 +151,16 @@ DesksBarView::~DesksBarView() {
 }
 
 // static
-int DesksBarView::GetBarHeightForWidth(const DesksBarView* desks_bar_view,
+int DesksBarView::GetBarHeightForWidth(aura::Window* root,
+                                       const DesksBarView* desks_bar_view,
                                        int width) {
   if (width <= kUseCompactLayoutWidthThreshold ||
       (desks_bar_view && width <= desks_bar_view->min_width_to_fit_contents_)) {
     return kBarHeightInCompactLayout;
   }
 
-  return kBarHeight;
+  return DeskPreviewView::GetHeight(root, /*compact=*/false) +
+         kNonPreviewAllocatedHeight;
 }
 
 // static
@@ -258,12 +269,9 @@ void DesksBarView::Layout() {
   const int total_width =
       mini_views_.size() * (mini_view_size.width() + kMiniViewsSpacing) -
       kMiniViewsSpacing;
-  gfx::Rect mini_views_bounds = bounds();
-  mini_views_bounds.ClampToCenteredSize(
-      gfx::Size(total_width, mini_view_size.height()));
 
-  int x = mini_views_bounds.x();
-  const int y = mini_views_bounds.y();
+  int x = (width() - total_width) / 2;
+  const int y = compact ? kMiniViewsYCompact : kMiniViewsY;
   for (auto& mini_view : mini_views_) {
     mini_view->SetBoundsRect(gfx::Rect(gfx::Point(x, y), mini_view_size));
     x += (mini_view_size.width() + kMiniViewsSpacing);

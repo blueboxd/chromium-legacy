@@ -360,13 +360,13 @@ class LoginPasswordView::DisplayPasswordButton
     const gfx::ImageSkia visible_icon = gfx::CreateVectorIcon(
         kLockScreenPasswordVisibleIcon, kDisplayPasswordButtonSizeDp,
         login_constants::kButtonEnabledColor);
-    SetImage(views::Button::STATE_NORMAL, invisible_icon);
-    SetToggledImage(views::Button::STATE_NORMAL, &visible_icon);
+    SetImage(views::Button::STATE_NORMAL, visible_icon);
+    SetToggledImage(views::Button::STATE_NORMAL, &invisible_icon);
 
     SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE));
-    SetToggledTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_SHOW));
+    SetToggledTooltipText(l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());

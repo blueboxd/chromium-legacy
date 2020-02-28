@@ -49,11 +49,11 @@ void ChromiumUrlRequest::SetPostData(const std::string& content_type,
   post_data_ = data;
 }
 
-void ChromiumUrlRequest::Start(const OnResultCallback& on_result_callback) {
+void ChromiumUrlRequest::Start(OnResultCallback on_result_callback) {
   DCHECK(!on_result_callback.is_null());
   DCHECK(on_result_callback_.is_null());
 
-  on_result_callback_ = on_result_callback;
+  on_result_callback_ = std::move(on_result_callback);
 
   std::string method = resource_request_->method;
 

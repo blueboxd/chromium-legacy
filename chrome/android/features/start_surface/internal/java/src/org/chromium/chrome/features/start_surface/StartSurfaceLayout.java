@@ -33,13 +33,13 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -101,7 +101,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         mController = mStartSurface.getController();
         mController.addOverviewModeObserver(this);
         mTabListDelegate = mStartSurface.getTabListDelegate();
-        if (CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()) {
+        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
             mThumbnailAspectRatio = (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
             mThumbnailAspectRatio = MathUtils.clamp(mThumbnailAspectRatio, 0.5f, 2.0f);
@@ -310,7 +310,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
-                CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
+                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                         ? Math.min(getWidth() / mThumbnailAspectRatio,
                                 sourceLayoutTab.getUnclampedOriginalContentHeight())
                         : getWidth(),
@@ -366,7 +366,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT,
-                CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()
+                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                         ? Math.min(getWidth() / mThumbnailAspectRatio,
                                 sourceLayoutTab.getUnclampedOriginalContentHeight())
                         : getWidth(),

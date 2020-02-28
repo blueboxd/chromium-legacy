@@ -114,7 +114,6 @@ public class CachedFeatureFlags {
     private static Map<String, Boolean> sBoolValuesReturned = new HashMap<>();
     private static Map<String, String> sStringValuesReturned = new HashMap<>();
     private static String sReachedCodeProfilerTrialGroup;
-    private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
 
     /**
      * Checks if a cached feature flag is enabled.
@@ -276,15 +275,6 @@ public class CachedFeatureFlags {
     }
 
     /**
-     * @return Whether this device is running Android Go. This is assumed when we're running Android
-     * O or later and we're on a low-end device.
-     */
-    public static boolean isAndroidGo() {
-        return SysUtils.isLowEndDevice()
-                && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
-    }
-
-    /**
      * Cache whether warming up network service process is enabled, so that the value
      * can be made available immediately on next start up.
      */
@@ -300,16 +290,6 @@ public class CachedFeatureFlags {
     public static boolean isNetworkServiceWarmUpEnabled() {
         return getConsistentBooleanValue(
                 ChromePreferenceKeys.FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED, false);
-    }
-
-    /**
-     * Returns whether to use {@link Window#setFormat()} to undo opacity change caused by
-     * {@link Activity#convertFromTranslucent()}.
-     */
-    public static boolean isSwapPixelFormatToFixConvertFromTranslucentEnabled() {
-        return SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceKeys.FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                true);
     }
 
     /**
@@ -337,23 +317,6 @@ public class CachedFeatureFlags {
         }
 
         return sReachedCodeProfilerTrialGroup;
-    }
-
-    /**
-     * @return Whether the thumbnail_aspect_ratio field trail is set.
-     */
-    public static boolean isTabThumbnailAspectRatioNotOne() {
-        if (sEnabledTabThumbnailApsectRatioForTesting != null) {
-            return sEnabledTabThumbnailApsectRatioForTesting;
-        }
-
-        double expectedAspectRatio = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
-        return Double.compare(1.0, expectedAspectRatio) != 0;
-    }
-
-    public static void enableTabThumbnailAspectRatioForTesting(Boolean enabled) {
-        sEnabledTabThumbnailApsectRatioForTesting = enabled;
     }
 
     static boolean getConsistentBooleanValue(String preferenceName, boolean defaultValue) {

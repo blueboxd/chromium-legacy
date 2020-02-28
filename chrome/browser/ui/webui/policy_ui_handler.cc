@@ -818,10 +818,9 @@ void PolicyUIHandler::RegisterMessages() {
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner(
+      base::ThreadPool::CreateCOMSTATaskRunner(
           {base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock(),
-           base::ThreadPool()})
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()})
           .get(),
       FROM_HERE, base::BindOnce(&GetGoogleUpdatePolicies),
       base::BindOnce(&PolicyUIHandler::SetUpdaterPolicies,

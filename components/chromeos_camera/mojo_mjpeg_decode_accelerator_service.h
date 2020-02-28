@@ -77,7 +77,7 @@ class MojoMjpegDecodeAcceleratorService
       int32_t bitstream_buffer_id,
       ::chromeos_camera::MjpegDecodeAccelerator::Error error);
 
-  const std::vector<GpuMjpegDecodeAcceleratorFactory::CreateAcceleratorCB>
+  std::vector<GpuMjpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
   // A map from |task_id| to MojoCallback.

@@ -219,8 +219,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
   base::SequencedTaskRunner* CreateTaskRunner() {
     DCHECK(!task_runner_.get());
-    task_runner_ =
-        base::CreateSequencedTaskRunner(Operation::blocking_task_traits());
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        Operation::blocking_task_traits());
     return task_runner_.get();
   }
 

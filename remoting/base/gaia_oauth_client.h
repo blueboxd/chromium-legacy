@@ -55,7 +55,8 @@ class GaiaOAuthClient : public OAuthClient,
             const std::string& auth_code,
             bool need_user_email,
             CompletionCallback on_done);
-    Request(const Request& other);
+    Request(Request&& other);
+    Request& operator=(Request&& other);
     virtual ~Request();
     gaia::OAuthClientInfo oauth_client_info;
     std::string auth_code;

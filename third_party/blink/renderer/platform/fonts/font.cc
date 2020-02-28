@@ -205,7 +205,10 @@ bool Font::DrawBidiText(cc::PaintCanvas* canvas,
 
     TextRunPaintInfo subrun_info(subrun);
 
-    ShapeResultBloberizer bloberizer(*this, device_scale_factor);
+    // Fix regression with -ftrivial-auto-var-init=pattern. See
+    // crbug.com/1055652.
+    STACK_UNINITIALIZED ShapeResultBloberizer bloberizer(*this,
+                                                         device_scale_factor);
     ShapeResultBuffer buffer;
     word_shaper.FillResultBuffer(subrun_info, &buffer);
     float run_width = bloberizer.FillGlyphs(subrun_info, buffer);

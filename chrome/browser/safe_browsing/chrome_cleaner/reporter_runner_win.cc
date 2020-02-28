@@ -951,10 +951,10 @@ class ReporterRunner {
   static ReporterRunner* instance_;
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_ =
-      base::CreateTaskRunner(
+      base::ThreadPool::CreateTaskRunner(
           // LaunchAndWaitForExit creates (MayBlock()) and joins
           // (WithBaseSyncPrimitives()) a process.
-          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 

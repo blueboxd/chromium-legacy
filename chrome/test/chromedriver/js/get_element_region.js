@@ -99,8 +99,7 @@ function getElementRegion(element) {
         throw new Error('shape=' + element.shape + ' is not supported');
       }
     } else {
-      boundingRect = element.getBoundingClientRect();
-      clientRect = Object.assign({}, boundingRect);
+      clientRect = boundingRect = element.getBoundingClientRect();
     }
   } else {
     boundingRect = element.getBoundingClientRect();

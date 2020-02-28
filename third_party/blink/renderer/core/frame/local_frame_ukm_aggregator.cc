@@ -247,6 +247,7 @@ void LocalFrameUkmAggregator::DidReachFirstContentfulPaint(
     switch (static_cast<MetricId>(i)) {
       CASE_FOR_ID(Compositing);
       CASE_FOR_ID(CompositingCommit);
+      CASE_FOR_ID(ImplCompositorCommit);
       CASE_FOR_ID(IntersectionObservation);
       CASE_FOR_ID(Paint);
       CASE_FOR_ID(PrePaint);
@@ -259,6 +260,7 @@ void LocalFrameUkmAggregator::DidReachFirstContentfulPaint(
       CASE_FOR_ID(Animate);
       CASE_FOR_ID(UpdateLayers);
       CASE_FOR_ID(ProxyCommit);
+      CASE_FOR_ID(WaitForCommit);
       case kCount:
       case kMainFrame:
         NOTREACHED();
@@ -304,6 +306,29 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
     // when we know the frame time.
     main_frame_percentage_records_[metric_index].interval_duration += duration;
   }
+}
+
+void LocalFrameUkmAggregator::RecordImplCompositorSample(
+    base::TimeTicks requested,
+    base::TimeTicks started,
+    base::TimeTicks completed) {
+  // Record the time spent waiting for the commit based on requested
+  // (which came from ProxyImpl::BeginMainFrame) and started as reported by
+  // the impl thread. If started is zero, no time was spent
+  // processing. This can only happen if the commit was aborted because there
+  // was no change and we did not wait for the impl thread at all. Attribute
+  // all time to the compositor commit so as to not imply that wait time was
+  // consumed.
+  if (started == base::TimeTicks()) {
+    RecordSample(kImplCompositorCommit, requested, completed);
+  } else {
+    RecordSample(kWaitForCommit, requested, started);
+    RecordSample(kImplCompositorCommit, started, completed);
+  }
+
+  // This will go away in M-84 when we are confident the WaitForCommit and
+  // ImplCompositorCommit metrics sum to this metric after reporting.
+  RecordSample(kProxyCommit, requested, completed);
 }
 
 void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
@@ -393,6 +418,7 @@ void LocalFrameUkmAggregator::RecordEvent(
     switch (static_cast<MetricId>(i)) {
       CASE_FOR_ID(Compositing);
       CASE_FOR_ID(CompositingCommit);
+      CASE_FOR_ID(ImplCompositorCommit);
       CASE_FOR_ID(IntersectionObservation);
       CASE_FOR_ID(Paint);
       CASE_FOR_ID(PrePaint);
@@ -405,6 +431,7 @@ void LocalFrameUkmAggregator::RecordEvent(
       CASE_FOR_ID(Animate);
       CASE_FOR_ID(UpdateLayers);
       CASE_FOR_ID(ProxyCommit);
+      CASE_FOR_ID(WaitForCommit);
       case kCount:
       case kMainFrame:
         NOTREACHED();

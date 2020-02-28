@@ -36,12 +36,3 @@ use_win_hybrid_spellchecker is used. In addition, for experiment purposes, a
 feature flag kWinUseHybridSpellChecker is used to control this behavior at
 runtime. Finally, this fallback logic requires the platform spell checker to be
 available, so it also uses the browser spell checker checks described above.
-
-## Note on use_windows_preferred_languages_for_spellcheck
-TODO(https://crbug.com/1000443): Use Windows preferred languages to help
-populate spellcheck settings.
-
-Use union of Chromium preferred languages (from Language settings) and
-the Windows preferred languages (from system language settings) as the
-source of the spellcheck languages in the "Spell check" section of the
-Chromium language settings, provided they are supported for spellcheck.

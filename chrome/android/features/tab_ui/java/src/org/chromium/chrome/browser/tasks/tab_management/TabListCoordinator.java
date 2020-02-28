@@ -150,7 +150,7 @@ public class TabListCoordinator implements Destroyable {
                 ViewLookupCachingFrameLayout root = (ViewLookupCachingFrameLayout) holder.itemView;
                 ImageView thumbnail = (ImageView) root.fastFindViewById(R.id.tab_thumbnail);
                 if (thumbnail == null) return;
-                if (CachedFeatureFlags.isTabThumbnailAspectRatioNotOne()) {
+                if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
                     float expectedThumbnailAspectRatio =
                             (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,

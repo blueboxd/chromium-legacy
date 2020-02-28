@@ -337,7 +337,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only
   // the content settings which are applicable to the incognito mode and differ
   // from the normal mode. Otherwise, adds the content settings for the normal
-  // mode.
+  // mode (applying inheritance rules if |is_off_the_record_|).
   void AddSettingsForOneType(
       const content_settings::ProviderInterface* provider,
       ProviderType provider_type,

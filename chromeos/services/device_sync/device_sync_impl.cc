@@ -26,6 +26,7 @@
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
+#include "chromeos/services/device_sync/cryptauth_metadata_syncer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_device_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
@@ -290,6 +291,7 @@ void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
   if (features::ShouldUseV2DeviceSync()) {
     CryptAuthDeviceRegistryImpl::RegisterPrefs(registry);
+    CryptAuthMetadataSyncerImpl::RegisterPrefs(registry);
   }
 }
 
@@ -859,7 +861,8 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
         CryptAuthV2DeviceManagerImpl::Factory::Get()->BuildInstance(
             client_app_metadata_provider_, cryptauth_device_registry_.get(),
             cryptauth_key_registry_.get(), cryptauth_client_factory_.get(),
-            cryptauth_gcm_manager_.get(), cryptauth_scheduler_.get());
+            cryptauth_gcm_manager_.get(), cryptauth_scheduler_.get(),
+            profile_prefs_);
   }
 
   cryptauth_enrollment_manager_->AddObserver(this);

@@ -142,7 +142,7 @@ Refer to README.md for content description and update process.
  <item id="image_annotation" hash_code="107881858" type="0" content_hash_code="96203979" os_list="linux,windows" file_path="services/image_annotation/annotator.cc"/>
  <item id="indexed_db_internals_handler" hash_code="131180348" type="0" content_hash_code="59026406" os_list="linux,windows" file_path="content/browser/indexed_db/indexed_db_internals_ui.cc"/>
  <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="6240898" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
- <item id="interest_feedv2_send" hash_code="85742023" type="0" content_hash_code="11750132" os_list="linux,windows" file_path="components/feed/core/v2/feed_network_impl.cc"/>
+ <item id="interest_feedv2_send" hash_code="85742023" type="0" content_hash_code="49706671" os_list="linux,windows" file_path="components/feed/core/v2/feed_network_impl.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" deprecated="2020-01-23" content_hash_code="78425687" file_path=""/>
  <item id="isolated_prerender_loader" hash_code="2181152" type="0" content_hash_code="113933667" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_url_loader.cc"/>

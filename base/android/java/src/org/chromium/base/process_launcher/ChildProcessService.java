@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.SparseArray;
 
 import org.chromium.base.BaseSwitches;
@@ -77,6 +78,8 @@ public class ChildProcessService {
     // PID of the client of this service, set in bindToCaller(), if mBindToCallerCheck is true.
     @GuardedBy("mBinderLock")
     private int mBoundCallingPid;
+    @GuardedBy("mBinderLock")
+    private String mBoundCallingClazz;
 
     // This is the native "Main" thread for the renderer / utility process.
     private Thread mMainThread;
@@ -108,16 +111,21 @@ public class ChildProcessService {
     private final IChildProcessService.Stub mBinder = new IChildProcessService.Stub() {
         // NOTE: Implement any IChildProcessService methods here.
         @Override
-        public boolean bindToCaller() {
+        public boolean bindToCaller(String clazz) {
             assert mBindToCallerCheck;
             assert mServiceBound;
             synchronized (mBinderLock) {
                 int callingPid = Binder.getCallingPid();
-                if (mBoundCallingPid == 0) {
+                if (mBoundCallingPid == 0 && mBoundCallingClazz == null) {
                     mBoundCallingPid = callingPid;
+                    mBoundCallingClazz = clazz;
                 } else if (mBoundCallingPid != callingPid) {
                     Log.e(TAG, "Service is already bound by pid %d, cannot bind for pid %d",
                             mBoundCallingPid, callingPid);
+                    return false;
+                } else if (!TextUtils.equals(mBoundCallingClazz, clazz)) {
+                    Log.w(TAG, "Service is already bound by %s, cannot bind for %s",
+                            mBoundCallingClazz, clazz);
                     return false;
                 }
             }

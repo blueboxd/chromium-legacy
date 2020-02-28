@@ -281,7 +281,7 @@ public class ChildProcessConnectionTest {
         verify(mServiceCallback, times(1)).onChildStarted();
         verify(mServiceCallback, never()).onChildStartFailed(any());
         verify(mServiceCallback, never()).onChildProcessDied(connection);
-        verify(mIChildProcessService, never()).bindToCaller();
+        verify(mIChildProcessService, never()).bindToCaller(any());
     }
 
     @Test
@@ -290,13 +290,13 @@ public class ChildProcessConnectionTest {
                 false /* bindAsExternalService */, null /* serviceBundle */);
         assertNotNull(mFirstServiceConnection);
         connection.start(false /* useStrongBinding */, mServiceCallback);
-        when(mIChildProcessService.bindToCaller()).thenReturn(true);
+        when(mIChildProcessService.bindToCaller(any())).thenReturn(true);
         mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
         // Service is started and bindToCallback is called.
         verify(mServiceCallback, times(1)).onChildStarted();
         verify(mServiceCallback, never()).onChildStartFailed(any());
         verify(mServiceCallback, never()).onChildProcessDied(connection);
-        verify(mIChildProcessService, times(1)).bindToCaller();
+        verify(mIChildProcessService, times(1)).bindToCaller(any());
     }
 
     @Test
@@ -307,13 +307,13 @@ public class ChildProcessConnectionTest {
         connection.start(false /* useStrongBinding */, mServiceCallback);
         // Pretend bindToCaller returns false, i.e. the service is already bound to a different
         // service.
-        when(mIChildProcessService.bindToCaller()).thenReturn(false);
+        when(mIChildProcessService.bindToCaller(any())).thenReturn(false);
         mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
         // Service fails to start.
         verify(mServiceCallback, never()).onChildStarted();
         verify(mServiceCallback, times(1)).onChildStartFailed(any());
         verify(mServiceCallback, never()).onChildProcessDied(connection);
-        verify(mIChildProcessService, times(1)).bindToCaller();
+        verify(mIChildProcessService, times(1)).bindToCaller(any());
     }
 
     @Test
@@ -466,7 +466,7 @@ public class ChildProcessConnectionTest {
     public void testUpdateGroupImportanceSmoke() throws RemoteException {
         ChildProcessConnection connection = createDefaultTestConnection();
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
-        when(mIChildProcessService.bindToCaller()).thenReturn(true);
+        when(mIChildProcessService.bindToCaller(any())).thenReturn(true);
         mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
         connection.updateGroupImportance(1, 2);
         assertEquals(1, connection.getGroup());

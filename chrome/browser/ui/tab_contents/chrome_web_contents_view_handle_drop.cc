@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
@@ -100,10 +101,8 @@ void HandleOnPerformDrop(
   if (drop_data.filenames.empty()) {
     ScanData(web_contents, std::move(callback), std::move(data));
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&GetPathsToScan, web_contents, std::move(drop_data),
                        std::move(data)),
         base::BindOnce(&ScanData, web_contents, std::move(callback)));

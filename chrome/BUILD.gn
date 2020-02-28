@@ -1502,12 +1502,6 @@ if (is_android) {
         [ "../components/content_settings/core/common/content_settings.h" ]
   }
 
-  java_cpp_enum("content_settings_type_javagen") {
-    sources = [
-      "../components/content_settings/core/common/content_settings_types.h",
-    ]
-  }
-
   java_cpp_enum("cookie_controls_mode_javagen") {
     sources =
         [ "../components/content_settings/core/browser/cookie_settings.h" ]

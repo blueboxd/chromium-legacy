@@ -20,7 +20,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/updater/win/net/net_util.h"
 #include "chrome/updater/win/net/network.h"
@@ -341,10 +342,10 @@ void NetworkFetcherWinHTTP::RequestError(const WINHTTP_ASYNC_RESULT* result) {
 
 void NetworkFetcherWinHTTP::WriteDataToFile() {
   constexpr base::TaskTraits kTaskTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileBlocking,
                      base::Unretained(this)),

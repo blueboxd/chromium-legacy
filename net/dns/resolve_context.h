@@ -34,9 +34,8 @@ class NET_EXPORT_PRIVATE ResolveContext
   // that have reached this limit.
   //
   // This limit is different from the failure limit that governs insecure async
-  // resolver bypass in several ways: the failures need not be consecutive,
-  // NXDOMAIN responses are never counted as failures, and the outcome of
-  // fallback queries is not taken into account.
+  // resolver bypass in multiple ways: NXDOMAIN responses are never counted as
+  // failures, and the outcome of fallback queries is not taken into account.
   static const int kAutomaticModeFailureLimit = 10;
 
   ResolveContext(URLRequestContext* url_request_context, bool enable_caching);
@@ -58,8 +57,8 @@ class NET_EXPORT_PRIVATE ResolveContext
   size_t FirstServerIndex(bool doh_server, const DnsSession* session);
 
   // Find the index of a non-DoH server to use for this attempt.  Starts from
-  // |starting_server| and finds the first eligible server (wrapping around as
-  // necessary) below failure limits, or if no eligible servers are below
+  // |starting_server| and finds the first server (wrapping around as necessary)
+  // below failure limits (|DnsConfig::attempts|), or if no servers are below
   // failure limits, the one with the oldest last failure. If |session| is not
   // the current session, assumes all servers are below failure limits and thus
   // always returns |starting_server|.
@@ -68,30 +67,29 @@ class NET_EXPORT_PRIVATE ResolveContext
 
   // Find the index of a DoH server to use for this attempt. Starts from
   // |starting_doh_server_index| and finds the first eligible server (wrapping
-  // around as necessary) below failure limits, or of no eligible servers are
-  // below failure limits, the one with the oldest last failure. If in AUTOMATIC
-  // mode, a server is only eligible after a successful DoH probe. Returns
-  // nullopt if there are no eligible DoH servers or |session| is not the
-  // current session.
+  // around as necessary) below failure limits (|DnsConfig::attempts|), or of no
+  // eligible servers are below failure limits, the eligible one with the oldest
+  // last failure. Returns nullopt if there are no eligible DoH servers or
+  // |session| is not the current session.
+  //
+  // If in AUTOMATIC mode, DoH servers are only eligible if "available".  See
+  // GetDohServerAvailability() for details.
   base::Optional<size_t> DohServerIndexToUse(
       size_t starting_doh_server_index,
       DnsConfig::SecureDnsMode secure_dns_mode,
       const DnsSession* session);
 
-  // Returns the number of DoH servers with successful probe states. Always 0 if
-  // |session| is not the current session.
-  size_t NumAvailableDohServers(const DnsSession* session) const;
-
-  // Returns whether |doh_server_index| is marked available. Always |false| if
-  // |session| is not the current session.
+  // Returns whether |doh_server_index| is eligible for use in AUTOMATIC mode,
+  // that is that consecutive failures are less than kAutomaticModeFailureLimit
+  // and the server has had at least one successful query or probe. Always
+  // |false| if |session| is not the current session.
   bool GetDohServerAvailability(size_t doh_server_index,
                                 const DnsSession* session) const;
 
-  // Record the latest DoH probe state. Noop if |session| is not the current
+  // Returns the number of DoH servers available for use in AUTOMATIC mode (see
+  // GetDohServerAvailability()). Always 0 if |session| is not the current
   // session.
-  void SetProbeSuccess(size_t doh_server_index,
-                       bool success,
-                       const DnsSession* session);
+  size_t NumAvailableDohServers(const DnsSession* session) const;
 
   // Record that server failed to respond (due to SRV_FAIL or timeout). If
   // |is_doh_server| and the number of failures has surpassed a threshold,
@@ -160,10 +158,13 @@ class NET_EXPORT_PRIVATE ResolveContext
   void RecordRttForUma(size_t server_index,
                        bool is_doh_server,
                        base::TimeDelta rtt,
-                       int rv);
+                       int rv,
+                       const DnsSession* session);
 
   // NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override;
+
+  static bool ServerStatsToDohAvailability(const ServerStats& stats);
 
   URLRequestContext* url_request_context_;
 
@@ -182,7 +183,6 @@ class NET_EXPORT_PRIVATE ResolveContext
   // TODO(crbug.com/1022059): Make const DnsSession once server stats have been
   // moved and no longer need to be read from DnsSession for availability logic.
   base::WeakPtr<const DnsSession> current_session_;
-  std::vector<bool> doh_server_availability_;
   // Current index into |config_.nameservers| to begin resolution with.
   int classic_server_index_ = 0;
   base::TimeDelta initial_timeout_;

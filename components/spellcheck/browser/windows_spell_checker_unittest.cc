@@ -82,21 +82,6 @@ class WindowsSpellCheckerTest : public testing::Test {
   }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void GetSupportedWindowsPreferredLanguagesCallback(
-      const std::vector<std::string>& preferred_languages) {
-    callback_finished_ = true;
-    preferred_languages_ = preferred_languages;
-    for (const auto& preferred_language : preferred_languages_) {
-      DLOG(INFO) << "GetSupportedWindowsPreferredLanguagesCallback: "
-                    "Dictionary supported for locale: "
-                 << preferred_language;
-    }
-    if (quit_)
-      std::move(quit_).Run();
-  }
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
-
  protected:
   std::unique_ptr<WindowsSpellChecker> win_spell_checker_;
 
@@ -109,9 +94,6 @@ class WindowsSpellCheckerTest : public testing::Test {
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   spellcheck::PerLanguageSuggestions per_language_suggestions_;
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  std::vector<std::string> preferred_languages_;
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
@@ -166,27 +148,6 @@ TEST_F(WindowsSpellCheckerTest, RequestTextCheck) {
                                            << ": Expected suggestion not found";
   }
 }
-
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-TEST_F(WindowsSpellCheckerTest, GetSupportedWindowsPreferredLanguages) {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
-    return;
-  }
-
-  ASSERT_TRUE(set_language_result_);
-
-  win_spell_checker_->GetSupportedWindowsPreferredLanguages(base::BindOnce(
-      &WindowsSpellCheckerTest::GetSupportedWindowsPreferredLanguagesCallback,
-      base::Unretained(this)));
-
-  RunUntilResultReceived();
-
-  ASSERT_LE(1u, preferred_languages_.size());
-  ASSERT_NE(preferred_languages_.end(),
-            std::find(preferred_languages_.begin(), preferred_languages_.end(),
-                      "en-US"));
-}
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {

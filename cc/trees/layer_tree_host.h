@@ -679,6 +679,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return std::move(begin_main_frame_metrics_);
   }
 
+  // Set the the impl proxy when a commit from the main thread begins
+  // processing. Used in metrics to determine the time spent waiting on thread
+  // synchronization.
+  void SetImplCommitStartTime(base::TimeTicks commit_start_time) {
+    impl_commit_start_time_ = commit_start_time;
+  }
+
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
 
@@ -886,6 +893,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // LocalFrameView that fills in the fields. This object adds the timing for
   // UpdateLayers. CC reads the data during commit, and clears the unique_ptr.
   std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics_;
+
+  // The time that the impl thread started processing the most recent commit
+  // sent from the main thread. Zero if the most recent BeginMainFrame did not
+  // result in a commit (due to no change in content).
+  base::TimeTicks impl_commit_start_time_;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

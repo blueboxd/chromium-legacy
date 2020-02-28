@@ -234,6 +234,14 @@ public class SysUtils {
         sAmountOfPhysicalMemoryKB = physicalMemoryKB;
     }
 
+    /**
+     * @return Whether this device is running Android Go. This is assumed when we're running Android
+     * O or later and we're on a low-end device.
+     */
+    public static boolean isAndroidGo() {
+        return isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+    }
+
     @NativeMethods
     interface Natives {
         void logPageFaultCountToTracing();

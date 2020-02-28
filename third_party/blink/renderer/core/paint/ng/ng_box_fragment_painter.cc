@@ -592,9 +592,11 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   }
 }
 
-void NGBoxFragmentPainter::PaintFloatingItems(const NGFragmentItems& items,
-                                              const PaintInfo& paint_info) {
-  for (const std::unique_ptr<NGFragmentItem>& item : items.Items()) {
+void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info,
+                                              NGInlineCursor* cursor) {
+  for (; *cursor; cursor->MoveToNext()) {
+    const NGFragmentItem* item = cursor->Current().Item();
+    DCHECK(item);
     const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
     if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
         !child_fragment->IsFloating())
@@ -620,9 +622,18 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
   if (const NGPhysicalBoxFragment* box =
           DynamicTo<NGPhysicalBoxFragment>(&container)) {
     if (const NGFragmentItems* items = box->Items()) {
-      PaintFloatingItems(*items, float_paint_info);
+      NGInlineCursor cursor(*items);
+      PaintFloatingItems(float_paint_info, &cursor);
       return;
     }
+    if (inline_box_cursor_) {
+      DCHECK(box->IsInlineBox());
+      NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
+      PaintFloatingItems(float_paint_info, &descendants);
+      return;
+    }
+    DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() ||
+           !box->IsInlineBox());
   }
 
   for (const NGLink& child : container.Children()) {

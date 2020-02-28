@@ -142,8 +142,6 @@ class PDFiumPage {
                         double bottom,
                         PageOrientation orientation) const;
 
-  const PDFEngine::PageFeatures* GetPageFeatures();
-
   int index() const { return index_; }
 
   const pp::Rect& rect() const { return rect_; }
@@ -312,7 +310,6 @@ class PDFiumPage {
   // objects.
   std::set<int> page_object_text_run_breaks_;
   bool available_;
-  PDFEngine::PageFeatures page_features_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumPage);
 };

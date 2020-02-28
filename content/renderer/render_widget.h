@@ -321,7 +321,7 @@ class CONTENT_EXPORT RenderWidget
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override;
   void WillCommitCompositorFrame() override;
-  void DidCommitCompositorFrame() override;
+  void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidCompletePageScaleAnimation() override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(

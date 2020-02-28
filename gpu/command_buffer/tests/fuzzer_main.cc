@@ -456,7 +456,9 @@ class CommandBufferSetup {
 
     decoder_->set_max_bucket_size(8 << 20);
 #if !defined(GPU_FUZZER_USE_RASTER_DECODER)
-    context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    if (context_group->buffer_manager()) {
+        context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    }
 #endif
     return decoder_->MakeCurrent();
   }

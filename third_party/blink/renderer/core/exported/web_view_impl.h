@@ -35,12 +35,14 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -99,12 +101,14 @@ using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
 
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       public RefCounted<WebViewImpl>,
-                                      public PageWidgetEventHandler {
+                                      public PageWidgetEventHandler,
+                                      public mojom::blink::PageBroadcast {
  public:
   static WebViewImpl* Create(WebViewClient*,
                              bool is_hidden,
                              bool compositing_enabled,
-                             WebViewImpl* opener);
+                             WebViewImpl* opener,
+                             mojo::ScopedInterfaceEndpointHandle page_handle);
 
   // All calls to Create() should be balanced with a call to Close(). This
   // synchronously destroys the WebViewImpl.
@@ -493,7 +497,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebViewImpl(WebViewClient*,
               bool is_hidden,
               bool does_composite,
-              WebViewImpl* opener);
+              WebViewImpl* opener,
+              mojo::ScopedInterfaceEndpointHandle page_handle);
   ~WebViewImpl() override;
 
   HitTestResult HitTestResultForRootFramePos(const PhysicalOffset&);
@@ -705,6 +710,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
   base::Optional<base::TimeTicks> update_layers_start_time_;
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
+
+  mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 };
 
 }  // namespace blink

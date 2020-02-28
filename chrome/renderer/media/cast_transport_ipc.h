@@ -31,7 +31,7 @@ class CastTransportIPC : public media::cast::CastTransport {
                    const net::IPEndPoint& remote_end_point,
                    std::unique_ptr<base::DictionaryValue> options,
                    const media::cast::PacketReceiverCallback& packet_callback,
-                   const media::cast::CastTransportStatusCallback& status_cb,
+                   media::cast::CastTransportStatusCallback status_callback,
                    BulkRawEventsCallback raw_events_cb);
 
   ~CastTransportIPC() override;

@@ -78,6 +78,8 @@ jumbo_source_set("browser") {
     "//components/tracing/common:interfaces",
     "//components/ui_devtools",
     "//components/url_formatter",
+    "//components/variations",
+    "//components/variations/net",
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",

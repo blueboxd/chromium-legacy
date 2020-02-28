@@ -759,4 +759,8 @@ bool BrowserContext::CanUseDiskWhenOffTheRecord() {
   return false;
 }
 
+variations::VariationsClient* BrowserContext::GetVariationsClient() {
+  return nullptr;
+}
+
 }  // namespace content

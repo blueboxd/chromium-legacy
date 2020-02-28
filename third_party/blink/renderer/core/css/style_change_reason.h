@@ -29,7 +29,6 @@ extern const char kFonts[];
 extern const char kFullscreen[];
 extern const char kFindInvisible[];
 extern const char kInheritedStyleChangeFromParentFrame[];
-extern const char kInline[];
 extern const char kInlineCSSStyleMutated[];
 extern const char kInspector[];
 extern const char kInvisibleChange[];

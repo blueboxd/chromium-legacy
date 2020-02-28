@@ -17,6 +17,7 @@ static_library("net") {
     "//services/network/public/cpp:cpp_base",
     "//url",
   ]
+
   deps = [
     "//base",
     "//components/google/core/common",
@@ -24,4 +25,13 @@ static_library("net") {
     "//components/variations/field_trial_config",
     "//components/variations/proto",
   ]
+
+  # third_party/blink/public/common does not build on iOS
+  if (!is_ios) {
+    sources += [
+      "variations_url_loader_throttle.cc",
+      "variations_url_loader_throttle.h",
+    ]
+    deps += [ "//third_party/blink/public/common" ]
+  }
 }

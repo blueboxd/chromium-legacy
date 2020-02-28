@@ -311,10 +311,12 @@ class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),
-        web_view_(blink::WebView::Create(/*client=*/nullptr,
-                                         /*is_hidden=*/false,
-                                         /*compositing_enabled=*/false,
-                                         nullptr)),
+        web_view_(
+            blink::WebView::Create(/*client=*/nullptr,
+                                   /*is_hidden=*/false,
+                                   /*compositing_enabled=*/false,
+                                   nullptr,
+                                   mojo::ScopedInterfaceEndpointHandle())),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,
                                                   &web_frame_client_,

@@ -244,8 +244,8 @@ void AudioDestination::RequestRender(size_t frames_requested,
       output_position_.position = 0.0;
 
     if (resampler_) {
-      resampler_->Resample(audio_utilities::kRenderQuantumFrames,
-                           resampler_bus_.get());
+      resampler_->ResampleInternal(audio_utilities::kRenderQuantumFrames,
+                                   resampler_bus_.get());
     } else {
       // Process WebAudio graph and push the rendered output to FIFO.
       callback_.Render(render_bus_.get(), audio_utilities::kRenderQuantumFrames,

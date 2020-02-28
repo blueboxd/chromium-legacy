@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/url_loader_throttles.h"
 
+#include "components/variations/net/variations_url_loader_throttle.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -21,7 +23,8 @@ CreateContentBrowserURLLoaderThrottles(
       GetContentClient()->browser()->CreateURLLoaderThrottles(
           request, browser_context, wc_getter, navigation_ui_data,
           frame_tree_node_id);
-  // TODO(alexclarke): Add VariationsURLLoaderThrottle here.
+  variations::VariationsURLLoaderThrottle::AppendThrottleIfNeeded(
+      browser_context->GetVariationsClient(), &throttles);
   return throttles;
 }
 

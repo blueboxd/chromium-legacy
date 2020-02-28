@@ -31,6 +31,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
+#include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -249,6 +250,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetWillEnterBackForwardCacheCallbackForTesting(
       const WillEnterBackForwardCacheCallbackForTesting& callback);
 
+  // The remote mojom::PageBroadcast interface that is used to send messages to
+  // the renderer's blink::WebViewImpl when broadcasting messages to all
+  // renderers hosting frames in the frame tree.
+  const mojo::AssociatedRemote<blink::mojom::PageBroadcast>&
+  GetAssociatedPageBroadcast();
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -405,6 +412,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   WillEnterBackForwardCacheCallbackForTesting
       will_enter_back_forward_cache_callback_for_testing_;
+
+  mojo::AssociatedRemote<blink::mojom::PageBroadcast> page_broadcast_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 

@@ -13,6 +13,8 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_enum_reader.h"
+#include "extensions/common/alias.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -50,6 +52,24 @@ TEST(ExtensionAPIPermissionTest, CheckEnums) {
         << "Failed to find entry " << entry.second << " with value "
         << entry.first;
   }
+}
+
+TEST(ExtensionAPIPermissionTest, ManagedSessionLoginWarningFlag) {
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
+
+  constexpr APIPermissionInfo::InitInfo init_info[] = {
+      {APIPermission::kUnknown, "test permission",
+       APIPermissionInfo::kFlagImpliesFullURLAccess |
+           APIPermissionInfo::
+               kFlagDoesNotRequireManagedSessionFullLoginWarning}};
+
+  info->RegisterPermissions(base::make_span(init_info),
+                            base::span<const extensions::Alias>());
+
+  EXPECT_TRUE(info->GetByID(APIPermission::kAlwaysOnTopWindows)
+                  ->requires_managed_session_full_login_warning());
+  EXPECT_FALSE(info->GetByID(APIPermission::kUnknown)
+                   ->requires_managed_session_full_login_warning());
 }
 
 }  // namespace extensions

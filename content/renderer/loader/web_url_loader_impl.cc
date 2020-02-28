@@ -28,6 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/variations/net/variations_url_loader_throttle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/common/content_constants.h"
@@ -41,6 +42,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/web_url_request_util.h"
+#include "content/renderer/variations_render_thread_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
@@ -669,6 +671,8 @@ void WebURLLoaderImpl::Context::Start(
     if (throttle)
       throttles.push_back(std::move(throttle));
   }
+
+  VariationsRenderThreadObserver::AppendThrottleIfNeeded(&throttles);
 
   uint32_t loader_options = network::mojom::kURLLoadOptionNone;
   if (!no_mime_sniffing) {

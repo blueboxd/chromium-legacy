@@ -67,6 +67,10 @@ class BlobStorageContext;
 class SpecialStoragePolicy;
 }  // namespace storage
 
+namespace variations {
+class VariationsClient;
+}  // namespace variations
+
 namespace content {
 
 namespace mojom {
@@ -387,6 +391,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // API implementation can give some benefits over the in-memory
   // implementation.
   virtual bool CanUseDiskWhenOffTheRecord();
+
+  // Returns the VariationsClient associated with the context if any, or
+  // nullptr if there isn't one.
+  virtual variations::VariationsClient* GetVariationsClient();
 
  private:
   const std::string unique_id_;

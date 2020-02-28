@@ -112,11 +112,7 @@ void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(mutation_observer_data_);
   visitor->Trace(flat_tree_node_data_);
   visitor->Trace(node_layout_data_);
-  // Do not keep empty NodeListsNodeData objects around.
-  if (node_lists_ && node_lists_->IsEmpty())
-    node_lists_.Clear();
-  else
-    visitor->Trace(node_lists_);
+  visitor->Trace(node_lists_);
   NodeData::TraceAfterDispatch(visitor);
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -23,9 +24,12 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/variations/variations_client.h"
+#include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -67,6 +71,37 @@ base::LazyInstance<std::set<content::BrowserContext*>>::Leaky
 }  // namespace
 
 #endif  // DCHECK_IS_ON()
+
+namespace {
+
+class ChromeVariationsClient : public variations::VariationsClient {
+ public:
+  explicit ChromeVariationsClient(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
+
+  ~ChromeVariationsClient() override = default;
+
+  bool IsIncognito() const override {
+    return browser_context_->IsOffTheRecord();
+  }
+
+  std::string GetVariationsHeader() const override {
+    return variations::VariationsHttpHeaderProvider::GetInstance()
+        ->GetClientDataHeader(IsSignedIn());
+  }
+
+ private:
+  bool IsSignedIn() const {
+    Profile* profile = Profile::FromBrowserContext(browser_context_);
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    return identity_manager && identity_manager->HasPrimaryAccount();
+  }
+
+  content::BrowserContext* browser_context_;
+};
+
+}  // namespace
 
 Profile::Profile()
     : restored_last_session_(false),
@@ -374,4 +409,10 @@ void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
   DCHECK(off_the_record->IsOffTheRecord());
   for (auto& observer : observers_)
     observer.OnOffTheRecordProfileCreated(off_the_record);
+}
+
+variations::VariationsClient* Profile::GetVariationsClient() {
+  if (!chrome_variations_client_)
+    chrome_variations_client_ = std::make_unique<ChromeVariationsClient>(this);
+  return chrome_variations_client_.get();
 }

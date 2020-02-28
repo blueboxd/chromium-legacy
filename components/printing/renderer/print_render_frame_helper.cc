@@ -671,7 +671,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr,
-      /*is_hidden=*/false, /*compositing_enabled=*/false, /*opener=*/nullptr);
+      /*is_hidden=*/false, /*compositing_enabled=*/false, /*opener=*/nullptr,
+      mojo::ScopedInterfaceEndpointHandle());
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -925,7 +926,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*client=*/this,
       /*is_hidden=*/false,
       /*compositing_enabled=*/false,
-      /*opener=*/nullptr);
+      /*opener=*/nullptr, mojo::ScopedInterfaceEndpointHandle());
   content::RenderView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame =
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);

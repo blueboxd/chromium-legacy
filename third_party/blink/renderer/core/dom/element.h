@@ -1344,11 +1344,6 @@ inline UniqueElementData& Element::EnsureUniqueElementData() {
   return To<UniqueElementData>(*element_data_);
 }
 
-inline void Element::InvalidateStyleAttribute() {
-  DCHECK(GetElementData());
-  GetElementData()->style_attribute_is_dirty_ = true;
-}
-
 inline const CSSPropertyValueSet* Element::PresentationAttributeStyle() {
   if (!GetElementData())
     return nullptr;

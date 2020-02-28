@@ -138,8 +138,12 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
 
     if (source_sample_rate != Context()->sampleRate()) {
       double scale_factor = source_sample_rate / Context()->sampleRate();
-      multi_channel_resampler_ = std::make_unique<MultiChannelResampler>(
-          scale_factor, number_of_channels);
+      multi_channel_resampler_.reset(new MediaMultiChannelResampler(
+          number_of_channels, scale_factor,
+          audio_utilities::kRenderQuantumFrames,
+          CrossThreadBindRepeating(
+              &MediaElementAudioSourceHandler::ProvideResamplerInput,
+              CrossThreadUnretained(this))));
     } else {
       // Bypass resampling.
       multi_channel_resampler_.reset();
@@ -172,6 +176,15 @@ void MediaElementAudioSourceHandler::PrintCorsMessage(const String& message) {
   }
 }
 
+void MediaElementAudioSourceHandler::ProvideResamplerInput(
+    int resampler_frame_delay,
+    AudioBus* dest) {
+  DCHECK(Context()->IsAudioThread());
+  DCHECK(MediaElement());
+  DCHECK(dest);
+  MediaElement()->GetAudioSourceProvider().ProvideInput(dest, dest->length());
+}
+
 void MediaElementAudioSourceHandler::Process(uint32_t number_of_frames) {
   AudioBus* output_bus = Output(0).Bus();
 
@@ -199,8 +212,7 @@ void MediaElementAudioSourceHandler::Process(uint32_t number_of_frames) {
     // progress, even if we're going to output silence anyway.
     if (multi_channel_resampler_.get()) {
       DCHECK_NE(source_sample_rate_, Context()->sampleRate());
-      multi_channel_resampler_->Process(&provider, output_bus,
-                                        number_of_frames);
+      multi_channel_resampler_->Resample(number_of_frames, output_bus);
     } else {
       // Bypass the resampler completely if the source is at the context's
       // sample-rate.

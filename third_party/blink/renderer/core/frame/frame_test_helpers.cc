@@ -479,7 +479,8 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   web_view_ = static_cast<WebViewImpl*>(
       WebView::Create(test_web_view_client_,
                       /*is_hidden=*/false,
-                      /*compositing_enabled=*/true, opener));
+                      /*compositing_enabled=*/true, opener,
+                      mojo::ScopedInterfaceEndpointHandle()));
   // This property must be set at initialization time, it is not supported to be
   // changed afterward, and does nothing.
   web_view_->GetSettings()->SetViewportEnabled(viewport_enabled_);

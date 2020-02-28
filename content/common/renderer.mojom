@@ -12,6 +12,7 @@ import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
+import "third_party/blink/public/mojom/page/page.mojom";
 import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
@@ -94,6 +95,9 @@ struct CreateViewParams {
 
   // Set this to true when creating a RenderView inside a portal.
   bool inside_portal;
+
+  // Endpoint for any messages that are broadcast to all views in a WebContents.
+  pending_associated_receiver<blink.mojom.PageBroadcast> blink_page_broadcast;
 };
 
 struct CreateFrameWidgetParams {

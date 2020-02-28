@@ -47,19 +47,6 @@ class ThreadState::SweepForbiddenScope final {
   ThreadState* const state_;
 };
 
-class ThreadState::MainThreadGCForbiddenScope final {
-  STACK_ALLOCATED();
-
- public:
-  MainThreadGCForbiddenScope() : thread_state_(ThreadState::MainThreadState()) {
-    thread_state_->EnterGCForbiddenScope();
-  }
-  ~MainThreadGCForbiddenScope() { thread_state_->LeaveGCForbiddenScope(); }
-
- private:
-  ThreadState* const thread_state_;
-};
-
 class ThreadState::GCForbiddenScope final {
   STACK_ALLOCATED();
 

@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -24,6 +25,10 @@ class VariationsRenderThreadObserver
   VariationsRenderThreadObserver();
   ~VariationsRenderThreadObserver() override;
 
+  // Appends a throttle if the browser has sent us a variations header.
+  static void AppendThrottleIfNeeded(
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles);
+
   // content::RenderThreadObserver:
   void RegisterMojoInterfaces(
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
@@ -31,6 +36,7 @@ class VariationsRenderThreadObserver
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
 
   // content::mojom::RendererConfiguration:
+  void SetVariationsHeader(const std::string& variation_ids_header) override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
 

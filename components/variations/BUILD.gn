@@ -42,6 +42,7 @@ static_library("variations") {
     "synthetic_trials_active_group_id_provider.h",
     "variations_associated_data.cc",
     "variations_associated_data.h",
+    "variations_client.h",
     "variations_crash_keys.cc",
     "variations_crash_keys.h",
     "variations_http_header_provider.cc",

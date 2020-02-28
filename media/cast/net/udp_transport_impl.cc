@@ -54,7 +54,7 @@ UdpTransportImpl::UdpTransportImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
-    const CastTransportStatusCallback& status_callback)
+    CastTransportStatusCallback status_callback)
     : io_thread_proxy_(io_thread_proxy),
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
@@ -67,7 +67,7 @@ UdpTransportImpl::UdpTransportImpl(
       next_dscp_value_(net::DSCP_NO_CHANGE),
       send_buffer_size_(media::cast::kMaxBurstSize *
                         media::cast::kMaxIpPacketSize),
-      status_callback_(status_callback),
+      status_callback_(std::move(status_callback)),
       bytes_sent_(0) {
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
 }

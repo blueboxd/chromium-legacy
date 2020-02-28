@@ -262,6 +262,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "functional_test.cc",
     "hash_map_test.cc",
     "hash_set_test.cc",
+    "linked_hash_set_test.cc",
     "list_hash_set_test.cc",
     "lru_cache_test.cc",
     "math_extras_test.cc",

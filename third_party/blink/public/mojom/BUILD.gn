@@ -102,6 +102,7 @@ mojom("mojom_platform") {
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
     "page/display_cutout.mojom",
+    "page/page.mojom",
     "page/spatial_navigation.mojom",
     "payments/payment_app.mojom",
     "peerconnection/peer_connection_tracker.mojom",

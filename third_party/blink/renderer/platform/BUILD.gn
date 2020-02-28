@@ -359,8 +359,6 @@ jumbo_component("platform") {
     "audio/mac/vector_math_mac.h",
     "audio/media_multi_channel_resampler.cc",
     "audio/media_multi_channel_resampler.h",
-    "audio/multi_channel_resampler.cc",
-    "audio/multi_channel_resampler.h",
     "audio/panner.cc",
     "audio/panner.h",
     "audio/pffft/fft_frame_pffft.cc",

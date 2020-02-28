@@ -45,6 +45,7 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -233,19 +234,23 @@ class EmptyEventListener final : public NativeEventListener {
 WebView* WebView::Create(WebViewClient* client,
                          bool is_hidden,
                          bool compositing_enabled,
-                         WebView* opener) {
+                         WebView* opener,
+                         mojo::ScopedInterfaceEndpointHandle page_handle) {
   return WebViewImpl::Create(client, is_hidden, compositing_enabled,
-                             static_cast<WebViewImpl*>(opener));
+                             static_cast<WebViewImpl*>(opener),
+                             std::move(page_handle));
 }
 
-WebViewImpl* WebViewImpl::Create(WebViewClient* client,
-                                 bool is_hidden,
-                                 bool compositing_enabled,
-                                 WebViewImpl* opener) {
+WebViewImpl* WebViewImpl::Create(
+    WebViewClient* client,
+    bool is_hidden,
+    bool compositing_enabled,
+    WebViewImpl* opener,
+    mojo::ScopedInterfaceEndpointHandle page_handle) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
-  auto web_view = base::AdoptRef(
-      new WebViewImpl(client, is_hidden, compositing_enabled, opener));
+  auto web_view = base::AdoptRef(new WebViewImpl(
+      client, is_hidden, compositing_enabled, opener, std::move(page_handle)));
   web_view->AddRef();
   return web_view.get();
 }
@@ -269,13 +274,17 @@ void WebViewImpl::SetPrerendererClient(
 WebViewImpl::WebViewImpl(WebViewClient* client,
                          bool is_hidden,
                          bool does_composite,
-                         WebViewImpl* opener)
+                         WebViewImpl* opener,
+                         mojo::ScopedInterfaceEndpointHandle page_handle)
     : as_view_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
-      fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
+      fullscreen_controller_(std::make_unique<FullscreenController>(this)),
+      receiver_(this,
+                mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast>(
+                    std::move(page_handle))) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
   }

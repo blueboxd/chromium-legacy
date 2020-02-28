@@ -27,7 +27,6 @@ const char kFrame[] = "Frame";
 const char kFullscreen[] = "Fullscreen";
 const char kInheritedStyleChangeFromParentFrame[] =
     "InheritedStyleChangeFromParentFrame";
-const char kInline[] = "Inline";
 const char kInlineCSSStyleMutated[] =
     "Inline CSS style declaration was mutated";
 const char kInspector[] = "Inspector";

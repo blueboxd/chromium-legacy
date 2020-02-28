@@ -32,7 +32,7 @@
 #include "base/thread_annotations.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider_client.h"
-#include "third_party/blink/renderer/platform/audio/multi_channel_resampler.h"
+#include "third_party/blink/renderer/platform/audio/media_multi_channel_resampler.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
@@ -86,6 +86,9 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   // zeroes.
   void PrintCorsMessage(const String& message);
 
+  // Provide input to the resampler (if used).
+  void ProvideResamplerInput(int resampler_frame_delay, AudioBus* dest);
+
   // The HTMLMediaElement is held alive by MediaElementAudioSourceNode which is
   // an AudioNode. AudioNode uses pre-finalizers to dispose the handler, so
   // holding a weak reference is ok here and will not interfer with garbage
@@ -99,7 +102,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   unsigned source_number_of_channels_;
   double source_sample_rate_;
 
-  std::unique_ptr<MultiChannelResampler> multi_channel_resampler_;
+  std::unique_ptr<MediaMultiChannelResampler> multi_channel_resampler_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

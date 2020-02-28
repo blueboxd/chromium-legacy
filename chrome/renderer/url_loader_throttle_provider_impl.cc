@@ -225,7 +225,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #endif
 
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-      ChromeRenderThreadObserver::is_incognito_process(),
 #if defined(OS_ANDROID)
       client_data_header,
 #endif

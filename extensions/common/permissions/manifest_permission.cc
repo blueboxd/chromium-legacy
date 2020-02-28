@@ -51,4 +51,8 @@ void ManifestPermission::Log(std::string* log) const {
       *ToValue(), base::JSONWriter::OPTIONS_PRETTY_PRINT, log);
 }
 
+bool ManifestPermission::RequiresManagedSessionFullLoginWarning() const {
+  return true;
+}
+
 }  // namespace extensions

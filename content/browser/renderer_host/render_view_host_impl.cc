@@ -369,7 +369,11 @@ bool RenderViewHostImpl::CreateRenderView(
   // GuestViews in the same StoragePartition need to find each other's frames.
   params->renderer_wide_named_frame_lookup = GetSiteInstance()->IsGuest();
   params->inside_portal = delegate_->IsPortal();
-
+  // RenderViweHostImpls is reused after a crash, so reset any endpoint that
+  // might be a leftover from a crash.
+  page_broadcast_.reset();
+  params->blink_page_broadcast =
+      page_broadcast_.BindNewEndpointAndPassReceiver();
   // TODO(danakj): Make the visual_properties optional in the message.
   if (proxy_route_id == MSG_ROUTING_NONE) {
     params->visual_properties = GetWidget()->GetInitialVisualProperties();
@@ -892,6 +896,11 @@ void RenderViewHostImpl::OnFocus() {
   // Note: We allow focus and blur from swapped out RenderViewHosts, even when
   // the active RenderViewHost is in a different BrowsingInstance (e.g., WebUI).
   delegate_->Activate();
+}
+
+const mojo::AssociatedRemote<blink::mojom::PageBroadcast>&
+RenderViewHostImpl::GetAssociatedPageBroadcast() {
+  return page_broadcast_;
 }
 
 void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(

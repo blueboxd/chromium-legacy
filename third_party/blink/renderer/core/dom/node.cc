@@ -375,7 +375,6 @@ ContainerNode* Node::parentNode() const {
 }
 
 NodeList* Node::childNodes() {
-  ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
     return EnsureRareData().EnsureNodeLists().EnsureChildNodeList(*this_node);

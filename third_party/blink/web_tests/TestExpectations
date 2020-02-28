@@ -437,6 +437,13 @@ crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/short-simple-duration
 crbug.com/1052202 external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
 crbug.com/1052202 external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
 
+crbug.com/785246 external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
+crbug.com/674797 external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
+crbug.com/674797 external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
+
+# Minor pixel differences
+crbug.com/1056492 external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
+
 # Slightly flaky timeouts (about 1 in 30)
 crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Crash Pass Timeout ]
 
@@ -2936,18 +2943,6 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/svg/struct/reftests/use-inheritance-001.svg [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-022.svg [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-023.svg [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/marker-path-001.svg [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
@@ -6699,3 +6694,12 @@ crbug.com/1055006 [ Linux ] external/wpt/std-toast/methods.html [ Pass Failure T
 crbug.com/1055006 [ Linux ] external/wpt/std-toast/options.html [ Pass Failure Timeout ]
 
 crbug.com/1048597 [ Linux Debug ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Timeout ]
+
+crbug.com/1056022 [ Fuchsia ] http/tests/uri/escaped-entity.html [ Pass Timeout ]
+crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Pass Timeout ]
+crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Pass Timeout ]
+crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Pass Timeout ]
+
+# Sheriff 2020-02-28
+crbug.com/1057036 [ Mac ] virtual/controls-refresh/calendar-picker/date-picker-ax.html [ Pass Timeout ]
+crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.html [ Pass Timeout ]

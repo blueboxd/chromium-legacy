@@ -78,8 +78,8 @@ void CastSessionDelegateBase::StartUDP(
       local_endpoint, remote_endpoint, std::move(options),
       base::Bind(&CastSessionDelegateBase::ReceivePacket,
                  base::Unretained(this)),
-      base::Bind(&CastSessionDelegateBase::StatusNotificationCB,
-                 base::Unretained(this), error_callback),
+      base::BindRepeating(&CastSessionDelegateBase::StatusNotificationCB,
+                          base::Unretained(this), error_callback),
       base::BindRepeating(
           &media::cast::LogEventDispatcher::DispatchBatchOfEvents,
           base::Unretained(cast_environment_->logger())));

@@ -446,7 +446,8 @@ void RenderViewImpl::Initialize(
   // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
-                             opener_frame ? opener_frame->View() : nullptr);
+                             opener_frame ? opener_frame->View() : nullptr,
+                             params->blink_page_broadcast.PassHandle());
 
   g_view_map.Get().insert(std::make_pair(GetWebView(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));

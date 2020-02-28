@@ -45,7 +45,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
-      const CastTransportStatusCallback& status_callback);
+      CastTransportStatusCallback status_callback);
   ~UdpTransportImpl() final;
 
   // PacketTransport implementations.

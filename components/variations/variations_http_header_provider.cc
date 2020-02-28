@@ -17,27 +17,20 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/variations/proto/client_variations.pb.h"
+#include "components/variations/variations_client.h"
 
 namespace variations {
 
-// The following documents how adding/removing http headers for web content
-// requests are implemented when Network Service is enabled or not enabled.
-//
-// When Network Service is not enabled, adding headers is implemented in
-// ChromeResourceDispatcherHostDelegate::RequestBeginning() by calling
-// variations::AppendVariationHeaders(), and removing headers is implemented in
-// ChromeNetworkDelegate::OnBeforeRedirect() by calling
-// variations::StripVariationHeaderIfNeeded().
-//
-// When Network Service is enabled, adding/removing headers is implemented by
-// request consumers, and how it is implemented depends on the request type.
+// Adding/removing headers is implemented by request consumers, and how it is
+// implemented depends on the request type.
 // There are three cases:
-// 1. Subresources request in renderer, it is implemented
-// in URLLoaderThrottleProviderImpl::CreateThrottles() by adding a
-// GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// 1. Subresources request in renderer, it is implemented by
+// WebURLLoaderImpl::Context::Start() by adding a VariationsURLLoaderThrottle
+// to a content::URLLoaderThrottle vector.
 // 2. Navigations/Downloads request in browser, it is implemented in
-// ChromeContentBrowserClient::CreateURLLoaderThrottles() by also adding a
-// GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// ChromeContentBrowserClient::CreateURLLoaderThrottles() which calls
+// CreateContentBrowserURLLoaderThrottles which also adds a
+// VariationsURLLoaderThrottle to a content::URLLoaderThrottle vector.
 // 3. SimpleURLLoader in browser, it is implemented in a SimpleURLLoader wrapper
 // function variations::CreateSimpleURLLoaderWithVariationsHeader().
 
@@ -241,8 +234,7 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   cached_variation_ids_header_signed_in_ = GenerateBase64EncodedProto(true);
 
   for (auto& observer : observer_list_) {
-    observer.VariationIdsHeaderUpdated(cached_variation_ids_header_,
-                                       cached_variation_ids_header_signed_in_);
+    observer.VariationIdsHeaderUpdated();
   }
 }
 

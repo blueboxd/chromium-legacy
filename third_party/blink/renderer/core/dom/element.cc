@@ -6206,10 +6206,7 @@ void Element::StyleAttributeChanged(
 
 void Element::InlineStyleChanged() {
   DCHECK(IsStyledElement());
-  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             style_change_reason::kInline));
-  DCHECK(GetElementData());
-  GetElementData()->style_attribute_is_dirty_ = true;
+  InvalidateStyleAttribute();
   probe::DidInvalidateStyleAttr(this);
 
   if (MutationObserverInterestGroup* recipients =
@@ -6507,6 +6504,16 @@ void Element::SetActive(bool active) {
     PseudoStateChanged(CSSSelector::kPseudoActive);
 
   GetLayoutObject()->InvalidateIfControlStateChanged(kPressedControlState);
+}
+
+void Element::InvalidateStyleAttribute() {
+  DCHECK(GetElementData());
+  GetElementData()->style_attribute_is_dirty_ = true;
+  SetNeedsStyleRecalc(kLocalStyleChange,
+                      StyleChangeReasonForTracing::Create(
+                          style_change_reason::kInlineCSSStyleMutated));
+  GetDocument().GetStyleEngine().AttributeChangedForElement(
+      html_names::kStyleAttr, *this);
 }
 
 }  // namespace blink

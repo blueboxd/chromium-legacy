@@ -195,7 +195,8 @@ void UpdateLegacyMultiColumnFlowThread(
     if (!has_processed_first_column_in_flow_thread) {
       // The offset of the flow thread should be the same as that of the first
       // first column.
-      flow_thread->SetLocation(child.Offset().ToLayoutPoint());
+      flow_thread->SetLocationAndUpdateOverflowControlsIfNeeded(
+          child.Offset().ToLayoutPoint());
       flow_thread->SetLogicalWidth(logical_column_fragment.InlineSize());
       has_processed_first_column_in_flow_thread = true;
     }
@@ -965,7 +966,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     DCHECK(IsA<HTMLFieldSetElement>(content_wrapper->Parent()->GetNode()));
     LayoutPoint location = rendered_legend->Location();
     location -= content_wrapper->Location();
-    rendered_legend->SetLocation(location);
+    rendered_legend->SetLocationAndUpdateOverflowControlsIfNeeded(location);
   }
 }
 
@@ -1021,7 +1022,8 @@ void NGBlockNode::CopyChildFragmentPosition(
       offset.left += consumed;
   }
 
-  layout_box->SetLocation(offset.ToLayoutPoint());
+  layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(
+      offset.ToLayoutPoint());
 }
 
 // For inline children, NG painters handles fragments directly, but there are
@@ -1048,7 +1050,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
                                       child->Size().width -
                                       maybe_flipped_offset.left;
         }
-        layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
+        layout_box.SetLocationAndUpdateOverflowControlsIfNeeded(
+            maybe_flipped_offset.ToLayoutPoint());
       }
 
       // Legacy compatibility. This flag is used in paint layer for
@@ -1095,7 +1098,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
                                       child->Size().width -
                                       maybe_flipped_offset.left;
         }
-        layout_box->SetLocation(maybe_flipped_offset.ToLayoutPoint());
+        layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(
+            maybe_flipped_offset.ToLayoutPoint());
         continue;
       }
 

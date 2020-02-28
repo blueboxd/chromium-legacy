@@ -146,7 +146,6 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
   // wrapped with a ThreadState::GCForbiddenScope in order to avoid an
   // initialized node_lists_ is cleared by NodeRareData::TraceAfterDispatch().
   NodeListsNodeData& EnsureNodeLists() {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     if (!node_lists_)
       return CreateNodeLists();
     return *node_lists_;

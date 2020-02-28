@@ -17,11 +17,11 @@ class GoogleURLLoaderThrottle
     : public blink::URLLoaderThrottle,
       public base::SupportsWeakPtr<GoogleURLLoaderThrottle> {
  public:
-  GoogleURLLoaderThrottle(bool is_off_the_record,
+  GoogleURLLoaderThrottle(
 #if defined(OS_ANDROID)
-                          const std::string& client_data_header,
+      const std::string& client_data_header,
 #endif
-                          chrome::mojom::DynamicParams dynamic_params);
+      chrome::mojom::DynamicParams dynamic_params);
   ~GoogleURLLoaderThrottle() override;
 
  private:
@@ -40,7 +40,6 @@ class GoogleURLLoaderThrottle
                            bool* defer) override;
 #endif
 
-  bool is_off_the_record_;
 #if defined(OS_ANDROID)
   std::string client_data_header_;
 #endif

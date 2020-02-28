@@ -43,7 +43,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   }
 
   ChildNodeList* EnsureChildNodeList(ContainerNode& node) {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return To<ChildNodeList>(child_node_list_.Get());
     auto* list = MakeGarbageCollected<ChildNodeList>(node);
@@ -52,7 +51,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   }
 
   EmptyNodeList* EnsureEmptyChildNodeList(Node& node) {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return To<EmptyNodeList>(child_node_list_.Get());
     auto* list = MakeGarbageCollected<EmptyNodeList>(node);
@@ -88,7 +86,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   T* AddCache(ContainerNode& node,
               CollectionType collection_type,
               const AtomicString& name) {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     NodeListAtomicNameCacheMap::AddResult result = atomic_name_caches_.insert(
         std::make_pair(collection_type, name), nullptr);
     if (!result.is_new_entry) {
@@ -102,7 +99,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
   template <typename T>
   T* AddCache(ContainerNode& node, CollectionType collection_type) {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     NodeListAtomicNameCacheMap::AddResult result = atomic_name_caches_.insert(
         NamedNodeListKey(collection_type, CSSSelector::UniversalSelectorAtom()),
         nullptr);
@@ -124,7 +120,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   TagCollectionNS* AddCache(ContainerNode& node,
                             const AtomicString& namespace_uri,
                             const AtomicString& local_name) {
-    DCHECK(ThreadState::Current()->IsGCForbidden());
     QualifiedName name(g_null_atom, local_name, namespace_uri);
     TagCollectionNSCache::AddResult result =
         tag_collection_ns_caches_.insert(name, nullptr);
@@ -183,7 +178,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
 template <typename Collection>
 inline Collection* ContainerNode::EnsureCachedCollection(CollectionType type) {
-  ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   return EnsureNodeLists().AddCache<Collection>(*this, type);
 }
 
@@ -191,7 +185,6 @@ template <typename Collection>
 inline Collection* ContainerNode::EnsureCachedCollection(
     CollectionType type,
     const AtomicString& name) {
-  ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   return EnsureNodeLists().AddCache<Collection>(*this, type, name);
 }
 
@@ -201,7 +194,6 @@ inline Collection* ContainerNode::EnsureCachedCollection(
     const AtomicString& namespace_uri,
     const AtomicString& local_name) {
   DCHECK_EQ(type, kTagCollectionNSType);
-  ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   return EnsureNodeLists().AddCache(*this, namespace_uri, local_name);
 }
 

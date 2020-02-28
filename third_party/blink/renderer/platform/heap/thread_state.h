@@ -182,7 +182,6 @@ class PLATFORM_EXPORT ThreadState final {
   class AtomicPauseScope;
   class GCForbiddenScope;
   class LsanDisabledScope;
-  class MainThreadGCForbiddenScope;
   class NoAllocationScope;
   class StatisticsCollector;
   struct Statistics;

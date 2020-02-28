@@ -406,7 +406,8 @@
     },
     'blink_heap': {
       'filepath': 'third_party/blink/renderer/platform/heap' \
-                  '|base/allocator/partition_allocator/'
+                  '|base/allocator/partition_allocator/' \
+                  '|components/gc/'
     },
     'blink_html': {
       'filepath': 'third_party/blink/renderer/core/html/' \

@@ -93,6 +93,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/field_trial_recorder.h"
+#include "content/browser/field_trial_synchronizer.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
@@ -1733,6 +1734,8 @@ bool RenderProcessHostImpl::Init() {
 
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
+
+  FieldTrialSynchronizer::UpdateRendererVariationsHeader(this);
 
 #if defined(OS_ANDROID)
   // Initialize the java audio manager so that media session tests will pass.

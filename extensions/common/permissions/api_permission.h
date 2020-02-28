@@ -393,7 +393,16 @@ class APIPermissionInfo {
     // permissions messages in chrome://management. Reach out to the privacy
     // team when you add a new permission to check whether you should set this
     // flag or not.
-    kFlagRequiresManagementUIWarning = 1 << 6
+    kFlagRequiresManagementUIWarning = 1 << 6,
+
+    // Indicates that the permission shouldn't trigger the full warning on
+    // the login screen of the managed-guest session. See
+    // prefs::kManagedSessionUseFullLoginWarning. Most permissions are
+    // considered powerful enough to warrant the full warning,
+    // so the default for permissions (by not including this flag) is to trigger
+    // it. Reach out to the privacy team when you add a new permission to check
+    // whether you should set this flag or not.
+    kFlagDoesNotRequireManagedSessionFullLoginWarning = 1 << 7
   };
 
   using APIPermissionConstructor =
@@ -448,9 +457,15 @@ class APIPermissionInfo {
   }
 
   // Returns true if this permission should trigger a warning on the management
-  // page
+  // page.
   bool requires_management_ui_warning() const {
     return (flags_ & kFlagRequiresManagementUIWarning) != 0;
+  }
+
+  // Returns true if this permission should trigger the full warning on the
+  // login screen of the managed guest session.
+  bool requires_managed_session_full_login_warning() const {
+    return (flags_ & kFlagDoesNotRequireManagedSessionFullLoginWarning) == 0;
   }
 
  private:

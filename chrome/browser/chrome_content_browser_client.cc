@@ -4278,10 +4278,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         GetPrerenderCanceler(wc_getter)));
   }
 
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  bool is_signed_in = identity_manager && identity_manager->HasPrimaryAccount();
-
 #if defined(OS_ANDROID)
   std::string client_data_header;
   if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
@@ -4297,15 +4293,12 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   chrome::mojom::DynamicParams dynamic_params = {
       profile->GetPrefs()->GetBoolean(prefs::kForceGoogleSafeSearch),
       profile->GetPrefs()->GetInteger(prefs::kForceYouTubeRestrict),
-      profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps),
-      variations::VariationsHttpHeaderProvider::GetInstance()
-          ->GetClientDataHeader(is_signed_in)};
-  result.push_back(
-      std::make_unique<GoogleURLLoaderThrottle>(profile->IsOffTheRecord(),
+      profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps)};
+  result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if defined(OS_ANDROID)
-                                                client_data_header,
+      client_data_header,
 #endif
-                                                std::move(dynamic_params)));
+      std::move(dynamic_params)));
 
   result.push_back(std::make_unique<ProtocolHandlerThrottle>(
       ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));

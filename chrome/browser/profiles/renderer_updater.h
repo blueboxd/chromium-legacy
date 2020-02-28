@@ -15,7 +15,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/variations/variations_http_header_provider.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -30,13 +29,11 @@ class RenderProcessHost;
 }
 
 // The RendererUpdater is responsible for updating renderers about state change.
-class RendererUpdater
-    : public KeyedService,
-      public signin::IdentityManager::Observer,
+class RendererUpdater : public KeyedService,
 #if defined(OS_CHROMEOS)
-      public chromeos::OAuth2LoginManager::Observer,
+                        public chromeos::OAuth2LoginManager::Observer,
 #endif
-      public variations::VariationsHttpHeaderProvider::Observer {
+                        public signin::IdentityManager::Observer {
  public:
   explicit RendererUpdater(Profile* profile);
   ~RendererUpdater() override;
@@ -65,11 +62,6 @@ class RendererUpdater
   void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
 
-  // VariationsHttpHeaderProvider::Observer:
-  void VariationIdsHeaderUpdated(
-      const std::string& variation_ids_header,
-      const std::string& variation_ids_header_signed_in) override;
-
   // Update all renderers due to a configuration change.
   void UpdateAllRenderers();
 
@@ -86,15 +78,11 @@ class RendererUpdater
   std::vector<mojo::Remote<chrome::mojom::ChromeOSListener>>
       chromeos_listeners_;
 #endif
-  variations::VariationsHttpHeaderProvider* variations_http_header_provider_;
 
   // Prefs that we sync to the renderers.
   BooleanPrefMember force_google_safesearch_;
   IntegerPrefMember force_youtube_restrict_;
   StringPrefMember allowed_domains_for_apps_;
-
-  std::string cached_variation_ids_header_;
-  std::string cached_variation_ids_header_signed_in_;
 
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;

@@ -1,0 +1,11 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+// Used for broadcast messages from browser to renderer for messages that need
+// to go to all blink::WebViewImpls for a given content::WebContents. There may
+// be multiple blink::WebViewImpls when there are out-of-process iframes.
+interface PageBroadcast {
+};

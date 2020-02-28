@@ -24,8 +24,21 @@ MediaMultiChannelResampler::MediaMultiChannelResampler(
 }
 
 void MediaMultiChannelResampler::Resample(int frames,
-                                          media::AudioBus* audio_bus) {
-  resampler_->Resample(audio_bus->frames(), audio_bus);
+                                          blink::AudioBus* audio_bus) {
+  // Create a media::AudioBus wrapper around the memory provided by the
+  // blink::AudioBus.
+  std::unique_ptr<media::AudioBus> resampler_bus_ =
+      media::AudioBus::CreateWrapper(audio_bus->NumberOfChannels());
+  for (unsigned int i = 0; i < audio_bus->NumberOfChannels(); ++i) {
+    resampler_bus_->SetChannelData(i, audio_bus->Channel(i)->MutableData());
+  }
+  resampler_bus_->set_frames(audio_bus->length());
+  ResampleInternal(frames, resampler_bus_.get());
+}
+
+void MediaMultiChannelResampler::ResampleInternal(int frames,
+                                                  media::AudioBus* audio_bus) {
+  resampler_->Resample(frames, audio_bus);
 }
 
 void MediaMultiChannelResampler::ProvideResamplerInput(

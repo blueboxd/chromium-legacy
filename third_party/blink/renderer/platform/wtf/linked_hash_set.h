@@ -25,8 +25,10 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 
@@ -1025,6 +1027,252 @@ inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
        static_cast<LinkedHashSetNodeBase&>(b));
   swap(a.value_, b.value_);
   Allocator::LeaveGCForbiddenScope();
+}
+
+// TODO(keinakashima): replace existing LinkedHashSet with NewLinkedHashSet
+// after completion
+
+template <typename ValueArg>
+class NewLinkedHashSetNode {
+  USING_FAST_MALLOC(NewLinkedHashSetNode);
+
+ public:
+  NewLinkedHashSetNode() = default;
+
+  NewLinkedHashSetNode(wtf_size_t prev_index,
+                       wtf_size_t next_index,
+                       const ValueArg& value)
+      : prev_index_(prev_index), next_index_(next_index), value_(value) {}
+
+  NewLinkedHashSetNode(wtf_size_t prev_index,
+                       wtf_size_t next_index,
+                       ValueArg&& value)
+      : prev_index_(prev_index),
+        next_index_(next_index),
+        value_(std::move(value)) {}
+
+  NewLinkedHashSetNode(const NewLinkedHashSetNode& other) = delete;
+
+  NewLinkedHashSetNode(NewLinkedHashSetNode&& other) = default;
+
+  NewLinkedHashSetNode& operator=(const NewLinkedHashSetNode& other) = delete;
+
+  NewLinkedHashSetNode& operator=(NewLinkedHashSetNode&& other) = default;
+
+  wtf_size_t GetNextIndexForFreeNode() const { return next_index_; }
+
+  wtf_size_t GetPrevIndexForUsedNode() const { return prev_index_; }
+
+  wtf_size_t GetNextIndexForUsedNode() const { return next_index_; }
+
+  const ValueArg& GetValueForUsedNode() const { return value_; }
+
+  void SetNextIndexForFreeNode(wtf_size_t next_index) {
+    next_index_ = next_index;
+  }
+
+  void SetPrevIndexForUsedNode(wtf_size_t prev_index) {
+    prev_index_ = prev_index;
+  }
+
+  void SetNextIndexForUsedNode(wtf_size_t next_index) {
+    next_index_ = next_index;
+  }
+
+  void SetValueForUsedNode(const ValueArg& value) { value_ = value; }
+
+  void SetValueForUsedNode(ValueArg&& value) { value_ = std::move(value); }
+
+ private:
+  wtf_size_t prev_index_ = 0;
+  wtf_size_t next_index_ = 0;
+  ValueArg value_ = HashTraits<ValueArg>::EmptyValue();
+};
+
+// This class is yet experimental. Do not use this class.
+
+// LinkedHashSet provides a Set interface like HashSet, but also has a
+// predictable iteration order. It has O(1) insertion, removal, and test for
+// containership. It maintains a linked list through its contents such that
+// iterating it yields values in the order in which they were inserted.
+// The linked list is implementing in a vector (with links being indexes instead
+// of pointers), to simplify the move of backing during GC compaction.
+
+template <typename ValueArg>
+class NewLinkedHashSet {
+  USING_FAST_MALLOC(NewLinkedHashSet);
+
+ private:
+  using Value = ValueArg;
+  using Node = NewLinkedHashSetNode<Value>;
+  using Map = HashMap<Value, wtf_size_t>;
+
+ public:
+  // TODO(keinakashima): add security check
+  struct AddResult final {
+    STACK_ALLOCATED();
+
+   public:
+    AddResult(const Value* stored_value, bool is_new_entry)
+        : stored_value(stored_value), is_new_entry(is_new_entry) {}
+    const Value* stored_value;
+    bool is_new_entry;
+  };
+
+  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+
+  NewLinkedHashSet();
+  NewLinkedHashSet(const NewLinkedHashSet&);
+  NewLinkedHashSet(NewLinkedHashSet&&);
+  NewLinkedHashSet& operator=(const NewLinkedHashSet&);
+  NewLinkedHashSet& operator=(NewLinkedHashSet&&);
+
+  ~NewLinkedHashSet() = default;
+
+  void Swap(NewLinkedHashSet&);
+
+  wtf_size_t size() const { return value_to_index_.size(); }
+  bool IsEmpty() const { return value_to_index_.IsEmpty(); }
+
+  // TODO(keinakashima): implement iterators
+
+  const Value& front() const;
+  void RemoveFirst();
+
+  const Value& back() const;
+  void pop_back();
+  // TODO(keinakashima): implement find, Contains
+
+  template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
+
+  void erase(ValuePeekInType);
+  // TODO(keinakashima): implement erase that has an iterator as an argument
+  // TODO(keinakashima): implement clear, RemoveAll, Trace
+
+ private:
+  bool IsFreeListEmpty() const { return free_head_index_ == anchor_index_; }
+
+  wtf_size_t UsedFirstIndex() const {
+    return nodes_[anchor_index_].GetNextIndexForUsedNode();
+  }
+  wtf_size_t UsedLastIndex() const {
+    return nodes_[anchor_index_].GetPrevIndexForUsedNode();
+  }
+  wtf_size_t NewEntryIndex() const {
+    if (IsFreeListEmpty()) {
+      return nodes_.size();
+    }
+    return free_head_index_;
+  }
+
+  HashMap<Value, wtf_size_t> value_to_index_;
+  Vector<Node> nodes_;
+  wtf_size_t free_head_index_ = anchor_index_;
+  static constexpr wtf_size_t anchor_index_ = 0;
+};
+
+template <typename T>
+NewLinkedHashSet<T>::NewLinkedHashSet() {
+  // TODO(keinakashima): add assertion when considering GC
+
+  // nodes_[0] is used for anchor, which serves as the beginning and the end of
+  // the used list.
+  nodes_.push_back(Node());
+}
+
+template <typename T>
+inline NewLinkedHashSet<T>::NewLinkedHashSet(NewLinkedHashSet&& other) {
+  Swap(other);
+}
+
+template <typename T>
+inline NewLinkedHashSet<T>& NewLinkedHashSet<T>::operator=(
+    const NewLinkedHashSet& other) {
+  NewLinkedHashSet tmp(other);
+  Swap(tmp);
+  return *this;
+}
+
+template <typename T>
+inline NewLinkedHashSet<T>& NewLinkedHashSet<T>::operator=(
+    NewLinkedHashSet&& other) {
+  Swap(other);
+  return *this;
+}
+
+template <typename T>
+inline void NewLinkedHashSet<T>::Swap(NewLinkedHashSet& other) {
+  value_to_index_.swap(other.value_to_index_);
+  nodes_.swap(other.nodes_);
+  swap(free_head_index_, other.free_head_index_);
+}
+
+template <typename T>
+inline const T& NewLinkedHashSet<T>::front() const {
+  DCHECK(!IsEmpty());
+  return nodes_[UsedFirstIndex()].GetValueForUsedNode();
+}
+
+template <typename T>
+inline const T& NewLinkedHashSet<T>::back() const {
+  DCHECK(!IsEmpty());
+  return nodes_[UsedLastIndex()].GetValueForUsedNode();
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::insert(
+    IncomingValueType&& value) {
+  wtf_size_t new_entry_index = NewEntryIndex();
+  typename Map::AddResult result =
+      value_to_index_.template insert(value, new_entry_index);
+
+  if (!result.is_new_entry) {
+    wtf_size_t index = result.stored_value->value;
+    return AddResult(&(nodes_[index].GetValueForUsedNode()), false);
+  }
+
+  wtf_size_t used_last_index = UsedLastIndex();
+  Node& used_last_node = nodes_[used_last_index];
+  Node& anchor = nodes_[anchor_index_];
+  used_last_node.SetNextIndexForUsedNode(new_entry_index);
+  anchor.SetPrevIndexForUsedNode(new_entry_index);
+
+  if (IsFreeListEmpty()) {
+    nodes_.push_back(Node(used_last_index, anchor_index_,
+                          std::forward<IncomingValueType>(value)));
+  } else {
+    DCHECK(free_head_index_ == new_entry_index);
+    Node& free_head = nodes_[free_head_index_];
+    free_head_index_ = free_head.GetNextIndexForFreeNode();
+    free_head = Node(used_last_index, anchor_index_, value);
+  }
+
+  return AddResult(&(nodes_[new_entry_index].GetValueForUsedNode()), true);
+}
+
+template <typename T>
+inline void NewLinkedHashSet<T>::erase(ValuePeekInType value) {
+  typename Map::iterator it = value_to_index_.find(value);
+  if (it == value_to_index_.end())
+    return;
+
+  wtf_size_t index = it->value;
+  value_to_index_.erase(value);
+  Node& node = nodes_[index];
+  wtf_size_t prev_index = node.GetPrevIndexForUsedNode();
+  wtf_size_t next_index = node.GetNextIndexForUsedNode();
+
+  Node& prev_node = nodes_[prev_index];
+  Node& next_node = nodes_[next_index];
+
+  prev_node.SetNextIndexForUsedNode(next_index);
+  next_node.SetPrevIndexForUsedNode(prev_index);
+
+  node.SetValueForUsedNode(HashTraits<T>::EmptyValue());
+  node.SetNextIndexForFreeNode(free_head_index_);
+  free_head_index_ = index;
 }
 
 }  // namespace WTF

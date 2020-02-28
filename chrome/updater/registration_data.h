@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/version.h"
+#include "chrome/updater/constants.h"
 
 namespace updater {
 
@@ -33,7 +34,7 @@ struct RegistrationRequest {
 
   // The version of the app already installed. 0.0.0.0 if the app is not
   // already installed.
-  base::Version version = base::Version("0.0.0.0");
+  base::Version version = base::Version(kNullVersion);
 
   // A file path. A file exists at this path if and only if the app is
   // still installed. This is used (on Mac, for example) to detect

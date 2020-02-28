@@ -24,6 +24,7 @@ struct DefaultSingletonTraits;
 }
 
 namespace variations {
+class VariationsClient;
 
 // A helper class for maintaining client experiments and metrics state
 // transmitted in custom HTTP request headers.
@@ -34,9 +35,7 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   class Observer {
    public:
     // Called when variation ids headers are updated.
-    virtual void VariationIdsHeaderUpdated(
-        const std::string& variation_ids_header,
-        const std::string& variation_ids_header_signed_in) {}
+    virtual void VariationIdsHeaderUpdated() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -184,8 +183,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   std::string cached_variation_ids_header_signed_in_;
 
   // List of observers to notify on variation ids header update.
-  // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  // NOTE this should really check observers are unregistered but due to
+  // https://crbug.com/1051937 this isn't currently possible.
+  base::ObserverList<Observer>::Unchecked observer_list_;
+
+  const VariationsClient* variations_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };

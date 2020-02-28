@@ -500,7 +500,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(&web_view_client, false,
-                      /*compositing_enabled=*/true, nullptr));
+                      /*compositing_enabled=*/true, nullptr,
+                      mojo::ScopedInterfaceEndpointHandle()));
+
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // WebView does not have a frame yet, but we should still be able to set the
   // background color.
@@ -2684,7 +2686,8 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // internal WebViewClient on demand if the supplied WebViewClient is null.
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(nullptr, false,
-                      /*compositing_enabled=*/false, nullptr));
+                      /*compositing_enabled=*/false, nullptr,
+                      mojo::ScopedInterfaceEndpointHandle()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(

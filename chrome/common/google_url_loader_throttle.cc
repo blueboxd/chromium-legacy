@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "components/google/core/common/google_util.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -23,31 +22,24 @@ const char kClientDataHeader[] = "X-CCT-Client-Data";
 }  // namespace
 
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
-    bool is_off_the_record,
 #if defined(OS_ANDROID)
     const std::string& client_data_header,
 #endif
     chrome::mojom::DynamicParams dynamic_params)
-    : is_off_the_record_(is_off_the_record),
+    :
 #if defined(OS_ANDROID)
       client_data_header_(client_data_header),
 #endif
       dynamic_params_(std::move(dynamic_params)) {
 }
 
-GoogleURLLoaderThrottle::~GoogleURLLoaderThrottle() {}
+GoogleURLLoaderThrottle::~GoogleURLLoaderThrottle() = default;
 
 void GoogleURLLoaderThrottle::DetachFromCurrentSequence() {}
 
 void GoogleURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  variations::AppendVariationsHeaderWithCustomValue(
-      request->url,
-      is_off_the_record_ ? variations::InIncognito::kYes
-                         : variations::InIncognito::kNo,
-      dynamic_params_.variation_ids_header, request);
-
   if (dynamic_params_.force_safe_search) {
     GURL new_url;
     safe_search_util::ForceGoogleSafeSearch(request->url, &new_url);
@@ -87,9 +79,6 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
     net::HttpRequestHeaders* modified_headers) {
-  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, response_head,
-                                             to_be_removed_headers);
-
   // URLLoaderThrottles can only change the redirect URL when the network
   // service is enabled. The non-network service path handles this in
   // ChromeNetworkDelegate.

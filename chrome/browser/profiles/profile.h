@@ -157,6 +157,8 @@ class Profile : public content::BrowserContext {
   bool IsOffTheRecord() override = 0;
   virtual bool IsOffTheRecord() const = 0;
 
+  variations::VariationsClient* GetVariationsClient() override;
+
   // Returns the creation time of this profile. This will either be the creation
   // time of the profile directory or, for ephemeral off-the-record profiles,
   // the creation time of the profile object instance.
@@ -469,6 +471,8 @@ class Profile : public content::BrowserContext {
   bool is_system_profile_;
 
   base::ObserverList<ProfileObserver> observers_;
+
+  std::unique_ptr<variations::VariationsClient> chrome_variations_client_;
 
   DISALLOW_COPY_AND_ASSIGN(Profile);
 };

@@ -3,8 +3,8 @@
 <head>
   <script src="../../../resources/testharness.js"></script>
   <script src="../../../resources/testharnessreport.js"></script>
-  <script src="../../../fast/forms/resources/picker-common.js"></script>
-  <script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+  <script src="../../forms/resources/picker-common.js"></script>
+  <script src="resources/calendar-picker-common.js"></script>
 </head>
 
 <body>
@@ -21,22 +21,21 @@ async_test((t) => {
         } else if (type == 'MarkDirty') {
             console.log('Received MarkDirty');
             markDirtyCounter++;
-        }
-
-        if (focusCounter == 3 && markDirtyCounter == 4) {
-            t.done();
+            if (focusCounter == 2 && markDirtyCounter == 2) {
+                t.done();
+            }
         }
     });
 
     var week1 = document.getElementById('week1');
     function test1() {
-        assert_equals(focusCounter, 2, "Expected 2 Focus events from opening picker");
-        assert_equals(markDirtyCounter, 3, "Expected 3 MarkDirty events from opening picker");
-       eventSender.keyDown('ArrowDown');
+        eventSender.keyDown('ArrowDown');
     }
 
     openPicker(week1, test1);
 }, 'Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.');
+
+
 
 </script>
 </body>

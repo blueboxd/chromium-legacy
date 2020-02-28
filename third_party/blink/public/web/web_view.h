@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
@@ -96,10 +97,14 @@ class WebView {
   // LayerTreeView will not be set for the WebWidget.
   // TODO(danakj): This field should go away as WebWidgets always composite
   // their output.
-  BLINK_EXPORT static WebView* Create(WebViewClient*,
-                                      bool is_hidden,
-                                      bool compositing_enabled,
-                                      WebView* opener);
+  // |page_handle| is only set for views that are part of a WebContents' frame
+  // tree.
+  BLINK_EXPORT static WebView* Create(
+      WebViewClient*,
+      bool is_hidden,
+      bool compositing_enabled,
+      WebView* opener,
+      mojo::ScopedInterfaceEndpointHandle page_handle);
 
   // Destroys the WebView.
   virtual void Close() = 0;

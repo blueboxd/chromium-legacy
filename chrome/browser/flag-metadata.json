@@ -566,6 +566,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "crostini-show-mic-setting",
+    "owners": [ "danielng"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "crostini-usb-allow-unsupported",
     "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 85

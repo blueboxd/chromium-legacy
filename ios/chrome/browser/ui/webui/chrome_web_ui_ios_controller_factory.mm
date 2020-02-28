@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/webui/about_ui.h"
 #include "ios/chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui_ios.h"
@@ -20,6 +21,7 @@
 #include "ios/chrome/browser/ui/webui/net_export/net_export_ui.h"
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
+#include "ios/chrome/browser/ui/webui/policy/policy_ui.h"
 #include "ios/chrome/browser/ui/webui/prefs_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
@@ -108,6 +110,10 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOSWithHost<TermsUI>;
   if (url_host == kChromeUIVersionHost)
     return &NewWebUIIOS<VersionUI>;
+
+  if (IsEnterprisePolicyEnabled() && url_host == kChromeUIPolicyHost) {
+    return &NewWebUIIOS<PolicyUI>;
+  }
 
   return nullptr;
 }

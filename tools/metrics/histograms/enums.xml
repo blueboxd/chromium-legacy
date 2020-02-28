@@ -26605,6 +26605,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3169" label="CssStyleSheetReplaceWithImport"/>
   <int value="3170" label="CryptoAlgorithmEd25519"/>
   <int value="3171" label="CryptoAlgorithmX25519"/>
+  <int value="3172" label="DisplayNames"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38626,6 +38627,7 @@ from previous Chrome versions.
   <int value="-181279574" label="NativeFilesystemAPI:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-180481252" label="CompositorThreadedScrollbarScrolling:enabled"/>
+  <int value="-177974995" label="CrostiniShowMicSetting:disabled"/>
   <int value="-175666252" label="Portals:disabled"/>
   <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>
   <int value="-174706795"
@@ -39665,6 +39667,7 @@ from previous Chrome versions.
   <int value="1094506652" label="UseGoogleLocalNtp:enabled"/>
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
+  <int value="1097935876" label="CrostiniShowMicSetting:enabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1101062411" label="Rar2Fs:disabled"/>
@@ -60835,6 +60838,30 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
   <int value="41" label="No error."/>
   <int value="42" label="Compression error."/>
+<!-- HttpDecoder or HttpDecoderAdapter errors -->
+
+  <int value="43" label="Varint beyond implementation limit."/>
+  <int value="44" label="Name length varint error."/>
+  <int value="45" label="Value legnth varint error."/>
+  <int value="46" label="Name string literal length exceeds buffer limit."/>
+  <int value="47" label="Value string literal length exceeds buffer limit."/>
+  <int value="48" label="Error in Huffman encoding for name."/>
+  <int value="49" label="Error in Huffman encoding for value."/>
+  <int value="50"
+      label="Next instruction should have been a dynamic table size update."/>
+  <int value="51"
+      label="Invalid index in indexed header field representation."/>
+  <int value="52"
+      label="Invalid index in literal header field with indexed name
+             representation."/>
+  <int value="53" label="Dynamic table size update not allowed."/>
+  <int value="54"
+      label="Initial dynamic table size update is above low water mark."/>
+  <int value="55"
+      label="Dynamic table size update is above acknowledged setting."/>
+  <int value="56" label="HPACK block ends in the middle of an instruction."/>
+  <int value="57" label="Incoming data fragment exceeds buffer limit."/>
+  <int value="58" label="Total compressed HPACK data size exceeds limit."/>
 </enum>
 
 <enum name="SpdyProtocolVersion">

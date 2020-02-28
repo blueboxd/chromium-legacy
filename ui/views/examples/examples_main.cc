@@ -95,6 +95,10 @@ int main(int argc, char** argv) {
   // values from TestTimeouts. This ensures they're properly initialized.
   TestTimeouts::Initialize();
 
+  // Viz depends on the task environment to correctly tear down.
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
+
   // The ContextFactory must exist before any Compositors are created.
   viz::HostFrameSinkManager host_frame_sink_manager;
   viz::ServerSharedBitmapManager shared_bitmap_manager;
@@ -104,9 +108,6 @@ int main(int argc, char** argv) {
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(
       &host_frame_sink_manager, &frame_sink_manager);
   context_factory->set_use_test_surface(false);
-
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
 
   base::i18n::InitializeICU();
 

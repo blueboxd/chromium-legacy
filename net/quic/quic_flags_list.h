@@ -368,3 +368,18 @@ QUIC_FLAG(bool,
 
 // If true, enable QUIC version h3-25.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_25, false)
+
+// If true, fix QUIC bandwidth sampler to avoid over estimating bandwidth in
+// the presence of ack aggregation.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_avoid_overestimate_bandwidth_with_aggregation,
+    false)
+
+// If true, emit more granular errors instead of
+// SpdyFramerError::SPDY_DECOMPRESS_FAILURE in Http2DecoderAdapter.
+// This flag is duplicated in spdy_flags_impl.h due to mixed usage of flags.
+// Please update the flag value in spdy when this flag is flipped.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
+          true)

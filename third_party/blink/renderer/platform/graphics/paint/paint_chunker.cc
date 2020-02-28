@@ -65,8 +65,9 @@ void PaintChunker::CreateNewChunk() {
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  bool item_forces_new_chunk =
-      item.IsForeignLayer() || item.IsScrollHitTest() || item.IsScrollbar();
+  bool item_forces_new_chunk = item.IsForeignLayer() ||
+                               item.IsGraphicsLayerWrapper() ||
+                               item.IsScrollHitTest() || item.IsScrollbar();
   if (item_forces_new_chunk)
     ForceNewChunk();
 

@@ -10,11 +10,13 @@
 
 namespace blink {
 
-CookieJar::CookieJar(blink::Document* document) : document_(document) {}
+CookieJar::CookieJar(blink::Document* document)
+    : backend_(document->ToExecutionContext()), document_(document) {}
 
 CookieJar::~CookieJar() = default;
 
 void CookieJar::Trace(Visitor* visitor) {
+  visitor->Trace(backend_);
   visitor->Trace(document_);
 }
 
@@ -56,7 +58,8 @@ void CookieJar::RequestRestrictedCookieManagerIfNeeded() {
   if (!backend_.is_bound() || !backend_.is_connected()) {
     backend_.reset();
     document_->GetBrowserInterfaceBroker().GetInterface(
-        backend_.BindNewPipeAndPassReceiver());
+        backend_.BindNewPipeAndPassReceiver(
+            document_->GetTaskRunner(TaskType::kInternalDefault)));
   }
 }
 

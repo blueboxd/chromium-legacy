@@ -38,7 +38,6 @@
       "chrome/app/google_chrome_strings.grd",
       "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd",
       "chrome/browser/resources/chromeos/accessibility/strings/accessibility_strings.grd",
-      "chrome/browser/resources/chromeos/accessibility/switch_access/strings/switch_access_strings.grd",
       "chrome/browser/touch_to_fill/android/internal/java/strings/android_touch_to_fill_strings.grd",
       "chrome/browser/ui/android/strings/android_chrome_strings.grd",
       "chrome/credential_provider/gaiacp/gaia_resources.grd",

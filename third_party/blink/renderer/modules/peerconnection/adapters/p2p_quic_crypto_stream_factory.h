@@ -26,7 +26,7 @@ class P2PQuicCryptoStreamFactory {
       const quic::QuicCryptoServerConfig* crypto_config,
       quic::QuicCompressedCertsCache* compressed_certs_cache,
       quic::QuicSession* session,
-      quic::QuicCryptoServerStream::Helper* helper) = 0;
+      quic::QuicCryptoServerStreamBase::Helper* helper) = 0;
 };
 
 }  // namespace blink

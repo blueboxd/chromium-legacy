@@ -36,7 +36,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
                     &version_manager_,
                     std::unique_ptr<quic::test::MockQuicConnectionHelper>(
                         new quic::test::MockQuicConnectionHelper),
-                    std::unique_ptr<quic::QuicCryptoServerStream::Helper>(
+                    std::unique_ptr<quic::QuicCryptoServerStreamBase::Helper>(
                         new QuicSimpleServerSessionHelper(
                             quic::QuicRandom::GetInstance())),
                     std::unique_ptr<quic::test::MockAlarmFactory>(

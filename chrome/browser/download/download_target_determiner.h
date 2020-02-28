@@ -324,6 +324,10 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   safe_browsing::DownloadFileType::DangerLevel GetDangerLevel(
       PriorVisitsToReferrer visits) const;
 
+  // Generates the download file name based on information from URL, response
+  // headers and sniffed mime type.
+  base::FilePath GenerateFileName() const;
+
   // download::DownloadItem::Observer
   void OnDownloadDestroyed(download::DownloadItem* download) override;
 

@@ -12,6 +12,8 @@ source_set("policy") {
     "browser_state_policy_connector_factory.mm",
     "configuration_policy_handler_list_factory.h",
     "configuration_policy_handler_list_factory.mm",
+    "policy_conversions_client_ios.h",
+    "policy_conversions_client_ios.mm",
     "schema_registry_factory.h",
     "schema_registry_factory.mm",
   ]
@@ -20,6 +22,7 @@ source_set("policy") {
     "//base",
     "//components/policy:generated",
     "//components/policy/core/common",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//services/network/public/cpp",
   ]

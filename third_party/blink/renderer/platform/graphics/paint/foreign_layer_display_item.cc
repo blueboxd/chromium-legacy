@@ -129,20 +129,4 @@ void RecordForeignLayer(GraphicsContext& context,
                              nullptr, properties);
 }
 
-void RecordGraphicsLayerAsForeignLayer(GraphicsContext& context,
-                                       DisplayItem::Type type,
-                                       const GraphicsLayer& graphics_layer) {
-  // In pre-CompositeAfterPaint, the GraphicsLayer hierarchy is still built
-  // during CompositingUpdate, and we have to clear them here to ensure no
-  // extraneous layers are still attached. In future we will disable all
-  // those layer hierarchy code so we won't need this line.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  graphics_layer.CcLayer()->RemoveAllChildren();
-
-  RecordForeignLayerInternal(
-      context, graphics_layer, type, graphics_layer.CcLayer(),
-      FloatPoint(graphics_layer.GetOffsetFromTransformNode()), &graphics_layer,
-      &graphics_layer.GetPropertyTreeState());
-}
-
 }  // namespace blink

@@ -210,7 +210,7 @@ Polymer({
         }, () => {});
       case State.PROMPT:
         if (this.backupCheckboxChecked_) {
-          this.startBackup_();
+          this.startBackup_(/*showFileChooser=*/ false);
         } else {
           this.startPrechecks_(() => {
             this.startUpgrade_();
@@ -247,9 +247,17 @@ Polymer({
   },
 
   /** @private */
-  startBackup_() {
+  onChangeLocationButtonClick_() {
+    this.startBackup_(/*showFileChooser=*/ true);
+  },
+
+  /**
+   * @param {boolean} showFileChooser
+   * @private
+   */
+  startBackup_(showFileChooser) {
     this.state_ = State.BACKUP;
-    BrowserProxy.getInstance().handler.backup();
+    BrowserProxy.getInstance().handler.backup(showFileChooser);
   },
 
   /** @private */

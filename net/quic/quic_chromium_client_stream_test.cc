@@ -61,11 +61,11 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD5(WritevData,
-               quic::QuicConsumedData(quic::QuicStream* stream,
-                                      quic::QuicStreamId id,
+               quic::QuicConsumedData(quic::QuicStreamId id,
                                       size_t write_length,
                                       quic::QuicStreamOffset offset,
-                                      quic::StreamSendingState fin));
+                                      quic::StreamSendingState state,
+                                      bool is_retransmission));
   MOCK_METHOD3(SendRstStream,
                void(quic::QuicStreamId stream_id,
                     quic::QuicRstStreamErrorCode error,
@@ -320,10 +320,10 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
   // All data written.
   std::string header = ConstructDataHeader(kDataLen);
   if (version_.HasIetfQuicFrames()) {
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
   EXPECT_EQ(
@@ -754,10 +754,10 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   // All data written.
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(kDataLen);
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
   EXPECT_EQ(
@@ -771,7 +771,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   const size_t kDataLen = base::size(kData1);
 
   // No data written.
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING, handle_->WriteStreamData(
@@ -782,10 +782,10 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   // All data written.
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(kDataLen);
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(kDataLen, true)));
   stream_->OnCanWrite();
   // Do 2 writes in version 99.
@@ -806,17 +806,17 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
   // All data written.
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(buf1->size());
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(buf1->size(), false)));
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(buf2->size());
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(buf2->size(), true)));
   TestCompletionCallback callback;
   EXPECT_EQ(
@@ -834,14 +834,14 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
   // Only a part of the data is written.
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(buf1->size());
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       // First piece of data is written.
       .WillOnce(Return(quic::QuicConsumedData(buf1->size(), false)));
   // Second piece of data is queued.
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -853,10 +853,10 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
   // The second piece of data is written.
   if (version_.HasIetfQuicFrames()) {
     std::string header = ConstructDataHeader(buf2->size());
-    EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+    EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
-  EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, false))
       .WillOnce(Return(quic::QuicConsumedData(buf2->size(), true)));
   stream_->OnCanWrite();
   if (version_.HasIetfQuicFrames()) {

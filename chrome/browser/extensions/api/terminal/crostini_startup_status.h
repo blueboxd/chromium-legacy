@@ -20,14 +20,13 @@ class CrostiniStartupStatus
     : public crostini::CrostiniManager::RestartObserver {
  public:
   CrostiniStartupStatus(base::RepeatingCallback<void(const std::string&)> print,
-                        bool verbose,
-                        base::OnceClosure callback);
+                        bool verbose);
   ~CrostiniStartupStatus() override;
 
   // Updates the progress spinner every 300ms.
   void ShowProgressAtInterval();
 
-  // Deletes this object when called.
+  // Called when startup is complete.
   void OnCrostiniRestarted(crostini::CrostiniResult result);
 
  private:
@@ -45,7 +44,6 @@ class CrostiniStartupStatus
 
   base::RepeatingCallback<void(const std::string& output)> print_;
   const bool verbose_;
-  base::OnceClosure callback_;
   int spinner_index_ = 0;
   int stage_index_ = 0;
   int end_of_line_index_ = 0;

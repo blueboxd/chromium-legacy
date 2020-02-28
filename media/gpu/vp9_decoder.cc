@@ -188,12 +188,12 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     gfx::Size new_pic_size = curr_frame_size_;
     gfx::Rect new_render_rect(curr_frame_hdr_->render_width,
                               curr_frame_hdr_->render_height);
-    // For safety, check the validity of render size or leave it as (0, 0).
+    // For safety, check the validity of render size or leave it as pic size.
     if (!gfx::Rect(new_pic_size).Contains(new_render_rect)) {
       DVLOG(1) << "Render size exceeds picture size. render size: "
                << new_render_rect.ToString()
                << ", picture size: " << new_pic_size.ToString();
-      new_render_rect = gfx::Rect();
+      new_render_rect = gfx::Rect(new_pic_size);
     }
     VideoCodecProfile new_profile =
         VP9ProfileToVideoCodecProfile(curr_frame_hdr_->profile);

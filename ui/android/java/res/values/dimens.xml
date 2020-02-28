@@ -39,6 +39,8 @@
     <dimen name="chip_bg_vertical_inset">8dp</dimen>
     <item name="chip_background_selected_focused_alpha" format="float" type="dimen">0.12</item>
     <item name="chip_background_selected_alpha" format="float" type="dimen">0.06</item>
+    <item name="chip_background_selected_hover_alpha" format="float" type="dimen">0.10</item>
+    <item name="chip_background_selected_hover_focused_alpha" format="float" type="dimen">0.12</item>
     <dimen name="chip_icon_size">20dp</dimen>
 
     <!-- Dropdown default measures -->

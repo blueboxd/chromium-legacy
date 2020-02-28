@@ -9,4 +9,5 @@ include_rules = [
     "+cc/trees/transform_node.h",
     "+third_party/inspector_protocol/crdtp",
     "+third_party/icu/source/common/unicode/locid.h",
+    "+net/http/http_status_code.h",
 ]

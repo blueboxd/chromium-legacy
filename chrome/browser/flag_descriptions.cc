@@ -3085,6 +3085,10 @@ const char kCrostiniDiskResizingDescription[] =
     "Use preallocated user-resizeable disks for Crostini instead of sparse "
     "automatically sized disks.";
 
+const char kCrostiniShowMicSettingName[] = "Allow Crostini mic setting";
+const char kCrostiniShowMicSettingDescription[] =
+    "Adds the option to allow Crostini to access the mic";
+
 const char kCrostiniUsernameName[] = "Allow picking your Crostini username";
 const char kCrostiniUsernameDescription[] =
     "Allow picking your Crostini username";

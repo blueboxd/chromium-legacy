@@ -28,7 +28,7 @@ class MODULES_EXPORT P2PQuicCryptoStreamFactoryImpl final
       const quic::QuicCryptoServerConfig* crypto_config,
       quic::QuicCompressedCertsCache* compressed_certs_cache,
       quic::QuicSession* session,
-      quic::QuicCryptoServerStream::Helper* helper) override;
+      quic::QuicCryptoServerStreamBase::Helper* helper) override;
 };
 
 }  // namespace blink

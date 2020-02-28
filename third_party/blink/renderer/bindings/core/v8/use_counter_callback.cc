@@ -249,6 +249,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kObjectPrototypeHasElements:
       blink_feature = WebFeature::kV8ObjectPrototypeHasElements;
       break;
+    case v8::Isolate::kDisplayNames:
+      blink_feature = WebFeature::kDisplayNames;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

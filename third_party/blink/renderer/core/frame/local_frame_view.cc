@@ -142,6 +142,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/graphics_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -2659,10 +2660,7 @@ static void CollectDrawableLayersForLayerListRecursively(
     const GraphicsLayer* root) {
   ForAllDrawableGraphicsLayers(
       root,
-      [&](const GraphicsLayer* layer) {
-        RecordGraphicsLayerAsForeignLayer(
-            context, DisplayItem::kForeignLayerWrapper, *layer);
-      },
+      [&](const GraphicsLayer* layer) { RecordGraphicsLayer(context, *layer); },
       [&](const GraphicsLayer* layer, cc::Layer* contents_layer) {
         RecordForeignLayer(
             context, *layer, DisplayItem::kForeignLayerContentsWrapper,
@@ -2678,7 +2676,7 @@ static void UpdateLayerDebugInfoRecursively(const GraphicsLayer* root) {
       [](const GraphicsLayer* layer) {
         PaintArtifactCompositor::UpdateLayerDebugInfo(
             layer->CcLayer(),
-            PaintChunk::Id(*layer, DisplayItem::kForeignLayerWrapper),
+            PaintChunk::Id(*layer, DisplayItem::kGraphicsLayerWrapper),
             layer->GetCompositingReasons(),
             layer->GetRasterInvalidationTracking());
       },

@@ -152,6 +152,14 @@ void CrostiniExportImport::ImportContainer(ContainerId container_id,
       web_contents);
 }
 
+base::FilePath CrostiniExportImport::GetDefaultBackupPath() const {
+  base::Time::Exploded exploded;
+  base::Time::Now().LocalExplode(&exploded);
+  return file_manager::util::GetMyFilesFolderForProfile(profile_).Append(
+      base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tini", exploded.year,
+                         exploded.month, exploded.day_of_month));
+}
+
 void CrostiniExportImport::OpenFileDialog(OperationData* operation_data,
                                           content::WebContents* web_contents) {
   if (!crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile_)) {
@@ -169,13 +177,7 @@ void CrostiniExportImport::OpenFileDialog(OperationData* operation_data,
     case ExportImportType::EXPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
       title = IDS_SETTINGS_CROSTINI_EXPORT;
-      base::Time::Exploded exploded;
-      base::Time::Now().LocalExplode(&exploded);
-      default_path =
-          file_manager::util::GetMyFilesFolderForProfile(profile_).Append(
-              base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tini",
-                                 exploded.year, exploded.month,
-                                 exploded.day_of_month));
+      default_path = GetDefaultBackupPath();
       break;
     case ExportImportType::IMPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -225,6 +227,22 @@ void CrostiniExportImport::ImportContainer(
     CrostiniManager::CrostiniResultCallback callback) {
   Start(NewOperationData(ExportImportType::IMPORT, std::move(container_id)),
         path, std::move(callback));
+}
+
+void CrostiniExportImport::ExportContainer(ContainerId container_id,
+                                           base::FilePath path,
+                                           OnceTrackerFactory tracker_factory) {
+  Start(NewOperationData(ExportImportType::EXPORT, std::move(container_id),
+                         std::move(tracker_factory)),
+        path, base::DoNothing());
+}
+
+void CrostiniExportImport::ImportContainer(ContainerId container_id,
+                                           base::FilePath path,
+                                           OnceTrackerFactory tracker_factory) {
+  Start(NewOperationData(ExportImportType::IMPORT, std::move(container_id),
+                         std::move(tracker_factory)),
+        path, base::DoNothing());
 }
 
 void CrostiniExportImport::Start(

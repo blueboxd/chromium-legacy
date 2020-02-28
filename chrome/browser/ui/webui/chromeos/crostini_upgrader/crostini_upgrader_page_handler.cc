@@ -42,12 +42,12 @@ void Redisplay() {
 
 }  // namespace
 
-void CrostiniUpgraderPageHandler::Backup() {
+void CrostiniUpgraderPageHandler::Backup(bool show_file_chooser) {
   Redisplay();
   upgrader_ui_delegate_->Backup(
       crostini::ContainerId(crostini::kCrostiniDefaultVmName,
                             crostini::kCrostiniDefaultContainerName),
-      web_contents_);
+      show_file_chooser, web_contents_);
 }
 
 void CrostiniUpgraderPageHandler::StartPrechecks() {

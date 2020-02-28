@@ -2515,6 +2515,7 @@ enum WebFeature {
   kCssStyleSheetReplaceWithImport = 3169,
   kCryptoAlgorithmEd25519 = 3170,
   kCryptoAlgorithmX25519 = 3171,
+  kDisplayNames = 3172,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

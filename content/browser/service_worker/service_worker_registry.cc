@@ -138,7 +138,7 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
 void ServiceWorkerRegistry::FindRegistrationForScope(
     const GURL& scope,
     FindRegistrationCallback callback) {
-  if (storage()->IsDisabled()) {
+  if (is_storage_disabled_) {
     RunSoon(
         FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -165,7 +165,7 @@ void ServiceWorkerRegistry::FindRegistrationForId(
     const GURL& origin,
     FindRegistrationCallback callback) {
   // Registration lookup is expected to abort when storage is disabled.
-  if (storage()->IsDisabled()) {
+  if (is_storage_disabled_) {
     CompleteFindNow(nullptr, blink::ServiceWorkerStatusCode::kErrorAbort,
                     std::move(callback));
     return;
@@ -194,7 +194,7 @@ void ServiceWorkerRegistry::FindRegistrationForIdOnly(
     int64_t registration_id,
     FindRegistrationCallback callback) {
   // Registration lookup is expected to abort when storage is disabled.
-  if (storage()->IsDisabled()) {
+  if (is_storage_disabled_) {
     CompleteFindNow(nullptr, blink::ServiceWorkerStatusCode::kErrorAbort,
                     std::move(callback));
     return;
@@ -266,7 +266,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   DCHECK(registration);
   DCHECK(version);
 
-  if (storage()->IsDisabled()) {
+  if (is_storage_disabled_) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            blink::ServiceWorkerStatusCode::kErrorAbort));
@@ -323,7 +323,7 @@ void ServiceWorkerRegistry::DeleteRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration,
     const GURL& origin,
     StatusCallback callback) {
-  if (storage()->IsDisabled()) {
+  if (is_storage_disabled_) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            blink::ServiceWorkerStatusCode::kErrorAbort));
@@ -626,6 +626,7 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
 void ServiceWorkerRegistry::PrepareForDeleteAndStarOver() {
   should_schedule_delete_and_start_over_ = false;
   storage()->Disable();
+  is_storage_disabled_ = true;
 }
 
 void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
@@ -636,6 +637,7 @@ void ServiceWorkerRegistry::DeleteAndStartOver(StatusCallback callback) {
 void ServiceWorkerRegistry::DisableDeleteAndStartOverForTesting() {
   DCHECK(should_schedule_delete_and_start_over_);
   should_schedule_delete_and_start_over_ = false;
+  is_storage_disabled_ = true;
 }
 
 ServiceWorkerRegistration*
@@ -1181,6 +1183,7 @@ void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {
   context_->ScheduleDeleteAndStartOver();
   // ServiceWorkerContextCore should call PrepareForDeleteAndStartOver().
   DCHECK(!should_schedule_delete_and_start_over_);
+  DCHECK(is_storage_disabled_);
 }
 
 }  // namespace content

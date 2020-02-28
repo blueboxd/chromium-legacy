@@ -148,6 +148,9 @@ TEST_F(PrivacyScreenControllerTest, TestEnableAndDisable) {
 
   // Enable for user 1, and switch to user 2. User 2 should have it disabled.
   controller()->SetEnabled(true);
+  // Switching accounts shouldn't trigger observers.
+  ::testing::Mock::VerifyAndClear(observer());
+  EXPECT_CALL(*observer(), OnPrivacyScreenSettingChanged).Times(0);
   EXPECT_TRUE(controller()->GetEnabled());
   SwitchActiveUser(kUser2Email);
   EXPECT_FALSE(controller()->GetEnabled());

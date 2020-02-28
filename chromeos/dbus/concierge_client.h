@@ -231,6 +231,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::StartArcVmRequest& request,
       DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) = 0;
 
+  // Launches a resize operation for the specified disk image.
+  // |callback| is called after the method call finishes, then you must use
+  // |DiskImageStatus| to poll for task completion.
+  virtual void ResizeDiskImage(
+      const vm_tools::concierge::ResizeDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ResizeDiskImageResponse>
+          callback) = 0;
+
   // Creates an instance of ConciergeClient.
   static std::unique_ptr<ConciergeClient> Create();
 

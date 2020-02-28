@@ -113,6 +113,10 @@ void ResourceRequest::CopyFrom(const ResourceRequest& src) {
   *this = src;
 }
 
+void ResourceRequest::CopyHeadFrom(const ResourceRequestHead* src) {
+  this->ResourceRequestHead::operator=(*src);
+}
+
 std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_url,
     const AtomicString& new_method,
@@ -143,8 +147,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetKeepalive(GetKeepalive());
   request->SetPriority(Priority());
 
-  if (request->HttpMethod() == HttpMethod())
-    request->SetHttpBody(HttpBody());
   request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();

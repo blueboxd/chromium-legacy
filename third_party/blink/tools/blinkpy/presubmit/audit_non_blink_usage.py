@@ -394,6 +394,9 @@ _CONFIG = [
             # HTTP structured headers
             'net::structured_headers::.+',
 
+            # HTTP status codes
+            'net::HTTP_.+',
+
             # Network service.
             'network::.+',
 

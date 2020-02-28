@@ -485,7 +485,7 @@ void ScriptValueToObject(ScriptState* script_state,
                          v8::Local<v8::Object>* object,
                          ExceptionState& exception_state) {
   auto* isolate = script_state->GetIsolate();
-  DCHECK(!value.IsEmpty());
+  CHECK(!value.IsEmpty());
   auto v8_value = value.V8Value();
   // All the object parameters in the standard are default-initialised to an
   // empty object.

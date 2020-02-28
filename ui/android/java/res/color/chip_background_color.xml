@@ -17,5 +17,14 @@
     <item android:alpha="@dimen/default_focused_alpha"
         android:color="@color/modern_grey_800"
         android:state_focused="true" />
+    <item android:alpha="@dimen/chip_background_selected_hover_alpha"
+        android:color="@color/filled_button_bg_color"
+        android:state_focused="true"
+        android:state_hovered="true" />
+    <item android:alpha="@dimen/chip_background_selected_hover_focused_alpha"
+        android:color="@color/filled_button_bg_color"
+        android:state_focused="true"
+        android:state_hovered="true"
+        android:state_selected="true" />
     <item android:color="@android:color/transparent" />
 </selector>

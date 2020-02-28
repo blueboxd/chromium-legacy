@@ -386,7 +386,7 @@ bool HTMLCanvasElement::IsWebGLBlocked() const {
   if (!frame)
     return false;
 
-  bool blocked;
+  bool blocked = false;
   frame->GetLocalFrameHostRemote().Are3DAPIsBlocked(&blocked);
   return blocked;
 }

@@ -42,6 +42,8 @@ class ASH_EXPORT PrivacyScreenController
 
   // Whether or not the privacy screen feature is supported by the device.
   bool IsSupported() const;
+  // Whether or not the privacy screen feature is enforced by policy.
+  bool IsManaged() const;
   // Get the PrivacyScreen settings stored in the current active user prefs.
   bool GetEnabled() const;
   // Set the desired PrivacyScreen settings in the current active user prefs.
@@ -60,7 +62,7 @@ class ASH_EXPORT PrivacyScreenController
 
  private:
   // Called when the user pref for the status of PrivacyScreen is changed.
-  void OnEnabledPrefChanged();
+  void OnEnabledPrefChanged(bool notify_observers);
 
   // Called when a change to |active_user_pref_service_| is detected (i.e. when
   // OnActiveUserPrefServiceChanged() is called.

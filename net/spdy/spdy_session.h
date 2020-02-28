@@ -117,6 +117,24 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_INTERNAL_FRAMER_ERROR = 41,
   SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE = 37,
   SPDY_ERROR_OVERSIZED_PAYLOAD = 40,
+  // HttpDecoder or HttpDecoderAdapter error.
+  SPDY_ERROR_HPACK_INDEX_VARINT_ERROR = 43,
+  SPDY_ERROR_HPACK_NAME_LENGTH_VARINT_ERROR = 44,
+  SPDY_ERROR_HPACK_VALUE_LENGTH_VARINT_ERROR = 45,
+  SPDY_ERROR_HPACK_NAME_TOO_LONG = 46,
+  SPDY_ERROR_HPACK_VALUE_TOO_LONG = 47,
+  SPDY_ERROR_HPACK_NAME_HUFFMAN_ERROR = 48,
+  SPDY_ERROR_HPACK_VALUE_HUFFMAN_ERROR = 49,
+  SPDY_ERROR_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE = 50,
+  SPDY_ERROR_HPACK_INVALID_INDEX = 51,
+  SPDY_ERROR_HPACK_INVALID_NAME_INDEX = 52,
+  SPDY_ERROR_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED = 53,
+  SPDY_ERROR_HPACK_INITIAL_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK =
+      54,
+  SPDY_ERROR_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING = 55,
+  SPDY_ERROR_HPACK_TRUNCATED_BLOCK = 56,
+  SPDY_ERROR_HPACK_FRAGMENT_TOO_LONG = 57,
+  SPDY_ERROR_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT = 58,
   // spdy::SpdyErrorCode mappings.
   STATUS_CODE_NO_ERROR = 41,
   STATUS_CODE_PROTOCOL_ERROR = 11,
@@ -147,7 +165,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 43,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 59,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapFramerErrorToProtocolError(
     http2::Http2DecoderAdapter::SpdyFramerError error);
@@ -187,7 +205,7 @@ enum class SpdyPushedStreamFate {
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-static_assert(17 == http2::Http2DecoderAdapter::LAST_ERROR,
+static_assert(33 == http2::Http2DecoderAdapter::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
 static_assert(13 == spdy::SpdyErrorCode::ERROR_CODE_MAX,
               "SpdyProtocolErrorDetails / spdy::SpdyErrorCode mismatch");

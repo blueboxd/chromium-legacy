@@ -165,12 +165,11 @@ most recent step towards CompositeAfterPaint was a project called
 which uses the compositing decisions from the current compositor
 (PaintLayerCompositor, which produces GraphicsLayers) with the new
 CompositeAfterPaint compositor (PaintArtifactCompositor). This is done by a step
-at the end of paint which collects all painted GraphicsLayers (and their
-associated cc::Layers) as a list of
-[ForeignLayerDisplayItem](../../platform/graphics/paint/foreign_layer_display_item.h)s.
-Foreign layers are typically used for cc::Layers managed outside blink (e.g.,
+at the end of paint which collects all painted GraphicsLayers as a list of
+[GraphicsLayerDisplayItem](../../platform/graphics/paint/graphics_layer_display_item.h)s.
+Additionaly, [ForeignLayerDisplayItem](../../platform/graphics/paint/foreign_layer_display_item.h)s are used for cc::Layers managed outside blink (e.g.,
 video layers, plugin layers) and are treated as opaque composited content by
-the PaintArtifactCompositor. This approach of using foreign layers starts using
+the PaintArtifactCompositor. This approach starts using
 much of the new PaintArtifactCompositor logic (e.g., converting blink property
 trees to cc property trees) without changing how compositing decisions are made.
 
@@ -292,9 +291,9 @@ from layout
       |<--------------------------------------------------+
       | PaintChunksToCcLayer::Convert()                   |
       v                                                   |
-+----------------+                                        |
-| Foreign layers |                                        |
-+----------------+                                        |
++--------------------------------------------------+      |
+| GraphicsLayerDisplayItem/ForeignLayerDisplayItem |      |
++--------------------------------------------------+      |
   |                                                       |
   |    LocalFrameView::PushPaintArtifactToCompositor()    |
   |         PaintArtifactCompositor::Update()             |

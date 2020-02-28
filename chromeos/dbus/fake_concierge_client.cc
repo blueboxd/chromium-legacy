@@ -268,6 +268,15 @@ void FakeConciergeClient::StartArcVm(
       FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
 }
 
+void FakeConciergeClient::ResizeDiskImage(
+    const vm_tools::concierge::ResizeDiskImageRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ResizeDiskImageResponse> callback) {
+  resize_disk_image_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), resize_disk_image_response_));
+}
+
 void FakeConciergeClient::NotifyVmStarted(
     const vm_tools::concierge::VmStartedSignal& signal) {
   for (auto& observer : vm_observer_list_)

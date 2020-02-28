@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_update_component_view.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -12,12 +13,35 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class LoadFinishedWaiter : public content::WebContentsObserver {
+ public:
+  explicit LoadFinishedWaiter(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+
+  ~LoadFinishedWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // content::WebContentsObserver:
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
 
 class CrostiniUpdateComponentViewBrowserTest
     : public CrostiniDialogBrowserTest {
@@ -99,13 +123,20 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
   ExpectNoView();
 
   UnregisterTermina();
-  crostini::LaunchCrostiniApp(browser()->profile(),
-                              crostini::kCrostiniTerminalId, 0);
+  crostini::LaunchCrostiniApp(browser()->profile(), crostini::GetTerminalId(),
+                              0);
   ExpectNoView();
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                        LaunchAppOffline_UpgradeNeeded) {
+  // Ensure Terminal System App is installed if enabled.
+  if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
+    web_app::WebAppProvider::Get(browser()->profile())
+        ->system_web_app_manager()
+        .InstallSystemAppsForTesting();
+  }
+
   base::HistogramTester histogram_tester;
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   crostini::CrostiniManager::GetForProfile(browser()->profile())
@@ -114,8 +145,18 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
   ExpectNoView();
 
   UnregisterTermina();
-  crostini::LaunchCrostiniApp(browser()->profile(),
-                              crostini::kCrostiniTerminalId, 0);
+  crostini::LaunchCrostiniApp(browser()->profile(), crostini::GetTerminalId(),
+                              0);
+
+  // For Terminal System App, we must wait for browser to load.
+  if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
+    Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
+        browser()->profile(), web_app::SystemAppType::TERMINAL);
+    CHECK_NE(nullptr, terminal_browser);
+    LoadFinishedWaiter(terminal_browser->tab_strip_model()->GetWebContentsAt(0))
+        .Wait();
+  }
+
   ExpectView();
 
   ActiveView()->AcceptDialog();

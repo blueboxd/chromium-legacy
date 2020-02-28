@@ -37,6 +37,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "net/http/http_status_code.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -497,10 +498,10 @@ static bool FormDataToString(scoped_refptr<EncodedFormData> body,
 
 static std::unique_ptr<protocol::Network::Request>
 BuildObjectForResourceRequest(const ResourceRequest& request,
+                              scoped_refptr<EncodedFormData> post_data,
                               size_t max_body_size) {
   String postData;
-  bool hasPostData =
-      FormDataToString(request.HttpBody(), max_body_size, &postData);
+  bool hasPostData = FormDataToString(post_data, max_body_size, &postData);
   KURL url = request.Url();
   // protocol::Network::Request doesn't have a separate referrer string member
   // like blink::ResourceRequest, so here we add ResourceRequest's referrer
@@ -771,12 +772,15 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* data =
       resources_data_->Data(request_id);
-  // Support for POST request redirect
+  // Support for POST request redirect.
   scoped_refptr<EncodedFormData> post_data;
-  if (data)
+  if (data &&
+      (redirect_response.HttpStatusCode() == net::HTTP_TEMPORARY_REDIRECT ||
+       redirect_response.HttpStatusCode() == net::HTTP_PERMANENT_REDIRECT)) {
     post_data = data->PostData();
-  else if (request.HttpBody())
+  } else if (request.HttpBody()) {
     post_data = request.HttpBody()->DeepCopy();
+  }
 
   resources_data_->ResourceCreated(request_id, loader_id, request.Url(),
                                    post_data);
@@ -799,7 +803,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                            initiator_info, std::numeric_limits<int>::max());
 
   std::unique_ptr<protocol::Network::Request> request_info(
-      BuildObjectForResourceRequest(request, max_post_data_size_.Get()));
+      BuildObjectForResourceRequest(request, post_data,
+                                    max_post_data_size_.Get()));
 
   // |loader| is null while inspecting worker.
   // TODO(horo): Refactor MixedContentChecker and set mixed content type even if

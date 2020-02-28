@@ -55,6 +55,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 @property(nonatomic, strong, nullable)
     UIDocumentInteractionController* documentInteractionController;
 @property(nonatomic, strong) ShellAuthService* authService;
+// The newly opened popup windows e.g., by JavaScript function "window.open()",
+// HTML "<a target='_blank'>".
+@property(nonatomic, strong) NSMutableArray<CWVWebView*>* popupWebViews;
 
 - (void)back;
 - (void)forward;
@@ -82,9 +85,12 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 @synthesize downloadFilePath = _downloadFilePath;
 @synthesize documentInteractionController = _documentInteractionController;
 @synthesize authService = _authService;
+@synthesize popupWebViews = _popupWebViews;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  self.popupWebViews = [[NSMutableArray alloc] init];
 
   // View creation.
   self.headerBackgroundView = [[UIView alloc] init];
@@ -259,7 +265,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   CWVWebViewConfiguration* configuration =
       [CWVWebViewConfiguration defaultConfiguration];
   configuration.syncController.delegate = self;
-  [self createWebViewWithConfiguration:configuration];
+  self.webView = [self createWebViewWithConfiguration:configuration];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -590,7 +596,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                               CWVWebViewConfiguration* configuration =
                                   weakSelf.webView.configuration;
                               [weakSelf removeWebView];
-                              [weakSelf
+                              weakSelf.webView = [weakSelf
                                   createWebViewWithConfiguration:configuration];
                             }]];
 
@@ -614,7 +620,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                               CWVWebViewConfiguration* configuration =
                                   weakSelf.webView.configuration;
                               [weakSelf removeWebView];
-                              [weakSelf
+                              weakSelf.webView = [weakSelf
                                   createWebViewWithConfiguration:configuration];
                             }]];
 
@@ -658,56 +664,59 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   CWVWebViewConfiguration* newConfiguration =
       wasPersistent ? [CWVWebViewConfiguration incognitoConfiguration]
                     : [CWVWebViewConfiguration defaultConfiguration];
-  [self createWebViewWithConfiguration:newConfiguration];
+  self.webView = [self createWebViewWithConfiguration:newConfiguration];
 }
 
-- (void)createWebViewWithConfiguration:(CWVWebViewConfiguration*)configuration {
-  self.webView = [[CWVWebView alloc] initWithFrame:[_contentView bounds]
-                                     configuration:configuration];
-  [_contentView addSubview:_webView];
+- (CWVWebView*)createWebViewWithConfiguration:
+    (CWVWebViewConfiguration*)configuration {
+  CWVWebView* webView = [[CWVWebView alloc] initWithFrame:[_contentView bounds]
+                                            configuration:configuration];
+  [_contentView addSubview:webView];
 
   // Gives a restoration identifier so that state restoration works.
-  _webView.restorationIdentifier = @"webView";
+  webView.restorationIdentifier = @"webView";
 
   // Configure delegates.
-  _webView.navigationDelegate = self;
-  _webView.UIDelegate = self;
+  webView.navigationDelegate = self;
+  webView.UIDelegate = self;
   _translationDelegate = [[ShellTranslationDelegate alloc] init];
-  _webView.translationController.delegate = _translationDelegate;
+  webView.translationController.delegate = _translationDelegate;
   _autofillDelegate = [[ShellAutofillDelegate alloc] init];
-  _webView.autofillController.delegate = _autofillDelegate;
+  webView.autofillController.delegate = _autofillDelegate;
 
   // Constraints.
-  _webView.translatesAutoresizingMaskIntoConstraints = NO;
+  webView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
-    [_webView.topAnchor
+    [webView.topAnchor
         constraintEqualToAnchor:_contentView.safeAreaLayoutGuide.topAnchor],
-    [_webView.leadingAnchor
+    [webView.leadingAnchor
         constraintEqualToAnchor:_contentView.safeAreaLayoutGuide.leadingAnchor],
-    [_webView.trailingAnchor
+    [webView.trailingAnchor
         constraintEqualToAnchor:_contentView.safeAreaLayoutGuide
                                     .trailingAnchor],
-    [_webView.bottomAnchor
+    [webView.bottomAnchor
         constraintEqualToAnchor:_contentView.safeAreaLayoutGuide.bottomAnchor],
   ]];
 
-  [_webView addObserver:self
-             forKeyPath:@"canGoBack"
-                options:NSKeyValueObservingOptionNew |
-                        NSKeyValueObservingOptionInitial
-                context:nil];
-  [_webView addObserver:self
-             forKeyPath:@"canGoForward"
-                options:NSKeyValueObservingOptionNew |
-                        NSKeyValueObservingOptionInitial
-                context:nil];
-  [_webView addObserver:self
-             forKeyPath:@"loading"
-                options:NSKeyValueObservingOptionNew |
-                        NSKeyValueObservingOptionInitial
-                context:nil];
+  [webView addObserver:self
+            forKeyPath:@"canGoBack"
+               options:NSKeyValueObservingOptionNew |
+                       NSKeyValueObservingOptionInitial
+               context:nil];
+  [webView addObserver:self
+            forKeyPath:@"canGoForward"
+               options:NSKeyValueObservingOptionNew |
+                       NSKeyValueObservingOptionInitial
+               context:nil];
+  [webView addObserver:self
+            forKeyPath:@"loading"
+               options:NSKeyValueObservingOptionNew |
+                       NSKeyValueObservingOptionInitial
+               context:nil];
 
-  [_webView addScriptCommandHandler:self commandPrefix:@"test"];
+  [webView addScriptCommandHandler:self commandPrefix:@"test"];
+
+  return webView;
 }
 
 - (void)removeWebView {
@@ -766,6 +775,13 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   return alertController;
 }
 
+- (void)closePopupWebView {
+  if (self.popupWebViews.count) {
+    [self.popupWebViews.lastObject removeFromSuperview];
+    [self.popupWebViews removeLastObject];
+  }
+}
+
 #pragma mark CWVUIDelegate methods
 
 - (CWVWebView*)webView:(CWVWebView*)webView
@@ -773,7 +789,29 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                forNavigationAction:(CWVNavigationAction*)action {
   NSLog(@"Create new CWVWebView for %@. User initiated? %@", action.request.URL,
         action.userInitiated ? @"Yes" : @"No");
-  return nil;
+
+  CWVWebView* newWebView = [self createWebViewWithConfiguration:configuration];
+  [self.popupWebViews addObject:newWebView];
+
+  UIButton* closeWindowButton = [[UIButton alloc] init];
+  [closeWindowButton setImage:[UIImage imageNamed:@"ic_stop"]
+                     forState:UIControlStateNormal];
+  closeWindowButton.tintColor = [UIColor blackColor];
+  closeWindowButton.backgroundColor = [UIColor whiteColor];
+  [closeWindowButton addTarget:self
+                        action:@selector(closePopupWebView)
+              forControlEvents:UIControlEventTouchUpInside];
+
+  [newWebView addSubview:closeWindowButton];
+  closeWindowButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [closeWindowButton.topAnchor constraintEqualToAnchor:newWebView.topAnchor
+                                                constant:16.0],
+    [closeWindowButton.centerXAnchor
+        constraintEqualToAnchor:newWebView.centerXAnchor],
+  ]];
+
+  return newWebView;
 }
 
 - (void)webViewDidClose:(CWVWebView*)webView {

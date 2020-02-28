@@ -13,7 +13,6 @@
 namespace blink {
 
 class GraphicsContext;
-class GraphicsLayer;
 class LayerAsJSONClient;
 
 // Represents foreign content (produced outside Blink) which draws to a layer.
@@ -76,12 +75,6 @@ PLATFORM_EXPORT void RecordForeignLayer(
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,
     const PropertyTreeState* properties = nullptr);
-
-// Records a graphics layer into a GraphicsContext.
-PLATFORM_EXPORT void RecordGraphicsLayerAsForeignLayer(
-    GraphicsContext& context,
-    DisplayItem::Type type,
-    const GraphicsLayer& graphics_layer);
 
 }  // namespace blink
 

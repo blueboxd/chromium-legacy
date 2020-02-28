@@ -16,10 +16,12 @@
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/graphics_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
@@ -110,10 +112,20 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
     for (const auto& paint_chunk : paint_artifact->PaintChunks()) {
       const auto& display_item =
           paint_artifact->GetDisplayItemList()[paint_chunk.begin_index];
-      DCHECK(display_item.IsForeignLayer());
-      const auto& foreign_layer_display_item =
-          static_cast<const ForeignLayerDisplayItem&>(display_item);
-      cc::Layer* layer = foreign_layer_display_item.GetLayer();
+      cc::Layer* layer = nullptr;
+      const LayerAsJSONClient* json_client = nullptr;
+      if (display_item.IsGraphicsLayerWrapper()) {
+        const GraphicsLayerDisplayItem& graphics_layer_display_item =
+            static_cast<const GraphicsLayerDisplayItem&>(display_item);
+        layer = graphics_layer_display_item.GetGraphicsLayer().CcLayer();
+        json_client = &graphics_layer_display_item.GetGraphicsLayer();
+      } else {
+        DCHECK(display_item.IsForeignLayer());
+        const auto& foreign_layer_display_item =
+            static_cast<const ForeignLayerDisplayItem&>(display_item);
+        layer = foreign_layer_display_item.GetLayer();
+        json_client = foreign_layer_display_item.GetLayerAsJSONClient();
+      }
       // Need to retrieve the transform from |pending_layers_| so that
       // any decomposition is not double-reported via |layer|'s
       // offset_from_transform_parent and |paint_chunk|'s transform inside
@@ -128,15 +140,13 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
         }
       }
       DCHECK(transform);
-      layers_as_json.AddLayer(
-          *layer, *transform,
-          foreign_layer_display_item.GetLayerAsJSONClient());
+      layers_as_json.AddLayer(*layer, *transform, json_client);
     }
   }
   return layers_as_json.Finalize();
 }
 
-static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
+static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
     const PaintArtifact& paint_artifact,
     const PaintChunk& paint_chunk,
     const FloatPoint& pending_layer_offset) {
@@ -145,21 +155,33 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
 
   const auto& display_item =
       paint_artifact.GetDisplayItemList()[paint_chunk.begin_index];
-  if (!display_item.IsForeignLayer())
+  if (!display_item.IsForeignLayer() &&
+      !display_item.IsGraphicsLayerWrapper()) {
     return nullptr;
+  }
 
-  // When a foreign layer's offset_to_transform_parent() changes, we don't
-  // call PaintArtifaceCompositor::SetNeedsUpdate() because the update won't
-  // change anything but cause unnecessary commit. Though
-  // UpdateTouchActionRects() depends on offset_to_transform_parent(), a
-  // foreign layer chunk doesn't have hit_test_data.
+  // UpdateTouchActionRects() depends on the layer's offset, but when the
+  // layer's offset changes, we do not call SetNeedsUpdate() (this is an
+  // optimization because the update would only cause an extra commit). This is
+  // only OK if the [Foreign|Graphics]Layer doesn't have hit test data.
   DCHECK(!paint_chunk.hit_test_data);
 
-  const auto& foreign_layer_display_item =
-      static_cast<const ForeignLayerDisplayItem&>(display_item);
-  auto* layer = foreign_layer_display_item.GetLayer();
-  layer->SetOffsetToTransformParent(gfx::Vector2dF(
-      foreign_layer_display_item.Offset() + pending_layer_offset));
+  cc::Layer* layer = nullptr;
+  FloatPoint layer_offset;
+  if (display_item.IsGraphicsLayerWrapper()) {
+    const auto& graphics_layer_display_item =
+        static_cast<const GraphicsLayerDisplayItem&>(display_item);
+    layer = graphics_layer_display_item.GetGraphicsLayer().CcLayer();
+    layer_offset = FloatPoint(graphics_layer_display_item.GetGraphicsLayer()
+                                  .GetOffsetFromTransformNode());
+  } else {
+    const auto& foreign_layer_display_item =
+        static_cast<const ForeignLayerDisplayItem&>(display_item);
+    layer = foreign_layer_display_item.GetLayer();
+    layer_offset = foreign_layer_display_item.Offset();
+  }
+  layer->SetOffsetToTransformParent(
+      gfx::Vector2dF(layer_offset + pending_layer_offset));
   return layer;
 }
 
@@ -297,12 +319,14 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   DCHECK(paint_chunks.size());
   const PaintChunk& first_paint_chunk = paint_chunks[0];
 
-  // If the paint chunk is a foreign layer, just return that layer.
-  if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
-          *paint_artifact, first_paint_chunk,
-          pending_layer.offset_of_decomposited_transforms)) {
+  scoped_refptr<cc::Layer> cc_layer;
+  // If the paint chunk is a foreign layer or placeholder for a GraphicsLayer,
+  // just return its cc::Layer.
+  if ((cc_layer = CcLayerForPaintChunk(
+           *paint_artifact, first_paint_chunk,
+           pending_layer.offset_of_decomposited_transforms))) {
     DCHECK_EQ(paint_chunks.size(), 1u);
-    return foreign_layer;
+    return cc_layer;
   }
 
   // If the paint chunk is a scroll hit test layer, lookup/create the layer.
@@ -322,7 +346,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
       ClientForPaintChunk(first_paint_chunk);
 
   IntRect cc_combined_bounds = EnclosingIntRect(pending_layer.bounds);
-  auto cc_layer = content_layer_client->UpdateCcPictureLayer(
+  cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
   if (cc_combined_bounds.IsEmpty())
@@ -848,6 +872,7 @@ void PaintArtifactCompositor::LayerizeGroup(
         const auto& first_display_item =
             paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
         requires_own_layer = first_display_item.IsForeignLayer() ||
+                             first_display_item.IsGraphicsLayerWrapper() ||
                              IsCompositedScrollHitTest(first_display_item) ||
                              IsCompositedScrollbar(first_display_item);
       }

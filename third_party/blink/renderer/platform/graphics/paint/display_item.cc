@@ -125,11 +125,17 @@ static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ForeignLayerPlugin);
     DEBUG_STRING_CASE(ForeignLayerVideo);
     DEBUG_STRING_CASE(ForeignLayerRemoteFrame);
-    DEBUG_STRING_CASE(ForeignLayerWrapper);
     DEBUG_STRING_CASE(ForeignLayerContentsWrapper);
     DEBUG_STRING_CASE(ForeignLayerLinkHighlight);
     DEBUG_STRING_CASE(ForeignLayerViewportScroll);
     DEBUG_STRING_CASE(ForeignLayerViewportScrollbar);
+    DEFAULT_CASE;
+  }
+}
+
+static String GraphicsLayerWrapperTypeAsDebugString(DisplayItem::Type type) {
+  switch (type) {
+    DEBUG_STRING_CASE(GraphicsLayerWrapper);
     DEFAULT_CASE;
   }
 }
@@ -140,6 +146,9 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
 
   if (IsForeignLayerType(type))
     return ForeignLayerTypeAsDebugString(type);
+
+  if (IsGraphicsLayerWrapperType(type))
+    return GraphicsLayerWrapperTypeAsDebugString(type);
 
   PAINT_PHASE_BASED_DEBUG_STRINGS(Clip);
   PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);

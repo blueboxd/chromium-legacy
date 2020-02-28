@@ -37,6 +37,11 @@ bool PrivacyScreenController::IsSupported() const {
       ->IsPrivacyScreenSupportedOnInternalDisplay();
 }
 
+bool PrivacyScreenController::IsManaged() const {
+  return active_user_pref_service_->IsManagedPreference(
+      prefs::kDisplayPrivacyScreenEnabled);
+}
+
 bool PrivacyScreenController::GetEnabled() const {
   return active_user_pref_service_ && active_user_pref_service_->GetBoolean(
                                           prefs::kDisplayPrivacyScreenEnabled);
@@ -90,11 +95,14 @@ void PrivacyScreenController::OnDisplayModeChanged(
   }
 }
 
-void PrivacyScreenController::OnEnabledPrefChanged() {
+void PrivacyScreenController::OnEnabledPrefChanged(bool notify_observers) {
   if (IsSupported()) {
     const bool is_enabled = GetEnabled();
     Shell::Get()->display_configurator()->SetPrivacyScreenOnInternalDisplay(
         is_enabled);
+
+    if (!notify_observers)
+      return;
 
     for (Observer& observer : observers_)
       observer.OnPrivacyScreenSettingChanged(is_enabled);
@@ -109,9 +117,12 @@ void PrivacyScreenController::InitFromUserPrefs() {
   pref_change_registrar_->Add(
       prefs::kDisplayPrivacyScreenEnabled,
       base::BindRepeating(&PrivacyScreenController::OnEnabledPrefChanged,
-                          base::Unretained(this)));
+                          base::Unretained(this),
+                          /*notify_observers=*/true));
 
-  OnEnabledPrefChanged();
+  // We don't want to notify observers upon initialization or on account change
+  // because changes will trigger a toast to show up.
+  OnEnabledPrefChanged(/*notify_observers=*/false);
 }
 
 }  // namespace ash

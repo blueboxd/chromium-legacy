@@ -7,11 +7,17 @@
 
 #include "net/base/net_export.h"
 
-namespace spdy {
+NET_EXPORT_PRIVATE extern bool spdy_enable_granular_decompress_errors;
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;
 }
+
+#define SPDY_CODE_COUNT_IMPL(name) \
+  do {                             \
+  } while (0)
+
+namespace spdy {
 
 inline bool GetSpdyRestartFlagImpl(bool flag) {
   return flag;

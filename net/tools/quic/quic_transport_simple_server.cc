@@ -26,7 +26,7 @@ using quic::ParsedQuicVersion;
 using quic::PROTOCOL_TLS1_3;
 using quic::QUIC_VERSION_99;
 using quic::QuicChromiumClock;
-using quic::QuicCryptoServerStream;
+using quic::QuicCryptoServerStreamBase;
 using quic::QuicSocketAddress;
 using quic::QuicTransportSimpleServerSession;
 
@@ -38,7 +38,7 @@ constexpr int kReadBufferSize = 2 * quic::kMaxIncomingPacketSize;
 }  // namespace
 
 class QuicTransportSimpleServerSessionHelper
-    : public QuicCryptoServerStream::Helper {
+    : public QuicCryptoServerStreamBase::Helper {
  public:
   bool CanAcceptClientHello(const CryptoHandshakeMessage& /*message*/,
                             const QuicSocketAddress& /*client_address*/,

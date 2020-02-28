@@ -105,6 +105,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
                   DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                       callback) override;
+  void ResizeDiskImage(
+      const vm_tools::concierge::ResizeDiskImageRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ResizeDiskImageResponse> callback)
+      override;
 
   const base::ObserverList<Observer>& observer_list() const {
     return observer_list_;
@@ -140,6 +144,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool attach_usb_device_called() const { return attach_usb_device_called_; }
   bool detach_usb_device_called() const { return detach_usb_device_called_; }
   bool start_arc_vm_called() const { return start_arc_vm_called_; }
+  bool resize_disk_image_called() const { return resize_disk_image_called_; }
   void set_vm_started_signal_connected(bool connected) {
     is_vm_started_signal_connected_ = connected;
   }
@@ -231,6 +236,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
           disk_image_status_signals) {
     disk_image_status_signals_ = disk_image_status_signals;
   }
+  void set_resize_disk_image_response(
+      const vm_tools::concierge::ResizeDiskImageResponse&
+          resize_disk_image_response) {
+    resize_disk_image_response_ = resize_disk_image_response;
+  }
 
   void NotifyVmStarted(const vm_tools::concierge::VmStartedSignal& signal);
   bool HasVmObservers() const;
@@ -267,6 +277,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
   bool start_arc_vm_called_ = false;
+  bool resize_disk_image_called_ = false;
   bool is_vm_started_signal_connected_ = true;
   bool is_vm_stopped_signal_connected_ = true;
   bool is_container_startup_failed_signal_connected_ = true;
@@ -300,6 +311,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       attach_usb_device_response_;
   base::Optional<vm_tools::concierge::DetachUsbDeviceResponse>
       detach_usb_device_response_;
+  base::Optional<vm_tools::concierge::ResizeDiskImageResponse>
+      resize_disk_image_response_;
 
   // Can be set to fake a series of disk image status signals.
   std::vector<vm_tools::concierge::DiskImageStatusResponse>

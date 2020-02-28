@@ -14,11 +14,14 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -226,31 +229,57 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
                   crostini::kCrostiniDefaultContainerName);
     std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
 
-    auto open_process =
-        base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
-                       this, user_id_hash, tab_id, vmshell_cmd.argv());
     auto* mgr = crostini::CrostiniManager::GetForProfile(profile);
     bool verbose =
         !mgr->GetContainerInfo(crostini::kCrostiniDefaultVmName,
                                crostini::kCrostiniDefaultContainerName)
              .has_value();
-    auto* observer = new CrostiniStartupStatus(
+    auto observer = std::make_unique<CrostiniStartupStatus>(
         base::BindRepeating(&NotifyProcessOutput, browser_context(), tab_id,
                             startup_id,
                             api::terminal_private::ToString(
                                 api::terminal_private::OUTPUT_TYPE_STDOUT)),
-        verbose, std::move(open_process));
+        verbose);
+    // Save copy of pointer for RestartObserver before moving object.
+    CrostiniStartupStatus* observer_ptr = observer.get();
     observer->ShowProgressAtInterval();
     mgr->RestartCrostini(
         vm_name, container_name,
-        base::BindOnce(&CrostiniStartupStatus::OnCrostiniRestarted,
-                       base::Unretained(observer)),
-        observer);
+        base::BindOnce(
+            &TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted,
+            this, std::move(observer), user_id_hash, tab_id,
+            vmshell_cmd.argv()),
+        observer_ptr);
   } else {
     // command=[unrecognized].
     return RespondNow(Error("Invalid process name: " + params->process_name));
   }
   return RespondLater();
+}
+
+void TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted(
+    std::unique_ptr<CrostiniStartupStatus> startup_status,
+    const std::string& user_id_hash,
+    int tab_id,
+    const std::vector<std::string>& arguments,
+    crostini::CrostiniResult result) {
+  startup_status->OnCrostiniRestarted(result);
+  if (result == crostini::CrostiniResult::SUCCESS) {
+    OpenProcess(user_id_hash, tab_id, arguments);
+  } else {
+    const std::string msg =
+        base::StringPrintf("Error starting crostini for terminal: %d", result);
+    LOG(ERROR) << msg;
+    Respond(Error(msg));
+
+    // Special handling to update terminal component.
+    if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED ||
+        result == crostini::CrostiniResult::LOAD_COMPONENT_FAILED) {
+      ShowCrostiniUpdateComponentView(
+          Profile::FromBrowserContext(browser_context()),
+          crostini::CrostiniUISurface::kAppList);
+    }
+  }
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OpenProcess(

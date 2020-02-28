@@ -40,8 +40,11 @@ class CrostiniUpgraderUIDelegate {
   virtual void AddObserver(CrostiniUpgraderUIObserver* observer) = 0;
   virtual void RemoveObserver(CrostiniUpgraderUIObserver* observer) = 0;
 
-  // Back up the current container before upgrading
+  // Back up the current container before upgrading. If |show_file_chooser|
+  // is true, the user will be able to select the backup location via a file
+  // chooser.
   virtual void Backup(const ContainerId& container_id,
+                      bool show_file_chooser,
                       content::WebContents* web_contents) = 0;
 
   virtual void StartPrechecks() = 0;

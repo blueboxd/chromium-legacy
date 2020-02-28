@@ -1778,6 +1778,9 @@ extern const char kCrostiniPortForwardingDescription[];
 extern const char kCrostiniDiskResizingName[];
 extern const char kCrostiniDiskResizingDescription[];
 
+extern const char kCrostiniShowMicSettingName[];
+extern const char kCrostiniShowMicSettingDescription[];
+
 extern const char kCrostiniUsernameName[];
 extern const char kCrostiniUsernameDescription[];
 

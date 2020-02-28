@@ -29,7 +29,7 @@ P2PQuicCryptoStreamFactoryImpl::CreateServerCryptoStream(
     const quic::QuicCryptoServerConfig* crypto_config,
     quic::QuicCompressedCertsCache* compressed_certs_cache,
     quic::QuicSession* session,
-    quic::QuicCryptoServerStream::Helper* helper) {
+    quic::QuicCryptoServerStreamBase::Helper* helper) {
   return quic::CreateCryptoServerStream(crypto_config, compressed_certs_cache,
                                         session, helper);
 }

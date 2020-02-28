@@ -25,6 +25,8 @@
 namespace media {
 
 class VaapiEncodeJob;
+template <typename T>
+class ScopedID;
 
 // A VideoEncodeAccelerator implementation that uses VA-API
 // (https://01.org/vaapi) for HW-accelerated video encode.
@@ -52,6 +54,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   class H264Accelerator;
   class VP8Accelerator;
   class VP9Accelerator;
+
+  // A self-cleaning VASurfaceID.
+  using ScopedVASurfaceID = ScopedID<VASurfaceID>;
 
   // Encoder state.
   enum State {
@@ -113,12 +118,16 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void ExecuteEncode(VASurfaceID va_surface_id);
 
   // Callback that returns a no longer used VASurfaceID to
-  // |available_va_surface_ids_| for reuse.
-  void RecycleVASurfaceID(VASurfaceID va_surface_id);
+  // |available_va_surfaces_| for reuse.
+  void RecycleVASurfaceID(
+      std::unique_ptr<ScopedVASurfaceID> scoped_va_surface_id,
+      VASurfaceID va_surface_id);
 
   // Callback that returns a no longer used VASurfaceID to
-  // |available_vpp_va_surface_ids_| for reuse.
-  void RecycleVPPVASurfaceID(VASurfaceID va_surface_id);
+  // |available_vpp_va_surfaces_| for reuse.
+  void RecycleVPPVASurfaceID(
+      std::unique_ptr<ScopedVASurfaceID> scoped_va_surface_id,
+      VASurfaceID va_surface_id);
 
   // Returns a bitstream buffer to the client if both a previously executed job
   // awaits to be completed and we have bitstream buffers available to download
@@ -195,19 +204,15 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   std::unique_ptr<AcceleratedVideoEncoder> encoder_;
 
   // VA surfaces available for encoding.
-  std::vector<VASurfaceID> available_va_surface_ids_;
+  std::vector<std::unique_ptr<ScopedVASurfaceID>> available_va_surfaces_;
   // VA surfaces available for scaling.
-  std::vector<VASurfaceID> available_vpp_va_surface_ids_;
+  std::vector<std::unique_ptr<ScopedVASurfaceID>> available_vpp_va_surfaces_;
 
   // VASurfaceIDs internal format.
   static constexpr unsigned int kVaSurfaceFormat = VA_RT_FORMAT_YUV420;
 
   // VA buffers for coded frames.
   std::vector<VABufferID> available_va_buffer_ids_;
-
-  // Callback via which finished VA surfaces are returned to us.
-  base::RepeatingCallback<void(VASurfaceID)> va_surface_release_cb_;
-  base::RepeatingCallback<void(VASurfaceID)> vpp_va_surface_release_cb_;
 
   // Queue of input frames to be encoded.
   base::queue<std::unique_ptr<InputFrameRef>> input_queue_;

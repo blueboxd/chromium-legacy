@@ -277,7 +277,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void GetNewResourceId(base::OnceCallback<void(int64_t resource_id)> callback);
 
   void Disable();
-  bool IsDisabled() const;
 
   // Schedules deleting |resources| from the disk cache and removing their keys
   // as purgeable resources from the service worker database. It's OK to call
@@ -430,6 +429,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   int64_t NewRegistrationId();
   int64_t NewVersionId();
   int64_t NewResourceId();
+
+  bool IsDisabled() const { return state_ == STORAGE_STATE_DISABLED; }
 
   // Static cross-thread helpers.
   static void CollectStaleResourcesFromDB(

@@ -47,11 +47,8 @@ std::string MoveForward(int i) {
 
 CrostiniStartupStatus::CrostiniStartupStatus(
     base::RepeatingCallback<void(const std::string&)> print,
-    bool verbose,
-    base::OnceClosure callback)
-    : print_(std::move(print)),
-      verbose_(verbose),
-      callback_(std::move(callback)) {
+    bool verbose)
+    : print_(std::move(print)), verbose_(verbose) {
   // Initialize Progress
   Print(base::StringPrintf("%s%s[%s] ", kCursorHide, kColor5Purple,
                            std::string(kMaxStage, ' ').c_str()));
@@ -62,8 +59,6 @@ CrostiniStartupStatus::~CrostiniStartupStatus() = default;
 void CrostiniStartupStatus::OnCrostiniRestarted(
     crostini::CrostiniResult result) {
   if (result != crostini::CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Error starting crostini for terminal: "
-               << static_cast<int>(result);
     PrintAfterStage(
         kColor1RedBright,
         base::StringPrintf("Error starting penguin container: %d %s\r\n",
@@ -77,8 +72,6 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
   }
   Print(
       base::StringPrintf("\r%s%s%s", kEraseInLine, kColor0Normal, kCursorShow));
-  std::move(callback_).Run();
-  delete this;
 }
 
 void CrostiniStartupStatus::ShowProgressAtInterval() {

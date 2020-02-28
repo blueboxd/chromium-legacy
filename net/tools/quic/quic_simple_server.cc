@@ -111,7 +111,7 @@ bool QuicSimpleServer::Listen(const IPEndPoint& address) {
   dispatcher_.reset(new quic::QuicSimpleDispatcher(
       &config_, &crypto_config_, &version_manager_,
       std::unique_ptr<quic::QuicConnectionHelperInterface>(helper_),
-      std::unique_ptr<quic::QuicCryptoServerStream::Helper>(
+      std::unique_ptr<quic::QuicCryptoServerStreamBase::Helper>(
           new QuicSimpleServerSessionHelper(quic::QuicRandom::GetInstance())),
       std::unique_ptr<quic::QuicAlarmFactory>(alarm_factory_),
       quic_simple_server_backend_, quic::kQuicDefaultConnectionIdLength));

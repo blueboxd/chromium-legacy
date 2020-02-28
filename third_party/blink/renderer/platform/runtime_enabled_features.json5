@@ -819,7 +819,7 @@
     },
     {
       name: "IDBRelaxedDurability",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IdleDetection",

@@ -37,7 +37,7 @@ class CrostiniUpgraderPageHandler
   ~CrostiniUpgraderPageHandler() override;
 
   // chromeos::crostini_upgrader::mojom::PageHandler:
-  void Backup() override;
+  void Backup(bool show_file_chooser) override;
   void StartPrechecks() override;
   void Upgrade() override;
   void Restore() override;

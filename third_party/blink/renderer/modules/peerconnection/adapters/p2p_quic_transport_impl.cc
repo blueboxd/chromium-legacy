@@ -171,7 +171,7 @@ std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
 // A dummy helper for a server crypto stream that accepts all client hellos
 // and generates a random connection ID.
 class DummyCryptoServerStreamHelper
-    : public quic::QuicCryptoServerStream::Helper {
+    : public quic::QuicCryptoServerStreamBase::Helper {
  public:
   explicit DummyCryptoServerStreamHelper(quic::QuicRandom* random) {}
 

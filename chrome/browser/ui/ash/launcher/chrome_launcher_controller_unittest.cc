@@ -773,7 +773,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
-          } else if (app == crostini::kCrostiniTerminalId) {
+          } else if (app == crostini::GetTerminalId()) {
             result += "Terminal";
           } else if (app == web_app_->id()) {
             result += "WebApp";

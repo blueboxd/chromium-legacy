@@ -557,6 +557,7 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
   // TODO(yoichio): Use move semantics as much as possible.
   // See crbug.com/787704.
   void CopyFrom(const ResourceRequest&);
+  void CopyHeadFrom(const ResourceRequestHead*);
 
   // Constructs a new ResourceRequest for a redirect from this instance.
   std::unique_ptr<ResourceRequest> CreateRedirectRequest(

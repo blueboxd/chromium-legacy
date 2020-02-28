@@ -1032,6 +1032,8 @@ jumbo_component("platform") {
     "graphics/paint/geometry_mapper_clip_cache.h",
     "graphics/paint/geometry_mapper_transform_cache.cc",
     "graphics/paint/geometry_mapper_transform_cache.h",
+    "graphics/paint/graphics_layer_display_item.cc",
+    "graphics/paint/graphics_layer_display_item.h",
     "graphics/paint/hit_test_data.cc",
     "graphics/paint/hit_test_data.h",
     "graphics/paint/hit_test_display_item.cc",

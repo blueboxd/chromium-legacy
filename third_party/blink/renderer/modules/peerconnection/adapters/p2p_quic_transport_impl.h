@@ -179,7 +179,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   std::unique_ptr<quic::QuicCryptoClientConfig> crypto_client_config_;
   // Used by server |crypto_stream_| to track most recently compressed certs.
   std::unique_ptr<quic::QuicCompressedCertsCache> compressed_certs_cache_;
-  std::unique_ptr<quic::QuicCryptoServerStream::Helper> server_stream_helper_;
+  std::unique_ptr<quic::QuicCryptoServerStreamBase::Helper>
+      server_stream_helper_;
   // Owned by the P2PQuicTransportImpl. |helper_| is placed before
   // |connection_| to ensure it outlives it.
   std::unique_ptr<quic::QuicConnectionHelperInterface> helper_;

@@ -327,6 +327,30 @@ const struct QuicErrorMapping {
     {quic::QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
      "quic.http.frame.unexpected.on.control.stream"},
 
+    {quic::QUIC_HPACK_INDEX_VARINT_ERROR, "quic.hpack.index_varint_error"},
+    {quic::QUIC_HPACK_NAME_LENGTH_VARINT_ERROR,
+     "quic.hpack.name_length_varint_error"},
+    {quic::QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR,
+     "quic.hpack.value_length_varint_error"},
+    {quic::QUIC_HPACK_NAME_TOO_LONG, "quic.hpack.name_too_long"},
+    {quic::QUIC_HPACK_VALUE_TOO_LONG, "quic.hpack.value_too_long"},
+    {quic::QUIC_HPACK_NAME_HUFFMAN_ERROR, "quic.hpack.name_huffman_error"},
+    {quic::QUIC_HPACK_VALUE_HUFFMAN_ERROR, "quic.hpack.value_huffman_error"},
+    {quic::QUIC_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE,
+     "quic.hpack.missing_dynamic_table_size_update"},
+    {quic::QUIC_HPACK_INVALID_INDEX, "quic.hpack.invalid_index"},
+    {quic::QUIC_HPACK_INVALID_NAME_INDEX, "quic.hpack.invalid_name_index"},
+    {quic::QUIC_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED,
+     "quic.hpack.dynamic_table_size_update_not_allowed"},
+    {quic::QUIC_HPACK_INITIAL_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK,
+     "quic.hpack.initial_table_size_update_is_above_low_water_mark"},
+    {quic::QUIC_HPACK_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING,
+     "quic.hpack.table_size_update_is_above_acknowledge_setting"},
+    {quic::QUIC_HPACK_TRUNCATED_BLOCK, "quic.hpack.truncated_block"},
+    {quic::QUIC_HPACK_FRAGMENT_TOO_LONG, "quic.hpack.fragment_too_long"},
+    {quic::QUIC_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT,
+     "quic.hpack.compressed_header_size_exceeds_limit"},
+
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be
     // an entry for it, but the symbol is gone.

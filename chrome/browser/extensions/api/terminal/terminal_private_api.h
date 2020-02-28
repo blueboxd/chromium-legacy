@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -16,6 +18,8 @@
 class PrefChangeRegistrar;
 
 namespace extensions {
+
+class CrostiniStartupStatus;
 
 class TerminalPrivateAPI : public BrowserContextKeyedAPI {
  public:
@@ -50,6 +54,14 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 
  private:
+  // Callback for when starting crostini is complete.
+  void OnCrostiniRestarted(
+      std::unique_ptr<CrostiniStartupStatus> startup_status,
+      const std::string& user_id_hash,
+      int tab_id,
+      const std::vector<std::string>& arguments,
+      crostini::CrostiniResult result);
+
   using ProcessOutputCallback =
       base::Callback<void(const std::string& terminal_id,
                           const std::string& output_type,

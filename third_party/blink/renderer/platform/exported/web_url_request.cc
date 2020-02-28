@@ -117,7 +117,8 @@ void WebURLRequest::CopyFrom(const WebURLRequest& r) {
   DCHECK_EQ(owned_resource_request_.get(), resource_request_);
   DCHECK(owned_resource_request_->IsNull());
   DCHECK(this != &r);
-  resource_request_->CopyFrom(*r.resource_request_);
+  resource_request_->CopyHeadFrom(r.resource_request_);
+  resource_request_->SetHttpBody(r.resource_request_->HttpBody());
 }
 
 bool WebURLRequest::IsNull() const {

@@ -53,8 +53,7 @@ import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
-import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
-import org.chromium.chrome.browser.xsurface.SurfaceRenderer;
+import org.chromium.chrome.browser.xsurface.SurfaceAdapterFactory;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
@@ -381,11 +380,10 @@ public abstract class AppHooks {
     }
 
     /**
-     * Returns a new {@link SurfaceRenderer} if the xsurface implementation is included in the
+     * Returns a new {@link SurfaceAdapterFactory} if the xsurface implementation is included in the
      * apk. Otherwise null is returned.
      */
-    public @Nullable SurfaceRenderer createExternalSurfaceRenderer(
-            SurfaceDependencyProvider dependencies) {
+    public @Nullable SurfaceAdapterFactory createExternalSurfaceAdapterFactory() {
         return null;
     }
 }

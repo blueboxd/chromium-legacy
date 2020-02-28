@@ -5,9 +5,13 @@
 #include "chrome/browser/chromeos/crostini/crostini_upgrader.h"
 
 #include "base/barrier_closure.h"
+#include "base/files/file_util.h"
+#include "base/location.h"
+#include "base/optional.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import_status_tracker.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
@@ -63,7 +67,10 @@ CrostiniUpgrader* CrostiniUpgrader::GetForProfile(Profile* profile) {
 }
 
 CrostiniUpgrader::CrostiniUpgrader(Profile* profile)
-    : profile_(profile), container_id_("", ""), pmc_observer_(this) {
+    : profile_(profile),
+      container_id_("", ""),
+      pmc_observer_(this),
+      backup_path_(base::nullopt) {
   CrostiniManager::GetForProfile(profile_)->AddUpgradeContainerProgressObserver(
       this);
 }
@@ -103,16 +110,17 @@ void CrostiniUpgrader::StatusTracker::SetStatusRunningUI(int progress_percent) {
 
 void CrostiniUpgrader::StatusTracker::SetStatusDoneUI() {
   if (type() == ExportImportType::EXPORT) {
-    upgrader_->OnBackup(CrostiniResult::SUCCESS);
+    upgrader_->OnBackup(CrostiniResult::SUCCESS, path());
   } else {
     upgrader_->OnRestore(CrostiniResult::SUCCESS);
   }
 }
 
 void CrostiniUpgrader::StatusTracker::SetStatusCancelledUI() {
-  // Successfully canceled backup/restore. Upgrade can continue.
+  // Successfully canceled backup/restore. Upgrade can continue but we will not
+  // use that backup to restore from.
   if (type() == ExportImportType::EXPORT) {
-    upgrader_->OnBackup(CrostiniResult::SUCCESS);
+    upgrader_->OnBackup(CrostiniResult::SUCCESS, base::nullopt);
   } else {
     upgrader_->OnRestore(CrostiniResult::SUCCESS);
   }
@@ -126,25 +134,52 @@ void CrostiniUpgrader::StatusTracker::SetStatusFailedWithMessageUI(
     result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_SPACE;
   }
   if (type() == ExportImportType::EXPORT) {
-    upgrader_->OnBackup(result);
+    upgrader_->OnBackup(result, base::nullopt);
   } else {
     upgrader_->OnRestore(result);
   }
 }
 
 void CrostiniUpgrader::Backup(const ContainerId& container_id,
+                              bool show_file_chooser,
                               content::WebContents* web_contents) {
-  CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
-      container_id, web_contents, MakeFactory());
+  if (show_file_chooser) {
+    CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
+        container_id, web_contents, MakeFactory());
+    return;
+  }
+  base::FilePath default_path =
+      CrostiniExportImport::GetForProfile(profile_)->GetDefaultBackupPath();
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&base::PathExists, default_path),
+      base::BindOnce(&CrostiniUpgrader::OnBackupPathChecked,
+                     weak_ptr_factory_.GetWeakPtr(), container_id, web_contents,
+                     default_path));
 }
 
-void CrostiniUpgrader::OnBackup(CrostiniResult result) {
+void CrostiniUpgrader::OnBackupPathChecked(const ContainerId& container_id,
+                                           content::WebContents* web_contents,
+                                           base::FilePath path,
+                                           bool path_exists) {
+  if (path_exists) {
+    CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
+        container_id, web_contents, MakeFactory());
+  } else {
+    CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
+        container_id, path, MakeFactory());
+  }
+}
+
+void CrostiniUpgrader::OnBackup(CrostiniResult result,
+                                base::Optional<base::FilePath> backup_path) {
   if (result != CrostiniResult::SUCCESS) {
     for (auto& observer : upgrader_observers_) {
       observer.OnBackupFailed();
     }
     return;
   }
+  backup_path_ = backup_path;
   for (auto& observer : upgrader_observers_) {
     observer.OnBackupSucceeded();
   }
@@ -242,8 +277,30 @@ void CrostiniUpgrader::OnUpgrade(CrostiniResult result) {
 
 void CrostiniUpgrader::Restore(const ContainerId& container_id,
                                content::WebContents* web_contents) {
-  CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
-      container_id, web_contents, MakeFactory());
+  if (!backup_path_.has_value()) {
+    CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
+        container_id, web_contents, MakeFactory());
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&base::PathExists, *backup_path_),
+      base::BindOnce(&CrostiniUpgrader::OnRestorePathChecked,
+                     weak_ptr_factory_.GetWeakPtr(), container_id, web_contents,
+                     *backup_path_));
+}
+
+void CrostiniUpgrader::OnRestorePathChecked(const ContainerId& container_id,
+                                            content::WebContents* web_contents,
+                                            base::FilePath path,
+                                            bool path_exists) {
+  if (!path_exists) {
+    CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
+        container_id, web_contents, MakeFactory());
+  } else {
+    CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
+        container_id, path, MakeFactory());
+  }
 }
 
 void CrostiniUpgrader::OnRestore(CrostiniResult result) {

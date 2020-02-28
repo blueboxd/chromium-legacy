@@ -31,10 +31,6 @@ inline constexpr WebSandboxFlags operator~(WebSandboxFlags flags) {
   return static_cast<WebSandboxFlags>(~static_cast<int>(flags));
 }
 
-inline std::ostream& operator<<(std::ostream& out, WebSandboxFlags flags) {
-  return out << std::bitset<sizeof(int) * 8>(static_cast<int>(flags));
-}
-
 }  // namespace mojom
 }  // namespace blink
 

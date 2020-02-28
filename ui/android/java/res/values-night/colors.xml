@@ -44,6 +44,7 @@
     <color name="chip_text_color_selected">@color/default_text_color_dark</color>
     <color name="chip_background_color_disabled">@color/modern_grey_300_alpha_38</color>
     <color name="chip_ripple_color_default">@android:color/white</color>
+    <color name="default_chip_outline_color">@color/default_chip_outline_color_dark</color>
 
     <!-- CircularProgressView colors -->
     <color name="circular_progress_inner_background_color_small">@color/modern_blue_300</color>

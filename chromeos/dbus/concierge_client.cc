@@ -233,6 +233,12 @@ class ConciergeClientImpl : public ConciergeClient {
     CallMethod(concierge::kStartArcVmMethod, request, std::move(callback));
   }
 
+  void ResizeDiskImage(const concierge::ResizeDiskImageRequest& request,
+                       DBusMethodCallback<concierge::ResizeDiskImageResponse>
+                           callback) override {
+    CallMethod(concierge::kResizeDiskImageMethod, request, std::move(callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     concierge_proxy_ = bus->GetObjectProxy(

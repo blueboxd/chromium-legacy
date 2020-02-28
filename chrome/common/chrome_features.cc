@@ -196,7 +196,7 @@ const base::Feature kPrintServerUi{"PrintServerUi",
 // OS_CHROMEOS, but this flag must be defined for all platforms since
 // it is required for SystemWebApp tests.
 const base::Feature kTerminalSystemApp{"TerminalSystemApp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable splits in the Terminal System App.
 const base::Feature kTerminalSystemAppSplits{"TerminalSystemAppSplits",

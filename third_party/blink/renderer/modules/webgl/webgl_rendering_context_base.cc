@@ -7976,7 +7976,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     if (!frame)
       return;
 
-    bool blocked;
+    bool blocked = false;
     frame->GetLocalFrameHostRemote().Are3DAPIsBlocked(&blocked);
     if (blocked)
       return;

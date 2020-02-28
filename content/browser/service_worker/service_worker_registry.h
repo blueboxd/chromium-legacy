@@ -332,6 +332,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   ServiceWorkerContextCore* const context_;
 
   std::unique_ptr<ServiceWorkerStorage> storage_;
+  bool is_storage_disabled_ = false;
 
   // For finding registrations being installed or uninstalled.
   using RegistrationRefsById =

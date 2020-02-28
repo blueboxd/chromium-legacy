@@ -27,9 +27,7 @@ class CrostiniStartupStatusTest : public testing::Test {
     return new CrostiniStartupStatus(
         base::BindRepeating(&CrostiniStartupStatusTest::Print,
                             base::Unretained(this)),
-        verbose,
-        base::BindOnce(&CrostiniStartupStatusTest::Done,
-                       base::Unretained(this)));
+        verbose);
   }
 
   void SetUp() override {}
@@ -44,8 +42,6 @@ TEST_F(CrostiniStartupStatusTest, TestNotVerbose) {
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
 
-  EXPECT_TRUE(done_);
-
   EXPECT_EQ(output_.size(), 2u);
   // Hide cursor, init progress.
   EXPECT_EQ(output_[0], "\x1b[?25l\x1b[35m[         ] ");
@@ -58,7 +54,6 @@ TEST_F(CrostiniStartupStatusTest, TestVerbose) {
   startup_status->OnStageStarted(InstallerState::kStart);
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
-  EXPECT_TRUE(done_);
 
   EXPECT_EQ(output_.size(), 6u);
   // Hide cursor, init progress.

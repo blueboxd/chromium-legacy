@@ -154,7 +154,6 @@ void ServiceWorkerStorage::FindRegistrationForScope(
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-
                              /*data=*/nullptr, /*resources=*/nullptr,
                              ServiceWorkerDatabase::Status::kErrorDisabled));
       return;
@@ -189,9 +188,9 @@ void ServiceWorkerStorage::FindRegistrationForId(
     FindRegistrationDataCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
-      NOTREACHED()
-          << "FindRegistrationForId() should not be called when storage "
-             "is disabled";
+      std::move(callback).Run(
+          /*data=*/nullptr, /*resources=*/nullptr,
+          ServiceWorkerDatabase::Status::kErrorDisabled);
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -223,9 +222,9 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
     FindRegistrationDataCallback callback) {
   switch (state_) {
     case STORAGE_STATE_DISABLED:
-      NOTREACHED()
-          << "FindRegistrationForIdOnly() should not be called when storage "
-             "is disabled";
+      std::move(callback).Run(
+          /*data=*/nullptr, /*resources=*/nullptr,
+          ServiceWorkerDatabase::Status::kErrorDisabled);
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -852,10 +851,6 @@ void ServiceWorkerStorage::Disable() {
   state_ = STORAGE_STATE_DISABLED;
   if (disk_cache_)
     disk_cache_->Disable();
-}
-
-bool ServiceWorkerStorage::IsDisabled() const {
-  return state_ == STORAGE_STATE_DISABLED;
 }
 
 void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {

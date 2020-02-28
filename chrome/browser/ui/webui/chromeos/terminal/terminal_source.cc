@@ -58,10 +58,14 @@ void ReadFile(const std::string& relative_path,
             {"manifest.json", R"({
                "name": "Test Terminal",
                "icons": [{ "src": "/icon.svg", "sizes": "any" }],
-               "start_url": "/html/pwa.html"})"},
+               "start_url": "/html/terminal.html"})"},
             {"icon.svg",
              "<svg xmlns='http://www.w3.org/2000/svg'><rect "
              "fill='red'/></svg>"},
+            {"html/terminal.html", "<script src='/js/terminal.js'></script>"},
+            {"js/terminal.js",
+             "chrome.terminalPrivate.openTerminalProcess("
+             "'vmshell', [], () => {})"},
         });
     auto it = kTestFiles->find(relative_path);
     if (it != kTestFiles->end()) {
